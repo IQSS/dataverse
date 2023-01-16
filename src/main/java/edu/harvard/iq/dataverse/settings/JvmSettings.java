@@ -63,6 +63,7 @@ public enum JvmSettings {
     // API SETTINGS
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
+    API_ALLOW_SESSION_AUTH(SCOPE_API, "allowSessionAuth")
     
     ;
     
@@ -191,7 +192,7 @@ public enum JvmSettings {
         
         return oldNames;
     }
-    
+
     /**
      * Retrieve the scoped key for this setting. Scopes are separated by dots.
      * If the setting contains placeholders, these will be represented as {@link #PLACEHOLDER_KEY}.

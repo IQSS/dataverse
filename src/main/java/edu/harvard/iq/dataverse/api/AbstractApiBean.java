@@ -370,7 +370,7 @@ public abstract class AbstractApiBean {
         final String requestApiKey = getRequestApiKey();
         final String requestWFKey = getRequestWorkflowInvocationID();
         if (requestApiKey == null && requestWFKey == null && getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN)==null) {
-            return session.getUser();
+            return getUserFromSessionOrGuest();
         }
         PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
         // For privateUrlUsers restricted to anonymized access, all api calls are off-limits except for those used in the UI
@@ -387,6 +387,13 @@ public abstract class AbstractApiBean {
             return privateUrlUser;
         }
         return findAuthenticatedUserOrDie(requestApiKey, requestWFKey);
+    }
+
+    private User getUserFromSessionOrGuest() {
+        if (JvmSettings.API_ALLOW_SESSION_AUTH.lookup(Boolean.class)) {
+            return session.getUser();
+        }
+        return GuestUser.get();
     }
 
     /**
