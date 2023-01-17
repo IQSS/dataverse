@@ -390,7 +390,7 @@ public abstract class AbstractApiBean {
     }
 
     private User getUserFromSessionOrGuest() {
-        if (JvmSettings.GATE_API_SESSION_AUTH.lookup(Boolean.class)) {
+        if (JvmSettings.FLAG_API_SESSION_AUTH.lookup(Boolean.class)) {
             return session.getUser();
         }
         return GuestUser.get();
