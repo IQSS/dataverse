@@ -169,7 +169,7 @@ BagIt Support
 
 BagIt is a set of hierarchical file system conventions designed to support disk-based storage and network transfer of arbitrary digital content. It offers several benefits such as integration with digital libraries, easy implementation, and transfer validation. See `the Wikipedia article <https://en.wikipedia.org/wiki/BagIt>`__ for more information.
 
-If the Dataverse installation you are using has enabled BagIt file handling, when uploading BagIt files the repository will validate the checksum values listed in each BagIt’s manifest file against the uploaded files and generate errors about any mismatches. The repository will identify a certain number of errors, such as the first five errors in each BagIt file, before reporting the errors.
+If the Dataverse installation you are using has enabled BagIt file handling, when uploading BagIt files the repository will validate the checksum values listed in each BagIt's manifest file against the uploaded files and generate errors about any mismatches. The repository will identify a certain number of errors, such as the first five errors in each BagIt file, before reporting the errors.
 
 |bagit-image1|
 
@@ -268,7 +268,7 @@ At https://workflows.community, the Workflows Community Initiative offers resour
 How to Upload Your Computational Workflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-After you :ref:`upload your files <dataset-file-upload>`, you can apply a "Workflow" tag to your workflow files, such as your Snakemake or R Notebooks files, so that you and others can find them more easily among your deposit’s other files.
+After you :ref:`upload your files <dataset-file-upload>`, you can apply a "Workflow" tag to your workflow files, such as your Snakemake or R Notebooks files, so that you and others can find them more easily among your deposit's other files.
 
 |cw-image3|
 
@@ -611,12 +611,12 @@ Creating a Private URL for your dataset allows you to share your dataset (for vi
 **Note:** To create a Private URL, you must have the *ManageDatasetPermissions* permission for your dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
 
 #. Go to your unpublished dataset
-#. Select the “Edit” button
-#. Select “Private URL” in the dropdown menu
-#. In the pop-up select “Create Private URL” or "Create URL for Anonymized Access". The latter supports anonymous review by removing author names and other potentially identifying information from citations, version history tables, and some metadata fields (as configured by the administrator).
+#. Select the "Edit" button
+#. Select "Private URL" in the dropdown menu
+#. In the pop-up select "Create Private URL" or "Create URL for Anonymized Access". The latter supports anonymous review by removing author names and other potentially identifying information from citations, version history tables, and some metadata fields (as configured by the administrator).
 #. Copy the Private URL which has been created for this dataset and it can now be shared with anyone you wish to have access to view or download files in your unpublished dataset.
 
-To disable a Private URL and to revoke access, follow the same steps as above until step #3 when you return to the popup, click the “Disable Private URL” button.
+To disable a Private URL and to revoke access, follow the same steps as above until step #3 when you return to the popup, click the "Disable Private URL" button.
 Note that only one PrivateURL (normal or with anonymized access) can be configured per dataset at a time. 
 
 Embargoes

@@ -56,7 +56,7 @@ In this example, ``128.64.32.16`` is your remote address (that you should verify
 
 Once you are ready, enable the :ref:`JVM option <useripaddresssourceheader>`. Verify that the remote locations are properly tracked in your MDC metrics, and/or your IP groups are working. As a final test, if your Dataverse installation is allowing unrestricted localhost access to the admin API, imitate an attack in which a malicious request is pretending to be coming from ``127.0.0.1``. Try the following from a remote, insecure location:
 
-``curl https://your.dataverse.edu/api/admin/settings --header "X-FORWARDED-FOR: 127.0.0.1"``
+:command:`curl https://your.dataverse.edu/api/admin/settings --header "X-FORWARDED-FOR: 127.0.0.1"`
 
 First of all, confirm that access is denied! If you are in fact able to access the settings api from a location outside the proxy, **something is seriously wrong**, so please let us know, and stop using the JVM option.  Otherwise check the access log entry for the header value. What you should see is something like ``"127.0.0.1, 128.64.32.16"``. Where the second address should be the real IP of your remote client. The fact that the "fake" ``127.0.0.1`` you sent over is present in the header is perfectly ok. This is the proper proxy behavior - it preserves any incoming values in the ``X-Forwarded-Header``, if supplied, and adds the detected incoming address to it, *on the right*. It is only this rightmost comma-separated value that Dataverse installation should ever be using. 
 
@@ -178,7 +178,7 @@ By default, the installer configures a default DOI namespace (10.5072) with Data
 
 and restart Payara. The prefix can be configured via the API (where it is referred to as "Authority"):
 
-``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
+:command:`curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority`
 
 Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable, and they will only resolve from the DataCite test environment (and then only if the Dataverse installation from which you published them is accessible - DOIs minted from your laptop will not resolve). Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
 
@@ -630,7 +630,7 @@ Reported Working S3-Compatible Storage
 `StorJ Object Store <https://www.storj.io>`_
  StorJ is a distributed object store that can be configured with an S3 gateway. Per the S3 Storage instructions above, you'll first set up the StorJ S3 store by defining the id, type, and label. After following the general installation, set the following configurations to use a StorJ object store: ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false``. For step-by-step instructions see https://docs.storj.io/dcs/how-tos/dataverse-integration-guide/
 
- Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``. Also, note that if you choose to enable ``dataverse.files.<id>.download-redirect`` the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using ``dataverse.files.<id>.url-expiration-minutes``.
+ Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``. Also, note that if you choose to enable ``dataverse.files.<id>.download-redirect`` the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that's more appropriate by using ``dataverse.files.<id>.url-expiration-minutes``.
 
 `Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
   Set ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false`` to use Surf Object
@@ -820,11 +820,11 @@ The custom logo image file is expected to be small enough to fit comfortably in 
 
 Given this location for the custom logo image file, run this curl command to add it to your settings:
 
-``curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
+:command:`curl -X PUT -d '/logos/navbar/logo.png' http://localhost:8080/api/admin/settings/:LogoCustomizationFile`
 
 To revert to the default configuration and have the Dataverse Project icon be displayed, run the following command:
 
-``curl -X DELETE http://localhost:8080/api/admin/settings/:LogoCustomizationFile``
+:command:`curl -X DELETE http://localhost:8080/api/admin/settings/:LogoCustomizationFile`
 
 About URL
 #########
@@ -849,15 +849,15 @@ Refer to :ref:`:SignUpUrl` and :ref:`conf-allow-signup` for setting a relative p
 Custom Header
 ^^^^^^^^^^^^^
 
-As a starting point you can download :download:`custom-header.html </_static/installation/files/var/www/dataverse/branding/custom-header.html>` and place it at ``/var/www/dataverse/branding/custom-header.html``.
+As a starting point you can copy the ``custom-header.html`` file located at ``/_static/installation/files/var/www/dataverse/branding/custom-header.html`` and place it at ``/var/www/dataverse/branding/custom-header.html``.
 
 Given this location for the custom header HTML file, run this curl command to add it to your settings:
 
-``curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile``
+:command:`curl -X PUT -d '/var/www/dataverse/branding/custom-header.html' http://localhost:8080/api/admin/settings/:HeaderCustomizationFile`
 
 If you have enabled a custom header or navbar logo, you might prefer to disable the theme of the root dataverse. You can do so by setting ``:DisableRootDataverseTheme`` to ``true`` like this:
 
-``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:DisableRootDataverseTheme``
+:command:`curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:DisableRootDataverseTheme`
 
 Please note: Disabling the display of the root Dataverse collection theme also disables your ability to edit it. Remember that Dataverse collection owners can set their Dataverse collections to "inherit theme" from the root. Those Dataverse collections will continue to inherit the root Dataverse collection theme (even though it no longer displays on the root). If you would like to edit the root Dataverse collection theme in the future, you will have to re-enable it first.
 
@@ -875,11 +875,11 @@ Custom Homepage
 
 When you configure a custom homepage, it **replaces** the root Dataverse collection in the content block, serving as a welcome page. This allows for complete control over the look and feel of the content block for your installation's homepage.
 
-As a starting point, download :download:`custom-homepage.html </_static/installation/files/var/www/dataverse/branding/custom-homepage.html>` and place it at ``/var/www/dataverse/branding/custom-homepage.html``.
+As a starting point, copy the ``custom-homepage.html`` located at ``/_static/installation/files/var/www/dataverse/branding/custom-homepage.html`` and place it at ``/var/www/dataverse/branding/custom-homepage.html``.
 
 Given this location for the custom homepage HTML file, run this curl command to add it to your settings:
 
-``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+:command:`curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile`
 
 Note that the ``custom-homepage.html`` file provided has multiple elements that assume your root Dataverse collection still has an alias of "root". While you were branding your root Dataverse collection, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
 
@@ -887,7 +887,7 @@ Note: If you prefer to start with less of a blank slate, you can review the cust
 
 If you decide you'd like to remove this setting, use the following curl command:
 
-``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
+:command:`curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile`
 
 Footer Block
 ++++++++++++
@@ -909,22 +909,22 @@ Custom Footer
 
 As mentioned above, the custom footer appears below the default footer.
 
-As a starting point, download :download:`custom-footer.html </_static/installation/files/var/www/dataverse/branding/custom-footer.html>` and place it at ``/var/www/dataverse/branding/custom-footer.html``.
+As a starting point, copy the ``custom-footer.html`` located at ``/_static/installation/files/var/www/dataverse/branding/custom-footer.html`` and place it at ``/var/www/dataverse/branding/custom-footer.html``.
 
 Given this location for the custom footer HTML file, run this curl command to add it to your settings:
 
-``curl -X PUT -d '/var/www/dataverse/branding/custom-footer.html' http://localhost:8080/api/admin/settings/:FooterCustomizationFile``
+:command:`curl -X PUT -d '/var/www/dataverse/branding/custom-footer.html' http://localhost:8080/api/admin/settings/:FooterCustomizationFile`
 
 Custom Stylesheet
 +++++++++++++++++
 
 You can style your custom homepage, footer, and header content with a custom CSS file. With advanced CSS know-how, you can achieve custom branding and page layouts by utilizing ``position``, ``padding`` or ``margin`` properties.
 
-As a starting point, download :download:`custom-stylesheet.css </_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css>` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``.
+As a starting point, copy the ``custom-stylesheet.css`` located at ``/_static/installation/files/var/www/dataverse/branding/custom-stylesheet.css`` and place it at ``/var/www/dataverse/branding/custom-stylesheet.css``.
 
 Given this location for the custom CSS file, run this curl command to add it to your settings:
 
-``curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile``
+:command:`curl -X PUT -d '/var/www/dataverse/branding/custom-stylesheet.css' http://localhost:8080/api/admin/settings/:StyleCustomizationFile`
 
 .. _i18n:
 
@@ -938,7 +938,7 @@ Adding Multiple Languages to the Dropdown in the Header
 
 The presence of the :ref:`:Languages` database setting adds a dropdown in the header for multiple languages. For example to add English and French to the dropdown:
 
-``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
+:command:`curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'`
 
 When a user selects one of the available choices, the Dataverse user interfaces will be translated into that language (assuming you also configure the "lang" directory and populate it with translations as described below).
 
@@ -1071,7 +1071,7 @@ The basic analytics configuration above tracks page navigation. However, it does
 
 Both Google and Matomo provide the optional capability to track such events and the Dataverse Software has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, and downloadCitation) to it's HTML to facilitate it.
 
-For Google Analytics, the example script at :download:`analytics-code.html </_static/installation/files/var/www/dataverse/branding/analytics-code.html>` will track both page hits and events within your Dataverse installation. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
+For Google Analytics, the example ``analytics-code.html`` script located at ``/_static/installation/files/var/www/dataverse/branding/analytics-code.html`` will track both page hits and events within your Dataverse installation. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
 
@@ -1119,13 +1119,13 @@ Adding Creative Common Licenses
 
 JSON files for `Creative Commons licenses <https://creativecommons.org/about/cclicenses/>`_ are provided below. Note that a new installation of Dataverse already includes CC0 and CC BY.
 
-- :download:`licenseCC0-1.0.json <../../../../scripts/api/data/licenses/licenseCC0-1.0.json>`
-- :download:`licenseCC-BY-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-4.0.json>`
-- :download:`licenseCC-BY-SA-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-SA-4.0.json>`
-- :download:`licenseCC-BY-NC-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-4.0.json>`
-- :download:`licenseCC-BY-NC-SA-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-SA-4.0.json>`
-- :download:`licenseCC-BY-ND-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-ND-4.0.json>`
-- :download:`licenseCC-BY-NC-ND-4.0.json <../../../../scripts/api/data/licenses/licenseCC-BY-NC-ND-4.0.json>`
+- ``licenseCC0-1.0.json`` located at ``/scripts/api/data/licenses/licenseCC0-1.0.json``
+- ``licenseCC-BY-4.0.json`` located at ``/scripts/api/data/licenses/licenseCC-BY-4.0.json``
+- ``licenseCC-BY-SA-4.0.json`` located at ``/scripts/api/data/licenses/licenseCC-BY-SA-4.0.json``
+- ``licenseCC-BY-NC-4.0.json`` located at ``/scripts/api/data/licenses/licenseCC-BY-NC-4.0.json``
+- ``licenseCC-BY-NC-SA-4.0.json`` located at ``/scripts/api/data/licenses/licenseCC-BY-NC-SA-4.0.json``
+- ``licenseCC-BY-ND-4.0.json`` located at ``/scripts/api/data/licenses/licenseCC-BY-ND-4.0.json``
+- ``licenseCC-BY-NC-ND-4.0.json`` located at ``/scripts/api/data/licenses/licenseCC-BY-NC-ND-4.0.json``
 
 .. _adding-custom-licenses:
 
@@ -1378,7 +1378,7 @@ Ensure robots.txt Is Not Blocking Search Engines
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For a public production Dataverse installation, it is probably desired that search agents be able to index published pages (AKA - pages that are visible to an unauthenticated user).
-Polite crawlers usually respect the `Robots Exclusion Standard <https://en.wikipedia.org/wiki/Robots_exclusion_standard>`_; we have provided an example of a production robots.txt :download:`here </_static/util/robots.txt>`).
+Polite crawlers usually respect the `Robots Exclusion Standard <https://en.wikipedia.org/wiki/Robots_exclusion_standard>`_; we have provided an example of a production robots.txt at ``/_static/util/robots.txt``).
 
 We **strongly recommend** using the crawler rules in the sample robots.txt linked above. Note that they make the Dataverse collection and dataset pages accessible to the search engine bots; but discourage them from actually crawling the site, by following any search links - facets and such - on the Dataverse collection pages. Such crawling is very inefficient in terms of system resources, and often results in confusing search results for the end users of the search engines (for example, when partial search results are indexed as individual pages).
 
@@ -2065,7 +2065,7 @@ See :ref:`Web-Analytics-Code` above.
 :FooterCopyright
 ++++++++++++++++
 
-By default the footer says "Copyright © [YYYY]" but you can add text after the year, as in the example below.
+By default the footer says "Copyright [YYYY]" but you can add text after the year, as in the example below.
 
 ``curl -X PUT -d ", Your Institution" http://localhost:8080/api/admin/settings/:FooterCopyright``
 
@@ -2126,16 +2126,14 @@ stored procedure or function (the assumed default setting is ``randomString``).
 In addition to this setting, a stored procedure or function must be created in
 the database.
 
-As a first example, the script below (downloadable
-:download:`here </_static/util/createsequence.sql>`) produces
+As a first example, the ``createsequence.sql`` script located at ``/_static/util/createsequence.sql``) produces
 sequential numerical values. You may need to make some changes to suit your
 system setup, see the comments for more information:
 
 .. literalinclude:: ../_static/util/createsequence.sql
    :language: plpgsql
 
-As a second example, the script below (downloadable
-:download:`here </_static/util/identifier_from_timestamp.sql>`) produces
+As a second example, the ``identifier_from_timestamp.sql`` script located at ``/_static/util/identifier_from_timestamp.sql``) produces
 sequential 8 character identifiers from a base36 representation of current
 timestamp.
 
@@ -2672,7 +2670,7 @@ Recommended setting: 20.
 
 Changes the default info message displayed when a user is required to change their password on login. The default is:
 
-``{0} Reset Password{1} – Our password requirements have changed. Please pick a strong password that matches the criteria below.``
+``{0} Reset Password{1} - Our password requirements have changed. Please pick a strong password that matches the criteria below.``
 
 Where the {0} and {1} denote surrounding HTML **bold** tags. It's recommended to put a single space before your custom message for better appearance (as in the default message above). Including the {0} and {1} to bolden part of your message is optional.
 
@@ -2937,7 +2935,7 @@ or
 
 Allows Cross-Origin Resource sharing(CORS). By default this setting is absent and the Dataverse Software assumes it to be true.
 
-If you don’t want to allow CORS for your installation, set:
+If you don't want to allow CORS for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowCors``
 
@@ -2946,7 +2944,7 @@ If you don’t want to allow CORS for your installation, set:
 
 Unlike other facets, those indexed by Date/Year are sorted chronologically by default, with the most recent value first. To have them sorted by number of hits, e.g. with the year with the most results first, set this to false 
 
-If you don’t want date facets to be sorted chronologically, set:
+If you don't want date facets to be sorted chronologically, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:ChronologicalDateFacets``
 
@@ -2971,7 +2969,7 @@ To enable redirects to the zipper on a different server:
 
 Number of errors to display to the user when creating DataFiles from a file upload. It defaults to 5 errors.
 
-``curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:CreateDataFilesMaxErrorsToDisplay``
+:command:`curl -X PUT -d '1' http://localhost:8080/api/admin/settings/:CreateDataFilesMaxErrorsToDisplay`
 
 .. _:BagItHandlerEnabled:
 
@@ -2980,7 +2978,7 @@ Number of errors to display to the user when creating DataFiles from a file uplo
 
 Part of the database settings to configure the BagIt file handler. Enables the BagIt file handler. By default, the handler is disabled.
 
-``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:BagItHandlerEnabled``
+:command:`curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:BagItHandlerEnabled`
 
 .. _:BagValidatorJobPoolSize:
 
@@ -2989,7 +2987,7 @@ Part of the database settings to configure the BagIt file handler. Enables the B
 
 Part of the database settings to configure the BagIt file handler. The number of threads the checksum validation class uses to validate a single zip file. Defaults to 4 threads
 
-``curl -X PUT -d '10' http://localhost:8080/api/admin/settings/:BagValidatorJobPoolSize``
+:command:`curl -X PUT -d '10' http://localhost:8080/api/admin/settings/:BagValidatorJobPoolSize`
 
 .. _:BagValidatorMaxErrors:
 
@@ -2998,7 +2996,7 @@ Part of the database settings to configure the BagIt file handler. The number of
 
 Part of the database settings to configure the BagIt file handler. The maximum number of errors allowed before the validation job aborts execution. This is to avoid processing the whole BagIt package. Defaults to 5 errors.
 
-``curl -X PUT -d '2' http://localhost:8080/api/admin/settings/:BagValidatorMaxErrors``
+:command:`curl -X PUT -d '2' http://localhost:8080/api/admin/settings/:BagValidatorMaxErrors`
 
 .. _:BagValidatorJobWaitInterval:
 
@@ -3007,7 +3005,7 @@ Part of the database settings to configure the BagIt file handler. The maximum n
 
 Part of the database settings to configure the BagIt file handler. This is the period in seconds to check for the number of errors during validation. Defaults to 10.
 
-``curl -X PUT -d '60' http://localhost:8080/api/admin/settings/:BagValidatorJobWaitInterval``
+:command:`curl -X PUT -d '60' http://localhost:8080/api/admin/settings/:BagValidatorJobWaitInterval`
 
 :ArchiverClassName
 ++++++++++++++++++
@@ -3023,14 +3021,14 @@ For examples, see the specific configuration above in :ref:`BagIt Export`.
 Each Archiver class may have its own custom settings. Along with setting which Archiver class to use, one must use this setting to identify which setting values should be sent to it when it is invoked. The value should be a comma-separated list of setting names.
 For example, the LocalSubmitToArchiveCommand only uses the :BagItLocalPath setting. To allow the class to use that setting, this setting must set as:
 
-``curl -X PUT -d ':BagItLocalPath' http://localhost:8080/api/admin/settings/:ArchiverSettings`` 
+:command:`curl -X PUT -d ':BagItLocalPath' http://localhost:8080/api/admin/settings/:ArchiverSettings`
 
 :BagGeneratorThreads
 ++++++++++++++++++++
 
 An archiver setting shared by several implementations (e.g. DuraCloud, Google, and Local) that can make Bag generation use fewer or more threads in zipping datafiles that the default of 2
  
-``curl http://localhost:8080/api/admin/settings/:BagGeneratorThreads -X PUT -d '8'``
+:command:`curl http://localhost:8080/api/admin/settings/:BagGeneratorThreads -X PUT -d '8'`
 
 :DuraCloudHost
 ++++++++++++++
@@ -3079,7 +3077,7 @@ In the DDI metadata exports, the default behavior is to always add the repositor
 A comma-separated list of field type names that should be 'withheld' when dataset access occurs via a Private Url with Anonymized Access (e.g. to support anonymized review). 
 A suggested minimum includes author, datasetContact, and contributor, but additional fields such as depositor, grantNumber, and publication might also need to be included.
 
-``curl -X PUT -d 'author, datasetContact, contributor, depositor, grantNumber, publication' http://localhost:8080/api/admin/settings/:AnonymizedFieldTypeNames``
+:command:`curl -X PUT -d 'author, datasetContact, contributor, depositor, grantNumber, publication' http://localhost:8080/api/admin/settings/:AnonymizedFieldTypeNames`
 
 :DatasetChecksumValidationSizeLimit
 +++++++++++++++++++++++++++++++++++
@@ -3088,7 +3086,7 @@ Setting ``DatasetChecksumValidationSizeLimit`` to a threshold in bytes, disables
 
 For example, if you want your Dataverse installation to skip validation for any dataset larger than 5 GB while publishing, use this setting:
 
-``curl -X PUT -d 5000000000 http://localhost:8080/api/admin/settings/:DatasetChecksumValidationSizeLimit``
+:command:`curl -X PUT -d 5000000000 http://localhost:8080/api/admin/settings/:DatasetChecksumValidationSizeLimit`
 
 When this option is used to disable the checksum validation, it's strongly recommended to perform periodic asynchronous checks via the integrity API
 
@@ -3103,7 +3101,7 @@ Setting ``DataFileChecksumValidationSizeLimit`` to a threshold in bytes, disable
 
 For example, if you want your Dataverse installation to skip validation for any data files larger than 2 GB while publishing, use this setting:
 
-``curl -X PUT -d 2000000000 http://localhost:8080/api/admin/settings/:DataFileChecksumValidationSizeLimit``
+:command:`curl -X PUT -d 2000000000 http://localhost:8080/api/admin/settings/:DataFileChecksumValidationSizeLimit`
 
 When this option is used to disable the checksum validation, it's strongly recommended to perform periodic asynchronous checks via the integrity API
 
@@ -3116,7 +3114,7 @@ Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
 
 A boolean setting that, if true, will send an email and notification to users when a Dataset is created. Messages go to those, other than the dataset creator, who have the ability/permission necessary to publish the dataset. The intent of this functionality is to simplify tracking activity and planning to follow-up contact.
   
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SendNotificationOnDatasetCreation``
+:command:`curl -X PUT -d true http://localhost:8080/api/admin/settings/:SendNotificationOnDatasetCreation`
 
 .. _:CVocConf:
 
@@ -3127,9 +3125,9 @@ A JSON-structured setting that configures Dataverse to associate specific metada
 
 Scripts that implement this association for specific service protocols are maintained at https://github.com/gdcc/dataverse-external-vocab-support. That repository also includes a json-schema for validating the structure required by this setting along with an example metadatablock and sample :CVocConf setting values associating entries in the example block with ORCID and SKOSMOS based services.
 
-``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
+:command:`wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json`
 
-``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
+:command:`curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf`
 
 .. _:ControlledVocabularyCustomJavaScript:
 
@@ -3140,11 +3138,11 @@ Scripts that implement this association for specific service protocols are maint
 
 To specify the URL for a custom script ``covoc.js`` to be loaded from an external site:
 
-``curl -X PUT -d 'https://example.com/js/covoc.js' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
+:command:`curl -X PUT -d 'https://example.com/js/covoc.js' http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript`
 
 To remove the custom script URL:
 
-``curl -X DELETE http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript``
+:command:`curl -X DELETE http://localhost:8080/api/admin/settings/:ControlledVocabularyCustomJavaScript`
 
 Please note that :ref:`:CVocConf` is a better option if the list is large or needs to be searchable from an external service using protocols such as SKOSMOS.
 
@@ -3160,7 +3158,7 @@ A dataset may only have one label at a time and if a label is set, it will be re
 This functionality is disabled when this setting is empty/not set.
 Each set of labels is identified by a curationLabelSet name and a JSON Array of the labels allowed in that set.
 
-``curl -X PUT -d '{"Standard Process":["Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"], "Alternate Process":["State 1","State 2","State 3"]}' http://localhost:8080/api/admin/settings/:AllowedCurationLabels``
+:command:`curl -X PUT -d '{"Standard Process":["Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"], "Alternate Process":["State 1","State 2","State 3"]}' http://localhost:8080/api/admin/settings/:AllowedCurationLabels`
 
 If the Dataverse Installation supports multiple languages, the curation label translations should be added to the ``CurationLabels`` properties files. (See :ref:`i18n` for more on properties files and internationalization in general.)
 Since the Curation labels are free text, while creating the key, it has to be converted to lowercase, replace space with underscore.
@@ -3177,7 +3175,7 @@ Example::
 
 By default, custom terms of data use and access can be specified after selecting "Custom Terms" from the License/DUA dropdown on the Terms tab. When ``:AllowCustomTermsOfUse`` is  set to ``false`` the "Custom Terms" item is not made available to the depositor.
 
-``curl -X PUT -d false http://localhost:8080/api/admin/settings/:AllowCustomTermsOfUse``
+:command:`curl -X PUT -d false http://localhost:8080/api/admin/settings/:AllowCustomTermsOfUse`
 
 .. _:MaxEmbargoDurationInMonths:
 
@@ -3188,7 +3186,7 @@ This setting controls whether embargoes are allowed in a Dataverse instance and 
 setting indicates embargoes are not supported. A value of -1 allows embargoes of any length. Any other value indicates the maximum number of months (from the current date) a user
 can enter for an embargo end date. This limit will be enforced in the popup dialog in which users enter the embargo date. For example, to set a two year maximum:
 
-``curl -X PUT -d 24 http://localhost:8080/api/admin/settings/:MaxEmbargoDurationInMonths``
+:command:`curl -X PUT -d 24 http://localhost:8080/api/admin/settings/:MaxEmbargoDurationInMonths`
 
 :DataverseMetadataValidatorScript
 +++++++++++++++++++++++++++++++++
@@ -3197,7 +3195,7 @@ An optional external script that validates Dataverse collection metadata as it's
 
 For example, once the following setting is created:
 
-``curl -X PUT -d /usr/local/bin/dv_validator.sh http://localhost:8080/api/admin/settings/:DataverseMetadataValidatorScript``
+:command:`curl -X PUT -d /usr/local/bin/dv_validator.sh http://localhost:8080/api/admin/settings/:DataverseMetadataValidatorScript`
 
 :DataverseMetadataPublishValidationFailureMsg
 +++++++++++++++++++++++++++++++++++++++++++++
@@ -3206,7 +3204,7 @@ Specifies a custom error message shown to the user when a Dataverse collection f
 
 For example: 
 
-``curl -X PUT -d "This content needs to go through an additional review by the Curation Team before it can be published." http://localhost:8080/api/admin/settings/:DataverseMetadataPublishValidationFailureMsg``
+:command:`curl -X PUT -d "This content needs to go through an additional review by the Curation Team before it can be published." http://localhost:8080/api/admin/settings/:DataverseMetadataPublishValidationFailureMsg`
 
 
 :DataverseMetadataUpdateValidationFailureMsg
@@ -3222,7 +3220,7 @@ An optional external script that validates dataset metadata during publishing. T
 
 For example:
 
-``curl -X PUT -d /usr/local/bin/ds_validator.sh http://localhost:8080/api/admin/settings/:DatasetMetadataValidatorScript``
+:command:`curl -X PUT -d /usr/local/bin/ds_validator.sh http://localhost:8080/api/admin/settings/:DatasetMetadataValidatorScript`
 
 In some ways this duplicates a workflow mechanism, since it is possible to define a workflow with additional validation steps. But please note that the important difference is that this external validation happens *synchronously*, while the user is wating; while a workflow is performed asynchronously with a lock placed on the dataset. This can be useful to some installations, in some situations. But it also means that the script provided should be expected to always work reasonably fast - ideally, in seconds, rather than minutes, etc.
 
@@ -3233,7 +3231,7 @@ Specifies a custom error message shown to the user when a dataset fails an exter
 
 For example: 
 
-``curl -X PUT -d "This content needs to go through an additional review by the Curation Team before it can be published." http://localhost:8080/api/admin/settings/:DatasetMetadataValidationFailureMsg``
+:command:`curl -X PUT -d "This content needs to go through an additional review by the Curation Team before it can be published." http://localhost:8080/api/admin/settings/:DatasetMetadataValidationFailureMsg`
 
 	
 :ExternalValidationAdminOverride
@@ -3250,11 +3248,11 @@ This setting is a comma-separated list of the new tags.
 
 To override the default list with Docs, Data, Code, and Workflow:
 
-``curl -X PUT -d 'Docs,Data,Code,Workflow' http://localhost:8080/api/admin/settings/:FileCategories``
+:command:`curl -X PUT -d 'Docs,Data,Code,Workflow' http://localhost:8080/api/admin/settings/:FileCategories`
 
 To remove the override and go back to the default list:
 
-``curl -X PUT -d '' http://localhost:8080/api/admin/settings/:FileCategories``
+:command:`curl -X PUT -d '' http://localhost:8080/api/admin/settings/:FileCategories`
 
 .. _:ShowMuteOptions:
 

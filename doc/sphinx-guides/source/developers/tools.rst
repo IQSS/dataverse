@@ -5,7 +5,7 @@ Tools
 These are handy tools for your :doc:`/developers/dev-environment/`.
 
 .. contents:: |toctitle|
-	:local:
+ :local:
 
 Netbeans Connector Chrome Extension
 +++++++++++++++++++++++++++++++++++
@@ -92,7 +92,7 @@ FontCustom
 
 The custom file type icons were created with the help of `FontCustom <https://github.com/FontCustom/fontcustom>`. Their README provides installation instructions as well as directions for producing your own vector-based icon font.
 
-Here is a vector-based SVG file to start with as a template: :download:`icon-template.svg <../_static/icon-template.svg>`
+A vector-based SVG file ``icon-template.svg`` to start with, is located at ``/_static/icon-template.svg``
 
 SonarQube
 +++++++++

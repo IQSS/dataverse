@@ -4,7 +4,7 @@ IP Groups
 IP Groups can be used to permit download of restricted files by IP addresses rather than people. For example, you may want to allow restricted files to be downloaded by researchers who physically enter a library and make use of the library's network.
 
 .. contents:: Contents:
-	:local:
+ :local:
 
 Listing IP Groups
 -----------------
@@ -16,7 +16,7 @@ IP Groups can be listed with the following curl command:
 Creating an IP Group
 --------------------
 
-IP Groups must be expressed as ranges in IPv4 or IPv6 format. For illustrative purposes, here is a example of the entire IPv4 and IPv6 range that you can :download:`download <../_static/admin/ipGroupAll.json>` and edit to have a narrower range to meet your needs. If you need your IP Group to only encompass a single IP address, you must enter that IP address for the "start" and "end" of the range. If you don't use IPv6 addresses, you can delete that section of the JSON. Please note that the "alias" must be unique if you define multiple IP Groups. You should give it a meaningful "name" since both "alias" and "name" will appear and be searchable in the GUI when your users are assigning roles.
+IP Groups must be expressed as ranges in IPv4 or IPv6 format. For illustrative purposes, the `/_static/admin/ipGroupAll.json` script is a example of the entire IPv4 and IPv6 range you can edit to have a narrower range to meet your needs. If you need your IP Group to only encompass a single IP address, you must enter that IP address for the "start" and "end" of the range. If you don't use IPv6 addresses, you can delete that section of the JSON. Please note that the "alias" must be unique if you define multiple IP Groups. You should give it a meaningful "name" since both "alias" and "name" will appear and be searchable in the GUI when your users are assigning roles.
 
 .. literalinclude:: ../_static/admin/ipGroupAll.json
 

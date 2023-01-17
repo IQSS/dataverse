@@ -1,0 +1,3 @@
+sphinx_bootstrap_theme
+sphinx-icon
+pdflatex

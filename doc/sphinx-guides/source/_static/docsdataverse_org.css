@@ -1,4 +1,4 @@
-*!
+/*!
  * Start Bootstrap - Heroic Features HTML Template (http://startbootstrap.com)
  * Code licensed under the Apache License v2.0.
  * For details, see http://www.apache.org/licenses/LICENSE-2.0.
@@ -181,4 +181,9 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size: .5em; vertical-align: t
 
 pre {
     white-space: pre-wrap;
+}
+
+/* default tables to left aligned */
+table.align-default {
+    text-align: left;
 }

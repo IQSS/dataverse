@@ -95,7 +95,7 @@ Enforce HTTPS
 
 To prevent attacks such as `FireSheep <http://en.wikipedia.org/wiki/Firesheep>`_, HTTPS should be enforced. https://wiki.apache.org/httpd/RewriteHTTPToHTTPS provides a good method. You **could** copy and paste that those "rewrite rule" lines into Apache's main config file at ``/etc/httpd/conf/httpd.conf`` but using Apache's "virtual hosts" feature is recommended so that you can leave the main configuration file alone and drop a host-specific file into place.
 
-Below is an example of how "rewrite rule" lines look within a ``VirtualHost`` block. Download a :download:`sample file <../_static/installation/files/etc/httpd/conf.d/dataverse.example.edu.conf>` , edit it to substitute your own hostname under ``ServerName``, and place it at ``/etc/httpd/conf.d/dataverse.example.edu.conf`` or a filename that matches your hostname. The file must be in ``/etc/httpd/conf.d`` and must end in ".conf" to be included in Apache's configuration.
+Below is an example of how "rewrite rule" lines look within a ``VirtualHost`` block. Use the sample ``dataverse.example.edu.conf`` file located at ``/_static/installation/files/etc/httpd/conf.d/dataverse.example.edu.conf`` and edit it to substitute your own hostname under ``ServerName``, and place it at ``/etc/httpd/conf.d/dataverse.example.edu.conf`` or a filename that matches your hostname. The file must be in ``/etc/httpd/conf.d`` and must end in ".conf" to be included in Apache's configuration.
 
 .. literalinclude:: ../_static/installation/files/etc/httpd/conf.d/dataverse.example.edu.conf
 
@@ -120,7 +120,7 @@ Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</Vir
       require valid-user
     </Location>
 
-You can download a :download:`sample ssl.conf file <../_static/installation/files/etc/httpd/conf.d/ssl.conf>` to compare it against the file you edited.
+You can use a sample ``ssl.conf`` file located at ``/_static/installation/files/etc/httpd/conf.d/ssl.conf`` to compare it against the file you edited.
 
 Note that ``/etc/httpd/conf.d/shib.conf`` and ``/etc/httpd/conf.d/shibboleth-ds.conf`` are expected to be present from installing Shibboleth via yum.
 
@@ -136,7 +136,7 @@ Configure Shibboleth
 shibboleth2.xml
 ~~~~~~~~~~~~~~~
 
-``/etc/shibboleth/shibboleth2.xml`` should look something like the :download:`sample shibboleth2.xml file <../_static/installation/files/etc/shibboleth/shibboleth2.xml>` below, but you must substitute your hostname in the ``entityID`` value. If your starting point is a ``shibboleth2.xml`` file provided by someone else, you must ensure that ``attributePrefix="AJP_"`` is added under ``ApplicationDefaults`` per the `Shibboleth wiki <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPJavaInstall>`_. Without the ``AJP_`` configuration in place, the required :ref:`shibboleth-attributes` will be null and users will be unable to log in.
+``/etc/shibboleth/shibboleth2.xml`` should look something like the sample shibboleth2.xml file located at ``/_static/installation/files/etc/shibboleth/shibboleth2.xml`` shown below, but you must substitute your hostname in the ``entityID`` value. If your starting point is a ``shibboleth2.xml`` file provided by someone else, you must ensure that ``attributePrefix="AJP_"`` is added under ``ApplicationDefaults`` per the `Shibboleth wiki <https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPJavaInstall>`_. Without the ``AJP_`` configuration in place, the required :ref:`shibboleth-attributes` will be null and users will be unable to log in.
 
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibboleth2.xml
    :language: xml
@@ -146,7 +146,7 @@ Specific Identity Provider(s)
 
 When configuring the ``MetadataProvider`` section of ``shibboleth2.xml`` you should consider if your users will all come from the same Identity Provider (IdP) or not.
 
-Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can download a :download:`sample dataverse-idp-metadata.xml file <../_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml>` and that includes the SAMLtest IdP from https://samltest.id but you will want to edit this file to include the metadata from the Identity Provider you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that the Dataverse Software requires, which are listed at :ref:`shibboleth-attributes`.
+Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can use a sample dataverse-idp-metadata.xml file located at ``/_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml`` and that includes the SAMLtest IdP from https://samltest.id but you will want to edit this file to include the metadata from the Identity Provider you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that the Dataverse Software requires, which are listed at :ref:`shibboleth-attributes`.
 
 Identity Federation
 ^^^^^^^^^^^^^^^^^^^
@@ -177,13 +177,13 @@ See also https://incommon.org/federation/attributes/ and https://wiki.shibboleth
 attribute-map.xml
 ~~~~~~~~~~~~~~~~~
 
-By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out and "subject-id" is used instead of "eppn". We recommend downloading and using :download:`attribute-map.xml<../_static/installation/files/etc/shibboleth/attribute-map.xml>` instead which has these changes and should be compatible with the Dataverse installation.
+By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out and "subject-id" is used instead of "eppn". We recommend using ``attribute-map.xml`` located at ``/_static/installation/files/etc/shibboleth/attribute-map.xml`` instead which has these changes and should be compatible with the Dataverse installation.
 
 Shibboleth and ADFS
 ~~~~~~~~~~~~~~~~~~~
 With appropriate configuration, your Dataverse installation and Shibboleth can make use of "single sign on" using Active Directory.
 This requires configuring ``shibd`` and ``httpd`` to load appropriate libraries, and insuring that the attribute mapping matches those provided.
-Example configuration files for :download:`shibboleth2.xml <../_static/installation/files/etc/shibboleth/shibboleth2_adfs.xml>` and :download:`attribute-map.xml <../_static/installation/files/etc/shibboleth/attribute-map_adfs.xml>` may be helpful.
+Example configuration files for ``shibboleth2.xml`` located at ``/_static/installation/files/etc/shibboleth/shibboleth2_adfs.xml`` and ``attribute-map.xml`` located at ``/_static/installation/files/etc/shibboleth/attribute-map_adfs.xml`` may be helpful.
 Note that your ADFS server hostname goes in the file referenced under "MetadataProvider" in your shibboleth2.xml file.
 
 Disable or Reconfigure SELinux
@@ -204,7 +204,7 @@ The second (more involved) option is to use the ``checkmodule``, ``semodule_pack
 Put Type Enforcement (TE) File in misc directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Copy and paste or download the :download:`shibboleth.te <../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te>` Type Enforcement (TE) file below and put it at ``/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te``.
+Copy and paste or use the ``shibboleth.te`` located at ``/_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te`` Type Enforcement (TE) file below and put it at ``/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te``.
 
 .. literalinclude:: ../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te
    :language: text
@@ -413,7 +413,7 @@ Institution-Wide Shibboleth Groups
 
 The Dataverse Software allows you to optionally define "institution-wide Shibboleth groups" based on the the entityID of the Identity Provider (IdP) used to authenticate. For example, an "institution-wide Shibboleth group" with ``https://samltest.id/saml/idp`` as the IdP would include everyone who logs in via the SAMLtest IdP mentioned above.
 
-To create an institution-wide Shibboleth groups, create a JSON file like :download:`shibGroupSAMLtest.json<../_static/installation/files/etc/shibboleth/shibGroupSAMLtest.json>` as below and issue this curl command:
+To create an institution-wide Shibboleth groups, create a JSON file like ``shibGroupSAMLtest.json`` located at ``/_static/installation/files/etc/shibboleth/shibGroupSAMLtest.json`` as below and issue this curl command:
 
 ``curl http://localhost:8080/api/admin/groups/shib -X POST -H 'Content-type:application/json' --upload-file shibGroupSAMLtest.json``
 

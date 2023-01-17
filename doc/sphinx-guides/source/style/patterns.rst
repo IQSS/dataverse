@@ -677,7 +677,7 @@ We use the `Pagination component <http://getbootstrap.com/components/#pagination
       
         <ul class="pagination">
             <li class="disabled">
-                <a href="#" onclick="return false;">«</a>
+                <a href="#" onclick="return false;"><<</a>
             </li>
             <li class="disabled">
                 <a href="#" onclick="return false;">&lt; Previous</a>
@@ -697,7 +697,7 @@ We use the `Pagination component <http://getbootstrap.com/components/#pagination
                 <a href="#" onclick="return false;">Next &gt;</a>
             </li>
             <li>
-                <a href="#" onclick="return false;">»</a>
+                <a href="#" onclick="return false;">>></a>
             </li>
         </ul>
 
@@ -776,17 +776,17 @@ For our help/information, success, warning, and error message blocks we use a cu
     <div class="panel-body">
       <div class="messagePanel">
         <div class="alert alert-dismissable alert-info">
-          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>
           <span class="glyphicon glyphicon-info-sign"></span>&nbsp;<strong>Edit Dataset Metadata</strong> - Add more metadata about this dataset to help others easily find it.
         </div>
         <div class="alert alert-success">
-          <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&nbsp;<strong>Success!</strong> – The metadata for this dataset has been updated.
+          <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&nbsp;<strong>Success!</strong> - The metadata for this dataset has been updated.
         </div>
         <div class="alert alert-warning">
-          <span class="glyphicon glyphicon glyphicon-warning-sign"></span>&nbsp;<strong>File Upload in Progress</strong> – This dataset is locked while the data files are being transferred and verified.
+          <span class="glyphicon glyphicon glyphicon-warning-sign"></span>&nbsp;<strong>File Upload in Progress</strong> - This dataset is locked while the data files are being transferred and verified.
         </div>
         <div class="alert alert-danger">
-          <span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;<strong>Error</strong> – The username, email address, or password you entered is invalid. Need assistance accessing your account? If you believe this is an error, please contact <a href="#" class="ui-commandlink ui-widget" onclick="return false;">Root Support</a> for assistance.
+          <span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;<strong>Error</strong> - The username, email address, or password you entered is invalid. Need assistance accessing your account? If you believe this is an error, please contact <a href="#" class="ui-commandlink ui-widget" onclick="return false;">Root Support</a> for assistance.
         </div>
       </div>
     </div>

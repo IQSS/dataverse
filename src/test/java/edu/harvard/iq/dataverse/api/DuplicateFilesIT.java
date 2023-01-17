@@ -424,7 +424,7 @@ public class DuplicateFilesIT {
      * This test is for the following scenario.
      *
      * What if the database has null for the directoryLabel? What if you pass in
-     * directory as “” (because you don’t realize you can just not pass it).
+     * directory as "" (because you don’t realize you can just not pass it).
      * when it check and compares, the old directory is null. so will that mean
      * labelChange = true and it will fail even though you didn’t really change
      * the directory?

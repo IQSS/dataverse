@@ -109,7 +109,7 @@ If you are leaving your institution and need to convert your Dataverse installat
 ORCID Log In
 ~~~~~~~~~~~~~
 
-You can set up your Dataverse installation account to allow you to log in using your ORCID credentials. ORCID® is an independent non-profit effort to provide an open registry of unique researcher identifiers and open services to link research activities and organizations to these identifiers. Learn more at `orcid.org <http://orcid.org>`_. 
+You can set up your Dataverse installation account to allow you to log in using your ORCID credentials. ORCID is an independent non-profit effort to provide an open registry of unique researcher identifiers and open services to link research activities and organizations to these identifiers. Learn more at `orcid.org <http://orcid.org>`_. 
 
 Create a Dataverse installation account using ORCID
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -162,7 +162,7 @@ Notifications
 
 Notifications appear in the notifications tab on your account page and are also displayed as a number next to your account name. You also receive notifications via email.
 
-If your admin has enabled the option to change the notification settings, you will find an overview of the notification and email settings in the notifications tab. There, you can select which notifications and/or emails you wish to receive. If certain notification or email options are greyed out, you can’t change the setting for this notification because the admin has set these as never to be muted by the user. You control the in-app and the email notifications separately in the two lists.
+If your admin has enabled the option to change the notification settings, you will find an overview of the notification and email settings in the notifications tab. There, you can select which notifications and/or emails you wish to receive. If certain notification or email options are greyed out, you can't change the setting for this notification because the admin has set these as never to be muted by the user. You control the in-app and the email notifications separately in the two lists.
 
 You will typically receive a notification or email when:
 

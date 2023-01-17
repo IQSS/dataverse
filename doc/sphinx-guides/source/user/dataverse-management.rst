@@ -31,7 +31,7 @@ Creating a Dataverse collection is easy but first you must be a registered user 
     * Most metadata fields can be hidden or can be selected as required or optional. Some fields may be selected as conditionally required, depending on metadata options chosen for the Dataverse installation.
     * Selected metadata fields are also used to pick which metadata fields you would like to use for creating :ref:`Dataset Templates <dataset-templates>`: after you finish creating your Dataverse collection.
 #. **Choose which metadata fields will be used as browse/search facets on your Dataverse collection**:
-    * These facets will allow users browsing or searching your Dataverse collection to filter its contents according to the fields you have selected. For example, if you select “Subject” as a facet, users will be able to filter your Dataverse collection’s contents by subject area.
+    * These facets will allow users browsing or searching your Dataverse collection to filter its contents according to the fields you have selected. For example, if you select "Subject" as a facet, users will be able to filter your Dataverse collection's contents by subject area.
     * By default, the facets that will appear on your Dataverse collection's landing page will be from the host Dataverse collection that this new Dataverse collection was created in, but you can add or remove facets from this default.
 #. **Click the "Create Dataverse" button** and you're done!
 
@@ -208,7 +208,7 @@ Note: Featured Dataverse collections can only be used with published Dataverse c
 Dataset Linking
 ===============
 
-Dataset linking allows a Dataverse collection owner to "link" their Dataverse collection to a dataset that exists outside of that Dataverse collection, so it appears in the Dataverse collection’s list of contents without actually *being* in that Dataverse collection. You can link other users' datasets to your Dataverse collection, but that does not transfer editing or other special permissions to you. The linked dataset will still be under the original user's control. 
+Dataset linking allows a Dataverse collection owner to "link" their Dataverse collection to a dataset that exists outside of that Dataverse collection, so it appears in the Dataverse collection's list of contents without actually *being* in that Dataverse collection. You can link other users' datasets to your Dataverse collection, but that does not transfer editing or other special permissions to you. The linked dataset will still be under the original user's control. 
 
 For example, researchers working on a collaborative study across institutions can each link their own individual institutional Dataverse collections to the one collaborative dataset, making it easier for interested parties from each institution to find the study.
 

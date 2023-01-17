@@ -4,7 +4,7 @@ Make Data Count
 `Make Data Count`_ is a project to collect and standardize metrics on data use, especially views, downloads, and citations. The Dataverse Software can integrate Make Data Count to collect and display usage metrics including counts of dataset views, file downloads, and dataset citations.
 
 .. contents:: Contents:
-	:local:
+ :local:
 
 Introduction
 ------------
@@ -79,17 +79,17 @@ Configure Counter Processor
 
 * First, become the "counter" Unix user.
 
-  * ``sudo su - counter``
+  * :command:`sudo su - counter`
 
 * Change to the directory where you installed Counter Processor.
 
-  * ``cd /usr/local/counter-processor-0.1.04``
+  * :command:`cd /usr/local/counter-processor-0.1.04`
 
-* Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>` to ``/usr/local/counter-processor-0.1.04``.
+* Copy the counter-processor-config.yaml located at ``/_static/admin/counter-processor-config.yaml`` to the ``/usr/local/counter-processor-0.1.04`` directory.
 
 * Edit the config file and pay particular attention to the FIXME lines.
 
-  * ``vim counter-processor-config.yaml``
+  * :command:`vim counter-processor-config.yaml`
 
 Populate Views and Downloads for the First Time
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -98,27 +98,27 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * Change to the directory where you installed Counter Processor.
 
-  * ``cd /usr/local/counter-processor-0.1.04``
+  * :command:`cd /usr/local/counter-processor-0.1.04`
 
 * If you are running Counter Processor for the first time in the middle of a month, you will need create blank log files for the previous days. e.g.:
 
-  * ``cd /usr/local/payara5/glassfish/domains/domain1/logs/mdc``
+  * :command:`cd /usr/local/payara5/glassfish/domains/domain1/logs/mdc`
 
-  * ``touch counter_2019-02-01.log``
+  * :command:`touch counter_2019-02-01.log`
   
-  * ``...``
+  * :command:`...`
   
-  * ``touch counter_2019-02-20.log``
+  * :command:`touch counter_2019-02-20.log`
  
 * Run Counter Processor.
 
-  * ``CONFIG_FILE=counter-processor-config.yaml python39 main.py``
+  * :command:`CONFIG_FILE=counter-processor-config.yaml python39 main.py`
 
   * A JSON file in SUSHI format will be created in the directory you specified under "output_file" in the config file.
 
 * Populate views and downloads for your datasets based on the SUSHI JSON file. The "/tmp" directory is used in the example below.
 
-  * ``curl -X POST "http://localhost:8080/api/admin/makeDataCount/addUsageMetricsFromSushiReport?reportOnDisk=/tmp/make-data-count-report.json"``
+  * :command:`curl -X POST "http://localhost:8080/api/admin/makeDataCount/addUsageMetricsFromSushiReport?reportOnDisk=/tmp/make-data-count-report.json"`
 
 * Verify that views and downloads are available via API.
 
@@ -129,7 +129,7 @@ Populate Views and Downloads Nightly
 
 Running ``main.py`` to create the SUSHI JSON file and the subsequent calling of the Dataverse Software API to process it should be added as a cron job.
 
-The Dataverse Software provides example scripts that run the steps to process new accesses and uploads and update your Dataverse installation's database :download:`counter_daily.sh <../_static/util/counter_daily.sh>` and to retrieve citations for all Datasets from DataCite :download:`counter_weekly.sh <../_static/util/counter_weekly.sh>`. These scripts should be configured for your environment and can be run manually or as cron jobs.
+The Dataverse Software provides example scripts that run the steps to process new accesses and uploads and update your Dataverse installation's database using ``counter_daily.sh`` at ``/_static/util/counter_daily.sh`` and to retrieve citations for all Datasets from DataCite ``counter_weekly.sh`` at ``/_static/util/counter_weekly.sh``. These scripts should be configured for your environment and can be run manually or as cron jobs.
 
 Sending Usage Metrics to the DataCite Hub
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -150,15 +150,15 @@ To configure your Dataverse installation to pull citations from the test vs. pro
 
 Please note that in the curl example, Bash environment variables are used with the idea that you can set a few environment variables and copy and paste the examples as is. For example, "$DOI" could become "doi:10.5072/FK2/BL2IBM" by issuing the following export command from Bash:
 
-``export DOI="doi:10.5072/FK2/BL2IBM"``
+:command:`export DOI="doi:10.5072/FK2/BL2IBM"`
 
 To confirm that the environment variable was set properly, you can use echo like this:
 
-``echo $DOI``
+:command:`echo $DOI`
 
 On some periodic basis (perhaps weekly) you should call the following curl command for each published dataset to update the list of citations that have been made for that dataset.
 
-``curl -X POST "http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=$DOI"``
+:command:`curl -X POST "http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=$DOI"`
 
 Citations will be retrieved for each published dataset and recorded in the your Dataverse installation's database.
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <entry xmlns="http://www.w3.org/2005/Atom" xmlns:dcterms="http://purl.org/dc/terms/">
-  <dcterms:title>“Changes in test-taking patterns over time” concerning the Flynn Effect in Estonia</dcterms:title>
+  <dcterms:title>"Changes in test-taking patterns over time" concerning the Flynn Effect in Estonia</dcterms:title>
   <!-- description of the data rather than the article -->
   <dcterms:description>The dataset from our previous Intelligence paper consists of data collected with the National Intelligence Tests (NIT, Estonian adaptation) in two historical time points: in 1934/36 (N=890) and 2006 (N=913) for students with an average age of 13. The data-file consists of information about cohort, age, and gender and test results at the item level for nine of the ten NIT subtests and subtest scores for the 10th subtest. Three answer types are separated: right answer, wrong answer and missing answer. Data can be used for psychometric research of cohort and sex differences at the scale and item level.</dcterms:description>
   <!-- Author and Affiliation are being used by this particular user. Affiliation is another attribute hack -->

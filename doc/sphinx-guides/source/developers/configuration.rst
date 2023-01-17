@@ -33,7 +33,7 @@ happiness to all the system administrators out there. This will be done by adopt
 
 So far we streamlined configuration of these Dataverse Software parts:
 
-- ✅ Database Connection
+- [x] Database Connection
 
 Complex Configuration Options
 -----------------------------

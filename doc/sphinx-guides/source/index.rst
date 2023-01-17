@@ -73,7 +73,6 @@ if you have some code, scripts or documentation that you'd like to share.
 If you have a **security issue** to report, please email `security@dataverse.org <mailto:security@dataverse.org>`__. See also :ref:`reporting-security-issues`.
 
 
-Indices and Tables
-------------------
+**Searching the documentation**
 
-* :ref:`search`
+This documentation can be searched using the site :ref:`search` or the search box located atop the left menu on pages within the documentation. For more advanced searching capabilities you may download a PDF copy of the documentation.

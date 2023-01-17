@@ -78,12 +78,12 @@ Normalize bit fields by converting to big-endian form, truncating all leading em
 | Convert calendar dates to a character string of the form ``YYYY-MM-DD``, zero padded. Partial dates in the form ``YYYY`` or ``YYYY-MM`` are permitted
 
 | *5b. Time.*
-| Time representation is based on an ``ISO 8601`` format ``hh:mm:ss.fffff``. ``hh``, ``mm`` and ``ss`` are 2 digit, zero-padded numbers. ``fffff`` represents fractions of a second, it must contain no trailing (non-significant) zeroes, and must be omitted altogether the value is zero. No other fractional representations, such as fractional minutes or hours, are permitted. If the time zone of the observation is known, convert the time value to the UTC time zone and append a ”``Z``” to the time representation. (In other words, no time zones other than UTC are allowed in the final normalized representation).
+| Time representation is based on an ``ISO 8601`` format ``hh:mm:ss.fffff``. ``hh``, ``mm`` and ``ss`` are 2 digit, zero-padded numbers. ``fffff`` represents fractions of a second, it must contain no trailing (non-significant) zeroes, and must be omitted altogether the value is zero. No other fractional representations, such as fractional minutes or hours, are permitted. If the time zone of the observation is known, convert the time value to the UTC time zone and append a "``Z``" to the time representation. (In other words, no time zones other than UTC are allowed in the final normalized representation).
 
 (see the :ref:`Note <note3>` at the end of this document for a discussion on :ref:`potential issues when calculating UNFs of time values <note3>`).
 
 | *5c. Combined Date and Time values.*
-| Format elements that comprise a combined date and time by concatenating the (full) date representation, a single letter “``T``”, and the time representation. Partial date representations are **prohibited** in combined date and time values.
+| Format elements that comprise a combined date and time by concatenating the (full) date representation, a single letter "``T``", and the time representation. Partial date representations are **prohibited** in combined date and time values.
 
 | *5d. Intervals.*
 | Represent intervals by using two date-time values, each formatted as defined previously, and separated by a slash ("``/``").

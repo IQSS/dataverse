@@ -431,13 +431,13 @@ The codebase is structured like this:
 .. code-block::
 
     <project root>              # Dataverse WAR Module
-    ├── pom.xml                 # (POM file of WAR module)
-    ├── modules                 #
-    │   └── dataverse-parent    # Dataverse Parent Module
-    │       └── pom.xml         # (POM file of Parent Module)
-    └── scripts                 #
-        └── zipdownload         # Zipdownloader JAR Module
-            └── pom.xml         # (POM file of Zipdownloader Module)
+    |--- pom.xml                # (POM file of WAR module)
+    |--- modules                #
+    |   |-- dataverse-parent    # Dataverse Parent Module
+    |       |-- pom.xml         # (POM file of Parent Module)
+    |-- scripts                 #
+        |-- zipdownload         # Zipdownloader JAR Module
+            |-- pom.xml         # (POM file of Zipdownloader Module)
 
 - Any developer cloning the project and running ``mvn`` within the project root will interact with the Dataverse WAR
   module, which is the same behavior since Dataverse 4.0 has been released.

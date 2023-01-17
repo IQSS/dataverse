@@ -16,19 +16,19 @@ The UNF V3 algorithm applied to the content of a data set or study is as follows
 
 Each character string comprises the following:
 
-• A sign character.
+- A sign character.
 
-• A single leading digit.
+- A single leading digit.
 
-• A decimal point.
+- A decimal point.
 
-• Up to k-1 digits following the decimal, consisting of the remaining k-1 digits of the number, omitting trailing zeros.
+- Up to k-1 digits following the decimal, consisting of the remaining k-1 digits of the number, omitting trailing zeros.
 
-• A lowercase letter "e."
+- A lowercase letter "e."
 
-• A sign character.
+- A sign character.
 
-• The digits of the exponent, omitting trailing zeros.
+- The digits of the exponent, omitting trailing zeros.
 
 For example, the number pi at five digits is represented as -3.1415e+, and the number 300 is represented as the string +3.e+2.
 

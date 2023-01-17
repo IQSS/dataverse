@@ -1,4 +1,4 @@
-@font-face {
+/* @font-face {
     font-family: 'socicon';
     src: url('./socicon-font/socicon-webfont.eot');
     src: url('./socicon-font/socicon-webfont.eot?#iefix') format('embedded-opentype'),
@@ -9,7 +9,7 @@
     font-weight: normal;
     font-style: normal;
     text-transform: initial;
-}
+} */
 
 .socicon {
     font-family: 'socicon' !important;

@@ -5,16 +5,16 @@ Testing
 In order to keep our codebase healthy, the Dataverse Project encourages developers to write automated tests in the form of unit tests and integration tests. We also welcome ideas for how to improve our automated testing.
 
 .. contents:: |toctitle|
-	:local:
+ :local:
 
 The Health of a Codebase
 ------------------------
 
 Before we dive into the nut and bolts of testing, let's back up for a moment and think about why we write automated tests in the first place. Writing automated tests is an investment and leads to better quality software. Counterintuitively, writing tests and executing them regularly allows a project to move faster. Martin Fowler explains this well while talking about the health of a codebase:
 
-    "This is an economic judgment. Several times, many times, I run into teams that say something like, 'Oh well. Management isn't allowing us to do a quality job here because it will slow us down. And we've appealed to management and said we need to put more quality in the code, but they've said no, we need to go faster instead.' And my comment to that is well, as soon as you’re framing it in terms of code quality versus speed, you've lost. Because the whole point of refactoring is to go faster.
+    "This is an economic judgment. Several times, many times, I run into teams that say something like, 'Oh well. Management isn't allowing us to do a quality job here because it will slow us down. And we've appealed to management and said we need to put more quality in the code, but they've said no, we need to go faster instead.' And my comment to that is well, as soon as you're framing it in terms of code quality versus speed, you've lost. Because the whole point of refactoring is to go faster.
 
-    "And this is why I quite like playing a bit more with the metaphor as the health of a codebase. If you keep yourself healthy then you'll be able to run faster. But if you just say, 'Well, I want to run a lot so I'm therefore going to run a whole load all the time and not eat properly and not pay attention about this shooting pain going up my leg,' then you’re not going to be able to run quickly very long. **You have to pay attention to your health. And same with the codebase. You have to continuously say, 'How do we keep it in a healthy state? Then we can go fast,' because we’re running marathons here with codebases. And if we neglect that internal quality of the codebase, it hits you surprisingly fast.**"
+    "And this is why I quite like playing a bit more with the metaphor as the health of a codebase. If you keep yourself healthy then you'll be able to run faster. But if you just say, 'Well, I want to run a lot so I'm therefore going to run a whole load all the time and not eat properly and not pay attention about this shooting pain going up my leg,' then you're not going to be able to run quickly very long. **You have to pay attention to your health. And same with the codebase. You have to continuously say, 'How do we keep it in a healthy state? Then we can go fast,' because we're running marathons here with codebases. And if we neglect that internal quality of the codebase, it hits you surprisingly fast.**"
 
     --Martin Fowler at https://devchat.tv/ruby-rogues/178-rr-book-club-refactoring-ruby-with-martin-fowler
 
@@ -231,22 +231,22 @@ Before writing any new REST Assured tests, you should get the tests to pass in a
 
 You do not have to reinvent the wheel. There are many useful methods you can call in your own tests -- especially within UtilIT.java -- when you need your test to create and/or interact with generated accounts, files, datasets, etc. Similar methods can subsequently delete them to get them out of your way as desired before the test has concluded.
 
-For example, if you’re testing your code’s operations with user accounts, the method ``UtilIT.createRandomUser();`` can generate an account for your test to work with. The same account can then be deleted by your program by calling the ``UtilIT.deleteUser();`` method on the imaginary friend your test generated.
+For example, if you're testing your code's operations with user accounts, the method ``UtilIT.createRandomUser();`` can generate an account for your test to work with. The same account can then be deleted by your program by calling the ``UtilIT.deleteUser();`` method on the imaginary friend your test generated.
 
-Remember, it’s only a test (and it's not graded)! Some guidelines to bear in mind:
+Remember, it's only a test (and it's not graded)! Some guidelines to bear in mind:
 
 - Map out which logical functions you want to test
-- Understand what’s being tested and ensure it’s repeatable
+- Understand what's being tested and ensure it's repeatable
 - Assert the conditions of success / return values for each operation
   * A useful resource would be `HTTP status codes <http://www.restapitutorial.com/httpstatuscodes.html>`_
 - Let the code do the labor; automate everything that happens when you run your test file.
-- Just as with any development, if you’re stuck: ask for help!
+- Just as with any development, if you're stuck: ask for help!
 
-To execute existing integration tests on your local Dataverse installation, a helpful command line tool to use is `Maven <http://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <http://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``.
+To execute existing integration tests on your local Dataverse installation, a helpful command line tool to use is `Maven <http://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <http://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it's easily done via Homebrew: ``brew install maven``.
 
 Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)>]``.
 
-+ If you want to run just one particular API test, it’s as easy as you think:
++ If you want to run just one particular API test, it's as easy as you think:
 
   ``mvn test -Dtest=FileRecordJobIT``
 
@@ -258,7 +258,7 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 
   ``mvn test -Dtest=FileMetadataIT -Ddataverse.test.baseurl='http://localhost:8080'``
 
-If you are adding a new test class, be sure to add it to :download:`tests/integration-tests.txt <../../../../tests/integration-tests.txt>` so that our automated testing knows about it.
+If you are adding a new test class, be sure to add it to ``tests/integration-tests.txt`` located at ``/tests/integration-tests.txt`` so that our automated testing knows about it.
 
 
 Writing and Using a Testcontainers Test
@@ -331,7 +331,7 @@ Note that we are running the following commands as the user "dataverse". In shor
 Add jacococli.jar to the WAR File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As the "dataverse" user download :download:`instrument_war_jacoco.bash <../_static/util/instrument_war_jacoco.bash>` (or skip ahead to the "git clone" step to get the script that way) and give it two arguments:
+As the "dataverse" user, use the ``instrument_war_jacoco.bash`` located at ``/_static/util/instrument_war_jacoco.bash`` (or skip ahead to the "git clone" step to get the script that way) and give it two arguments:
 
 - path to your pristine WAR file
 - path to the new WAR file the script will create with jacococli.jar in it
@@ -391,12 +391,12 @@ Load/Performance Testing
 Locust
 ~~~~~~
 
-Load and performance testing is conducted on an as-needed basis but we're open to automating it. As of this writing Locust ( https://locust.io ) scripts at https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests have been used.
+Load and performance testing is conducted on an as-needed basis but we're open to automating it. As of this writing Locust (https://locust.io) scripts at https://github.com/IQSS/dataverse-helper-scripts/tree/master/src/stress_tests have been used.
 
 download-files.sh script
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-One way of generating load is by downloading many files. You can download :download:`download-files.sh <../../../../tests/performance/download-files/download-files.sh>`, make it executable (``chmod 755``), and run it with ``--help``. You can use ``-b`` to specify the base URL of the Dataverse installation and ``-s`` to specify the number of seconds to wait between requests like this:
+One way of generating load is by downloading many files. You can use ``download-files.sh`` located at ``/tests/performance/download-files/download-files.sh``, make it executable (``chmod 755``), and run it with ``--help``. You can use ``-b`` to specify the base URL of the Dataverse installation and ``-s`` to specify the number of seconds to wait between requests like this:
 
 ``./download-files.sh -b https://dev1.dataverse.org -s 2``
 
@@ -456,7 +456,7 @@ Accessibility Testing
 Accessibility Policy
 ~~~~~~~~~~~~~~~~~~~~
 
-The Dataverse Project aims to improve the user experience for those with disabilities, and are in the process of following the recommendations of the `Harvard University Digital Accessibility Policy <https://accessibility.huit.harvard.edu/digital-accessibility-policy>`__,  which use the Worldwide Web Consortium’s Web Content Accessibility Guidelines version 2.1, Level AA Conformance (WCAG 2.1 Level AA) as the standard.
+The Dataverse Project aims to improve the user experience for those with disabilities, and are in the process of following the recommendations of the `Harvard University Digital Accessibility Policy <https://accessibility.huit.harvard.edu/digital-accessibility-policy>`__,  which use the Worldwide Web Consortium's Web Content Accessibility Guidelines version 2.1, Level AA Conformance (WCAG 2.1 Level AA) as the standard.
 
 To report an accessibility issue with the Dataverse Software, you can create a new issue in our GitHub repo at: https://github.com/IQSS/dataverse/issues/
 

@@ -6,7 +6,7 @@ Troubleshooting
 Sometimes a Dataverse installation's users get into trouble. Sometimes a Dataverse installation itself gets into trouble. If something has gone wrong, this section is for you.
 
 .. contents:: Contents:
-	:local:
+ :local:
 
 Using Dataverse Installation APIs to Troubleshoot and Fix Problems
 ------------------------------------------------------------------
@@ -101,7 +101,7 @@ We don't know what's causing this issue, but here's a known workaround:
 - Start Payara
 
 The shell script below performs the steps above. 
-Note that it may or may not work on your system, so it is provided as an example only, downloadable :download:`here </_static/util/clear_timer.sh>`. The configuration values might need to be changed to reflect your environment (the Payara directory). See the comments in the script for more information.
+Note that it may or may not work on your system, so it is provided as an example only, located at ``/_static/util/clear_timer.sh``. The configuration values might need to be changed to reflect your environment (the Payara directory). See the comments in the script for more information.
 
 .. literalinclude:: ../_static/util/clear_timer.sh
 

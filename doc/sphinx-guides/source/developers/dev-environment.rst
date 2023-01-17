@@ -5,7 +5,7 @@ Development Environment
 These instructions are purposefully opinionated and terse to help you get your development environment up and running as quickly as possible! Please note that familiarity with running commands from the terminal is assumed.
 
 .. contents:: |toctitle|
-	:local:
+ :local:
 
 Quick Start
 -----------
@@ -170,7 +170,7 @@ Create a Python virtual environment, activate it, then install dependencies:
 
 The installer will try to connect to the SMTP server you tell it to use. If you don't have a mail server handy you can run ``nc -l 25`` in another terminal and choose "localhost" (the default) to get past this check.
 
-Finally, run the installer (see also :download:`README_python.txt <../../../../scripts/installer/README_python.txt>` if necessary):
+Finally, run the installer (see also ``README_python.txt`` located at ``/scripts/installer/README_python.txt`` if necessary):
 
 ``python3 install.py``
 

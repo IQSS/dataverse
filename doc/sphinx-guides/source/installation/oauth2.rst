@@ -2,7 +2,7 @@ OAuth Login Options
 ===================
 
 .. contents:: |toctitle|
-	:local:
+ :local:
 
 Introduction
 ------------
@@ -49,13 +49,13 @@ As explained under "Auth Modes" in the :doc:`config` section, available authenti
 
 ``curl http://localhost:8080/api/admin/authenticationProviders``
 
-We will ``POST`` a JSON file containing the Client ID and Client Secret to this ``authenticationProviders`` API endpoint to add another authentication provider. As a starting point, you'll want to download the JSON template file matching the provider you're setting up:
+We will ``POST`` a JSON file containing the Client ID and Client Secret to this ``authenticationProviders`` API endpoint to add another authentication provider. As a starting point, you'll want to use the JSON template file matching the provider you're setting up:
 
-- :download:`orcid-public.json <../_static/installation/files/root/auth-providers/orcid-public.json>`
-- :download:`orcid-member.json <../_static/installation/files/root/auth-providers/orcid-member.json>`
-- :download:`github.json <../_static/installation/files/root/auth-providers/github.json>`
-- :download:`google.json <../_static/installation/files/root/auth-providers/google.json>`
-- :download:`microsoft.json <../_static/installation/files/root/auth-providers/microsoft.json>`
+- ``orcid-public.json`` located at ``/_static/installation/files/root/auth-providers/orcid-public.json``
+- ``orcid-member.json`` located at ``/_static/installation/files/root/auth-providers/orcid-member.json``
+- ``github.json`` located at ``/_static/installation/files/root/auth-providers/github.json``
+- ``google.json`` located at ``/_static/installation/files/root/auth-providers/google.json``
+- ``microsoft.json`` located at ``/_static/installation/files/root/auth-providers/microsoft.json``
 
 Here's how the JSON template for GitHub looks, for example:
 
@@ -76,7 +76,7 @@ ORCID Sandbox
 ORCID provides a sandbox registry, which may be useful for staging, or for development installations.
 This template can be used for configuring this setting (**this is not something you should use in a production environment**):
 
-- :download:`orcid-sandbox.json <../_static/installation/files/root/auth-providers/orcid-sandbox.json>`
+- ``orcid-sandbox.json`` located at ``/_static/installation/files/root/auth-providers/orcid-sandbox.json``
 
 Disabling Sign Up
 ~~~~~~~~~~~~~~~~~

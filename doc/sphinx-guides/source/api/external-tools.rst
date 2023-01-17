@@ -58,14 +58,14 @@ Let's look at two examples of external tool manifests (one at the file level and
 External Tools for Files
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-:download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` is a file level both an "explore" tool and a "preview" tool that operates on tabular files:
+``fabulousFileTool.json`` located at ``/_static/installation/files/root/external-tools/fabulousFileTool.json`` is a file level both an "explore" tool and a "preview" tool that operates on tabular files:
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/fabulousFileTool.json
 
 External Tools for Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` is a dataset level explore tool:
+``dynamicDatasetTool.json`` located at ``/_static/installation/files/root/external-tools/dynamicDatasetTool.json`` is a dataset level explore tool:
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/dynamicDatasetTool.json
 
@@ -78,7 +78,7 @@ Terminology
     ===========================  ==========
     Term                         Definition
     ===========================  ==========
-    external tool manifest       A **JSON file** the defines the URL constructed by a Dataverse installation when users click explore or configure tool options. External tool makers are asked to host this JSON file on a website (no app store yet, sorry) and explain how to use install and use the tool. Examples include :download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` and :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as well as the real world examples above such as Data Explorer.
+    external tool manifest       A **JSON file** the defines the URL constructed by a Dataverse installation when users click explore or configure tool options. External tool makers are asked to host this JSON file on a website (no app store yet, sorry) and explain how to use install and use the tool. Examples include ``fabulousFileTool.json`` located at ``/_static/installation/files/root/external-tools/fabulousFileTool.json`` and ``dynamicDatasetTool.json`` located at ``/_static/installation/files/root/external-tools/dynamicDatasetTool.json`` as well as the real world examples above such as Data Explorer.
 
     displayName                  The **name** of the tool in the Dataverse installation web interface. For example, "Data Explorer".
 
@@ -138,7 +138,7 @@ Reserved Words
 
     ``{datasetPid}``             depends     The Persistent ID (DOI or Handle) of the dataset. For example, ``doi:10.7910/DVN/TJCLKP``. This reseved word is **required for dataset level tools** unless you use ``{datasetId}`` instead.
 
-    ``{datasetVersion}``         optional    The friendly version number ( or \:draft ) of the dataset version the file level tool is being launched from. For example, ``1.0`` or ``:draft``.
+    ``{datasetVersion}``         optional    The friendly version number (or \:draft ) of the dataset version the file level tool is being launched from. For example, ``1.0`` or ``:draft``.
 
     ``{localeCode}``             optional    The code for the language ("en" for English, "fr" for French, etc.) that user has selected from the language toggle in a Dataverse installation. See also :ref:`i18n`.
     ===========================  ==========  ===========
@@ -176,7 +176,7 @@ For example, if the ``toolName`` of your external tool is ``fabulous`` then the 
 Using Example Manifests to Get Started
 ++++++++++++++++++++++++++++++++++++++
 
-Again, you can use :download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` or :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as a starting point for your own manifest file.
+Again, you can use ``fabulousFileTool.json`` located at ``/_static/installation/files/root/external-tools/fabulousFileTool.json`` or ``dynamicDatasetTool.json`` located at ``/_static/installation/files/root/external-tools/dynamicDatasetTool.json`` as a starting point for your own manifest file.
 
 Testing Your External Tool
 --------------------------
@@ -191,7 +191,7 @@ Spreading the Word About Your External Tool
 Adding Your Tool to the Inventory of External Tools
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Once you've gotten your tool working, please make a pull request to update the list of tools above! You are also welcome to download :download:`dataverse-external-tools.tsv <../_static/admin/dataverse-external-tools.tsv>`, add your tool to the TSV file, create and issue at https://github.com/IQSS/dataverse/issues , and then upload your TSV file there.
+Once you've gotten your tool working, please make a pull request to update the list of tools above! You are also welcome to download ``dataverse-external-tools.tsv`` located at ``/_static/admin/dataverse-external-tools.tsv``, add your tool to the TSV file, create and issue at https://github.com/IQSS/dataverse/issues , and then upload your TSV file there.
 
 Unless your tool runs entirely in a browser, you may have integrated server-side software with your Dataverse installation. If so, please double check that your software is listed in the :doc:`/admin/integrations` section of the Admin Guide and if not, please open an issue or pull request to add it. Thanks!
 

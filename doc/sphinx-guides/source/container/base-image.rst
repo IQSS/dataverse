@@ -127,7 +127,7 @@ provides. These are mostly based on environment variables (very common with cont
 .. list-table::
     :align: left
     :width: 100
-    :widths: 10 10 10 50
+    :widths: 40 10 10 40
     :header-rows: 1
 
     * - Env. variable
@@ -139,12 +139,12 @@ provides. These are mostly based on environment variables (very common with cont
       - String
       - Set to add arguments to generated `asadmin deploy` commands.
     * - ``PREBOOT_COMMANDS``
-      - [preboot]_
+      - [1]_
       - Abs. path
       - Provide path to file with ``asadmin`` commands to run **before** boot of application server.
         See also `Pre/postboot script docs`_.
     * - ``POSTBOOT_COMMANDS``
-      - [postboot]_
+      - [2]_
       - Abs. path
       - Provide path to file with ``asadmin`` commands to run **after** boot of application server.
         See also `Pre/postboot script docs`_.
@@ -190,7 +190,7 @@ provides. These are mostly based on environment variables (very common with cont
         This means it will enable dumping the heap to ``${DUMPS_DIR}`` (see below) in "out of memory" cases.
         (You should back this location with disk space / ramdisk, so it does not write into an overlay filesystem!)
     * - ``JVM_DUMPS_ARG``
-      - [dump-option]_
+      - [3]_
       - String
       - Can be fine tuned for more grained controls of dumping behaviour.
     * - ``ENABLE_JMX``
@@ -217,9 +217,9 @@ provides. These are mostly based on environment variables (very common with cont
         *Note:* can also be set using any other `MicroProfile Config Sources`_ available via ``dataverse.http.timeout``.
 
 
-.. [preboot] ``${CONFIG_DIR}/pre-boot-commands.asadmin``
-.. [postboot] ``${CONFIG_DIR}/post-boot-commands.asadmin``
-.. [dump-option] ``-XX:+HeapDumpOnOutOfMemoryError``
+.. [1] ``${CONFIG_DIR}/pre-boot-commands.asadmin``
+.. [2] ``${CONFIG_DIR}/post-boot-commands.asadmin``
+.. [3] ``-XX:+HeapDumpOnOutOfMemoryError``
 
 
 

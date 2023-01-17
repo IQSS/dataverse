@@ -329,7 +329,7 @@ Logos
 
 The Dataverse Project logo (below) is displayed in the footer, and was the basis for the creation of the application's icons and favicon.
 
-Create both print and web version of the Dataverse Project logo by downloading this vector-based SVG file: :download:`dataverse_project_logo.svg <../_static/dataverse_project_logo.svg>`
+Create both print and web version of the Dataverse Project logo by using this vector-based SVG file: ``dataverse_project_logo.svg`` located at ``/_static/dataverse_project_logo.svg``
 
 .. raw:: html
 
@@ -341,7 +341,7 @@ Create both print and web version of the Dataverse Project logo by downloading t
 
 The brand logo (below) was created as a custom icon to represent the concept of a Dataverse collection. It is used as the logo in the Bootstrap navbar component and across the application.
 
-Create both print and web version of the Dataverse collection logo by downloading this vector-based SVG file: :download:`Dataverse_brand_icon.svg <../_static/Dataverse_brand_icon.svg>`
+Create both print and web version of the Dataverse collection logo by using this vector-based SVG file: ``Dataverse_brand_icon.svg`` located at ``/_static/Dataverse_brand_icon.svg``
 
 .. raw:: html
 

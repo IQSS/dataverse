@@ -1,0 +1,16 @@
+{% if version > "0" %}
+  {% set app_version = version %}
+{% else %}
+  {% set app_version = "something" %}
+{% endif %}
+
+<div class="justify-content-center p1"><a href="{{pathto("_static/Dataverse.pdf", 1)}}?version={{ app_version }}" class="btn btn-warning" title="For more robust searching of our documentation, we suggest searching within this PDF copy of our documentation.">Download a PDF of this documentation</a></div>
+{%- if pagename != "search" %}
+<form action="{{ pathto('search') }}" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" aria-label="Search" title="This search has some limitations, so if you need more advanced document searching, try searching through the downloadable PDF."/>
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+{%- endif %}
