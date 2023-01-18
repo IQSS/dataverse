@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.settings;
 
+import java.util.Objects;
+
 /**
  * <p>
  *     This enum holds so-called "feature flags" aka "feature gates", etc. It can be used throughout the application
@@ -24,7 +26,8 @@ public enum FeatureFlags {
     
     /* None yet - please add the first here. Example code:
      *
-     * MY_FLAG_NAME_HERE("sth-fancy", false),
+     * DESCRIPTIVE_NAME_HERE("flag-name"),
+     * DESCRIPTIVE_NAME_HERE("flag-name", false),
      *
      */
     
@@ -33,11 +36,33 @@ public enum FeatureFlags {
     final String flag;
     final boolean defaultStatus;
     
+    /**
+     * Construct a flag with default status "off".
+     *
+     * @param flag This flag name will be used to create a scoped String with {@link JvmSettings#FEATURE_FLAG},
+     *             making it available as "dataverse.feature.${flag}".
+     */
+    FeatureFlags(String flag) {
+        this(flag, false);
+    }
+    
+    /**
+     * Construct a flag.
+     * @param flag This flag name will be used to create a scoped String with {@link JvmSettings#FEATURE_FLAG},
+     *             making it available as "dataverse.feature.${flag}".
+     * @param defaultStatus A sensible default should be given here. Probably this will be "false" for most
+     *                      experimental feature previews.
+     */
     FeatureFlags(String flag, boolean defaultStatus) {
+        Objects.requireNonNull(flag);
         this.flag = flag;
         this.defaultStatus = defaultStatus;
     }
     
+    /**
+     * Determine the status of this flag via {@link JvmSettings}.
+     * @return True or false, depending on the configuration or {@link #defaultStatus} if not found.
+     */
     public boolean enabled() {
         return JvmSettings.FEATURE_FLAG.lookupOptional(Boolean.class, flag).orElse(defaultStatus);
     }
