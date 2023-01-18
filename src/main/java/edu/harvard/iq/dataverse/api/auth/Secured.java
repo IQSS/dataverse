@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.api;
+package edu.harvard.iq.dataverse.api.auth;
 
 import javax.ws.rs.NameBinding;
 import java.lang.annotation.ElementType;
