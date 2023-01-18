@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.api.auth;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 
 import javax.inject.Inject;
@@ -13,6 +15,8 @@ public class ApiKeyAuthMechanism implements AuthMechanism {
 
     private static final String DATAVERSE_API_KEY_REQUEST_HEADER_NAME = "X-Dataverse-key";
     private static final String DATAVERSE_API_KEY_REQUEST_PARAM_NAME = "key";
+    private static final String ACCESS_DATAFILE_PATH_PREFIX = "/access/datafile/";
+    private static final String RESPONSE_MESSAGE_BAD_API_KEY = "Bad API key";
 
     @Inject
     protected PrivateUrlServiceBean privateUrlSvc;
@@ -26,29 +30,22 @@ public class ApiKeyAuthMechanism implements AuthMechanism {
     private static final Logger logger = Logger.getLogger(ApiKeyAuthMechanism.class.getName());
 
     @Override
-    public AuthenticatedUser getAuthenticatedUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse {
+    public User findUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse {
         String apiKey = getRequestApiKey(containerRequestContext);
         if (apiKey == null) {
             return null;
         }
-        /*PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(apiKey);
+        PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(apiKey);
         if (privateUrlUser != null) {
-            if (privateUrlUser.hasAnonymizedAccess()) {
-                String pathInfo = containerRequestContext.getUriInfo().getPath();
-                String prefix = "/access/datafile/";
-                if (!(pathInfo.startsWith(prefix) && !pathInfo.substring(prefix.length()).contains("/"))) {
-                    logger.info("Anonymized access request for " + pathInfo);
-                    throw new AuthException("API Access not allowed with this Key");
-                }
-            }
+            checkAnonymizedAccessToRequestPath(containerRequestContext.getUriInfo().getPath(), privateUrlUser);
             return privateUrlUser;
-        }*/
+        }
         AuthenticatedUser authUser = authSvc.lookupUser(apiKey);
         if (authUser != null) {
             authUser = userSvc.updateLastApiUseTime(authUser);
             return authUser;
         }
-        throw new WrappedAuthErrorResponse(getBadApiKeyResponseMessage(apiKey));
+        throw new WrappedAuthErrorResponse(RESPONSE_MESSAGE_BAD_API_KEY);
     }
 
     private String getRequestApiKey(ContainerRequestContext containerRequestContext) {
@@ -58,7 +55,15 @@ public class ApiKeyAuthMechanism implements AuthMechanism {
         return headerParamApiKey != null ? headerParamApiKey : queryParamApiKey;
     }
 
-    protected String getBadApiKeyResponseMessage(String apiKey) {
-        return (apiKey != null) ? "Bad api key" : "Please provide a key query parameter (?" + DATAVERSE_API_KEY_REQUEST_PARAM_NAME + "=XXX) or via the HTTP header " + DATAVERSE_API_KEY_REQUEST_HEADER_NAME;
+    private void checkAnonymizedAccessToRequestPath(String requestPath, PrivateUrlUser privateUrlUser) throws WrappedAuthErrorResponse {
+        if (!privateUrlUser.hasAnonymizedAccess()) {
+            return;
+        }
+        // For privateUrlUsers restricted to anonymized access, all api calls are off-limits except for those used in the UI
+        // to download the file or image thumbs
+        if (!(requestPath.startsWith(ACCESS_DATAFILE_PATH_PREFIX) && !requestPath.substring(ACCESS_DATAFILE_PATH_PREFIX.length()).contains("/"))) {
+            logger.info("Anonymized access request for " + requestPath);
+            throw new WrappedAuthErrorResponse(RESPONSE_MESSAGE_BAD_API_KEY);
+        }
     }
 }

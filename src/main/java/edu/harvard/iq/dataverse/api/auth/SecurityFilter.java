@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api.auth;
 
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -21,7 +21,7 @@ public class SecurityFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
         try {
-            AuthenticatedUser authenticatedUser = apiKeyAuthMechanism.getAuthenticatedUserFromRequest(containerRequestContext);
+            User user = apiKeyAuthMechanism.findUserFromRequest(containerRequestContext);
         } catch (WrappedAuthErrorResponse e) {
             containerRequestContext.abortWith(e.getResponse());
         }
