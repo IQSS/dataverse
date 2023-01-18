@@ -174,10 +174,14 @@ public class LinkIT {
          * Remove this early return when you are ready to work on
          * https://github.com/IQSS/dataverse/issues/7430 about strange linking
          * behavior.
-         */
-        if (true) {
+         * 
+         *         
+         * 
+         * if (true) {
             return;
         }
+         */
+
 
         Response createLevel2a = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level2a", null, apiToken, level1a);
         createLevel2a.prettyPrint();
