@@ -24,10 +24,14 @@ import java.util.Objects;
  */
 public enum FeatureFlags {
     
-    /* None yet - please add the first here. Example code:
+    /* None yet - please add the first here. Example code with JavaDoc example:
      *
+     * /**
+     *  * Your (short) description of what will happen when enabling here.
+     *  * @apiNote Raise flag by setting "dataverse.feature.flag-name"
+     *  * @since Dataverse 5.13
+     *  * /
      * DESCRIPTIVE_NAME_HERE("flag-name"),
-     * DESCRIPTIVE_NAME_HERE("flag-name", false),
      *
      */
     
