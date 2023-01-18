@@ -31,6 +31,10 @@ public enum FeatureFlags {
      *
      */
     
+    // This is used for testing only, thus no documentation! Might be removed when adding the first real flag
+    // and replace it in the unit test!
+    TEST_MODE("test_mode"),
+    
     ;
     
     final String flag;
