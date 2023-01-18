@@ -43,14 +43,21 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - name: Build and push Docker image
+      - name: Build and export to Docker
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: ${{ env.ROOT_DATAVERSE_SG }}/SphinxDocBuildPDF
-          push: true
+          load: true
           tags: ${{ env.DKR_DV_PDF }}
 
       - name: Build PDF document
         run: |
           cd doc/sphinx-guides/
           docker run --rm ${{ env.ROOT_DATAVERSE_SG }}:/docs ${{ env.DKR_DV_PDF }} make latexpdf
+
+      - name: Build and push
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: ${{ env.ROOT_DATAVERSE_SG }}/SphinxDocBuildPDF
+          push: true
+          tags: ${{ env.DKR_DV_PDF }}
