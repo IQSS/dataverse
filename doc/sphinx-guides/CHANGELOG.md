@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## To do items
 
 - [ ] submit pull request `9277 - Correcting the Sphinx documentation PDF build` 
-- [ ] create a GitHub workflow for checking the documentation [https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action#testing-out-your-action-in-a-workflow]
+- [ ] create a GitHub workflow for checking the documentation using something like [https://github.com/OdumInstitute/sphinx-action] or [https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action#testing-out-your-action-in-a-workflow]
 - [ ] determine the `\doc\sphinx-guides\source\img` files no longer in use and determine if they should be added back in and need to be updated to reflect UI changes
 - [ ] long tables do not split across pages in LaTeX, such as the `#datasetField (field) properties` table in `\doc\sphinx-guides\source\admin\metadatacustomization.rst`, so the table simply truncates at the page break (see if this is fixed when the table is generate using csv table format)
 - [ ] switch inline tables such as the ones on `\doc\sphinx-guides\source\admin\metadatacustomization.rst` to use csv tables such as those in `\doc\sphinx-guides\source\api\external-tools.rst` because formatting tables manually is a nightmare (search for instances of `+---` in the docs)
