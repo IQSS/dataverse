@@ -1930,6 +1930,9 @@ please find all known feature flags below. Any of these flags can be activated u
     * - Flag Name
       - Description
       - Default status
+    * - Example flag
+      - Replace this with something real
+      - ``Off``
 
 **Note:** Can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX``.
