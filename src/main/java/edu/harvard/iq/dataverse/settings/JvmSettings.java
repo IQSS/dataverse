@@ -66,7 +66,9 @@ public enum JvmSettings {
     
     // FEATURE FLAGS SETTINGS
     SCOPE_FLAGS(PREFIX, "feature"),
-    FEATURE_FLAG(SCOPE_FLAGS), // this is a placeholder, to be filled in by FeatureFlag entries
+    // This is a special placeholder-type setting entry, to be filled in by FeatureFlag entries during lookup.
+    // Avoids adding flag entries twice.
+    FEATURE_FLAG(SCOPE_FLAGS),
     
     ;
     
