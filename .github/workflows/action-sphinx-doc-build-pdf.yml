@@ -15,7 +15,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   # Your root Dataverse sphinx-guide path will be set using a `ROOT_DATAVERSE_SG` variable
-  ROOT_DATAVERSE_SG: doc/sphinx-guides/
+  ROOT_DATAVERSE_SG: doc/sphinx-guides
   # Next create a variable `DKR_DV_PDF` to store the unique name for the Docker image being created to run the PDF Sphinx builds
   DKR_DV_PDF: kuhlaid/sddi_pdf:latest
 
@@ -39,12 +39,12 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and export to Docker
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        uses: docker/build-push-action@v3
         with:
           context: ${{ env.ROOT_DATAVERSE_SG }}/SphinxDocBuildPDF
           load: true
@@ -56,7 +56,7 @@ jobs:
           docker run --rm ${{ env.ROOT_DATAVERSE_SG }}:/docs ${{ env.DKR_DV_PDF }} make latexpdf
 
       - name: Build and push
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        uses: docker/build-push-action@v3
         with:
           context: ${{ env.ROOT_DATAVERSE_SG }}/SphinxDocBuildPDF
           push: true
