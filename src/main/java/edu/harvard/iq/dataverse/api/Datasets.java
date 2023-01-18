@@ -733,8 +733,11 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset ds = findDatasetOrDie(id);
             DataverseRequest req = createDataverseRequest(findUserOrDie());
-            DatasetVersion dsv = ds.getOrCreateEditVersion();
+            //Check if latest existing version is draft
             boolean updateDraft = ds.getLatestVersion().isDraft();
+            //Then get a draft version - the latest or a new one as needed
+            DatasetVersion dsv = ds.getOrCreateEditVersion();
+            
             dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, licenseSvc);
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             DatasetVersion managedVersion;
@@ -771,6 +774,9 @@ public class Datasets extends AbstractApiBean {
 
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
+            //Check if latest existing version is draft
+            boolean updateDraft = ds.getLatestVersion().isDraft();
+            //Then get a draft version - the latest or a new one as needed
             DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             List<DatasetField> fields = new LinkedList<>();
@@ -881,8 +887,6 @@ public class Datasets extends AbstractApiBean {
                 }
             }
 
-
-            boolean updateDraft = ds.getLatestVersion().isDraft();
             DatasetVersion managedVersion = updateDraft
                     ? execCommand(new UpdateDatasetVersionCommand(ds, req)).getOrCreateEditVersion()
                     : execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
@@ -934,6 +938,9 @@ public class Datasets extends AbstractApiBean {
            
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
+            //Check if latest existing version is draft
+            boolean updateDraft = ds.getLatestVersion().isDraft();
+            //Then get a draft version - the latest or a new one as needed
             DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             List<DatasetField> fields = new LinkedList<>();
@@ -1036,7 +1043,6 @@ public class Datasets extends AbstractApiBean {
                     dsv.getDatasetFields().add(updateField);
                 }
             }
-            boolean updateDraft = ds.getLatestVersion().isDraft();
             DatasetVersion managedVersion;
 
             if (updateDraft) {
