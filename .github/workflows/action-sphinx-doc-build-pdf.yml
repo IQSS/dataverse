@@ -53,8 +53,8 @@ jobs:
 
       - name: Build PDF document
         run: |
-          cd doc/sphinx-guides/
-          docker run -v "$GITHUB_WORKSPACE$/{{ env.ROOT_DATAVERSE_SG }}:/docs" --rm ${{ env.DKR_DV_PDF }} make latexpdf
+          cd "$GITHUB_WORKSPACE$/doc/sphinx-guides"
+          docker run --rm -v "$GITHUB_WORKSPACE$/{{ env.ROOT_DATAVERSE_SG }}:/docs" ${{ env.DKR_DV_PDF }} make latexpdf
 
       - name: Build and push
         uses: docker/build-push-action@v3
