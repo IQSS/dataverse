@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionDifference;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -13,16 +14,24 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
+
+import javax.json.JsonObject;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 /**
  *
@@ -211,5 +220,27 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected Timestamp getTimestamp() {
         return timestamp;
+    }
+
+    protected void checkSystemMetadataKeyIfNeeded(DatasetVersion newVersion, DatasetVersion persistedVersion) throws IllegalCommandException {
+        Set<MetadataBlock> changedMDBs = DatasetVersionDifference.getBlocksWithChanges(newVersion, persistedVersion);
+        changedMDBs.forEach(mdb -> {logger.fine(mdb.getName() + " has been changed");});
+        
+        String smdbString = JvmSettings.METADATA_BLOCK_SYSTEM_METADATA_KEYS.lookupOptional().orElse(null);
+        if (smdbString != null) {
+            JsonObject systemMetadataBlocks = JsonUtil.getJsonObject(smdbString);
+            HttpServletRequest httpServletRequest = getRequest().getHttpServletRequest();
+            if (httpServletRequest != null) {
+                String mdKey = httpServletRequest.getParameter(MetadataBlockServiceBean.SYSTEM_MD_KEY);
+                for (MetadataBlock mdb : changedMDBs) {
+                    if (systemMetadataBlocks.containsKey(mdb.getName())) {
+                        if (mdKey==null || !mdKey.equals(systemMetadataBlocks.getString(mdb.getName()))) {
+                            throw new IllegalCommandException("Updating system metadata requires a key", this);
+                        }
+                    }
+                }
+            }
+        }
+        
     }
 }

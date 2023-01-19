@@ -24,6 +24,7 @@ public class DataverseRequest {
     private final User user;
     private final IpAddress sourceAddress;
     private final String invocationId;
+    private final HttpServletRequest httpServletRequest;
     
     private final static String undefined = "0.0.0.0";
     
@@ -55,11 +56,12 @@ public class DataverseRequest {
     
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
-
+        httpServletRequest = aHttpServletRequest;
+        
         IpAddress address = null;
 
         if (aHttpServletRequest != null) {
-
+           
             if (headerToUse != null) {
                 /*
                  * The optional case of using a header to determine the IP address is discussed
@@ -151,6 +153,7 @@ public class DataverseRequest {
         user = aUser;
         sourceAddress = aSourceAddress;
         invocationId=null;
+        httpServletRequest=null;
     }
     
     public User getUser() {
@@ -185,6 +188,10 @@ public class DataverseRequest {
 
     public String getWFInvocationId() {
         return invocationId;
+    }
+    
+    public HttpServletRequest getHttpServletRequest() {
+        return httpServletRequest;
     }
     
 }

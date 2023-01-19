@@ -707,7 +707,7 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public JsonObject getSystemMetadataBlocks() {
         if (systemMetadataBlocks == null) {
-            String smdbString = JvmSettings.METADATA_BLOCK_SYSTEM_METADATA_KEYS.lookup();
+            String smdbString = JvmSettings.METADATA_BLOCK_SYSTEM_METADATA_KEYS.lookupOptional().orElse(null);
             if (smdbString != null) {
                 systemMetadataBlocks = JsonUtil.getJsonObject(smdbString);
             }

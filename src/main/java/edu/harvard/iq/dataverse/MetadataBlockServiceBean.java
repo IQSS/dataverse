@@ -18,7 +18,7 @@ public class MetadataBlockServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-    
+    public static final String SYSTEM_MD_KEY="mdkey";
     
     public MetadataBlock save(MetadataBlock mdb) {
        return em.merge(mdb);
