@@ -7,6 +7,8 @@
 # To get a newer version, you will need to update the SHA.
 # You can also reference a tag or branch, but the action may change without warning.
 
+# Commit [https://github.com/kuhlaid/dataverse/commit/e704b7cee6a4139a6581748f501fc07e75468c18] built the PDF but not sure what to do next (maybe copy the PDF to github-pages?)
+
 name: Create and publish a Docker image for building the PDF document
 
 on: [push]
@@ -51,14 +53,13 @@ jobs:
           load: true
           tags: ${{ env.DKR_DV_PDF }}
 
-      - name: Build PDF document
+      - name: BuildPdfDocument
         run: |
           cd "$GITHUB_WORKSPACE/doc/sphinx-guides"
           docker run --rm -v "$GITHUB_WORKSPACE/${{ env.ROOT_DATAVERSE_SG }}:/docs" ${{ env.DKR_DV_PDF }} make latexpdf
 
-      - name: Build and push
-        uses: docker/build-push-action@v3
+      - name: Upload PDF artifact 
+        uses: actions/upload-artifact@v1
         with:
-          context: ${{ env.ROOT_DATAVERSE_SG }}/SphinxDocBuildPDF
-          push: true
-          tags: ${{ env.DKR_DV_PDF }}
+          name: BuildPdfDocument
+          path: "$GITHUB_WORKSPACE/${{ env.ROOT_DATAVERSE_SG }}/doc/sphinx-guides/build/latex"
