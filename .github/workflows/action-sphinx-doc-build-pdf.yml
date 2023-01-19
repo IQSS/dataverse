@@ -62,4 +62,4 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: BuildPdfDocument
-          path: "$GITHUB_WORKSPACE/${{ env.ROOT_DATAVERSE_SG }}/doc/sphinx-guides/build/latex"
+          path: "$GITHUB_WORKSPACE/doc/sphinx-guides/build/latex"
