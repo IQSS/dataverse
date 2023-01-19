@@ -44,6 +44,10 @@ public enum JvmSettings {
     FQDN(PREFIX, "fqdn"),
     SITE_URL(PREFIX, "siteUrl"),
     
+    // FILES SETTINGS
+    SCOPE_FILES(PREFIX, "files"),
+    FILES_DIRECTORY(SCOPE_FILES, "directory"),
+    
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),
     SOLR_HOST(SCOPE_SOLR, "host"),
