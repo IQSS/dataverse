@@ -6,23 +6,17 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.MarkupChecker;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
-import static java.util.stream.Collectors.toList;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
-import javax.inject.Named;
+import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -36,7 +30,7 @@ public class DatasetVersionUI implements Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
-    @EJB
+    @Inject
     SettingsWrapper settingsWrapper;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
