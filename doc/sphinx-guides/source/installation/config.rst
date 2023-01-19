@@ -1082,6 +1082,9 @@ Adding Custom Licenses
 
 If you are interested in adding a custom license, you will need to create your own JSON file as explained in  see :ref:`standardizing-custom-licenses`.
 
+Other licenses used worldwide:
+- :download:`license_etalab-2.0.json <../../../../scripts/api/data/licenses/license_etalab-2.0.json>` used in France (Etalab Open License 2.0, CC-BY 2.0 compliant).
+
 Removing Licenses
 +++++++++++++++++
 
