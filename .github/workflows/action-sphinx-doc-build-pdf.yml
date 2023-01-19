@@ -7,6 +7,9 @@
 # To get a newer version, you will need to update the SHA.
 # You can also reference a tag or branch, but the action may change without warning.
 
+# removed this command since it was not working
+# docker run -v ${{ env.ROOT_DATAVERSE_SG }}:/docs --rm ${{ env.DKR_DV_PDF }} make latexpdf
+
 name: Create and publish a Docker image for building the PDF document
 
 on: [push]
@@ -56,7 +59,6 @@ jobs:
         run: |
           cd doc/sphinx-guides/
           docker run -it --rm -v ${{ env.ROOT:/docs ${{ env.DKR_DV_HTML }} sphinx-quickstart
-# docker run -v ${{ env.ROOT_DATAVERSE_SG }}:/docs --rm ${{ env.DKR_DV_PDF }} make latexpdf
 
       - name: Build and push
         uses: docker/build-push-action@v3
