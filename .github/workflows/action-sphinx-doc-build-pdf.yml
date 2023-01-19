@@ -15,7 +15,6 @@ name: Create and publish a Docker image for building the PDF document
 on: [push]
 
 env:
-  # GitHub packages registry
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   # Your root Dataverse sphinx-guide path will be set using a `ROOT_DATAVERSE_SG` variable
@@ -58,7 +57,7 @@ jobs:
       - name: Build PDF document
         run: |
           cd doc/sphinx-guides/
-          docker run -it --rm -v ${{ env.ROOT:/docs ${{ env.DKR_DV_HTML }} sphinx-quickstart
+          docker run -it --rm -v ${{ env.ROOT_DATAVERSE_SG }}:/docs ${{ env.DKR_DV_HTML }} sphinx-quickstart
 
       - name: Build and push
         uses: docker/build-push-action@v3
