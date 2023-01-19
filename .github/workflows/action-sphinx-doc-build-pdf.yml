@@ -58,8 +58,17 @@ jobs:
           cd "$GITHUB_WORKSPACE/doc/sphinx-guides"
           docker run --rm -v "$GITHUB_WORKSPACE/${{ env.ROOT_DATAVERSE_SG }}:/docs" ${{ env.DKR_DV_PDF }} make latexpdf
 
-      - name: Upload PDF artifact 
-        uses: actions/upload-artifact@v1
+      # - name: Upload PDF artifact 
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: BuildPdfDocument
+      #     path: "doc/sphinx-guides/build/latex"
+
+      - name: Push static PDF to gh-pages branch
+        uses: crazy-max/ghaction-github-pages@v3
         with:
           name: BuildPdfDocument
-          path: "doc/sphinx-guides/build/latex"
+          target_branch: gh-pages
+          build_dir: "${{ env.ROOT_DATAVERSE_SG }}/build/latex"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
