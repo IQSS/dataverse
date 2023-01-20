@@ -1,0 +1,8 @@
+{
+  "id": "oidc-keycloak",
+  "factoryAlias": "oidc",
+  "title": "OIDC-Keycloak",
+  "subtitle": "OIDC-Keycloak",
+  "factoryData": "type: oidc | issuer: http://localhost:8090/auth/realms/oidc-realm | clientId: oidc-client | clientSecret: ss6gE8mODCDfqesQaSG3gwUwZqZt547E",
+  "enabled": true
+}
