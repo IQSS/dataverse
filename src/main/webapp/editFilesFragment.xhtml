@@ -158,8 +158,13 @@
                                   widgetVar="fileUploadWidget">
                         <f:passThroughAttribute name="aria-label" value="#{bundle['file.uploadFiles']}"/>
                     </p:fileUpload>
-                                
-                                <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !lockedFromEdits }"  class="margin-top">
+                              <ui:fragment rendered="#{!lockedFromEdits}">
+                                <div jsf:id="webloaderBlock" jsf:rendered="#{webloaderUploadSupported}"  class="ui-fileupload-buttonbar ui-widget-header ui-corner-top">
+                                    <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromWebloader.tip']}</p>
+                                    <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromWebloaderAfterCreate.tip']}</p>
+                                    <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{(datasetPage==true) ? DatasetPage.getWebloaderUrlForDataset(dataset):EditDatafilesPage.getWebloaderUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromWebloader']}"  icon="ui-icon-plusthick" />
+                                </div>
+                                <div jsf:id="dropboxBlock" jsf:rendered="#{settingsWrapper.isHasDropBoxKey()}"  class="margin-top">
                                     <!-- Dropbox upload widget -->
                                     <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                                     <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
@@ -167,12 +172,12 @@
                                     <p:commandButton id="dropBoxUserButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
                                     <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" redisplay="false" />
                                 </div>
-                                <div jsf:id="globusBlock" jsf:rendered="#{globusUploadSupported and !lockedFromEdits }"  class="margin-top">
+                                <div jsf:id="globusBlock" jsf:rendered="#{globusUploadSupported}"  class="margin-top">
                                     <p class="help-block" jsf:rendered="#{!createDataset}">#{bundle['file.fromGlobus.tip']}</p>
                                     <p class="help-block" jsf:rendered="#{createDataset}">#{bundle['file.fromGlobusAfterCreate.tip']}</p>
                                     <p:button target="_blank" rendered="#{!createDataset}" onclick="cancelDatasetEdit();window.open('#{GlobusServiceBean.getGlobusAppUrlForDataset(dataset)}');return false;" value="#{bundle['file.fromGlobus']}"  icon="globus-btn" />
                                 </div>
-                    
+                              </ui:fragment>
                             </div>
                         </div>
                     
@@ -578,7 +583,8 @@
     <p:dialog id="fileTypeDifferentPopup" styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}" widgetVar="fileTypeDifferentPopup" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForFileTypeDifferentPopUp}</p>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" oncomplete="uploadWidgetDropMsg();"
+            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" oncomplete="uploadWidgetDropMsg();
+                            setupDirectUpload(#{systemConfig.directUploadEnabled(EditDatafilesPage.dataset)});"
                              action="#{EditDatafilesPage.deleteFiles()}"
                              update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage"/>
             <button class="btn btn-default" onclick="PF('fileTypeDifferentPopup').hide();" type="button">
