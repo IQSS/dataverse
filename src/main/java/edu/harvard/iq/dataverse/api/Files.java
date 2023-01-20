@@ -619,6 +619,27 @@ public class Files extends AbstractApiBean {
         }
     }
 
+    @Path("{id}/extractNcml")
+    @POST
+    public Response extractNcml(@PathParam("id") String id) {
+        try {
+            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            if (!au.isSuperuser()) {
+                // We can always make a command in the future if there's a need
+                // for non-superusers to call this API.
+                return error(Response.Status.FORBIDDEN, "This API call can be used by superusers only");
+            }
+            DataFile dataFileIn = findDataFileOrDie(id);
+            java.nio.file.Path tempLocationPath = null;
+            boolean successOrFail = ingestService.extractMetadataNcml(dataFileIn, tempLocationPath);
+            NullSafeJsonBuilder result = NullSafeJsonBuilder.jsonObjectBuilder()
+                    .add("result", successOrFail);
+            return ok(result);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
     /**
      * Attempting to run metadata export, for all the formats for which we have
      * metadata Exporters.
