@@ -33,6 +33,8 @@ import javax.persistence.StoredProcedureParameter;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
@@ -391,19 +393,21 @@ public class Dataset extends DvObjectContainer {
 
     /**
      * The "edit version" is the most recent *draft* of a dataset, and if the
-     * latest version of a dataset is published, a new draft will be created.
-     * 
+     * latest version of a dataset is published, a new draft will be created. If
+     * you don't want to create a new version, you should be using
+     * getLatestVersion.
+     *
      * @return The edit version {@code this}.
      */
-    public DatasetVersion getEditVersion() {
-        return getEditVersion(null, null);
+    public DatasetVersion getOrCreateEditVersion() {
+        return getOrCreateEditVersion(null, null);
     }
 
-    public DatasetVersion getEditVersion(FileMetadata fm) {
-        return getEditVersion(null, fm);
+    public DatasetVersion getOrCreateEditVersion(FileMetadata fm) {
+        return getOrCreateEditVersion(null, fm);
     }
 
-    public DatasetVersion getEditVersion(Template template, FileMetadata fm) {
+    public DatasetVersion getOrCreateEditVersion(Template template, FileMetadata fm) {
         DatasetVersion latestVersion = this.getLatestVersion();
         if (!latestVersion.isWorkingCopy() || template != null) {
             // if the latest version is released or archived, create a new version for editing
@@ -528,11 +532,8 @@ public class Dataset extends DvObjectContainer {
     @Deprecated 
     public Path getFileSystemDirectory() {
         Path studyDir = null;
-
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-            filesRootDirectory = "/tmp/files";
-        }
+        
+        String filesRootDirectory = JvmSettings.FILES_DIRECTORY.lookup();
         
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
             for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {

@@ -56,6 +56,8 @@ import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+import edu.harvard.iq.dataverse.util.WebloaderUtil;
 import edu.harvard.iq.dataverse.validation.URLValidator;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
@@ -1846,7 +1848,9 @@ public class DatasetPage implements java.io.Serializable {
         return settingsWrapper.isGlobusUpload() && settingsWrapper.isGlobusEnabledStorageDriver(dataset.getEffectiveStorageDriverId());
     }
     
-    
+    public boolean webloaderUploadSupported() {
+        return settingsWrapper.isWebloaderUpload() && StorageIO.isDirectUploadEnabled(dataset.getEffectiveStorageDriverId());
+    }
 
     private String init(boolean initFull) {
 
@@ -2068,7 +2072,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 //Initalize with the default if there is one 
                 dataset.setTemplate(selectedTemplate);
-                workingVersion = dataset.getEditVersion(selectedTemplate, null);
+                workingVersion = dataset.getOrCreateEditVersion(selectedTemplate, null);
                 updateDatasetFieldInputLevels();
             } else {
                 workingVersion = dataset.getCreateVersion(licenseServiceBean.getDefault());
@@ -2402,7 +2406,7 @@ public class DatasetPage implements java.io.Serializable {
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
 
             //On create set pre-populated fields
-            for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
+            for (DatasetField dsf : dataset.getOrCreateEditVersion().getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor) && dsf.isEmpty()) {
                     dsf.getDatasetFieldValues().get(0).setValue(au.getLastName() + ", " + au.getFirstName());
                 }
@@ -2459,7 +2463,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         String termsOfAccess = workingVersion.getTermsOfUseAndAccess().getTermsOfAccess();
         boolean requestAccess = workingVersion.getTermsOfUseAndAccess().isFileAccessRequest();
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
         workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
         workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(requestAccess);
         List <FileMetadata> newSelectedFiles = new ArrayList<>();
@@ -2522,7 +2526,7 @@ public class DatasetPage implements java.io.Serializable {
         if (this.readOnly) {
             dataset = datasetService.find(dataset.getId());
         }
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
         clone = workingVersion.cloneDatasetVersion();
         if (editMode.equals(EditMode.METADATA)) {
             datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, true);
@@ -3453,7 +3457,7 @@ public class DatasetPage implements java.io.Serializable {
             if (markedForDelete.getId() != null) {
                 // This FileMetadata has an id, i.e., it exists in the database.
                 // We are going to remove this filemetadata from the version:
-                dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                dataset.getOrCreateEditVersion().getFileMetadatas().remove(markedForDelete);
                 // But the actual delete will be handled inside the UpdateDatasetCommand
                 // (called later on). The list "filesToBeDeleted" is passed to the
                 // command as a parameter:
@@ -3679,7 +3683,7 @@ public class DatasetPage implements java.io.Serializable {
                     // have been created in the dataset.
                     dataset = datasetService.find(dataset.getId());
 
-                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles, null, true);
+                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getOrCreateEditVersion(), newFiles, null, true);
                     newFiles.clear();
 
                     // and another update command:
@@ -5491,7 +5495,7 @@ public class DatasetPage implements java.io.Serializable {
             return cachedTools;
         }
         DataFile dataFile = datafileService.find(fileId);
-        cachedTools = ExternalToolServiceBean.findExternalToolsByFile(externalTools, dataFile);
+        cachedTools = externalToolService.findExternalToolsByFile(externalTools, dataFile);
         cachedToolsByFileId.put(fileId, cachedTools); //add to map so we don't have to do the lifting again
         return cachedTools;
     }
@@ -6061,6 +6065,20 @@ public class DatasetPage implements java.io.Serializable {
             apiToken.setTokenString(privUrl.getToken());
         }
         PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken));
+    }
+
+    public String getWebloaderUrlForDataset(Dataset d) {
+        String localeCode = session.getLocaleCode();
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            ApiToken apiToken = authService.getValidApiTokenForUser((AuthenticatedUser) user);
+            return WebloaderUtil.getWebloaderUrl(d, apiToken, localeCode,
+                    settingsService.getValueForKey(SettingsServiceBean.Key.WebloaderUrl));
+        } else {
+            // Shouldn't normally happen (seesion timeout? bug?)
+            logger.warning("getWebloaderUrlForDataset called for non-Authenticated user");
+            return null;
+        }
     }
     
     /**
