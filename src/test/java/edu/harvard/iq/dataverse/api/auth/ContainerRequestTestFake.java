@@ -8,14 +8,14 @@ import java.util.*;
 
 import static edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism.DATAVERSE_API_KEY_REQUEST_HEADER_NAME;
 
-public class ContainerRequestFake implements ContainerRequestContext {
+public class ContainerRequestTestFake implements ContainerRequestContext {
 
     private final String apiKey;
     private final UriInfo uriInfo;
 
-    public ContainerRequestFake(String apiKey, String path) {
+    public ContainerRequestTestFake(String apiKey, String path) {
         this.apiKey = apiKey;
-        this.uriInfo = new UriInfoFake(apiKey, path);
+        this.uriInfo = new UriInfoTestFake(apiKey, path);
     }
 
     @Override

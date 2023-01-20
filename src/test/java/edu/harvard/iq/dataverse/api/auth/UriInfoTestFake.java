@@ -6,12 +6,12 @@ import java.util.List;
 
 import static edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism.DATAVERSE_API_KEY_REQUEST_PARAM_NAME;
 
-public class UriInfoFake implements UriInfo {
+public class UriInfoTestFake implements UriInfo {
 
     private final String apiKey;
     private final String path;
 
-    public UriInfoFake(String apiKey, String path) {
+    public UriInfoTestFake(String apiKey, String path) {
         this.apiKey = apiKey;
         this.path = path;
     }

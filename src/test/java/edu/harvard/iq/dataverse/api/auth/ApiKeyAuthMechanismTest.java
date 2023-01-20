@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.auth;
 
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -13,8 +14,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 
 import static edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism.ACCESS_DATAFILE_PATH_PREFIX;
 import static edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism.RESPONSE_MESSAGE_BAD_API_KEY;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ApiKeyAuthMechanismTest {
 
@@ -28,43 +28,102 @@ public class ApiKeyAuthMechanismTest {
     @BeforeEach
     public void setUp() {
         sut = new ApiKeyAuthMechanism();
-        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
-        sut.userSvc = Mockito.mock(UserServiceBean.class);
     }
 
     @Test
-    public void testFindUserFromRequest_NotAnonymizedPrivateUrlUser() throws WrappedAuthErrorResponse {
+    public void testFindUserFromRequest_ApiKeyNotProvided() throws WrappedAuthErrorResponse {
+        sut.privateUrlSvc = Mockito.mock(PrivateUrlServiceBean.class);
+        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
+        sut.userSvc = Mockito.mock(UserServiceBean.class);
+
+        ContainerRequestContext testContainerRequest = new ContainerRequestTestFake(null, TEST_PATH);
+        User actual = sut.findUserFromRequest(testContainerRequest);
+
+        assertNull(actual);
+    }
+
+    @Test
+    public void testFindUserFromRequest_NotAnonymizedPrivateUrlUserAuthenticated() throws WrappedAuthErrorResponse {
         PrivateUrlServiceBean privateUrlServiceStub = Mockito.mock(PrivateUrlServiceBean.class);
         PrivateUrlUser testPrivateUrlUser = new PrivateUrlUser(1L);
         Mockito.when(privateUrlServiceStub.getPrivateUrlUserFromToken(TEST_API_KEY)).thenReturn(testPrivateUrlUser);
         sut.privateUrlSvc = privateUrlServiceStub;
 
-        ContainerRequestContext testContainerRequest = new ContainerRequestFake(TEST_API_KEY, TEST_PATH);
+        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
+        sut.userSvc = Mockito.mock(UserServiceBean.class);
+
+        ContainerRequestContext testContainerRequest = new ContainerRequestTestFake(TEST_API_KEY, TEST_PATH);
         User actual = sut.findUserFromRequest(testContainerRequest);
 
         assertEquals(testPrivateUrlUser, actual);
     }
 
     @Test
-    public void testFindUserFromRequest_AnonymizedPrivateUrlUserAccessingDatafile() throws WrappedAuthErrorResponse {
+    public void testFindUserFromRequest_AnonymizedPrivateUrlUserAuthenticated_AccessingAccessDatafilePath() throws WrappedAuthErrorResponse {
         PrivateUrlServiceBean privateUrlServiceStub = Mockito.mock(PrivateUrlServiceBean.class);
         Mockito.when(privateUrlServiceStub.getPrivateUrlUserFromToken(TEST_API_KEY)).thenReturn(testAnonymizedPrivateUrlUser);
         sut.privateUrlSvc = privateUrlServiceStub;
 
-        ContainerRequestContext testContainerRequest = new ContainerRequestFake(TEST_API_KEY, ACCESS_DATAFILE_PATH_PREFIX);
+        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
+        sut.userSvc = Mockito.mock(UserServiceBean.class);
+
+        ContainerRequestContext testContainerRequest = new ContainerRequestTestFake(TEST_API_KEY, ACCESS_DATAFILE_PATH_PREFIX);
         User actual = sut.findUserFromRequest(testContainerRequest);
 
         assertEquals(testAnonymizedPrivateUrlUser, actual);
     }
 
     @Test
-    public void testFindUserFromRequest_AnonymizedPrivateUrlUserNotAccessingDatafile() {
+    public void testFindUserFromRequest_AnonymizedPrivateUrlUserAuthenticated_NotAccessingAccessDatafilePath() {
         PrivateUrlServiceBean privateUrlServiceStub = Mockito.mock(PrivateUrlServiceBean.class);
         Mockito.when(privateUrlServiceStub.getPrivateUrlUserFromToken(TEST_API_KEY)).thenReturn(testAnonymizedPrivateUrlUser);
         sut.privateUrlSvc = privateUrlServiceStub;
 
-        ContainerRequestContext testContainerRequest = new ContainerRequestFake(TEST_API_KEY, TEST_PATH);
+        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
+        sut.userSvc = Mockito.mock(UserServiceBean.class);
+
+        ContainerRequestContext testContainerRequest = new ContainerRequestTestFake(TEST_API_KEY, TEST_PATH);
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
+
+        assertEquals(RESPONSE_MESSAGE_BAD_API_KEY, wrappedAuthErrorResponse.getMessage());
+    }
+
+    @Test
+    public void testFindUserFromRequest_AuthenticatedUser() throws WrappedAuthErrorResponse {
+        PrivateUrlServiceBean privateUrlServiceStub = Mockito.mock(PrivateUrlServiceBean.class);
+        Mockito.when(privateUrlServiceStub.getPrivateUrlUserFromToken(TEST_API_KEY)).thenReturn(null);
+        sut.privateUrlSvc = privateUrlServiceStub;
+
+        AuthenticationServiceBean authenticationServiceBeanStub = Mockito.mock(AuthenticationServiceBean.class);
+        AuthenticatedUser testAuthenticatedUser = new AuthenticatedUser();
+        Mockito.when(authenticationServiceBeanStub.lookupUser(TEST_API_KEY)).thenReturn(testAuthenticatedUser);
+        sut.authSvc = authenticationServiceBeanStub;
+
+        UserServiceBean userServiceBeanStub = Mockito.mock(UserServiceBean.class);
+        Mockito.when(userServiceBeanStub.updateLastApiUseTime(testAuthenticatedUser)).thenReturn(testAuthenticatedUser);
+        sut.userSvc = userServiceBeanStub;
+
+        ContainerRequestContext testContainerRequest = new ContainerRequestTestFake(TEST_API_KEY, TEST_PATH);
+        User actual = sut.findUserFromRequest(testContainerRequest);
+
+        assertEquals(testAuthenticatedUser, actual);
+    }
+
+    @Test
+    public void testFindUserFromRequest_CanNotAuthenticateUserWithAnyMethod() {
+        PrivateUrlServiceBean privateUrlServiceStub = Mockito.mock(PrivateUrlServiceBean.class);
+        Mockito.when(privateUrlServiceStub.getPrivateUrlUserFromToken(TEST_API_KEY)).thenReturn(null);
+        sut.privateUrlSvc = privateUrlServiceStub;
+
+        AuthenticationServiceBean authenticationServiceBeanStub = Mockito.mock(AuthenticationServiceBean.class);
+        Mockito.when(authenticationServiceBeanStub.lookupUser(TEST_API_KEY)).thenReturn(null);
+        sut.authSvc = authenticationServiceBeanStub;
+
+        sut.userSvc = Mockito.mock(UserServiceBean.class);
+
+        ContainerRequestContext testContainerRequest = new ContainerRequestTestFake(TEST_API_KEY, TEST_PATH);
+        WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
+
         assertEquals(RESPONSE_MESSAGE_BAD_API_KEY, wrappedAuthErrorResponse.getMessage());
     }
 }
