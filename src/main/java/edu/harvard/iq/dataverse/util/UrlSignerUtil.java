@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -19,6 +20,10 @@ public class UrlSignerUtil {
 
     private static final Logger logger = Logger.getLogger(UrlSignerUtil.class.getName());
 
+    public static final String SIGNED_URL_TOKEN="token";
+    public static final String SIGNED_URL_METHOD="method";
+    public static final String SIGNED_URL_USER="user";
+    public static final String SIGNED_URL_UNTIL="until";
     /**
      * 
      * @param baseUrl - the URL to sign - cannot contain query params
@@ -34,7 +39,7 @@ public class UrlSignerUtil {
      * @return - the signed URL
      */
     public static String signUrl(String baseUrl, Integer timeout, String user, String method, String key) {
-        StringBuilder signedUrl = new StringBuilder(baseUrl);
+        StringBuilder signedUrlBuilder = new StringBuilder(baseUrl);
 
         boolean firstParam = true;
         if (baseUrl.contains("?")) {
@@ -44,33 +49,33 @@ public class UrlSignerUtil {
             LocalDateTime validTime = LocalDateTime.now();
             validTime = validTime.plusMinutes(timeout);
             validTime.toString();
-            signedUrl.append(firstParam ? "?" : "&").append("until=").append(validTime);
+            signedUrlBuilder.append(firstParam ? "?" : "&").append(SIGNED_URL_UNTIL + "=").append(validTime);
             firstParam = false;
         }
         if (user != null) {
-            signedUrl.append(firstParam ? "?" : "&").append("user=").append(user);
+            signedUrlBuilder.append(firstParam ? "?" : "&").append(SIGNED_URL_USER + "=").append(user);
             firstParam = false;
         }
         if (method != null) {
-            signedUrl.append(firstParam ? "?" : "&").append("method=").append(method);
+            signedUrlBuilder.append(firstParam ? "?" : "&").append(SIGNED_URL_METHOD + "=").append(method);
             firstParam=false;
         }
-        signedUrl.append(firstParam ? "?" : "&").append("token=");
-        logger.fine("String to sign: " + signedUrl.toString() + "<key>");
-        signedUrl.append(DigestUtils.sha512Hex(signedUrl.toString() + key));
-        logger.fine("Generated Signed URL: " + signedUrl.toString());
+        signedUrlBuilder.append(firstParam ? "?" : "&").append(SIGNED_URL_TOKEN + "=");
+        logger.fine("String to sign: " + signedUrlBuilder.toString() + "<key>");
+        String signedUrl = signedUrlBuilder.toString();
+        signedUrl= signedUrl + (DigestUtils.sha512Hex(signedUrl + key));
         if (logger.isLoggable(Level.FINE)) {
             logger.fine(
-                    "URL signature is " + (isValidUrl(signedUrl.toString(), user, method, key) ? "valid" : "invalid"));
+                    "URL signature is " + (isValidUrl(signedUrl, user, method, key) ? "valid" : "invalid"));
         }
-        return signedUrl.toString();
+        return signedUrl;
     }
 
     /**
      * This method will only return true if the URL and parameters except the
      * "token" are unchanged from the original/match the values sent to this method,
      * and the "token" parameter matches what this method recalculates using the
-     * shared key THe method also assures that the "until" timestamp is after the
+     * shared key. The method also assures that the "until" timestamp is after the
      * current time.
      * 
      * @param signedUrl - the signed URL as received from Dataverse
@@ -97,19 +102,19 @@ public class UrlSignerUtil {
             String allowedMethod = null;
             String allowedUser = null;
             for (NameValuePair nvp : params) {
-                if (nvp.getName().equals("token")) {
+                if (nvp.getName().equals(SIGNED_URL_TOKEN)) {
                     hash = nvp.getValue();
                     logger.fine("Hash: " + hash);
                 }
-                if (nvp.getName().equals("until")) {
+                if (nvp.getName().equals(SIGNED_URL_UNTIL)) {
                     dateString = nvp.getValue();
                     logger.fine("Until: " + dateString);
                 }
-                if (nvp.getName().equals("method")) {
+                if (nvp.getName().equals(SIGNED_URL_METHOD)) {
                     allowedMethod = nvp.getValue();
                     logger.fine("Method: " + allowedMethod);
                 }
-                if (nvp.getName().equals("user")) {
+                if (nvp.getName().equals(SIGNED_URL_USER)) {
                     allowedUser = nvp.getValue();
                     logger.fine("User: " + allowedUser);
                 }
@@ -148,4 +153,18 @@ public class UrlSignerUtil {
         return valid;
     }
 
+    public static boolean hasToken(String urlString) {
+        try {
+            URL url = new URL(urlString);
+            List<NameValuePair> params = URLEncodedUtils.parse(url.getQuery(), Charset.forName("UTF-8"));
+            for (NameValuePair nvp : params) {
+                if (nvp.getName().equals(SIGNED_URL_TOKEN)) {
+                    return true;
+                }
+            }
+        } catch (MalformedURLException mue) {
+            logger.fine("Bad url string: " + urlString);
+        }
+        return false;
+    }
 }

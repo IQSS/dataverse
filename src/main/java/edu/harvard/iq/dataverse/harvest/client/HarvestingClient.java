@@ -188,7 +188,9 @@ public class HarvestingClient implements Serializable {
     }
 
     public void setHarvestingUrl(String harvestingUrl) {
-        this.harvestingUrl = harvestingUrl.trim();
+        if (harvestingUrl != null) {
+            this.harvestingUrl = harvestingUrl.trim();
+        }
     }
     
     private String archiveUrl; 
