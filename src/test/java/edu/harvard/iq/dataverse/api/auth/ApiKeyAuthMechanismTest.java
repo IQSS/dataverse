@@ -43,7 +43,7 @@ public class ApiKeyAuthMechanismTest {
     }
 
     @Test
-    public void testFindUserFromRequest_NotAnonymizedPrivateUrlUserAuthenticated() throws WrappedAuthErrorResponse {
+    public void testFindUserFromRequest_ApiKeyProvided_NotAnonymizedPrivateUrlUserAuthenticated() throws WrappedAuthErrorResponse {
         PrivateUrlServiceBean privateUrlServiceStub = Mockito.mock(PrivateUrlServiceBean.class);
         PrivateUrlUser testPrivateUrlUser = new PrivateUrlUser(1L);
         Mockito.when(privateUrlServiceStub.getPrivateUrlUserFromToken(TEST_API_KEY)).thenReturn(testPrivateUrlUser);
@@ -59,7 +59,7 @@ public class ApiKeyAuthMechanismTest {
     }
 
     @Test
-    public void testFindUserFromRequest_AnonymizedPrivateUrlUserAuthenticated_AccessingAccessDatafilePath() throws WrappedAuthErrorResponse {
+    public void testFindUserFromRequest_ApiKeyProvided_AnonymizedPrivateUrlUserAuthenticated_AccessingAccessDatafilePath() throws WrappedAuthErrorResponse {
         PrivateUrlServiceBean privateUrlServiceStub = Mockito.mock(PrivateUrlServiceBean.class);
         Mockito.when(privateUrlServiceStub.getPrivateUrlUserFromToken(TEST_API_KEY)).thenReturn(testAnonymizedPrivateUrlUser);
         sut.privateUrlSvc = privateUrlServiceStub;
@@ -74,7 +74,7 @@ public class ApiKeyAuthMechanismTest {
     }
 
     @Test
-    public void testFindUserFromRequest_AnonymizedPrivateUrlUserAuthenticated_NotAccessingAccessDatafilePath() {
+    public void testFindUserFromRequest_ApiKeyProvided_AnonymizedPrivateUrlUserAuthenticated_NotAccessingAccessDatafilePath() {
         PrivateUrlServiceBean privateUrlServiceStub = Mockito.mock(PrivateUrlServiceBean.class);
         Mockito.when(privateUrlServiceStub.getPrivateUrlUserFromToken(TEST_API_KEY)).thenReturn(testAnonymizedPrivateUrlUser);
         sut.privateUrlSvc = privateUrlServiceStub;
@@ -89,7 +89,7 @@ public class ApiKeyAuthMechanismTest {
     }
 
     @Test
-    public void testFindUserFromRequest_AuthenticatedUser() throws WrappedAuthErrorResponse {
+    public void testFindUserFromRequest_ApiKeyProvided_AuthenticatedUser() throws WrappedAuthErrorResponse {
         PrivateUrlServiceBean privateUrlServiceStub = Mockito.mock(PrivateUrlServiceBean.class);
         Mockito.when(privateUrlServiceStub.getPrivateUrlUserFromToken(TEST_API_KEY)).thenReturn(null);
         sut.privateUrlSvc = privateUrlServiceStub;
@@ -110,7 +110,7 @@ public class ApiKeyAuthMechanismTest {
     }
 
     @Test
-    public void testFindUserFromRequest_CanNotAuthenticateUserWithAnyMethod() {
+    public void testFindUserFromRequest_ApiKeyProvided_CanNotAuthenticateUserWithAnyMethod() {
         PrivateUrlServiceBean privateUrlServiceStub = Mockito.mock(PrivateUrlServiceBean.class);
         Mockito.when(privateUrlServiceStub.getPrivateUrlUserFromToken(TEST_API_KEY)).thenReturn(null);
         sut.privateUrlSvc = privateUrlServiceStub;
