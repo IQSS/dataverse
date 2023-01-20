@@ -647,6 +647,8 @@ public class AuthenticationServiceBean {
         
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
             .setInfo(authenticatedUser.getIdentifier()));
+        
+        authenticatedUser.initialize();
 
         return authenticatedUser;
     }
@@ -936,6 +938,16 @@ public class AuthenticationServiceBean {
         Query query = em.createQuery("SELECT wc FROM WorkflowComment wc WHERE wc.authenticatedUser.id = :auid");
         query.setParameter("auid", user.getId());       
         return query.getResultList();
+    }
+
+    public ApiToken getValidApiTokenForUser(AuthenticatedUser user) {
+        ApiToken apiToken = null;
+        apiToken = findApiTokenByUser(user);
+        if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+            logger.fine("Created apiToken for user: " + user.getIdentifier());
+            apiToken = generateApiTokenForUser(user);
+        }
+        return apiToken;
     }
 
 }
