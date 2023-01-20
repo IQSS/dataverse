@@ -19,6 +19,7 @@ Developer Guide
    sql-upgrade-scripts
    testing
    documentation
+   security
    dependencies
    debugging
    coding-style
