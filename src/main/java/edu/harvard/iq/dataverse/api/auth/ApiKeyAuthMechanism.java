@@ -13,8 +13,8 @@ import java.util.logging.Logger;
 
 public class ApiKeyAuthMechanism implements AuthMechanism {
 
-    private static final String DATAVERSE_API_KEY_REQUEST_HEADER_NAME = "X-Dataverse-key";
-    private static final String DATAVERSE_API_KEY_REQUEST_PARAM_NAME = "key";
+    public static final String DATAVERSE_API_KEY_REQUEST_HEADER_NAME = "X-Dataverse-key";
+    public static final String DATAVERSE_API_KEY_REQUEST_PARAM_NAME = "key";
     private static final String ACCESS_DATAFILE_PATH_PREFIX = "/access/datafile/";
     private static final String RESPONSE_MESSAGE_BAD_API_KEY = "Bad API key";
 
