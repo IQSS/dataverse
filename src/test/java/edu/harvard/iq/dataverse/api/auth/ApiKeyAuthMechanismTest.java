@@ -36,7 +36,7 @@ public class ApiKeyAuthMechanismTest {
         sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
         sut.userSvc = Mockito.mock(UserServiceBean.class);
 
-        ContainerRequestContext testContainerRequest = new ContainerRequestTestFake(null, TEST_PATH);
+        ContainerRequestContext testContainerRequest = new ApiKeyContainerRequestTestFake(null, TEST_PATH);
         User actual = sut.findUserFromRequest(testContainerRequest);
 
         assertNull(actual);
@@ -52,7 +52,7 @@ public class ApiKeyAuthMechanismTest {
         sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
         sut.userSvc = Mockito.mock(UserServiceBean.class);
 
-        ContainerRequestContext testContainerRequest = new ContainerRequestTestFake(TEST_API_KEY, TEST_PATH);
+        ContainerRequestContext testContainerRequest = new ApiKeyContainerRequestTestFake(TEST_API_KEY, TEST_PATH);
         User actual = sut.findUserFromRequest(testContainerRequest);
 
         assertEquals(testPrivateUrlUser, actual);
@@ -67,7 +67,7 @@ public class ApiKeyAuthMechanismTest {
         sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
         sut.userSvc = Mockito.mock(UserServiceBean.class);
 
-        ContainerRequestContext testContainerRequest = new ContainerRequestTestFake(TEST_API_KEY, ACCESS_DATAFILE_PATH_PREFIX);
+        ContainerRequestContext testContainerRequest = new ApiKeyContainerRequestTestFake(TEST_API_KEY, ACCESS_DATAFILE_PATH_PREFIX);
         User actual = sut.findUserFromRequest(testContainerRequest);
 
         assertEquals(testAnonymizedPrivateUrlUser, actual);
@@ -82,7 +82,7 @@ public class ApiKeyAuthMechanismTest {
         sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
         sut.userSvc = Mockito.mock(UserServiceBean.class);
 
-        ContainerRequestContext testContainerRequest = new ContainerRequestTestFake(TEST_API_KEY, TEST_PATH);
+        ContainerRequestContext testContainerRequest = new ApiKeyContainerRequestTestFake(TEST_API_KEY, TEST_PATH);
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         assertEquals(RESPONSE_MESSAGE_BAD_API_KEY, wrappedAuthErrorResponse.getMessage());
@@ -103,7 +103,7 @@ public class ApiKeyAuthMechanismTest {
         Mockito.when(userServiceBeanStub.updateLastApiUseTime(testAuthenticatedUser)).thenReturn(testAuthenticatedUser);
         sut.userSvc = userServiceBeanStub;
 
-        ContainerRequestContext testContainerRequest = new ContainerRequestTestFake(TEST_API_KEY, TEST_PATH);
+        ContainerRequestContext testContainerRequest = new ApiKeyContainerRequestTestFake(TEST_API_KEY, TEST_PATH);
         User actual = sut.findUserFromRequest(testContainerRequest);
 
         assertEquals(testAuthenticatedUser, actual);
@@ -121,7 +121,7 @@ public class ApiKeyAuthMechanismTest {
 
         sut.userSvc = Mockito.mock(UserServiceBean.class);
 
-        ContainerRequestContext testContainerRequest = new ContainerRequestTestFake(TEST_API_KEY, TEST_PATH);
+        ContainerRequestContext testContainerRequest = new ApiKeyContainerRequestTestFake(TEST_API_KEY, TEST_PATH);
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         assertEquals(RESPONSE_MESSAGE_BAD_API_KEY, wrappedAuthErrorResponse.getMessage());

@@ -6,17 +6,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
 
-import static edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism.DATAVERSE_API_KEY_REQUEST_HEADER_NAME;
-
 public class ContainerRequestTestFake implements ContainerRequestContext {
-
-    private final String apiKey;
-    private final UriInfo uriInfo;
-
-    public ContainerRequestTestFake(String apiKey, String path) {
-        this.apiKey = apiKey;
-        this.uriInfo = new UriInfoTestFake(apiKey, path);
-    }
 
     @Override
     public Object getProperty(String s) {
@@ -40,7 +30,7 @@ public class ContainerRequestTestFake implements ContainerRequestContext {
 
     @Override
     public UriInfo getUriInfo() {
-        return uriInfo;
+        return null;
     }
 
     @Override
@@ -75,9 +65,6 @@ public class ContainerRequestTestFake implements ContainerRequestContext {
 
     @Override
     public String getHeaderString(String s) {
-        if (s.equals(DATAVERSE_API_KEY_REQUEST_HEADER_NAME)) {
-            return this.apiKey;
-        }
         return null;
     }
 

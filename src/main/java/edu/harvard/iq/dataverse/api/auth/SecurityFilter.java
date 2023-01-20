@@ -20,8 +20,10 @@ public class SecurityFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
+        CompoundAuthMechanism compoundAuthMechanism = new CompoundAuthMechanism(apiKeyAuthMechanism);
         try {
-            User user = apiKeyAuthMechanism.findUserFromRequest(containerRequestContext);
+            User user = compoundAuthMechanism.findUserFromRequest(containerRequestContext);
+            containerRequestContext.setProperty("user", user);
         } catch (WrappedAuthErrorResponse e) {
             containerRequestContext.abortWith(e.getResponse());
         }
