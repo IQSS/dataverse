@@ -9,6 +9,8 @@ The Dataverse Community is exploring the use of Docker, Kubernetes, and other co
 
 The :doc:`testing` section mentions using Docker for integration tests.
 
+See also the :doc:`/container/index`.
+
 .. contents:: |toctitle|
 	:local:
 

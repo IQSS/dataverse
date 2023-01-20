@@ -57,10 +57,16 @@ public class JsonUtil {
         }
         return stringWriter.toString();
     }
-
+    
     public static javax.json.JsonObject getJsonObject(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
             return Json.createReader(rdr).readObject();
+        }
+    }
+    
+    public static javax.json.JsonArray getJsonArray(String serializedJson) {
+        try (StringReader rdr = new StringReader(serializedJson)) {
+            return Json.createReader(rdr).readArray();
         }
     }
 }
