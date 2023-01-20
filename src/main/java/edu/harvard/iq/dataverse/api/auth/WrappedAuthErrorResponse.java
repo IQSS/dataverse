@@ -10,14 +10,20 @@ import static edu.harvard.iq.dataverse.api.AbstractApiBean.STATUS_ERROR;
 
 public class WrappedAuthErrorResponse extends Exception {
 
+    private final String message;
     private final Response response;
 
     public WrappedAuthErrorResponse(String message) {
+        this.message = message;
         this.response = Response.status(Response.Status.UNAUTHORIZED)
                 .entity(NullSafeJsonBuilder.jsonObjectBuilder()
                         .add("status", STATUS_ERROR)
                         .add("message", message).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
+    }
+
+    public String getMessage() {
+        return this.message;
     }
 
     public Response getResponse() {

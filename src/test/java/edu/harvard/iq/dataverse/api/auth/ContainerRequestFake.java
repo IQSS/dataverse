@@ -13,9 +13,9 @@ public class ContainerRequestFake implements ContainerRequestContext {
     private final String apiKey;
     private final UriInfo uriInfo;
 
-    public ContainerRequestFake(String apiKey) {
+    public ContainerRequestFake(String apiKey, String path) {
         this.apiKey = apiKey;
-        this.uriInfo = new UriInfoFake(apiKey);
+        this.uriInfo = new UriInfoFake(apiKey, path);
     }
 
     @Override

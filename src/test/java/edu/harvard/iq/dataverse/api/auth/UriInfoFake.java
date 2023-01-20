@@ -9,14 +9,16 @@ import static edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism.DATAVERSE_AP
 public class UriInfoFake implements UriInfo {
 
     private final String apiKey;
+    private final String path;
 
-    public UriInfoFake(String apiKey) {
+    public UriInfoFake(String apiKey, String path) {
         this.apiKey = apiKey;
+        this.path = path;
     }
 
     @Override
     public String getPath() {
-        return null;
+        return path;
     }
 
     @Override
