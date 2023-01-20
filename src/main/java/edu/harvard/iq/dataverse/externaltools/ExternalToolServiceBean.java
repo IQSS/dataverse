@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import edu.harvard.iq.dataverse.AuxiliaryFile;
+import edu.harvard.iq.dataverse.AuxiliaryFileServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -30,6 +32,8 @@ import javax.persistence.TypedQuery;
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.ejb.EJB;
+import javax.json.JsonValue;
 
 @Stateless
 @Named
@@ -39,6 +43,9 @@ public class ExternalToolServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    @EJB
+    AuxiliaryFileServiceBean auxiliaryFileService;
 
     public List<ExternalTool> findAll() {
         TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o ORDER BY o.id", ExternalTool.class);
@@ -133,18 +140,43 @@ public class ExternalToolServiceBean {
      * file supports The list of tools is passed in so it doesn't hit the
      * database each time
      */
-    public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
+    public List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
         List<ExternalTool> externalTools = new ArrayList<>();
         //Map tabular data to it's mimetype (the isTabularData() check assures that this code works the same as before, but it may need to change if tabular data is split into subtypes with differing mimetypes)
         final String contentType = file.isTabularData() ? DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
         allExternalTools.forEach((externalTool) -> {
-            //Match tool and file type 
-            if (contentType.equals(externalTool.getContentType())) {
+            //Match tool and file type, then check requirements
+            if (contentType.equals(externalTool.getContentType()) && meetsRequirements(externalTool, file)) {
                 externalTools.add(externalTool);
             }
         });
 
         return externalTools;
+    }
+
+    public boolean meetsRequirements(ExternalTool externalTool, DataFile dataFile) {
+        String requirements = externalTool.getRequirements();
+        if (requirements == null) {
+            logger.fine("Data file id" + dataFile.getId() + ": no requirements for tool id " + externalTool.getId());
+            return true;
+        }
+        boolean meetsRequirements = true;
+        JsonObject requirementsObj = JsonUtil.getJsonObject(requirements);
+        JsonArray auxFilesExist = requirementsObj.getJsonArray("auxFilesExist");
+        for (JsonValue jsonValue : auxFilesExist) {
+            String formatTag = jsonValue.asJsonObject().getString("formatTag");
+            String formatVersion = jsonValue.asJsonObject().getString("formatVersion");
+            AuxiliaryFile auxFile = auxiliaryFileService.lookupAuxiliaryFile(dataFile, formatTag, formatVersion);
+            if (auxFile == null) {
+                logger.fine("Data file id" + dataFile.getId() + ": cannot find required aux file. formatTag=" + formatTag + ". formatVersion=" + formatVersion);
+                meetsRequirements = false;
+                break;
+            } else {
+                logger.fine("Data file id" + dataFile.getId() + ": found required aux file. formatTag=" + formatTag + ". formatVersion=" + formatVersion);
+                meetsRequirements = true;
+            }
+        }
+        return meetsRequirements;
     }
 
     public static ExternalTool parseAddExternalToolManifest(String manifest) {
@@ -170,6 +202,7 @@ public class ExternalToolServiceBean {
         JsonObject toolParametersObj = jsonObject.getJsonObject(TOOL_PARAMETERS);
         JsonArray queryParams = toolParametersObj.getJsonArray("queryParameters");
         JsonArray allowedApiCallsArray = jsonObject.getJsonArray(ALLOWED_API_CALLS);
+        JsonObject requirementsObj = jsonObject.getJsonObject(REQUIREMENTS);
  
         boolean allRequiredReservedWordsFound = false;
         if (scope.equals(Scope.FILE)) {
@@ -227,8 +260,12 @@ public class ExternalToolServiceBean {
         if(allowedApiCallsArray !=null) {
             allowedApiCalls = allowedApiCallsArray.toString();
         }
+        String requirements = null;
+        if (requirementsObj != null) {
+            requirements = requirementsObj.toString();
+        }
 
-        return new ExternalTool(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType, allowedApiCalls);
+        return new ExternalTool(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType, allowedApiCalls, requirements);
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {
