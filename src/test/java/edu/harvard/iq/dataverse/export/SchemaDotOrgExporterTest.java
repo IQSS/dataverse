@@ -6,9 +6,9 @@ import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 
-import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.json.JsonObject;
+
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -69,6 +71,7 @@ public class SchemaDotOrgExporterTest {
      * 
      */
     @Test
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
     public void testExportDataset() throws JsonParseException, ParseException, IOException {
         File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
@@ -178,7 +181,6 @@ public class SchemaDotOrgExporterTest {
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
-        System.setProperty(SITE_URL, "https://librascholar.org");
         boolean hideFileUrls = false;
         if (hideFileUrls) {
             System.setProperty(FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, "true");
