@@ -174,7 +174,12 @@ public class SettingsServiceBean {
          *
          */
         SearchRespectPermissionRoot,
-        /** Solr hostname and port, such as "localhost:8983". */
+        /**
+         * Solr hostname and port, such as "localhost:8983".
+         * @deprecated New installations should not use this database setting, but use {@link JvmSettings#SOLR_HOST}
+         *             and {@link JvmSettings#SOLR_PORT}.
+         */
+        @Deprecated(forRemoval = true, since = "2022-12-23")
         SolrHostColonPort,
         /** Enable full-text indexing in solr up to max file size */
         SolrFullTextIndexing, //true or false (default)
@@ -563,11 +568,15 @@ public class SettingsServiceBean {
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */
-        ControlledVocabularyCustomJavaScript,
+        ControlledVocabularyCustomJavaScript, 
         /**
          * A compound setting for disabling signup for remote Auth providers:
          */
         AllowRemoteAuthSignUp,
+        /**
+         * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
+         */
+        WebloaderUrl,
         /**
          * A comma-separated list of CategoryName in the desired order for files to be
          * sorted in the file table display. If not set, files will be sorted
@@ -575,6 +584,7 @@ public class SettingsServiceBean {
          * and alphabetically within each category.
          */
         CategorySortOrder;
+
         ;
 
         @Override
