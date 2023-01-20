@@ -7,21 +7,19 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import edu.harvard.iq.dataverse.util.testing.SystemProperty;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import org.junit.jupiter.api.Test;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Test;
-import org.mockito.Mockito;
 
 public class ExternalToolHandlerTest {
 
@@ -205,9 +203,10 @@ public class ExternalToolHandlerTest {
         assertEquals("Unknown reserved word: {junk}", expectedException.getMessage());
 
     }
-
+    
+    
     @Test
-    @SystemProperty(key = SystemConfig.SITE_URL, value = "https://librascholar.org")
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
     public void testGetToolUrlWithAllowedApiCalls() {
         System.out.println("allowedApiCalls test");
         Dataset ds = new Dataset();

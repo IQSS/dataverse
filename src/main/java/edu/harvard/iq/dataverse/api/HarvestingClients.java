@@ -373,13 +373,13 @@ public class HarvestingClients extends AbstractApiBean {
             }
             
             if (authenticatedUser == null || !authenticatedUser.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Only the Dataverse Admin user can run harvesting jobs");
+                return error(Response.Status.FORBIDDEN, "Only admin users can run harvesting jobs");
             }
             
             HarvestingClient harvestingClient = harvestingClientService.findByNickname(clientNickname);
             
             if (harvestingClient == null) {
-                return error(Response.Status.NOT_FOUND, "No such dataverse: "+clientNickname);
+                return error(Response.Status.NOT_FOUND, "No such client: "+clientNickname);
             }
             
             DataverseRequest dataverseRequest = createDataverseRequest(authenticatedUser);
@@ -391,34 +391,7 @@ public class HarvestingClients extends AbstractApiBean {
         return this.accepted();
     }
     
-    // This GET shows the status of the harvesting run in progress for this 
-    // client, if present: 
-    // @GET
-    // @Path("{nickName}/run")
-    // TODO: 
-    
-    // This DELETE kills the harvesting run in progress for this client, 
-    // if present: 
-    // @DELETE
-    // @Path("{nickName}/run")
-    // TODO: 
-    
-    
-    
-    
-    
     /* Auxiliary, helper methods: */ 
-    
-    /*
-    @Deprecated
-    public static JsonArrayBuilder harvestingConfigsAsJsonArray(List<Dataverse> harvestingDataverses) {
-        JsonArrayBuilder hdArr = Json.createArrayBuilder();
-        
-        for (Dataverse hd : harvestingDataverses) {
-            hdArr.add(harvestingConfigAsJson(hd.getHarvestingClientConfig()));
-        }
-        return hdArr;
-    }*/
     
     public static JsonObjectBuilder harvestingConfigAsJson(HarvestingClient harvestingConfig) {
         if (harvestingConfig == null) {
