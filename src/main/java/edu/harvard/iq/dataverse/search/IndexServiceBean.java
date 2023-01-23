@@ -1662,7 +1662,7 @@ public class IndexServiceBean {
             logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
         }        
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
-        if (dataversePaths.size() > 0) {
+        if (dataversePaths.size() > 0 && dvo.isInstanceofDataverse()) {
             // removing the dataverse's own id from the paths
             // fixes bug where if my parent dv was linked my dv was shown as linked to myself
             dataversePaths.remove(dataversePaths.size() - 1);
