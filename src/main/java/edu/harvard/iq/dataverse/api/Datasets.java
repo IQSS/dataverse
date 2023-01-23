@@ -692,10 +692,11 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/metadata")
     @Produces("application/ld+json, application/json-ld")
-    public Response getVersionJsonLDMetadata(@PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return getVersionJsonLDMetadata(id, ":draft", uriInfo, headers);
+    public Response getVersionJsonLDMetadata(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return getVersionJsonLDMetadata(crc, id, ":draft", uriInfo, headers);
     }
 
     @PUT
