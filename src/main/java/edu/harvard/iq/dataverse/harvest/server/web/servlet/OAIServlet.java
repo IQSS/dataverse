@@ -207,7 +207,8 @@ public class OAIServlet extends HttpServlet {
                 .withDeleteMethod(DeletedRecord.TRANSIENT)
                 .withMaxListIdentifiers(maxListIdentifiers)
                 .withMaxListRecords(maxListRecords)
-                .withMaxListSets(maxListSets);
+                .withMaxListSets(maxListSets)
+                .withEarliestDate(recordService.getEarliestDate());
         
         return repositoryConfiguration; 
     }

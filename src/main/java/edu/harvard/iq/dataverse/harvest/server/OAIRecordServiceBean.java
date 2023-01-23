@@ -32,6 +32,7 @@ import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.TemporalType;
 
@@ -373,6 +374,18 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             logger.fine("Caught exception; returning null.");
             return null;
         }
+    }
+    
+    public Instant getEarliestDate() {
+        String queryString = "SELECT min(r.lastUpdateTime) FROM OAIRecord r";
+        TypedQuery<Date> query = em.createQuery(queryString, Date.class);
+        Date retDate = query.getSingleResult();
+        if (retDate != null) {
+            return retDate.toInstant();
+        }
+        
+        // if there are no records yet, return the default "now"
+        return new Date().toInstant();
     }
     
 }
