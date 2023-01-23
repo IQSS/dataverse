@@ -53,14 +53,20 @@ External tools must be expressed in an external tool manifest file, a specific J
 Examples of Manifests
 +++++++++++++++++++++
 
-Let's look at two examples of external tool manifests (one at the file level and one at the dataset level) before we dive into how they work.
+Let's look at a few examples of external tool manifests (both at the file level and at the dataset level) before we dive into how they work.
+
+.. _tools-for-files:
 
 External Tools for Files
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-:download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` is a file level both an "explore" tool and a "preview" tool that operates on tabular files:
+:download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` is a file level (both an "explore" tool and a "preview" tool) that operates on tabular files:
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/fabulousFileTool.json
+
+:download:`auxFileTool.json <../_static/installation/files/root/external-tools/auxFileTool.json>` is a file level preview tool that operates on auxiliary files associated with a data file (note the "requirements" section):
+
+.. literalinclude:: ../_static/installation/files/root/external-tools/auxFileTool.json
 
 External Tools for Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -113,6 +119,10 @@ Terminology
     allowedApiCalls httpMethod   Which HTTP method the specified callback uses such as ``GET`` or ``POST``.
     
     allowedApiCalls timeOut      For non-public datasets and datafiles, how many minutes the signed URLs given to the tool should be valid for. Must be an integer.
+
+    requirements                 **Resources your tool needs to function.** For now, the only requirement you can specify is that one or more auxiliary files exist (see auxFilesExist in the :ref:`tools-for-files` example). Currently, requirements only apply to preview tools. If the requirements are not met, the preview tool is not shown.
+
+    auxFilesExist                **An array containing formatTag and formatVersion pairs** for each auxiliary file that your tool needs to download to function properly. For example, a required aux file could have a ``formatTag`` of "NcML" and a ``formatVersion`` of "1.0". See also :doc:`/developers/aux-file-support`.
     
     toolName                     A **name** of an external tool that is used to differentiate between external tools and also used in bundle.properties for localization in the Dataverse installation web interface. For example, the toolName for Data Explorer is ``explorer``. For the Data Curation Tool the toolName is ``dct``. This is an optional parameter in the manifest JSON file.   
     ===========================  ==========

@@ -435,7 +435,9 @@ To support multiple stores, a Dataverse installation now requires an id, type, a
 
 Out of the box, a Dataverse installation is configured to use local file storage in the 'file' store by default. You can add additional stores and, as a superuser, configure specific Dataverse collections to use them (by editing the 'General Information' for the Dataverse collection as described in the :doc:`/admin/dataverses-datasets` section).
 
-Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
+Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored
+(in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
+(See also the option reference: :ref:`dataverse.files.directory`)
 
 If you wish to change which store is used by default, you'll need to delete the existing default storage driver and set a new one using jvm options.
 
@@ -445,6 +447,8 @@ If you wish to change which store is used by default, you'll need to delete the 
     ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
 
 It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
+
+.. _storage-files-dir:
 
 File Storage
 ++++++++++++
@@ -1664,13 +1668,26 @@ protocol, host, and port number and should not include a trailing slash.
 - We are absolutely aware that it's confusing to have both ``dataverse.fqdn`` and ``dataverse.siteUrl``.
   https://github.com/IQSS/dataverse/issues/6636 is about resolving this confusion.
 
-
 .. _dataverse.files.directory:
 
 dataverse.files.directory
 +++++++++++++++++++++++++
 
-This is how you configure the path Dataverse uses for temporary files. (File store specific dataverse.files.\<id\>.directory options set the permanent data storage locations.)
+Please provide an absolute path to a directory backed by some mounted file system. This directory is used for a number
+of purposes:
+
+1. ``<dataverse.files.directory>/temp`` after uploading, data is temporarily stored here for ingest and/or before
+   shipping to the final storage destination.
+2. ``<dataverse.files.directory>/sword`` a place to store uploads via the :doc:`../api/sword` before transfer
+   to final storage location and/or ingest.
+3. ``<dataverse.files.directory>/googlecloudkey.json`` used with :ref:`Google Cloud Configuration` for BagIt exports.
+   This location is deprecated and might be refactored into a distinct setting in the future.
+4. The experimental DCM feature for :doc:`../developers/big-data-support` is able to trigger imports for externally
+   uploaded files in a directory tree at ``<dataverse.files.directory>/<PID Authority>/<PID Identifier>``
+   under certain conditions. This directory may also be used by file stores for :ref:`permanent file storage <storage-files-dir>`,
+   but this is controlled by other, store-specific settings.
+
+Defaults to ``/tmp/dataverse``. Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_DIRECTORY``.
 
 .. _dataverse.files.uploads:
 
@@ -3386,7 +3403,7 @@ For example:
 
 ``curl -X PUT -d "This content needs to go through an additional review by the Curation Team before it can be published." http://localhost:8080/api/admin/settings/:DatasetMetadataValidationFailureMsg``
 
-	
+
 :ExternalValidationAdminOverride
 ++++++++++++++++++++++++++++++++
 
