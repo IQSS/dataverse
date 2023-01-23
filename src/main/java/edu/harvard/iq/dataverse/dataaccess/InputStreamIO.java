@@ -161,7 +161,7 @@ public class InputStreamIO extends StorageIO<DataFile> {
     }
 
     @Override
-    public List<String> cleanUp(Predicate<String> filter) throws IOException {
+    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: tthis method is not supported in this DataAccess driver.");
     }
 

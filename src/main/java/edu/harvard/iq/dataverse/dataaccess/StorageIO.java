@@ -623,6 +623,6 @@ public abstract class StorageIO<T extends DvObject> {
         return m.find();
     }
 
-    public abstract List<String> cleanUp(Predicate<String> filter) throws IOException;
+    public abstract List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException;
 
 }

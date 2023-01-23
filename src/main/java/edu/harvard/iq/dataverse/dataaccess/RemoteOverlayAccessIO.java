@@ -633,7 +633,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public List<String> cleanUp(Predicate<String> filter) throws IOException {
-        return baseStore.cleanUp(filter);
+    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
+        return baseStore.cleanUp(filter, dryRun);
     }
 }

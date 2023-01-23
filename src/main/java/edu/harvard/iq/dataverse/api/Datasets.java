@@ -121,6 +121,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
@@ -157,6 +158,7 @@ import com.amazonaws.services.s3.model.PartETag;
 public class Datasets extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Datasets.class.getCanonicalName());
+    private static final Pattern dataFilePattern = Pattern.compile("^[0-9a-f]{11}-[0-9a-f]{12}\\.?.*");
     
     @Inject DataverseSession session;
 
@@ -2535,32 +2537,43 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Access denied!");
         }
 
-        List<String> deleted = new ArrayList<>();
-        Set<String> files = new HashSet<String>();
-        try {
-            for (DataFile dataFile: dataset.getFiles()) {
-                String storageIdentifier = dataFile.getStorageIdentifier();
-                String location = storageIdentifier.substring(storageIdentifier.indexOf("://") + 3);
-                String[] locationParts = location.split(":", 3);//separate bucket, swift container, etc. from fileName
-                files.add(locationParts[locationParts.length-1]);
-            }
-            StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
-            Predicate<String> filter = f -> {
-                return !f.startsWith("export_") || files.stream().noneMatch(x -> f.startsWith(x));
-            };
+        boolean doDryRun = dryrun != null && dryrun.booleanValue();
 
-            if (dryrun != null && dryrun.booleanValue()) {
-                deleted.addAll(files.stream().filter(filter).collect(Collectors.toList()));
-            } else {
-                deleted.addAll(datasetIO.cleanUp(filter));
-            }
+        // check if no legacy files are present
+        Set<String> datasetFilenames = getDatasetFilenames(dataset);
+        if (datasetFilenames.stream().anyMatch(x -> !dataFilePattern.matcher(x).matches())) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Dataset contains files not matching the nameing pattern!");
+        }
+
+        Predicate<String> filter = getToDeleteFilesFilter(datasetFilenames);
+        List<String> deleted;
+        try {
+            StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
+            deleted = datasetIO.cleanUp(filter, doDryRun);
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
             return error(Response.Status.INTERNAL_SERVER_ERROR, "IOException! Serious Error! See administrator!");
         }
 
-        return ok("Found: " + files.stream().collect(Collectors.joining(", ")) + "\n" + "Deleted: " + deleted.stream().collect(Collectors.joining(", ")));
+        return ok("Found: " + datasetFilenames.stream().collect(Collectors.joining(", ")) + "\n" + "Deleted: " + deleted.stream().collect(Collectors.joining(", ")));
         
+    }
+
+    private static Set<String> getDatasetFilenames(Dataset dataset) {
+        Set<String> files = new HashSet<>();
+        for (DataFile dataFile: dataset.getFiles()) {
+            String storageIdentifier = dataFile.getStorageIdentifier();
+            String location = storageIdentifier.substring(storageIdentifier.indexOf("://") + 3);
+            String[] locationParts = location.split(":", 3);//separate bucket, swift container, etc. from fileName
+            files.add(locationParts[locationParts.length-1]);
+        }
+        return files;
+    }
+
+    public static Predicate<String> getToDeleteFilesFilter(Set<String> datasetFilenames) {
+        return f -> {
+            return dataFilePattern.matcher(f).matches() && datasetFilenames.stream().noneMatch(x -> f.startsWith(x));
+        };
     }
 
     private void msg(String m) {

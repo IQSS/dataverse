@@ -944,8 +944,11 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public List<String> cleanUp(Predicate<String> filter) throws IOException {
+    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
         List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+        if (dryRun) {
+            return toDelete;
+        }
         for (String f : toDelete) {
             this.deleteFile(f);
         }
