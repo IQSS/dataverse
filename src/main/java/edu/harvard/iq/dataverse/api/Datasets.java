@@ -478,16 +478,17 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
+    @AuthRequired
     @Path("{id}/dirindex")
     @Produces("text/html")
-    public Response getFileAccessFolderView(@PathParam("id") String datasetId, @QueryParam("version") String versionId, @QueryParam("folder") String folderName, @QueryParam("original") Boolean originals, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+    public Response getFileAccessFolderView(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @QueryParam("version") String versionId, @QueryParam("folder") String folderName, @QueryParam("original") Boolean originals, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         folderName = folderName == null ? "" : folderName;
         versionId = versionId == null ? ":latest-published" : versionId;
         
         DatasetVersion version;
         try {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             version = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -603,16 +604,17 @@ public class Datasets extends AbstractApiBean {
     }
   
     @PUT
+    @AuthRequired
     @Path("{id}/versions/{versionId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateDraftVersion( String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
+    public Response updateDraftVersion(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId){
       
         if ( ! ":draft".equals(versionId) ) {
             return error( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
         }
         
         try ( StringReader rdr = new StringReader(jsonBody) ) {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
             DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json);
@@ -668,11 +670,12 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/versions/{versionId}/metadata")
     @Produces("application/ld+json, application/json-ld")
-    public Response getVersionJsonLDMetadata(@PathParam("id") String id, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersionJsonLDMetadata(@Context ContainerRequestContext crc, @PathParam("id") String id, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         try {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(id), uriInfo, headers);
             OREMap ore = new OREMap(dsv,
                     settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false));
@@ -696,13 +699,14 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("{id}/metadata")
     @Consumes("application/ld+json, application/json-ld")
-    public Response updateVersionMetadata(String jsonLDBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
+    public Response updateVersionMetadata(@Context ContainerRequestContext crc, String jsonLDBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
 
         try {
             Dataset ds = findDatasetOrDie(id);
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion dsv = ds.getOrCreateEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
             dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false, licenseSvc);
@@ -730,12 +734,13 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("{id}/metadata/delete")
     @Consumes("application/ld+json, application/json-ld")
-    public Response deleteMetadata(String jsonLDBody, @PathParam("id") String id) {
+    public Response deleteMetadata(@Context ContainerRequestContext crc, String jsonLDBody, @PathParam("id") String id) {
         try {
             Dataset ds = findDatasetOrDie(id);
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion dsv = ds.getOrCreateEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
             dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, licenseSvc);
@@ -761,10 +766,11 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("{id}/deleteMetadata")
-    public Response deleteVersionMetadata(String jsonBody, @PathParam("id") String id) throws WrappedResponse {
+    public Response deleteVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id) throws WrappedResponse {
 
-        DataverseRequest req = createDataverseRequest(findUserOrDie());
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
 
         return processDatasetFieldDataDelete(jsonBody, id, req);
     }
@@ -916,17 +922,13 @@ public class Datasets extends AbstractApiBean {
     }
     
     @PUT
+    @AuthRequired
     @Path("{id}/editMetadata")
-    public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) {
+    public Response editVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) {
 
         Boolean replaceData = replace != null;
         DataverseRequest req = null;
-        try {
-         req = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse ex) {
-            logger.log(Level.SEVERE, "Edit metdata error: " + ex.getMessage(), ex);
-            return ex.getResponse();
-        }
+        req = createDataverseRequest(getRequestUser(crc));
 
         return processDatasetUpdate(jsonBody, id, req, replaceData);
     }
@@ -1307,10 +1309,11 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/move/{targetDataverseAlias}")
-    public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
+    public Response moveDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             Dataset ds = findDatasetOrDie(id);
             Dataverse target = dataverseService.findByAlias(targetDataverseAlias);
             if (target == null) {
@@ -1598,10 +1601,11 @@ public class Datasets extends AbstractApiBean {
 
 
     @PUT
+    @AuthRequired
     @Path("{linkedDatasetId}/link/{linkingDataverseAlias}")
-    public Response linkDataset(@PathParam("linkedDatasetId") String linkedDatasetId, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
+    public Response linkDataset(@Context ContainerRequestContext crc, @PathParam("linkedDatasetId") String linkedDatasetId, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             Dataset linked = findDatasetOrDie(linkedDatasetId);
             Dataverse linking = findDataverseOrDie(linkingDataverseAlias);
             if (linked == null){
@@ -1642,10 +1646,11 @@ public class Datasets extends AbstractApiBean {
 
 
     @GET
+    @AuthRequired
     @Path("{id}/links")
-    public Response getLinks(@PathParam("id") String idSupplied ) {
+    public Response getLinks(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied ) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Not a superuser");
             }
@@ -1672,8 +1677,9 @@ public class Datasets extends AbstractApiBean {
      * @param apiKey
      */
     @POST
+    @AuthRequired
     @Path("{identifier}/assignments")
-    public Response createAssignment(RoleAssignmentDTO ra, @PathParam("identifier") String id, @QueryParam("key") String apiKey) {
+    public Response createAssignment(@Context ContainerRequestContext crc, RoleAssignmentDTO ra, @PathParam("identifier") String id, @QueryParam("key") String apiKey) {
         try {
             Dataset dataset = findDatasetOrDie(id);
             
@@ -1701,7 +1707,7 @@ public class Datasets extends AbstractApiBean {
 
             String privateUrlToken = null;
             return ok(
-                    json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(findUserOrDie()), privateUrlToken))));
+                    json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(getRequestUser(crc)), privateUrlToken))));
         } catch (WrappedResponse ex) {
             List<String> args = Arrays.asList(ex.getMessage());
             logger.log(Level.WARNING, BundleUtil.getStringFromBundle("datasets.api.grant.role.cant.create.assignment.error", args));
@@ -1711,13 +1717,14 @@ public class Datasets extends AbstractApiBean {
     }
     
     @DELETE
+    @AuthRequired
     @Path("{identifier}/assignments/{id}")
-    public Response deleteAssignment(@PathParam("id") long assignmentId, @PathParam("identifier") String dsId) {
+    public Response deleteAssignment(@Context ContainerRequestContext crc, @PathParam("id") long assignmentId, @PathParam("identifier") String dsId) {
         RoleAssignment ra = em.find(RoleAssignment.class, assignmentId);
         if (ra != null) {
             try {
                 findDatasetOrDie(dsId);
-                execCommand(new RevokeRoleCommand(ra, createDataverseRequest(findUserOrDie())));
+                execCommand(new RevokeRoleCommand(ra, createDataverseRequest(getRequestUser(crc))));
                 List<String> args = Arrays.asList(ra.getRole().getName(), ra.getAssigneeIdentifier(), ra.getDefinitionPoint().accept(DvObject.NamePrinter));
                 return ok(BundleUtil.getStringFromBundle("datasets.api.revoke.role.success", args));
             } catch (WrappedResponse ex) {
@@ -1775,16 +1782,13 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/thumbnail/candidates")
-    public Response getDatasetThumbnailCandidates(@PathParam("id") String idSupplied) {
+    public Response getDatasetThumbnailCandidates(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             boolean canUpdateThumbnail = false;
-            try {
-                canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
-            } catch (WrappedResponse ex) {
-                logger.info("Exception thrown while trying to figure out permissions while getting thumbnail for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
-            }
+            canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(getRequestUser(crc)), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
             if (!canUpdateThumbnail) {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to list dataset thumbnail candidates.");
             }
@@ -1827,10 +1831,11 @@ public class Datasets extends AbstractApiBean {
 
     // TODO: Rather than only supporting looking up files by their database IDs (dataFileIdSupplied), consider supporting persistent identifiers.
     @POST
+    @AuthRequired
     @Path("{id}/thumbnail/{dataFileId}")
-    public Response setDataFileAsThumbnail(@PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
+    public Response setDataFileAsThumbnail(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
         try {
-            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, dataFileIdSupplied, null));
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, dataFileIdSupplied, null));
             return ok("Thumbnail set to " + datasetThumbnail.getBase64image());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -1838,12 +1843,12 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/thumbnail")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream
-    ) {
+    public Response uploadDatasetLogo(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream) {
         try {
-            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, inputStream));
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, inputStream));
             return ok("Thumbnail is now " + datasetThumbnail.getBase64image());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -1851,10 +1856,11 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("{id}/thumbnail")
-    public Response removeDatasetLogo(@PathParam("id") String idSupplied) {
+    public Response removeDatasetLogo(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         try {
-            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.removeThumbnail, null, null));
+            execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.removeThumbnail, null, null));
             return ok("Dataset thumbnail removed.");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -1902,8 +1908,9 @@ public class Datasets extends AbstractApiBean {
      * -MAD 4.9.1
      */
     @POST
+    @AuthRequired
     @Path("{identifier}/dataCaptureModule/checksumValidation")
-    public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) {
+    public Response receiveChecksumValidationResults(@Context ContainerRequestContext crc, @PathParam("identifier") String id, JsonObject jsonFromDcm) {
         logger.log(Level.FINE, "jsonFromDcm: {0}", jsonFromDcm);
         AuthenticatedUser authenticatedUser = null;
         try {
@@ -1930,7 +1937,7 @@ public class Datasets extends AbstractApiBean {
 
                     ImportMode importMode = ImportMode.MERGE;
                     try {
-                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(findUserOrDie()), dataset, uploadFolder, new Long(totalSize), importMode));
+                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(getRequestUser(crc)), dataset, uploadFolder, new Long(totalSize), importMode));
                         long jobId = jsonFromImportJobKickoff.getInt("executionId");
                         String message = jsonFromImportJobKickoff.getString("message");
                         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -2009,10 +2016,11 @@ public class Datasets extends AbstractApiBean {
     
 
     @POST
+    @AuthRequired
     @Path("{id}/submitForReview")
-    public Response submitForReview(@PathParam("id") String idSupplied) {
+    public Response submitForReview(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         try {
-            Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)));
+            Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied)));
             JsonObjectBuilder result = Json.createObjectBuilder();
             
             boolean inReview = updatedDataset.isLockedFor(DatasetLock.Reason.InReview);
@@ -2055,12 +2063,13 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/curationStatus")
-    public Response getCurationStatus(@PathParam("id") String idSupplied) {
+    public Response getCurationStatus(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         try {
             Dataset ds = findDatasetOrDie(idSupplied);
             DatasetVersion dsv = ds.getLatestVersion();
-            if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), ds).has(Permission.PublishDataset)) {
+            if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(getRequestUser(crc)), ds).has(Permission.PublishDataset)) {
                 return response(req -> ok(dsv.getExternalStatusLabel()==null ? "":dsv.getExternalStatusLabel()));
             } else {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to view the curation status of this dataset.");
@@ -2071,13 +2080,14 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("{id}/curationStatus")
-    public Response setCurationStatus(@PathParam("id") String idSupplied, @QueryParam("label") String label) {
+    public Response setCurationStatus(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @QueryParam("label") String label) {
         Dataset ds = null;
         User u = null;
         try {
             ds = findDatasetOrDie(idSupplied);
-            u = findUserOrDie();
+            u = getRequestUser(crc);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -2091,13 +2101,14 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("{id}/curationStatus")
-    public Response deleteCurationStatus(@PathParam("id") String idSupplied) {
+    public Response deleteCurationStatus(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         Dataset ds = null;
         User u = null;
         try {
             ds = findDatasetOrDie(idSupplied);
-            u = findUserOrDie();
+            u = getRequestUser(crc);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -2111,19 +2122,15 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/uploadsid")
     @Deprecated
-    public Response getUploadUrl(@PathParam("id") String idSupplied) {
+    public Response getUploadUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
 
             boolean canUpdateDataset = false;
-            try {
-                canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
-            } catch (WrappedResponse ex) {
-                logger.info("Exception thrown while trying to figure out permissions while getting upload URL for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
-                throw ex;
-            }
+            canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(getRequestUser(crc)), dataset).canIssue(UpdateDatasetVersionCommand.class);
             if (!canUpdateDataset) {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
             }
@@ -2151,21 +2158,15 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/uploadurls")
-    public Response getMPUploadUrls(@PathParam("id") String idSupplied, @QueryParam("size") long fileSize) {
+    public Response getMPUploadUrls(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @QueryParam("size") long fileSize) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
 
             boolean canUpdateDataset = false;
-            try {
-                canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset)
-                        .canIssue(UpdateDatasetVersionCommand.class);
-            } catch (WrappedResponse ex) {
-                logger.info(
-                        "Exception thrown while trying to figure out permissions while getting upload URLs for dataset id "
-                                + dataset.getId() + ": " + ex.getLocalizedMessage());
-                throw ex;
-            }
+            canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(getRequestUser(crc)), dataset)
+                    .canIssue(UpdateDatasetVersionCommand.class);
             if (!canUpdateDataset) {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
             }
@@ -2333,9 +2334,11 @@ public class Datasets extends AbstractApiBean {
      * @return
      */
     @POST
+    @AuthRequired
     @Path("{id}/add")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response addFileToDataset(@PathParam("id") String idSupplied,
+    public Response addFileToDataset(@Context ContainerRequestContext crc,
+                    @PathParam("id") String idSupplied,
                     @FormDataParam("jsonData") String jsonData,
                     @FormDataParam("file") InputStream fileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
@@ -2347,18 +2350,11 @@ public class Datasets extends AbstractApiBean {
         }
 
         // -------------------------------------
-        // (1) Get the user from the API key
+        // (1) Get the user from the ContainerRequestContext
         // -------------------------------------
         User authUser;
-        try {
-            authUser = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN,
-                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
-            );
-        }
-        
-        
+        authUser = getRequestUser(crc);
+
         // -------------------------------------
         // (2) Get the Dataset Id
         //  
@@ -3132,15 +3128,16 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/timestamps")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTimestamps(@PathParam("identifier") String id) {
+    public Response getTimestamps(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
 
         Dataset dataset = null;
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         try {
             dataset = findDatasetOrDie(id);
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             Set<Permission> perms = new HashSet<Permission>();
             perms.add(Permission.ViewUnpublishedDataset);
             boolean canSeeDraft = permissionSvc.hasPermissionsFor(u, dataset, perms);
@@ -3285,9 +3282,10 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/deleteglobusRule")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response deleteglobusRule(@PathParam("id") String datasetId,@FormDataParam("jsonData") String jsonData
+    public Response deleteglobusRule(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,@FormDataParam("jsonData") String jsonData
     ) throws IOException, ExecutionException, InterruptedException {
 
 
@@ -3299,15 +3297,10 @@ public class Datasets extends AbstractApiBean {
         }
 
         // -------------------------------------
-        // (1) Get the user from the API key
+        // (1) Get the user from the ContainerRequestContext
         // -------------------------------------
         User authUser;
-        try {
-            authUser = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth")
-            );
-        }
+        authUser = getRequestUser(crc);
 
         // -------------------------------------
         // (2) Get the Dataset Id
@@ -3336,9 +3329,11 @@ public class Datasets extends AbstractApiBean {
      * @return
      */
     @POST
+    @AuthRequired
     @Path("{id}/addFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response addFilesToDataset(@PathParam("id") String idSupplied,
+    public Response addFilesToDataset(@Context ContainerRequestContext crc,
+                                      @PathParam("id") String idSupplied,
                                       @FormDataParam("jsonData") String jsonData) {
 
         if (!systemConfig.isHTTPUpload()) {
@@ -3346,15 +3341,10 @@ public class Datasets extends AbstractApiBean {
         }
 
         // -------------------------------------
-        // (1) Get the user from the API key
+        // (1) Get the user from the ContainerRequestContext
         // -------------------------------------
         User authUser;
-        try {
-            authUser = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth")
-            );
-        }
+        authUser = getRequestUser(crc);
 
         // -------------------------------------
         // (2) Get the Dataset Id
@@ -3407,25 +3397,22 @@ public class Datasets extends AbstractApiBean {
      * @return
      */
     @POST
+    @AuthRequired
     @Path("{id}/replaceFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response replaceFilesInDataset(@PathParam("id") String idSupplied,
-                                      @FormDataParam("jsonData") String jsonData) {
+    public Response replaceFilesInDataset(@Context ContainerRequestContext crc,
+                                          @PathParam("id") String idSupplied,
+                                          @FormDataParam("jsonData") String jsonData) {
 
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
         }
 
         // -------------------------------------
-        // (1) Get the user from the API key
+        // (1) Get the user from the ContainerRequestContext
         // -------------------------------------
         User authUser;
-        try {
-            authUser = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth")
-            );
-        }
+        authUser = getRequestUser(crc);
 
         // -------------------------------------
         // (2) Get the Dataset Id
@@ -3664,11 +3651,15 @@ public class Datasets extends AbstractApiBean {
     // This supports the cases where a tool is accessing a restricted resource (e.g.
     // for a draft dataset), or public case.
     @GET
+    @AuthRequired
     @Path("{id}/versions/{version}/toolparams/{tid}")
-    public Response getExternalToolDVParams(@PathParam("tid") long externalToolId,
-            @PathParam("id") String datasetId, @PathParam("version") String version, @QueryParam(value = "locale") String locale) {
+    public Response getExternalToolDVParams(@Context ContainerRequestContext crc,
+                                            @PathParam("tid") long externalToolId,
+                                            @PathParam("id") String datasetId,
+                                            @PathParam("version") String version,
+                                            @QueryParam(value = "locale") String locale) {
         try {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion target = getDatasetVersionOrDie(req, version, findDatasetOrDie(datasetId), null, null);
             if (target == null) {
                 return error(BAD_REQUEST, "DatasetVersion not found.");
@@ -3682,7 +3673,7 @@ public class Datasets extends AbstractApiBean {
                 return error(BAD_REQUEST, "External tool does not have dataset scope.");
             }
             ApiToken apiToken = null;
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if (u instanceof AuthenticatedUser) {
                 apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) u);
             }
