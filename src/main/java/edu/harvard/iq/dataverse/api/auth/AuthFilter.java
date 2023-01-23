@@ -12,10 +12,10 @@ import java.io.IOException;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.CONTAINER_REQUEST_CONTEXT_USER;
 
-@Secured
+@AuthRequired
 @Provider
 @Priority(Priorities.AUTHENTICATION)
-public class SecurityFilter implements ContainerRequestFilter {
+public class AuthFilter implements ContainerRequestFilter {
 
     @Inject
     private ApiKeyAuthMechanism apiKeyAuthMechanism;
