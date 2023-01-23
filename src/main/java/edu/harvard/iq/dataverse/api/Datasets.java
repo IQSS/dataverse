@@ -95,7 +95,6 @@ import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 
-import static edu.harvard.iq.dataverse.api.ApiConstants.CONTAINER_REQUEST_CONTEXT_USER;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -309,7 +308,7 @@ public class Datasets extends AbstractApiBean {
         return response( req -> {
             Dataset doomed = findDatasetOrDie(id);
             DatasetVersion doomedVersion = doomed.getLatestVersion();
-            User u = (User) crc.getProperty(CONTAINER_REQUEST_CONTEXT_USER);
+            User u = getRequestUser(crc);
             boolean destroy = false;
             
             if (doomed.getVersions().size() == 1) {
@@ -343,13 +342,14 @@ public class Datasets extends AbstractApiBean {
     }
         
     @DELETE
+    @AuthRequired
     @Path("{id}/destroy")
-    public Response destroyDataset(@PathParam("id") String id) {
+    public Response destroyDataset(@Context ContainerRequestContext crc, @PathParam("id") String id) {
 
         return response(req -> {
             // first check if dataset is released, and if so, if user is a superuser
             Dataset doomed = findDatasetOrDie(id);
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
 
             if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Destroy can only be called by superusers."));
