@@ -20,6 +20,8 @@
 
 package edu.harvard.iq.dataverse.ingest;
 
+import edu.harvard.iq.dataverse.AuxiliaryFile;
+import edu.harvard.iq.dataverse.AuxiliaryFileServiceBean;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
@@ -72,6 +74,7 @@ import org.apache.commons.io.IOUtils;
 //import edu.harvard.iq.dvn.unf.*;
 import org.dataverse.unf.*;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -81,6 +84,7 @@ import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -113,6 +117,9 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Message;
 import javax.faces.application.FacesMessage;
+import javax.ws.rs.core.MediaType;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.NetcdfFiles;
 
 /**
  *
@@ -133,6 +140,8 @@ public class IngestServiceBean {
     DatasetFieldServiceBean fieldService;
     @EJB
     DataFileServiceBean fileService; 
+    @EJB
+    AuxiliaryFileServiceBean auxiliaryFileService;
     @EJB
     SystemConfig systemConfig;
 
@@ -231,6 +240,9 @@ public class IngestServiceBean {
 						dataFile.setFilesize(dataAccess.getSize());
 						savedSuccess = true;
 						logger.fine("Success: permanently saved file " + dataFile.getFileMetadata().getLabel());
+
+                                            // TODO: reformat this file to remove the many tabs added in cc08330
+                                            extractMetadataNcml(dataFile, tempLocationPath);
 
 					} catch (IOException ioex) {
                     logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
@@ -343,6 +355,7 @@ public class IngestServiceBean {
 						try {
 							// FITS is the only type supported for metadata
 							// extraction, as of now. -- L.A. 4.0
+                                                        // Note that extractMetadataNcml() is used for NetCDF/HDF5.
 							dataFile.setContentType("application/fits");
 							metadataExtracted = extractMetadata(tempFileLocation, dataFile, version);
 						} catch (IOException mex) {
@@ -565,7 +578,6 @@ public class IngestServiceBean {
         return sb.toString();
     }
 
-    
     public void produceSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
         /*
         logger.info("Skipping summary statistics and UNF.");
@@ -1206,7 +1218,104 @@ public class IngestServiceBean {
         return ingestSuccessful;
     }
 
-    
+    /**
+     * @param dataFile The DataFile from which to attempt NcML extraction
+     * (NetCDF or HDF5 format)
+     * @param tempLocationPath Null if the file is already saved to permanent
+     * storage. Otherwise, the path to the temp location of the files, as during
+     * initial upload.
+     * @return True if the Ncml files was created. False on any error or if the
+     * NcML file already exists.
+     */
+    public boolean extractMetadataNcml(DataFile dataFile, Path tempLocationPath) {
+        boolean ncmlFileCreated = false;
+        logger.fine("extractMetadataNcml: dataFileIn: " + dataFile + ". tempLocationPath: " + tempLocationPath);
+        InputStream inputStream = null;
+        String dataFileLocation = null;
+        if (tempLocationPath != null) {
+            // This file was just uploaded and hasn't been saved to S3 or local storage.
+            dataFileLocation = tempLocationPath.toString();
+        } else {
+            // This file is already on S3 or local storage.
+            File tempFile = null;
+            File localFile;
+            StorageIO<DataFile> storageIO;
+            try {
+                storageIO = dataFile.getStorageIO();
+                storageIO.open();
+                if (storageIO.isLocalFile()) {
+                    localFile = storageIO.getFileSystemPath().toFile();
+                    dataFileLocation = localFile.getAbsolutePath();
+                    logger.fine("extractMetadataNcml: file is local. Path: " + dataFileLocation);
+                } else {
+                    // Need to create a temporary local file:
+                    tempFile = File.createTempFile("tempFileExtractMetadataNcml", ".tmp");
+                    try ( ReadableByteChannel targetFileChannel = (ReadableByteChannel) storageIO.getReadChannel();  FileChannel tempFileChannel = new FileOutputStream(tempFile).getChannel();) {
+                        tempFileChannel.transferFrom(targetFileChannel, 0, storageIO.getSize());
+                    }
+                    dataFileLocation = tempFile.getAbsolutePath();
+                    logger.fine("extractMetadataNcml: file is on S3. Downloaded and saved to temp path: " + dataFileLocation);
+                }
+            } catch (IOException ex) {
+                logger.info("While attempting to extract NcML, could not use storageIO for data file id " + dataFile.getId() + ". Exception: " + ex);
+            }
+        }
+        if (dataFileLocation != null) {
+            try ( NetcdfFile netcdfFile = NetcdfFiles.open(dataFileLocation)) {
+                logger.fine("trying to open " + dataFileLocation);
+                if (netcdfFile != null) {
+                    // For now, empty string. What should we pass as a URL to toNcml()? The filename (including the path) most commonly at https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_cookbook.html
+                    // With an empty string the XML will show 'location="file:"'.
+                    String ncml = netcdfFile.toNcml("");
+                    inputStream = new ByteArrayInputStream(ncml.getBytes(StandardCharsets.UTF_8));
+                } else {
+                    logger.info("NetcdfFiles.open() could not open file id " + dataFile.getId() + " (null returned).");
+                }
+            } catch (IOException ex) {
+                logger.info("NetcdfFiles.open() could not open file id " + dataFile.getId() + ". Exception caught: " + ex);
+            }
+        } else {
+            logger.info("dataFileLocation is null for file id " + dataFile.getId() + ". Can't extract NcML.");
+        }
+        if (inputStream != null) {
+            // If you change NcML, you must also change the previewer.
+            String formatTag = "NcML";
+            // 0.1 is arbitrary. It's our first attempt to put out NcML so we're giving it a low number.
+            // If you bump the number here, be sure the bump the number in the previewer as well.
+            // We could use 2.2 here since that's the current version of NcML.
+            String formatVersion = "0.1";
+            String origin = "netcdf-java";
+            boolean isPublic = true;
+            // See also file.auxfiles.types.NcML in Bundle.properties. Used to group aux files in UI.
+            String type = "NcML";
+            // XML because NcML doesn't have its own MIME/content type at https://www.iana.org/assignments/media-types/media-types.xhtml
+            MediaType mediaType = new MediaType("text", "xml");
+            try {
+                // Let the cascade do the save if the file isn't yet on permanent storage.
+                boolean callSave = false;
+                if (tempLocationPath == null) {
+                    callSave = true;
+                    // Check for an existing NcML file
+                    logger.fine("Checking for existing NcML aux file for file id  " + dataFile.getId());
+                    AuxiliaryFile existingAuxiliaryFile = auxiliaryFileService.lookupAuxiliaryFile(dataFile, formatTag, formatVersion);
+                    if (existingAuxiliaryFile != null) {
+                        logger.fine("Aux file already exists for NetCDF/HDF5 file for file id  " + dataFile.getId());
+                        return false;
+                    }
+                }
+                AuxiliaryFile auxFile = auxiliaryFileService.processAuxiliaryFile(inputStream, dataFile, formatTag, formatVersion, origin, isPublic, type, mediaType, callSave);
+                logger.fine("Aux file extracted from NetCDF/HDF5 file saved to storage (but not to the database yet) from file id  " + dataFile.getId());
+                ncmlFileCreated = true;
+            } catch (Exception ex) {
+                logger.info("exception throw calling processAuxiliaryFile: " + ex);
+            }
+        } else {
+            logger.info("extractMetadataNcml: input stream is null! dataFileLocation was " + dataFileLocation);
+        }
+
+        return ncmlFileCreated;
+    }
+
     private void processDatasetMetadata(FileMetadataIngest fileMetadataIngest, DatasetVersion editVersion) throws IOException {
         
         

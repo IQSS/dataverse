@@ -184,10 +184,14 @@ File Handling
 
 Certain file types in the Dataverse installation are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the sections below for information about special functionality for specific file types.
 
+.. _file-previews:
+
 File Previews
 -------------
 
 Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Private URL. See also :ref:`privateurl`.
+
+Installation of previewers is explained in the :doc:`/admin/external-tools` section of in the Admin Guide.
 
 Tabular Data Files
 ------------------
@@ -305,6 +309,15 @@ Astronomy (FITS)
 ----------------
 
 Metadata found in the header section of `Flexible Image Transport System (FITS) files <http://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by the Dataverse Software, aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable and browsable (facets) at the Dataset-level.
+
+.. _netcdf-and-hdf5:
+
+NetCDF and HDF5
+---------------
+
+For NetCDF and HDF5 files, an attempt will be made to extract metadata in NcML_ (XML) format and save it as an auxiliary file. (See also :doc:`/developers/aux-file-support` in the Developer Guide.) A previewer for these NcML files is available (see :ref:`file-previews`).
+
+.. _NcML: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
 
 Compressed Files
 ----------------
