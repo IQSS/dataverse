@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
@@ -98,6 +99,9 @@ public class SearchServiceBean {
     private SolrClient solrServer;
     private SolrQuerySanitizer querySanitizer;
     private LicenseRepository licenseRepository;
+    private DataverseDao dataverseDao;
+
+    private Long rootDataverseId;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -107,7 +111,8 @@ public class SearchServiceBean {
     public SearchServiceBean(DvObjectServiceBean dvObjectService, DatasetFieldServiceBean datasetFieldService,
                              SettingsServiceBean settingsService, SystemConfig systemConfig,
                              PermissionFilterQueryBuilder permissionQueryBuilder, SolrClient solrServer,
-                             SolrQuerySanitizer querySanitizer, LicenseRepository licenseRepository) {
+                             SolrQuerySanitizer querySanitizer, LicenseRepository licenseRepository,
+                             DataverseDao dataverseDao) {
         this.dvObjectService = dvObjectService;
         this.datasetFieldService = datasetFieldService;
         this.settingsService = settingsService;
@@ -116,6 +121,7 @@ public class SearchServiceBean {
         this.solrServer = solrServer;
         this.querySanitizer = querySanitizer;
         this.licenseRepository = licenseRepository;
+        this.dataverseDao = dataverseDao;
     }
 
 
@@ -204,6 +210,8 @@ public class SearchServiceBean {
         for (String filterQuery : filterQueries) {
             solrQuery.addFilterQuery(filterQuery);
         }
+        // Remove root dataverse from search results
+        solrQuery.addFilterQuery(String.format("-%s:%d", SearchFields.ENTITY_ID, getRootDataverseId()));
 
         addDvObjectTypeFilterQuery(solrQuery, typesToSearch);
 
@@ -293,7 +301,7 @@ public class SearchServiceBean {
         //Going through the results
         for (SolrDocument solrDocument : docs) {
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
-            Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
+            Long entityId = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String solrType = (String) solrDocument.getFieldValue(SearchFields.TYPE);
             SearchObjectType type = SearchObjectType.fromSolrValue(solrType);
 
@@ -354,7 +362,7 @@ public class SearchServiceBean {
                 solrSearchResult.setPublicationStatuses(publicationStates);
             }
             solrSearchResult.setId(id);
-            solrSearchResult.setEntityId(entityid);
+            solrSearchResult.setEntityId(entityId);
             solrSearchResult.setIdentifier(identifier);
             solrSearchResult.setPersistentUrl(persistentUrl);
             solrSearchResult.setType(type);
@@ -390,7 +398,7 @@ public class SearchServiceBean {
 //                solrSearchResult.setApiUrl(baseUrl + "/api/dataverses/" + entityid);
             } else if (type == SearchObjectType.DATASETS) {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
-                solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
+                solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityId);
                 //Image url now set via thumbnail api
                 //solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
                 // No, we don't want to set the base64 thumbnails here.
@@ -416,7 +424,7 @@ public class SearchServiceBean {
                 if (title != null) {
                     solrSearchResult.setTitle(title);
                 } else {
-                    logger.fine("No title indexed. Setting to empty string to prevent NPE. Dataset id " + entityid + " and version id " + datasetVersionId);
+                    logger.fine("No title indexed. Setting to empty string to prevent NPE. Dataset id " + entityId + " and version id " + datasetVersionId);
                     solrSearchResult.setTitle("");
                 }
                 List<String> authors = (List) solrDocument.getFieldValues("dsf_txt_" + DatasetFieldConstant.authorName);
@@ -431,7 +439,7 @@ public class SearchServiceBean {
                     parent.setParentIdentifier(parentGlobalId);
                 }
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?persistentId=" + parentGlobalId);
-                solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityid);
+                solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityId);
                 /*
                   @todo We are not yet setting the API URL for files because
                  * not all files have metadata. Only subsettable files (those
@@ -450,7 +458,7 @@ public class SearchServiceBean {
                         long fileSizeInBytesLong = (long) fileSizeInBytesObject;
                         solrSearchResult.setFileSizeInBytes(fileSizeInBytesLong);
                     } catch (ClassCastException ex) {
-                        logger.info("Could not cast file " + entityid + " to long for " + SearchFields.FILE_SIZE_IN_BYTES + ": " + ex.getLocalizedMessage());
+                        logger.info("Could not cast file " + entityId + " to long for " + SearchFields.FILE_SIZE_IN_BYTES + ": " + ex.getLocalizedMessage());
                     }
                 }
                 solrSearchResult.setFileMd5((String) solrDocument.getFieldValue(SearchFields.FILE_MD5));
@@ -565,6 +573,13 @@ public class SearchServiceBean {
     }
 
     // -------------------- PRIVATE --------------------
+
+    private Long getRootDataverseId() {
+        if (rootDataverseId == null) {
+            rootDataverseId = dataverseDao.findRootDataverse().getId();
+        }
+        return rootDataverseId;
+    }
 
     private String getLocaleFacetCategoryName(String facetCategoryName, Map<String, DatasetFieldType> index) {
         final String formattedFacetFieldName = removeSolrFieldSuffix(facetCategoryName);

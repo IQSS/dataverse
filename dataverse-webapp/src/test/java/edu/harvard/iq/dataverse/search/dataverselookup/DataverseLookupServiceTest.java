@@ -3,8 +3,6 @@ package edu.harvard.iq.dataverse.search.dataverselookup;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.persistence.MocksFactory;
-import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.query.PermissionFilterQueryBuilder;
 import edu.harvard.iq.dataverse.search.query.SolrQuerySanitizer;
@@ -24,7 +22,6 @@ import static edu.harvard.iq.dataverse.search.MockSolrResponseUtil.field;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,10 +60,10 @@ class DataverseLookupServiceTest {
                         document(fields(14L, "dv_14", "sub_dv2", "Sub-dataverse 2", "15", "Some dataverse"))),
                 createSolrResponse(
                         document(fields(15L, "dv_15", "some", "Some dataverse", "1", "Root"))));
-        DataverseLookupService.LookupPermissions lookupPermissions = new DataverseLookupService.LookupPermissions("", true);
+        String permissionFilterQuery = "";
 
         // when
-        List<LookupData> lookupData = service.fetchLookupData("", lookupPermissions);
+        List<LookupData> lookupData = service.fetchLookupData("", permissionFilterQuery);
 
         // then
         assertThat(lookupData).extracting(LookupData::getIdentifier, LookupData::getName,
@@ -79,40 +76,20 @@ class DataverseLookupServiceTest {
     }
 
     @Test
-    void createLookupPermissions() {
+    void buildFilterQuery() {
         // given
         when(permissionFilterQueryBuilder.buildPermissionFilterQueryForAddDataset(dataverseRequest))
                 .thenReturn("PERMISSION_QUERY");
-        when(permissionService.requestOn(any(), any())).thenReturn(requestPermissionQuery);
-        when(requestPermissionQuery.has(any())).thenReturn(true);
 
         // when
-        DataverseLookupService.LookupPermissions lookupPermissions = service.createLookupPermissions(dataverseRequest);
+        String permissionFilterQuery = service.buildFilterQuery(dataverseRequest);
 
         // then
-        assertThat(lookupPermissions.getPermissionFilterQuery()).isEqualTo("PERMISSION_QUERY");
-        assertThat(lookupPermissions.isRootPermitted()).isTrue();
+        assertThat(permissionFilterQuery).isEqualTo("PERMISSION_QUERY");
     }
 
     @Test
-    void findDataverseByName__rootDataverse() {
-        // given
-        Dataverse root = new Dataverse();
-        root.setId(1L);
-        when(dataverseDao.findRootDataverse()).thenReturn(root);
-        service.init();
-
-        // when
-        LookupData result = service.findDataverseByName("Root");
-
-        // then
-        assertThat(result).extracting(LookupData::getId, LookupData::getIdentifier, LookupData::getName)
-                .containsExactly(1L, "<b>root</b>", "<b>Root</b>");
-        verifyZeroInteractions(solrClient);
-    }
-
-    @Test
-    void findDataverseByName__nonRootDataverse_stripTagsFromName() throws Exception {
+    void findDataverseByName__stripTagsFromName() throws Exception {
         // given
         when(solrClient.query(any())).thenReturn(
                 createSolrResponse(document(

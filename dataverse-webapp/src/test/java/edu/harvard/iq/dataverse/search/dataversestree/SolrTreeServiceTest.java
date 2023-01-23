@@ -43,8 +43,6 @@ class SolrTreeServiceTest {
     private PermissionFilterQueryBuilder permissionFilterQueryBuilder;
     @Mock
     private DataverseDao dataverseDao;
-    @Mock
-    private PermissionServiceBean permissionService;
 
     @Mock
     private PermissionServiceBean.RequestPermissionQuery permissionQuery;
@@ -64,8 +62,6 @@ class SolrTreeServiceTest {
                 document(field("entityId", 323L),
                         field("parentId", "1"),
                         field("subtreePaths", list("/1")))));
-        when(permissionService.requestOn(Mockito.any(), Mockito.any())).thenReturn(permissionQuery);
-        when(dataverseDao.findRootDataverse()).thenReturn(MocksFactory.makeDataverse());
         DataverseRequest request = new DataverseRequest(MocksFactory.makeAuthenticatedUser("First", "Last"),
                 (HttpServletRequest) null);
 
@@ -96,8 +92,6 @@ class SolrTreeServiceTest {
                                 "/1", "/1/323", "/1/323/121",
                                 "/1", "/1/841", "/1/841/9203", "/1/841/9203/67",
                                 "/1", "/1/543", "/1/543/12")))));
-        when(permissionService.requestOn(Mockito.any(), Mockito.any())).thenReturn(permissionQuery);
-        when(dataverseDao.findRootDataverse()).thenReturn(MocksFactory.makeDataverse());
         DataverseRequest request = new DataverseRequest(MocksFactory.makeAuthenticatedUser("First", "Last"),
                 (HttpServletRequest) null);
 
@@ -121,7 +115,7 @@ class SolrTreeServiceTest {
         // given
         NodesInfo nodesInfo = new NodesInfo(
                 permissions(viewable(1L), selectable(11L), selectable(12L), selectable(13L), viewable(21L)),
-                expandableNodes(1L, 11L, 21L), 1L);
+                expandableNodes(1L, 11L, 21L));
         when(solrClient.query(Mockito.any())).thenReturn(createSolrResponse(
                 document(field("entityId", 1L), field("name", "Root")),
                 document(field("entityId", 11L), field("name", "Collection 1")),

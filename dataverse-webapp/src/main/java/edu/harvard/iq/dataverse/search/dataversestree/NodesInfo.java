@@ -7,14 +7,12 @@ import java.util.Set;
 public class NodesInfo {
     private final Map<Long, NodePermission> permissions;
     private final Set<Long> expandableNodes;
-    private final Long rootNodeId;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public NodesInfo(Map<Long, NodePermission> permissions, Set<Long> expandableNodes, Long rootNodeId) {
+    public NodesInfo(Map<Long, NodePermission> permissions, Set<Long> expandableNodes) {
         this.permissions = Objects.requireNonNull(permissions);
         this.expandableNodes = Objects.requireNonNull(expandableNodes);
-        this.rootNodeId = rootNodeId;
     }
 
     // -------------------- GETTERS --------------------
@@ -25,10 +23,6 @@ public class NodesInfo {
 
     public Set<Long> getExpandableNodes() {
         return expandableNodes;
-    }
-
-    public Long getRootNodeId() {
-        return rootNodeId;
     }
 
     // -------------------- LOGIC --------------------

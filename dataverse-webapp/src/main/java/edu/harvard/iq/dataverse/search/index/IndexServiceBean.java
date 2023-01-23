@@ -56,7 +56,6 @@ import org.xml.sax.ContentHandler;
 
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.inject.Inject;
@@ -75,7 +74,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -88,29 +86,6 @@ public class IndexServiceBean {
 
     private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
 
-    @EJB
-    DvObjectServiceBean dvObjectService;
-    @EJB
-    DataverseDao dataverseDao;
-    @EJB
-    DatasetDao datasetDao;
-    @EJB
-    SystemConfig systemConfig;
-    @EJB
-    SolrIndexServiceBean solrIndexService;
-    @EJB
-    DatasetLinkingServiceBean dsLinkingService;
-    @EJB
-    DataverseLinkingService dvLinkingService;
-    @Inject
-    SettingsServiceBean settingsService;
-    @Inject
-    private SolrClient solrServer;
-    @Inject
-    private CitationFactory citationFactory;
-
-    private DataAccess dataAccess;
-
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
     public static final String solrDocIdentifierDataset = "dataset_";
@@ -121,6 +96,41 @@ public class IndexServiceBean {
     private static final String groupPerUserPrefix = "group_user";
     public static final String HARVESTED = "Harvested";
 
+    private DvObjectServiceBean dvObjectService;
+    private DataverseDao dataverseDao;
+    private DatasetDao datasetDao;
+    private SystemConfig systemConfig;
+    private SolrIndexServiceBean solrIndexService;
+    private DatasetLinkingServiceBean dsLinkingService;
+    private DataverseLinkingService dvLinkingService;
+    private SettingsServiceBean settingsService;
+    private SolrClient solrServer;
+    private CitationFactory citationFactory;
+    private DataAccess dataAccess = DataAccess.dataAccess();
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public IndexServiceBean() { }
+
+    @Inject
+    public IndexServiceBean(DvObjectServiceBean dvObjectService, DataverseDao dataverseDao,
+                            DatasetDao datasetDao, SystemConfig systemConfig,
+                            SolrIndexServiceBean solrIndexService, DatasetLinkingServiceBean dsLinkingService,
+                            DataverseLinkingService dvLinkingService, SettingsServiceBean settingsService,
+                            SolrClient solrServer, CitationFactory citationFactory) {
+        this.dvObjectService = dvObjectService;
+        this.dataverseDao = dataverseDao;
+        this.datasetDao = datasetDao;
+        this.systemConfig = systemConfig;
+        this.solrIndexService = solrIndexService;
+        this.dsLinkingService = dsLinkingService;
+        this.dvLinkingService = dvLinkingService;
+        this.settingsService = settingsService;
+        this.solrServer = solrServer;
+        this.citationFactory = citationFactory;
+    }
+
+    // -------------------- LOGIC --------------------
 
     public Future<String> indexDvObject(DvObject objectIn){
 
@@ -145,10 +155,7 @@ public class IndexServiceBean {
             logger.info(msg);
             return new AsyncResult<>(msg);
         }
-        if (dataverse.isRoot()) {
-            String msg = "The root dataverse should not be indexed. Returning.";
-            return new AsyncResult<>(msg);
-        }
+
         Dataverse rootDataverse = dataverseDao.findRootDataverse();
 
         Collection<SolrInputDocument> docs = new ArrayList<>();
@@ -547,6 +554,178 @@ public class IndexServiceBean {
         }
     }
 
+    public List<String> findPathSegments(Dataverse dataverse) {
+        List<String> dataversePathIds = new ArrayList<>();
+        dataversePathIds.add(dataverse.getId().toString());
+
+        while (dataverse.getOwner() != null) {
+            dataverse = dataverse.getOwner();
+            dataversePathIds.add(dataverse.getId().toString());
+        }
+        Collections.reverse(dataversePathIds);
+
+        return dataversePathIds;
+    }
+
+    List<String> getDataversePathsFromSegments(List<String> dataversePathSegments) {
+        List<String> subtrees = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        for (String segment : dataversePathSegments) {
+            sb.append("/").append(segment);
+            subtrees.add(sb.toString());
+        }
+        return subtrees;
+    }
+
+    public List<Long> findDataversesInSolrOnly() throws SearchException {
+        return findDvObjectInSolrOnly("dataverses");
+    }
+
+    public List<Long> findDatasetsInSolrOnly() throws SearchException {
+        return findDvObjectInSolrOnly("datasets");
+    }
+
+    public List<Long> findFilesInSolrOnly() throws SearchException {
+        return findDvObjectInSolrOnly("files");
+    }
+    public static String getGroupPrefix() {
+        return groupPrefix;
+    }
+
+    public static String getGroupPerUserPrefix() {
+        return groupPerUserPrefix;
+    }
+
+    public String delete(Dataverse doomed) {
+        logger.fine("deleting Solr document for dataverse " + doomed.getId());
+        UpdateResponse updateResponse;
+        try {
+            updateResponse = solrServer.deleteById(solrDocIdentifierDataverse + doomed.getId());
+            solrServer.commit();
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+        String response = "Successfully deleted dataverse " + doomed.getId() + " from Solr index. updateReponse was: " + updateResponse.toString();
+        logger.fine(response);
+        return response;
+    }
+
+    /**
+     * @todo call this in fewer places, favoring
+     * SolrIndexServiceBeans.deleteMultipleSolrIds instead to operate in batches
+     * <p>
+     * https://github.com/IQSS/dataverse/issues/142
+     */
+    public String removeSolrDocFromIndex(String doomed) {
+
+        logger.fine("deleting Solr document: " + doomed);
+        UpdateResponse updateResponse;
+        try {
+            updateResponse = solrServer.deleteById(doomed);
+            solrServer.commit();
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+        String response = "Attempted to delete " + doomed + " from Solr index. updateReponse was: " + updateResponse.toString();
+        logger.fine(response);
+        return response;
+    }
+
+    public String convertToFriendlyDate(Date dateAsDate) {
+        if (dateAsDate == null) {
+            dateAsDate = new Date();
+        }
+        // using DateFormat for May 5, 2014 to match what's in DVN 3.x
+        DateFormat dateFormatter = new SimpleDateFormat("MMM d, yyyy", Locale.US);
+        return dateFormatter.format(dateAsDate);
+    }
+
+    /**
+     * @return Dataverses that should be reindexed either because they have
+     * never been indexed or their index time is before their modification time.
+     */
+    public List<Dataverse> findStaleOrMissingDataverses() {
+        List<Dataverse> staleDataverses = new ArrayList<>();
+        for (Dataverse dataverse : dataverseDao.findAll()) {
+            if (dataverse.isRoot()) {
+                continue;
+            }
+            if (stale(dataverse)) {
+                staleDataverses.add(dataverse);
+            }
+        }
+        return staleDataverses;
+    }
+
+    /**
+     * @return Datasets that should be reindexed either because they have never
+     * been indexed or their index time is before their modification time.
+     */
+    public List<Dataset> findStaleOrMissingDatasets() {
+        List<Dataset> staleDatasets = new ArrayList<>();
+        for (Dataset dataset : datasetDao.findAll()) {
+            if (stale(dataset)) {
+                staleDatasets.add(dataset);
+            }
+        }
+        return staleDatasets;
+    }
+
+    // This is a convenience method for deleting all the SOLR documents
+    // (Datasets and DataFiles) harvested by a specific HarvestingClient.
+    // The delete logic is a bit simpler, than when deleting "real", local
+    // datasets and files - for example, harvested datasets are never Drafts, etc.
+    // We are also less concerned with the diagnostics; if any of it fails,
+    // we don't need to treat it as a fatal condition.
+    public void deleteHarvestedDocuments(HarvestingClient harvestingClient) {
+        List<String> solrIdsOfDatasetsToDelete = new ArrayList<>();
+
+        // I am going to make multiple solrIndexService.deleteMultipleSolrIds() calls;
+        // one call for the list of datafiles in each dataset; then one more call to
+        // delete all the dataset documents.
+        // I'm *assuming* this is safer than to try and make one complete list of
+        // all the documents (datasets and datafiles), and then attempt to delete
+        // them all at once... (is there a limit??) The list can be huge - if the
+        // harvested archive is on the scale of Odum or ICPSR, with thousands of
+        // datasets and tens of thousands of files.
+        //
+        for (Dataset harvestedDataset : harvestingClient.getHarvestedDatasets()) {
+            solrIdsOfDatasetsToDelete.add(solrDocIdentifierDataset + harvestedDataset.getId());
+
+            List<String> solrIdsOfDatafilesToDelete = new ArrayList<>();
+            for (DataFile datafile : harvestedDataset.getFiles()) {
+                solrIdsOfDatafilesToDelete.add(solrDocIdentifierFile + datafile.getId());
+            }
+            logger.fine("attempting to delete the following datafiles from the index: " + StringUtils.join(solrIdsOfDatafilesToDelete, ","));
+            IndexResponse resultOfAttemptToDeleteFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfDatafilesToDelete);
+            logger.fine("result of an attempted delete of the harvested files associated with the dataset " + harvestedDataset.getId() + ": " + resultOfAttemptToDeleteFiles);
+
+        }
+
+        logger.fine("attempting to delete the following datasets from the index: " + StringUtils.join(solrIdsOfDatasetsToDelete, ","));
+        IndexResponse resultOfAttemptToDeleteDatasets = solrIndexService.deleteMultipleSolrIds(solrIdsOfDatasetsToDelete);
+        logger.fine("result of attempt to delete harvested datasets associated with the client: " + resultOfAttemptToDeleteDatasets + "\n");
+
+    }
+
+    // Another convenience method, for deleting all the SOLR documents (dataset_
+    // and datafile_s) associated with a harveste dataset. The comments for the
+    // method above apply here too.
+    public void deleteHarvestedDocuments(Dataset harvestedDataset) {
+        List<String> solrIdsOfDocumentsToDelete = new ArrayList<>();
+        solrIdsOfDocumentsToDelete.add(solrDocIdentifierDataset + harvestedDataset.getId());
+
+        for (DataFile datafile : harvestedDataset.getFiles()) {
+            solrIdsOfDocumentsToDelete.add(solrDocIdentifierFile + datafile.getId());
+        }
+
+        logger.fine("attempting to delete the following documents from the index: " + StringUtils.join(solrIdsOfDocumentsToDelete, ","));
+        IndexResponse resultOfAttemptToDeleteDocuments = solrIndexService.deleteMultipleSolrIds(solrIdsOfDocumentsToDelete);
+        logger.fine("result of attempt to delete harvested documents: " + resultOfAttemptToDeleteDocuments + "\n");
+    }
+
+    // -------------------- PRIVATE --------------------
+
     private String deleteDraftFiles(List<String> solrDocIdsForDraftFilesToDelete) {
         IndexResponse indexResponse = solrIndexService.deleteMultipleSolrIds(solrDocIdsForDraftFilesToDelete);
         return indexResponse.toString();
@@ -819,7 +998,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
                     datafileSolrInputDocument.addField(SearchFields.ACCESS,
                                                        fileMetadata.getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED ? SearchConstants.RESTRICTED : SearchConstants.PUBLIC);
-                    
+
                     if (!dataset.hasActiveEmbargo()) {
                         FileTermsOfUse fileTermsOfUse = fileMetadata.getTermsOfUse();
                         if (fileTermsOfUse.getTermsOfUseType() == TermsOfUseType.LICENSE_BASED && fileTermsOfUse.getLicense() != null) {
@@ -1044,7 +1223,7 @@ public class IndexServiceBean {
                         filesToIndex.add(datafileSolrInputDocument);
                     }
                 }
-                
+
                 FileTermsOfUse fileTermsOfUse = fileMetadata.getTermsOfUse();
                 if (firstFileTermsOfUse == null) {
                     firstFileTermsOfUse = fileTermsOfUse;
@@ -1054,7 +1233,7 @@ public class IndexServiceBean {
                         sameLicenseForAllFiles = false;
                     }
                     if (firstFileTermsOfUseType == TermsOfUseType.LICENSE_BASED) {
-                        sameLicenseForAllFiles = (firstFileTermsOfUse.getLicense() != null && fileTermsOfUse.getLicense() != null)  
+                        sameLicenseForAllFiles = (firstFileTermsOfUse.getLicense() != null && fileTermsOfUse.getLicense() != null)
                                                  ? firstFileTermsOfUse.getLicense().getId().equals(fileTermsOfUse.getLicense().getId()) : false;
                     }
                     if (firstFileTermsOfUseType == TermsOfUseType.RESTRICTED) {
@@ -1086,7 +1265,7 @@ public class IndexServiceBean {
         }
 
         docs.add(solrInputDocument);
-        
+
         try {
             solrServer.add(docs);
             solrServer.commit();
@@ -1147,34 +1326,6 @@ public class IndexServiceBean {
         return finalValue;
     }
 
-    public List<String> findPathSegments(Dataverse dataverse) {
-        List<String> dataversePathIds = new ArrayList<>();
-        dataversePathIds.add(dataverse.getId().toString());
-
-        while (dataverse.getOwner() != null) {
-            dataverse = dataverse.getOwner();
-            dataversePathIds.add(dataverse.getId().toString());
-        }
-        Collections.reverse(dataversePathIds);
-
-        return dataversePathIds;
-    }
-
-    List<String> getDataversePathsFromSegments(List<String> dataversePathSegments) {
-        List<String> subtrees = new ArrayList<>();
-        for (int i = 0; i < dataversePathSegments.size(); i++) {
-            StringBuilder pathBuilder = new StringBuilder();
-            int numSegments = dataversePathSegments.size();
-            for (int j = 0; j < numSegments; j++) {
-                if (j <= i) {
-                    pathBuilder.append("/").append(dataversePathSegments.get(j));
-                }
-            }
-            subtrees.add(pathBuilder.toString());
-        }
-        return subtrees;
-    }
-
     private void addDataverseReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataverse dataverse) {
         if (dataverse.getPublicationDate() != null) {
             Calendar calendar = Calendar.getInstance();
@@ -1192,58 +1343,6 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.PUBLICATION_YEAR, YYYY);
             solrInputDocument.addField(SearchFields.DATASET_PUBLICATION_DATE, YYYY);
         }
-    }
-
-    public static String getGroupPrefix() {
-        return groupPrefix;
-    }
-
-    public static String getGroupPerUserPrefix() {
-        return groupPerUserPrefix;
-    }
-
-    public String delete(Dataverse doomed) {
-        logger.fine("deleting Solr document for dataverse " + doomed.getId());
-        UpdateResponse updateResponse;
-        try {
-            updateResponse = solrServer.deleteById(solrDocIdentifierDataverse + doomed.getId());
-            solrServer.commit();
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-        String response = "Successfully deleted dataverse " + doomed.getId() + " from Solr index. updateReponse was: " + updateResponse.toString();
-        logger.fine(response);
-        return response;
-    }
-
-    /**
-     * @todo call this in fewer places, favoring
-     * SolrIndexServiceBeans.deleteMultipleSolrIds instead to operate in batches
-     * <p>
-     * https://github.com/IQSS/dataverse/issues/142
-     */
-    public String removeSolrDocFromIndex(String doomed) {
-
-        logger.fine("deleting Solr document: " + doomed);
-        UpdateResponse updateResponse;
-        try {
-            updateResponse = solrServer.deleteById(doomed);
-            solrServer.commit();
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-        String response = "Attempted to delete " + doomed + " from Solr index. updateReponse was: " + updateResponse.toString();
-        logger.fine(response);
-        return response;
-    }
-
-    public String convertToFriendlyDate(Date dateAsDate) {
-        if (dateAsDate == null) {
-            dateAsDate = new Date();
-        }
-        // using DateFormat for May 5, 2014 to match what's in DVN 3.x
-        DateFormat dateFormatter = new SimpleDateFormat("MMM d, yyyy", Locale.US);
-        return dateFormatter.format(dateAsDate);
     }
 
     private List<String> findSolrDocIdsForDraftFilesToDelete(Dataset datasetWithDraftFilesToDelete) {
@@ -1318,37 +1417,6 @@ public class IndexServiceBean {
         return "Desired state for existence of cards: " + desiredCards + "\n";
     }
 
-    /**
-     * @return Dataverses that should be reindexed either because they have
-     * never been indexed or their index time is before their modification time.
-     */
-    public List<Dataverse> findStaleOrMissingDataverses() {
-        List<Dataverse> staleDataverses = new ArrayList<>();
-        for (Dataverse dataverse : dataverseDao.findAll()) {
-            if (dataverse.isRoot()) {
-                continue;
-            }
-            if (stale(dataverse)) {
-                staleDataverses.add(dataverse);
-            }
-        }
-        return staleDataverses;
-    }
-
-    /**
-     * @return Datasets that should be reindexed either because they have never
-     * been indexed or their index time is before their modification time.
-     */
-    public List<Dataset> findStaleOrMissingDatasets() {
-        List<Dataset> staleDatasets = new ArrayList<>();
-        for (Dataset dataset : datasetDao.findAll()) {
-            if (stale(dataset)) {
-                staleDatasets.add(dataset);
-            }
-        }
-        return staleDatasets;
-    }
-
     private boolean stale(DvObject dvObject) {
         Timestamp indexTime = dvObject.getIndexTime();
         Timestamp modificationTime = dvObject.getModificationTime();
@@ -1357,18 +1425,6 @@ public class IndexServiceBean {
         } else {
             return indexTime.before(modificationTime);
         }
-    }
-
-    public List<Long> findDataversesInSolrOnly() throws SearchException {
-        return findDvObjectInSolrOnly("dataverses");
-    }
-
-    public List<Long> findDatasetsInSolrOnly() throws SearchException {
-        return findDvObjectInSolrOnly("datasets");
-    }
-
-    public List<Long> findFilesInSolrOnly() throws SearchException {
-        return findDvObjectInSolrOnly("files");
     }
 
     private List<Long> findDvObjectInSolrOnly(String type) throws SearchException {
@@ -1425,59 +1481,6 @@ public class IndexServiceBean {
             }
         }
         return dvObjectInSolrOnly;
-    }
-
-    // This is a convenience method for deleting all the SOLR documents
-    // (Datasets and DataFiles) harvested by a specific HarvestingClient.
-    // The delete logic is a bit simpler, than when deleting "real", local
-    // datasets and files - for example, harvested datasets are never Drafts, etc.
-    // We are also less concerned with the diagnostics; if any of it fails,
-    // we don't need to treat it as a fatal condition.
-    public void deleteHarvestedDocuments(HarvestingClient harvestingClient) {
-        List<String> solrIdsOfDatasetsToDelete = new ArrayList<>();
-
-        // I am going to make multiple solrIndexService.deleteMultipleSolrIds() calls;
-        // one call for the list of datafiles in each dataset; then one more call to
-        // delete all the dataset documents.
-        // I'm *assuming* this is safer than to try and make one complete list of
-        // all the documents (datasets and datafiles), and then attempt to delete
-        // them all at once... (is there a limit??) The list can be huge - if the
-        // harvested archive is on the scale of Odum or ICPSR, with thousands of
-        // datasets and tens of thousands of files.
-        //
-        for (Dataset harvestedDataset : harvestingClient.getHarvestedDatasets()) {
-            solrIdsOfDatasetsToDelete.add(solrDocIdentifierDataset + harvestedDataset.getId());
-
-            List<String> solrIdsOfDatafilesToDelete = new ArrayList<>();
-            for (DataFile datafile : harvestedDataset.getFiles()) {
-                solrIdsOfDatafilesToDelete.add(solrDocIdentifierFile + datafile.getId());
-            }
-            logger.fine("attempting to delete the following datafiles from the index: " + StringUtils.join(solrIdsOfDatafilesToDelete, ","));
-            IndexResponse resultOfAttemptToDeleteFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfDatafilesToDelete);
-            logger.fine("result of an attempted delete of the harvested files associated with the dataset " + harvestedDataset.getId() + ": " + resultOfAttemptToDeleteFiles);
-
-        }
-
-        logger.fine("attempting to delete the following datasets from the index: " + StringUtils.join(solrIdsOfDatasetsToDelete, ","));
-        IndexResponse resultOfAttemptToDeleteDatasets = solrIndexService.deleteMultipleSolrIds(solrIdsOfDatasetsToDelete);
-        logger.fine("result of attempt to delete harvested datasets associated with the client: " + resultOfAttemptToDeleteDatasets + "\n");
-
-    }
-
-    // Another convenience method, for deleting all the SOLR documents (dataset_
-    // and datafile_s) associated with a harveste dataset. The comments for the
-    // method above apply here too.
-    public void deleteHarvestedDocuments(Dataset harvestedDataset) {
-        List<String> solrIdsOfDocumentsToDelete = new ArrayList<>();
-        solrIdsOfDocumentsToDelete.add(solrDocIdentifierDataset + harvestedDataset.getId());
-
-        for (DataFile datafile : harvestedDataset.getFiles()) {
-            solrIdsOfDocumentsToDelete.add(solrDocIdentifierFile + datafile.getId());
-        }
-
-        logger.fine("attempting to delete the following documents from the index: " + StringUtils.join(solrIdsOfDocumentsToDelete, ","));
-        IndexResponse resultOfAttemptToDeleteDocuments = solrIndexService.deleteMultipleSolrIds(solrIdsOfDocumentsToDelete);
-        logger.fine("result of attempt to delete harvested documents: " + resultOfAttemptToDeleteDocuments + "\n");
     }
 
     private Set<Locale> getConfiguredLocales() {

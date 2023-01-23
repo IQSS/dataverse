@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.common.MarkupChecker;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.dataverselookup.DataverseLookupService;
 import edu.harvard.iq.dataverse.search.dataverselookup.LookupData;
 import edu.harvard.iq.dataverse.search.dataversestree.NodeData;
@@ -11,31 +12,28 @@ import org.primefaces.event.NodeExpandEvent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
-import javax.faces.event.ActionEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Currently this bean is only scaffolding for subsequent tasks.
- */
 @ViewScoped
 @Named("CreateDatasetDialog")
 public class CreateDatasetDialog implements Serializable {
     private SolrTreeService solrTreeService;
     private DataverseRequestServiceBean dataverseRequestService;
     private DataverseLookupService dataverseLookupService;
+    private DataverseDao dataverseDao;
 
     private Mode selectedMode = Mode.LOOKUP;
     private boolean initialized = false;
 
-    private NodesInfo nodesInfo = new NodesInfo(Collections.emptyMap(), Collections.emptySet(), null);
+    private NodesInfo nodesInfo = new NodesInfo(Collections.emptyMap(), Collections.emptySet());
     private TreeNode rootNode = new DefaultTreeNode(new NodeData(null, "TreeRoot", true, false));
     private TreeNode selectedNode;
 
-    private DataverseLookupService.LookupPermissions lookupPermissions;
+    private String permissionFilterQuery;
     private LookupData lookupSelection;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -44,10 +42,11 @@ public class CreateDatasetDialog implements Serializable {
 
     @Inject
     public CreateDatasetDialog(SolrTreeService solrTreeService, DataverseRequestServiceBean dataverseRequestService,
-                               DataverseLookupService dataverseLookupService) {
+                               DataverseLookupService dataverseLookupService, DataverseDao dataverseDao) {
         this.solrTreeService = solrTreeService;
         this.dataverseRequestService = dataverseRequestService;
         this.dataverseLookupService = dataverseLookupService;
+        this.dataverseDao = dataverseDao;
     }
 
     // -------------------- GETTERS --------------------
@@ -74,10 +73,12 @@ public class CreateDatasetDialog implements Serializable {
         if (initialized) {
             return;
         }
-        lookupPermissions = dataverseLookupService.createLookupPermissions(dataverseRequestService.getDataverseRequest());
+        permissionFilterQuery = dataverseLookupService.buildFilterQuery(dataverseRequestService.getDataverseRequest());
         nodesInfo = solrTreeService.fetchNodesInfo(dataverseRequestService.getDataverseRequest());
-        TreeNode firstNode = new DefaultTreeNode(new NodeData(nodesInfo.getRootNodeId(), "Root", true,
-                nodesInfo.isSelectable(nodesInfo.getRootNodeId())), rootNode);
+        Dataverse rootDataverse = dataverseDao.findRootDataverse();
+        Long rootId = rootDataverse.getId();
+        TreeNode firstNode = new DefaultTreeNode(new NodeData(rootId, rootDataverse.getDisplayName(), true,
+                nodesInfo.isSelectable(rootId)), rootNode);
         fetchChildNodes(firstNode);
         firstNode.setExpanded(true);
         initialized = true;
@@ -90,7 +91,7 @@ public class CreateDatasetDialog implements Serializable {
     }
 
     public List<LookupData> fetchLookupData(String query) {
-        return dataverseLookupService.fetchLookupData(query, lookupPermissions);
+        return dataverseLookupService.fetchLookupData(query, permissionFilterQuery);
     }
 
     public String stripHtml(String text) {

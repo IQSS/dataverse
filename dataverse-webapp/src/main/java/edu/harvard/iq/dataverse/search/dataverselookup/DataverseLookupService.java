@@ -1,11 +1,8 @@
 package edu.harvard.iq.dataverse.search.dataverselookup;
 
-import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.common.MarkupChecker;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.query.PermissionFilterQueryBuilder;
 import edu.harvard.iq.dataverse.search.query.SearchObjectType;
@@ -20,7 +17,6 @@ import org.apache.solr.common.params.HighlightParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.io.IOException;
@@ -45,10 +41,6 @@ public class DataverseLookupService {
     private SolrClient solrClient;
     private PermissionFilterQueryBuilder permissionFilterQueryBuilder;
     private SolrQuerySanitizer querySanitizer;
-    private DataverseDao dataverseDao;
-    private PermissionServiceBean permissionService;
-
-    private LookupData rootData;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -56,25 +48,17 @@ public class DataverseLookupService {
 
     @Inject
     public DataverseLookupService(SolrClient solrClient, PermissionFilterQueryBuilder permissionFilterQueryBuilder,
-                                  SolrQuerySanitizer querySanitizer, DataverseDao dataverseDao,
-                                  PermissionServiceBean permissionService) {
+                                  SolrQuerySanitizer querySanitizer) {
         this.solrClient = solrClient;
         this.permissionFilterQueryBuilder = permissionFilterQueryBuilder;
         this.querySanitizer = querySanitizer;
-        this.dataverseDao = dataverseDao;
-        this.permissionService = permissionService;
     }
 
     // -------------------- LOGIC --------------------
 
-    @PostConstruct
-    public void init() {
-        this.rootData = createRootData();
-    }
-
-    public List<LookupData> fetchLookupData(String query, LookupPermissions lookupPermissions) {
+    public List<LookupData> fetchLookupData(String query, String permissionFilterQuery) {
         String processedQuery = processQuery(query);
-        SolrQuery solrQuery = createSolrQuery(processedQuery, lookupPermissions);
+        SolrQuery solrQuery = createSolrQuery(processedQuery, permissionFilterQuery);
         QueryResponse response = querySolr(solrQuery);
         if (response == null) {
             return Collections.emptyList();
@@ -120,21 +104,15 @@ public class DataverseLookupService {
         // Use all the data we have for creating parents index
         Map<Long, EntryData> indexForParents = Stream.concat(processedData.stream(), additionalDataForParents.stream())
                 .collect(Collectors.toMap(e -> e.id, e -> e, (prev, next) -> next));
-        return createResults(processedData, indexForParents, isRootQueried(query) && lookupPermissions.isRootPermitted());
+        return createResults(processedData, indexForParents);
     }
 
-    public LookupPermissions createLookupPermissions(DataverseRequest dataverseRequest) {
-        String permissionFilterQuery = permissionFilterQueryBuilder.buildPermissionFilterQueryForAddDataset(dataverseRequest);
-        Dataverse rootDataverse = dataverseDao.findRootDataverse();
-        boolean rootPermitted = permissionService.requestOn(dataverseRequest, rootDataverse).has(Permission.AddDataset);
-        return new LookupPermissions(permissionFilterQuery, rootPermitted);
+    public String buildFilterQuery(DataverseRequest dataverseRequest) {
+        return permissionFilterQueryBuilder.buildPermissionFilterQueryForAddDataset(dataverseRequest);
     }
 
     public LookupData findDataverseByName(String itemName) {
         itemName = MarkupChecker.stripAllTags(itemName);
-        if ("Root".equalsIgnoreCase(itemName)) {
-            return rootData;
-        }
         String query = String.format("%s:\"%s\" AND %s:%s", SearchFields.NAME, itemName,
                 SearchFields.TYPE, SearchObjectType.DATAVERSES.getSolrValue());
         SolrQuery solrQuery = new SolrQuery(query)
@@ -154,12 +132,6 @@ public class DataverseLookupService {
 
     // -------------------- PRIVATE --------------------
 
-    private LookupData createRootData() {
-        Dataverse rootDataverse = dataverseDao.findRootDataverse();
-        return new LookupData(rootDataverse.getId(), addHighlightTags("root"),
-                addHighlightTags("Root"), StringUtils.EMPTY, StringUtils.EMPTY);
-    }
-
     private String processQuery(String query) {
         if (StringUtils.isBlank(query)) {
             return "*";
@@ -173,10 +145,10 @@ public class DataverseLookupService {
         return toProcess.length > 1 ? String.format("(%s)", processed) : processed;
     }
 
-    private SolrQuery createSolrQuery(String queryToSolr, LookupPermissions lookupPermissions) {
+    private SolrQuery createSolrQuery(String queryToSolr, String permissionFilterQuery) {
         String typeQuery = String.format(" AND %s:%s", SearchFields.TYPE, SearchObjectType.DATAVERSES.getSolrValue());
         return new SolrQuery(queryToSolr + typeQuery)
-                .addFilterQuery(lookupPermissions.getPermissionFilterQuery())
+                .addFilterQuery(permissionFilterQuery)
                 .setFields(SearchFields.ID, SearchFields.ENTITY_ID, SearchFields.IDENTIFIER, SearchFields.NAME,
                         SearchFields.PARENT_ID, SearchFields.PARENT_NAME)
                 .addHighlightField(SearchFields.IDENTIFIER)
@@ -206,24 +178,14 @@ public class DataverseLookupService {
                 .setHighlightSimplePre(HIGHLIGHT_PRE).setHighlightSimplePost(HIGHLIGHT_POST);
     }
 
-    private List<LookupData> createResults(List<EntryData> entries, Map<Long, EntryData> indexForParents, boolean includeRoot) {
-        List<LookupData> lookupData = new ArrayList<>(entries.size() + (includeRoot ? 1 : 0));
-        // We have to manually include root dataverse, as it's not present in solr
-        if (includeRoot) {
-            lookupData.add(rootData);
-        }
+    private List<LookupData> createResults(List<EntryData> entries, Map<Long, EntryData> indexForParents) {
+        List<LookupData> lookupData = new ArrayList<>(entries.size());
         for (EntryData entryData : entries) {
             EntryData upperParent = indexForParents.get(entryData.parentId);
             lookupData.add(new LookupData(entryData.id, entryData.identifier, entryData.name, entryData.parentName,
                     upperParent != null ? upperParent.parentName : StringUtils.EMPTY));
         }
         return lookupData;
-    }
-
-    private boolean isRootQueried(String query) {
-        return Arrays.stream(query.toLowerCase().split("\\s+"))
-                .filter(StringUtils::isNotBlank)
-                .anyMatch(q -> q.matches("ro|roo|root"));
     }
 
     private String addHighlightTags(String value) {
@@ -318,28 +280,6 @@ public class DataverseLookupService {
             this.name = name;
             this.parentId = parentId;
             this.parentName = parentName;
-        }
-    }
-
-    public static class LookupPermissions {
-        private final String permissionFilterQuery;
-        private final boolean rootPermitted;
-
-        // -------------------- CONSTRUCTORS --------------------
-
-        public LookupPermissions(String permissionFilterQuery, boolean rootPermitted) {
-            this.permissionFilterQuery = permissionFilterQuery;
-            this.rootPermitted = rootPermitted;
-        }
-
-        // -------------------- GETTERS --------------------
-
-        public String getPermissionFilterQuery() {
-            return permissionFilterQuery;
-        }
-
-        public boolean isRootPermitted() {
-            return rootPermitted;
         }
     }
 }

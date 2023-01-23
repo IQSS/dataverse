@@ -1,10 +1,7 @@
 package edu.harvard.iq.dataverse.search.dataversestree;
 
 import edu.harvard.iq.dataverse.DataverseDao;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.query.PermissionFilterQueryBuilder;
 import edu.harvard.iq.dataverse.search.query.SearchObjectType;
@@ -37,7 +34,6 @@ public class SolrTreeService {
     private SolrClient solrClient;
     private PermissionFilterQueryBuilder permissionFilterQueryBuilder;
     private DataverseDao dataverseDao;
-    private PermissionServiceBean permissionService;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -45,11 +41,10 @@ public class SolrTreeService {
 
     @Inject
     public SolrTreeService(SolrClient solrClient, PermissionFilterQueryBuilder permissionFilterQueryBuilder,
-                           DataverseDao dataverseDao, PermissionServiceBean permissionService) {
+                           DataverseDao dataverseDao) {
         this.solrClient = solrClient;
         this.permissionFilterQueryBuilder = permissionFilterQueryBuilder;
         this.dataverseDao = dataverseDao;
-        this.permissionService = permissionService;
     }
 
     // -------------------- LOGIC --------------------
@@ -60,9 +55,9 @@ public class SolrTreeService {
             queryResponse = executeSolrQueryForNodeInfo(dataverseRequest);
         } catch (IOException | SolrServerException ex) {
             logger.warn("Error during permissions fetching: ", ex);
-            return new NodesInfo(Collections.emptyMap(), Collections.emptySet(), null);
+            return new NodesInfo(Collections.emptyMap(), Collections.emptySet());
         }
-        return createNodesInfo(dataverseRequest, queryResponse);
+        return createNodesInfo(queryResponse);
     }
 
     public List<NodeData> fetchNodes(Long nodeId, NodesInfo nodesInfo) {
@@ -82,7 +77,7 @@ public class SolrTreeService {
     // -------------------- PRIVATE --------------------
 
     private QueryResponse executeSolrQueryForNodeInfo(DataverseRequest dataverseRequest) throws IOException, SolrServerException {
-        Integer dataversesCount = dataverseDao.countDataverses().intValue() - 1; // root dataverse is not indexed by solr
+        Integer dataversesCount = dataverseDao.countDataverses().intValue();
         String permissionQuery = permissionFilterQueryBuilder.buildPermissionFilterQueryForAddDataset(dataverseRequest);
         SolrQuery query = new SolrQuery()
                 .setRows(dataversesCount)
@@ -92,13 +87,14 @@ public class SolrTreeService {
         return solrClient.query(query);
     }
 
-    private NodesInfo createNodesInfo(DataverseRequest dataverseRequest, QueryResponse queryResponse) {
+    private NodesInfo createNodesInfo(QueryResponse queryResponse) {
         Set<Long> allowedToSelect = new HashSet<>();
         Set<Long> allowedToView = new HashSet<>();
         for (SolrDocument solrDocument : queryResponse.getResults()) {
             allowedToSelect.add((Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID));
             String parentId = (String) solrDocument.getFieldValue(SearchFields.PARENT_ID);
             List<String> paths = (List<String>) solrDocument.getFieldValue(SearchFields.SUBTREE);
+            paths = paths != null ? paths : Collections.emptyList();
             Set<Long> intermediatePaths = paths.stream()
                     .filter(p -> p.endsWith("/" + parentId))
                     .flatMap(p -> Arrays.stream(p.split("/"))
@@ -116,12 +112,7 @@ public class SolrTreeService {
         for (Long id : allowedToView) {
             result.put(id, NodePermission.VIEW);
         }
-        Dataverse root = dataverseDao.findRootDataverse();
-        if (permissionService.requestOn(dataverseRequest, root)
-                .has(Permission.AddDataset)) {
-            result.put(root.getId(), NodePermission.SELECT);
-        }
-        return new NodesInfo(result, expandableNodes, root.getId());
+        return new NodesInfo(result, expandableNodes);
     }
 
     private QueryResponse executeSolrQueryForNodes(Long nodeId) throws IOException, SolrServerException {
