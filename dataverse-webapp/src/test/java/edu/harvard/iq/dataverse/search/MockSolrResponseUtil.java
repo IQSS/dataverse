@@ -7,7 +7,9 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.util.NamedList;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MockSolrResponseUtil {
@@ -37,5 +39,12 @@ public class MockSolrResponseUtil {
 
     public static Tuple2<String, Object> field(String name, Object value) {
         return Tuple.of(name, value);
+    }
+
+    @SafeVarargs
+    public static <T> List<T> list(T... values) {
+        List<T> result = new ArrayList<>();
+        result.addAll(Arrays.asList(values));
+        return result;
     }
 }

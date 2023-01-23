@@ -87,7 +87,7 @@ public class SolrTreeService {
         SolrQuery query = new SolrQuery()
                 .setRows(dataversesCount)
                 .setQuery(String.format("%s:%s", SearchFields.TYPE, SearchObjectType.DATAVERSES.getSolrValue()))
-                .setFields(SearchFields.ENTITY_ID, String.format("path:field(%s,max)", SearchFields.SUBTREE))
+                .setFields(SearchFields.ENTITY_ID, SearchFields.PARENT_ID, SearchFields.SUBTREE)
                 .setFilterQueries(permissionQuery);
         return solrClient.query(query);
     }
@@ -97,11 +97,15 @@ public class SolrTreeService {
         Set<Long> allowedToView = new HashSet<>();
         for (SolrDocument solrDocument : queryResponse.getResults()) {
             allowedToSelect.add((Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID));
-            String path = (String) solrDocument.getFieldValue("path");
-            allowedToView.addAll(Arrays.stream(path.split("/"))
-                    .filter(StringUtils::isNotBlank)
-                    .map(Long::valueOf)
-                    .collect(Collectors.toSet()));
+            String parentId = (String) solrDocument.getFieldValue(SearchFields.PARENT_ID);
+            List<String> paths = (List<String>) solrDocument.getFieldValue(SearchFields.SUBTREE);
+            Set<Long> intermediatePaths = paths.stream()
+                    .filter(p -> p.endsWith("/" + parentId))
+                    .flatMap(p -> Arrays.stream(p.split("/"))
+                            .filter(StringUtils::isNotBlank)
+                            .map(Long::valueOf))
+                    .collect(Collectors.toSet());
+            allowedToView.addAll(intermediatePaths);
         }
         Set<Long> expandableNodes = new HashSet<>(allowedToView); // if node is expandable it's listed in subtreePath field
         allowedToView.removeAll(allowedToSelect); // SELECT node is more than only VIEW, so we remove selectable nodes

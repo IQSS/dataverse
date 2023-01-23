@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.search.query.PermissionFilterQueryBuilder;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.apache.solr.client.solrj.SolrClient;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import static edu.harvard.iq.dataverse.search.MockSolrResponseUtil.createSolrResponse;
 import static edu.harvard.iq.dataverse.search.MockSolrResponseUtil.document;
 import static edu.harvard.iq.dataverse.search.MockSolrResponseUtil.field;
+import static edu.harvard.iq.dataverse.search.MockSolrResponseUtil.list;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.when;
@@ -53,9 +55,15 @@ class SolrTreeServiceTest {
     void fetchNodesInfo() throws Exception {
         // given
         when(solrClient.query(Mockito.any())).thenReturn(createSolrResponse(
-                document(field("entityId", 321L), field("path", "/1/323/22")),
-                document(field("entityId", 322L), field("path", "/1/323")),
-                document(field("entityId", 323L), field("path", "/1"))));
+                document(field("entityId", 321L),
+                        field("parentId", "22"),
+                        field("subtreePaths", list("/1", "/1/323", "/1/323/22"))),
+                document(field("entityId", 322L),
+                        field("parentId", "323"),
+                        field("subtreePaths", list("/1", "/1/323"))),
+                document(field("entityId", 323L),
+                        field("parentId", "1"),
+                        field("subtreePaths", list("/1")))));
         when(permissionService.requestOn(Mockito.any(), Mockito.any())).thenReturn(permissionQuery);
         when(dataverseDao.findRootDataverse()).thenReturn(MocksFactory.makeDataverse());
         DataverseRequest request = new DataverseRequest(MocksFactory.makeAuthenticatedUser("First", "Last"),
@@ -75,6 +83,37 @@ class SolrTreeServiceTest {
                         tuple(22L, NodePermission.VIEW));
         assertThat(nodesInfo.getExpandableNodes())
                 .containsExactlyInAnyOrder(1L, 22L, 323L);
+    }
+
+    @Test
+    @DisplayName("Only path containing parentId of the dataverse is taken into account when creating intermediate expandable nodes")
+    void fetchNodesInfo__linkedDataverse() throws Exception {
+        // given
+        when(solrClient.query(Mockito.any())).thenReturn(createSolrResponse(
+                document(field("entityId", 321L),
+                        field("parentId", "121"),
+                        field("subtreePaths", list(
+                                "/1", "/1/323", "/1/323/121",
+                                "/1", "/1/841", "/1/841/9203", "/1/841/9203/67",
+                                "/1", "/1/543", "/1/543/12")))));
+        when(permissionService.requestOn(Mockito.any(), Mockito.any())).thenReturn(permissionQuery);
+        when(dataverseDao.findRootDataverse()).thenReturn(MocksFactory.makeDataverse());
+        DataverseRequest request = new DataverseRequest(MocksFactory.makeAuthenticatedUser("First", "Last"),
+                (HttpServletRequest) null);
+
+        // when
+        NodesInfo nodesInfo = service.fetchNodesInfo(request);
+
+        // then
+        assertThat(nodesInfo.getPermissions().entrySet())
+                .extracting(Map.Entry::getKey, Map.Entry::getValue)
+                .containsExactlyInAnyOrder(
+                        tuple(321L, NodePermission.SELECT),
+                        tuple(323L, NodePermission.VIEW),
+                        tuple(121L, NodePermission.VIEW),
+                        tuple(1L, NodePermission.VIEW));
+        assertThat(nodesInfo.getExpandableNodes())
+                .containsExactlyInAnyOrder(1L, 323L, 121L);
     }
 
     @Test
