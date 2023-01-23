@@ -1,11 +1,11 @@
 <ui:composition
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
-    xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:p="http://primefaces.org/ui"
-    xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:c="http://java.sun.com/jsp/jstl/core"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:jsf="http://xmlns.jcp.org/jsf"
+        xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 
 
     <div class="control-label-with-tooltip">
@@ -25,11 +25,18 @@
     <!-- input text start -->
     <span id="pre-input-#{datasetField.datasetFieldType.name}" class="pre-input-tag"/>
 
-    <p:inputText value="#{datasetField.value}" id="inputText"
+    <c:set var="widgetVar" value="#{mapId}_#{datasetField.datasetFieldType.name}"/>
+    <p:inputText value="#{datasetField.value}" id="geoInputText"
+                 onchange="DvJS.Geo.EditView.putValue('#{mapId}', '#{datasetField.datasetFieldType.name}', $(this).val()); DvJS.Geo.EditView.updateMap('#{mapId}')"
+                 widgetVar="#{widgetVar}"
+                 pt:data-handler="#{widgetVar}"
                  styleClass="form-control"/>
+    <script>
+        DvJS.Geo.EditView.putValue('#{mapId}', '#{datasetField.datasetFieldType.name}', '#{datasetField.value}');
+        DvJS.Geo.EditView.putWidgetVar('#{mapId}', '#{datasetField.datasetFieldType.name}', '#{widgetVar}');
+    </script>
 
-
-    <p:watermark for="inputText" value="#{datasetField.datasetFieldType.localeWatermark}"></p:watermark>
+    <p:watermark for="geoInputText" value="#{datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty datasetField.validationMessage}">
         <span class="ui-message-error-detail">
@@ -41,11 +48,11 @@
     <!-- This button is currently only for adding replication data for the title field -->
     <ui:fragment rendered="#{inputRenderer.hasActionButton() and inputRenderer.showActionButtonForOperation(operation)}">
         <p:commandButton styleClass="btn btn-default" style="margin-top: 5px;"
-                value="#{inputRenderer.getActionButtonText()}"
-                widgetVar="#{datasetField.datasetFieldType.name}"
-                actionListener="#{inputRenderer.executeButtonAction(datasetField, allBlockfields)}"
-                update="inputText"
-                oncomplete="PF('#{datasetField.datasetFieldType.name}').disable();">
+                         value="#{inputRenderer.getActionButtonText()}"
+                         widgetVar="#{datasetField.datasetFieldType.name}"
+                         actionListener="#{inputRenderer.executeButtonAction(datasetField, allBlockfields)}"
+                         update="inputText"
+                         oncomplete="PF('#{datasetField.datasetFieldType.name}').disable();">
         </p:commandButton>
     </ui:fragment>
 

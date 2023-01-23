@@ -10,7 +10,8 @@
 
     <!--@elvariable id="metadataBlocks" type="java.util.Set< java.util.Map.Entry<edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock, java.util.List<edu.harvard.iq.dataverse.persistence.dataset.DatasetField>>"-->
     <!-- Edit Mode -->
-    <p:fragment id="editMetadataFragement" >
+    <o:importConstants type="edu.harvard.iq.dataverse.persistence.dataset.FieldType"/>
+    <p:fragment id="editMetadataFragement">
     <div class="panel-group">
         <ui:repeat id="metadataBlocks" value="#{metadataBlocks}" var="metadataBlockVal" varStatus="block">
             <div class="panel panel-default" jsf:rendered="#{(showAllBlocks or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty()
@@ -21,10 +22,11 @@
                         #{metadataBlockVal.key.localeDisplayName} <span class="glyphicon #{block.first || expandAllBlocks  ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
                     </h3>
                 </a>
-                <div id="panelCollapse#{block.index}" class="collapse #{block.first || expandAllBlocks ? 'in' : ''}">
+                <div id="panelCollapse#{block.index}" class="collapse #{block.first || expandAllBlocks ? 'in' : ''}"
+                     data-map-prefix="map_#{metadataBlockVal.key.name}_">
                     <div class="panel-body">
-                        <ui:repeat id="fieldsByType" value="#{metadataBlockVal.value}" var="fieldsByType">
-
+                        <ui:repeat id="fieldsByType" value="#{metadataBlockVal.value}" var="fieldsByType" varStatus="fieldsByTypeStatus">
+                            <c:set var="isGeospatial" value="#{fieldsByType.datasetFieldType.fieldType eq FieldType.GEOBOX}"/>
                             <p:outputPanel id="fieldsByTypeFragment" rendered="#{((showAllFields
                                                             or fieldsByType.datasetFieldType.displayOnCreate
                                                             or !fieldsByType.areAllFieldsEmpty()
@@ -55,7 +57,7 @@
                                 <div class="col-sm-9 form-group">
                                     <ui:fragment rendered="#{!fieldsByType.datasetFieldType.controlledVocabulary}">
                                     <ui:repeat id="datasetFields" value="#{fieldsByType.datasetFields}" var="datasetField" varStatus="valCount" >
-
+                                        <c:set var="currentMap" value="map_#{metadataBlockVal.key.name}_#{fieldsByTypeStatus.index}_#{valCount.index}"/>
                                         <div class="form-col-container form-group
                                                 #{fieldsByType.datasetFieldType.compound ? 'edit-compound-field form-field-group':'edit-field'}">
 
@@ -70,7 +72,9 @@
                                                     <ui:param name="operation" value="#{operation}" />
                                                 </ui:include>
                                             </div>
-
+                                            <script jsf:rendered="#{isGeospatial}">
+                                                    DvJS.Geo.EditView.prepare('#{currentMap}');
+                                            </script>
                                             <!-- Sub Fields -->
                                             <div class="col-xs-9 form-col-container field-add-delete-input" jsf:rendered="#{fieldsByType.datasetFieldType.compound}"
                                                         role="#{fieldsByType.datasetFieldType.allowMultiples ? 'group' : 'presentation'}"
@@ -87,6 +91,8 @@
                                                             <ui:param name="labelFieldNumber" value="0" />
                                                             <ui:param name="allBlockfields" value="#{metadataBlockVal.value}" />
                                                             <ui:param name="operation" value="#{operation}" />
+                                                            <ui:param name="isGeobox" value="#{isGeobox}" />
+                                                            <ui:param name="mapId" value="#{currentMap}" />
                                                         </ui:include>
 
                                                     </div>
@@ -98,20 +104,33 @@
                                                 <p:commandLink title="#{bundle.add}"
                                                                styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{fieldsByType.datasetFieldType.compound ? 'compound-field-btn' : ''}"
                                                                actionListener="#{fieldsByType.addEmptyDatasetField(valCount.index + 1)}"
-                                                               update=":#{p:resolveClientIds('@id(fieldsByTypeFragment)', view)}"
-                                                               >
+                                                               update=":#{p:resolveClientIds('@id(fieldsByTypeFragment)', view)}">
                                                     <span class="glyphicon glyphicon-plus no-text"/>
                                                     <o:skipValidators />
                                                 </p:commandLink>
                                                 <p:commandLink title="#{bundle.delete}"
                                                                styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{fieldsByType.datasetFieldType.compound ? 'compound-field-btn' : ''}"
-                                                               rendered="#{fieldsByType.datasetFields.size() > 1}"
+                                                               rendered="#{isGeospatial and fieldsByType.datasetFields.size() > 1}"
                                                                actionListener="#{fieldsByType.removeDatasetField(valCount.index)}"
                                                                update=":#{p:resolveClientIds('@id(fieldsByTypeFragment)', view)}"
-                                                               >
+                                                               onclick="DvJS.Geo.EditView.remove($(this).attr('data-map'))"
+                                                               pt:data-map="#{currentMap}">
                                                     <span class="glyphicon glyphicon-minus no-text"/>
                                                     <o:skipValidators />
                                                 </p:commandLink>
+                                                <p:commandLink title="#{bundle.delete}"
+                                                               styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{fieldsByType.datasetFieldType.compound ? 'compound-field-btn' : ''}"
+                                                               rendered="#{not isGeospatial and fieldsByType.datasetFields.size() > 1}"
+                                                               actionListener="#{fieldsByType.removeDatasetField(valCount.index)}"
+                                                               update=":#{p:resolveClientIds('@id(fieldsByTypeFragment)', view)}">
+                                                    <span class="glyphicon glyphicon-minus no-text"/>
+                                                    <o:skipValidators />
+                                                </p:commandLink>
+                                            </div>
+
+                                            <!-- Map -->
+                                            <div id="#{currentMap}" class="col-xs-9 form-col-container" style="height:180px"
+                                                 jsf:rendered="#{isGeospatial}">
                                             </div>
                                         </div>
 
@@ -135,9 +154,25 @@
                             </p:outputPanel>
                         </ui:repeat>
                     </div>
+                    <script>
+                    if ($('#panelCollapse#{block.index}').hasClass('in')) {
+                        DvJS.Geo.EditView.initializeAll('map_#{metadataBlockVal.key.name}');
+                    } else {
+                        $('#panelCollapse#{block.index}').on('shown.bs.collapse', function() {
+                            DvJS.Geo.EditView.initializeAll('map_#{metadataBlockVal.key.name}');
+                        });
+                    }
+                    </script>
                 </div>
             </div>
         </ui:repeat>
+        <script>
+            $(document).on('pfAjaxComplete', function() {
+                for (const tab of $('.in[id^=panelCollapse]')) {
+                    DvJS.Geo.EditView.initializeAll($(tab).attr('data-map-prefix'));
+                }
+            });
+        </script>
     </div>
     </p:fragment>
 </ui:composition>

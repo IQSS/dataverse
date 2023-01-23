@@ -8,7 +8,7 @@
             type="edu.harvard.iq.dataverse.persistence.dataset.InputRendererType"
             var="inputRendererTypeEnum"/>
 
-    <p:fragment rendered="#{inputRenderer.getType() eq inputRendererTypeEnum.TEXT}">
+    <p:fragment rendered="#{inputRenderer.getType() eq inputRendererTypeEnum.TEXT and not isGeospatial}">
         <ui:include src="/WEB-INF/templates/dataset/inputRenderer/textInputField.xhtml" >
             <ui:param name="inputRenderer" value="#{inputRenderer}" />
             <ui:param name="datasetField" value="#{datasetField}" />
@@ -16,6 +16,18 @@
             <ui:param name="labelFieldNumber" value="#{labelFieldNumber}" />
             <ui:param name="allBlockfields" value="#{allBlockfields}" />
             <ui:param name="operation" value="#{operation}" />
+        </ui:include>
+    </p:fragment>
+
+    <p:fragment rendered="#{inputRenderer.getType() eq inputRendererTypeEnum.TEXT and isGeospatial}">
+        <ui:include src="/WEB-INF/templates/dataset/inputRenderer/geoboxTextInputField.xhtml" >
+            <ui:param name="inputRenderer" value="#{inputRenderer}" />
+            <ui:param name="datasetField" value="#{datasetField}" />
+            <ui:param name="hiddenLabel" value="#{hiddenLabel}" />
+            <ui:param name="labelFieldNumber" value="#{labelFieldNumber}" />
+            <ui:param name="allBlockfields" value="#{allBlockfields}" />
+            <ui:param name="operation" value="#{operation}" />
+            <ui:param name="mapId" value="#{mapId}" />
         </ui:include>
     </p:fragment>
 
@@ -29,7 +41,7 @@
             <ui:param name="operation" value="#{operation}" />
         </ui:include>
     </p:fragment>
-    
+
     <p:fragment rendered="#{inputRenderer.getType() eq inputRendererTypeEnum.TEXTBOX}">
         <ui:include src="/WEB-INF/templates/dataset/inputRenderer/textboxInputField.xhtml">
             <ui:param name="inputRenderer" value="#{inputRenderer}" />
@@ -40,7 +52,7 @@
             <ui:param name="operation" value="#{operation}" />
         </ui:include>
     </p:fragment>
-    
+
     <p:fragment rendered="#{inputRenderer.getType() eq inputRendererTypeEnum.HTML_MARKUP}">
         <ui:include src="/WEB-INF/templates/dataset/inputRenderer/htmlMarkupInputField.xhtml">
             <ui:param name="inputRenderer" value="#{inputRenderer}" />
@@ -51,7 +63,7 @@
             <ui:param name="operation" value="#{operation}" />
         </ui:include>
     </p:fragment>
-    
+
     <p:fragment rendered="#{inputRenderer.getType() eq inputRendererTypeEnum.VOCABULARY_SELECT}">
         <ui:include src="/WEB-INF/templates/dataset/inputRenderer/controlledVocabInputField.xhtml">
             <ui:param name="inputRenderer" value="#{inputRenderer}" />
@@ -62,7 +74,7 @@
             <ui:param name="operation" value="#{operation}" />
         </ui:include>
     </p:fragment>
-    
+
     <p:fragment rendered="#{inputRenderer.getType() eq inputRendererTypeEnum.HIDDEN_VOCABULARY}">
         <ui:include src="/WEB-INF/templates/dataset/inputRenderer/hiddenControlledVocabInputField.xhtml">
             <ui:param name="inputRenderer" value="#{inputRenderer}" />
