@@ -450,10 +450,22 @@ public class Files extends AbstractApiBean {
                 .build();
     }
     
+    @GET                    
+    @Path("{id}/draft")
+    public Response getFileDataDraft(@PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
+        return getFileDataResponse(fileIdOrPersistentId, uriInfo, headers, response, true);
+    }
+    
     @GET                             
     @Path("{id}")
     public Response getFileData(@PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
+          return getFileDataResponse(fileIdOrPersistentId, uriInfo, headers, response, false);
+    }
+    
+    private Response getFileDataResponse(String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response, boolean draft ){
+        
         DataverseRequest req;
+        
         try {
             req = createDataverseRequest(findUserOrDie());
         } catch (Exception e) {
@@ -465,22 +477,37 @@ public class Files extends AbstractApiBean {
         } catch (Exception e) {
             return error(BAD_REQUEST, "Error attempting get the requested data file.");
         }
-        FileMetadata fm;
-        //first get latest published
-        //if not available get draft if permissible
-        try {
-            
-            fm = df.getLatestPublishedFileMetadata();
 
-        } catch (UnsupportedOperationException e) {
+        FileMetadata fm;
+
+        if (draft) {
             try {
                 fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
             } catch (WrappedResponse w) {
                 return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset.");
             }
             if (null == fm) {
-                return error(BAD_REQUEST, "No draft availabile for this dataset");
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.no.draft"));
             }
+        } else {
+            //first get latest published
+            //if not available get draft if permissible
+
+            try {
+
+                fm = df.getLatestPublishedFileMetadata();
+
+            } catch (UnsupportedOperationException e) {
+                try {
+                    fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
+                } catch (WrappedResponse w) {
+                    return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset.");
+                }
+                if (null == fm) {
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.no.draft"));
+                }
+            }
+
         }
         
         if (fm.getDatasetVersion().isReleased()) {
@@ -523,7 +550,7 @@ public class Files extends AbstractApiBean {
                     return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset." );
                 }
                 if(null == fm) {
-                    return error(BAD_REQUEST, "No draft availabile for this dataset");
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.no.draft"));
                 }
             } else {
                 fm = df.getLatestPublishedFileMetadata();
@@ -539,6 +566,7 @@ public class Files extends AbstractApiBean {
                 .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
                 .build();
     }
+    
     @GET                    
     @Path("{id}/metadata/draft")
     public Response getFileMetadataDraft(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
