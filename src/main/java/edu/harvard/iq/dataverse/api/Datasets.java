@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -93,6 +94,8 @@ import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.CONTAINER_REQUEST_CONTEXT_USER;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -140,6 +143,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -289,8 +293,9 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("{id}")
-    public Response deleteDataset( @PathParam("id") String id) {
+    public Response deleteDataset(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         // Internally, "DeleteDatasetCommand" simply redirects to "DeleteDatasetVersionCommand"
         // (and there's a comment that says "TODO: remove this command")
         // do we need an exposed API call for it? 
@@ -304,7 +309,7 @@ public class Datasets extends AbstractApiBean {
         return response( req -> {
             Dataset doomed = findDatasetOrDie(id);
             DatasetVersion doomedVersion = doomed.getLatestVersion();
-            User u = findUserOrDie();
+            User u = (User) crc.getProperty(CONTAINER_REQUEST_CONTEXT_USER);
             boolean destroy = false;
             
             if (doomed.getVersions().size() == 1) {
