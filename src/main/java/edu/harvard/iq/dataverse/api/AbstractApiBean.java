@@ -77,11 +77,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.CONTAINER_REQUEST_CONTEXT_USER;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
@@ -327,6 +330,10 @@ public abstract class AbstractApiBean {
         String queryParamWFKey = httpRequest.getParameter("invocationID");
                 
         return headerParamWFKey!=null ? headerParamWFKey : queryParamWFKey;
+    }
+
+    protected User getRequestUser(ContainerRequestContext crc) {
+        return (User) crc.getProperty(CONTAINER_REQUEST_CONTEXT_USER);
     }
 
     /* ========= *\
