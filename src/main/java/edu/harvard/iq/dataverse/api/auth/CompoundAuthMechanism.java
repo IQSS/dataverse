@@ -31,7 +31,7 @@ public class CompoundAuthMechanism implements AuthMechanism {
             }
         }
         if (user == null) {
-            return GuestUser.get();
+            user = GuestUser.get();
         }
         return user;
     }

@@ -5,8 +5,8 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-// TODO: Find common place for this?
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.STATUS_ERROR;
+import static edu.harvard.iq.dataverse.api.ApiConstants.STATUS_ERROR;
+
 
 public class WrappedAuthErrorResponse extends Exception {
 
