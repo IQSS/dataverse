@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
@@ -24,7 +23,6 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -557,6 +555,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
         if (!StringUtils.isEmpty(getNewHarvestingUrl())) {
 
             OaiHandler oaiHandler = new OaiHandler(getNewHarvestingUrl());
+            if (getNewCustomHeader() != null) {
+                oaiHandler.setCustomHeaders(oaiHandler.makeCustomHeaders(getNewCustomHeader()));
+            }
             boolean success = true;
             String message = null;
 
@@ -639,11 +640,11 @@ public class HarvestingClientsPage implements java.io.Serializable {
     }
     
     public boolean validateCustomHeader() {
-        if (!StringUtils.isEmpty(getCustomHeader())) {
+        if (!StringUtils.isEmpty(getNewCustomHeader())) {
             // TODO: put this method somewhere else as a static utility
             
             // check that it's looking like "{header-name}: {header value}" at least
-            if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+:.*",getCustomHeader())) {
+            if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+:.*",getNewCustomHeader())) {
                 FacesContext.getCurrentInstance().addMessage(getNewClientCustomHeaderInputField().getClientId(),
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.customHeader.invalid")));
 
@@ -786,11 +787,11 @@ public class HarvestingClientsPage implements java.io.Serializable {
         this.newHarvestingUrl = newHarvestingUrl;
     }
     
-    public String getCustomHeader() {
+    public String getNewCustomHeader() {
         return customHeader; 
     }
     
-    public void setCustomHeader(String customHeader) {
+    public void setNewCustomHeader(String customHeader) {
         this.customHeader = customHeader;
     }
     
