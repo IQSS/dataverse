@@ -2538,13 +2538,11 @@ public class Datasets extends AbstractApiBean {
         List<String> deleted = new ArrayList<>();
         Set<String> files = new HashSet<String>();
         try {
-            for (DatasetVersion dv : dataset.getVersions()) {
-                for (FileMetadata f : dv.getFileMetadatas()) {
-                    String storageIdentifier = f.getDataFile().getStorageIdentifier();
-                    String location = storageIdentifier.substring(storageIdentifier.indexOf("://") + 3);
-                    String[] locationParts = location.split(":", 3);//separate bucket, swift container, etc. from fileName
-                    files.add(locationParts[locationParts.length-1]);
-                }
+            for (DataFile dataFile: dataset.getFiles()) {
+                String storageIdentifier = dataFile.getStorageIdentifier();
+                String location = storageIdentifier.substring(storageIdentifier.indexOf("://") + 3);
+                String[] locationParts = location.split(":", 3);//separate bucket, swift container, etc. from fileName
+                files.add(locationParts[locationParts.length-1]);
             }
             StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
             Predicate<String> filter = f -> {
