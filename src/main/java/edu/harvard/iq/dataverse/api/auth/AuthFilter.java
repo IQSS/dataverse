@@ -20,9 +20,17 @@ public class AuthFilter implements ContainerRequestFilter {
     @Inject
     private ApiKeyAuthMechanism apiKeyAuthMechanism;
 
+    @Inject
+    private WorkflowKeyAuthMechanism workflowKeyAuthMechanism;
+
+    // Auth mechanisms should be ordered by priority
+    private final CompoundAuthMechanism compoundAuthMechanism = new CompoundAuthMechanism(
+            apiKeyAuthMechanism,
+            workflowKeyAuthMechanism
+    );
+
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
-        CompoundAuthMechanism compoundAuthMechanism = new CompoundAuthMechanism(apiKeyAuthMechanism);
         try {
             User user = compoundAuthMechanism.findUserFromRequest(containerRequestContext);
             containerRequestContext.setProperty(CONTAINER_REQUEST_CONTEXT_USER, user);
