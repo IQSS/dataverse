@@ -398,8 +398,6 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                   }
               }
 
-              scanner.close();
-              out.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
