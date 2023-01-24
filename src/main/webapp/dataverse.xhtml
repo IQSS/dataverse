@@ -822,55 +822,15 @@
                     </div>
                     </h:form>
                 </p:dialog>
+                <c:set var="descriptionText" value="#{bundle.description}" />
                 <script>
                     //<![CDATA[
                     var scrollPos=0;
                     $(document).ready(function () {
                         initCarousel();
                         popoverHTML('#{bundle.htmlAllowedTitle}','#{bundle.htmlAllowedTags}');
-                        contentTruncateForDataverse();
+                        summarizeDesc();
                     });
-                    function contentTruncateForDataverse(){
-                        // SELECTOR ID FROM PARAMETERS
-                        $('#dataverseDesc').each(function () {
- 
-                            // add responsive img class to limit width to that of container
-                            $(this).find('img').attr('class', 'img-responsive');
- 
-                            // find container height
-                            var containerHeight = $(this).outerHeight();
- 
-                            if (containerHeight > 250) {
-                                // ADD A MAX-HEIGHT TO CONTAINER
-                                 $(this).css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
- 
-                                // BTN LABEL TEXT, ARIA ATTR'S, FROM BUNDLE VIA PARAMETERS
-                                var readMoreBtn = '<button class="btn btn-link desc-more-link" type="button" data-toggle="tooltip" data-original-title="Click to read the full Description." aria-expanded="false" aria-controls="#dataverseDesc">Read full Description [+]</button>';
-                                var moreBlock = '<div class="more-block">' + readMoreBtn + '</div>';
-                                var readLessBtn = '<button class="btn btn-link desc-less-link" type="button" data-toggle="tooltip" data-original-title="Click to collapse the Description." aria-expanded="true" aria-controls="#dataverseDesc">Collapse Description [-]</button>';
-                                var lessBlock = '<div class="less-block">' + readLessBtn + '</div>';
-
-                                // add "Read full desc [+]" btn, background fade
-                                $(this).append(moreBlock); 
-
-                                // show full description in summary block on "Read full desc [+]" btn click
-                                $(document).on('click', 'button.desc-more-link', function() {
-                                    $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'none','overflow-y':'visible','position':'relative'});
-                                    $(this).parent('div.more-block').replaceWith(lessBlock);
-                                    $('.less-block button').tooltip();
-                                });
-
-                                // trucnate description in summary block on "Collapse desc [-]" btn click
-                                $(document).on('click', 'button.desc-less-link', function() {
-                                    $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
-                                    $(this).parent('div.less-block').replaceWith(moreBlock);
-                                    $('html, body').animate({scrollTop: $('#' + truncSelector).offset().top - 60}, 500);
-                                    $('.more-block button').tooltip();
-                                });
-                            }
-                        });
-                    }
-
                     function initCarousel() {
                         var owl1 = $("#featuredDataversesList");
                         owl1.owlCarousel({
@@ -894,6 +854,18 @@
                             $("#featuredDataversesBlock .customNavigation a.btn").hide();
                         }
                         $('#featuredDataversesList .item').matchHeight();
+                    }
+                    function summarizeDesc() {
+                        // truncate summary description, contentTruncate function in dv_rebind_bootstrap_ui.js
+                        // add id to pass as selector param
+                        var descId = 'dataverseDesc';
+                        // add metadata dynamic label text, tooltip text from bundle as param
+                        var truncMoreBtn = '#{of:format1(bundle.truncateMoreBtn, descriptionText)}';
+                        var truncMoreTip = '#{of:format1(bundle.truncateMoreTip, descriptionText)}';
+                        var truncLessBtn = '#{of:format1(bundle.truncateLessBtn, descriptionText)}';
+                        var truncLessTip = '#{of:format1(bundle.truncateLessTip, descriptionText)}';
+                        // pass bundle text variables as params to function
+                        contentTruncate(descId, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip);
                     }
                     function callOnError(){
                         window.scrollTo(0, 0);
