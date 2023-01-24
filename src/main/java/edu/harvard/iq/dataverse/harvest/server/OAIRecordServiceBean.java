@@ -32,7 +32,6 @@ import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.TemporalType;
 
