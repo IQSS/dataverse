@@ -375,34 +375,31 @@ public class TabularSubsetGenerator implements SubsetGenerator {
 
     public void subsetFile(InputStream in, String outfile, List<Integer> columns, Long numCases,
         String delimiter) {
-        try {
-          Scanner scanner =  new Scanner(in);
-          scanner.useDelimiter("\\n");
+          try (Scanner scanner = new Scanner(in); BufferedWriter out = new BufferedWriter(new FileWriter(outfile))) {
+            scanner.useDelimiter("\\n");
 
-          BufferedWriter out = new BufferedWriter(new FileWriter(outfile));
-            for (long caseIndex = 0; caseIndex < numCases; caseIndex++) {
-                if (scanner.hasNext()) {
-                    String[] line = (scanner.next()).split(delimiter,-1);
-                    List<String> ln = new ArrayList<String>();
-                    for (Integer i : columns) {
-                        ln.add(line[i]);
+                for (long caseIndex = 0; caseIndex < numCases; caseIndex++) {
+                    if (scanner.hasNext()) {
+                        String[] line = (scanner.next()).split(delimiter,-1);
+                        List<String> ln = new ArrayList<String>();
+                        for (Integer i : columns) {
+                            ln.add(line[i]);
+                        }
+                        out.write(StringUtils.join(ln,"\t")+"\n");
+                    } else {
+                        throw new RuntimeException("Tab file has fewer rows than the determined number of cases.");
                     }
-                    out.write(StringUtils.join(ln,"\t")+"\n");
-                } else {
-                    throw new RuntimeException("Tab file has fewer rows than the determined number of cases.");
                 }
-            }
 
-          while (scanner.hasNext()) {
-              if (!"".equals(scanner.next()) ) {
-                  throw new RuntimeException("Tab file has extra nonempty rows than the determined number of cases.");
+              while (scanner.hasNext()) {
+                  if (!"".equals(scanner.next()) ) {
+                      throw new RuntimeException("Tab file has extra nonempty rows than the determined number of cases.");
 
+                  }
               }
-          }
 
-          scanner.close();
-          out.close();
-
+              scanner.close();
+              out.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
