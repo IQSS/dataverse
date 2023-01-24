@@ -1086,22 +1086,24 @@ public class Datasets extends AbstractApiBean {
      * @deprecated This was shipped as a GET but should have been a POST, see https://github.com/IQSS/dataverse/issues/2431
      */
     @GET
+    @AuthRequired
     @Path("{id}/actions/:publish")
     @Deprecated
-    public Response publishDataseUsingGetDeprecated( @PathParam("id") String id, @QueryParam("type") String type ) {
+    public Response publishDataseUsingGetDeprecated(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("type") String type ) {
         logger.info("publishDataseUsingGetDeprecated called on id " + id + ". Encourage use of POST rather than GET, which is deprecated.");
-        return publishDataset(id, type, false);
+        return publishDataset(crc, id, type, false);
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/actions/:publish")
-    public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type, @QueryParam("assureIsIndexed") boolean mustBeIndexed) {
+    public Response publishDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("type") String type, @QueryParam("assureIsIndexed") boolean mustBeIndexed) {
         try {
             if (type == null) {
                 return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major','minor', or 'updatecurrent').");
             }
             boolean updateCurrent=false;
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             type = type.toLowerCase();
             boolean isMinor=false;
             switch (type) {
@@ -1220,11 +1222,12 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/actions/:releasemigrated")
     @Consumes("application/ld+json, application/json-ld")
-    public Response publishMigratedDataset(String jsonldBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam ("updatepidatprovider") boolean contactPIDProvider) {
+    public Response publishMigratedDataset(@Context ContainerRequestContext crc, String jsonldBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam ("updatepidatprovider") boolean contactPIDProvider) {
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Only superusers can release migrated datasets");
             }
@@ -1335,13 +1338,14 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/files/actions/:set-embargo")
-    public Response createFileEmbargo(@PathParam("id") String id, String jsonBody){
+    public Response createFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Status.UNAUTHORIZED, "Authentication is required.");
         }
@@ -1491,13 +1495,14 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/files/actions/:unset-embargo")
-    public Response removeFileEmbargo(@PathParam("id") String id, String jsonBody){
+    public Response removeFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Status.UNAUTHORIZED, "Authentication is required.");
         }
@@ -1869,8 +1874,9 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/dataCaptureModule/rsync")
-    public Response getRsync(@PathParam("identifier") String id) {
+    public Response getRsync(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
         //TODO - does it make sense to switch this to dataset identifier for consistency with the rest of the DCM APIs?
         if (!DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
             return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " does not contain " + SystemConfig.FileUploadMethods.RSYNC + ".");
@@ -1878,7 +1884,7 @@ public class Datasets extends AbstractApiBean {
         Dataset dataset = null;
         try {
             dataset = findDatasetOrDie(id);
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             ScriptRequestResponse scriptRequestResponse = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(user), dataset));
             
             DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, user.getId(), "script downloaded");
@@ -1915,7 +1921,7 @@ public class Datasets extends AbstractApiBean {
         logger.log(Level.FINE, "jsonFromDcm: {0}", jsonFromDcm);
         AuthenticatedUser authenticatedUser = null;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.BAD_REQUEST, "Authentication is required.");
         }
@@ -2035,9 +2041,10 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/returnToAuthor")
-    public Response returnToAuthor(@PathParam("id") String idSupplied, String jsonBody) {
-        
+    public Response returnToAuthor(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, String jsonBody) {
+
         if (jsonBody == null || jsonBody.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset (field: reasonForReturn).");
         }
@@ -2051,7 +2058,7 @@ public class Datasets extends AbstractApiBean {
             if (reasonForReturn == null || reasonForReturn.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "You must enter a reason for returning a dataset to the author(s).");
             }
-            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));
 
             JsonObjectBuilder result = Json.createObjectBuilder();
@@ -2196,15 +2203,16 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("mpupload")
-    public Response abortMPUpload(@QueryParam("globalid") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
+    public Response abortMPUpload(@Context ContainerRequestContext crc, @QueryParam("globalid") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
         try {
             Dataset dataset = datasetSvc.findByGlobalId(idSupplied);
             //Allow the API to be used within a session (e.g. for direct upload in the UI)
             User user = session.getUser();
             if (!user.isAuthenticated()) {
                 try {
-                    user = findAuthenticatedUserOrDie();
+                    user = getRequestAuthenticatedUserOrDie(crc);
                 } catch (WrappedResponse ex) {
                     logger.info(
                             "Exception thrown while trying to figure out permissions while getting aborting upload for dataset id "
@@ -2250,15 +2258,16 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("mpupload")
-    public Response completeMPUpload(String partETagBody, @QueryParam("globalid") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
+    public Response completeMPUpload(@Context ContainerRequestContext crc, String partETagBody, @QueryParam("globalid") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
         try {
             Dataset dataset = datasetSvc.findByGlobalId(idSupplied);
             //Allow the API to be used within a session (e.g. for direct upload in the UI)
             User user = session.getUser();
             if (!user.isAuthenticated()) {
                 try {
-                    user = findAuthenticatedUserOrDie();
+                    user = getRequestAuthenticatedUserOrDie(crc);
                 } catch (WrappedResponse ex) {
                     logger.info(
                             "Exception thrown while trying to figure out permissions to complete mpupload for dataset id "
@@ -2492,7 +2501,7 @@ public class Datasets extends AbstractApiBean {
                 } else {
                     return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
                 }
-                
+
                 //"Look at that!  You added a file! (hey hey, it may have worked)");
             } catch (NoFilesException ex) {
                 Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
@@ -2607,12 +2616,13 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("{identifier}/locks")
-    public Response deleteLocks(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
+    public Response deleteLocks(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
 
         return response(req -> {
             try {
-                AuthenticatedUser user = findAuthenticatedUserOrDie();
+                AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
                 if (!user.isSuperuser()) {
                     return error(Response.Status.FORBIDDEN, "This API end point can be used by superusers only.");
                 }
@@ -2671,11 +2681,12 @@ public class Datasets extends AbstractApiBean {
     }
     
     @POST
+    @AuthRequired
     @Path("{identifier}/lock/{type}")
-    public Response lockDataset(@PathParam("identifier") String id, @PathParam("type") DatasetLock.Reason lockType) {
+    public Response lockDataset(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @PathParam("type") DatasetLock.Reason lockType) {
         return response(req -> {
             try {
-                AuthenticatedUser user = findAuthenticatedUserOrDie();
+                AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
                 if (!user.isSuperuser()) {
                     return error(Response.Status.FORBIDDEN, "This API end point can be used by superusers only.");
                 }
@@ -2707,8 +2718,9 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
+    @AuthRequired
     @Path("locks")
-    public Response listLocks(@QueryParam("type") String lockType, @QueryParam("userIdentifier") String userIdentifier) { //DatasetLock.Reason lockType) {        
+    public Response listLocks(@Context ContainerRequestContext crc, @QueryParam("type") String lockType, @QueryParam("userIdentifier") String userIdentifier) { //DatasetLock.Reason lockType) {
         // This API is here, under /datasets, and not under /admin, because we
         // likely want it to be accessible to admin users who may not necessarily 
         // have localhost access, that would be required to get to /api/admin in 
@@ -2716,7 +2728,7 @@ public class Datasets extends AbstractApiBean {
         // this api to admin users only.
         AuthenticatedUser apiUser;
         try {
-            apiUser = findAuthenticatedUserOrDie();
+            apiUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
         }
@@ -2942,15 +2954,16 @@ public class Datasets extends AbstractApiBean {
     }
     
     @PUT
+    @AuthRequired
     @Path("{identifier}/storageDriver")
-    public Response setFileStore(@PathParam("identifier") String dvIdtf,
+    public Response setFileStore(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             String storageDriverLabel,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
         
         // Superuser-only:
         AuthenticatedUser user;
         try {
-            user = findAuthenticatedUserOrDie();
+            user = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.BAD_REQUEST, "Authentication is required.");
         }
@@ -2979,14 +2992,15 @@ public class Datasets extends AbstractApiBean {
     }
     
     @DELETE
+    @AuthRequired
     @Path("{identifier}/storageDriver")
-    public Response resetFileStore(@PathParam("identifier") String dvIdtf,
+    public Response resetFileStore(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
         
         // Superuser-only:
         AuthenticatedUser user;
         try {
-            user = findAuthenticatedUserOrDie();
+            user = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.BAD_REQUEST, "Authentication is required.");
         }
@@ -3008,12 +3022,13 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/curationLabelSet")
-    public Response getCurationLabelSet(@PathParam("identifier") String dvIdtf,
+    public Response getCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -3033,15 +3048,18 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("{identifier}/curationLabelSet")
-    public Response setCurationLabelSet(@PathParam("identifier") String dvIdtf,
-            @QueryParam("name") String curationLabelSet,
-            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+    public Response setCurationLabelSet(@Context ContainerRequestContext crc,
+                                        @PathParam("identifier") String dvIdtf,
+                                        @QueryParam("name") String curationLabelSet,
+                                        @Context UriInfo uriInfo,
+                                        @Context HttpHeaders headers) throws WrappedResponse {
 
         // Superuser-only:
         AuthenticatedUser user;
         try {
-            user = findAuthenticatedUserOrDie();
+            user = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
         }
@@ -3074,14 +3092,15 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("{identifier}/curationLabelSet")
-    public Response resetCurationLabelSet(@PathParam("identifier") String dvIdtf,
+    public Response resetCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         // Superuser-only:
         AuthenticatedUser user;
         try {
-            user = findAuthenticatedUserOrDie();
+            user = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.BAD_REQUEST, "Authentication is required.");
         }
@@ -3103,12 +3122,15 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/allowedCurationLabels")
-    public Response getAllowedCurationLabels(@PathParam("identifier") String dvIdtf,
-            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+    public Response getAllowedCurationLabels(@Context ContainerRequestContext crc,
+                                             @PathParam("identifier") String dvIdtf,
+                                             @Context UriInfo uriInfo,
+                                             @Context HttpHeaders headers) throws WrappedResponse {
         AuthenticatedUser user = null;
         try {
-            user = findAuthenticatedUserOrDie();
+            user = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -3204,9 +3226,11 @@ public class Datasets extends AbstractApiBean {
 
 
     @POST
+    @AuthRequired
     @Path("{id}/addglobusFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response addGlobusFilesToDataset(@PathParam("id") String datasetId,
+    public Response addGlobusFilesToDataset(@Context ContainerRequestContext crc,
+                                            @PathParam("id") String datasetId,
                                             @FormDataParam("jsonData") String jsonData,
                                             @Context UriInfo uriInfo,
                                             @Context HttpHeaders headers
@@ -3223,7 +3247,7 @@ public class Datasets extends AbstractApiBean {
         // -------------------------------------
         AuthenticatedUser authUser;
         try {
-            authUser = findAuthenticatedUserOrDie();
+            authUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth")
             );
@@ -3465,12 +3489,13 @@ public class Datasets extends AbstractApiBean {
      * @throws WrappedResponse
      */
     @GET
+    @AuthRequired
     @Path("/listCurationStates")
     @Produces("text/csv")
-    public Response getCurationStates() throws WrappedResponse {
+    public Response getCurationStates(@Context ContainerRequestContext crc) throws WrappedResponse {
 
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -3522,13 +3547,17 @@ public class Datasets extends AbstractApiBean {
     // APIs to manage archival status
 
     @GET
+    @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
-    public Response getDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
-            @PathParam("version") String versionNumber, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
+                                                    @PathParam("id") String datasetId,
+                                                    @PathParam("version") String versionNumber,
+                                                    @Context UriInfo uriInfo,
+                                                    @Context HttpHeaders headers) {
 
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             if (!au.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -3548,15 +3577,19 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
-    public Response setDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
-            @PathParam("version") String versionNumber, String newStatus, @Context UriInfo uriInfo,
-            @Context HttpHeaders headers) {
+    public Response setDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
+                                                    @PathParam("id") String datasetId,
+                                                    @PathParam("version") String versionNumber,
+                                                    String newStatus,
+                                                    @Context UriInfo uriInfo,
+                                                    @Context HttpHeaders headers) {
 
         logger.fine(newStatus);
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
 
             if (!au.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
@@ -3602,13 +3635,17 @@ public class Datasets extends AbstractApiBean {
     }
     
     @DELETE
+    @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
-    public Response deleteDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
-            @PathParam("version") String versionNumber, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response deleteDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
+                                                       @PathParam("id") String datasetId,
+                                                       @PathParam("version") String versionNumber,
+                                                       @Context UriInfo uriInfo,
+                                                       @Context HttpHeaders headers) {
 
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             if (!au.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }

@@ -336,6 +336,21 @@ public abstract class AbstractApiBean {
         return (User) crc.getProperty(CONTAINER_REQUEST_CONTEXT_USER);
     }
 
+    /*
+    TODO:
+     This method is designed to comply with existing authorization logic, based on the old findAuthenticatedUserOrDie method.
+     Ideally, as for authentication, a filter could be implemented for authorization, which would extract and encapsulate the
+     authorization logic from the AbstractApiBean.
+     */
+    protected AuthenticatedUser getRequestAuthenticatedUserOrDie(ContainerRequestContext crc) throws WrappedResponse {
+        User requestUser = (User) crc.getProperty(CONTAINER_REQUEST_CONTEXT_USER);
+        if (requestUser.isAuthenticated()) {
+            return (AuthenticatedUser) requestUser;
+        } else {
+            throw new WrappedResponse(authenticatedUserRequired());
+        }
+    }
+
     /* ========= *\
      *  Finders  *
     \* ========= */
@@ -873,7 +888,12 @@ public abstract class AbstractApiBean {
         String message = (wfId != null ) ? "Bad workflow invocationId " : "Please provide an invocationId query parameter (?invocationId=XXX) or via the HTTP header " + DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME;
         return error(Status.UNAUTHORIZED, message );
     }
-    
+
+    protected Response authenticatedUserRequired() {
+        String message = "Only authenticated users can perform the requested operation";
+        return error(Status.UNAUTHORIZED, message );
+    }
+
     protected Response permissionError( PermissionException pe ) {
         return permissionError( pe.getMessage() );
     }
