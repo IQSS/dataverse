@@ -81,8 +81,6 @@ public class DvObjectServiceBean implements java.io.Serializable {
     }   
     // FIXME This type-by-string has to go, in favor of passing a class parameter.
     public DvObject findByGlobalId(String globalIdString, String typeString) {
-        System.out.print("dvobject svc bean id string: " + globalIdString );
-        System.out.print("dvobject svc bean typeString: " + typeString );
         return findByGlobalId(globalIdString, typeString, false);
     }
     

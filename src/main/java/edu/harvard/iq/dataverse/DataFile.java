@@ -554,7 +554,6 @@ public class DataFile extends DvObject implements Comparable {
         for (FileMetadata fileMetadata : fileMetadatas) {
             // if it finds a draft, skip
             if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
-                System.out.print("Draft id: " + fileMetadata.getId());
                 continue;
             }            
             
@@ -570,7 +569,7 @@ public class DataFile extends DvObject implements Comparable {
         if(fmd == null) {
             throw new UnsupportedOperationException("No published metadata version for DataFile " + this.getId());
         }
-        System.out.print("Returning: " + fmd.getId());
+
         return fmd;
     }
 
