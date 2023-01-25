@@ -2089,7 +2089,7 @@ You may get its draft version of an unpublished file if you pass an api token wi
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
-  curl -H "X-Dataverse-key:$API_TOKEN" http://$SERVER/api/files/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER/api/files/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -2121,7 +2121,7 @@ You may get its draft version of an published file if you pass an api token with
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
-  curl -H "X-Dataverse-key:$API_TOKEN" http://$SERVER/api/files/:persistentId/draft/?persistentId=$PERSISTENT_IDENTIFIER
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER/api/files/:persistentId/draft/?persistentId=$PERSISTENT_IDENTIFIER
 
 The fully expanded example above (without environment variables) looks like this:
 
