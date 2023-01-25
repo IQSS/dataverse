@@ -14,9 +14,9 @@ public class CompoundAuthMechanism implements AuthMechanism {
     private final List<AuthMechanism> authMechanisms = new ArrayList<>();
 
     @Inject
-    public CompoundAuthMechanism(ApiKeyAuthMechanism apiKeyAuthMechanism, WorkflowKeyAuthMechanism workflowKeyAuthMechanism) {
+    public CompoundAuthMechanism(ApiKeyAuthMechanism apiKeyAuthMechanism, WorkflowKeyAuthMechanism workflowKeyAuthMechanism, SignedUrlAuthMechanism signedUrlAuthMechanism) {
         // Auth mechanisms should be ordered by priority
-        add(apiKeyAuthMechanism, workflowKeyAuthMechanism);
+        add(apiKeyAuthMechanism, workflowKeyAuthMechanism, signedUrlAuthMechanism);
     }
 
     public CompoundAuthMechanism(AuthMechanism... authMechanisms) {
