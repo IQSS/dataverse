@@ -2564,7 +2564,7 @@ public class Datasets extends AbstractApiBean {
         for (DataFile dataFile: dataset.getFiles()) {
             String storageIdentifier = dataFile.getStorageIdentifier();
             String location = storageIdentifier.substring(storageIdentifier.indexOf("://") + 3);
-            String[] locationParts = location.split(":", 3);//separate bucket, swift container, etc. from fileName
+            String[] locationParts = location.split(":");//separate bucket, swift container, etc. from fileName
             files.add(locationParts[locationParts.length-1]);
         }
         return files;
