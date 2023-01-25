@@ -37,7 +37,7 @@ public class SignedUrlAuthMechanismTest {
     }
 
     @Test
-    public void testFindUserFromRequest_SignedUrlTokenProvided_ValidSignedUrl_UserAuthenticated() throws WrappedAuthErrorResponse {
+    public void testFindUserFromRequest_SignedUrlTokenProvided_UserExists_ValidSignedUrl_UserAuthenticated() throws WrappedAuthErrorResponse {
         AuthenticationServiceBean authenticationServiceBeanStub = Mockito.mock(AuthenticationServiceBean.class);
 
         AuthenticatedUser testAuthenticatedUser = new AuthenticatedUser();
@@ -56,7 +56,7 @@ public class SignedUrlAuthMechanismTest {
     }
 
     @Test
-    public void testFindUserFromRequest_SignedUrlTokenProvided_InvalidSignedUrl_UserNotAuthenticated() {
+    public void testFindUserFromRequest_SignedUrlTokenProvided_UserExists_InvalidSignedUrl_UserNotAuthenticated() {
         AuthenticationServiceBean authenticationServiceBeanStub = Mockito.mock(AuthenticationServiceBean.class);
 
         AuthenticatedUser testAuthenticatedUser = new AuthenticatedUser();
@@ -65,6 +65,19 @@ public class SignedUrlAuthMechanismTest {
         ApiToken apiTokenStub = Mockito.mock(ApiToken.class);
         Mockito.when(apiTokenStub.getTokenString()).thenReturn("different-token-from-the-signed-url");
         Mockito.when(authenticationServiceBeanStub.findApiTokenByUser(testAuthenticatedUser)).thenReturn(apiTokenStub);
+
+        sut.authSvc = authenticationServiceBeanStub;
+
+        ContainerRequestContext testContainerRequest = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID);
+        WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
+
+        assertEquals(RESPONSE_MESSAGE_BAD_SIGNED_URL, wrappedAuthErrorResponse.getMessage());
+    }
+
+    @Test
+    public void testFindUserFromRequest_SignedUrlTokenProvided_UserDoesNotExistForTheGivenId_UserNotAuthenticated() {
+        AuthenticationServiceBean authenticationServiceBeanStub = Mockito.mock(AuthenticationServiceBean.class);
+        Mockito.when(authenticationServiceBeanStub.getAuthenticatedUser(TEST_SIGNED_URL_USER_ID)).thenReturn(null);
 
         sut.authSvc = authenticationServiceBeanStub;
 

@@ -39,22 +39,27 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
 
     private AuthenticatedUser getAuthenticatedUserFromSignedUrl(ContainerRequestContext containerRequestContext) {
         AuthenticatedUser authUser = null;
-        UriInfo uriInfo = containerRequestContext.getUriInfo();
         // The signedUrl contains a param telling which user this is supposed to be for.
         // We don't trust this. So we lookup that user, and get their API key, and use
         // that as a secret in validating the signedURL. If the signature can't be
         // validated with their key, the user (or their API key) has been changed and
         // we reject the request.
-        // ToDo - add null checks/ verify that calling methods catch things.
-        String user = uriInfo.getQueryParameters().getFirst(SIGNED_URL_USER);
-        AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(user);
-        String key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + authSvc.findApiTokenByUser(targetUser).getTokenString();
-        String signedUrl = uriInfo.getRequestUri().toString();
-        String method = containerRequestContext.getMethod();
-        boolean validated = UrlSignerUtil.isValidUrl(signedUrl, user, method, key);
-        if (validated) {
-            authUser = targetUser;
+        UriInfo uriInfo = containerRequestContext.getUriInfo();
+        String userId = uriInfo.getQueryParameters().getFirst(SIGNED_URL_USER);
+        AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(userId);
+        if (targetUser != null) {
+            String signedUrl = uriInfo.getRequestUri().toString();
+            String requestMethod = containerRequestContext.getMethod();
+            String signedUrlSigningKey = getSignedUrlSigningKeyForUser(targetUser);
+            boolean isSignedUrlValid = UrlSignerUtil.isValidUrl(signedUrl, userId, requestMethod, signedUrlSigningKey);
+            if (isSignedUrlValid) {
+                authUser = targetUser;
+            }
         }
         return authUser;
+    }
+
+    private String getSignedUrlSigningKeyForUser(AuthenticatedUser targetUser) {
+        return JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + authSvc.findApiTokenByUser(targetUser).getTokenString();
     }
 }
