@@ -505,6 +505,9 @@ public abstract class AbstractApiBean {
     }
     
     protected DataFile findDataFileOrDie(String id) throws WrappedResponse {
+        
+        System.out.print("findfile ordie: " + id);
+        
         DataFile datafile;
         if (id.equals(PERSISTENT_ID_KEY)) {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));

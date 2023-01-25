@@ -465,7 +465,7 @@ public class Files extends AbstractApiBean {
     private Response getFileDataResponse(String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response, boolean draft ){
         
         DataverseRequest req;
-        
+         System.out.print("fileIdOrPersistentId: " + fileIdOrPersistentId);
         try {
             req = createDataverseRequest(findUserOrDie());
         } catch (Exception e) {
@@ -481,6 +481,7 @@ public class Files extends AbstractApiBean {
         FileMetadata fm;
 
         if (draft) {
+            System.out.print("getting draft via path param");
             try {
                 fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
             } catch (WrappedResponse w) {
@@ -494,11 +495,12 @@ public class Files extends AbstractApiBean {
             //if not available get draft if permissible
 
             try {
-
+                System.out.print("trying to get latest published...");
                 fm = df.getLatestPublishedFileMetadata();
 
             } catch (UnsupportedOperationException e) {
                 try {
+                    System.out.print("failed to get published trying to get draft...");
                     fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
                 } catch (WrappedResponse w) {
                     return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset.");
