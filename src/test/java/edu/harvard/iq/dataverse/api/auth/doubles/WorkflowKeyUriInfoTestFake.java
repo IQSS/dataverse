@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.api.auth;
+package edu.harvard.iq.dataverse.api.auth.doubles;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;

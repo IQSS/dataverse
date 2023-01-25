@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.auth;
 
+import edu.harvard.iq.dataverse.api.auth.doubles.ContainerRequestTestFake;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;

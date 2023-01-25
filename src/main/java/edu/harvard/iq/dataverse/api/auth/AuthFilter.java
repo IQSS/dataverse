@@ -18,16 +18,7 @@ import static edu.harvard.iq.dataverse.api.ApiConstants.CONTAINER_REQUEST_CONTEX
 public class AuthFilter implements ContainerRequestFilter {
 
     @Inject
-    private ApiKeyAuthMechanism apiKeyAuthMechanism;
-
-    @Inject
-    private WorkflowKeyAuthMechanism workflowKeyAuthMechanism;
-
-    // Auth mechanisms should be ordered by priority
-    private final CompoundAuthMechanism compoundAuthMechanism = new CompoundAuthMechanism(
-            apiKeyAuthMechanism,
-            workflowKeyAuthMechanism
-    );
+    private CompoundAuthMechanism compoundAuthMechanism;
 
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {

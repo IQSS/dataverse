@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.auth;
 
+import edu.harvard.iq.dataverse.api.auth.doubles.WorkflowKeyContainerRequestTestFake;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class WorkflowKeyAuthMechanismTest {
 
     private static final String TEST_WORKFLOW_KEY = "test-workflow-key";
+
     private WorkflowKeyAuthMechanism sut;
 
     @BeforeEach

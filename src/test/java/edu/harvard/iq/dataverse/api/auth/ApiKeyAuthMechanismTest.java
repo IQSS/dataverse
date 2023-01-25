@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api.auth;
 
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.api.auth.doubles.ApiKeyContainerRequestTestFake;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;

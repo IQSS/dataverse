@@ -10,7 +10,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 public class WorkflowKeyAuthMechanism implements AuthMechanism {
 
     public static final String DATAVERSE_WORKFLOW_KEY_REQUEST_HEADER_NAME = "X-Dataverse-invocationID";
-
     public static final String DATAVERSE_WORKFLOW_KEY_REQUEST_PARAM_NAME = "invocationID";
     public static final String RESPONSE_MESSAGE_BAD_WORKFLOW_KEY = "Bad workflow invocationID";
 
