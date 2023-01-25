@@ -497,7 +497,9 @@ public class Files extends AbstractApiBean {
             try {
                 System.out.print("trying to get latest published...");
                 fm = df.getLatestPublishedFileMetadata();
-
+                System.out.print("fm_id" + fm.getId());
+                System.out.print("fm_desc" + fm.getDescription());
+                
             } catch (UnsupportedOperationException e) {
                 try {
                     System.out.print("failed to get published trying to get draft...");
