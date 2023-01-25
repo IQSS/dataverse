@@ -11,14 +11,13 @@ import org.mockito.Mockito;
 
 import javax.ws.rs.container.ContainerRequestContext;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static edu.harvard.iq.dataverse.api.auth.SignedUrlAuthMechanism.RESPONSE_MESSAGE_BAD_SIGNED_URL;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SignedUrlAuthMechanismTest {
 
     private static final String TEST_SIGNED_URL_TOKEN = "test-signed-url-token";
     private static final String TEST_SIGNED_URL_USER_ID = "test-user";
-    private static final String TEST_API_TOKEN = "test-api-token";
 
     private SignedUrlAuthMechanism sut;
 
@@ -31,7 +30,7 @@ public class SignedUrlAuthMechanismTest {
     public void testFindUserFromRequest_SignedUrlTokenNotProvided() throws WrappedAuthErrorResponse {
         sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
 
-        ContainerRequestContext testContainerRequest = new SignedUrlContainerRequestTestFake(null, null, null);
+        ContainerRequestContext testContainerRequest = new SignedUrlContainerRequestTestFake(null, null);
         User actual = sut.findUserFromRequest(testContainerRequest);
 
         assertNull(actual);
@@ -45,14 +44,33 @@ public class SignedUrlAuthMechanismTest {
         Mockito.when(authenticationServiceBeanStub.getAuthenticatedUser(TEST_SIGNED_URL_USER_ID)).thenReturn(testAuthenticatedUser);
 
         ApiToken apiTokenStub = Mockito.mock(ApiToken.class);
-        Mockito.when(apiTokenStub.getTokenString()).thenReturn(TEST_API_TOKEN);
+        Mockito.when(apiTokenStub.getTokenString()).thenReturn(TEST_SIGNED_URL_TOKEN);
         Mockito.when(authenticationServiceBeanStub.findApiTokenByUser(testAuthenticatedUser)).thenReturn(apiTokenStub);
 
         sut.authSvc = authenticationServiceBeanStub;
 
-        ContainerRequestContext testContainerRequest = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID, TEST_API_TOKEN);
+        ContainerRequestContext testContainerRequest = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID);
         User actual = sut.findUserFromRequest(testContainerRequest);
 
         assertEquals(testAuthenticatedUser, actual);
+    }
+
+    @Test
+    public void testFindUserFromRequest_SignedUrlTokenProvided_InvalidSignedUrl_UserNotAuthenticated() {
+        AuthenticationServiceBean authenticationServiceBeanStub = Mockito.mock(AuthenticationServiceBean.class);
+
+        AuthenticatedUser testAuthenticatedUser = new AuthenticatedUser();
+        Mockito.when(authenticationServiceBeanStub.getAuthenticatedUser(TEST_SIGNED_URL_USER_ID)).thenReturn(testAuthenticatedUser);
+
+        ApiToken apiTokenStub = Mockito.mock(ApiToken.class);
+        Mockito.when(apiTokenStub.getTokenString()).thenReturn("different-token-from-the-signed-url");
+        Mockito.when(authenticationServiceBeanStub.findApiTokenByUser(testAuthenticatedUser)).thenReturn(apiTokenStub);
+
+        sut.authSvc = authenticationServiceBeanStub;
+
+        ContainerRequestContext testContainerRequest = new SignedUrlContainerRequestTestFake(TEST_SIGNED_URL_TOKEN, TEST_SIGNED_URL_USER_ID);
+        WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
+
+        assertEquals(RESPONSE_MESSAGE_BAD_SIGNED_URL, wrappedAuthErrorResponse.getMessage());
     }
 }

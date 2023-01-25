@@ -5,8 +5,8 @@ import javax.ws.rs.core.UriInfo;
 public class SignedUrlContainerRequestTestFake extends ContainerRequestTestFake {
     private final UriInfo uriInfo;
 
-    public SignedUrlContainerRequestTestFake(String signedUrlToken, String signedUrlUserId, String apiToken) {
-        this.uriInfo = new SignedUrlUriInfoTestFake(signedUrlToken, signedUrlUserId, apiToken);
+    public SignedUrlContainerRequestTestFake(String signedUrlToken, String signedUrlUserId) {
+        this.uriInfo = new SignedUrlUriInfoTestFake(signedUrlToken, signedUrlUserId);
     }
 
     @Override
