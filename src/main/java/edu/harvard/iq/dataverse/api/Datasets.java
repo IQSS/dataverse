@@ -2542,7 +2542,7 @@ public class Datasets extends AbstractApiBean {
         // check if no legacy files are present
         Set<String> datasetFilenames = getDatasetFilenames(dataset);
         if (datasetFilenames.stream().anyMatch(x -> !dataFilePattern.matcher(x).matches())) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Dataset contains files not matching the nameing pattern!");
+            logger.log(Level.WARNING, "Dataset contains legacy files not matching the naming pattern!");
         }
 
         Predicate<String> filter = getToDeleteFilesFilter(datasetFilenames);
