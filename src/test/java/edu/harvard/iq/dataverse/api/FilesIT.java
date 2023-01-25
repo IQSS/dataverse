@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
+
+import static edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism.RESPONSE_MESSAGE_BAD_API_KEY;
 import static java.lang.Thread.sleep;
 import java.math.BigDecimal;
 import java.nio.file.Path;
@@ -213,11 +215,10 @@ public class FilesIT {
 
         msgt("Here it is: " + addResponse.prettyPrint());
 
-        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.auth");
-        
+
         addResponse.then().assertThat()
                 .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
-                .body("message", equalTo(errMsg))
+                .body("message", equalTo(RESPONSE_MESSAGE_BAD_API_KEY))
                 .statusCode(FORBIDDEN.getStatusCode());
     }
 
