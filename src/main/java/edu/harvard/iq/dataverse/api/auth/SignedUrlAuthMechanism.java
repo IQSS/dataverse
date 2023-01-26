@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api.auth;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -47,19 +48,16 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         UriInfo uriInfo = containerRequestContext.getUriInfo();
         String userId = uriInfo.getQueryParameters().getFirst(SIGNED_URL_USER);
         AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(userId);
-        if (targetUser != null) {
+        ApiToken userApiToken = authSvc.findApiTokenByUser(targetUser);
+        if (targetUser != null && userApiToken != null) {
             String signedUrl = uriInfo.getRequestUri().toString();
             String requestMethod = containerRequestContext.getMethod();
-            String signedUrlSigningKey = getSignedUrlSigningKeyForUser(targetUser);
+            String signedUrlSigningKey = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + userApiToken.getTokenString();
             boolean isSignedUrlValid = UrlSignerUtil.isValidUrl(signedUrl, userId, requestMethod, signedUrlSigningKey);
             if (isSignedUrlValid) {
                 authUser = targetUser;
             }
         }
         return authUser;
-    }
-
-    private String getSignedUrlSigningKeyForUser(AuthenticatedUser targetUser) {
-        return JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + authSvc.findApiTokenByUser(targetUser).getTokenString();
     }
 }
