@@ -31,10 +31,15 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.gdcc.xoai.exceptions.OAIException;
+import io.gdcc.xoai.model.oaipmh.Granularity;
+import io.gdcc.xoai.services.impl.SimpleResumptionTokenFormat;
 import org.apache.commons.lang3.StringUtils;
 
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -127,10 +132,9 @@ public class OAIServlet extends HttpServlet {
 
         repositoryConfiguration = createRepositoryConfiguration(); 
                                 
-        xoaiRepository = new Repository()
+        xoaiRepository = new Repository(repositoryConfiguration)
             .withSetRepository(setRepository)
-            .withItemRepository(itemRepository)
-            .withConfiguration(repositoryConfiguration);
+            .withItemRepository(itemRepository);
         
         dataProvider = new DataProvider(getXoaiContext(), getXoaiRepository());
     }
@@ -196,8 +200,25 @@ public class OAIServlet extends HttpServlet {
         // have a reason not to want to advertise their email address, so no 
         // email will be shown in the output of Identify. 
         InternetAddress systemEmailAddress = MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
-
-        RepositoryConfiguration repositoryConfiguration = RepositoryConfiguration.defaults()
+        
+        RepositoryConfiguration repositoryConfiguration = new RepositoryConfiguration.RepositoryConfigurationBuilder().withAdminEmail(systemEmailAddress.getAddress())
+                //.withDescription(null)
+                .withCompression("gzip")
+                .withCompression("deflate")
+                .withGranularity(Granularity.Second)
+                .withResumptionTokenFormat(new SimpleResumptionTokenFormat().withGranularity(Granularity.Second))
+                .withRepositoryName(repositoryName)
+                .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
+                .withEarliestDate(Instant.EPOCH)
+                .withMaxListIdentifiers(maxListIdentifiers)
+                .withMaxListSets(maxListSets)
+                .withMaxListRecords(maxListRecords)
+                .withDeleteMethod(DeletedRecord.TRANSIENT)
+                .withEnableMetadataAttributes(true)
+                .withRequireFromAfterEarliest(false)
+                .build();
+        
+        /*RepositoryConfiguration repositoryConfiguration = new RepositoryConfiguration.defaults()
                 .withEnableMetadataAttributes(true)
                 .withRepositoryName(repositoryName)
                 .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
@@ -207,7 +228,7 @@ public class OAIServlet extends HttpServlet {
                 .withDeleteMethod(DeletedRecord.TRANSIENT)
                 .withMaxListIdentifiers(maxListIdentifiers)
                 .withMaxListRecords(maxListRecords)
-                .withMaxListSets(maxListSets);
+                .withMaxListSets(maxListSets);*/
         
         return repositoryConfiguration; 
     }
