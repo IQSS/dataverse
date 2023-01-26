@@ -77,10 +77,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
@@ -382,7 +381,14 @@ public abstract class AbstractApiBean {
      * Returns the user of pointed by the API key, or the guest user
      * @return a user, may be a guest user.
      * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse iff there is an api key present, but it is invalid.
+     *
+     * @deprecated  Do not use this method.
+     *    This method is expected to be removed once all API endpoints use the filter-based authentication.
+     *    @see <a href="https://github.com/IQSS/dataverse/issues/9293">#9293</a>
+     *    In case you are implementing a new endpoint that requires user authentication, here is an example of how to apply the new filter-based authentication:
+     *    {@link edu.harvard.iq.dataverse.api.Datasets#getDataset(ContainerRequestContext, String, UriInfo, HttpHeaders, HttpServletResponse)}
      */
+    @Deprecated
     protected User findUserOrDie() throws WrappedResponse {
         final String requestApiKey = getRequestApiKey();
         final String requestWFKey = getRequestWorkflowInvocationID();
@@ -740,7 +746,14 @@ public abstract class AbstractApiBean {
      *
      * @param hdl handling code block.
      * @return HTTP Response appropriate for the way {@code hdl} executed.
+     *
+     * @deprecated  Do not use this method.
+     *    This method is expected to be removed once all API endpoints use the filter-based authentication.
+     *    @see <a href="https://github.com/IQSS/dataverse/issues/9293">#9293</a>
+     *    Replaced by:
+     *    {@link #response(DataverseRequestHandler, User)}
      */
+    @Deprecated
     protected Response response( DataverseRequestHandler hdl ) {
         try {
             return hdl.handle(createDataverseRequest(findUserOrDie()));
@@ -751,6 +764,14 @@ public abstract class AbstractApiBean {
         }
     }
 
+    /***
+     * The preferred way of handling a request that requires a user. The method
+     * receives a user and handles it to the handler for doing the actual work.
+     *
+     * @param hdl handling code block.
+     * @param user the associated request user.
+     * @return HTTP Response appropriate for the way {@code hdl} executed.
+     */
     protected Response response(DataverseRequestHandler hdl, User user) {
         try {
             return hdl.handle(createDataverseRequest(user));
