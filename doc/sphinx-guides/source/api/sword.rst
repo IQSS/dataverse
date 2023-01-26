@@ -67,7 +67,7 @@ Differences in Dataverse Software 4 from DVN 3.x lead to a few minor backward in
 
 - As of Dataverse Software 5.10, ``NONE`` is no longer supported as a license.
 
-- As of Dataverse Software 5.11, when uploading files, you must supply "Content-Disposition: attachment; filename=example.zip" rather than "Content-Disposition: filename=example.zip". See :ref:`sword-add-files`.
+- As of Dataverse Software 5.14, when uploading files, you must supply "Content-Disposition: attachment; filename=example.zip" rather than "Content-Disposition: filename=example.zip". See :ref:`sword-add-files`.
 
 New features as of v1.1
 -----------------------
