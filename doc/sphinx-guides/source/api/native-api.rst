@@ -2060,6 +2060,77 @@ The response is a JSON object described in the :doc:`/api/external-tools` sectio
 Files
 -----
 
+Get JSON Representation of a File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+
+Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB*:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/files/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/files/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+
+You may get its draft version of an unpublished file if you pass an api token with view draft permissions:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER/api/files/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/files/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+
+
+|CORS| Show the file whose id is passed:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=408730
+
+  curl $SERVER_URL/api/file/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/files/408730
+
+You may get its draft version of an published file if you pass an api token with view draft permissions and use the draft path parameter:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER/api/files/:persistentId/draft/?persistentId=$PERSISTENT_IDENTIFIER
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/files/:persistentId/draft/?persistentId=doi:10.5072/FK2/J8SJZB
+
+The file id can be extracted from the response retrieved from the API which uses the persistent identifier (``/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER``).
+
 Adding Files
 ~~~~~~~~~~~~
 

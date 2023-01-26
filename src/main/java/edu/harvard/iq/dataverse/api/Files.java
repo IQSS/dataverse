@@ -43,6 +43,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.InputStream;
@@ -53,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -441,6 +443,76 @@ public class Files extends AbstractApiBean {
                 .build();
     }
     
+    @GET                    
+    @Path("{id}/draft")
+    public Response getFileDataDraft(@PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
+        return getFileDataResponse(fileIdOrPersistentId, uriInfo, headers, response, true);
+    }
+    
+    @GET                             
+    @Path("{id}")
+    public Response getFileData(@PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
+          return getFileDataResponse(fileIdOrPersistentId, uriInfo, headers, response, false);
+    }
+    
+    private Response getFileDataResponse(String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response, boolean draft ){
+        
+        DataverseRequest req;
+        try {
+            req = createDataverseRequest(findUserOrDie());
+        } catch (Exception e) {
+            return error(BAD_REQUEST, "Error attempting to request information. Maybe a bad API token?");
+        }
+        final DataFile df;
+        try {
+            df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+        } catch (Exception e) {
+            return error(BAD_REQUEST, "Error attempting get the requested data file.");
+        }
+
+        FileMetadata fm;
+
+        if (draft) {
+            try {
+                fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
+            } catch (WrappedResponse w) {
+                return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset.");
+            }
+            if (null == fm) {
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.no.draft"));
+            }
+        } else {
+            //first get latest published
+            //if not available get draft if permissible
+
+            try {
+                fm = df.getLatestPublishedFileMetadata();
+                
+            } catch (UnsupportedOperationException e) {
+                try {
+                    fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
+                } catch (WrappedResponse w) {
+                    return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset.");
+                }
+                if (null == fm) {
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.no.draft"));
+                }
+            }
+
+        }
+        
+        if (fm.getDatasetVersion().isReleased()) {
+            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
+            mdcLogService.logEntry(entry);
+        } 
+        
+        return Response.ok(Json.createObjectBuilder()
+                .add("status", STATUS_OK)
+                .add("data", json(fm)).build())
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+    }
+    
     @GET                             
     @Path("{id}/metadata")
     public Response getFileMetadata(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
@@ -466,7 +538,7 @@ public class Files extends AbstractApiBean {
                     return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset." );
                 }
                 if(null == fm) {
-                    return error(BAD_REQUEST, "No draft availabile for this dataset");
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.no.draft"));
                 }
             } else {
                 fm = df.getLatestPublishedFileMetadata();
@@ -482,6 +554,7 @@ public class Files extends AbstractApiBean {
                 .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
                 .build();
     }
+    
     @GET                    
     @Path("{id}/metadata/draft")
     public Response getFileMetadataDraft(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
