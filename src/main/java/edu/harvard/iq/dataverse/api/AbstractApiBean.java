@@ -724,16 +724,7 @@ public abstract class AbstractApiBean {
         } catch ( WrappedResponse rr ) {
             return rr.getResponse();
         } catch ( Exception ex ) {
-            String incidentId = UUID.randomUUID().toString();
-            logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
-            return Response.status(500)
-                .entity( Json.createObjectBuilder()
-                             .add("status", "ERROR")
-                             .add("code", 500)
-                             .add("message", "Internal server error. More details available at the server logs.")
-                             .add("incidentId", incidentId)
-                        .build())
-                .type("application/json").build();
+            return handleDataverseRequestHandlerException(ex);
         }
     }
 
@@ -756,17 +747,31 @@ public abstract class AbstractApiBean {
         } catch ( WrappedResponse rr ) {
             return rr.getResponse();
         } catch ( Exception ex ) {
-            String incidentId = UUID.randomUUID().toString();
-            logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
-            return Response.status(500)
-                .entity( Json.createObjectBuilder()
-                             .add("status", "ERROR")
-                             .add("code", 500)
-                             .add("message", "Internal server error. More details available at the server logs.")
-                             .add("incidentId", incidentId)
+            return handleDataverseRequestHandlerException(ex);
+        }
+    }
+
+    protected Response response(DataverseRequestHandler hdl, User user) {
+        try {
+            return hdl.handle(createDataverseRequest(user));
+        } catch ( WrappedResponse rr ) {
+            return rr.getResponse();
+        } catch ( Exception ex ) {
+            return handleDataverseRequestHandlerException(ex);
+        }
+    }
+
+    private Response handleDataverseRequestHandlerException(Exception ex) {
+        String incidentId = UUID.randomUUID().toString();
+        logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
+        return Response.status(500)
+                .entity(Json.createObjectBuilder()
+                        .add("status", "ERROR")
+                        .add("code", 500)
+                        .add("message", "Internal server error. More details available at the server logs.")
+                        .add("incidentId", incidentId)
                         .build())
                 .type("application/json").build();
-        }
     }
 
     /* ====================== *\

@@ -240,8 +240,9 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
+    @AuthRequired
     @Path("{id}")
-    public Response getDataset(@PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+    public Response getDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
         return response( req -> {
             final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id)));
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
@@ -252,7 +253,7 @@ public class Datasets extends AbstractApiBean {
                 mdcLogService.logEntry(entry);
             }
             return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
-        });
+        }, getRequestUser(crc));
     }
     
     // TODO: 
@@ -304,11 +305,11 @@ public class Datasets extends AbstractApiBean {
         // "destroyDataset" API calls.  
         // (The logic below follows the current implementation of the underlying 
         // commands!)
-        
+
+        User u = getRequestUser(crc);
         return response( req -> {
             Dataset doomed = findDatasetOrDie(id);
             DatasetVersion doomedVersion = doomed.getLatestVersion();
-            User u = getRequestUser(crc);
             boolean destroy = false;
             
             if (doomed.getVersions().size() == 1) {
@@ -338,7 +339,7 @@ public class Datasets extends AbstractApiBean {
             }
             
             return ok("Dataset " + id + " deleted");
-        });
+        }, u);
     }
         
     @DELETE
@@ -346,10 +347,10 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/destroy")
     public Response destroyDataset(@Context ContainerRequestContext crc, @PathParam("id") String id) {
 
+        User u = getRequestUser(crc);
         return response(req -> {
             // first check if dataset is released, and if so, if user is a superuser
             Dataset doomed = findDatasetOrDie(id);
-            User u = getRequestUser(crc);
 
             if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Destroy can only be called by superusers."));
@@ -371,12 +372,13 @@ public class Datasets extends AbstractApiBean {
             }
 
             return ok("Dataset " + id + " destroyed");
-        });
+        }, u);
     }
     
     @DELETE
+    @AuthRequired
     @Path("{id}/versions/{versionId}")
-    public Response deleteDraftVersion( @PathParam("id") String id,  @PathParam("versionId") String versionId ){
+    public Response deleteDraftVersion(@Context ContainerRequestContext crc, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
         if ( ! ":draft".equals(versionId) ) {
             return badRequest("Only the :draft version can be deleted");
         }
@@ -408,22 +410,24 @@ public class Datasets extends AbstractApiBean {
             }
             
             return ok("Draft version of dataset " + id + " deleted");
-        });
+        }, getRequestUser(crc));
     }
         
     @DELETE
+    @AuthRequired
     @Path("{datasetId}/deleteLink/{linkedDataverseId}")
-    public Response deleteDatasetLinkingDataverse( @PathParam("datasetId") String datasetId, @PathParam("linkedDataverseId") String linkedDataverseId) {
+    public Response deleteDatasetLinkingDataverse(@Context ContainerRequestContext crc, @PathParam("datasetId") String datasetId, @PathParam("linkedDataverseId") String linkedDataverseId) {
                 boolean index = true;
         return response(req -> {
             execCommand(new DeleteDatasetLinkingDataverseCommand(req, findDatasetOrDie(datasetId), findDatasetLinkingDataverseOrDie(datasetId, linkedDataverseId), index));
             return ok("Link from Dataset " + datasetId + " to linked Dataverse " + linkedDataverseId + " deleted");
-        });
+        }, getRequestUser(crc));
     }
         
     @PUT
+    @AuthRequired
     @Path("{id}/citationdate")
-    public Response setCitationDate( @PathParam("id") String id, String dsfTypeName) {
+    public Response setCitationDate(@Context ContainerRequestContext crc, @PathParam("id") String id, String dsfTypeName) {
         return response( req -> {
             if ( dsfTypeName.trim().isEmpty() ){
                 return badRequest("Please provide a dataset field type in the requst body.");
@@ -438,43 +442,47 @@ public class Datasets extends AbstractApiBean {
 
             execCommand(new SetDatasetCitationDateCommand(req, findDatasetOrDie(id), dsfType));
             return ok("Citation Date for dataset " + id + " set to: " + (dsfType != null ? dsfType.getDisplayName() : "default"));
-        });
+        }, getRequestUser(crc));
     }
     
     @DELETE
+    @AuthRequired
     @Path("{id}/citationdate")
-    public Response useDefaultCitationDate( @PathParam("id") String id) {
+    public Response useDefaultCitationDate(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         return response( req -> {
             execCommand(new SetDatasetCitationDateCommand(req, findDatasetOrDie(id), null));
             return ok("Citation Date for dataset " + id + " set to default");
-        });
+        }, getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("{id}/versions")
-    public Response listVersions( @PathParam("id") String id ) {
+    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id ) {
         return response( req ->
              ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id)) )
                                 .stream()
                                 .map( d -> json(d) )
-                                .collect(toJsonArray())));
+                                .collect(toJsonArray())), getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("{id}/versions/{versionId}")
-    public Response getVersion( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersion(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
                     : ok(json(dsv));
-        });
+        }, getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("{id}/versions/{versionId}/files")
-    public Response getVersionFiles( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersionFiles(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> ok( jsonFileMetadatas(
-                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas())));
+                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas())), getRequestUser(crc));
     }
     
     @GET
@@ -515,21 +523,24 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
+    @AuthRequired
     @Path("{id}/versions/{versionId}/metadata")
-    public Response getVersionMetadata( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersionMetadata(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> ok(
                     jsonByBlocks(
                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers )
-                                .getDatasetFields())));
+                                .getDatasetFields())), getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("{id}/versions/{versionNumber}/metadata/{block}")
-    public Response getVersionMetadataBlock( @PathParam("id") String datasetId, 
-                                             @PathParam("versionNumber") String versionNumber, 
-                                             @PathParam("block") String blockName, 
-                                             @Context UriInfo uriInfo, 
-                                             @Context HttpHeaders headers ) {
+    public Response getVersionMetadataBlock(@Context ContainerRequestContext crc,
+                                            @PathParam("id") String datasetId,
+                                            @PathParam("versionNumber") String versionNumber,
+                                            @PathParam("block") String blockName,
+                                            @Context UriInfo uriInfo,
+                                            @Context HttpHeaders headers) {
         
         return response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo, headers );
@@ -541,21 +552,23 @@ public class Datasets extends AbstractApiBean {
                 }
             }
             return notFound("metadata block named " + blockName + " not found");
-        });
+        }, getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("{id}/modifyRegistration")
-    public Response updateDatasetTargetURL(@PathParam("id") String id ) {
+    public Response updateDatasetTargetURL(@Context ContainerRequestContext crc, @PathParam("id") String id ) {
         return response( req -> {
             execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(id), req));
             return ok("Dataset " + id + " target url updated");
-        });
+        }, getRequestUser(crc));
     }
     
     @POST
+    @AuthRequired
     @Path("/modifyRegistrationAll")
-    public Response updateDatasetTargetURLAll() {
+    public Response updateDatasetTargetURLAll(@Context ContainerRequestContext crc) {
         return response( req -> {
             datasetService.findAll().forEach( ds -> {
                 try {
@@ -565,12 +578,13 @@ public class Datasets extends AbstractApiBean {
                 }
             });
             return ok("Update All Dataset target url completed");
-        });
+        }, getRequestUser(crc));
     }
     
     @POST
+    @AuthRequired
     @Path("{id}/modifyRegistrationMetadata")
-    public Response updateDatasetPIDMetadata(@PathParam("id") String id) {
+    public Response updateDatasetPIDMetadata(@Context ContainerRequestContext crc, @PathParam("id") String id) {
 
         try {
             Dataset dataset = findDatasetOrDie(id);
@@ -585,12 +599,13 @@ public class Datasets extends AbstractApiBean {
             execCommand(new UpdateDvObjectPIDMetadataCommand(findDatasetOrDie(id), req));
             List<String> args = Arrays.asList(id);
             return ok(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.success.for.single.dataset", args));
-        });
+        }, getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("/modifyRegistrationPIDMetadataAll")
-    public Response updateDatasetPIDMetadataAll() {
+    public Response updateDatasetPIDMetadataAll(@Context ContainerRequestContext crc) {
         return response( req -> {
             datasetService.findAll().forEach( ds -> {
                 try {
@@ -600,7 +615,7 @@ public class Datasets extends AbstractApiBean {
                 }
             });
             return ok(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.success.for.update.all"));
-        });
+        }, getRequestUser(crc));
     }
   
     @PUT
@@ -1743,38 +1758,42 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/assignments")
-    public Response getAssignments(@PathParam("identifier") String id) {
+    public Response getAssignments(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
         return response(req ->
                 ok(execCommand(
                         new ListRoleAssignments(req, findDatasetOrDie(id)))
-                        .stream().map(ra -> json(ra)).collect(toJsonArray())));
+                        .stream().map(ra -> json(ra)).collect(toJsonArray())), getRequestUser(crc));
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/privateUrl")
-    public Response getPrivateUrlData(@PathParam("id") String idSupplied) {
+    public Response getPrivateUrlData(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         return response( req -> {
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, findDatasetOrDie(idSupplied)));
             return (privateUrl != null) ? ok(json(privateUrl))
                     : error(Response.Status.NOT_FOUND, "Private URL not found.");
-        });
+        }, getRequestUser(crc));
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/privateUrl")
-    public Response createPrivateUrl(@PathParam("id") String idSupplied,@DefaultValue("false") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
+    public Response createPrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied,@DefaultValue("false") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
         if(anonymizedAccess && settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames)==null) {
             throw new NotAcceptableException("Anonymized Access not enabled");
         }
         return response(req ->
                 ok(json(execCommand(
-                new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied), anonymizedAccess)))));
+                new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied), anonymizedAccess)))), getRequestUser(crc));
     }
 
     @DELETE
+    @AuthRequired
     @Path("{id}/privateUrl")
-    public Response deletePrivateUrl(@PathParam("id") String idSupplied) {
+    public Response deletePrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         return response( req -> {
             Dataset dataset = findDatasetOrDie(idSupplied);
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, dataset));
@@ -1784,7 +1803,7 @@ public class Datasets extends AbstractApiBean {
             } else {
                 return notFound("No Private URL to delete.");
             }
-        });
+        }, getRequestUser(crc));
     }
 
     @GET
@@ -2077,8 +2096,9 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset ds = findDatasetOrDie(idSupplied);
             DatasetVersion dsv = ds.getLatestVersion();
-            if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(getRequestUser(crc)), ds).has(Permission.PublishDataset)) {
-                return response(req -> ok(dsv.getExternalStatusLabel()==null ? "":dsv.getExternalStatusLabel()));
+            User user = getRequestUser(crc);
+            if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset)) {
+                return response(req -> ok(dsv.getExternalStatusLabel()==null ? "":dsv.getExternalStatusLabel()), user);
             } else {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to view the curation status of this dataset.");
             }
@@ -2676,7 +2696,7 @@ public class Datasets extends AbstractApiBean {
                 return wr.getResponse();
             }
 
-        });
+        }, getRequestUser(crc));
 
     }
     
@@ -2714,7 +2734,7 @@ public class Datasets extends AbstractApiBean {
                 return wr.getResponse();
             }
 
-        });
+        }, getRequestUser(crc));
     }
     
     @GET
@@ -2811,21 +2831,23 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
+    @AuthRequired
     @Path("{identifier}/storagesize")
-    public Response getStorageSize(@PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached,
+    public Response getStorageSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached,
                                    @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.storage"),
-                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), includeCached, GetDatasetStorageSizeCommand.Mode.STORAGE, null)))));
+                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), includeCached, GetDatasetStorageSizeCommand.Mode.STORAGE, null)))), getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("{identifier}/versions/{versionId}/downloadsize")
-    public Response getDownloadSize(@PathParam("identifier") String dvIdtf, @PathParam("versionId") String version,
+    public Response getDownloadSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("versionId") String version,
                                     @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
 
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"),
-                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), false, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers))))));
+                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), false, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers))))), getRequestUser(crc));
     }
 
     @GET
@@ -2938,8 +2960,9 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
+    @AuthRequired
     @Path("{identifier}/storageDriver")
-    public Response getFileStore(@PathParam("identifier") String dvIdtf,
+    public Response getFileStore(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
         
         Dataset dataset; 
@@ -2950,7 +2973,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
         
-        return response(req -> ok(dataset.getEffectiveStorageDriverId()));
+        return response(req -> ok(dataset.getEffectiveStorageDriverId()), getRequestUser(crc));
     }
     
     @PUT
@@ -3044,7 +3067,7 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
 
-        return response(req -> ok(dataset.getEffectiveCurationLabelSetName()));
+        return response(req -> ok(dataset.getEffectiveCurationLabelSetName()), getRequestUser(crc));
     }
 
     @PUT
@@ -3144,7 +3167,7 @@ public class Datasets extends AbstractApiBean {
         }
         if (permissionSvc.requestOn(createDataverseRequest(user), dataset).has(Permission.PublishDataset)) {
             String[] labelArray = systemConfig.getCurationLabels().get(dataset.getEffectiveCurationLabelSetName());
-            return response(req -> ok(String.join(",", labelArray)));
+            return response(req -> ok(String.join(",", labelArray)), getRequestUser(crc));
         } else {
             return error(Response.Status.FORBIDDEN, "You are not permitted to view the allowed curation labels for this dataset.");
         }
