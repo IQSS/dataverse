@@ -580,6 +580,7 @@ public class JsonPrinter {
                 // in a sense that there's no longer the category field in the 
                 // fileMetadata object; but there are now multiple, oneToMany file 
                 // categories - and we probably need to export them too!) -- L.A. 4.5
+                // DONE: catgegories by name 
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
                 .add("restricted", fmd.isRestricted()) 
@@ -617,13 +618,13 @@ public class JsonPrinter {
         // (TODO...? L.A. 4.5, Aug 7 2016)
         String fileName = null;
         
-        if (fileMetadata != null) {
-            fileName = fileMetadata.getLabel();
-        } else if (df.getFileMetadata() != null) {
+        if (fileMetadata == null){
             // Note that this may not necessarily grab the file metadata from the 
             // version *you want*! (L.A.)
-            fileName = df.getFileMetadata().getLabel();
+            fileMetadata = df.getFileMetadata();
         }
+         
+        fileName = fileMetadata.getLabel();
         
         String pidURL = "";
         
@@ -640,7 +641,8 @@ public class JsonPrinter {
                 .add("filename", fileName)
                 .add("contentType", df.getContentType())
                 .add("filesize", df.getFilesize())
-                .add("description", df.getDescription())
+                .add("description", fileMetadata.getDescription())
+                .add("categories", getFileCategories(fileMetadata))
                 .add("embargo", embargo)
                 //.add("released", df.isReleased())
                 //.add("restricted", df.isRestricted())
