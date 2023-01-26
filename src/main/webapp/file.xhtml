@@ -475,16 +475,22 @@
                                                         <th scope="row">
                                                             #{bundle['file.metadata.filetags']}
                                                         </th>
-                                                        <td>
-                                                            <div id="file-tags">
-                                                                <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag" rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
-                                                                    <h:outputText value="#{tag}" styleClass="label label-default"/>
+                                                        <td id="fileCategoriesList">
+                                                            <div id="file-tags"> 
+                                                                <ui:repeat value="#{FilePage.fileMetadata.categoriesByNameForFilePage}" var="tag" 
+                                                                           varStatus="loop"    rendered="#{!(empty FilePage.fileMetadata.categoriesByNameForFilePage)}">
+                                                                    <h:outputText value="&lt;br/&gt;"  
+                                                                                  escape="false" rendered="#{tag.toString().blank}"/>
+                                                                    <h:outputText value="#{tag}" styleClass="label label-default" rendered="#{!tag.toString().blank}"/>
                                                                 </ui:repeat>
-                                                                <ui:repeat value="#{FilePage.fileMetadata.dataFile.tags}" var="tag">
-                                                                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
+                                                                <ui:repeat value="#{FilePage.fileMetadata.dataFile.tagLabelsForFilePage}" var="tag" varStatus="loopt" >
+                                                                    <h:outputText value="#{loopt.first ? '&lt;br/&gt;': '' }" escape="false"/>
+                                                                    <h:outputText value="&lt;br/&gt;"  
+                                                                                  escape="false" rendered="#{tag.toString().blank}"/>
+                                                                    <h:outputText value="#{tag}" styleClass="label label-info" rendered="#{!tag.toString().blank}"/>
                                                                 </ui:repeat>
                                                             </div>
-                                                        </td>
+                                                        </td>    
                                                     </tr>
                                                     <tr id="filePersistentIdBlock" jsf:rendered="#{FilePage.file.identifier != null}">
                                                         <th scope="row">

@@ -237,6 +237,28 @@ public class FileMetadata implements Serializable {
         return ret;
     }
     
+    public List<String> getCategoriesByNameForFilePage() {
+    /*
+      adds an empty string after 80 characters 
+      to facilitate line breaks
+    */
+        ArrayList<String> ret = new ArrayList<>();
+
+        if (fileCategories == null) {
+            return ret;
+        }
+        int charCount = 0;
+        for (DataFileCategory fileCategory : fileCategories) {
+            charCount = charCount + fileCategory.getName().length();
+            if (charCount > 80) {
+                ret.add("");
+                charCount = 0;
+            }
+            ret.add(fileCategory.getName());
+        }
+        return ret;
+    }
+    
     
     public JsonArrayBuilder getCategoryNamesAsJsonArrayBuilder() {
 
