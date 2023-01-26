@@ -38,8 +38,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -209,7 +207,7 @@ public class OAIServlet extends HttpServlet {
                 .withResumptionTokenFormat(new SimpleResumptionTokenFormat().withGranularity(Granularity.Second))
                 .withRepositoryName(repositoryName)
                 .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
-                .withEarliestDate(Instant.EPOCH)
+                .withEarliestDate(Instant.EPOCH) // this is NOT something we really want to be doing, but this will be corrected once PR9316 is merged
                 .withMaxListIdentifiers(maxListIdentifiers)
                 .withMaxListSets(maxListSets)
                 .withMaxListRecords(maxListRecords)
@@ -218,17 +216,6 @@ public class OAIServlet extends HttpServlet {
                 .withRequireFromAfterEarliest(false)
                 .build();
         
-        /*RepositoryConfiguration repositoryConfiguration = new RepositoryConfiguration.defaults()
-                .withEnableMetadataAttributes(true)
-                .withRepositoryName(repositoryName)
-                .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
-                .withCompression("gzip")
-                .withCompression("deflate")
-                .withAdminEmail(systemEmailAddress != null ? systemEmailAddress.getAddress() : null)
-                .withDeleteMethod(DeletedRecord.TRANSIENT)
-                .withMaxListIdentifiers(maxListIdentifiers)
-                .withMaxListRecords(maxListRecords)
-                .withMaxListSets(maxListSets);*/
         
         return repositoryConfiguration; 
     }
