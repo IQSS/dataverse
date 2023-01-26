@@ -335,11 +335,17 @@ public abstract class AbstractApiBean {
         return (User) crc.getProperty(CONTAINER_REQUEST_CONTEXT_USER);
     }
 
-    /*
-    TODO:
-     This method is designed to comply with existing authorization logic, based on the old findAuthenticatedUserOrDie method.
-     Ideally, as for authentication, a filter could be implemented for authorization, which would extract and encapsulate the
-     authorization logic from the AbstractApiBean.
+    /**
+     * Gets the authenticated user from the ContainerRequestContext user property. If the user from the property
+     * is not authenticated, throws a wrapped "authenticated user required" user (HTTP UNAUTHORIZED) response.
+     * @param crc a ContainerRequestContext implementation
+     * @return The authenticated user
+     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse in case the user is not authenticated.
+     *
+     * TODO:
+     *  This method is designed to comply with existing authorization logic, based on the old findAuthenticatedUserOrDie method.
+     *  Ideally, as for authentication, a filter could be implemented for authorization, which would extract and encapsulate the
+     *  authorization logic from the AbstractApiBean.
      */
     protected AuthenticatedUser getRequestAuthenticatedUserOrDie(ContainerRequestContext crc) throws WrappedResponse {
         User requestUser = (User) crc.getProperty(CONTAINER_REQUEST_CONTEXT_USER);
@@ -421,9 +427,16 @@ public abstract class AbstractApiBean {
      *
      * If no user is found, throws a wrapped bad api key (HTTP UNAUTHORIZED) response.
      *
-     * @return The authenticated user which owns the passed api key
+     * @return The authenticated user which owns the passed api key.
      * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse in case said user is not found.
+     *
+     * @deprecated  Do not use this method.
+     *    This method is expected to be removed once all API endpoints use the filter-based authentication.
+     *    @see <a href="https://github.com/IQSS/dataverse/issues/9293">#9293</a>
+     *    Replaced by:
+     *    {@link #getRequestAuthenticatedUserOrDie(ContainerRequestContext)}
      */
+    @Deprecated
     protected AuthenticatedUser findAuthenticatedUserOrDie() throws WrappedResponse {
         return findAuthenticatedUserOrDie(getRequestApiKey(), getRequestWorkflowInvocationID());
     }
