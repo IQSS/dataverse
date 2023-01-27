@@ -219,7 +219,7 @@ public class FilesIT {
         addResponse.then().assertThat()
                 .body("status", equalTo(ApiConstants.STATUS_ERROR))
                 .body("message", equalTo(ApiKeyAuthMechanism.RESPONSE_MESSAGE_BAD_API_KEY))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .statusCode(UNAUTHORIZED.getStatusCode());
     }
 
     @Test
