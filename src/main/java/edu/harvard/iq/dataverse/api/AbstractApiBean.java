@@ -83,7 +83,6 @@ import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
-import static edu.harvard.iq.dataverse.api.ApiConstants.CONTAINER_REQUEST_CONTEXT_USER;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
@@ -96,8 +95,6 @@ public abstract class AbstractApiBean {
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     private static final String PERSISTENT_ID_KEY=":persistentId";
     private static final String ALIAS_KEY=":alias";
-    public static final String STATUS_ERROR = "ERROR";
-    public static final String STATUS_OK = "OK";
     public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
     public static final String DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME = "X-Dataverse-invocationID";
 
@@ -332,7 +329,7 @@ public abstract class AbstractApiBean {
     }
 
     protected User getRequestUser(ContainerRequestContext crc) {
-        return (User) crc.getProperty(CONTAINER_REQUEST_CONTEXT_USER);
+        return (User) crc.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER);
     }
 
     /**
@@ -348,7 +345,7 @@ public abstract class AbstractApiBean {
      *  authorization logic from the AbstractApiBean.
      */
     protected AuthenticatedUser getRequestAuthenticatedUserOrDie(ContainerRequestContext crc) throws WrappedResponse {
-        User requestUser = (User) crc.getProperty(CONTAINER_REQUEST_CONTEXT_USER);
+        User requestUser = (User) crc.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER);
         if (requestUser.isAuthenticated()) {
             return (AuthenticatedUser) requestUser;
         } else {
@@ -814,21 +811,21 @@ public abstract class AbstractApiBean {
 
     protected Response ok( JsonArrayBuilder bld ) {
         return Response.ok(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
+            .add("status", ApiConstants.STATUS_OK)
             .add("data", bld).build())
             .type(MediaType.APPLICATION_JSON).build();
     }
     
     protected Response ok( JsonArray ja ) {
         return Response.ok(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
+            .add("status", ApiConstants.STATUS_OK)
             .add("data", ja).build())
             .type(MediaType.APPLICATION_JSON).build();
     }
 
     protected Response ok( JsonObjectBuilder bld ) {
         return Response.ok( Json.createObjectBuilder()
-            .add("status", STATUS_OK)
+            .add("status", ApiConstants.STATUS_OK)
             .add("data", bld).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
@@ -836,7 +833,7 @@ public abstract class AbstractApiBean {
     
     protected Response ok( JsonObject jo ) {
         return Response.ok( Json.createObjectBuilder()
-                .add("status", STATUS_OK)
+                .add("status", ApiConstants.STATUS_OK)
                 .add("data", jo).build() )
                 .type(MediaType.APPLICATION_JSON)
                 .build();    
@@ -844,7 +841,7 @@ public abstract class AbstractApiBean {
 
     protected Response ok( String msg ) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
+            .add("status", ApiConstants.STATUS_OK)
             .add("data", Json.createObjectBuilder().add("message",msg)).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
@@ -852,7 +849,7 @@ public abstract class AbstractApiBean {
     
     protected Response ok( String msg, JsonObjectBuilder bld  ) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
+            .add("status", ApiConstants.STATUS_OK)
             .add("message", Json.createObjectBuilder().add("message",msg))     
             .add("data", bld).build())      
             .type(MediaType.APPLICATION_JSON)
@@ -861,7 +858,7 @@ public abstract class AbstractApiBean {
 
     protected Response ok( boolean value ) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
+            .add("status", ApiConstants.STATUS_OK)
             .add("data", value).build() ).build();
     }
 
@@ -948,7 +945,7 @@ public abstract class AbstractApiBean {
     protected static Response error( Status sts, String msg ) {
         return Response.status(sts)
                 .entity( NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("status", STATUS_ERROR)
+                        .add("status", ApiConstants.STATUS_ERROR)
                         .add( "message", msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }

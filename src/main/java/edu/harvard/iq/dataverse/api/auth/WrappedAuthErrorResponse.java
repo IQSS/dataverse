@@ -1,12 +1,10 @@
 package edu.harvard.iq.dataverse.api.auth;
 
+import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import static edu.harvard.iq.dataverse.api.ApiConstants.STATUS_ERROR;
-
 
 public class WrappedAuthErrorResponse extends Exception {
 
@@ -17,7 +15,7 @@ public class WrappedAuthErrorResponse extends Exception {
         this.message = message;
         this.response = Response.status(Response.Status.UNAUTHORIZED)
                 .entity(NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("status", STATUS_ERROR)
+                        .add("status", ApiConstants.STATUS_ERROR)
                         .add("message", message).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }

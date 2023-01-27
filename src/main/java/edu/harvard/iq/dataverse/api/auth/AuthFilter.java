@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.auth;
 
+import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.users.User;
 
 import javax.annotation.Priority;
@@ -9,8 +10,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
-
-import static edu.harvard.iq.dataverse.api.ApiConstants.CONTAINER_REQUEST_CONTEXT_USER;
 
 @AuthRequired
 @Provider
@@ -24,7 +23,7 @@ public class AuthFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
         try {
             User user = compoundAuthMechanism.findUserFromRequest(containerRequestContext);
-            containerRequestContext.setProperty(CONTAINER_REQUEST_CONTEXT_USER, user);
+            containerRequestContext.setProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER, user);
         } catch (WrappedAuthErrorResponse e) {
             containerRequestContext.abortWith(e.getResponse());
         }

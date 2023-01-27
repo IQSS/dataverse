@@ -1219,7 +1219,7 @@ public class Datasets extends AbstractApiBean {
                     return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
                 } else {
                     return Response.ok(Json.createObjectBuilder()
-                            .add("status", STATUS_OK)
+                            .add("status", ApiConstants.STATUS_OK)
                             .add("status_details", successMsg)
                             .add("data", json(ds)).build())
                             .type(MediaType.APPLICATION_JSON)
@@ -1464,7 +1464,7 @@ public class Datasets extends AbstractApiBean {
             }
             if (badFiles) {
                 return Response.status(Status.FORBIDDEN)
-                        .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", STATUS_ERROR)
+                        .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", ApiConstants.STATUS_ERROR)
                                 .add("message", "You do not have permission to embargo the following files")
                                 .add("files", restrictedFiles).build())
                         .type(MediaType.APPLICATION_JSON_TYPE).build();
@@ -1584,7 +1584,7 @@ public class Datasets extends AbstractApiBean {
             }
             if (badFiles) {
                 return Response.status(Status.FORBIDDEN)
-                        .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", STATUS_ERROR)
+                        .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", ApiConstants.STATUS_ERROR)
                                 .add("message", "The following files do not have embargoes or you do not have permission to remove their embargoes")
                                 .add("files", restrictedFiles).build())
                         .type(MediaType.APPLICATION_JSON_TYPE).build();

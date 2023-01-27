@@ -7,6 +7,7 @@ public final class ApiConstants {
     }
 
     // Statuses
+    public static final String STATUS_OK = "OK";
     public static final String STATUS_ERROR = "ERROR";
 
     // Authentication
