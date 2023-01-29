@@ -14,6 +14,10 @@ import javax.ws.rs.core.UriInfo;
 import static edu.harvard.iq.dataverse.util.UrlSignerUtil.SIGNED_URL_TOKEN;
 import static edu.harvard.iq.dataverse.util.UrlSignerUtil.SIGNED_URL_USER;
 
+/**
+ * @author Guillermo Portas
+ * Authentication mechanism that attempts to authenticate a user from a Signed URL provided in an API request.
+ */
 public class SignedUrlAuthMechanism implements AuthMechanism {
 
     public static final String RESPONSE_MESSAGE_BAD_SIGNED_URL = "Bad signed URL";

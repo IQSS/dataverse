@@ -7,6 +7,10 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 
+/**
+ * @author Guillermo Portas
+ * Authentication mechanism that attempts to authenticate a user from a Workflow Key provided in an API request.
+ */
 public class WorkflowKeyAuthMechanism implements AuthMechanism {
 
     public static final String DATAVERSE_WORKFLOW_KEY_REQUEST_HEADER_NAME = "X-Dataverse-invocationID";

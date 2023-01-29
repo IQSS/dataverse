@@ -11,6 +11,10 @@ import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.util.logging.Logger;
 
+/**
+ * @author Guillermo Portas
+ * Authentication mechanism that attempts to authenticate a user from an API Key provided in an API request.
+ */
 public class ApiKeyAuthMechanism implements AuthMechanism {
 
     public static final String DATAVERSE_API_KEY_REQUEST_HEADER_NAME = "X-Dataverse-key";

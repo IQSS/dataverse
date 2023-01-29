@@ -11,6 +11,10 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 
+/**
+ * @author Guillermo Portas
+ * Dedicated filter to authenticate the user requesting an API endpoint that requires user authentication.
+ */
 @AuthRequired
 @Provider
 @Priority(Priorities.AUTHENTICATION)

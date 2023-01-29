@@ -9,13 +9,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author Guillermo Portas
+ * Compound authentication mechanism that attempts to authenticate a user through the different authentication mechanisms (ordered by priority) of which it is composed.
+ * If no user is returned from any of the inner authentication mechanisms, a Guest user is returned.
+ */
 public class CompoundAuthMechanism implements AuthMechanism {
 
     private final List<AuthMechanism> authMechanisms = new ArrayList<>();
 
     @Inject
     public CompoundAuthMechanism(ApiKeyAuthMechanism apiKeyAuthMechanism, WorkflowKeyAuthMechanism workflowKeyAuthMechanism, SignedUrlAuthMechanism signedUrlAuthMechanism) {
-        // Auth mechanisms should be ordered by priority
+        // Auth mechanisms should be ordered by priority here
         add(apiKeyAuthMechanism, workflowKeyAuthMechanism, signedUrlAuthMechanism);
     }
 
