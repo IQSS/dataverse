@@ -67,6 +67,7 @@ import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
@@ -114,11 +115,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Predicate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
@@ -155,6 +158,7 @@ import com.amazonaws.services.s3.model.PartETag;
 public class Datasets extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Datasets.class.getCanonicalName());
+    private static final Pattern dataFilePattern = Pattern.compile("^[0-9a-f]{11}-[0-9a-f]{12}\\.?.*");
     
     @Inject DataverseSession session;
 
@@ -2486,6 +2490,76 @@ public class Datasets extends AbstractApiBean {
         
     } // end: addFileToDataset
 
+
+    /**
+     * Clean storage of a Dataset
+     *
+     * @param idSupplied
+     * @return
+     */
+    @GET
+    @Path("{id}/cleanStorage")
+    public Response cleanStorage(@PathParam("id") String idSupplied, @QueryParam("dryrun") Boolean dryrun) {
+        // get user and dataset
+        User authUser;
+        try {
+            authUser = findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN,
+                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+            );
+        }
+
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(idSupplied);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        // check permissions
+        if (!permissionSvc.permissionsFor(createDataverseRequest(authUser), dataset).contains(Permission.EditDataset)) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Access denied!");
+        }
+
+        boolean doDryRun = dryrun != null && dryrun.booleanValue();
+
+        // check if no legacy files are present
+        Set<String> datasetFilenames = getDatasetFilenames(dataset);
+        if (datasetFilenames.stream().anyMatch(x -> !dataFilePattern.matcher(x).matches())) {
+            logger.log(Level.WARNING, "Dataset contains legacy files not matching the naming pattern!");
+        }
+
+        Predicate<String> filter = getToDeleteFilesFilter(datasetFilenames);
+        List<String> deleted;
+        try {
+            StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
+            deleted = datasetIO.cleanUp(filter, doDryRun);
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "IOException! Serious Error! See administrator!");
+        }
+
+        return ok("Found: " + datasetFilenames.stream().collect(Collectors.joining(", ")) + "\n" + "Deleted: " + deleted.stream().collect(Collectors.joining(", ")));
+        
+    }
+
+    private static Set<String> getDatasetFilenames(Dataset dataset) {
+        Set<String> files = new HashSet<>();
+        for (DataFile dataFile: dataset.getFiles()) {
+            String storageIdentifier = dataFile.getStorageIdentifier();
+            String location = storageIdentifier.substring(storageIdentifier.indexOf("://") + 3);
+            String[] locationParts = location.split(":");//separate bucket, swift container, etc. from fileName
+            files.add(locationParts[locationParts.length-1]);
+        }
+        return files;
+    }
+
+    public static Predicate<String> getToDeleteFilesFilter(Set<String> datasetFilenames) {
+        return f -> {
+            return dataFilePattern.matcher(f).matches() && datasetFilenames.stream().noneMatch(x -> f.startsWith(x));
+        };
+    }
 
     private void msg(String m) {
         //System.out.println(m);
