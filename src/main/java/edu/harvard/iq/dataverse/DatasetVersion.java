@@ -1957,13 +1957,14 @@ public class DatasetVersion implements Serializable {
             job.add("license",DatasetUtil.getLicenseURI(this));
         }
         
+        String installationBrandName = BrandingUtil.getInstallationBrandName();
+        
         job.add("includedInDataCatalog", Json.createObjectBuilder()
                 .add("@type", "DataCatalog")
-                .add("name", BrandingUtil.getRootDataverseCollectionName())
+                .add("name", installationBrandName)
                 .add("url", SystemConfig.getDataverseSiteUrlStatic())
         );
-
-        String installationBrandName = BrandingUtil.getInstallationBrandName();
+        
         /**
          * Both "publisher" and "provider" are included but they have the same
          * values. Some services seem to prefer one over the other.
