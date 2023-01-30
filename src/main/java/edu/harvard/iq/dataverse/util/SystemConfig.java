@@ -1,33 +1,16 @@
 package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
-
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.time.Year;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.passay.CharacterRule;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -38,9 +21,21 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
-
-import org.passay.CharacterRule;
-import org.apache.commons.io.IOUtils;
+import java.io.StringReader;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.time.Year;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * System-wide configuration
@@ -61,28 +56,7 @@ public class SystemConfig {
     AuthenticationServiceBean authenticationService;
     
    public static final String DATAVERSE_PATH = "/dataverse/";
-
-    /**
-     * A JVM option for the advertised fully qualified domain name (hostname) of
-     * the Dataverse installation, such as "dataverse.example.com", which may
-     * differ from the hostname that the server knows itself as.
-     *
-     * The equivalent in DVN 3.x was "dvn.inetAddress".
-     */
-    public static final String FQDN = "dataverse.fqdn";
-    
-    /**
-     * A JVM option for specifying the "official" URL of the site.
-     * Unlike the FQDN option above, this would be a complete URL, 
-     * with the protocol, port number etc. 
-     */
-    public static final String SITE_URL = "dataverse.siteUrl";
-
-    /**
-     * A JVM option for where files are stored on the file system.
-     */
-    public static final String FILES_DIRECTORY = "dataverse.files.directory";
-
+   
     /**
      * Some installations may not want download URLs to their files to be
      * available in Schema.org JSON-LD output.
@@ -96,12 +70,6 @@ public class SystemConfig {
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
 
     /**
-     * A common place to find the String for a sane Solr hostname:port
-     * combination.
-     */
-    private String saneDefaultForSolrHostColonPort = "localhost:8983";
-
-    /**
      * The default number of datafiles that we allow to be created through 
      * zip file upload.
      */
@@ -109,9 +77,8 @@ public class SystemConfig {
     public static final long defaultZipDownloadLimit = 104857600L; // 100MB
     private static final int defaultMultipleUploadFilesLimit = 1000;
     private static final int defaultLoginSessionTimeout = 480; // = 8 hours
-
-    private static String appVersionString = null; 
-    private static String buildNumberString = null; 
+    
+    private String buildNumber = null;
     
     private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
     
@@ -132,137 +99,60 @@ public class SystemConfig {
     // candidate for being moved into some kind of an application-scoped caching
     // service... some CachingService @Singleton - ? (L.A. 5.8)
     public String getVersion(boolean withBuildNumber) {
-        
-        if (appVersionString == null) {
-
-            // The Version Number is no longer supplied in a .properties file - so
-            // we can't just do 
-            //  return BundleUtil.getStringFromBundle("version.number", null, ResourceBundle.getBundle("VersionNumber", Locale.US));
-            //
-            // Instead, we'll rely on Maven placing the version number into the
-            // Manifest, and getting it from there:
-            // (this is considered a better practice, and will also allow us
-            // to maintain this number in only one place - the pom.xml file)
-            // -- L.A. 4.0.2
-            
-            // One would assume, that once the version is in the MANIFEST.MF, 
-            // as Implementation-Version:, it would be possible to obtain 
-            // said version simply as 
-            //    appVersionString = getClass().getPackage().getImplementationVersion();
-            // alas - that's not working, for whatever reason. (perhaps that's 
-            // only how it works with jar-ed packages; not with .war files).
-            // People on the interwebs suggest that one should instead 
-            // open the Manifest as a resource, then extract its attributes. 
-            // There were some complications with that too. Plus, relying solely 
-            // on the MANIFEST.MF would NOT work for those of the developers who 
-            // are using "in place deployment" (i.e., where 
-            // Netbeans runs their builds directly from the local target 
-            // directory, bypassing the war file deployment; and the Manifest 
-            // is only available in the .war file). For that reason, I am 
-            // going to rely on the pom.properties file, and use java.util.Properties 
-            // to read it. We have to look for this file in 2 different places
-            // depending on whether this is a .war file deployment, or a 
-            // developers build. (the app-level META-INF is only populated when
-            // a .war file is built; the "maven-archiver" directory, on the other 
-            // hand, is only available when it's a local build deployment).
-            // So, long story short, I'm resorting to the convoluted steps below. 
-            // It may look hacky, but it should actually be pretty solid and 
-            // reliable. 
-            
-            
-            // First, find the absolute path url of the application persistence file
-            // always supplied with the Dataverse app:
-            java.net.URL fileUrl = Thread.currentThread().getContextClassLoader().getResource("META-INF/persistence.xml");
-            String filePath = null;
-
-
-            if (fileUrl != null) {
-                filePath = fileUrl.getFile();
-                if (filePath != null) {
-                    InputStream mavenPropertiesInputStream = null;
-                    String mavenPropertiesFilePath; 
-                    Properties mavenProperties = new Properties();
-
-                    
-                    filePath = filePath.replaceFirst("/[^/]*$", "/");
-                    // Using a relative path, find the location of the maven pom.properties file. 
-                    // First, try to look for it in the app-level META-INF. This will only be 
-                    // available if it's a war file deployment: 
-                    mavenPropertiesFilePath = filePath.concat("../../../META-INF/maven/edu.harvard.iq/dataverse/pom.properties");                                     
-                    
-                    try {
-                        mavenPropertiesInputStream = new FileInputStream(mavenPropertiesFilePath);
-                    } catch (IOException ioex) {
-                        // OK, let's hope this is a local dev. build. 
-                        // In that case the properties file should be available in 
-                        // the maven-archiver directory: 
-                        
-                        mavenPropertiesFilePath = filePath.concat("../../../../maven-archiver/pom.properties");
-                        
-                        // try again: 
-                        
-                        try {
-                            mavenPropertiesInputStream = new FileInputStream(mavenPropertiesFilePath);
-                        } catch (IOException ioex2) {
-                            logger.warning("Failed to find and/or open for reading the pom.properties file.");
-                            mavenPropertiesInputStream = null; 
-                        }
-                    }
-                    
-                    if (mavenPropertiesInputStream != null) {
-                        try {
-                            mavenProperties.load(mavenPropertiesInputStream);
-                            appVersionString = mavenProperties.getProperty("version");                        
-                        } catch (IOException ioex) {
-                            logger.warning("caught IOException trying to read and parse the pom properties file.");
-                        } finally {
-                            IOUtils.closeQuietly(mavenPropertiesInputStream);
-                        }
-                    }
-                    
-                } else {
-                    logger.warning("Null file path representation of the location of persistence.xml in the webapp root directory!"); 
-                }
-            } else {
-                logger.warning("Could not find the location of persistence.xml in the webapp root directory!");
-            }
-
-            
-            if (appVersionString == null) {
-                // still null? - defaulting to 4.0:    
-                appVersionString = "4.0";
-            }
-        }
+        // Retrieve the version via MPCONFIG
+        // NOTE: You may override the version via all methods of MPCONFIG.
+        //       It will default to read from microprofile-config.properties source,
+        //       which contains in the source a Maven property reference to ${project.version}.
+        //       When packaging the app to deploy it, Maven will replace this, rendering it a static entry.
+        String appVersion = JvmSettings.VERSION.lookup();
             
         if (withBuildNumber) {
-            if (buildNumberString == null) {
-                // (build number is still in a .properties file in the source tree; it only 
-                // contains a real build number if this war file was built by 
-                // Jenkins) 
-                        
+            if (buildNumber == null) {
+                // (build number is still in a .properties file in the source tree; it only
+                // contains a real build number if this war file was built by Jenkins)
+                // TODO: might be replaced with same trick as for version via Maven property w/ empty default
                 try {
-                    buildNumberString = ResourceBundle.getBundle("BuildNumber").getString("build.number");
+                    buildNumber = ResourceBundle.getBundle("BuildNumber").getString("build.number");
                 } catch (MissingResourceException ex) {
-                    buildNumberString = null; 
+                    buildNumber = null;
+                }
+                
+                // Also try to read the build number via MicroProfile Config if not already present from the
+                // properties file (so can be overridden by env var or other source)
+                if (buildNumber == null || buildNumber.isEmpty()) {
+                    buildNumber = JvmSettings.BUILD.lookupOptional().orElse("");
                 }
             }
             
-            if (buildNumberString != null && !buildNumberString.equals("")) {
-                return appVersionString + " build " + buildNumberString; 
-            } 
-        }        
-        
-        return appVersionString; 
-    }
-
-    public String getSolrHostColonPort() {
-        String SolrHost;
-        if ( System.getenv("SOLR_SERVICE_HOST") != null && System.getenv("SOLR_SERVICE_HOST") != ""){
-            SolrHost = System.getenv("SOLR_SERVICE_HOST");
+            if (!buildNumber.equals("")) {
+                return appVersion + " build " + buildNumber;
+            }
         }
-        else SolrHost = saneDefaultForSolrHostColonPort;
-        String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, SolrHost);
-        return solrHostColonPort;
+        
+        return appVersion;
+    }
+    
+    /**
+     * Retrieve the Solr endpoint in "host:port" form, to be used with a Solr client.
+     *
+     * This will retrieve the setting from either the database ({@link SettingsServiceBean.Key#SolrHostColonPort}) or
+     * via Microprofile Config API (properties {@link JvmSettings#SOLR_HOST} and {@link JvmSettings#SOLR_PORT}).
+     *
+     * A database setting always takes precedence. If not given via other config sources, a default from
+     * <code>resources/META-INF/microprofile-config.properties</code> is used. (It's possible to use profiles.)
+     *
+     * @return Solr endpoint as string "hostname:port"
+     */
+    public String getSolrHostColonPort() {
+        // Get from MPCONFIG. Might be configured by a sysadmin or simply return the default shipped with
+        // resources/META-INF/microprofile-config.properties.
+        // NOTE: containers should use system property mp.config.profile=ct to use sane container usage default
+        String host = JvmSettings.SOLR_HOST.lookup();
+        String port = JvmSettings.SOLR_PORT.lookup();
+        
+        // DB setting takes precedence over all. If not present, will return default from above.
+        return Optional.ofNullable(settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort))
+            .orElse(host + ":" + port);
     }
 
     public boolean isProvCollectionEnabled() {
@@ -340,32 +230,58 @@ public class SystemConfig {
     }
     
     /**
-     * The "official", designated URL of the site;
-     * can be defined as a complete URL; or derived from the 
-     * "official" hostname. If none of these options is set,
-     * defaults to the InetAddress.getLocalHOst() and https;
-     * These are legacy JVM options. Will be eventualy replaced
-     * by the Settings Service configuration.
+     * Lookup (or construct) the designated URL of this instance from configuration.
+     *
+     * Can be defined as a complete URL via <code>dataverse.siteUrl</code>; or derived from the hostname
+     * <code>dataverse.fqdn</code> and HTTPS. If none of these options is set, defaults to the
+     * {@link InetAddress#getLocalHost} and HTTPS.
+     *
+     * NOTE: This method does not provide any validation.
+     * TODO: The behaviour of this method is subject to a later change, see
+     *       https://github.com/IQSS/dataverse/issues/6636
+     *
+     * @return The designated URL of this instance as per configuration.
      */
     public String getDataverseSiteUrl() {
         return getDataverseSiteUrlStatic();
     }
     
+    /**
+     * Lookup (or construct) the designated URL of this instance from configuration.
+     *
+     * Can be defined as a complete URL via <code>dataverse.siteUrl</code>; or derived from the hostname
+     * <code>dataverse.fqdn</code> and HTTPS. If none of these options is set, defaults to the
+     * {@link InetAddress#getLocalHost} and HTTPS.
+     *
+     * NOTE: This method does not provide any validation.
+     * TODO: The behaviour of this method is subject to a later change, see
+     *       https://github.com/IQSS/dataverse/issues/6636
+     *
+     * @return The designated URL of this instance as per configuration.
+     */
     public static String getDataverseSiteUrlStatic() {
-        String hostUrl = System.getProperty(SITE_URL);
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
+        // If dataverse.siteUrl has been configured, simply return it
+        Optional<String> siteUrl = JvmSettings.SITE_URL.lookupOptional();
+        if (siteUrl.isPresent()) {
+            return siteUrl.get();
         }
-        String hostName = System.getProperty(FQDN);
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
+        
+        // Otherwise try to lookup dataverse.fqdn setting and default to HTTPS
+        Optional<String> fqdn = JvmSettings.FQDN.lookupOptional();
+        if (fqdn.isPresent()) {
+            return "https://" + fqdn.get();
         }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
+        
+        // Last resort - get the servers local name and use it.
+        // BEWARE - this is dangerous.
+        // 1) A server might have a different name than your repository URL.
+        // 2) The underlying reverse DNS lookup might point to a different name than your repository URL.
+        // 3) If this server has multiple IPs assigned, which one will it be for the lookup?
+        try {
+            return "https://" + InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e) {
+            return null;
+        }
     }
     
     /**
@@ -373,22 +289,6 @@ public class SystemConfig {
      */
     public String getPageURLWithQueryString() {
         return PrettyContext.getCurrentInstance().getRequestURL().toURL() + PrettyContext.getCurrentInstance().getRequestQueryString().toQueryString();
-    }
-
-    /**
-     * The "official" server's fully-qualified domain name: 
-     */
-    public String getDataverseServer() {
-        // still reliese on a JVM option: 
-        String fqdn = System.getProperty(FQDN);
-        if (fqdn == null) {
-            try {
-                fqdn = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        return fqdn;
     }
 
     public String getGuidesBaseUrl() {
@@ -862,7 +762,13 @@ public class SystemConfig {
          * Upload through Globus of large files
          */
 
-        GLOBUS("globus")
+        GLOBUS("globus"), 
+        
+        /**
+         * Upload folders of files through dvwebloader app
+         */
+
+        WEBLOADER("dvwebloader");
         ;
 
 
@@ -998,6 +904,10 @@ public class SystemConfig {
 
     public boolean isGlobusUpload(){
         return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), true);
+    }
+    
+    public boolean isWebloaderUpload(){
+        return getMethodAvailable(FileUploadMethods.WEBLOADER.toString(), true);
     }
 
     // Controls if HTTP upload is enabled for both GUI and API.

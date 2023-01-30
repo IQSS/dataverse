@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import javax.ejb.EJB;
@@ -44,7 +45,7 @@ public class Info extends AbstractApiBean {
     @GET
     @Path("server")
     public Response getServer() {
-        return response( req -> ok(systemConfig.getDataverseServer()));
+        return response( req -> ok(JvmSettings.FQDN.lookup()));
     }
     
     @GET

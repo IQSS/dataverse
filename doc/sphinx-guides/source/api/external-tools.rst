@@ -53,14 +53,20 @@ External tools must be expressed in an external tool manifest file, a specific J
 Examples of Manifests
 +++++++++++++++++++++
 
-Let's look at two examples of external tool manifests (one at the file level and one at the dataset level) before we dive into how they work.
+Let's look at a few examples of external tool manifests (both at the file level and at the dataset level) before we dive into how they work.
+
+.. _tools-for-files:
 
 External Tools for Files
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-:download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` is a file level both an "explore" tool and a "preview" tool that operates on tabular files:
+:download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` is a file level (both an "explore" tool and a "preview" tool) that operates on tabular files:
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/fabulousFileTool.json
+
+:download:`auxFileTool.json <../_static/installation/files/root/external-tools/auxFileTool.json>` is a file level preview tool that operates on auxiliary files associated with a data file (note the "requirements" section):
+
+.. literalinclude:: ../_static/installation/files/root/external-tools/auxFileTool.json
 
 External Tools for Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -92,7 +98,9 @@ Terminology
     
     contentType                  File level tools operate on a specific **file type** (content type or MIME type such as "application/pdf") and this must be specified. Dataset level tools do not use contentType.
 
-    toolParameters               **Query parameters** are supported and described below.
+    toolParameters               **httpMethod**, **queryParameters**, and **allowedApiCalls** are supported and described below.
+    
+    httpMethod                   Either ``GET`` or ``POST``.
 
     queryParameters              **Key/value combinations** that can be appended to the toolUrl. For example, once substitution takes place (described below) the user may be redirected to ``https://fabulousfiletool.com?fileId=42&siteUrl=http://demo.dataverse.org``.
 
@@ -101,6 +109,20 @@ Terminology
     query parameter values       A **mechanism for substituting reserved words with dynamic content**. For example, in your manifest file, you can use a reserved word (described below) such as ``{fileId}`` to pass a file's database id to your tool in a query parameter. Your tool might receive this query parameter as "fileId=42".
 
     reserved words               A **set of strings surrounded by curly braces** such as ``{fileId}`` or ``{datasetId}`` that will be inserted into query parameters. See the table below for a complete list.
+    
+    allowedApiCalls              An array of objects defining callbacks the tool is allowed to make to the Dataverse API. If the dataset or file being accessed is not public, the callback URLs will be signed to allow the tool access for a defined time.
+    
+    allowedApiCalls name         A name the tool will use to identify this callback URL such as ``retrieveDataFile``.
+    
+    allowedApiCalls urlTemplate  The relative URL for the callback using reserved words to indicate where values should by dynamically substituted such as ``/api/v1/datasets/{datasetId}``.
+    
+    allowedApiCalls httpMethod   Which HTTP method the specified callback uses such as ``GET`` or ``POST``.
+    
+    allowedApiCalls timeOut      For non-public datasets and datafiles, how many minutes the signed URLs given to the tool should be valid for. Must be an integer.
+
+    requirements                 **Resources your tool needs to function.** For now, the only requirement you can specify is that one or more auxiliary files exist (see auxFilesExist in the :ref:`tools-for-files` example). Currently, requirements only apply to preview tools. If the requirements are not met, the preview tool is not shown.
+
+    auxFilesExist                **An array containing formatTag and formatVersion pairs** for each auxiliary file that your tool needs to download to function properly. For example, a required aux file could have a ``formatTag`` of "NcML" and a ``formatVersion`` of "1.0". See also :doc:`/developers/aux-file-support`.
     
     toolName                     A **name** of an external tool that is used to differentiate between external tools and also used in bundle.properties for localization in the Dataverse installation web interface. For example, the toolName for Data Explorer is ``explorer``. For the Data Curation Tool the toolName is ``dct``. This is an optional parameter in the manifest JSON file.   
     ===========================  ==========
@@ -130,6 +152,25 @@ Reserved Words
 
     ``{localeCode}``             optional    The code for the language ("en" for English, "fr" for French, etc.) that user has selected from the language toggle in a Dataverse installation. See also :ref:`i18n`.
     ===========================  ==========  ===========
+
+.. _api-exttools-auth:
+
+Authorization Options
++++++++++++++++++++++
+
+When called for datasets or data files that are not public (i.e. in a draft dataset or for a restricted file), external tools are allowed access via the user's credentials. This is accomplished by one of two mechanisms:
+
+* Signed URLs (more secure, recommended)
+
+  - Configured via the ``allowedApiCalls`` section of the manifest. The tool will be provided with signed URLs allowing the specified access to the given dataset or datafile for the specified amount of time. The tool will not be able to access any other datasets or files the user may have access to and will not be able to make calls other than those specified.
+  - For tools invoked via a GET call, Dataverse will include a callback query parameter with a Base64 encoded value. The decoded value is a signed URL that can be called to retrieve a JSON response containing all of the queryParameters and allowedApiCalls specified in the manfiest.
+  - For tools invoked via POST, Dataverse will send a JSON body including the requested queryParameters and allowedApiCalls. Dataverse expects the response to the POST to indicate a redirect which Dataverse will use to open the tool.
+
+* API Token (deprecated, less secure, not recommended)
+
+  - Configured via the ``queryParameters`` by including an ``{apiToken}`` value. When this is present Dataverse will send the user's apiToken to the tool. With the user's API token, the tool can perform any action via the Dataverse API that the user could. External tools configured via this method should be assessed for their trustworthiness.
+  - For tools invoked via GET, this will be done via a query parameter in the request URL which could be cached in the browser's history. Dataverse expects the response to the POST to indicate a redirect which Dataverse will use to open the tool.
+  - For tools invoked via POST, Dataverse will send a JSON body including the apiToken.
 
 Internationalization of Your External Tool
 ++++++++++++++++++++++++++++++++++++++++++
