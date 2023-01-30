@@ -1723,50 +1723,62 @@ public final class DatasetVersionDifference {
      */
     public static Set<MetadataBlock> getBlocksWithChanges(DatasetVersion newVersion, DatasetVersion originalVersion) {
         Set<MetadataBlock> changedBlockSet = new HashSet<MetadataBlock>();
-        
-        //Compare Data
+
+        // Compare Data
         List<DatasetField> newDatasetFields = new LinkedList<DatasetField>(newVersion.getDatasetFields());
-        List<DatasetField> originalDatasetFields = new LinkedList<DatasetField>(originalVersion.getDatasetFields());
-        Iterator<DatasetField> dsfoIter = originalDatasetFields.listIterator();
-        while(dsfoIter.hasNext()) {
-            DatasetField dsfo = dsfoIter.next();
-            boolean deleted = true;
+        if (originalVersion == null) {
+            // Every field is new, just list blocks used
             Iterator<DatasetField> dsfnIter = newDatasetFields.listIterator();
-                
             while (dsfnIter.hasNext()) {
                 DatasetField dsfn = dsfnIter.next();
-                if (dsfo.getDatasetFieldType().equals(dsfn.getDatasetFieldType())) {
-                    deleted = false;
-                    if (!changedBlockSet.contains(dsfo.getDatasetFieldType().getMetadataBlock())) {
-                        logger.fine("Checking " + dsfo.getDatasetFieldType().getName());
-                        if (dsfo.getDatasetFieldType().isPrimitive()) {
-                            if (fieldsAreDifferent(dsfo, dsfn, false)) {
-                                logger.fine("Adding block for " + dsfo.getDatasetFieldType().getName());
-                                changedBlockSet.add(dsfo.getDatasetFieldType().getMetadataBlock());
-                            }
-                        } else {
-                            if (fieldsAreDifferent(dsfo, dsfn, true)) {
-                                logger.fine("Adding block for " + dsfo.getDatasetFieldType().getName());
-                                changedBlockSet.add(dsfo.getDatasetFieldType().getMetadataBlock());
-                            }
-                        }
-                    }
-                    dsfnIter.remove();
-                    break; // if found go to next dataset field
+                if (!changedBlockSet.contains(dsfn.getDatasetFieldType().getMetadataBlock())) {
+                    changedBlockSet.add(dsfn.getDatasetFieldType().getMetadataBlock());
                 }
             }
 
-            if (deleted) {
-                logger.fine("Adding block for deleted " + dsfo.getDatasetFieldType().getName());
-                changedBlockSet.add(dsfo.getDatasetFieldType().getMetadataBlock());
+        } else {
+            List<DatasetField> originalDatasetFields = new LinkedList<DatasetField>(originalVersion.getDatasetFields());
+            Iterator<DatasetField> dsfoIter = originalDatasetFields.listIterator();
+            while (dsfoIter.hasNext()) {
+                DatasetField dsfo = dsfoIter.next();
+                boolean deleted = true;
+                Iterator<DatasetField> dsfnIter = newDatasetFields.listIterator();
+
+                while (dsfnIter.hasNext()) {
+                    DatasetField dsfn = dsfnIter.next();
+                    if (dsfo.getDatasetFieldType().equals(dsfn.getDatasetFieldType())) {
+                        deleted = false;
+                        if (!changedBlockSet.contains(dsfo.getDatasetFieldType().getMetadataBlock())) {
+                            logger.fine("Checking " + dsfo.getDatasetFieldType().getName());
+                            if (dsfo.getDatasetFieldType().isPrimitive()) {
+                                if (fieldsAreDifferent(dsfo, dsfn, false)) {
+                                    logger.fine("Adding block for " + dsfo.getDatasetFieldType().getName());
+                                    changedBlockSet.add(dsfo.getDatasetFieldType().getMetadataBlock());
+                                }
+                            } else {
+                                if (fieldsAreDifferent(dsfo, dsfn, true)) {
+                                    logger.fine("Adding block for " + dsfo.getDatasetFieldType().getName());
+                                    changedBlockSet.add(dsfo.getDatasetFieldType().getMetadataBlock());
+                                }
+                            }
+                        }
+                        dsfnIter.remove();
+                        break; // if found go to next dataset field
+                    }
+                }
+
+                if (deleted) {
+                    logger.fine("Adding block for deleted " + dsfo.getDatasetFieldType().getName());
+                    changedBlockSet.add(dsfo.getDatasetFieldType().getMetadataBlock());
+                }
+                dsfoIter.remove();
             }
-            dsfoIter.remove();
-        }
-        //Only fields left are non-matching ones but they may be empty
-        for (DatasetField dsfn : newDatasetFields) {
-            if(!dsfn.isEmpty()) {
-              logger.fine("Adding block for added " + dsfn.getDatasetFieldType().getName());
-              changedBlockSet.add(dsfn.getDatasetFieldType().getMetadataBlock());
+            // Only fields left are non-matching ones but they may be empty
+            for (DatasetField dsfn : newDatasetFields) {
+                if (!dsfn.isEmpty()) {
+                    logger.fine("Adding block for added " + dsfn.getDatasetFieldType().getName());
+                    changedBlockSet.add(dsfn.getDatasetFieldType().getMetadataBlock());
+                }
             }
         }
         return changedBlockSet;

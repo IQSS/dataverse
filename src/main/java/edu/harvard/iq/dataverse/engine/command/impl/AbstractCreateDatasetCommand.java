@@ -83,6 +83,10 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // without persisting the new version, or altering its files. 
         new CreateDatasetVersionCommand(getRequest(), theDataset, dsv).prepareDatasetAndVersion();
         
+        if(!harvested) {
+            checkSystemMetadataKeyIfNeeded(dsv, null);
+        }
+        
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
         theDataset.setCreateDate(getTimestamp());
