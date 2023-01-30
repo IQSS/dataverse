@@ -277,6 +277,23 @@
                                         <p:message for="destinationDataverseMenu"/>
                                     </div>
                                 </div>
+                                
+                                <!-- (optional): custom header -->
+                                <div class="form-group">
+                                    <label for="customHeader" class="col-sm-2 control-label">
+                                        <span>
+                                            #{bundle['harvestclients.newClientDialog.customHeader']} 
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:inputText id="customHeader" styleClass="form-control"
+                                                     value="#{harvestingClientsPage.newCustomHeader}"
+                                                     binding="#{harvestingClientsPage.newClientCustomHeaderInputField}"/>
+                                        <p:watermark for="customHeader" value="#{bundle['harvestclients.newClientDialog.customHeader.watermark']}" id="watermark1" />
+                                        <p:message for="customHeader"/>
+                                        <p class="help-block" jsf:rendered="#{harvestingClientsPage.createMode}">#{bundle['harvestclients.newClientDialog.customHeader.helptext']}</p>
+                                    </div>
+                                </div>
 
                                 <div class="form-group">
                                     <div class="col-sm-9 col-sm-offset-2 button-block">
