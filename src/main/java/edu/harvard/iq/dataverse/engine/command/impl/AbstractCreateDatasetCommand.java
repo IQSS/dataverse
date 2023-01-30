@@ -30,15 +30,15 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
     
     private static final Logger logger = Logger.getLogger(AbstractCreateDatasetCommand.class.getCanonicalName());
     
-    final protected boolean registrationRequired;
+    final protected boolean harvested;
     
     public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         this(theDataset, aRequest, false);
     }
 
-    public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isRegistrationRequired) {
+    public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isHarvested) {
         super(aRequest, theDataset);
-        registrationRequired = isRegistrationRequired;
+        harvested=isHarvested;
     }
    
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
@@ -110,10 +110,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)
         handlePid(theDataset, ctxt);
-                
-        if (registrationRequired && (theDataset.getGlobalIdCreateTime() == null)) {
-            throw new CommandExecutionException("Dataset could not be created.  Registration failed", this);
-        }
         
         ctxt.em().persist(theDataset);
         
