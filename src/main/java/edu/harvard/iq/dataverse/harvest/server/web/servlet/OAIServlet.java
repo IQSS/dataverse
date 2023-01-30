@@ -31,10 +31,13 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.gdcc.xoai.exceptions.OAIException;
+import io.gdcc.xoai.model.oaipmh.Granularity;
+import io.gdcc.xoai.services.impl.SimpleResumptionTokenFormat;
 import org.apache.commons.lang3.StringUtils;
 
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -127,10 +130,9 @@ public class OAIServlet extends HttpServlet {
 
         repositoryConfiguration = createRepositoryConfiguration(); 
                                 
-        xoaiRepository = new Repository()
+        xoaiRepository = new Repository(repositoryConfiguration)
             .withSetRepository(setRepository)
-            .withItemRepository(itemRepository)
-            .withConfiguration(repositoryConfiguration);
+            .withItemRepository(itemRepository);
         
         dataProvider = new DataProvider(getXoaiContext(), getXoaiRepository());
     }
@@ -193,24 +195,30 @@ public class OAIServlet extends HttpServlet {
         }
         // The admin email address associated with this installation: 
         // (Note: if the setting does not exist, we are going to assume that they
-        // have a reason not to want to advertise their email address, so no 
-        // email will be shown in the output of Identify. 
+        // have a reason not to want to configure their email address, if it is
+        // a developer's instance, for example; or a reason not to want to 
+        // advertise it to the world.) 
         InternetAddress systemEmailAddress = MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
-
-        RepositoryConfiguration repositoryConfiguration = RepositoryConfiguration.defaults()
-                .withEnableMetadataAttributes(true)
-                .withRepositoryName(repositoryName)
-                .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
+        String systemEmailLabel = systemEmailAddress != null ? systemEmailAddress.getAddress() : "donotreply@localhost";
+        
+        RepositoryConfiguration configuration = new RepositoryConfiguration.RepositoryConfigurationBuilder()
+                .withAdminEmail(systemEmailLabel)
                 .withCompression("gzip")
                 .withCompression("deflate")
-                .withAdminEmail(systemEmailAddress != null ? systemEmailAddress.getAddress() : null)
-                .withDeleteMethod(DeletedRecord.TRANSIENT)
+                .withGranularity(Granularity.Second)
+                .withResumptionTokenFormat(new SimpleResumptionTokenFormat().withGranularity(Granularity.Second))
+                .withRepositoryName(repositoryName)
+                .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
+                .withEarliestDate(recordService.getEarliestDate())
                 .withMaxListIdentifiers(maxListIdentifiers)
-                .withMaxListRecords(maxListRecords)
                 .withMaxListSets(maxListSets)
-                .withEarliestDate(recordService.getEarliestDate());
+                .withMaxListRecords(maxListRecords)
+                .withDeleteMethod(DeletedRecord.TRANSIENT)
+                .withEnableMetadataAttributes(true)
+                .withRequireFromAfterEarliest(false)
+                .build();        
         
-        return repositoryConfiguration; 
+        return configuration; 
     }
     
     /**
