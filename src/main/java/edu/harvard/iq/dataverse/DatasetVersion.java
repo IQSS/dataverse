@@ -853,8 +853,13 @@ public class DatasetVersion implements Serializable {
             plainTextDescriptions.add(MarkupChecker.stripAllTags(htmlDescription));
         }
         String description = String.join("\n", plainTextDescriptions);
-        if(description.length()>=5000) {
-            description = description.substring(0, (description.substring(0,4997).lastIndexOf(" "))) + "...";
+        if (description.length() >= 5000) {
+            int endIndex = description.substring(0, 4997).lastIndexOf(" ");
+            if (endIndex == -1) {
+                //There are no spaces so just break anyway
+                endIndex = 4997;
+            }
+            description = description.substring(0, endIndex) + "...";
         }
         return description;
     }
