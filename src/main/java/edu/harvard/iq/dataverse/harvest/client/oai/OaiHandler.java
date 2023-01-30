@@ -5,7 +5,6 @@ import io.gdcc.xoai.model.oaipmh.results.record.Header;
 import io.gdcc.xoai.model.oaipmh.results.MetadataFormat;
 import io.gdcc.xoai.model.oaipmh.results.Set;
 import io.gdcc.xoai.serviceprovider.ServiceProvider;
-import io.gdcc.xoai.serviceprovider.client.JdkHttpOaiClient;
 import io.gdcc.xoai.serviceprovider.exceptions.BadArgumentException;
 import io.gdcc.xoai.serviceprovider.exceptions.InvalidOAIResponse;
 import io.gdcc.xoai.serviceprovider.exceptions.NoSetHierarchyException;
@@ -15,8 +14,10 @@ import io.gdcc.xoai.serviceprovider.parameters.ListIdentifiersParameters;
 import edu.harvard.iq.dataverse.harvest.client.FastGetRecord;
 import static edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean.DATAVERSE_PROPRIETARY_METADATA_API;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import io.gdcc.xoai.serviceprovider.client.JdkHttpOaiClient;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.http.HttpClient;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,14 +25,18 @@ import org.xml.sax.SAXException;
 import javax.xml.transform.TransformerException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Leonid Andreev
  */
 public class OaiHandler implements Serializable {
+    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler");
     
     public OaiHandler() {
         
@@ -65,6 +70,8 @@ public class OaiHandler implements Serializable {
         
         this.fromDate = harvestingClient.getLastNonEmptyHarvestTime();
         
+        this.customHeaders = makeCustomHeaders(harvestingClient.getCustomHttpHeaders());
+        
         this.harvestingClient = harvestingClient;
     }
     
@@ -74,6 +81,7 @@ public class OaiHandler implements Serializable {
     private String setName; 
     private Date   fromDate;
     private Boolean setListTruncated = false;
+    private Map<String,String> customHeaders = null;
     
     private ServiceProvider serviceProvider; 
     
@@ -119,6 +127,14 @@ public class OaiHandler implements Serializable {
         return setListTruncated;
     }
     
+    public Map<String,String> getCustomHeaders() {
+        return this.customHeaders;
+    }
+    
+    public void setCustomHeaders(Map<String,String> customHeaders) {
+       this.customHeaders = customHeaders;
+    }
+    
     public ServiceProvider getServiceProvider() throws OaiHandlerException {
         if (serviceProvider == null) {
             if (baseOaiUrl == null) {
@@ -128,8 +144,15 @@ public class OaiHandler implements Serializable {
 
             context.withBaseUrl(baseOaiUrl);
             context.withGranularity(Granularity.Second);
-            // builds the client with the default parameters and the JDK http client:
-            context.withOAIClient(JdkHttpOaiClient.newBuilder().withBaseUrl(baseOaiUrl).build());
+            
+            JdkHttpOaiClient.Builder xoaiClientBuilder = JdkHttpOaiClient.newBuilder().withBaseUrl(getBaseOaiUrl());
+            if (getCustomHeaders() != null) {
+                for (String headerName : getCustomHeaders().keySet()) {
+                    logger.fine("adding custom header; name: "+headerName+", value: "+getCustomHeaders().get(headerName));
+                }   
+                xoaiClientBuilder = xoaiClientBuilder.withCustomHeaders(getCustomHeaders());
+            }
+            context.withOAIClient(xoaiClientBuilder.build());
             serviceProvider = new ServiceProvider(context);
         }
         
@@ -235,7 +258,7 @@ public class OaiHandler implements Serializable {
                 
     }
     
-    public FastGetRecord runGetRecord(String identifier) throws OaiHandlerException { 
+    public FastGetRecord runGetRecord(String identifier, HttpClient httpClient) throws OaiHandlerException { 
         if (StringUtils.isEmpty(this.baseOaiUrl)) {
             throw new OaiHandlerException("Attempted to execute GetRecord without server URL specified.");
         }
@@ -244,7 +267,7 @@ public class OaiHandler implements Serializable {
         }
         
         try {
-            return new FastGetRecord(this.baseOaiUrl, identifier, this.metadataPrefix);
+            return new FastGetRecord(this, identifier, httpClient);
         } catch (ParserConfigurationException pce) {
             throw new OaiHandlerException("ParserConfigurationException executing GetRecord: "+pce.getMessage());
         } catch (SAXException se) {
@@ -292,5 +315,29 @@ public class OaiHandler implements Serializable {
         // not implemented yet
         // (we will need it, both for validating the remote server,
         // and to learn about its extended capabilities)
+    }
+    
+    public Map<String,String> makeCustomHeaders(String headersString) {
+        if (headersString != null) {
+            String[] parts = headersString.split("\\\\n");
+            HashMap<String,String> ret = new HashMap<>();
+            logger.info("found "+parts.length+" parts");
+            int count = 0;
+            for (int i = 0; i < parts.length; i++) {
+                if (parts[i].indexOf(':') > 0) {
+                    String headerName = parts[i].substring(0, parts[i].indexOf(':'));
+                    String headerValue = parts[i].substring(parts[i].indexOf(':')+1).strip();
+                    
+                    ret.put(headerName, headerValue);
+                    count++;
+                } 
+                // simply skipping it if malformed; or we could throw an exception - ?
+            }
+            if (ret.size() > 0) {
+                logger.info("returning the array with "+ret.size()+" name/value pairs");
+                return ret;
+            }
+        }
+        return null; 
     }
 }
