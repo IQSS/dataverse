@@ -60,7 +60,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -1306,5 +1309,75 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return true;
     }
     
+    private List<String> listAllFiles() throws IOException {
+        if (!this.canWrite()) {
+            open();
+        }
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This S3AccessIO object hasn't been properly initialized.");
+        }
+        String prefix = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/";
 
+        List<String> ret = new ArrayList<>();
+        ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
+        ObjectListing storedFilesList = null; 
+        try {
+            storedFilesList = s3.listObjects(req);
+        } catch (SdkClientException sce) {
+            throw new IOException ("S3 listObjects: failed to get a listing for " + prefix);
+        }
+        if (storedFilesList == null) {
+            return ret;
+        }
+        List<S3ObjectSummary> storedFilesSummary = storedFilesList.getObjectSummaries();
+        try {
+            while (storedFilesList.isTruncated()) {
+                logger.fine("S3 listObjects: going to next page of list");
+                storedFilesList = s3.listNextBatchOfObjects(storedFilesList);
+                if (storedFilesList != null) {
+                    storedFilesSummary.addAll(storedFilesList.getObjectSummaries());
+                }
+            }
+        } catch (AmazonClientException ase) {
+            //logger.warning("Caught an AmazonServiceException in S3AccessIO.listObjects():    " + ase.getMessage());
+            throw new IOException("S3AccessIO: Failed to get objects for listing.");
+        }
+
+        for (S3ObjectSummary item : storedFilesSummary) {
+            String fileName = item.getKey().substring(prefix.length());
+            ret.add(fileName);
+        }
+        return ret;
+    }
+
+    private void deleteFile(String fileName) throws IOException {
+        if (!this.canWrite()) {
+            open();
+        }
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This S3AccessIO object hasn't been properly initialized.");
+        }
+        String prefix = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/";
+
+        try {
+            DeleteObjectRequest dor = new DeleteObjectRequest(bucketName, prefix + fileName);
+            s3.deleteObject(dor);
+        } catch (AmazonClientException ase) {
+            logger.warning("S3AccessIO: Unable to delete object    " + ase.getMessage());
+        }
+    }
+
+    @Override
+    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
+        List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+        if (dryRun) {
+            return toDelete;
+        }
+        for (String f : toDelete) {
+            this.deleteFile(f);
+        }
+        return toDelete;
+    }
 }
