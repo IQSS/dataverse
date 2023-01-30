@@ -347,29 +347,6 @@ public class DataFile extends DvObject implements Comparable {
         }
         return tagStrings;
     }
-    
-    public List<String> getTagLabelsForFilePage() {
-    /*
-      adds an empty string after 80 characters 
-      to facilitate line breaks
-    */
-
-        List<DataFileTag> currentDataTags = this.getTags();
-        List<String> tagStrings = new ArrayList<>();
-
-        if ((currentDataTags != null) && (!currentDataTags.isEmpty())) {
-            int charCount = 0;
-            for (DataFileTag element : currentDataTags) {
-                charCount = charCount + element.getTypeLabel().length();
-                if (charCount > 80) {
-                    tagStrings.add("");
-                    charCount = 0;
-                }
-                tagStrings.add(element.getTypeLabel());
-            }
-        }
-        return tagStrings;
-    }
 
     public JsonArrayBuilder getTagLabelsAsJsonArrayBuilder(){
         
