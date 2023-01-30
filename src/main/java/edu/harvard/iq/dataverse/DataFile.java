@@ -569,7 +569,7 @@ public class DataFile extends DvObject implements Comparable {
         if(fmd == null) {
             throw new UnsupportedOperationException("No published metadata version for DataFile " + this.getId());
         }
-        
+
         return fmd;
     }
 
