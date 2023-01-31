@@ -435,11 +435,12 @@ public class Access extends AbstractApiBean {
     
     
     // Metadata format defaults to DDI:
-    @Path("datafile/{fileId}/metadata")
     @GET
+    @AuthRequired
+    @Path("datafile/{fileId}/metadata")
     @Produces({"text/xml"})
-    public String tabularDatafileMetadata(@PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
-        return tabularDatafileMetadataDDI(fileId, fileMetadataId, exclude, include, header, response);
+    public String tabularDatafileMetadata(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+        return tabularDatafileMetadataDDI(crc, fileId, fileMetadataId, exclude, include, header, response);
     }
     
     /* 
