@@ -632,9 +632,10 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/metadatablocks/:isRoot")
-    public Response getMetadataRoot_legacy(@PathParam("identifier") String dvIdtf) {
-        return getMetadataRoot(dvIdtf);
+    public Response getMetadataRoot_legacy(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        return getMetadataRoot(crc, dvIdtf);
     }
 
     @GET
@@ -655,11 +656,12 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/metadatablocks/:isRoot")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.WILDCARD)
-    public Response setMetadataRoot_legacy(@PathParam("identifier") String dvIdtf, String body) {
-        return setMetadataRoot(dvIdtf, body);
+    public Response setMetadataRoot_legacy(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String body) {
+        return setMetadataRoot(crc, dvIdtf, body);
     }
 
     @PUT
@@ -1213,11 +1215,13 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}")
-    public Response addRoleAssingee(@PathParam("identifier") String dvIdtf,
-            @PathParam("aliasInOwner") String grpAliasInOwner,
-            @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
-        return addRoleAssingees(Collections.singletonList(roleAssigneeIdentifier), dvIdtf, grpAliasInOwner);
+    public Response addRoleAssingee(@Context ContainerRequestContext crc,
+                                    @PathParam("identifier") String dvIdtf,
+                                    @PathParam("aliasInOwner") String grpAliasInOwner,
+                                    @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+        return addRoleAssingees(crc, Collections.singletonList(roleAssigneeIdentifier), dvIdtf, grpAliasInOwner);
     }
 
     @DELETE

@@ -278,7 +278,7 @@ public abstract class AbstractApiBean {
     /**
      * Functional interface for handling HTTP requests in the APIs.
      *
-     * @see #response(edu.harvard.iq.dataverse.api.AbstractApiBean.DataverseRequestHandler)
+     * @see #response(edu.harvard.iq.dataverse.api.AbstractApiBean.DataverseRequestHandler, edu.harvard.iq.dataverse.authorization.users.User)
      */
     protected static interface DataverseRequestHandler {
         Response handle( DataverseRequest u ) throws WrappedResponse;
@@ -738,36 +738,6 @@ public abstract class AbstractApiBean {
     protected Response response( Callable<Response> hdl ) {
         try {
             return hdl.call();
-        } catch ( WrappedResponse rr ) {
-            return rr.getResponse();
-        } catch ( Exception ex ) {
-            return handleDataverseRequestHandlerException(ex);
-        }
-    }
-
-    /**
-     * The preferred way of handling a request that requires a user. The system
-     * looks for the user and, if found, handles it to the handler for doing the
-     * actual work.
-     *
-     * This is a relatively secure way to handle things, since if the user is not
-     * found, the response is about the bad API key, rather than something else
-     * (say, 404 NOT FOUND which leaks information about the existence of the
-     * sought object).
-     *
-     * @param hdl handling code block.
-     * @return HTTP Response appropriate for the way {@code hdl} executed.
-     *
-     * @deprecated  Do not use this method.
-     *    This method is expected to be removed once all API endpoints use the filter-based authentication.
-     *    @see <a href="https://github.com/IQSS/dataverse/issues/9293">#9293</a>
-     *    Replaced by:
-     *    {@link #response(DataverseRequestHandler, User)}
-     */
-    @Deprecated
-    protected Response response( DataverseRequestHandler hdl ) {
-        try {
-            return hdl.handle(createDataverseRequest(findUserOrDie()));
         } catch ( WrappedResponse rr ) {
             return rr.getResponse();
         } catch ( Exception ex ) {
