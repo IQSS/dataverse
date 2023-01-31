@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
@@ -56,6 +57,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
@@ -534,22 +537,18 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@GET
+	@AuthRequired
 	@Path(listUsersPartialAPIPath)
 	@Produces({ "application/json" })
 	public Response filterAuthenticatedUsers(
+			@Context ContainerRequestContext crc,
 			@QueryParam("searchTerm") String searchTerm,
 			@QueryParam("selectedPage") Integer selectedPage,
 			@QueryParam("itemsPerPage") Integer itemsPerPage,
 			@QueryParam("sortKey") String sortKey
 	) {
 
-		User authUser;
-		try {
-			authUser = this.findUserOrDie();
-		} catch (AbstractApiBean.WrappedResponse ex) {
-			return error(Response.Status.FORBIDDEN,
-					BundleUtil.getStringFromBundle("dashboard.list_users.api.auth.invalid_apikey"));
-		}
+		User authUser = getRequestUser(crc);
 
 		if (!authUser.isSuperuser()) {
 			return error(Response.Status.FORBIDDEN,
@@ -1323,23 +1322,20 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@Path("permissions/{dvo}")
+	@AuthRequired
 	@GET
-	public Response findPermissonsOn(@PathParam("dvo") String dvo) {
+	public Response findPermissonsOn(@Context ContainerRequestContext crc, @PathParam("dvo") String dvo) {
 		try {
 			DvObject dvObj = findDvo(dvo);
 			if (dvObj == null) {
 				return notFound("DvObject " + dvo + " not found");
 			}
-			try {
-				User aUser = findUserOrDie();
-				JsonObjectBuilder bld = Json.createObjectBuilder();
-				bld.add("user", aUser.getIdentifier());
-				bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
-				return ok(bld);
+			User aUser = getRequestUser(crc);
+			JsonObjectBuilder bld = Json.createObjectBuilder();
+			bld.add("user", aUser.getIdentifier());
+			bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
+			return ok(bld);
 
-			} catch (WrappedResponse wr) {
-				return wr.getResponse();
-			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Error while testing permissions", e);
 			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -1465,8 +1461,9 @@ public class Admin extends AbstractApiBean {
 	}
 
     @POST
+	@AuthRequired
     @Path("{id}/reregisterHDLToPID")
-    public Response reregisterHdlToPID(@PathParam("id") String id) {
+    public Response reregisterHdlToPID(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
         try {
             if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
@@ -1474,7 +1471,7 @@ public class Admin extends AbstractApiBean {
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
             }
             
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
                 logger.info("Bad Request Unauthor " );
                 return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
@@ -1501,12 +1498,13 @@ public class Admin extends AbstractApiBean {
     }
 
 	@GET
+	@AuthRequired
 	@Path("{id}/registerDataFile")
-	public Response registerDataFile(@PathParam("id") String id) {
+	public Response registerDataFile(@Context ContainerRequestContext crc, @PathParam("id") String id) {
 		logger.info("Starting to register  " + id + " file id. " + new Date());
 
 		try {
-			User u = findUserOrDie();
+			User u = getRequestUser(crc);
 			DataverseRequest r = createDataverseRequest(u);
 			DataFile df = findDataFileOrDie(id);
 			if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
