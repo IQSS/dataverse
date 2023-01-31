@@ -842,12 +842,26 @@ public class DatasetVersion implements Serializable {
         return MarkupChecker.stripAllTags(getDescription());
     }
 
-    public List<String> getDescriptionsPlainText() {
-        List<String> plainTextDescriptions = new ArrayList<>();
+    /* This method is (only) used in creating schema.org json-jd where Google requires a text description <5000 chars.
+     * 
+     * @returns - a single string composed of all descriptions (joined with \n if more than one) truncated with a trailing '...' if >=5000 chars
+     */
+    public String getDescriptionsPlainTextTruncated() {
+        List<String> plainTextDescriptions = new ArrayList<String>();
+        
         for (String htmlDescription : getDescriptions()) {
             plainTextDescriptions.add(MarkupChecker.stripAllTags(htmlDescription));
         }
-        return plainTextDescriptions;
+        String description = String.join("\n", plainTextDescriptions);
+        if (description.length() >= 5000) {
+            int endIndex = description.substring(0, 4997).lastIndexOf(" ");
+            if (endIndex == -1) {
+                //There are no spaces so just break anyway
+                endIndex = 4997;
+            }
+            description = description.substring(0, endIndex) + "...";
+        }
+        return description;
     }
 
     /**
@@ -1859,16 +1873,8 @@ public class DatasetVersion implements Serializable {
         job.add("dateModified", this.getPublicationDateAsString());
         job.add("version", this.getVersionNumber().toString());
 
-        JsonArrayBuilder descriptionsArray = Json.createArrayBuilder();
-        List<String> descriptions = this.getDescriptionsPlainText();
-        for (String description : descriptions) {
-            descriptionsArray.add(description);
-        }
-        /**
-         * In Dataverse 4.8.4 "description" was a single string but now it's an
-         * array.
-         */
-        job.add("description", descriptionsArray);
+        String description = this.getDescriptionsPlainTextTruncated();
+        job.add("description", description);
 
         /**
          * "keywords" - contains subject(s), datasetkeyword(s) and topicclassification(s)
@@ -1892,11 +1898,16 @@ public class DatasetVersion implements Serializable {
         job.add("keywords", keywords);
         
         /**
-         * citation: (multiple) related publication citation and URLs, if
-         * present.
+         * citation: (multiple) related publication citation and URLs, if present.
          *
-         * In Dataverse 4.8.4 "citation" was an array of strings but now it's an
-         * array of objects.
+         * Schema.org allows text or a CreativeWork object. Google recommends text with
+         * either the full citation or the PID URL. This code adds an object if we have
+         * the citation text for the work and/or an entry in the URL field (i.e.
+         * https://doi.org/...) The URL is reported as the 'url' field while the
+         * citation text (which would normally include the name) is reported as 'name'
+         * since there doesn't appear to be a better field ('text', which was used
+         * previously, is the actual text of the creative work).
+         * 
          */
         List<DatasetRelPublication> relatedPublications = getRelatedPublications();
         if (!relatedPublications.isEmpty()) {
@@ -1911,11 +1922,12 @@ public class DatasetVersion implements Serializable {
                 JsonObjectBuilder citationEntry = Json.createObjectBuilder();
                 citationEntry.add("@type", "CreativeWork");
                 if (pubCitation != null) {
-                    citationEntry.add("text", pubCitation);
+                    citationEntry.add("name", pubCitation);
                 }
                 if (pubUrl != null) {
                     citationEntry.add("@id", pubUrl);
                     citationEntry.add("identifier", pubUrl);
+                    citationEntry.add("url", pubUrl);
                 }
                 if (addToArray) {
                     jsonArrayBuilder.add(citationEntry);
@@ -1957,13 +1969,14 @@ public class DatasetVersion implements Serializable {
             job.add("license",DatasetUtil.getLicenseURI(this));
         }
         
+        String installationBrandName = BrandingUtil.getInstallationBrandName();
+        
         job.add("includedInDataCatalog", Json.createObjectBuilder()
                 .add("@type", "DataCatalog")
-                .add("name", BrandingUtil.getRootDataverseCollectionName())
+                .add("name", installationBrandName)
                 .add("url", SystemConfig.getDataverseSiteUrlStatic())
         );
-
-        String installationBrandName = BrandingUtil.getInstallationBrandName();
+        
         /**
          * Both "publisher" and "provider" are included but they have the same
          * values. Some services seem to prefer one over the other.
@@ -2012,7 +2025,7 @@ public class DatasetVersion implements Serializable {
                 }
                 fileObject.add("@type", "DataDownload");
                 fileObject.add("name", fileMetadata.getLabel());
-                fileObject.add("fileFormat", fileMetadata.getDataFile().getContentType());
+                fileObject.add("encodingFormat", fileMetadata.getDataFile().getContentType());
                 fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
                 fileObject.add("description", fileMetadata.getDescription());
                 fileObject.add("@id", filePidUrlAsString);
@@ -2021,10 +2034,8 @@ public class DatasetVersion implements Serializable {
                 if (hideFilesBoolean != null && hideFilesBoolean.equals("true")) {
                     // no-op
                 } else {
-                    if (FileUtil.isPubliclyDownloadable(fileMetadata)) {
-                        String nullDownloadType = null;
-                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId()));
-                    }
+                    String nullDownloadType = null;
+                    fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId()));
                 }
                 fileArray.add(fileObject);
             }

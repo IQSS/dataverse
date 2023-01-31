@@ -730,13 +730,12 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:$API_TOKEN" https://demo.dataverse.org/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
 
-
-|CORS| Show the dataset whose id is passed:
+|CORS| Show the dataset whose database id is passed:
 
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
-  export ID=408730
+  export ID=24
 
   curl $SERVER_URL/api/datasets/$ID
 
@@ -744,7 +743,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl https://demo.dataverse.org/api/datasets/408730
+  curl https://demo.dataverse.org/api/datasets/24
 
 The dataset id can be extracted from the response retrieved from the API which uses the persistent identifier (``/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER``).
 
@@ -1512,6 +1511,38 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/datasets/:persistentId/add?persistentId=doi:10.5072/FK2/J8SJZB -F 'jsonData={"description":"A remote image.","storageIdentifier":"trsa://themes/custom/qdr/images/CoreTrustSeal-logo-transparent.png","checksumType":"MD5","md5Hash":"509ef88afa907eaf2c17c1c8d8fde77e","label":"testlogo.png","fileName":"testlogo.png","mimeType":"image/png"}'
+
+.. _cleanup-storage-api:
+
+Cleanup storage of a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is an experimental feature and should be tested on your system before using it in production.
+Also, make sure that your backups are up-to-date before using this on production servers.
+It is advised to first call this method with the ``dryrun`` parameter set to ``true`` before actually deleting the files.
+This will allow you to manually inspect the files that would be deleted if that parameter is set to ``false`` or is omitted (a list of the files that would be deleted is provided in the response).
+
+If your Dataverse installation has been configured to support direct uploads, or in some other situations,
+you could end up with some files in the storage of a dataset that are not linked to that dataset directly. Most commonly, this could
+happen when an upload fails in the middle of a transfer, i.e. if a user does a UI direct upload and leaves the page without hitting cancel or save,
+Dataverse doesn't know and doesn't clean up the files. Similarly in the direct upload API, if the final /addFiles call isn't done, the files are abandoned. 
+
+All the files stored in the Dataset storage location that are not in the file list of that Dataset (and follow the naming pattern of the dataset files) can be removed, as shown in the example below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/J8SJZB
+  export DRYRUN=true
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/datasets/:persistentId/cleanStorage?persistentId=$PERSISTENT_ID&dryrun=$DRYRUN"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X GET https://demo.dataverse.org/api/datasets/:persistentId/cleanStorage?persistentId=doi:10.5072/FK2/J8SJZB&dryrun=true
 
 Adding Files To a Dataset via Other Tools
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
