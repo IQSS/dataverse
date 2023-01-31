@@ -75,8 +75,6 @@ public class SchemaDotOrgExporterTest {
     public void testExportDataset() throws JsonParseException, ParseException, IOException {
         File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
-        license.setDefault(true);
 
         JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
         JsonObject json2 = createExportFromJson(json);
@@ -99,9 +97,7 @@ public class SchemaDotOrgExporterTest {
         assertEquals("1955-11-05", json2.getString("datePublished"));
         assertEquals("1955-11-05", json2.getString("dateModified"));
         assertEquals("1", json2.getString("version"));
-        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", json2.getJsonArray("description").getString(0));
-        assertEquals("Bird is the word.", json2.getJsonArray("description").getString(1));
-        assertEquals(2, json2.getJsonArray("description").size());
+        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.\nBird is the word.", json2.getString("description"));
         assertEquals("Medicine, Health and Life Sciences", json2.getJsonArray("keywords").getString(0));
         assertEquals("tcTerm1", json2.getJsonArray("keywords").getString(1));
         assertEquals("KeywordTerm1", json2.getJsonArray("keywords").getString(2));
