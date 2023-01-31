@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -20,6 +21,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 @Stateless
@@ -57,12 +60,13 @@ public class BatchImport extends AbstractApiBean {
      * @return import status (including id of the dataset created)
      */
     @POST
+    @AuthRequired
     @Path("import")
-    public Response postImport(String body, @QueryParam("dv") String parentIdtf, @QueryParam("key") String apiKey) {
+    public Response postImport(@Context ContainerRequestContext crc, String body, @QueryParam("dv") String parentIdtf, @QueryParam("key") String apiKey) {
 
         DataverseRequest dataverseRequest;
         try {
-            dataverseRequest = createDataverseRequest(findAuthenticatedUserOrDie());
+            dataverseRequest = createDataverseRequest(getRequestAuthenticatedUserOrDie(crc));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

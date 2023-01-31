@@ -374,14 +374,15 @@ public class HarvestingClients extends AbstractApiBean {
     
     // This POST starts a new harvesting run:
     @POST
+    @AuthRequired
     @Path("{nickName}/run")
-    public Response startHarvestingJob(@PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws IOException {
+    public Response startHarvestingJob(@Context ContainerRequestContext crc, @PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws IOException {
         
         try {
             AuthenticatedUser authenticatedUser = null; 
             
             try {
-                authenticatedUser = findAuthenticatedUserOrDie();
+                authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             } catch (WrappedResponse wr) {
                 return error(Response.Status.UNAUTHORIZED, "Authentication required to use this API method");
             }

@@ -183,8 +183,9 @@ public class Users extends AbstractApiBean {
     }
     
     @GET
+    @AuthRequired
     @Path(":me")
-    public Response getAuthenticatedUserByToken() {
+    public Response getAuthenticatedUserByToken(@Context ContainerRequestContext crc) {
 
         String tokenFromRequestAPI = getRequestApiKey();
 
@@ -193,7 +194,7 @@ public class Users extends AbstractApiBean {
         // this is a good idea
         if (authenticatedUser == null) {
             try {
-                authenticatedUser = findAuthenticatedUserOrDie();
+                authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             } catch (WrappedResponse ex) {
                 Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
                 return error(Response.Status.BAD_REQUEST, "User with token " + tokenFromRequestAPI + " not found.");

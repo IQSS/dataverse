@@ -1238,23 +1238,22 @@ public class Access extends AbstractApiBean {
      * @return 
      *
      */
-    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @POST
+    @AuthRequired
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-
-    public Response saveAuxiliaryFileWithVersion(@PathParam("fileId") Long fileId,
-            @PathParam("formatTag") String formatTag,
-            @PathParam("formatVersion") String formatVersion,
-            @FormDataParam("origin") String origin,
-            @FormDataParam("isPublic") boolean isPublic,
-            @FormDataParam("type") String type,
-            @FormDataParam("file") final FormDataBodyPart formDataBodyPart,
-            @FormDataParam("file") InputStream fileInputStream
-          
-    ) {
+    public Response saveAuxiliaryFileWithVersion(@Context ContainerRequestContext crc,
+                                                 @PathParam("fileId") Long fileId,
+                                                 @PathParam("formatTag") String formatTag,
+                                                 @PathParam("formatVersion") String formatVersion,
+                                                 @FormDataParam("origin") String origin,
+                                                 @FormDataParam("isPublic") boolean isPublic,
+                                                 @FormDataParam("type") String type,
+                                                 @FormDataParam("file") final FormDataBodyPart formDataBodyPart,
+                                                 @FormDataParam("file") InputStream fileInputStream) {
         AuthenticatedUser authenticatedUser;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(FORBIDDEN, "Authorized users only.");
         }
@@ -1296,14 +1295,16 @@ public class Access extends AbstractApiBean {
      * @param formDataBodyPart
      * @return 
      */
-    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @DELETE
-    public Response deleteAuxiliaryFileWithVersion(@PathParam("fileId") Long fileId,
-            @PathParam("formatTag") String formatTag,
-            @PathParam("formatVersion") String formatVersion) {
+    @AuthRequired
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
+    public Response deleteAuxiliaryFileWithVersion(@Context ContainerRequestContext crc,
+                                                   @PathParam("fileId") Long fileId,
+                                                   @PathParam("formatTag") String formatTag,
+                                                   @PathParam("formatVersion") String formatVersion) {
         AuthenticatedUser authenticatedUser;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(FORBIDDEN, "Authorized users only.");
         }
@@ -1384,8 +1385,9 @@ public class Access extends AbstractApiBean {
      * @return
      */
     @PUT
+    @AuthRequired
     @Path("/datafile/{id}/requestAccess")
-    public Response requestFileAccess(@PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
+    public Response requestFileAccess(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
         
         DataverseRequest dataverseRequest;
         DataFile dataFile;
@@ -1404,7 +1406,7 @@ public class Access extends AbstractApiBean {
         AuthenticatedUser requestor;
 
         try {
-            requestor = findAuthenticatedUserOrDie();
+            requestor = getRequestAuthenticatedUserOrDie(crc);
             dataverseRequest = createDataverseRequest(requestor);
         } catch (WrappedResponse wr) {
             List<String> args = Arrays.asList(wr.getLocalizedMessage());
@@ -1442,8 +1444,9 @@ public class Access extends AbstractApiBean {
      * @return
      */
     @GET
+    @AuthRequired
     @Path("/datafile/{id}/listRequests")
-    public Response listFileAccessRequests(@PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
+    public Response listFileAccessRequests(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
 
         DataverseRequest dataverseRequest;
 
@@ -1456,7 +1459,7 @@ public class Access extends AbstractApiBean {
         }
 
         try {
-            dataverseRequest = createDataverseRequest(findAuthenticatedUserOrDie());
+            dataverseRequest = createDataverseRequest(getRequestAuthenticatedUserOrDie(crc));
         } catch (WrappedResponse wr) {
             List<String> args = Arrays.asList(wr.getLocalizedMessage());
             return error(UNAUTHORIZED, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));

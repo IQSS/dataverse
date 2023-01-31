@@ -595,15 +595,15 @@ public class Files extends AbstractApiBean {
     // type for which ingest was not previously supported. 
     // We are considering making it possible, in the future, to reingest 
     // a datafile that's already ingested as Tabular; for example, to address a 
-    // bug that has been found in an ingest plugin. 
-    
-    @Path("{id}/reingest")
+    // bug that has been found in an ingest plugin.
     @POST
-    public Response reingest(@PathParam("id") String id) {
+    @AuthRequired
+    @Path("{id}/reingest")
+    public Response reingest(@Context ContainerRequestContext crc, @PathParam("id") String id) {
 
         AuthenticatedUser u;
         try {
-            u = findAuthenticatedUserOrDie();
+            u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "This API call can be used by superusers only");
             }
@@ -684,11 +684,12 @@ public class Files extends AbstractApiBean {
         }
     }
 
-    @Path("{id}/extractNcml")
     @POST
-    public Response extractNcml(@PathParam("id") String id) {
+    @AuthRequired
+    @Path("{id}/extractNcml")
+    public Response extractNcml(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             if (!au.isSuperuser()) {
                 // We can always make a command in the future if there's a need
                 // for non-superusers to call this API.
