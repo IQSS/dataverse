@@ -32,6 +32,8 @@ import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
+
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -96,6 +98,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
@@ -444,9 +447,10 @@ public class Access extends AbstractApiBean {
      * which we are going to retire.
      */
     @Path("datafile/{fileId}/metadata/ddi")
+    @AuthRequired
     @GET
     @Produces({"text/xml"})
-    public String tabularDatafileMetadataDDI(@PathParam("fileId") String fileId,  @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String tabularDatafileMetadataDDI(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
         DataFile dataFile = null; 
@@ -461,11 +465,7 @@ public class Access extends AbstractApiBean {
         if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
             boolean hasPermissionToDownloadFile = false;
             DataverseRequest dataverseRequest;
-            try {
-                dataverseRequest = createDataverseRequest(findUserOrDie());
-            } catch (WrappedResponse ex) {
-                throw new BadRequestException("cannot find user");
-            }
+            dataverseRequest = createDataverseRequest(getRequestUser(crc));
             if (dataverseRequest != null && dataverseRequest.getUser() instanceof GuestUser) {
                 // We must be in the UI. Try to get a non-GuestUser from the session.
                 dataverseRequest = dvRequestService.getDataverseRequest();
@@ -656,11 +656,12 @@ public class Access extends AbstractApiBean {
     }
 
     @Path("dataset/{id}")
+    @AuthRequired
     @GET
     @Produces({"application/zip"})
-    public Response downloadAllFromLatest(@PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+    public Response downloadAllFromLatest(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         try {
-            User user = findUserOrDie(); 
+            User user = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(user);
             final Dataset retrieved = findDatasetOrDie(datasetIdOrPersistentId);
             if (!(user instanceof GuestUser)) {
@@ -700,11 +701,12 @@ public class Access extends AbstractApiBean {
     }
 
     @Path("dataset/{id}/versions/{versionId}")
+    @AuthRequired
     @GET
     @Produces({"application/zip"})
-    public Response downloadAllFromVersion(@PathParam("id") String datasetIdOrPersistentId, @PathParam("versionId") String versionId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+    public Response downloadAllFromVersion(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId, @PathParam("versionId") String versionId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         try {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             final Dataset ds = execCommand(new GetDatasetCommand(req, findDatasetOrDie(datasetIdOrPersistentId)));
             DatasetVersion dsv = execCommand(handleVersion(versionId, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
 
@@ -1337,8 +1339,9 @@ public class Access extends AbstractApiBean {
      * @return
      */
     @PUT
+    @AuthRequired
     @Path("{id}/allowAccessRequest")
-    public Response allowAccessRequest(@PathParam("id") String datasetToAllowAccessId, String requestStr) {
+    public Response allowAccessRequest(@Context ContainerRequestContext crc, @PathParam("id") String datasetToAllowAccessId, String requestStr) {
 
         DataverseRequest dataverseRequest = null;
         Dataset dataset;
@@ -1352,12 +1355,7 @@ public class Access extends AbstractApiBean {
 
         boolean allowRequest = Boolean.valueOf(requestStr);
 
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(wr.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
-        }
+        dataverseRequest = createDataverseRequest(getRequestUser(crc));
 
         dataset.getOrCreateEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
 
@@ -1495,8 +1493,9 @@ public class Access extends AbstractApiBean {
      * @return
      */
     @PUT
+    @AuthRequired
     @Path("/datafile/{id}/grantAccess/{identifier}")
-    public Response grantFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
+    public Response grantFileAccess(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
         
         DataverseRequest dataverseRequest;
         DataFile dataFile;
@@ -1515,12 +1514,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
         }
 
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
-        }
+        dataverseRequest = createDataverseRequest(getRequestUser(crc));
 
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
 
@@ -1559,8 +1553,9 @@ public class Access extends AbstractApiBean {
      * @return
      */
     @DELETE
+    @AuthRequired
     @Path("/datafile/{id}/revokeAccess/{identifier}")
-    public Response revokeFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
+    public Response revokeFileAccess(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
 
         DataverseRequest dataverseRequest;
         DataFile dataFile;
@@ -1572,12 +1567,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
         }
 
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(wr.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
-        }
+        dataverseRequest = createDataverseRequest(getRequestUser(crc));
 
         if (identifier == null || identifier.equals("")) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.noKey"));
@@ -1629,8 +1619,9 @@ public class Access extends AbstractApiBean {
      * @return
      */
     @PUT
+    @AuthRequired
     @Path("/datafile/{id}/rejectAccess/{identifier}")
-    public Response rejectFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
+    public Response rejectFileAccess(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
 
         DataverseRequest dataverseRequest;
         DataFile dataFile;
@@ -1649,13 +1640,8 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
         }
 
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
-        }
-        
+        dataverseRequest = createDataverseRequest(getRequestUser(crc));
+
         if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
