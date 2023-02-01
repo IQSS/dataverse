@@ -85,13 +85,15 @@ public class SchemaDotOrgExporterTest {
         assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("identifier"));
         assertEquals("Darwin's Finches", json2.getString("name"));
         assertEquals("Finch, Fiona", json2.getJsonArray("creator").getJsonObject(0).getString("name"));
-        assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getString("affiliation"));
+        assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getJsonObject("affiliation").getString("name"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("@id"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("identifier"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("sameAs"));
         assertEquals("Finch, Fiona", json2.getJsonArray("author").getJsonObject(0).getString("name"));
-        assertEquals("Birds Inc.", json2.getJsonArray("author").getJsonObject(0).getString("affiliation"));
+        assertEquals("Birds Inc.", json2.getJsonArray("author").getJsonObject(0).getJsonObject("affiliation").getString("name"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("@id"));
         assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("identifier"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("sameAs"));
         assertEquals("1955-11-05", json2.getString("datePublished"));
         assertEquals("1955-11-05", json2.getString("dateModified"));
         assertEquals("1", json2.getString("version"));
@@ -115,7 +117,7 @@ public class SchemaDotOrgExporterTest {
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
         assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
         assertEquals("Organization", json2.getJsonObject("publisher").getString("@type"));
-        assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
+        assertEquals("LibraScholar", json2.getJsonObject("publisher").getString("name"));
         assertEquals("Organization", json2.getJsonObject("provider").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
         assertEquals("Organization", json2.getJsonArray("funder").getJsonObject(0).getString("@type"));
