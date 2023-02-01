@@ -205,7 +205,7 @@ public class OAIServlet extends HttpServlet {
                 .withAdminEmail(systemEmailLabel)
                 .withCompression("gzip")
                 .withCompression("deflate")
-                .withGranularity(Granularity.Second)
+                .withGranularity(Granularity.Lenient)
                 .withResumptionTokenFormat(new SimpleResumptionTokenFormat().withGranularity(Granularity.Second))
                 .withRepositoryName(repositoryName)
                 .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
