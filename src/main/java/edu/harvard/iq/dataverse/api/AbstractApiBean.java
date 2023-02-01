@@ -415,30 +415,6 @@ public abstract class AbstractApiBean {
         return findAuthenticatedUserOrDie(requestApiKey, requestWFKey);
     }
 
-    /**
-     * Finds the authenticated user, based on (in order):
-     * <ol>
-     *  <li>The key in the HTTP header {@link #DATAVERSE_KEY_HEADER_NAME}</li>
-     *  <li>The key in the query parameter {@code key}
-     * </ol>
-     *
-     * If no user is found, throws a wrapped bad api key (HTTP UNAUTHORIZED) response.
-     *
-     * @return The authenticated user which owns the passed api key.
-     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse in case said user is not found.
-     *
-     * @deprecated  Do not use this method.
-     *    This method is expected to be removed once all API endpoints use the filter-based authentication.
-     *    @see <a href="https://github.com/IQSS/dataverse/issues/9293">#9293</a>
-     *    Replaced by:
-     *    {@link #getRequestAuthenticatedUserOrDie(ContainerRequestContext)}
-     */
-    @Deprecated
-    protected AuthenticatedUser findAuthenticatedUserOrDie() throws WrappedResponse {
-        return findAuthenticatedUserOrDie(getRequestApiKey(), getRequestWorkflowInvocationID());
-    }
-
-
     private AuthenticatedUser findAuthenticatedUserOrDie( String key, String wfid ) throws WrappedResponse {
         if (key != null) {
             // No check for deactivated user because it's done in authSvc.lookupUser.

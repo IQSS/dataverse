@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
@@ -45,10 +46,14 @@ public class BatchImport extends AbstractApiBean {
     BatchServiceBean batchService;
 
     @GET
+    @AuthRequired
     @Path("harvest")
-    public Response harvest(@QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("createDV") Boolean createDV, @QueryParam("key") String apiKey) throws IOException {
-        return startBatchJob(fileDir, parentIdtf, apiKey, ImportType.HARVEST, createDV);
-
+    public Response harvest(@Context ContainerRequestContext crc, @QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("createDV") Boolean createDV, @QueryParam("key") String apiKey) throws IOException {
+        try {
+            return startBatchJob(getRequestAuthenticatedUserOrDie(crc), fileDir, parentIdtf, apiKey, ImportType.HARVEST, createDV);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 
     /**
@@ -98,24 +103,23 @@ public class BatchImport extends AbstractApiBean {
      * @return import status (including id's of the datasets created)
      */
     @GET
+    @AuthRequired
     @Path("import")
-    public Response getImport(@QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("createDV") Boolean createDV, @QueryParam("key") String apiKey) {
-
-        return startBatchJob(fileDir, parentIdtf, apiKey, ImportType.NEW, createDV);
-
+    public Response getImport(@Context ContainerRequestContext crc, @QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("createDV") Boolean createDV, @QueryParam("key") String apiKey) {
+        try {
+            return startBatchJob(getRequestAuthenticatedUserOrDie(crc), fileDir, parentIdtf, apiKey, ImportType.NEW, createDV);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 
-    private Response startBatchJob(String fileDir, String parentIdtf, String apiKey, ImportType importType, Boolean createDV) {
+    private Response startBatchJob(User user, String fileDir, String parentIdtf, String apiKey, ImportType importType, Boolean createDV) {
         if (createDV == null) {
             createDV = Boolean.FALSE;
         }
         try {
             DataverseRequest dataverseRequest;
-            try {
-                dataverseRequest = createDataverseRequest(findAuthenticatedUserOrDie());
-            } catch (WrappedResponse wr) {
-                return wr.getResponse();
-            }
+            dataverseRequest = createDataverseRequest(user);
             if (parentIdtf == null) {
                 parentIdtf = "root";
             }
