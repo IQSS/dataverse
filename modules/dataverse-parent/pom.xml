@@ -164,7 +164,7 @@
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         
         <!-- NEW gdcc XOAI library implementation -->
-        <gdcc.xoai.version>5.0.0-RC2</gdcc.xoai.version>
+        <gdcc.xoai.version>5.0.0</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
         <testcontainers.version>1.15.0</testcontainers.version>
