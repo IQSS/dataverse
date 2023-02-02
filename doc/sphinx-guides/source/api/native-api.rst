@@ -730,13 +730,12 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:$API_TOKEN" https://demo.dataverse.org/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
 
-
-|CORS| Show the dataset whose id is passed:
+|CORS| Show the dataset whose database id is passed:
 
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
-  export ID=408730
+  export ID=24
 
   curl $SERVER_URL/api/datasets/$ID
 
@@ -744,7 +743,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl https://demo.dataverse.org/api/datasets/408730
+  curl https://demo.dataverse.org/api/datasets/24
 
 The dataset id can be extracted from the response retrieved from the API which uses the persistent identifier (``/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER``).
 

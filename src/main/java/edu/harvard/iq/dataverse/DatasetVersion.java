@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.MarkupChecker;
+import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
@@ -842,12 +843,26 @@ public class DatasetVersion implements Serializable {
         return MarkupChecker.stripAllTags(getDescription());
     }
 
-    public List<String> getDescriptionsPlainText() {
-        List<String> plainTextDescriptions = new ArrayList<>();
+    /* This method is (only) used in creating schema.org json-jd where Google requires a text description <5000 chars.
+     * 
+     * @returns - a single string composed of all descriptions (joined with \n if more than one) truncated with a trailing '...' if >=5000 chars
+     */
+    public String getDescriptionsPlainTextTruncated() {
+        List<String> plainTextDescriptions = new ArrayList<String>();
+        
         for (String htmlDescription : getDescriptions()) {
             plainTextDescriptions.add(MarkupChecker.stripAllTags(htmlDescription));
         }
-        return plainTextDescriptions;
+        String description = String.join("\n", plainTextDescriptions);
+        if (description.length() >= 5000) {
+            int endIndex = description.substring(0, 4997).lastIndexOf(" ");
+            if (endIndex == -1) {
+                //There are no spaces so just break anyway
+                endIndex = 4997;
+            }
+            description = description.substring(0, endIndex) + "...";
+        }
+        return description;
     }
 
     /**
@@ -1802,27 +1817,46 @@ public class DatasetVersion implements Serializable {
         for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
             JsonObjectBuilder author = Json.createObjectBuilder();
             String name = datasetAuthor.getName().getDisplayValue();
+            String identifierAsUrl = datasetAuthor.getIdentifierAsUrl();
             DatasetField authorAffiliation = datasetAuthor.getAffiliation();
             String affiliation = null;
             if (authorAffiliation != null) {
-                affiliation = datasetAuthor.getAffiliation().getDisplayValue();
+                affiliation = datasetAuthor.getAffiliation().getValue();
             }
-            // We are aware of "givenName" and "familyName" but instead of a person it might be an organization such as "Gallup Organization".
-            //author.add("@type", "Person");
-            author.add("name", name);
-            // We are aware that the following error is thrown by https://search.google.com/structured-data/testing-tool
-            // "The property affiliation is not recognized by Google for an object of type Thing."
-            // Someone at Google has said this is ok.
-            // This logic could be moved into the `if (authorAffiliation != null)` block above.
-            if (!StringUtil.isEmpty(affiliation)) {
-                author.add("affiliation", affiliation);
+            JsonObject entity = PersonOrOrgUtil.getPersonOrOrganization(name, false, (identifierAsUrl!=null));
+            String givenName= entity.containsKey("givenName") ? entity.getString("givenName"):null;
+            String familyName= entity.containsKey("familyName") ? entity.getString("familyName"):null;
+            
+            if (entity.getBoolean("isPerson")) {
+                // Person
+                author.add("@type", "Person");
+                if (givenName != null) {
+                    author.add("givenName", givenName);
+                }
+                if (familyName != null) {
+                    author.add("familyName", familyName);
+                }
+                if (!StringUtil.isEmpty(affiliation)) {
+                    author.add("affiliation", Json.createObjectBuilder().add("@type", "Organization").add("name", affiliation));
+                }
+                //Currently all possible identifier URLs are for people not Organizations
+                if(identifierAsUrl != null) {
+                    author.add("sameAs", identifierAsUrl);
+                    //Legacy - not sure if these are still useful
+                    author.add("@id", identifierAsUrl);
+                    author.add("identifier", identifierAsUrl);
+
+                }
+            } else {
+                // Organization
+                author.add("@type", "Organization");
+                if (!StringUtil.isEmpty(affiliation)) {
+                    author.add("parentOrganization", Json.createObjectBuilder().add("@type", "Organization").add("name", affiliation));
+                }
             }
-            String identifierAsUrl = datasetAuthor.getIdentifierAsUrl();
-            if (identifierAsUrl != null) {
-                // It would be valid to provide an array of identifiers for authors but we have decided to only provide one.
-                author.add("@id", identifierAsUrl);
-                author.add("identifier", identifierAsUrl);
-            }
+            // Both cases
+            author.add("name", entity.getString("fullName"));
+            //And add to the array
             authors.add(author);
         }
         JsonArray authorsArray = authors.build();
@@ -1859,16 +1893,8 @@ public class DatasetVersion implements Serializable {
         job.add("dateModified", this.getPublicationDateAsString());
         job.add("version", this.getVersionNumber().toString());
 
-        JsonArrayBuilder descriptionsArray = Json.createArrayBuilder();
-        List<String> descriptions = this.getDescriptionsPlainText();
-        for (String description : descriptions) {
-            descriptionsArray.add(description);
-        }
-        /**
-         * In Dataverse 4.8.4 "description" was a single string but now it's an
-         * array.
-         */
-        job.add("description", descriptionsArray);
+        String description = this.getDescriptionsPlainTextTruncated();
+        job.add("description", description);
 
         /**
          * "keywords" - contains subject(s), datasetkeyword(s) and topicclassification(s)
@@ -1892,11 +1918,16 @@ public class DatasetVersion implements Serializable {
         job.add("keywords", keywords);
         
         /**
-         * citation: (multiple) related publication citation and URLs, if
-         * present.
+         * citation: (multiple) related publication citation and URLs, if present.
          *
-         * In Dataverse 4.8.4 "citation" was an array of strings but now it's an
-         * array of objects.
+         * Schema.org allows text or a CreativeWork object. Google recommends text with
+         * either the full citation or the PID URL. This code adds an object if we have
+         * the citation text for the work and/or an entry in the URL field (i.e.
+         * https://doi.org/...) The URL is reported as the 'url' field while the
+         * citation text (which would normally include the name) is reported as 'name'
+         * since there doesn't appear to be a better field ('text', which was used
+         * previously, is the actual text of the creative work).
+         * 
          */
         List<DatasetRelPublication> relatedPublications = getRelatedPublications();
         if (!relatedPublications.isEmpty()) {
@@ -1911,11 +1942,12 @@ public class DatasetVersion implements Serializable {
                 JsonObjectBuilder citationEntry = Json.createObjectBuilder();
                 citationEntry.add("@type", "CreativeWork");
                 if (pubCitation != null) {
-                    citationEntry.add("text", pubCitation);
+                    citationEntry.add("name", pubCitation);
                 }
                 if (pubUrl != null) {
                     citationEntry.add("@id", pubUrl);
                     citationEntry.add("identifier", pubUrl);
+                    citationEntry.add("url", pubUrl);
                 }
                 if (addToArray) {
                     jsonArrayBuilder.add(citationEntry);
@@ -1957,13 +1989,14 @@ public class DatasetVersion implements Serializable {
             job.add("license",DatasetUtil.getLicenseURI(this));
         }
         
+        String installationBrandName = BrandingUtil.getInstallationBrandName();
+        
         job.add("includedInDataCatalog", Json.createObjectBuilder()
                 .add("@type", "DataCatalog")
-                .add("name", BrandingUtil.getRootDataverseCollectionName())
+                .add("name", installationBrandName)
                 .add("url", SystemConfig.getDataverseSiteUrlStatic())
         );
-
-        String installationBrandName = BrandingUtil.getInstallationBrandName();
+        
         /**
          * Both "publisher" and "provider" are included but they have the same
          * values. Some services seem to prefer one over the other.
@@ -2012,7 +2045,7 @@ public class DatasetVersion implements Serializable {
                 }
                 fileObject.add("@type", "DataDownload");
                 fileObject.add("name", fileMetadata.getLabel());
-                fileObject.add("fileFormat", fileMetadata.getDataFile().getContentType());
+                fileObject.add("encodingFormat", fileMetadata.getDataFile().getContentType());
                 fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
                 fileObject.add("description", fileMetadata.getDescription());
                 fileObject.add("@id", filePidUrlAsString);
@@ -2021,10 +2054,8 @@ public class DatasetVersion implements Serializable {
                 if (hideFilesBoolean != null && hideFilesBoolean.equals("true")) {
                     // no-op
                 } else {
-                    if (FileUtil.isPubliclyDownloadable(fileMetadata)) {
-                        String nullDownloadType = null;
-                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId()));
-                    }
+                    String nullDownloadType = null;
+                    fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId()));
                 }
                 fileArray.add(fileObject);
             }

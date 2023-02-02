@@ -195,7 +195,9 @@ public class OAIServlet extends HttpServlet {
         }
         // The admin email address associated with this installation: 
         // (Note: if the setting does not exist, we are going to assume that they
-        // have a reason not to want to advertise their email address. 
+        // have a reason not to want to configure their email address, if it is
+        // a developer's instance, for example; or a reason not to want to 
+        // advertise it to the world.) 
         InternetAddress systemEmailAddress = MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
         String systemEmailLabel = systemEmailAddress != null ? systemEmailAddress.getAddress() : "donotreply@localhost";
         
@@ -203,19 +205,18 @@ public class OAIServlet extends HttpServlet {
                 .withAdminEmail(systemEmailLabel)
                 .withCompression("gzip")
                 .withCompression("deflate")
-                .withGranularity(Granularity.Second)
+                .withGranularity(Granularity.Lenient)
                 .withResumptionTokenFormat(new SimpleResumptionTokenFormat().withGranularity(Granularity.Second))
                 .withRepositoryName(repositoryName)
                 .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
-                .withEarliestDate(Instant.EPOCH) // this is NOT something we really want to be doing, but this will be corrected once PR9316 is merged
+                .withEarliestDate(recordService.getEarliestDate())
                 .withMaxListIdentifiers(maxListIdentifiers)
                 .withMaxListSets(maxListSets)
                 .withMaxListRecords(maxListRecords)
                 .withDeleteMethod(DeletedRecord.TRANSIENT)
                 .withEnableMetadataAttributes(true)
                 .withRequireFromAfterEarliest(false)
-                .build();
-        
+                .build();        
         
         return configuration; 
     }
