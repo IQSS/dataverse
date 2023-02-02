@@ -371,99 +371,11 @@ public abstract class AbstractApiBean {
     }
 
     /**
-     *
      * @param apiKey the key to find the user with
      * @return the user, or null
-     * @see #findUserOrDie(java.lang.String)
      */
     protected AuthenticatedUser findUserByApiToken( String apiKey ) {
         return authSvc.lookupUser(apiKey);
-    }
-
-    /**
-     * Returns the user of pointed by the API key, or the guest user
-     * @return a user, may be a guest user.
-     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse iff there is an api key present, but it is invalid.
-     *
-     * @deprecated  Do not use this method.
-     *    This method is expected to be removed once all API endpoints use the filter-based authentication.
-     *    @see <a href="https://github.com/IQSS/dataverse/issues/9293">#9293</a>
-     *    In case you are implementing a new endpoint that requires user authentication, here is an example of how to apply the new filter-based authentication:
-     *    {@link edu.harvard.iq.dataverse.api.Datasets#getDataset(ContainerRequestContext, String, UriInfo, HttpHeaders, HttpServletResponse)}
-     */
-    @Deprecated
-    protected User findUserOrDie() throws WrappedResponse {
-        final String requestApiKey = getRequestApiKey();
-        final String requestWFKey = getRequestWorkflowInvocationID();
-        if (requestApiKey == null && requestWFKey == null && getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN)==null) {
-            return GuestUser.get();
-        }
-        PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
-        // For privateUrlUsers restricted to anonymized access, all api calls are off-limits except for those used in the UI
-        // to download the file or image thumbs
-        if (privateUrlUser != null) {
-            if (privateUrlUser.hasAnonymizedAccess()) {
-                String pathInfo = httpRequest.getPathInfo();
-                String prefix= "/access/datafile/";
-                if (!(pathInfo.startsWith(prefix) && !pathInfo.substring(prefix.length()).contains("/"))) {
-                    logger.info("Anonymized access request for " + pathInfo);
-                    throw new WrappedResponse(error(Status.UNAUTHORIZED, "API Access not allowed with this Key"));
-                }
-            }
-            return privateUrlUser;
-        }
-        return findAuthenticatedUserOrDie(requestApiKey, requestWFKey);
-    }
-
-    private AuthenticatedUser findAuthenticatedUserOrDie( String key, String wfid ) throws WrappedResponse {
-        if (key != null) {
-            // No check for deactivated user because it's done in authSvc.lookupUser.
-            AuthenticatedUser authUser = authSvc.lookupUser(key);
-
-            if (authUser != null) {
-                authUser = userSvc.updateLastApiUseTime(authUser);
-
-                return authUser;
-            }
-            else {
-                throw new WrappedResponse(badApiKey(key));
-            }
-        } else if (wfid != null) {
-            AuthenticatedUser authUser = authSvc.lookupUserForWorkflowInvocationID(wfid);
-            if (authUser != null) {
-                return authUser;
-            } else {
-                throw new WrappedResponse(badWFKey(wfid));
-            }
-        } else if (getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN) != null) {
-            AuthenticatedUser authUser = getAuthenticatedUserFromSignedUrl();
-            if (authUser != null) {
-                return authUser;
-            }
-        }
-        //Just send info about the apiKey - workflow users will learn about invocationId elsewhere
-        throw new WrappedResponse(badApiKey(null));
-    }
-    
-    private AuthenticatedUser getAuthenticatedUserFromSignedUrl() {
-        AuthenticatedUser authUser = null;
-        // The signedUrl contains a param telling which user this is supposed to be for.
-        // We don't trust this. So we lookup that user, and get their API key, and use
-        // that as a secret in validating the signedURL. If the signature can't be
-        // validated with their key, the user (or their API key) has been changed and
-        // we reject the request.
-        // ToDo - add null checks/ verify that calling methods catch things.
-        String user = httpRequest.getParameter("user");
-        AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(user);
-        String key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("")
-                + authSvc.findApiTokenByUser(targetUser).getTokenString();
-        String signedUrl = httpRequest.getRequestURL().toString() + "?" + httpRequest.getQueryString();
-        String method = httpRequest.getMethod();
-        boolean validated = UrlSignerUtil.isValidUrl(signedUrl, user, method, key);
-        if (validated) {
-            authUser = targetUser;
-        }
-        return authUser;
     }
 
     protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {

@@ -436,23 +436,25 @@ public class Files extends AbstractApiBean {
                 .build();
     }
     
-    @GET                    
+    @GET
+    @AuthRequired
     @Path("{id}/draft")
-    public Response getFileDataDraft(@PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
-        return getFileDataResponse(fileIdOrPersistentId, uriInfo, headers, response, true);
+    public Response getFileDataDraft(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
+        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, true);
     }
     
-    @GET                             
+    @GET
+    @AuthRequired
     @Path("{id}")
-    public Response getFileData(@PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
-          return getFileDataResponse(fileIdOrPersistentId, uriInfo, headers, response, false);
+    public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
+          return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, false);
     }
     
-    private Response getFileDataResponse(String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response, boolean draft ){
+    private Response getFileDataResponse(User user, String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response, boolean draft ){
         
         DataverseRequest req;
         try {
-            req = createDataverseRequest(findUserOrDie());
+            req = createDataverseRequest(user);
         } catch (Exception e) {
             return error(BAD_REQUEST, "Error attempting to request information. Maybe a bad API token?");
         }
