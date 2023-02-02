@@ -475,16 +475,17 @@
                                                         <th scope="row">
                                                             #{bundle['file.metadata.filetags']}
                                                         </th>
-                                                        <td>
-                                                            <div id="file-tags">
-                                                                <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag" rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
-                                                                    <h:outputText value="#{tag}" styleClass="label label-default"/>
+                                                        <td id="fileCategoriesList"   >
+                                                            <div id="file-tags" > 
+                                                                <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag">
+                                                                    <h:outputText value="#{tag}" styleClass="label label-default" />
                                                                 </ui:repeat>
-                                                                <ui:repeat value="#{FilePage.fileMetadata.dataFile.tags}" var="tag">
-                                                                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
+                                                                <ui:repeat value="#{FilePage.fileMetadata.dataFile.tagLabels}" var="tag" varStatus="loop" >
+                                                                    <h:outputText value="#{loop.first ? '&lt;br/&gt;': '' }" escape="false"/>
+                                                                    <h:outputText value="#{tag}" styleClass="label label-info"/>
                                                                 </ui:repeat>
                                                             </div>
-                                                        </td>
+                                                        </td>    
                                                     </tr>
                                                     <tr id="filePersistentIdBlock" jsf:rendered="#{FilePage.file.identifier != null}">
                                                         <th scope="row">

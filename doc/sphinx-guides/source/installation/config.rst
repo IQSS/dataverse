@@ -2016,8 +2016,6 @@ By default, download URLs to files will be included in Schema.org JSON-LD output
 
 ``./asadmin create-jvm-options '-Ddataverse.files.hide-schema-dot-org-download-urls=true'``
 
-Please note that there are other reasons why download URLs may not be included for certain files such as if a guestbook entry is required or if the file is restricted.
-
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
 .. _useripaddresssourceheader:
@@ -2047,6 +2045,27 @@ This setting is useful in cases such as running your Dataverse installation behi
 	"HTTP_FORWARDED",
 	"HTTP_VIA",
 	"REMOTE_ADDR"
+	
+.. _dataverse.personOrOrg.assumeCommaInPersonName:
+
+dataverse.personOrOrg.assumeCommaInPersonName
++++++++++++++++++++++++++++++++++++++++++++++
+
+Please note that this setting is experimental.
+
+The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization. If you are sure that
+users are following the guidance to add people in the recommended family name, given name order, with a comma, you can set this true to always assume entries without a comma are for Organizations. The default is false.
+
+.. _dataverse.personOrOrg.orgPhraseArray:
+
+dataverse.personOrOrg.orgPhraseArray
+++++++++++++++++++++++++++++++++++++
+
+Please note that this setting is experimental.
+
+The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization.
+If you have examples where an orgization name is being inferred to belong to a person, you can use this setting to force it to be recognized as an organization.
+The value is expected to be a JsonArray of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization. 
 
 
 .. _dataverse.api.signature-secret:
