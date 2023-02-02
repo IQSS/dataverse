@@ -30,8 +30,6 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
@@ -43,14 +41,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
-import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -58,7 +53,6 @@ import java.io.StringReader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -77,7 +71,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -210,9 +203,6 @@ public abstract class AbstractApiBean {
     protected SavedSearchServiceBean savedSearchSvc;
 
     @EJB
-    protected PrivateUrlServiceBean privateUrlSvc;
-
-    @EJB
     protected ConfirmEmailServiceBean confirmEmailSvc;
 
     @EJB
@@ -319,13 +309,6 @@ public abstract class AbstractApiBean {
         String queryParamApiKey = httpRequest.getParameter("key");
                 
         return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
-    }
-    
-    protected String getRequestWorkflowInvocationID() {
-        String headerParamWFKey = httpRequest.getHeader(DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME);
-        String queryParamWFKey = httpRequest.getParameter("invocationID");
-                
-        return headerParamWFKey!=null ? headerParamWFKey : queryParamWFKey;
     }
 
     protected User getRequestUser(ContainerRequestContext crc) {
