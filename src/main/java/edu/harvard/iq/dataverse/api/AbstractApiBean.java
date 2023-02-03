@@ -90,6 +90,7 @@ public abstract class AbstractApiBean {
     private static final String ALIAS_KEY=":alias";
     public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
     public static final String DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME = "X-Dataverse-invocationID";
+    public static final String RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED = "Only authenticated users can perform the requested operation";
 
     /**
      * Utility class to convey a proper error response using Java's exceptions.
@@ -757,19 +758,9 @@ public abstract class AbstractApiBean {
     protected Response conflict( String msg ) {
         return error( Status.CONFLICT, msg );
     }
-    
-    protected Response badApiKey( String apiKey ) {
-        return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME);
-    }
-
-    protected Response badWFKey( String wfId ) {
-        String message = (wfId != null ) ? "Bad workflow invocationId " : "Please provide an invocationId query parameter (?invocationId=XXX) or via the HTTP header " + DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME;
-        return error(Status.UNAUTHORIZED, message );
-    }
 
     protected Response authenticatedUserRequired() {
-        String message = "Only authenticated users can perform the requested operation";
-        return error(Status.UNAUTHORIZED, message );
+        return error(Status.UNAUTHORIZED, RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED);
     }
 
     protected Response permissionError( PermissionException pe ) {

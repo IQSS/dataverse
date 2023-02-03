@@ -155,7 +155,7 @@ public class SearchIT {
         Response dataverse47behaviorOfTokensBeingRequired = UtilIT.search("id:dataset_" + datasetId1, nullToken);
         dataverse47behaviorOfTokensBeingRequired.prettyPrint();
         dataverse47behaviorOfTokensBeingRequired.then().assertThat()
-                .body("message", CoreMatchers.equalTo("Please provide a key query parameter (?key=XXX) or via the HTTP header X-Dataverse-key"))
+                .body("message", CoreMatchers.equalTo(AbstractApiBean.RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
         Response reEnableTokenlessSearch = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiRequiresToken);
@@ -973,12 +973,12 @@ public class SearchIT {
         Response searchFakeSubtree = UtilIT.search(searchPart, apiToken, "&subtree=fake");
         searchFakeSubtree.prettyPrint();
         searchFakeSubtree.then().assertThat()
-                .statusCode(400);
+                .statusCode(BAD_REQUEST.getStatusCode());
         
         Response searchFakeSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree=fake");
         searchFakeSubtreeNoAPI.prettyPrint();
         searchFakeSubtreeNoAPI.then().assertThat()
-                .statusCode(400);
+                .statusCode(FORBIDDEN.getStatusCode());
 
         Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
         searchUnpublishedSubtree.prettyPrint();

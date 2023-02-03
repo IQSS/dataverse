@@ -96,7 +96,7 @@ public class AdminIT {
         String nonSuperUsername = UtilIT.getUsernameFromResponse(createUserResponse);
         
         Response filterResponseBadToken = UtilIT.filterAuthenticatedUsers(nonSuperuserApiToken, null, null, null, null);
-        filterResponseBadToken.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        filterResponseBadToken.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
          
         // delete user
         Response deleteNonSuperuser = UtilIT.deleteUser(nonSuperUsername);
