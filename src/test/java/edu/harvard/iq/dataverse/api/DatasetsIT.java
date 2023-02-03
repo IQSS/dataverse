@@ -1052,7 +1052,7 @@ public class DatasetsIT {
         Response downloadFile = UtilIT.downloadFile(fileId, tokenForPrivateUrlUser);
         assertEquals(OK.getStatusCode(), downloadFile.getStatusCode());
         Response downloadFileBadToken = UtilIT.downloadFile(fileId, "junk");
-        assertEquals(FORBIDDEN.getStatusCode(), downloadFileBadToken.getStatusCode());
+        assertEquals(UNAUTHORIZED.getStatusCode(), downloadFileBadToken.getStatusCode());
         Response notPermittedToListRoleAssignment = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, userWithNoRolesApiToken);
         assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignment.getStatusCode());
         Response roleAssignments = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, apiToken);
