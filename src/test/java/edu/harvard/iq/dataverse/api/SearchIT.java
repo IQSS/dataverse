@@ -978,7 +978,7 @@ public class SearchIT {
         Response searchFakeSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree=fake");
         searchFakeSubtreeNoAPI.prettyPrint();
         searchFakeSubtreeNoAPI.then().assertThat()
-                .statusCode(FORBIDDEN.getStatusCode());
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
         Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
         searchUnpublishedSubtree.prettyPrint();
