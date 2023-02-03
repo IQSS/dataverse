@@ -47,7 +47,7 @@ public class AdminIT {
     public void testListAuthenticatedUsers() throws Exception {
         Response anon = UtilIT.listAuthenticatedUsers("");
         anon.prettyPrint();
-        anon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        anon.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
         Response createNonSuperuser = UtilIT.createRandomUser();
         
@@ -84,7 +84,7 @@ public class AdminIT {
         // --------------------------------------------
         Response anon = UtilIT.filterAuthenticatedUsers("", null, null, null, null);
         anon.prettyPrint();
-        anon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        anon.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
         // --------------------------------------------
         // Forbidden: Try with a regular user--*not a superuser*
@@ -287,7 +287,7 @@ public class AdminIT {
 
         Response builtinToShibAnon = UtilIT.migrateBuiltinToShib(data, "");
         builtinToShibAnon.prettyPrint();
-        builtinToShibAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        builtinToShibAnon.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
         Response createSuperuser = UtilIT.createRandomUser();
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
@@ -381,7 +381,7 @@ public class AdminIT {
 
         Response builtinToShibAnon = UtilIT.migrateBuiltinToShib(data, "");
         builtinToShibAnon.prettyPrint();
-        builtinToShibAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        builtinToShibAnon.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
         Response createSuperuser = UtilIT.createRandomUser();
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
