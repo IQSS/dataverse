@@ -82,7 +82,7 @@ public class AdminIT {
         // --------------------------------------------
         // Forbidden: Try *without* an API token
         // --------------------------------------------
-        Response anon = UtilIT.filterAuthenticatedUsers(null, null, null, null, null);
+        Response anon = UtilIT.filterAuthenticatedUsers("", null, null, null, null);
         anon.prettyPrint();
         anon.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
