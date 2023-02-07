@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.persistence.dataset;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.JpaEntity;
+import edu.harvard.iq.dataverse.persistence.config.JsonMapConverter;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
 import org.apache.commons.lang3.StringUtils;
@@ -10,6 +11,7 @@ import javax.faces.model.SelectItem;
 import javax.faces.model.SelectItemGroup;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -27,6 +29,7 @@ import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -153,6 +156,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     @Column(name="validation", nullable = false)
     private String validation;
 
+    @Column(name="metadata", nullable = false)
+    @Convert(converter = JsonMapConverter.class)
+    private Map<String, String> metadata = Collections.emptyMap();
+
     // -------------------- CONSTRUCTORS --------------------
 
     public DatasetFieldType() { }
@@ -276,6 +283,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public String getValidation() {
         return validation;
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
     }
 
     // -------------------- LOGIC --------------------
@@ -457,6 +468,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
                         : fieldType.equals(FieldType.TEXTBOX));
     }
 
+    public String getMetadata(String key) {
+        return metadata.get(key);
+    }
+
     // -------------------- PRIVATE --------------------
 
     private String getLocaleTitleWithParent() {
@@ -578,6 +593,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public void setValidation(String validation) {
         this.validation = validation;
+    }
+
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
     }
 
     // -------------------- hashCode & equals --------------------

@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.ControlledVocabularyValueServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
@@ -9,6 +11,7 @@ import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
+import edu.harvard.iq.dataverse.persistence.config.JsonMapConverter;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabAlternate;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
@@ -38,9 +41,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -49,6 +55,8 @@ import java.util.stream.Collectors;
 @Path("admin/datasetfield")
 public class DatasetFieldServiceApi extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(DatasetFieldServiceApi.class.getName());
+
+    private static final JsonMapConverter jsonMapConverter = new JsonMapConverter();
 
     @EJB
     DatasetFieldServiceBean datasetFieldService;
@@ -139,7 +147,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                               .add("parentAllowsMultiples", parentAllowsMultiplesDisplay)
                               .add("solrFieldSearchable", solrFieldSearchable)
                               .add("solrFieldFacetable", solrFieldFacetable)
-                              .add("isRequired", isRequired));
+                              .add("isRequired", isRequired)
+                              .add("validation", dsf.getValidation())
+                              .add("metadata", jsonMapConverter.convertToDatabaseColumn(dsf.getMetadata())));
 
         } catch (NoResultException nre) {
             return notFound(name);
@@ -300,13 +310,10 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 
     private String parseDatasetField(String[] values) {
 
-        //First see if it exists
-        DatasetFieldType dsf = datasetFieldService.findByName(values[1]);
-        if (dsf == null) {
-            //if not create new
-            dsf = new DatasetFieldType();
-        }
-        //add(update) values
+        DatasetFieldType found = datasetFieldService.findByName(values[1]);
+        final DatasetFieldType dsf = found != null ? found : new DatasetFieldType();
+
+        // add/update values
         dsf.setName(values[1]);
         dsf.setTitle(values[2]);
         dsf.setDescription(values[3]);
@@ -328,14 +335,18 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         dsf.setInputRendererType(InputRendererType.valueOf(values[15]));
         dsf.setInputRendererOptions(values[16]);
         dsf.setMetadataBlock(dataverseDao.findMDBByName(values[17]));
-        if (values.length > 18 && !StringUtils.isEmpty(values[18])) {
-            dsf.setUri(values[18]);
-        }
-        if (values.length > 19 && StringUtils.isNotBlank(values[19])) {
-            dsf.setValidation(values[19]);
-        }
+        setIfNotEmpty(dsf::setUri, 18, values);
+        setIfNotEmpty(dsf::setValidation, 19, values);
+        setIfNotEmpty(v -> dsf.setMetadata(jsonMapConverter.convertToEntityAttribute(v)), 20, values);
+
         datasetFieldService.save(dsf);
         return dsf.getName();
+    }
+
+    private void setIfNotEmpty(Consumer<String> setter, int index, String[] values) {
+        if (values != null && values.length > index && StringUtils.isNotBlank(values[index])) {
+            setter.accept(values[index]);
+        }
     }
 
     private String parseControlledVocabulary(String[] values) {

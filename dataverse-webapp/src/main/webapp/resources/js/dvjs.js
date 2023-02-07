@@ -2,10 +2,10 @@ function initDvJS() {
   
   function initGeo() {
     // Coordinates mapping in GEOBOX datafield
-    const X1 = 'westLongitude';
-    const Y1 = 'southLongitude';
-    const X2 = 'eastLongitude';
-    const Y2 = 'northLongitude';
+    const X1 = 'W';
+    const Y1 = 'S';
+    const X2 = 'E';
+    const Y2 = 'N';
 
     const RECT_COLOR = '#e3276f';
     const MAX_ZOOM = 19;

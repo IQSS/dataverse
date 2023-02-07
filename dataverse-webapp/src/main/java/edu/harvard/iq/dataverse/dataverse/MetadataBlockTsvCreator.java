@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.dataverse;
 
+import edu.harvard.iq.dataverse.persistence.config.JsonMapConverter;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabAlternate;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
@@ -19,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 public class MetadataBlockTsvCreator {
 
     private static final Logger logger = LoggerFactory.getLogger(MetadataBlockTsvCreator.class);
+    private static final JsonMapConverter jsonMapConverter = new JsonMapConverter();
 
     private static final CSVFormat TSV = CSVFormat.DEFAULT
             .withEscape('\\')
@@ -175,7 +178,8 @@ public class MetadataBlockTsvCreator {
         INPUT_RENDERER_OPTIONS("inputRendererOptions", DatasetFieldType::getInputRendererOptions),
         METADATABLOCK_ID("metadatablock_id", t -> t.getMetadataBlock().getName()),
         TERM_URI("termURI", DatasetFieldType::getUri),
-        VALIDATION("validation", DatasetFieldType::getValidation);
+        VALIDATION("validation", DatasetFieldType::getValidation),
+        METADATA("metadata", DatasetFieldType::getMetadata, v -> (Object) jsonMapConverter.convertToDatabaseColumn((Map<String, String>) v));
 
         DatasetFieldTypeRecord(String columnName, Function<DatasetFieldType, Object> valueGetter, UnaryOperator<Object> formatter) {
             this.columnName = columnName;

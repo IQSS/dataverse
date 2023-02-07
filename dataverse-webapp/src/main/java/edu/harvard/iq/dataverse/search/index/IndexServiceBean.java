@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SolrField;
+import edu.harvard.iq.dataverse.search.index.geobox.GeoboxIndexUtil;
 import edu.harvard.iq.dataverse.search.query.SearchObjectType;
 import edu.harvard.iq.dataverse.search.query.SearchPublicationStatus;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -106,7 +107,9 @@ public class IndexServiceBean {
     private SettingsServiceBean settingsService;
     private SolrClient solrServer;
     private CitationFactory citationFactory;
+
     private DataAccess dataAccess = DataAccess.dataAccess();
+    private GeoboxIndexUtil geoboxIndexUtil = new GeoboxIndexUtil();
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -828,15 +831,16 @@ public class IndexServiceBean {
                 String solrFieldSearchable = dsfSolrField.getNameSearchable();
                 String solrFieldFacetable = dsfSolrField.getNameFacetable();
 
-                if (dsf.getValues() != null && !dsf.getValues().isEmpty() && dsf.getValues().get(0) != null && solrFieldSearchable != null) {
+                if (dsf.getValues() != null && !dsf.getValues().isEmpty()
+                        && dsf.getValues().get(0) != null && solrFieldSearchable != null) {
 
                     logger.fine("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
                     // if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER))
                     // {
-                    if (dsfSolrField.getSolrType().equals(SolrField.SolrType.EMAIL)) {
+                    if (SolrField.SolrType.EMAIL.equals(dsfSolrField.getSolrType())) {
                         // no-op. we want to keep email address out of Solr per
                         // https://github.com/IQSS/dataverse/issues/759
-                    } else if (dsfSolrField.getSolrType().equals(SolrField.SolrType.DATE)) {
+                    } else if (SolrField.SolrType.DATE.equals(dsfSolrField.getSolrType())) {
                         String dateAsString = dsf.getValues_nondisplay().get(0);
                         logger.fine("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
@@ -866,7 +870,7 @@ public class IndexServiceBean {
                     } else {
                         // _s (dynamic string) and all other Solr fields
 
-                        if (dsf.getDatasetFieldType().getName().equals("authorAffiliation")) {
+                        if ("authorAffiliation".equals(dsf.getDatasetFieldType().getName())) {
                             /*
                               @todo think about how to tie the fact that this
                              * needs to be multivalued (_ss) because a
@@ -898,7 +902,7 @@ public class IndexServiceBean {
                                     solrInputDocument.addField(solrFieldFacetable, controlledVocabularyValue.getStrValue());
                                 }
                             }
-                        } else if (dsfType.getFieldType().equals(FieldType.TEXTBOX)) {
+                        } else if (FieldType.TEXTBOX.equals(dsfType.getFieldType())) {
                             // strip HTML
                             List<String> htmlFreeText = StringUtil.htmlArray2textArray(dsf.getValuesWithoutNaValues());
                             solrInputDocument.addField(solrFieldSearchable, htmlFreeText);
@@ -921,6 +925,9 @@ public class IndexServiceBean {
                             }
                         }
                     }
+                }
+                if (dsfType.getFieldType() == FieldType.GEOBOX && geoboxIndexUtil.isIndexable(dsf)) {
+                    solrInputDocument.addField(solrFieldSearchable, geoboxIndexUtil.geoboxFieldToSolr(dsf));
                 }
             }
         }
@@ -1488,5 +1495,4 @@ public class IndexServiceBean {
                 .map(Locale::forLanguageTag)
                 .collect(Collectors.toSet());
     }
-
 }

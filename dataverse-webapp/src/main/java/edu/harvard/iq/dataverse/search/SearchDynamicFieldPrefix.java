@@ -3,12 +3,12 @@ package edu.harvard.iq.dataverse.search;
 import java.util.stream.Stream;
 
 public enum SearchDynamicFieldPrefix {
-    TXT ("dsf_txt_"),
-    STR ("dsf_str_"),
-    DTR ("dsf_dtr_"),
-    INT ("dsf_int_"),
-    FLT ("dsf_flt_")
-    ;
+    TEXT("dsf_txt_"),
+    STRING("dsf_str_"),
+    DATE("dsf_dtr_"),
+    INTEGER("dsf_int_"),
+    FLOAT("dsf_flt_"),
+    GEOBOX("dsf_geobox_");
 
 
     private String prefix;

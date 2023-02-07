@@ -27,13 +27,13 @@
 
     <c:set var="widgetVar" value="#{mapId}_#{datasetField.datasetFieldType.name}"/>
     <p:inputText value="#{datasetField.value}" id="geoInputText"
-                 onchange="DvJS.Geo.EditView.putValue('#{mapId}', '#{datasetField.datasetFieldType.name}', $(this).val()); DvJS.Geo.EditView.updateMap('#{mapId}')"
+                 onchange="DvJS.Geo.EditView.putValue('#{mapId}', '#{datasetField.datasetFieldType.metadata['geoboxCoord']}', $(this).val()); DvJS.Geo.EditView.updateMap('#{mapId}')"
                  widgetVar="#{widgetVar}"
                  pt:data-handler="#{widgetVar}"
                  styleClass="form-control"/>
     <script>
-        DvJS.Geo.EditView.putValue('#{mapId}', '#{datasetField.datasetFieldType.name}', '#{datasetField.value}');
-        DvJS.Geo.EditView.putWidgetVar('#{mapId}', '#{datasetField.datasetFieldType.name}', '#{widgetVar}');
+        DvJS.Geo.EditView.putValue('#{mapId}', '#{datasetField.datasetFieldType.metadata["geoboxCoord"]}', '#{datasetField.value}');
+        DvJS.Geo.EditView.putWidgetVar('#{mapId}', '#{datasetField.datasetFieldType.metadata["geoboxCoord"]}', '#{widgetVar}');
     </script>
 
     <p:watermark for="geoInputText" value="#{datasetField.datasetFieldType.localeWatermark}"></p:watermark>
