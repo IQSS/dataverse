@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] switch inline tables such as the ones on `\doc\sphinx-guides\source\admin\metadatacustomization.rst` to use csv tables such as those in `\doc\sphinx-guides\source\api\external-tools.rst` because formatting tables manually is a nightmare (search for instances of `+---` in the docs); long tables (that extend beyond one page MUST have a `:class: longtable` defined for the CSV table otherwise the table will truncate at the end of the first page)
 - [ ] include warning instructions for those wanting to contribute to the documentation that csv tables should be used over manually formatted
 - [x] replace instances of `guides.dataverse.org/en` with :ref references (since we do not want any hard coded domain name paths when not necessary)
+- [ ] might want to create a `docker-compose.yml` using [https://docs.docker.com/compose/gettingstarted/#step-3-define-services-in-a-compose-file] to handle the different steps/images instead of using the markdown file to step through things manually
+- [ ] see if the dvinstall process is different than described in `https://guides.dataverse.org/en/latest/installation/prerequisites.html?highlight=dvinstall`
+- [ ] why is psycopg2 not part of the install prerequisites? `https://guides.dataverse.org/en/latest/developers/dev-environment.html?highlight=psycopg2`
+- [ ] the documentation needs to set the shell type when running terminal commands because some assume `sh` and others assume `bash`
 
 ## Issues
 
