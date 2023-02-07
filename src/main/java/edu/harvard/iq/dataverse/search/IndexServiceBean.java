@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -30,6 +31,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -37,6 +39,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -86,6 +89,8 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.xml.sax.ContentHandler;
 
 @Stateless
@@ -93,6 +98,7 @@ import org.xml.sax.ContentHandler;
 public class IndexServiceBean {
 
     private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
+    private static final Config config = ConfigProvider.getConfig();
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -153,13 +159,18 @@ public class IndexServiceBean {
     public static final String HARVESTED = "Harvested";
     private String rootDataverseName;
     private Dataverse rootDataverseCached;
-    private SolrClient solrServer;
+    SolrClient solrServer;
 
     private VariableMetadataUtil variableMetadataUtil;
 
     @PostConstruct
     public void init() {
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        // Get from MPCONFIG. Might be configured by a sysadmin or simply return the default shipped with
+        // resources/META-INF/microprofile-config.properties.
+        String protocol = JvmSettings.SOLR_PROT.lookup();
+        String path = JvmSettings.SOLR_PATH.lookup();
+    
+        String urlString = protocol + "://" + systemConfig.getSolrHostColonPort() + path;
         solrServer = new HttpSolrClient.Builder(urlString).build();
 
         rootDataverseName = findRootDataverseCached().getName();
@@ -947,6 +958,70 @@ public class IndexServiceBean {
                         }
                     }
                 }
+                
+                //ToDo - define a geom/bbox type solr field and find those instead of just this one
+                if(dsfType.getName().equals(DatasetFieldConstant.geographicBoundingBox)) {
+                    String minWestLon=null;
+                    String maxEastLon=null;
+                    String maxNorthLat=null;
+                    String minSouthLat=null;
+                    for (DatasetFieldCompoundValue compoundValue : dsf.getDatasetFieldCompoundValues()) {
+                        String westLon=null;
+                        String eastLon=null;
+                        String northLat=null;
+                        String southLat=null;
+                        for(DatasetField childDsf: compoundValue.getChildDatasetFields()) {
+                            switch (childDsf.getDatasetFieldType().getName()) {
+                            case DatasetFieldConstant.westLongitude:
+                                westLon = childDsf.getRawValue();
+                                break;
+                            case DatasetFieldConstant.eastLongitude:
+                                eastLon = childDsf.getRawValue();
+                                break;
+                            case DatasetFieldConstant.northLatitude:
+                                northLat = childDsf.getRawValue();
+                                break;
+                            case DatasetFieldConstant.southLatitude:
+                                southLat = childDsf.getRawValue();
+                                break;
+                            }
+                        }
+                        if ((eastLon != null || westLon != null) && (northLat != null || southLat != null)) {
+                            // we have a point or a box, so proceed
+                            if (eastLon == null) {
+                                eastLon = westLon;
+                            } else if (westLon == null) {
+                                westLon = eastLon;
+                            }
+                            if (northLat == null) {
+                                northLat = southLat;
+                            } else if (southLat == null) {
+                                southLat = northLat;
+                            }
+                            //Find the overall bounding box that includes all bounding boxes
+                            if(minWestLon==null || Float.parseFloat(minWestLon) > Float.parseFloat(westLon)) {
+                                minWestLon=westLon;
+                            }
+                            if(maxEastLon==null || Float.parseFloat(maxEastLon) < Float.parseFloat(eastLon)) {
+                                maxEastLon=eastLon;
+                            }
+                            if(minSouthLat==null || Float.parseFloat(minSouthLat) > Float.parseFloat(southLat)) {
+                                minSouthLat=southLat;
+                            }
+                            if(maxNorthLat==null || Float.parseFloat(maxNorthLat) < Float.parseFloat(northLat)) {
+                                maxNorthLat=northLat;
+                            }
+                            //W, E, N, S
+                            solrInputDocument.addField(SearchFields.GEOLOCATION, "ENVELOPE(" + westLon + "," + eastLon + "," + northLat + "," + southLat + ")");
+                        }
+                    }
+                    //Only one bbox per dataset
+                    //W, E, N, S
+                    if ((minWestLon != null || maxEastLon != null) && (maxNorthLat != null || minSouthLat != null)) {
+                        solrInputDocument.addField(SearchFields.BOUNDING_BOX, "ENVELOPE(" + minWestLon + "," + maxEastLon + "," + maxNorthLat + "," + minSouthLat + ")");
+                    }
+
+                }
             }
 
             for(String metadataBlockName : metadataBlocksWithValue) {
@@ -1422,6 +1497,7 @@ public class IndexServiceBean {
                 dataset = (Dataset) dvObject;
                 linkingDataverses = dsLinkingService.findLinkingDataverses(dataset.getId());
                 ancestorList = dataset.getOwner().getOwners();
+                ancestorList.add(dataset.getOwner()); //to show dataset in linking dv when parent dv is linked
             }
             if(dvObject.isInstanceofDataverse()){
                 dv = (Dataverse) dvObject;
@@ -1586,6 +1662,11 @@ public class IndexServiceBean {
             logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
         }        
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
+        if (dataversePaths.size() > 0 && dvo.isInstanceofDataverse()) {
+            // removing the dataverse's own id from the paths
+            // fixes bug where if my parent dv was linked my dv was shown as linked to myself
+            dataversePaths.remove(dataversePaths.size() - 1);
+        }
         /*
         add linking paths
         */

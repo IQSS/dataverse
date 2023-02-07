@@ -144,6 +144,7 @@ var fileUpload = class fileUploadClass {
         async doUpload() {
                 this.state = UploadState.UPLOADING;
                 var thisFile = curFile-1;
+                this.id=thisFile;
                 //This appears to be the earliest point when the file table has been populated, and, since we don't know how many table entries have had ids added already, we check
                 var filerows = $('.ui-fileupload-files .ui-fileupload-row');
                 //Add an id attribute to each entry so we can later match progress and errors with the right entry
@@ -318,7 +319,7 @@ var fileUpload = class fileUploadClass {
                 if (directUploadReport) {
                         getMD5(this.file, prog => {
                                 var current = 1 + prog;
-                                $('progress').attr({
+                                $('[upid="' + this.id + '"] progress').attr({
                                         value: current,
                                         max: 2
                                 });

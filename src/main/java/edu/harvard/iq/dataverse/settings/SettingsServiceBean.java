@@ -569,6 +569,10 @@ public class SettingsServiceBean {
          */
         AllowRemoteAuthSignUp,
         /**
+         * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
+         */
+        WebloaderUrl,
+        /**
          * Optional email address to use with the support form/ feedback api emails. Default is to use the SystemEmail account.
          * 
          */
@@ -579,6 +583,7 @@ public class SettingsServiceBean {
          * contact form, when email is sent TO the listed Dataverse, Dataset, or DataFile contacts. Default is false.
          */
         CCSupportOnContactEmails
+
         ;
 
         @Override
