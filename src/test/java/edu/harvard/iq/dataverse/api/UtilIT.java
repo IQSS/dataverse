@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import com.jayway.restassured.path.xml.XmlPath;
+import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -3136,5 +3137,16 @@ public class UtilIT {
 
 
         return importDDI.post(postString);
+    }
+
+    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json; charset=utf-8")
+                .queryParam("role_ids", roleIds)
+                .queryParam("dvobject_types", MyDataFilterParams.defaultDvObjectTypes)
+                .queryParam("published_states", MyDataFilterParams.defaultPublishedStates)
+                .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
+        return response;
     }
 }

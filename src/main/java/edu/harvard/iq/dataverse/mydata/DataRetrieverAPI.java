@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -38,6 +39,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -254,78 +257,49 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return jsonData.build().toString();
         
     }
-    
 
-    /**
-     * @todo This should support the "X-Dataverse-key" header like the other
-     * APIs.
-     */
-    @Path(retrieveDataPartialAPIPath)
+
     @GET
+    @AuthRequired
+    @Path(retrieveDataPartialAPIPath)
     @Produces({"application/json"})
-    public String retrieveMyDataAsJsonString(@QueryParam("dvobject_types") List<String> dvobject_types, 
-            @QueryParam("published_states") List<String> published_states, 
-            @QueryParam("selected_page") Integer selectedPage, 
-            @QueryParam("mydata_search_term") String searchTerm,             
-            @QueryParam("role_ids") List<Long> roleIds, 
-            @QueryParam("userIdentifier") String userIdentifier,
-            @QueryParam("key") String apiToken) { //String myDataParams) {
-        //System.out.println("_YE_OLDE_QUERY_COUNTER_");
-        //msgt("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-        boolean DEBUG_MODE = false;
+    public String retrieveMyDataAsJsonString(
+            @Context ContainerRequestContext crc,
+            @QueryParam("dvobject_types") List<String> dvobject_types,
+            @QueryParam("published_states") List<String> published_states,
+            @QueryParam("selected_page") Integer selectedPage,
+            @QueryParam("mydata_search_term") String searchTerm,
+            @QueryParam("role_ids") List<Long> roleIds,
+            @QueryParam("userIdentifier") String userIdentifier) {
         boolean OTHER_USER = false;
 
         String localeCode = session.getLocaleCode();
         String noMsgResultsFound = BundleUtil.getStringFromPropertyFile("dataretrieverAPI.noMsgResultsFound",
                 "Bundle", new Locale(localeCode));
-        
-        // For, superusers, the searchUser may differ from the authUser
-        //
-        AuthenticatedUser searchUser = null;  
 
-        if (DEBUG_MODE==true){      // DEBUG: use userIdentifier
-            authUser = getUserFromIdentifier(userIdentifier);
-            if (authUser == null){
-                return this.getJSONErrorString("Requires authentication", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");              
+        if ((session.getUser() != null) && (session.getUser().isAuthenticated())) {
+            authUser = (AuthenticatedUser) session.getUser();
+        } else {
+            try {
+                authUser = getRequestAuthenticatedUserOrDie(crc);
+            } catch (WrappedResponse e) {
+                return this.getJSONErrorString("Requires authentication.  Please login.", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");
             }
-        } else if ((session.getUser() != null)&&(session.getUser().isAuthenticated())){            
-             authUser = (AuthenticatedUser)session.getUser();
-       
-             // If person is a superuser, see if a userIdentifier has been specified 
-             // and use that instead
-             if ((authUser.isSuperuser())&&(userIdentifier != null)&&(!userIdentifier.isEmpty())){
-                 searchUser = getUserFromIdentifier(userIdentifier);
-                 if (searchUser != null){
-                     authUser = searchUser;
-                     OTHER_USER = true;
-                 }else{
-                    return this.getJSONErrorString("No user found for: \"" + userIdentifier + "\"", null);              
-                 }
-             }       
-        } else if (apiToken != null) {      // Is this being accessed by an API Token?
-            
-            authUser = findUserByApiToken(apiToken);
-            if (authUser == null){
-                return this.getJSONErrorString("Requires authentication.  Please login.", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");              
-            }else{
-                // If person is a superuser, see if a userIdentifier has been specified 
-                // and use that instead
-                if ((authUser.isSuperuser())&&(userIdentifier != null)&&(!userIdentifier.isEmpty())){
-                    searchUser = getUserFromIdentifier(userIdentifier);
-                    if (searchUser != null){
-                        authUser = searchUser;
-                        OTHER_USER = true;
-                    }else{
-                        return this.getJSONErrorString("No user found for: \"" + userIdentifier + "\"", null);              
-                    }
-                }       
-
-            }
-                    
-        } else{
-            return this.getJSONErrorString("Requires authentication.  Please login.", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");              
         }
-                     
+
+        // For superusers, the searchUser may differ from the authUser
+        AuthenticatedUser searchUser = null;
+        // If the user is a superuser, see if a userIdentifier has been specified and use that instead
+        if ((authUser.isSuperuser()) && (userIdentifier != null) && (!userIdentifier.isEmpty())) {
+            searchUser = getUserFromIdentifier(userIdentifier);
+            if (searchUser != null) {
+                authUser = searchUser;
+                OTHER_USER = true;
+            } else {
+                return this.getJSONErrorString("No user found for: \"" + userIdentifier + "\"", null);
+            }
+        }
+
         roleList = dataverseRoleService.findAll();
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);    
         
@@ -462,7 +436,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         //jsonData.add("total_dvobject_counts", getTotalCountsFromSolrAsJSON(searchUser, this.myDataFinder));
 
         
-        if (OTHER_USER==true){
+        if (OTHER_USER){
             jsonData.add("other_user", searchUser.getIdentifier());
         }
                                 
