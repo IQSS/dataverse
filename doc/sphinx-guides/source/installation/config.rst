@@ -1084,7 +1084,7 @@ If you are interested in adding a custom license, you will need to create your o
 
 Other licenses used worldwide:
 
-- :download:`license_etalab-2.0.json <../../../../scripts/api/data/licenses/license_etalab-2.0.json>` used in France (Etalab Open License 2.0, CC-BY 2.0 compliant).
+- :download:`license_etalab-2.0.json <../../../../scripts/api/data/licenses/licenseetalab-2.0.json>` used in France (Etalab Open License 2.0, CC-BY 2.0 compliant).
 
 Removing Licenses
 +++++++++++++++++
