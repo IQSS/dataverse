@@ -168,6 +168,34 @@ public class SystemConfig {
         return getLocalizedProperty(Key.SiteFullName, locale);
     }
 
+    public boolean isSuperiorLogoDefined(Locale locale) {
+        return !getLocalizedProperty(Key.SuperiorLogoPath, locale).isEmpty() || !getLocalizedProperty(Key.SuperiorLogoResponsivePath, locale).isEmpty();
+    }
+
+    public String getSuperiorLogoLink(Locale locale) {
+        return getLocalizedProperty(Key.SuperiorLogoLink, locale);
+    }
+
+    public String getSuperiorLogoPath(Locale locale) {
+        return getLocalizedProperty(Key.SuperiorLogoPath, locale);
+    }
+
+    public String getSuperiorLogoResponsivePath(Locale locale) {
+        return getLocalizedProperty(Key.SuperiorLogoResponsivePath, locale);
+    }
+
+    public String getSuperiorLogoContrastPath(Locale locale) {
+        return getLocalizedProperty(Key.SuperiorLogoContrastPath, locale);
+    }
+
+    public String getSuperiorLogoContrastResponsivePath(Locale locale) {
+        return getLocalizedProperty(Key.SuperiorLogoContrastResponsivePath, locale);
+    }
+
+    public String getSuperiorLogoAlt(Locale locale) {
+        return getLocalizedProperty(Key.SuperiorLogoAlt, locale);
+    }
+
     public String getGuidesBaseUrl(Locale locale) {
         String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
         return guidesBaseUrl + "/" + locale;

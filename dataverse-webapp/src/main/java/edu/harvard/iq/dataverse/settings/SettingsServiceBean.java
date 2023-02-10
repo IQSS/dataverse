@@ -567,6 +567,48 @@ public class SettingsServiceBean {
         SiteFullName,
 
         /**
+         * Target link for the "superior logo".
+         * Setting can be postfixed with language code to
+         * obtain path a language-specific link.
+         */
+        SuperiorLogoLink,
+
+        /**
+         * Path to a "superior logo" to be presented in the header.
+         * Setting can be postfixed with language code to
+         * obtain path to a translated logo.
+         */
+        SuperiorLogoPath,
+
+        /**
+         * Path to a compact "superior logo" to be presented in the header.
+         * Setting can be postfixed with language code to
+         * obtain the path to a translated logo.
+         */
+        SuperiorLogoResponsivePath,
+
+        /**
+         * Path to a "superior logo" (high contrast version) to be presented in the header.
+         * Setting can be postfixed with language code to
+         * obtain path to a translated logo.
+         */
+        SuperiorLogoContrastPath,
+
+        /**
+         * Path to a compact "superior logo" (high contrast version) to be presented in the header.
+         * Setting can be postfixed with language code to
+         * obtain the path to a translated logo.
+         */
+        SuperiorLogoContrastResponsivePath,
+
+        /**
+         * Description (alt text) for the "superior logo".
+         * Setting can be postfixed with language code to
+         * obtain translated versions.
+         */
+        SuperiorLogoAlt,
+
+        /**
          * Indicates if antivirus scanner is enabled
          */
         AntivirusScannerEnabled,

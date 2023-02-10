@@ -48,22 +48,44 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a href="/" class="navbar-brand">
-                    <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':LogoCustomizationFile')}">
-                        <i id="site-logo" class="icon-dataverse"></i>
-                        <span>
-                            <span id="site-title">
-                                <h:outputText value="#{systemConfig.getSiteName(dataverseSession.locale)}" escape="false"/>
-                            </span>
-                            <span id="site-subtitle">
-                                <h:outputText value="#{systemConfig.getSiteFullName(dataverseSession.locale)}" escape="false"/>
-                            </span>
-                        </span>
+                <div class="logos-container">
+                    <ui:fragment rendered="#{systemConfig.isSuperiorLogoDefined(dataverseSession.locale)}">
+                        <div class="superior-logo-container">
+                            <a href="#{systemConfig.getSuperiorLogoLink(dataverseSession.locale)}" target="_blank" title="#{bundle['opensInNewTab']}" class="superior-logo-link">
+                                <img src="#{resource[systemConfig.getSuperiorLogoPath(dataverseSession.locale)]}"
+                                     jsf:rendered="#{not empty systemConfig.getSuperiorLogoPath(dataverseSession.locale)}" 
+                                     alt="#{systemConfig.getSuperiorLogoAlt(dataverseSession.locale)}" class="superior-logo regular big"></img>
+                                <img src="#{resource[systemConfig.getSuperiorLogoResponsivePath(dataverseSession.locale)]}"
+                                     jsf:rendered="#{not empty systemConfig.getSuperiorLogoResponsivePath(dataverseSession.locale)}" 
+                                     alt="#{systemConfig.getSuperiorLogoAlt(dataverseSession.locale)}" class="superior-logo regular responsive"></img>
+                                <img src="#{resource[systemConfig.getSuperiorLogoContrastPath(dataverseSession.locale)]}"
+                                     jsf:rendered="#{not empty systemConfig.getSuperiorLogoContrastPath(dataverseSession.locale)}"
+                                     alt="#{systemConfig.getSuperiorLogoAlt(dataverseSession.locale)}" class="superior-logo contrast big"></img>
+                                <img src="#{resource[systemConfig.getSuperiorLogoContrastResponsivePath(dataverseSession.locale)]}"
+                                     jsf:rendered="#{not empty systemConfig.getSuperiorLogoContrastResponsivePath(dataverseSession.locale)}"
+                                     alt="#{systemConfig.getSuperiorLogoAlt(dataverseSession.locale)}" class="superior-logo contrast responsive"></img>
+                            </a>
+                        </div>
                     </ui:fragment>
-                    <h:graphicImage rendered="#{!empty settingsWrapper.getSettingValue(':LogoCustomizationFile')}"
-                                    url="#{settingsWrapper.getSettingValue(':LogoCustomizationFile')}"
-                                    styleClass="navbar-brand custom-logo"/>
-                </a>
+                    <div class="main-logo-container">
+                        <a href="/" class="navbar-brand">
+                            <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':LogoCustomizationFile')}">
+                                <i id="site-logo" class="icon-dataverse"></i>
+                                <span>
+                                    <span id="site-title">
+                                        <h:outputText value="#{systemConfig.getSiteName(dataverseSession.locale)}" escape="false"/>
+                                    </span>
+                                    <span id="site-subtitle">
+                                        <h:outputText value="#{systemConfig.getSiteFullName(dataverseSession.locale)}" escape="false"/>
+                                    </span>
+                                </span>
+                            </ui:fragment>
+                            <h:graphicImage rendered="#{!empty settingsWrapper.getSettingValue(':LogoCustomizationFile')}"
+                                            url="#{settingsWrapper.getSettingValue(':LogoCustomizationFile')}"
+                                            styleClass="navbar-brand custom-logo"/>
+                        </a>
+                    </div>
+                </div>
             </div>
             <div class="collapse navbar-collapse" id="topNavBar">
                 <nav class="pull-right">

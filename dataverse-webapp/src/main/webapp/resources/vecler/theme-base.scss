@@ -2089,6 +2089,39 @@ $navbar-height: 102px;
 	}
 }
 
+.logos-container,
+.main-logo-container,
+.superior-logo-container {
+	display: inline-block;
+}
+
+.superior-logo-container {
+	height: $navbar-height;
+	vertical-align: bottom;
+
+	a {
+		height: 100%;
+		display: inline-block;
+	}
+
+	+ .main-logo-container {
+		margin-left: 2rem;
+	}
+}
+
+.main-logo-container {
+	margin-bottom: -0.333em;
+}
+
+.superior-logo {
+	height: 100%;
+}
+
+body.high-contrast-yellow-on-black .superior-logo.regular,
+body:not(.high-contrast-yellow-on-black) .superior-logo.contrast {
+	display: none;
+}
+
 .language-select.dropdown-menu a {
 	padding: 3px 20px;
 	clear: both;
