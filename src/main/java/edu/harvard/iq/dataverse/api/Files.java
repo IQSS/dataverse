@@ -362,9 +362,9 @@ public class Files extends AbstractApiBean {
             try {
                 commandEngine.submit(update_cmd);
             } catch (CommandException ex) {
-                return error(BAD_REQUEST, "Delete failed for file ID: " + fileIdOrPersistentId);
+                return error(BAD_REQUEST, "Delete failed for file ID: " + fileIdOrPersistentId + ": " + ex.getMessage());
             } catch (EJBException ex) {
-                return error(BAD_REQUEST, "Delete failed for file ID: " + fileIdOrPersistentId);
+                return error(BAD_REQUEST, "Delete failed for file ID: " + fileIdOrPersistentId + ": " + ex.getMessage());
             }
     
             if (deletePhysicalFile) {
