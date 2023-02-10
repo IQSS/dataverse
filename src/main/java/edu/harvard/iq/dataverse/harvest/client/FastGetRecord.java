@@ -19,8 +19,8 @@
 */
 package edu.harvard.iq.dataverse.harvest.client;
 
+import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import java.io.IOException;
-import java.io.FileNotFoundException;
 
 import java.io.InputStream;
 import java.io.StringReader;
@@ -31,9 +31,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 import java.io.PrintWriter;
-import java.net.HttpURLConnection;
+import static java.net.HttpURLConnection.HTTP_OK;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Map;
+import java.util.Optional;
 
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
@@ -84,17 +89,18 @@ public class FastGetRecord {
     /**
      * Client-side GetRecord verb constructor
      *
-     * @param baseURL the baseURL of the server to be queried
+     * @param oaiHandler the configured OaiHande running this harvest
+     * @param identifier Record identifier
+     * @param httpClient jdk HttpClient used to make http requests
      * @exception MalformedURLException the baseURL is bad
      * @exception SAXException the xml response is bad
      * @exception IOException an I/O error occurred
+     * @exception TransformerException if it fails to parse the service portion of the record
      */
 
-    public FastGetRecord(String baseURL, String identifier, String metadataPrefix)
-    throws IOException, ParserConfigurationException, SAXException,
+    public FastGetRecord(OaiHandler oaiHandler, String identifier, HttpClient httpClient) throws IOException, ParserConfigurationException, SAXException,
     TransformerException {
-        harvestRecord (baseURL, identifier, metadataPrefix);
-
+        harvestRecord (oaiHandler.getBaseOaiUrl(), identifier, oaiHandler.getMetadataPrefix(), oaiHandler.getCustomHeaders(), httpClient);
     }
     
     private String errorMessage = null;
@@ -117,57 +123,63 @@ public class FastGetRecord {
     }
 
 
-    public void harvestRecord(String baseURL, String identifier, String metadataPrefix) throws IOException,
-        ParserConfigurationException, SAXException, TransformerException {
+    public void harvestRecord(String baseURL, String identifier, String metadataPrefix, Map<String,String> customHeaders, HttpClient httpClient) throws IOException,
+        ParserConfigurationException, SAXException, TransformerException{
 
         xmlInputFactory = javax.xml.stream.XMLInputFactory.newInstance();
-
         String requestURL = getRequestURL(baseURL, identifier, metadataPrefix);
+        InputStream in;
+        
+        // This was one other place where the Harvester code was still using 
+        // the obsolete java.net.ttpUrlConnection that didn't get replaced with
+        // the new java.net.http.HttpClient during the first pas of the XOAI 
+        // rewrite. (L.A.)
 
-        InputStream in = null;
-        URL url = new URL(requestURL);
-        HttpURLConnection con = null;
-        int responseCode = 0;
 
-        con = (HttpURLConnection) url.openConnection();
-        con.setRequestProperty("User-Agent", "DataverseHarvester/3.0");
-        con.setRequestProperty("Accept-Encoding",
-                                   "compress, gzip, identify");
-        try {
-            responseCode = con.getResponseCode();
-            //logger.debug("responseCode=" + responseCode);
-        } catch (FileNotFoundException e) {
-            //logger.info(requestURL, e);
-            responseCode = HttpURLConnection.HTTP_UNAVAILABLE;
+        if (httpClient == null) {
+            throw new IOException("Null Http Client, cannot make a GetRecord call to obtain the metadata.");
         }
+        
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(requestURL))
+                .GET()
+                .header("User-Agent", "XOAI Service Provider v5 (Dataverse)")
+                .header("Accept-Encoding", "compress, gzip");
+        
+        if (customHeaders != null) {
+            for (String headerName : customHeaders.keySet()) {
+                requestBuilder.header(headerName, customHeaders.get(headerName));
+            }
+        }
+        
+        HttpRequest request = requestBuilder.build();
+        HttpResponse<InputStream> response;
 
-        // TODO: -- L.A.
-        //
-        // support for cookies;
-        // support for limited retry attempts -- ?
-        // implement reading of the stream as filterinputstream -- ?
-        // -- that could make it a little faster still. -- L.A. 
-
-
-
-        if (responseCode == 200) {
-
-            String contentEncoding = con.getHeaderField("Content-Encoding");
-            //logger.debug("contentEncoding=" + contentEncoding);
-
-            // support for the standard compress/gzip/deflate compression
-            // schemes:
-
-            if ("compress".equals(contentEncoding)) {
-                ZipInputStream zis = new ZipInputStream(con.getInputStream());
-                zis.getNextEntry();
-                in = zis;
-            } else if ("gzip".equals(contentEncoding)) {
-                in = new GZIPInputStream(con.getInputStream());
-            } else if ("deflate".equals(contentEncoding)) {
-                in = new InflaterInputStream(con.getInputStream());
-            } else {
-                in = con.getInputStream();
+        try {            
+             response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Failed to connect to the remote dataverse server to obtain GetRecord metadata");
+        }
+        
+        int responseCode = response.statusCode();
+        
+        if (responseCode == HTTP_OK) {
+            InputStream inputStream = response.body();
+            Optional<String> contentEncoding = response.headers().firstValue("Content-Encoding");
+            
+            // support for the standard gzip encoding:
+            in = inputStream; 
+            if (contentEncoding.isPresent()) {
+                if (contentEncoding.get().equals("compress")) {
+                    ZipInputStream zis = new ZipInputStream(inputStream);
+                    zis.getNextEntry();
+                    in = zis;
+                } else if (contentEncoding.get().equals("gzip")) {
+                    in = new GZIPInputStream(inputStream);
+                } else if (contentEncoding.get().equals("deflate")) {
+                    in = new InflaterInputStream(inputStream);
+                }
             }
 
             // We are going to read the OAI header and SAX-parse it for the
@@ -185,9 +197,7 @@ public class FastGetRecord {
             FileOutputStream tempFileStream = null;
             PrintWriter metadataOut = null;
 
-            savedMetadataFile = File.createTempFile("meta", ".tmp");
-            
-            
+            savedMetadataFile = File.createTempFile("meta", ".tmp");            
 
             int mopen = 0;
             int mclose = 0;
