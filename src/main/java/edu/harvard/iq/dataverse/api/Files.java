@@ -353,7 +353,6 @@ public class Files extends AbstractApiBean {
             Dataset dataset = dataFile.getOwner();
             DatasetVersion v = dataset.getOrCreateEditVersion();
             DataverseRequest dvRequest2 = createDataverseRequest(authUser);
-            dvRequest2.getUser();
             deletePhysicalFile = !dataFile.isReleased();
 
             UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest2,  fileToDelete, v);
