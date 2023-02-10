@@ -46,17 +46,22 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -317,6 +322,65 @@ public class Files extends AbstractApiBean {
         }
             
     } // end: replaceFileInDataset
+
+    /**
+     * Delete an Existing File 
+     * 
+     * @param id file ID or peristent ID
+     */
+    @DELETE
+    @Path("{id}")
+    public Response deleteFileInDataset(@PathParam("id") String fileIdOrPersistentId){
+
+        if (!systemConfig.isHTTPUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        }
+        // (1) Get the user from the API key
+        User authUser;
+        try {
+            authUser = findUserOrDie();
+        } catch (AbstractApiBean.WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth"));
+        }
+
+        msg("DELETE!");
+
+        // (2) Delete
+        boolean deletePhysicalFile = false;
+        try {
+            DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
+            List<FileMetadata> fileToDelete = dataFile.getFileMetadatas();
+            Dataset dataset = dataFile.getOwner();
+            DatasetVersion v = dataset.getOrCreateEditVersion();
+            DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+            dvRequest2.getUser();
+            deletePhysicalFile = !dataFile.isReleased();
+
+            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest2,  fileToDelete, v);
+            update_cmd.setValidateLenient(true);
+
+            try {
+                commandEngine.submit(update_cmd);
+            } catch (CommandException ex) {
+                return error(BAD_REQUEST, "Delete failed for file ID: " + fileIdOrPersistentId);
+            } catch (EJBException ex) {
+                return error(BAD_REQUEST, "Delete failed for file ID: " + fileIdOrPersistentId);
+            }
+    
+            if (deletePhysicalFile) {
+                try {
+                    fileService.finalizeFileDelete(dataFile.getId(), fileService.getPhysicalFileToDelete(dataFile));
+                } catch (IOException ioex) {
+                    logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                            + dataFile.getId() + ", storage location: " + fileService.getPhysicalFileToDelete(dataFile));
+                }
+            }
+        } catch (WrappedResponse ex) {
+            return error(BAD_REQUEST, "There was no file found for ID: " + fileIdOrPersistentId);
+        }
+
+        return ok(deletePhysicalFile);
+    }
     
     //Much of this code is taken from the replace command, 
     //simplified as we aren't actually switching files
