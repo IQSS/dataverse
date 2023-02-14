@@ -224,7 +224,9 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
 
     protected void checkSystemMetadataKeyIfNeeded(DatasetVersion newVersion, DatasetVersion persistedVersion) throws IllegalCommandException {
         Set<MetadataBlock> changedMDBs = DatasetVersionDifference.getBlocksWithChanges(newVersion, persistedVersion);
-        changedMDBs.forEach(mdb -> {logger.fine(mdb.getName() + " has been changed");});
+        changedMDBs.forEach(mdb -> {
+            logger.fine(mdb.getName() + " has been changed");
+        });
         
         String smdbString = JvmSettings.METADATA_BLOCK_SYSTEM_METADATA_KEYS.lookupOptional().orElse(null);
         if (smdbString != null) {
