@@ -60,7 +60,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -937,9 +940,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     // them for some servers, we check whether the protocol is in the url and then
                     // normalizing to use the part without the protocol
                     String endpointServer = endpoint;
-                    int protocolEnd = endpoint.indexOf("://");
+                    int protocolEnd = endpoint.indexOf(DataAccess.SEPARATOR);
                     if (protocolEnd >=0 ) {
-                        endpointServer = endpoint.substring(protocolEnd + 3);
+                        endpointServer = endpoint.substring(protocolEnd + DataAccess.SEPARATOR.length());
                     }
                     logger.fine("Endpoint: " + endpointServer);
                     // We're then replacing 
@@ -998,9 +1001,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 // them for some servers, we check whether the protocol is in the url and then
                 // normalizing to use the part without the protocol
                 String endpointServer = endpoint;
-                int protocolEnd = endpoint.indexOf("://");
+                int protocolEnd = endpoint.indexOf(DataAccess.SEPARATOR);
                 if (protocolEnd >=0 ) {
-                    endpointServer = endpoint.substring(protocolEnd + 3);
+                    endpointServer = endpoint.substring(protocolEnd + DataAccess.SEPARATOR.length());
                 }
                 logger.fine("Endpoint: " + endpointServer);
                 // We're then replacing 
@@ -1274,5 +1277,107 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public void setMainDriver(boolean mainDriver) {
         this.mainDriver = mainDriver;
     }
+    
+    public static String getDriverPrefix(String driverId) {
+        return driverId+ DataAccess.SEPARATOR + getBucketName(driverId) + ":";
+    }
+    
+    //Confirm inputs are of the form s3://demo-dataverse-bucket:176e28068b0-1c3f80357c42
+    protected static boolean isValidIdentifier(String driverId, String storageId) {
+        String storageBucketAndId = storageId.substring(storageId.lastIndexOf("//") + 2);
+        String bucketName = getBucketName(driverId);
+        if(bucketName==null) {
+            logger.warning("No bucket defined for " + driverId);
+            return false;
+        }
+        int index = storageBucketAndId.lastIndexOf(":");
+        if(index<=0) {
+            logger.warning("No bucket defined in submitted identifier: " + storageId);
+            return false;
+        }
+        String idBucket = storageBucketAndId.substring(0, index);
+        String id = storageBucketAndId.substring(index+1);
+        logger.fine(id);
+        if(!bucketName.equals(idBucket)) {
+            logger.warning("Incorrect bucket in submitted identifier: " + storageId);
+            return false;
+        }
+        if (!usesStandardNamePattern(id)) {
+            logger.warning("Unacceptable identifier pattern in submitted identifier: " + storageId);
+            return false;
+        }
+        return true;
+    }
+    
+    private List<String> listAllFiles() throws IOException {
+        if (!this.canWrite()) {
+            open();
+        }
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This S3AccessIO object hasn't been properly initialized.");
+        }
+        String prefix = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/";
 
+        List<String> ret = new ArrayList<>();
+        ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
+        ObjectListing storedFilesList = null; 
+        try {
+            storedFilesList = s3.listObjects(req);
+        } catch (SdkClientException sce) {
+            throw new IOException ("S3 listObjects: failed to get a listing for " + prefix);
+        }
+        if (storedFilesList == null) {
+            return ret;
+        }
+        List<S3ObjectSummary> storedFilesSummary = storedFilesList.getObjectSummaries();
+        try {
+            while (storedFilesList.isTruncated()) {
+                logger.fine("S3 listObjects: going to next page of list");
+                storedFilesList = s3.listNextBatchOfObjects(storedFilesList);
+                if (storedFilesList != null) {
+                    storedFilesSummary.addAll(storedFilesList.getObjectSummaries());
+                }
+            }
+        } catch (AmazonClientException ase) {
+            //logger.warning("Caught an AmazonServiceException in S3AccessIO.listObjects():    " + ase.getMessage());
+            throw new IOException("S3AccessIO: Failed to get objects for listing.");
+        }
+
+        for (S3ObjectSummary item : storedFilesSummary) {
+            String fileName = item.getKey().substring(prefix.length());
+            ret.add(fileName);
+        }
+        return ret;
+    }
+
+    private void deleteFile(String fileName) throws IOException {
+        if (!this.canWrite()) {
+            open();
+        }
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This S3AccessIO object hasn't been properly initialized.");
+        }
+        String prefix = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/";
+
+        try {
+            DeleteObjectRequest dor = new DeleteObjectRequest(bucketName, prefix + fileName);
+            s3.deleteObject(dor);
+        } catch (AmazonClientException ase) {
+            logger.warning("S3AccessIO: Unable to delete object    " + ase.getMessage());
+        }
+    }
+
+    @Override
+    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
+        List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+        if (dryRun) {
+            return toDelete;
+        }
+        for (String f : toDelete) {
+            this.deleteFile(f);
+        }
+        return toDelete;
+    }
 }

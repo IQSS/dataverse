@@ -733,6 +733,9 @@ public class PermissionServiceBean {
             else if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
             }
+            else if (dataset.isLockedFor(DatasetLock.Reason.GlobusUpload)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+            }
             else if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
             }
@@ -766,6 +769,9 @@ public class PermissionServiceBean {
             }
             // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
             else if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+            }
+            else if (dataset.isLockedFor(DatasetLock.Reason.GlobusUpload)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {

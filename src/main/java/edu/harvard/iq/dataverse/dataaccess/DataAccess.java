@@ -331,14 +331,23 @@ public class DataAccess {
         String driverId = DataAccess.getStorageDriverFromIdentifier(storageIdentifier);
         String effectiveDriverId = d.getEffectiveStorageDriverId();
         if(!effectiveDriverId.equals(driverId)) {
+            //Not allowed unless this is a remote store and you're uploading to the basestore
             if(getDriverType(driverId).equals(REMOTE)) {
                 String baseDriverId = RemoteOverlayAccessIO.getBaseStoreIdFor(driverId);
                 if(!effectiveDriverId.equals(baseDriverId)) {
+                    //Not allowed - wrong base driver
                     allowed = false;
+                } else {
+                    //Only allowed if baseStore allows it
+                    allowed = StorageIO.isDirectUploadEnabled(baseDriverId);
                 }
             } else {
+                //Not allowed - wrong main driver
                 allowed=false;
             }
+        } else {
+            //Only allowed if main store allows it
+            allowed = StorageIO.isDirectUploadEnabled(driverId);
         }
         return allowed;
     }

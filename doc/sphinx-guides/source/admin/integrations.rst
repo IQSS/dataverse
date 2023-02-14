@@ -57,7 +57,7 @@ their research results and retain links to imported and exported data. Users
 can organize their data in "Datasets", which can be exported to a Dataverse installation via
 the command-line interface (CLI).
 
-Renku dataset documentation: https://renku-python.readthedocs.io/en/latest/reference/commands.html#module-renku.cli.dataset
+Renku documentation: https://renku-python.readthedocs.io
 
 Flagship deployment of the Renku platform: https://renkulab.io
 
@@ -115,6 +115,8 @@ Binder
 ++++++
 
 Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by entering the DOI of a dataset in a Dataverse installation on https://mybinder.org
+
+A Binder button can also be added to every dataset page to launch Binder from there. See :doc:`external-tools`.
 
 Institutions can self host BinderHub. The Dataverse Project is one of the supported `repository providers <https://binderhub.readthedocs.io/en/latest/developer/repoproviders.html#supported-repoproviders>`_.
 

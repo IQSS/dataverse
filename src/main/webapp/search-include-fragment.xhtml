@@ -594,7 +594,15 @@
                         <ui:repeat value="#{result.highlightsAsList}" var="highlight" rendered="#{result.highlightsAsList.size() > 0}">
                             <ui:repeat value="#{highlight.snippets}" var="snippet">
                                 <div>
-                                    <h:outputText value="#{highlight.displayName}: #{snippet}" escape="false"/>
+                                    <h:outputText value='#{highlight.displayName}: '/>
+                                    <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+                                    <h:outputText value="#{covcConf.isEmpty() ? snippet: MarkupChecker:stripAllTags(snippet)}" escape="false">
+                                        <c:if test="#{!cvocConf.isEmpty()}">
+                                            <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(datasetFieldServiceBean.findByName(highlight.solrField.nameSearchable).id).getString('languages'))}" />
+                                            <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(datasetFieldServiceBean.findByName(highlight.solrField.nameSearchable).id).getString('cvoc-url','')}" />
+                                            <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(datasetFieldServiceBean.findByName(highlight.solrField.nameSearchable).id).getString('protocol','')}" />
+                                        </c:if>
+                                    </h:outputText>
                                 </div>
                             </ui:repeat>
                         </ui:repeat>
