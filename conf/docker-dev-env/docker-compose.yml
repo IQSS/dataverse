@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+
+  dev_postgres:
+    container_name: "dev_postgres"
+    image: postgres:13
+    restart: on-failure
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
