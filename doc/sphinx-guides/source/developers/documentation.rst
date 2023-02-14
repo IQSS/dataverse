@@ -22,6 +22,8 @@ That's it! Thank you for your contribution! Your pull request will be added manu
 
 Please see https://github.com/IQSS/dataverse/pull/5857 for an example of a quick fix that was merged (the "Files changed" tab shows how a typo was fixed).
 
+Preview your documentation changes which will be built automatically as part of your pull request in Github.  It will show up as a check entitled: `docs/readthedocs.org:dataverse-guide — Read the Docs build succeeded!`.  For example, this PR built to https://dataverse-guide--9249.org.readthedocs.build/en/9249/.
+
 If you would like to read more about the Dataverse Project's use of GitHub, please see the :doc:`version-control` section. For bug fixes and features we request that you create an issue before making a pull request but this is not at all necessary for quick fixes to the documentation.
 
 .. _admin: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/admin
