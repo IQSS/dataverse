@@ -8,7 +8,7 @@
  * @type integer screen width in px
  */
 
-var accessibilityTopNavbarMobileBreakpoint = 992;
+var accessibilityTopNavbarMobileBreakpoint = 768;
 
 /**
  * Denotes whether to print debug info to console.
@@ -177,9 +177,11 @@ function accessibilityApplySetting(setting, value) {
         accessibilityAddSettingClass(setting);
         accessibilitySetAriaPressed(setting);
 
+        /*
         if (setting === "fontSize") {
             accessibilityToggleNavbar(true);
         }
+        */
     }
     else {
         accessibilityDebugLog("Changing setting \"" + setting + "\"to default");
@@ -187,9 +189,11 @@ function accessibilityApplySetting(setting, value) {
         accessibilityRemoveSettingClass(setting);
         accessibilitySetAriaPressed(setting);
 
+        /*
         if (setting === "fontSize") {
             accessibilityToggleNavbar(false);
         }
+        */
     }
 }
 
