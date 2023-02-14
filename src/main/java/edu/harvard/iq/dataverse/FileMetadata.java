@@ -259,7 +259,6 @@ public class FileMetadata implements Serializable {
         return ret;
     }
     
-    
     public JsonArrayBuilder getCategoryNamesAsJsonArrayBuilder() {
 
         JsonArrayBuilder builder = Json.createArrayBuilder();
