@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -88,6 +89,8 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.xml.sax.ContentHandler;
 
 @Stateless
@@ -95,6 +98,7 @@ import org.xml.sax.ContentHandler;
 public class IndexServiceBean {
 
     private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
+    private static final Config config = ConfigProvider.getConfig();
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -155,13 +159,18 @@ public class IndexServiceBean {
     public static final String HARVESTED = "Harvested";
     private String rootDataverseName;
     private Dataverse rootDataverseCached;
-    private SolrClient solrServer;
+    SolrClient solrServer;
 
     private VariableMetadataUtil variableMetadataUtil;
 
     @PostConstruct
     public void init() {
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
+        // Get from MPCONFIG. Might be configured by a sysadmin or simply return the default shipped with
+        // resources/META-INF/microprofile-config.properties.
+        String protocol = JvmSettings.SOLR_PROT.lookup();
+        String path = JvmSettings.SOLR_PATH.lookup();
+    
+        String urlString = protocol + "://" + systemConfig.getSolrHostColonPort() + path;
         solrServer = new HttpSolrClient.Builder(urlString).build();
 
         rootDataverseName = findRootDataverseCached().getName();
@@ -1488,6 +1497,7 @@ public class IndexServiceBean {
                 dataset = (Dataset) dvObject;
                 linkingDataverses = dsLinkingService.findLinkingDataverses(dataset.getId());
                 ancestorList = dataset.getOwner().getOwners();
+                ancestorList.add(dataset.getOwner()); //to show dataset in linking dv when parent dv is linked
             }
             if(dvObject.isInstanceofDataverse()){
                 dv = (Dataverse) dvObject;
@@ -1652,6 +1662,11 @@ public class IndexServiceBean {
             logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
         }        
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
+        if (dataversePaths.size() > 0 && dvo.isInstanceofDataverse()) {
+            // removing the dataverse's own id from the paths
+            // fixes bug where if my parent dv was linked my dv was shown as linked to myself
+            dataversePaths.remove(dataversePaths.size() - 1);
+        }
         /*
         add linking paths
         */

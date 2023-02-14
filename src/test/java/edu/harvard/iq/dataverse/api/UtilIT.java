@@ -567,6 +567,11 @@ public class UtilIT {
                 .post("/api/dataverses/" + dataverseAlias + "/metadatablocks");
     }
 
+    static Response getMetadataBlock(String block) {
+        return given()
+                .get("/api/metadatablocks/" + block);
+    }
+
     static private String getDatasetXml(String title, String author, String description) {
         String nullLicense = null;
         String nullRights = null;
@@ -738,10 +743,11 @@ public class UtilIT {
     }
 
     static Response downloadAuxFile(Long fileId, String formatTag, String formatVersion, String apiToken) {
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
-        return response;
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
     }
 
     static Response listAuxFilesByOrigin(Long fileId, String origin, String apiToken) {
@@ -992,6 +998,12 @@ public class UtilIT {
                 .urlEncodingEnabled(false)
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + optionalQueryParam);
     }
+    
+    static Response getFileData(String fileId, String apiToken) {       
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId );
+    }
 
     static Response testIngest(String fileName, String fileType) {
         return given()
@@ -1165,7 +1177,14 @@ public class UtilIT {
                 .post("/api/files/" + fileId + "/uningest/?key=" + apiToken);
         return uningestFileResponse;
     }
-    
+
+    public static Response extractNcml(Long fileId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/files/" + fileId + "/extractNcml");
+        return response;
+    }
+
     //I don't understand why this blows up when I remove the key
     public static Response getDataFileMetadata(Long fileId, String apiToken) {
         Response fileResponse = given()
@@ -2620,18 +2639,49 @@ public class UtilIT {
         return given().put(apiPath);
     }
     
+    static Response getOaiIdentify() {
+        String oaiVerbPath = "/oai?verb=Identify";
+        return given().get(oaiVerbPath);
+    }
+    
+    static Response getOaiListMetadataFormats() {
+        String oaiVerbPath = "/oai?verb=ListMetadataFormats";
+        return given().get(oaiVerbPath);
+    }
+    
+    static Response getOaiListSets() {
+        String oaiVerbPath = "/oai?verb=ListSets";
+        return given().get(oaiVerbPath);
+    }
+    
     static Response getOaiRecord(String datasetPersistentId, String metadataFormat) {
         String apiPath = String.format("/oai?verb=GetRecord&identifier=%s&metadataPrefix=%s", datasetPersistentId, metadataFormat);
         return given().get(apiPath);
     }
     
     static Response getOaiListIdentifiers(String setName, String metadataFormat) {
-        String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        
+        String apiPath;
+        if (StringUtil.nonEmpty(setName)) {
+            apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        } else {
+            apiPath = String.format("/oai?verb=ListIdentifiers&metadataPrefix=%s", metadataFormat);
+        }
+        return given().get(apiPath);
+    }
+    
+    static Response getOaiListIdentifiersWithResumptionToken(String resumptionToken) {
+        String apiPath = String.format("/oai?verb=ListIdentifiers&resumptionToken=%s", resumptionToken);
         return given().get(apiPath);
     }
 
     static Response getOaiListRecords(String setName, String metadataFormat) {
         String apiPath = String.format("/oai?verb=ListRecords&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        return given().get(apiPath);
+    }
+    
+    static Response getOaiListRecordsWithResumptionToken(String resumptionToken) {
+        String apiPath = String.format("/oai?verb=ListRecords&resumptionToken=%s", resumptionToken);
         return given().get(apiPath);
     }
 

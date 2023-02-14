@@ -884,7 +884,6 @@ div.panel-body.read-terms{max-height:220px; overflow-y:scroll; width:100%; backg
 .dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
 .globus-btn.ui-icon {background: url("https://docs.globus.org/images/home/transfer.png") no-repeat;background-size:contain;display:inline-block;}
 
-
 /* VERSIONS */
 div[id$="versionsTable"] th.col-select-width * {display:none;}
 #version-details-block > div {width:35%; padding:4px 10px; border: 1px solid #DDDDDD;}
@@ -928,6 +927,9 @@ thead.ui-datatable-scrollable-theadclone {display:none}
 #file-title-block span.glyphicon-lock, #file-title-block span.icon-unlock {top:1px;}
 #file-title-block span.ingest-warning {vertical-align:text-bottom;font-size:30px;}
 #fileCategoriesBlock span.label {margin-right: 0.5em;}
+#file-tags .label {
+    display:inline-block;
+}
 
 /* BLOCK UI */
 .ui-blockui.ui-widget-overlay {background:#fff; opacity:.6;}
