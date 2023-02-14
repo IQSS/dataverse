@@ -116,6 +116,8 @@ Binder
 
 Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by entering the DOI of a dataset in a Dataverse installation on https://mybinder.org
 
+A Binder button can also be added to every dataset page to launch Binder from there. See :doc:`external-tools`.
+
 Institutions can self host BinderHub. The Dataverse Project is one of the supported `repository providers <https://binderhub.readthedocs.io/en/latest/developer/repoproviders.html#supported-repoproviders>`_.
 
 Renku
