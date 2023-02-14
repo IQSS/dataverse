@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import javax.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.IOException;
@@ -88,7 +89,7 @@ public class HarvestingClients extends AbstractApiBean {
             }
             
             if (retrievedHarvestingClient != null) {
-                hcArr.add(harvestingConfigAsJson(retrievedHarvestingClient));
+                hcArr.add(JsonPrinter.json(retrievedHarvestingClient));
             }
         }
         
@@ -136,7 +137,7 @@ public class HarvestingClients extends AbstractApiBean {
         }
         
         try {
-            return ok(harvestingConfigAsJson(retrievedHarvestingClient));  
+            return ok(JsonPrinter.json(retrievedHarvestingClient));  
         } catch (Exception ex) {
             logger.warning("Unknown exception caught while trying to format harvesting client config as json: "+ex.getMessage());
             return error( Response.Status.BAD_REQUEST, 
@@ -216,7 +217,7 @@ public class HarvestingClients extends AbstractApiBean {
                         
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             harvestingClient = execCommand(new CreateHarvestingClientCommand(req, harvestingClient));
-            return created( "/harvest/clients/" + nickName, harvestingConfigAsJson(harvestingClient));
+            return created( "/harvest/clients/" + nickName, JsonPrinter.json(harvestingClient));
                     
         } catch (JsonParseException ex) {
             return error( Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage() );
@@ -268,6 +269,8 @@ public class HarvestingClients extends AbstractApiBean {
             }
             
             // Go through the supported editable fields and update the client accordingly: 
+            // TODO: We may want to reevaluate whether we really want/need *all*
+            // of these fields to be editable.
             
             if (newHarvestingClient.getHarvestingUrl() != null) {
                 harvestingClient.setHarvestingUrl(newHarvestingClient.getHarvestingUrl());
@@ -287,10 +290,13 @@ public class HarvestingClients extends AbstractApiBean {
             if (newHarvestingClient.getHarvestStyle() != null) {
                 harvestingClient.setHarvestStyle(newHarvestingClient.getHarvestStyle());
             }
+            if (newHarvestingClient.getCustomHttpHeaders() != null) {
+                harvestingClient.setCustomHttpHeaders(newHarvestingClient.getCustomHttpHeaders());
+            }
             // TODO: Make schedule configurable via this API too. 
             
             harvestingClient = execCommand( new UpdateHarvestingClientCommand(req, harvestingClient));
-            return ok( "/harvest/clients/" + nickName, harvestingConfigAsJson(harvestingClient));
+            return ok( "/harvest/clients/" + nickName,  JsonPrinter.json(harvestingClient)); // harvestingConfigAsJson(harvestingClient));
                     
         } catch (JsonParseException ex) {
             return error( Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage() );
@@ -373,13 +379,13 @@ public class HarvestingClients extends AbstractApiBean {
             }
             
             if (authenticatedUser == null || !authenticatedUser.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Only the Dataverse Admin user can run harvesting jobs");
+                return error(Response.Status.FORBIDDEN, "Only admin users can run harvesting jobs");
             }
             
             HarvestingClient harvestingClient = harvestingClientService.findByNickname(clientNickname);
             
             if (harvestingClient == null) {
-                return error(Response.Status.NOT_FOUND, "No such dataverse: "+clientNickname);
+                return error(Response.Status.NOT_FOUND, "No such client: "+clientNickname);
             }
             
             DataverseRequest dataverseRequest = createDataverseRequest(authenticatedUser);
@@ -389,60 +395,5 @@ public class HarvestingClients extends AbstractApiBean {
             return this.error(Response.Status.BAD_REQUEST, "Exception thrown when running harvesting client\""+clientNickname+"\" via REST API; " + e.getMessage());
         }
         return this.accepted();
-    }
-    
-    // This GET shows the status of the harvesting run in progress for this 
-    // client, if present: 
-    // @GET
-    // @Path("{nickName}/run")
-    // TODO: 
-    
-    // This DELETE kills the harvesting run in progress for this client, 
-    // if present: 
-    // @DELETE
-    // @Path("{nickName}/run")
-    // TODO: 
-    
-    
-    
-    
-    
-    /* Auxiliary, helper methods: */ 
-    
-    /*
-    @Deprecated
-    public static JsonArrayBuilder harvestingConfigsAsJsonArray(List<Dataverse> harvestingDataverses) {
-        JsonArrayBuilder hdArr = Json.createArrayBuilder();
-        
-        for (Dataverse hd : harvestingDataverses) {
-            hdArr.add(harvestingConfigAsJson(hd.getHarvestingClientConfig()));
-        }
-        return hdArr;
-    }*/
-    
-    public static JsonObjectBuilder harvestingConfigAsJson(HarvestingClient harvestingConfig) {
-        if (harvestingConfig == null) {
-            return null; 
-        }
-        
-        
-        return jsonObjectBuilder().add("nickName", harvestingConfig.getName()).
-                add("dataverseAlias", harvestingConfig.getDataverse().getAlias()).
-                add("type", harvestingConfig.getHarvestType()).
-                add("style", harvestingConfig.getHarvestStyle()).
-                add("harvestUrl", harvestingConfig.getHarvestingUrl()).
-                add("archiveUrl", harvestingConfig.getArchiveUrl()).
-                add("archiveDescription",harvestingConfig.getArchiveDescription()).
-                add("metadataFormat", harvestingConfig.getMetadataPrefix()).
-                add("set", harvestingConfig.getHarvestingSet() == null ? "N/A" : harvestingConfig.getHarvestingSet()).
-                add("schedule", harvestingConfig.isScheduled() ? harvestingConfig.getScheduleDescription() : "none").
-                add("status", harvestingConfig.isHarvestingNow() ? "inProgress" : "inActive").
-                add("lastHarvest", harvestingConfig.getLastHarvestTime() == null ? "N/A" : harvestingConfig.getLastHarvestTime().toString()).
-                add("lastResult", harvestingConfig.getLastResult()).
-                add("lastSuccessful", harvestingConfig.getLastSuccessfulHarvestTime() == null ? "N/A" : harvestingConfig.getLastSuccessfulHarvestTime().toString()).
-                add("lastNonEmpty", harvestingConfig.getLastNonEmptyHarvestTime() == null ? "N/A" : harvestingConfig.getLastNonEmptyHarvestTime().toString()).
-                add("lastDatasetsHarvested", harvestingConfig.getLastHarvestedDatasetCount() == null ? "N/A" : harvestingConfig.getLastHarvestedDatasetCount().toString()).
-                add("lastDatasetsDeleted", harvestingConfig.getLastDeletedDatasetCount() == null ? "N/A" : harvestingConfig.getLastDeletedDatasetCount().toString()).
-                add("lastDatasetsFailed", harvestingConfig.getLastFailedDatasetCount() == null ? "N/A" : harvestingConfig.getLastFailedDatasetCount().toString());
     }
 }

@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+
+  keycloak:
+    image: 'jboss/keycloak:16.1.1'
+    environment:
+      - KEYCLOAK_USER=kcadmin
+      - KEYCLOAK_PASSWORD=kcpassword
+      - KEYCLOAK_IMPORT=/tmp/oidc-realm.json
+      - KEYCLOAK_LOGLEVEL=DEBUG
+    ports:
+      - "8090:8080"
+    volumes:
+      - './oidc-realm.json:/tmp/oidc-realm.json'
