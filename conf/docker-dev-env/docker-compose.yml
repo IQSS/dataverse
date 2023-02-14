@@ -14,3 +14,12 @@ services:
       - "5432:5432"
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
+
+  dev_solr:
+    container_name: "dev_solr"
+    image: solr:8.11.1
+    restart: on-failure
+    ports:
+      - "8983:8983"
+    volumes:
+      - ./solr/data:/var/solr

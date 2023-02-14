@@ -1,2 +1,5 @@
 # Postgres volumes
 /postgresql
+
+# Solr volumes
+/solr
