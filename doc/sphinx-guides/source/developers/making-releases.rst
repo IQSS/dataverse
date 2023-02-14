@@ -95,6 +95,8 @@ At this point you can send around the draft release for any final feedback. Link
 
 Make corrections to the draft, if necessary. It will be out of sync with the .md file, but that's ok (`#7988 <https://github.com/IQSS/dataverse/issues/7988>`_ is tracking this).
 
+.. _run-build-create-war:
+
 Run a Build to Create the War File
 ----------------------------------
 
@@ -109,6 +111,15 @@ Go to https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ and make the fo
 Click "Save" then "Build Now".
 
 The build number will appear in ``/api/info/version`` (along with the commit mentioned above) from a running installation (e.g. ``{"version":"5.10.1","build":"907-b844672``).
+
+Note that the build number comes from script in an early build step...
+
+.. code-block:: bash
+
+  COMMIT_SHA1=`echo $GIT_COMMIT | cut -c-7`
+  echo "build.number=${BUILD_NUMBER}-${COMMIT_SHA1}" > $WORKSPACE/src/main/java/BuildNumber.properties
+
+... but we can explore alternative methods of specifying the build number, as described in :ref:`auto-custom-build-number`.
 
 Build Installer (dvinstall.zip)
 -------------------------------

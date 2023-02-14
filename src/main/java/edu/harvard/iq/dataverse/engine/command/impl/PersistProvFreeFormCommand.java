@@ -36,7 +36,7 @@ public class PersistProvFreeFormCommand extends AbstractCommand<DataFile> {
         }
         else {
             Dataset dataset = dataFile.getOwner();
-            DatasetVersion workingVersion = dataset.getEditVersion();
+            DatasetVersion workingVersion = dataset.getOrCreateEditVersion();
 
             if (workingVersion.isDraft()) { 
                 if (dataset.isReleased()){

@@ -33,9 +33,11 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
@@ -683,4 +685,56 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         }
         return true;
     }
+
+    private List<String> listAllFiles() throws IOException {
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This FileAccessIO object hasn't been properly initialized.");
+        }
+
+        Path datasetDirectoryPath = Paths.get(dataset.getAuthorityForFileStorage(), dataset.getIdentifierForFileStorage());
+        if (datasetDirectoryPath == null) {
+            throw new IOException("Could not determine the filesystem directory of the dataset.");
+        }
+
+        DirectoryStream<Path> dirStream = Files.newDirectoryStream(Paths.get(this.getFilesRootDirectory(), datasetDirectoryPath.toString()));
+        
+        List<String> res = new ArrayList<>();
+        if (dirStream != null) {
+            for (Path filePath : dirStream) {
+                res.add(filePath.getFileName().toString());
+            }
+            dirStream.close();
+        }
+        
+        return res;
+    }
+    
+    private void deleteFile(String fileName) throws IOException {
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This FileAccessIO object hasn't been properly initialized.");
+        }
+
+        Path datasetDirectoryPath = Paths.get(dataset.getAuthorityForFileStorage(), dataset.getIdentifierForFileStorage());
+        if (datasetDirectoryPath == null) {
+            throw new IOException("Could not determine the filesystem directory of the dataset.");
+        }
+
+        Path p = Paths.get(this.getFilesRootDirectory(), datasetDirectoryPath.toString(), fileName);
+        Files.delete(p);
+    }
+
+    @Override
+    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
+        List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+        if (dryRun) {
+            return toDelete;
+        }
+        for (String f : toDelete) {
+            this.deleteFile(f);
+        }
+        return toDelete;
+    }
+
 }

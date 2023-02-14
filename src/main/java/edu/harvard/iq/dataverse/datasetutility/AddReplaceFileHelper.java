@@ -26,20 +26,22 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
@@ -47,10 +49,10 @@ import java.util.logging.Logger;
 import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -114,10 +116,9 @@ public class AddReplaceFileHelper{
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
     public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
     public static String FILE_REPLACE_FORCE_OPERATION = "FILE_REPLACE_FORCE_OPERATION";
-    public static String MULTIPLEFILES_ADD_OPERATION = "MULTIPLEFILES_ADD_OPERATION";
-            
+
     private String currentOperation;
-    
+    boolean multifile = false;
     // -----------------------------------
     // All the needed EJBs, passed to the constructor
     // -----------------------------------
@@ -127,8 +128,6 @@ public class AddReplaceFileHelper{
     private PermissionServiceBean permissionService;
     private EjbDataverseEngine commandEngine;
     private SystemConfig systemConfig;
-    private LicenseServiceBean licenseServiceBean;
-
     // -----------------------------------
     // Instance variables directly added
     // -----------------------------------
@@ -144,10 +143,6 @@ public class AddReplaceFileHelper{
     // -- Optional  
     private DataFile fileToReplace;             // step 25
     
-    // -----------------------------------
-    // Instance variables derived from other input
-    // -----------------------------------
-    private User user;
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
     List<DataFile> initialFileList; 
@@ -256,13 +251,12 @@ public class AddReplaceFileHelper{
      * @param dvRequest 
      */
     public AddReplaceFileHelper(DataverseRequest dvRequest, 
-                            IngestServiceBean ingestService,                            
+                            IngestServiceBean ingestService,
                             DatasetServiceBean datasetService,
                             DataFileServiceBean fileService,
                             PermissionServiceBean permissionService,
                             EjbDataverseEngine commandEngine,
-                            SystemConfig systemConfig,
-                            LicenseServiceBean licenseServiceBean){
+                            SystemConfig systemConfig){
 
         // ---------------------------------
         // make sure DataverseRequest isn't null and has a user
@@ -304,16 +298,12 @@ public class AddReplaceFileHelper{
         this.permissionService = permissionService;
         this.commandEngine = commandEngine;
         this.systemConfig = systemConfig;
-        this.licenseServiceBean = licenseServiceBean;
-
-        
-        
         initErrorHandling();
         
         // Initiate instance vars
         this.dataset = null;
         this.dvRequest = dvRequest;
-        this.user = dvRequest.getUser();
+        dvRequest.getUser();
         
     }
 
@@ -336,7 +326,7 @@ public class AddReplaceFileHelper{
 
     }
 
-    public boolean runAddFileByDataset(Dataset chosenDataset,
+    private boolean runAddFileByDataset(Dataset chosenDataset,
                                        String newFileName,
                                        String newFileContentType,
                                        String newStorageIdentifier,
@@ -348,12 +338,8 @@ public class AddReplaceFileHelper{
 
         initErrorHandling();
 
-        if(multipleFiles) {
-            this.currentOperation = MULTIPLEFILES_ADD_OPERATION;
-        }
-        else {
-            this.currentOperation = FILE_ADD_OPERATION;
-        }
+        multifile=multipleFiles;
+        this.currentOperation = FILE_ADD_OPERATION;
 
         if (!this.step_001_loadDataset(chosenDataset)){
             return false;
@@ -393,6 +379,11 @@ public class AddReplaceFileHelper{
     }*/
     
 
+    public boolean runForceReplaceFile(long fileToReplaceId, String newFilename, String newFileContentType,
+        String newStorageIdentifier, InputStream newFileInputStream, Dataset ds, OptionalFileParams optionalFileParams) {
+        return runForceReplaceFile(fileToReplaceId, newFilename, newFileContentType,
+                newStorageIdentifier, newFileInputStream, ds, optionalFileParams, false);
+    }
     /**
      * After the constructor, this method is called to replace a file
      * 
@@ -403,16 +394,19 @@ public class AddReplaceFileHelper{
      * @param newFileInputStream
      * @return 
      */
-    public boolean runForceReplaceFile(Long oldFileId,
+    private boolean runForceReplaceFile(Long oldFileId,
                         String newFileName, 
                         String newFileContentType, 
                         String newStorageIdentifier,
                         InputStream newFileInputStream,
-                        OptionalFileParams optionalFileParams){
+                        Dataset ds,
+                        OptionalFileParams optionalFileParams,
+                        boolean multipleFiles){
         
         msgt(">> runForceReplaceFile");
         initErrorHandling();
 
+        multifile=multipleFiles;
         this.currentOperation = FILE_REPLACE_FORCE_OPERATION;
 
                
@@ -426,22 +420,35 @@ public class AddReplaceFileHelper{
         if (!this.step_005_loadFileToReplaceById(oldFileId)){
             return false;
         }
-
-        
-        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
+        if(!ds.getId().equals(fileToReplace.getOwner().getId())) {
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_not_in_dataset"));
+            return false;
+        }
+        // ds may include changes not yet in the copy created when loading the file from the db, as in replaceFiles()
+        return this.runAddReplaceFile(ds, newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
     }
     
 
-	public boolean runReplaceFile(Long oldFileId,
+    public boolean runReplaceFile(long fileToReplaceId, String newFilename, String newFileContentType,
+            String newStorageIdentifier, InputStream newFileInputStream, Dataset ds, OptionalFileParams optionalFileParams) {
+        return runReplaceFile(fileToReplaceId, newFilename, newFileContentType,
+                newStorageIdentifier, newFileInputStream, ds, optionalFileParams, false);
+        
+    }
+    
+    private boolean runReplaceFile(Long oldFileId,
                             String newFileName, 
                             String newFileContentType, 
                             String newStorageIdentifier, 
                             InputStream newFileInputStream,
-                            OptionalFileParams optionalFileParams){
+                            Dataset ds,
+                            OptionalFileParams optionalFileParams,
+                            boolean multipleFiles){
     
         msgt(">> runReplaceFile");
 
         initErrorHandling();
+        multifile=multipleFiles;
         this.currentOperation = FILE_REPLACE_OPERATION;
         
         if (oldFileId==null){
@@ -455,7 +462,13 @@ public class AddReplaceFileHelper{
         if (!this.step_005_loadFileToReplaceById(oldFileId)){
             return false;
         }
-        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
+
+        if(!ds.getId().equals(fileToReplace.getOwner().getId())) {
+            this.addErrorSevere(getBundleErr("existing_file_to_replace_not_in_dataset"));
+            return false;
+        }
+        // ds may include changes not yet in the copy created when loading the file from the db, as in replaceFiles()
+        return this.runAddReplaceFile(ds, newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
     }
     
     
@@ -759,19 +772,15 @@ public class AddReplaceFileHelper{
             return false;
             
         }
-        
-        if (this.isFileReplaceOperation()){
+        if (this.isFileReplaceOperation()) {
             msgt("step_080_run_update_dataset_command_for_replace");
-            if (!this.step_080_run_update_dataset_command_for_replace()){
-                return false;            
+            if (!this.step_080_run_update_dataset_command_for_replace()) {
+                return false;
             }
-            
-        }else{
+        } else if (!multifile) {
             msgt("step_070_run_update_dataset_command");
-            if (!this.isMultipleFilesAddOperation()) {
-                if (!this.step_070_run_update_dataset_command()) {
-                    return false;
-                }
+            if (!this.step_070_run_update_dataset_command()) {
+                return false;
             }
         }
 
@@ -832,16 +841,6 @@ public class AddReplaceFileHelper{
     public boolean isFileAddOperation(){
     
         return this.currentOperation.equals(FILE_ADD_OPERATION);
-    }
-
-    /**
-     * Is this a multiple files add operation ?
-     * @return
-     */
-
-    public boolean isMultipleFilesAddOperation(){
-
-        return this.currentOperation.equals(MULTIPLEFILES_ADD_OPERATION);
     }
 
     /**
@@ -1200,8 +1199,11 @@ public class AddReplaceFileHelper{
         }
 
         // Load the working version of the Dataset
-        workingVersion = dataset.getEditVersion();
-        clone =   workingVersion.cloneDatasetVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
+        if(!multifile) {
+            //Don't repeatedly update the clone (losing changes) in multifile case
+            clone = workingVersion.cloneDatasetVersion();
+        }
         try {
             CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,
@@ -1291,9 +1293,6 @@ public class AddReplaceFileHelper{
 
         // Initialize new file list
         this.finalFileList = new ArrayList<>();
-
-        String warningMessage  = null;
-        
 
         if (isFileReplaceOperation() && this.fileToReplace == null){
             // This error shouldn't happen if steps called correctly
@@ -1511,10 +1510,7 @@ public class AddReplaceFileHelper{
             return true;
         }
         
-        // -----------------------------------------------------------   
-        // violations found: gather all error messages
-        // -----------------------------------------------------------   
-        List<String> errMsgs = new ArrayList<>();
+        new ArrayList<>();
         for (ConstraintViolation violation : constraintViolations) {
             /*
             for 8859 return conflict response status if the validation fails
@@ -1566,7 +1562,7 @@ public class AddReplaceFileHelper{
                 }
                 
             } catch (DataFileTagException ex) {
-                Logger.getLogger(AddReplaceFileHelper.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
                 addError(ex.getMessage());
                 return false;
             } catch (CommandException ex) {
@@ -1605,70 +1601,81 @@ public class AddReplaceFileHelper{
         return true;
     }
     
+    List<FileMetadata> filesToDelete = new ArrayList<FileMetadata>();
+    Map<Long, String> deleteFileStorageLocations = new HashMap<>();
     
     /**
      * Create and run the update dataset command
      * 
      * @return 
      */
-    private boolean step_070_run_update_dataset_command(){
-        
-        if (this.hasError()){
+    private boolean step_070_run_update_dataset_command() {
+        //Note -only single file operations and multifile replace call this, multifile add does not
+        if (this.hasError()) {
             return false;
         }
 
-        Command<Dataset> update_cmd;
+        Command<Dataset> update_cmd = null;
         String deleteStorageLocation = null;
-        long deleteFileId=-1;
-        if(isFileReplaceOperation()) {
-            List<FileMetadata> filesToDelete = new ArrayList<FileMetadata>();
-            filesToDelete.add(fileToReplace.getFileMetadata());
-            
-            if(!fileToReplace.isReleased()) {
-                //If file is only in draft version, also need to delete the physical file
-            deleteStorageLocation = fileService.getPhysicalFileToDelete(fileToReplace);
-            deleteFileId=fileToReplace.getId();
+        long deleteFileId = -1;
+        if (isFileReplaceOperation()) {
+            if (!multifile) {
+                filesToDelete.clear();
+                deleteFileStorageLocations.clear();
             }
-            //Adding the file to the delete list for the command will delete this filemetadata and, if the file hasn't been released, the datafile itself. 
-            update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, filesToDelete, clone);
+            filesToDelete.add(fileToReplace.getFileMetadata());
+
+            if (!fileToReplace.isReleased()) {
+                // If file is only in draft version, also need to delete the physical file
+                deleteStorageLocation = fileService.getPhysicalFileToDelete(fileToReplace);
+                deleteFileId = fileToReplace.getId();
+                deleteFileStorageLocations.put(deleteFileId, deleteStorageLocation);
+            }
+            if (!multifile) {
+                // Adding the file to the delete list for the command will delete this
+                // filemetadata and, if the file hasn't been released, the datafile itself.
+                update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, filesToDelete, clone);
+            }
         } else {
-          update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
+            update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
         }
-        ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);  
-        
-        try {            
-            // Submit the update dataset command 
-            // and update the local dataset object
-            //
-            dataset = commandEngine.submit(update_cmd);
-        } catch (CommandException ex) {
-            /**
-             * @todo Add a test to exercise this error.
-             */
-            this.addErrorSevere(getBundleErr("add.add_file_error"));
-            logger.severe(ex.getMessage());
-            return false;
-        }catch (EJBException ex) {
-            /**
-             * @todo Add a test to exercise this error.
-             */
-            this.addErrorSevere("add.add_file_error (see logs)");
-            logger.severe(ex.getMessage());
-            return false;
+        if (!multifile) {
+            //Avoid NPE in multifile replace case
+            ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);
         }
-        //Sanity check
-        if(isFileReplaceOperation()) {
-            if (deleteStorageLocation != null) {
-                // Finalize the delete of the physical file 
-                // (File service will double-check that the datafile no 
-                // longer exists in the database, before proceeding to 
-                // delete the physical file)
-                try {
-                    fileService.finalizeFileDelete(deleteFileId, deleteStorageLocation);
-                } catch (IOException ioex) {
-                    logger.warning("Failed to delete the physical file associated with the deleted datafile id="
-                            + deleteFileId + ", storage location: " + deleteStorageLocation);
-                }
+        if (!multifile) {
+            try {
+                // Submit the update dataset command
+                // and update the local dataset object
+                //
+                dataset = commandEngine.submit(update_cmd);
+            } catch (CommandException ex) {
+                /**
+                 * @todo Add a test to exercise this error.
+                 */
+                this.addErrorSevere(getBundleErr("add.add_file_error"));
+                logger.severe(ex.getMessage());
+                return false;
+            } catch (EJBException ex) {
+                /**
+                 * @todo Add a test to exercise this error.
+                 */
+                this.addErrorSevere("add.add_file_error (see logs)");
+                logger.severe(ex.getMessage());
+                return false;
+            }
+        }
+
+        if (isFileReplaceOperation() && deleteFileId!=-1 && !multifile) {
+            // Finalize the delete of the physical file
+            // (File service will double-check that the datafile no
+            // longer exists in the database, before proceeding to
+            // delete the physical file)
+            try {
+                fileService.finalizeFileDelete(deleteFileId, deleteStorageLocation);
+            } catch (IOException ioex) {
+                logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                        + deleteFileId + ", storage location: " + deleteStorageLocation);
             }
         }
         return true;
@@ -1766,7 +1773,7 @@ public class AddReplaceFileHelper{
             }
 
             /*
-             * Go through the final file list, settting the rootFileId and previousFileId
+             * Go through the final file list, setting the rootFileId and previousFileId
              */
             for (DataFile df : finalFileList) {
                 df.setPreviousDataFileId(fileToReplace.getId());
@@ -1775,7 +1782,7 @@ public class AddReplaceFileHelper{
 
             }
         }
-        // Call the update dataset command which will delete the replaced filemetadata and file in needed (if file is not released)
+        // Call the update dataset command which will delete the replaced filemetadata and file if needed (if file is not released)
         //
         return step_070_run_update_dataset_command();
         
@@ -1805,7 +1812,7 @@ public class AddReplaceFileHelper{
         newlyAddedFileMetadatas = new ArrayList<>();
         
         // Loop of uglinesss...but expect 1 to 4 files in final file list
-        List<FileMetadata> latestFileMetadatas = dataset.getEditVersion().getFileMetadatas();
+        List<FileMetadata> latestFileMetadatas = dataset.getOrCreateEditVersion().getFileMetadatas();
         
         
         for (DataFile newlyAddedFile : finalFileList){
@@ -1927,7 +1934,7 @@ public class AddReplaceFileHelper{
             //return true;
         //}
 
-        if (!this.isMultipleFilesAddOperation()) {
+        if (!multifile) {
             msg("pre ingest start");
             // start the ingest!
             ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
@@ -2021,6 +2028,13 @@ public class AddReplaceFileHelper{
         this.duplicateFileWarning = duplicateFileWarning;
     }
 
+    /** Add multiple pre-positioned files listed in the jsonData. Works with direct upload, Globus, and other out-of-band methods.
+     * 
+     * @param jsonData - an array of jsonData entries (one per file) using the single add file jsonData format
+     * @param dataset
+     * @param authUser
+     * @return
+     */
     public Response addFiles(String jsonData, Dataset dataset, User authUser) {
         msgt("(addFilesToDataset) jsonData: " + jsonData.toString());
 
@@ -2033,15 +2047,14 @@ public class AddReplaceFileHelper{
         // -----------------------------------------------------------
         // Read jsonData and Parse files information from jsondata  :
         // -----------------------------------------------------------
-        try (StringReader rdr = new StringReader(jsonData)) {
-            JsonReader dbJsonReader = Json.createReader(rdr);
-            filesJson = dbJsonReader.readArray();
-            dbJsonReader.close();
+        try {
+            filesJson = JsonUtil.getJsonArray(jsonData);
 
 
             if (filesJson != null) {
                 totalNumberofFiles = filesJson.getValuesAs(JsonObject.class).size();
-
+                workingVersion = dataset.getOrCreateEditVersion();
+                clone = workingVersion.cloneDatasetVersion();
                 for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
 
                     OptionalFileParams optionalFileParams = null;
@@ -2065,10 +2078,9 @@ public class AddReplaceFileHelper{
                             }
 
                             msgt("ADD!  = " + newFilename);
-                            if (!hasError()) {
-                                runAddFileByDataset(dataset, newFilename, newFileContentType, newStorageIdentifier,
-                                        null, optionalFileParams, true);
-                            }
+
+                            runAddFileByDataset(dataset, newFilename, newFileContentType, newStorageIdentifier, null,
+                                    optionalFileParams, true);
                             if (hasError()) {
                                 JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                         .add("storageIdentifier", newStorageIdentifier)
@@ -2103,7 +2115,7 @@ public class AddReplaceFileHelper{
                         }
 
                     } catch (DataFileTagException ex) {
-                        Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                         JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                 .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
                                 .add("message", ex.getMessage())
@@ -2112,7 +2124,7 @@ public class AddReplaceFileHelper{
 
                     }
                     catch (NoFilesException ex) {
-                        Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.log(Level.SEVERE, null, ex);
                         JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                 .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
                                 .add("message", BundleUtil.getStringFromBundle("NoFileException!  Serious Error! See administrator!"))
@@ -2131,7 +2143,7 @@ public class AddReplaceFileHelper{
                 }
 
                 try {
-                    Command<Dataset> cmd = new UpdateDatasetVersionCommand(dataset, dvRequest);
+                    Command<Dataset> cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
                     ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
                     commandEngine.submit(cmd);
                 } catch (CommandException ex) {
@@ -2140,9 +2152,6 @@ public class AddReplaceFileHelper{
 
                 dataset = datasetService.find(dataset.getId());
 
-                List<DataFile> s = dataset.getFiles();
-                for (DataFile dataFile : s) {
-                }
                 //ingest job
                 ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) authUser);
 
@@ -2161,6 +2170,174 @@ public class AddReplaceFileHelper{
                 .add("Total number of files", totalNumberofFiles)
                 .add("Number of files successfully added", successNumberofFiles);
 
+
+        return Response.ok().entity(Json.createObjectBuilder()
+                .add("status", STATUS_OK)
+                .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build() ).build();
+    }
+    
+    /**
+     * Replace multiple files with prepositioned replacements as listed in the
+     * jsonData. Works with direct upload, Globus, and other out-of-band methods.
+     * 
+     * @param jsonData - must include fileToReplaceId key with file ID and may include forceReplace key with true/false(default) 
+     * @param dataset
+     * @param authUser
+     * @return
+     */
+    
+    public Response replaceFiles(String jsonData, Dataset ds, User authUser) {
+        msgt("(replaceFilesInDataset) jsonData: " + jsonData.toString());
+
+        this.dataset = ds;
+        JsonArrayBuilder jarr = Json.createArrayBuilder();
+
+        JsonArray filesJson = null;
+
+        int totalNumberofFiles = 0;
+        int successNumberofFiles = 0;
+        // -----------------------------------------------------------
+        // Read jsonData and Parse files information from jsondata  :
+        // -----------------------------------------------------------
+        try {
+            filesJson = JsonUtil.getJsonArray(jsonData);
+
+
+            if (filesJson != null) {
+                totalNumberofFiles = filesJson.getValuesAs(JsonObject.class).size();
+                workingVersion = dataset.getOrCreateEditVersion();
+                clone = workingVersion.cloneDatasetVersion();
+                for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
+                    boolean forceReplace = false;
+                    // (2a) Check for optional "forceReplace"
+                    if ((fileJson.containsKey("forceReplace"))) {
+                        forceReplace = fileJson.getBoolean("forceReplace", false);
+                    }
+                    long fileToReplaceId = -1;
+                    JsonNumber ftri = fileJson.getJsonNumber("fileToReplaceId");
+                    if(ftri !=null) {
+                        fileToReplaceId = ftri.longValueExact();
+                    }
+                    
+                    OptionalFileParams optionalFileParams = null;
+                    try {
+                        // (2b) Load up optional params via JSON
+                        //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
+                        optionalFileParams = new OptionalFileParams(fileJson.toString());
+
+                        String newFilename = null;
+                        String newFileContentType = null;
+                        String newStorageIdentifier = null;
+                        if ((fileToReplaceId !=-1) && optionalFileParams.hasStorageIdentifier()) {
+                            newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                            newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
+                            if(!DataAccess.uploadToDatasetAllowed(dataset,  newStorageIdentifier)) {
+                                addErrorSevere("Dataset store configuration does not allow provided storageIdentifier.");
+                            }
+                            if (optionalFileParams.hasFileName()) {
+                                newFilename = optionalFileParams.getFileName();
+                                if (optionalFileParams.hasMimetype()) {
+                                    newFileContentType = optionalFileParams.getMimeType();
+                                }
+                            }
+
+                            msgt("REPLACE!  = " + newFilename);
+                            if (forceReplace) {
+                                runForceReplaceFile(fileToReplaceId, newFilename, newFileContentType,
+                                        newStorageIdentifier, null, dataset, optionalFileParams, true);
+                            } else {
+                                runReplaceFile(fileToReplaceId, newFilename, newFileContentType, newStorageIdentifier,
+                                        null, dataset, optionalFileParams, true);
+                            }
+                            if (hasError()) {
+                                JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                        .add("storageIdentifier", newStorageIdentifier)
+                                        .add("errorMessage", getHttpErrorCode().toString() +":"+ getErrorMessagesAsString("\n"))
+                                        .add("fileDetails", fileJson);
+                                jarr.add(fileoutput);
+                            } else {
+                                JsonObject successresult = getSuccessResultAsJsonObjectBuilder().build();
+                                String duplicateWarning = getDuplicateFileWarning();
+
+                                if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
+                                    JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                            .add("storageIdentifier", newStorageIdentifier)
+                                            .add("warningMessage", getDuplicateFileWarning())
+                                            .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
+                                    jarr.add(fileoutput);
+                                } else {
+                                    JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                            .add("storageIdentifier", newStorageIdentifier)
+                                            .add("successMessage", "Replaced successfully in the dataset")
+                                            .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
+                                    jarr.add(fileoutput);
+                                }
+                            successNumberofFiles = successNumberofFiles + 1;
+                            }
+                        } else {
+                            JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                    .add("errorMessage", "You must provide a fileToReplaceId, storageidentifier, filename, and mimetype.")
+                                    .add("fileDetails", fileJson);
+
+                            jarr.add(fileoutput);
+                        }
+
+                    } catch (DataFileTagException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                        JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
+                                .add("message", ex.getMessage())
+                                .add("fileDetails", fileJson);
+                        jarr.add(fileoutput);
+
+                    }
+                    catch (NoFilesException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                        JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
+                                .add("message", BundleUtil.getStringFromBundle("NoFileException!  Serious Error! See administrator!"))
+                                .add("fileDetails", fileJson);
+                        jarr.add(fileoutput);
+                    }
+                }// End of adding files
+
+                DatasetLock eipLock = dataset.getLockFor(DatasetLock.Reason.EditInProgress);
+                if (eipLock == null) {
+                    logger.warning("Dataset not locked for EditInProgress ");
+                } else {
+                    datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
+                    logger.info("Removed EditInProgress lock ");
+                }
+
+                try {
+                    Command<Dataset> cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, filesToDelete, clone);
+                    ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
+                    commandEngine.submit(cmd);
+                } catch (CommandException ex) {
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "CommandException updating DatasetVersion from addFiles job: " + ex.getMessage());
+                }
+
+                fileService.finalizeFileDeletes(deleteFileStorageLocations);
+                
+                dataset = datasetService.find(dataset.getId());
+
+                //ingest job
+                ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) authUser);
+
+            }
+        }
+        catch ( javax.json.stream.JsonParsingException ex) {
+            ex.printStackTrace();
+            return error(BAD_REQUEST, "Json Parsing Exception :" + ex.getMessage());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return error(BAD_REQUEST, e.getMessage());
+        }
+
+        JsonObjectBuilder result = Json.createObjectBuilder()
+                .add("Total number of files", totalNumberofFiles)
+                .add("Number of files successfully replaced", successNumberofFiles);
 
         return Response.ok().entity(Json.createObjectBuilder()
                 .add("status", STATUS_OK)
