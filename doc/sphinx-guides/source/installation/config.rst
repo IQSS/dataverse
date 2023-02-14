@@ -579,14 +579,14 @@ To **create a user** with full S3 access and nothing more for security reasons, 
 (Identity and Access Management). See `IAM User Guide <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html>`_
 for more info on this process.
 
-**Generate the user keys** needed for a Dataverse installation afterwards by clicking on the created user.
+To use programmatic access, **Generate the user keys** needed for a Dataverse installation afterwards by clicking on the created user.
 (You can skip this step when running on EC2, see below.)
 
 .. TIP::
   If you are hosting your Dataverse installation on an AWS EC2 instance alongside storage in S3, it is possible to use IAM Roles instead
   of the credentials file (the file at ``~/.aws/credentials`` mentioned below). Please note that you will still need the
   ``~/.aws/config`` file to specify the region. For more information on this option, see
-  http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+  https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
 
 Preparation When Using Custom S3-Compatible Service
 ###################################################
