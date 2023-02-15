@@ -99,6 +99,10 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             logger.severe("Draft version of dataset: " + tempDataset.getId() + " has: " + newFileCount + " while last published version has " + pubFileCount);
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasetversion.update.failure"), this);
         }
+        Long thumbId = null;
+        if(tempDataset.getThumbnailFile()!=null) {
+            thumbId = tempDataset.getThumbnailFile().getId();
+        };
         for (FileMetadata publishedFmd : pubFmds) {
             DataFile dataFile = publishedFmd.getDataFile();
             FileMetadata draftFmd = dataFile.getLatestFileMetadata();
@@ -135,6 +139,10 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             // And any references in the list held by categories
             for (DataFileCategory cat : tempDataset.getCategories()) {
                 cat.getFileMetadatas().remove(draftFmd);
+            }
+            //And any thumbnail reference
+            if(publishedFmd.getDataFile().getId()==thumbId) {
+                tempDataset.setThumbnailFile(publishedFmd.getDataFile());
             }
         }
 
