@@ -83,14 +83,14 @@ A basic Dataverse installation runs fine on modest hardware. For example, in the
 
 In contrast, before we moved it to the Amazon Cloud, the production installation at https://dataverse.harvard.edu was backed by six servers with two Intel Xeon 2.53 Ghz CPUs and either 48 or 64 GB of RAM. The three servers with 48 GB of RAM run were web frontends running Glassfish 4 and Apache and were load balanced by a hardware device. The remaining three servers with 64 GB of RAM were the primary and backup database servers and a server dedicated to running Rserve. Multiple TB of storage were mounted from a SAN via NFS.
 
-Currently, the Harvard Dataverse Repository is served by four AWS server nodes, all "m4.4xlarge" instances (64GB/16 vCPU):
+Currently, the Harvard Dataverse Repository is served by four AWS server nodes
 
-- two instances for web frontends running Payara fronted by Apache
+- two instances for web frontends running Payara fronted by Apache ("m4.4xlarge" with 64 GB RAM and 16 vCPUs)
 
   - these are sitting behind an AWS ELB load balancer
 
-- one instance for the Solr search engine
-- one instance for R
+- one instance for the Solr search engine ("m4.2xlarge" with 32 GB RAM and 8 vCPUs)
+- one instance for R ("m4.xlarge" instances with 16 GB RAM and 4 vCPUs)
 
 The PostgreSQL database is served by Amazon RDS.
 
