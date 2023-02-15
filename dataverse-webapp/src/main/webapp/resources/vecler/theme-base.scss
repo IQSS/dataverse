@@ -3256,6 +3256,10 @@ table[id$="resultsTable"] {
 	}
 }
 
+.card-title-icon-block a {
+	word-break: break-word;
+}
+
 @media screen and (min-width: $screen-sm-min) {
 	.card-content-container {
 		margin-left: 3.333em;
