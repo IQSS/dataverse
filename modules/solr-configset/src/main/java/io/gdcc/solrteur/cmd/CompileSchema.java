@@ -126,29 +126,63 @@ public class CompileSchema implements Callable<Integer> {
                 solrteur.Logger.warn(new solrteur.AbortScriptException("Could not read "+path, e));
             }
         }
+    
+        // Abort here if there were errors
+        if (hadErrors) {
+            throw new solrteur.AbortScriptException("Experienced parsing errors, fix your block definitions first to continue", null);
+        }
         
         // If all blocks could be read and are valid, let's extract the fields
         Map<Block, List<Field>> blockFieldsMap = new HashMap<>();
-        if (!hadErrors) {
-            Set<Block> blocks = blockPathMap.keySet();
-            //blocks.forEach(b -> System.out.println(b.getName()));
-            
-            for (Map.Entry<Block, Path> mdb : blockPathMap.entrySet()) {
-                Block block = mdb.getKey();
-                Path path = mdb.getValue();
+        Set<Block> blocks = blockPathMap.keySet();
     
-                try {
-                    List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
-                    // First store all retrieved fields, we check on uniqueness later
-                    blockFieldsMap.put(block, reader.retrieveFields(lines, blocks));
-                } catch (ParserException e) {
-                    // Log a warning but continue parsing with next file to get done as much as possible.
-                    logErrors(path, e);
-                } catch (IOException e) {
-                    // Log a warning but continue parsing with next file to get done as much as possible.
-                    solrteur.Logger.warn(new solrteur.AbortScriptException("Could not read "+path, e));
+        for (Map.Entry<Block, Path> mdb : blockPathMap.entrySet()) {
+            Block block = mdb.getKey();
+            Path path = mdb.getValue();
+
+            try {
+                List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+                // First store all retrieved fields, we check on uniqueness later
+                blockFieldsMap.put(block, reader.retrieveFields(lines, blocks));
+            } catch (ParserException e) {
+                // Log a warning but continue parsing with next file to get done as much as possible.
+                hadErrors = true;
+                logErrors(path, e);
+            } catch (IOException e) {
+                // Log a warning but continue parsing with next file to get done as much as possible.
+                hadErrors = true;
+                solrteur.Logger.warn(new solrteur.AbortScriptException("Could not read "+path, e));
+            }
+        }
+    
+        // Abort here if there were errors
+        if (hadErrors) {
+            throw new solrteur.AbortScriptException("Experienced parsing errors, fix your field definitions first to continue", null);
+        }
+        
+        // We need to check uniqueness of fields across blocks
+        Map<Field,Block> fieldBlockMap = new HashMap<>();
+        for (Map.Entry<Block,List<Field>> entry : blockFieldsMap.entrySet()) {
+            Block block = entry.getKey();
+            System.out.println("BLOCK: " + block.getName());
+            
+            for (Field field : entry.getValue()) {
+                System.out.println("    FIELD: " + field.getName());
+                
+                if (fieldBlockMap.containsKey(field)) {
+                    hadErrors = true;
+                    solrteur.Logger.warn("Duplicate field '" + field.getName() + "' in block '" + block.getName() +
+                        "' from '" + blockPathMap.get(block) + "': already defined by block '" +
+                        fieldBlockMap.get(field).getName() + "' from '" + blockPathMap.get(fieldBlockMap.get(field)) + "'");
+                } else {
+                    fieldBlockMap.put(field, block);
                 }
             }
+        }
+    
+        // Abort here if there were errors
+        if (hadErrors) {
+            throw new solrteur.AbortScriptException("Stopping analysis", null);
         }
     
     }

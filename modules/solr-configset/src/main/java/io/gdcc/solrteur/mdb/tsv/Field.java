@@ -29,6 +29,7 @@ public final class Field {
     public static final String WHITESPACE_ONLY = "^\\s+$";
     
     public static final Predicate<String> matchBoolean = s -> "TRUE".equals(s) || "FALSE".equals(s);
+    public static final Predicate<String> matchParentDisplayFormat = Pattern.compile("^[;,:]?$").asMatchPredicate();
     
     /**
      * Programmatic variant of the spec of a #datasetField. List all the column headers and associated restrictions
@@ -315,9 +316,7 @@ public final class Field {
             }
         }
         
-        // TODO: extend with:
-        //       2) unique numbers in ordering (attention: compound fields!)
-        //       4) warnings for facetable fields with suboptimal field types
+        // TODO: extract distinct checks and move to separate methods to reduce complexity
         public List<Field> build() throws ParserException {
             // Check if all fields are unique within this block
             List<String> duplicates = fields.stream()
@@ -334,13 +333,13 @@ public final class Field {
             }
             
             // Create parent / child relations for compound fields and validate
-            // 1. Get all fields that claim to have a parent
+            // a) Get all fields that claim to have a parent
             List<Field> children = fields.stream()
                 .filter(field -> !field.get(Header.PARENT, "").isEmpty())
                 .collect(Collectors.toUnmodifiableList());
     
             ParserException parentException = new ParserException("Compound field errors:");
-            // 2. Search and associate the parent field to these children
+            // b) Search and associate the parent field to these children
             for (Field child : children) {
                 // Always non-null as we filtered for this before, so will never be "" (but we avoid the Optional)
                 String parentName = child.get(Header.PARENT, "");
@@ -364,10 +363,10 @@ public final class Field {
                 }
             }
             
-            // 3. No cyclic dependencies / deep nesting is optional
+            // Check no cyclic dependencies present / deep nesting is optional.
             // First, fetch fields that are children and parents at the same time:
             List<Field> parentChilds = fields.stream()
-                .filter(field -> !field.children.isEmpty() && field.parent != null)
+                .filter(field -> field.isParent() && field.isChild())
                 .collect(Collectors.toUnmodifiableList());
             
             // When deep nesting is disabled, this list must be empty (only 1 level of nesting allowed means
@@ -388,33 +387,46 @@ public final class Field {
                 });
             }
             
-            // 4. Ensure all compound parents are of type "none"
+            // Ensure compound parents are a) of type "none", b) have no displayFormat other than ":", ";" or "," and
+            // are c) not facetable and d) not allowed to use a CV
             List<Field> parents = fields.stream()
-                .filter(field -> !field.children.isEmpty())
+                .filter(Field::isParent)
                 .collect(Collectors.toUnmodifiableList());
             
             parents.forEach(field -> {
+                // a) type none
                 // The first check shall never be true, but just in case...
                 if (field.get(Header.FIELDTYPE).isEmpty() || !Types.NONE.test(field.get(Header.FIELDTYPE).get())) {
                     parentException.addSubException(
-                        new ParserException("'" + field.getName() + "' is a parent but does not have fieldType 'none'")
+                        new ParserException("'" + field.getName() + "' is a parent but does not have 'fieldType'='none'")
+                            .withLineNumber(field.lineIndex));
+                }
+                // b) displayFormat contains only ":", ";" or "," or empty
+                if (field.get(Header.DISPLAY_FORMAT).isEmpty() || !matchParentDisplayFormat.test(field.get(Header.DISPLAY_FORMAT).get())) {
+                    parentException.addSubException(
+                        new ParserException("'" + field.getName() + "' is a parent but 'displayFormat' is not empty or from [;,:]")
+                            .withLineNumber(field.lineIndex));
+                }
+                // c) not facetable
+                if (field.get(Header.FACETABLE).isEmpty() || field.get(Header.FACETABLE).get().equals("TRUE")) {
+                    parentException.addSubException(
+                        new ParserException("'" + field.getName() + "' is a parent but has 'facetable'='TRUE'")
+                            .withLineNumber(field.lineIndex));
+                }
+                // c) not using a CV
+                if (field.get(Header.ALLOW_CONTROLLED_VOCABULARY).isEmpty() || field.get(Header.ALLOW_CONTROLLED_VOCABULARY).get().equals("TRUE")) {
+                    parentException.addSubException(
+                        new ParserException("'" + field.getName() + "' is a parent but has 'allowControlledVocabulary'='TRUE'")
                             .withLineNumber(field.lineIndex));
                 }
             });
-            
-            // Check display order uniqueness
-            // 1. Check all top level fields first
-            /*
-            List<Field> topLevel = fields.stream()
-                // get all fields that have no parent, which means top level
-                .filter(field -> field.parent == null)
-                .collect(Collectors.groupingBy(field -> field.get(Header.DISPLAY_ORDER, "")))
-                .entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().size() > 1)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toUnmodifiableList());
-            */
+    
+            // TODO: Extend check here with:
+            //       1) Unique numbers in displayOrder (attention: compound fields!) - should it print warnings when unsorted?
+            //       2) Warnings for facetable fields with suboptimal field types
+            //       3) Check if any compound fields are optional but have required children and warn about potential unwanted conditional requirements
+            //       4) Check no primitive (non-parent) field has type "none"
+            //       5) ...
             
             // Now either die or return fields
             if (parentException.hasSubExceptions()) {
@@ -440,9 +452,9 @@ public final class Field {
     /* ---- Actual Field Class starting here ---- */
     
     private Field parent;
-    private List<Field> children = new ArrayList<>();
-    private Map<Header, String> properties = new EnumMap<>(Header.class);
-    private int lineIndex;
+    private final List<Field> children = new ArrayList<>();
+    private final Map<Header, String> properties = new EnumMap<>(Header.class);
+    private final int lineIndex;
     
     private Field(int lineIndex) {
         this.lineIndex = lineIndex;
@@ -461,6 +473,14 @@ public final class Field {
     public String getName() {
         // Will always be non-null after creating the field with the builder
         return properties.get(Header.NAME);
+    }
+    
+    public boolean isParent() {
+        return !this.children.isEmpty();
+    }
+    
+    public boolean isChild() {
+        return this.parent != null;
     }
     
     List<ControlledVocabulary> controlledVocabularyValues = List.of();
