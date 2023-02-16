@@ -79,15 +79,24 @@ System Requirements
 Hardware Requirements
 +++++++++++++++++++++
 
-A basic Dataverse installation runs fine on modest hardware. For example, as of this writing the test installation at http://phoenix.dataverse.org is backed by a single virtual machine with two 2.8 GHz processors, 8 GB of RAM and 50 GB of disk.
+A basic Dataverse installation runs fine on modest hardware. For example, in the recent past we had a test instance backed by a single virtual machine with two 2.8 GHz processors, 8 GB of RAM and 50 GB of disk.
 
 In contrast, before we moved it to the Amazon Cloud, the production installation at https://dataverse.harvard.edu was backed by six servers with two Intel Xeon 2.53 Ghz CPUs and either 48 or 64 GB of RAM. The three servers with 48 GB of RAM run were web frontends running Glassfish 4 and Apache and were load balanced by a hardware device. The remaining three servers with 64 GB of RAM were the primary and backup database servers and a server dedicated to running Rserve. Multiple TB of storage were mounted from a SAN via NFS.
 
-Currently, the Harvard Dataverse Repository is served by four AWS server nodes: two "m4.4xlarge" instances (64GB/16 vCPU) as web frontends, one 32GB/8 vCPU ("m4.2xlarge") instance for the Solr search engine, and one 16GB/4 vCPU ("m4.xlarge") instance for R. The PostgreSQL database is served by Amazon RDS, and physical files are stored on Amazon S3.
+Currently, the Harvard Dataverse Repository is served by four AWS server nodes
 
-The Dataverse Software installation script will attempt to give your app server the right amount of RAM based on your system.
+- two instances for web frontends running Payara fronted by Apache ("m4.4xlarge" with 64 GB RAM and 16 vCPUs)
 
-Experimentation and testing with various hardware configurations is encouraged, or course, but do reach out as explained in the :doc:`intro` as needed for assistance.
+  - these are sitting behind an AWS ELB load balancer
+
+- one instance for the Solr search engine ("m4.2xlarge" with 32 GB RAM and 8 vCPUs)
+- one instance for R ("m4.xlarge" instances with 16 GB RAM and 4 vCPUs)
+
+The PostgreSQL database is served by Amazon RDS.
+
+Physical files are stored on Amazon S3. The primary bucket is replicated in real-time to a secondary bucket, which is backed up to Glacier. Deleted files are kept around on the secondary bucket for a little while for convenient recovery. In addition, we use a backup script mentioned under :doc:`/admin/backups`.
+
+Experimentation and testing with various hardware configurations is encouraged, or course. Note that the installation script will attempt to give your app server (the web frontend) the right amount of RAM based on your system.
 
 Software Requirements
 +++++++++++++++++++++
