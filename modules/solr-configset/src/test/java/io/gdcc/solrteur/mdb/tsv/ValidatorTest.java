@@ -1,5 +1,6 @@
-package cli.util.model;
+package io.gdcc.solrteur.mdb.tsv;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -37,7 +38,7 @@ class ValidatorTest {
                 "true,https://host/hello",
             })
         void urlValidation(boolean expected, String sut) {
-            assertEquals(expected, Validator.isValidUrl(sut));
+            Assertions.assertEquals(expected, Validator.isValidUrl(sut));
         }
     }
     

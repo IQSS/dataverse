@@ -1,4 +1,4 @@
-package cli.util.model;
+package io.gdcc.solrteur.mdb.tsv;
 
 public enum ParsingState {
     Vocabularies(ControlledVocabulary.KEYWORD),
@@ -29,6 +29,15 @@ public enum ParsingState {
         return this == Fields || this == Vocabularies;
     }
     
+    /**
+     * Return the next state if the given line is triggering the change correctly.
+     * Wrong header lines will trigger exceptions.
+     *
+     * @param headerLine The line to analyse for switching to the next parsing state
+     * @param config The parser configuration
+     * @return The new state (will throw if line not valid)
+     * @throws ParserException When the given line wasn't the expected one to transition the state
+     */
     public ParsingState transitionState(String headerLine, Configuration config) throws ParserException {
         // if not null, not starting the same state again (no loops allowed) and starting the correct next state, return the next state
         if(headerLine != null &&

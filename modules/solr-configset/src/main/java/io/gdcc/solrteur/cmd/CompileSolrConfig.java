@@ -1,7 +1,8 @@
 //DEPS net.sf.saxon:Saxon-HE:10.6
 
-package cli.cmd;
+package io.gdcc.solrteur.cmd;
 
+import io.gdcc.solrteur.solrteur;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.Serializer;
@@ -24,8 +25,8 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import cli.solrteur.AbortScriptException;
-import cli.solrteur.Logger;
+import io.gdcc.solrteur.solrteur.AbortScriptException;
+import io.gdcc.solrteur.solrteur.Logger;
 
 @Command(name = "solrconfig",
     mixinStandardHelpOptions = true,
@@ -33,11 +34,10 @@ import cli.solrteur.Logger;
     showDefaultValues = true,
     sortOptions = false,
     description = "Compile the solrconfig.xml from a source and XSLT files%n")
-public
-class CompileSolrConfig implements Callable<Integer> {
+public class CompileSolrConfig implements Callable<Integer> {
     
     @ParentCommand
-    private cli.solrteur cliParent;
+    private solrteur cliParent;
     
     @Option(required = true,
         names = {"--xslts"},
@@ -114,5 +114,7 @@ class CompileSolrConfig implements Callable<Integer> {
         } catch (SaxonApiException e) {
             throw new AbortScriptException("XML transformation failed", e);
         }
+        
+        Logger.info("Finished applying XSLT transformations, saved to " + solrConfig);
     }
 }

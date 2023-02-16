@@ -1,4 +1,4 @@
-package cli.util.model;
+package io.gdcc.solrteur.mdb.tsv;
 
 public final class ParserError {
     String message;

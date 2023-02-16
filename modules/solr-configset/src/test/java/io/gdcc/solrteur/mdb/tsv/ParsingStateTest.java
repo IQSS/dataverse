@@ -1,5 +1,11 @@
-package cli.util.model;
+package io.gdcc.solrteur.mdb.tsv;
 
+import io.gdcc.solrteur.mdb.tsv.Configuration;
+import io.gdcc.solrteur.mdb.tsv.Block;
+import io.gdcc.solrteur.mdb.tsv.ControlledVocabulary;
+import io.gdcc.solrteur.mdb.tsv.Field;
+import io.gdcc.solrteur.mdb.tsv.ParserException;
+import io.gdcc.solrteur.mdb.tsv.ParsingState;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;

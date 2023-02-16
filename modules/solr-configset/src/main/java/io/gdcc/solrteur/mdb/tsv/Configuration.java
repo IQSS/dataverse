@@ -1,4 +1,4 @@
-package cli.util.model;
+package io.gdcc.solrteur.mdb.tsv;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,11 +9,13 @@ public final class Configuration {
     private final String trigger;
     private final String column;
     private final Matcher rtrimMatcher;
+    private final Boolean allowDeepFieldNesting;
     
     public Configuration(
         String comment,
         String trigger,
-        String column
+        String column,
+        boolean allowDeepFieldNesting
     ) {
         notNullNotEmpty("Comment indicator", comment);
         this.comment = comment;
@@ -25,10 +27,12 @@ public final class Configuration {
         this.column = column;
         
         this.rtrimMatcher = Pattern.compile("(" + this.column + ")+$").matcher("");
+        
+        this.allowDeepFieldNesting = allowDeepFieldNesting;
     }
     
     public static Configuration defaultConfig() {
-        return new Configuration("%%", "#", "\t");
+        return new Configuration("%%", "#", "\t", false);
     }
     
     private static void notNullNotEmpty(String optionName, String value) {
@@ -55,5 +59,9 @@ public final class Configuration {
     
     public String trigger(String keyword) {
         return this.triggerIndicator() + keyword;
+    }
+    
+    public boolean deepFieldNestingEnabled() {
+        return this.allowDeepFieldNesting;
     }
 }

@@ -1,4 +1,4 @@
-package cli.util.model;
+package io.gdcc.solrteur.mdb.tsv;
 
 import java.util.Arrays;
 import java.util.Collections;

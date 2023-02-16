@@ -1,5 +1,6 @@
-package cli.util.model;
+package io.gdcc.solrteur.mdb.tsv;
 
+import io.gdcc.solrteur.mdb.tsv.Configuration;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 

@@ -1,4 +1,4 @@
-package cli.util.model;
+package io.gdcc.solrteur.mdb.tsv;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -48,7 +48,7 @@ public final class Validator {
                                            final List<String> validOrderedHeaders,
                                            final Configuration config) throws ParserException {
         // start a parenting parser exception to be filled with errors as subexceptions
-        ParserException ex = new ParserException("contains an invalid column header");
+        ParserException ex = new ParserException("Invalid headline:");
     
         if (headerLine == null || headerLine.isBlank()) {
             ex.addSubException("Header may not be null, empty or whitespace only");

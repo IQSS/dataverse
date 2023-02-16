@@ -1,10 +1,11 @@
-package cli.util.model;
+package io.gdcc.solrteur.mdb.tsv;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
@@ -171,13 +172,13 @@ public final class Block {
             // no null or blank lines for the parser. (blank lines can be skipped and not sent here by calling code)
             if (line == null || line.isBlank()) {
                 this.hasErrors = true;
-                throw new ParserException("must not be empty nor blanks only nor null.");
+                throw new ParserException("Must not be empty nor blanks only nor null.");
             }
             
             // only 1 block definition allowed as per spec
             if (this.block != null) {
                 this.hasErrors = true;
-                throw new ParserException("must not try to add another metadata block definition");
+                throw new ParserException("Must not add more than one metadata block definition");
             } else {
                 this.block = parseAndValidateColumns(line.split(config.columnSeparator()));
             }
@@ -192,19 +193,19 @@ public final class Block {
          * @throws ParserException
          */
         Block parseAndValidateColumns(final String[] lineParts) throws ParserException {
-            if (lineParts == null || lineParts.length != header.size()) {
-                throw new ParserException("does not match length of metadata block headline");
+            if (lineParts == null || lineParts.length > header.size()) {
+                throw new ParserException("Does not match length of metadata block headline");
             }
             
             Block block = new Block();
-            ParserException parserException = new ParserException("has validation errors");
+            ParserException parserException = new ParserException("Has validation errors:");
             
             for (int i = 0; i < lineParts.length; i++) {
                 Block.Header column = header.get(i);
                 String value = lineParts[i];
                 if( ! column.isValid(value)) {
                     parserException.addSubException(
-                        "Invalid value '" + value + " for column '" + column + "', " + column.getErrorMessage());
+                        "Invalid value '" + value + "' for column '" + column + "', " + column.getErrorMessage());
                 } else {
                     block.set(column, value);
                 }
@@ -228,9 +229,9 @@ public final class Block {
          * block that has been analysed. Will execute associated field builders (which will execute associated
          * vocabulary builders).
          */
-        public Block build() {
+        public Block build(int indexLastLineofBlockSection) {
             if (hasSucceeded()) {
-                // TODO: extend with adding the necessary bits about block properties, contained fields etc.
+                block.indexLastLineofBlockSection = indexLastLineofBlockSection;
                 return block;
             } else {
                 throw new IllegalStateException("Trying to build a block with errors or without parsing a line first");
@@ -241,7 +242,8 @@ public final class Block {
     /* ---- Actual Block Class starting here ---- */
     
     private final Map<Header,String> properties = new EnumMap<>(Header.class);
-    private Optional<List<Field>> fields = Optional.empty();
+    private List<Field> fields = Collections.emptyList();
+    private int indexLastLineofBlockSection;
     
     private Block() {}
     
@@ -253,5 +255,34 @@ public final class Block {
     }
     public String get(Header column, String defaultValue) {
         return this.properties.getOrDefault(column, defaultValue);
+    }
+    
+    public int getIndexLastLineofBlockSection() {
+        return indexLastLineofBlockSection;
+    }
+    
+    public String getName() {
+        return this.properties.get(Header.NAME);
+    }
+    
+    /**
+     * Get fields for this metadata block.
+     * @return List of fields. May be empty, but never null.
+     */
+    public List<Field> getFields() {
+        return fields;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Block)) return false;
+        Block block = (Block) o;
+        return this.getName().equals(block.getName());
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(properties);
     }
 }

@@ -17,6 +17,7 @@
     <properties>
         <solr.configset.directory>${project.build.directory}/${solr.configset}</solr.configset.directory>
         <solr.packaging.type>pom</solr.packaging.type>
+        <solrteur.script>${project.build.sourceDirectory}/io/gdcc/solrteur/solrteur.java</solrteur.script>
     </properties>
     
     <build>
@@ -49,7 +50,7 @@
                 <executions>
                     <execution>
                         <id>download-solr</id>
-                        <!--<phase>prepare-package</phase>-->
+                        <phase>initialize</phase>
                         <goals>
                             <goal>wget</goal>
                         </goals>
@@ -69,6 +70,22 @@
                 <version>0.0.7</version>
                 <executions>
                     <execution>
+                        <id>extract-template</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <args>
+                                <arg>--solr-version="${solr.version}"</arg>
+                                <arg>--target="${solr.configset.directory}"</arg>
+                                <arg>extract-zip</arg>
+                                <arg>--zip="${project.build.directory}/solr-${solr.version}.zip"</arg>
+                            </args>
+                            <script>${solrteur.script}</script>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>compile-solrconfig-xml</id>
                         <phase>process-resources</phase>
                         <goals>
@@ -76,14 +93,30 @@
                         </goals>
                         <configuration>
                             <args>
-                                <arg>solrconfig</arg>
                                 <arg>--solr-version="${solr.version}"</arg>
-                                <arg>--zip="${project.build.directory}/solr-${solr.version}.zip"</arg>
-                                <arg>--configset="${solr.configset.directory}"</arg>
+                                <arg>--target="${solr.configset.directory}"</arg>
+                                <arg>solrconfig</arg>
                                 <arg>--xslts="${project.resources[0].directory}/solrconfig-xslt"</arg>
-                                <arg>--schemaxml="${project.resources[0].directory}/schema.xml"</arg>
                             </args>
-                            <script>${project.build.scriptSourceDirectory}/cli/solrteur.java</script>
+                            <script>${solrteur.script}</script>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>compile-schema</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <args>
+                                <arg>--solr-version="${solr.version}"</arg>
+                                <arg>--target="${solr.configset.directory}"</arg>
+                                <arg>schema</arg>
+                                <!--<arg>-tsvs="${project.basedir}/../../scripts/api/data/metadatablocks"</arg>-->
+                                <arg>--tsvs="${project.resources[0].directory}/tsv"</arg>
+                                <arg>--base="${project.resources[0].directory}/schema.xml"</arg>
+                            </args>
+                            <script>${solrteur.script}</script>
                         </configuration>
                     </execution>
                 </executions>

@@ -1,17 +1,20 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //
 //SOURCES cmd/*.java
+//SOURCES mdb/*.java
+//SOURCES mdb/**/*.java
 //
 //DEPS info.picocli:picocli:4.6.3
 
-package cli;
+package io.gdcc.solrteur;
 
-import cli.cmd.ExtractConfigSet;
+import io.gdcc.solrteur.cmd.CompileSchema;
+import io.gdcc.solrteur.cmd.ExtractConfigSet;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-import cli.cmd.CompileSolrConfig;
+import io.gdcc.solrteur.cmd.CompileSolrConfig;
 
 import java.nio.file.Path;
 
@@ -28,7 +31,8 @@ import java.nio.file.Path;
     description = "Execute different tasks around Dataverse and Solr",
     subcommands = {
         ExtractConfigSet.class,
-        CompileSolrConfig.class
+        CompileSolrConfig.class,
+        CompileSchema.class
     },
     synopsisSubcommandLabel = "COMMAND")
 public class solrteur {
@@ -80,9 +84,8 @@ public class solrteur {
         static void log(String message) {
             System.out.println(message);
         }
-        static void log(AbortScriptException ex) {
-            System.out.println(ex.getMessage());
-            ex.getCause().printStackTrace();
+        static void logError(String message) {
+            System.err.println(message);
         }
         
         public static void info(String message) {
@@ -92,8 +95,18 @@ public class solrteur {
         }
         public static void info(AbortScriptException ex) {
             if (!quiet) {
-                log(ex);
+                log(ex.getMessage());
+                log(ex.getCause().getMessage());
             }
+        }
+    
+        public static void warn(String message) {
+            logError(message);
+        }
+        
+        public static void warn(AbortScriptException ex) {
+            logError(ex.getMessage());
+            logError(ex.getCause().getMessage());
         }
     }
     

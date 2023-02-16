@@ -1,6 +1,6 @@
-package cli.cmd;
+package io.gdcc.solrteur.cmd;
 
-import cli.solrteur;
+import io.gdcc.solrteur.solrteur;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ParentCommand;
@@ -18,8 +18,8 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.Callable;
 
-import cli.solrteur.AbortScriptException;
-import cli.solrteur.Logger;
+import io.gdcc.solrteur.solrteur.AbortScriptException;
+import io.gdcc.solrteur.solrteur.Logger;
 
 @Command(
     name = "extract-zip",
@@ -64,7 +64,8 @@ public class ExtractConfigSet implements Callable<Integer> {
     private void extractConfigSet() throws AbortScriptException {
         // Wrap the file system in a try-with-resources statement
         // to auto-close it when finished and prevent a memory leak
-        try (FileSystem zipFileSystem = FileSystems.newFileSystem(solrZipFile, null)) {
+        // NOTE: the explicit casting to ClassLoader is necessary to make this compatible with JDK 11 _and_ 17
+        try (FileSystem zipFileSystem = FileSystems.newFileSystem(solrZipFile, (ClassLoader) null)) {
             Path zipSource = zipFileSystem.getPath(solrConfigSetZipPath);
             
             // TODO: should we delete the target before copying the new content? (Usually this shouldn't change, but better safe than sorry?)
@@ -79,7 +80,7 @@ public class ExtractConfigSet implements Callable<Integer> {
                     Path targetDir = Path.of(cliParent.getTargetDir().toString(), strippedZipPath);
                     
                     try {
-                        Logger.info(solrZipFile + ":" + zippedDir + " -> " + targetDir);
+                        //Logger.info(solrZipFile + ":" + zippedDir + " -> " + targetDir);
                         Files.copy(zippedDir, targetDir, StandardCopyOption.COPY_ATTRIBUTES);
                     } catch (FileAlreadyExistsException e) {
                         // intentional ignore - simply reuse the existing directory
@@ -94,7 +95,7 @@ public class ExtractConfigSet implements Callable<Integer> {
                     String strippedZipPath = zippedFile.toString().substring(solrConfigSetZipPath.length());
                     Path targetFile = Path.of(cliParent.getTargetDir().toString(), strippedZipPath);
     
-                    Logger.info(solrZipFile + ":" + zippedFile + " -> " + targetFile);
+                    //Logger.info(solrZipFile + ":" + zippedFile + " -> " + targetFile);
                     Files.copy(zippedFile, targetFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
                     
                     return FileVisitResult.CONTINUE;
