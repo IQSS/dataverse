@@ -575,6 +575,47 @@ a[id$=advsearchlink] {
 	display: inline-block;
 }
 
+/* Geo map */
+
+.geo-map {
+	max-height: calc(100vh - 160px);
+}
+
+@media screen and (max-width: $screen-xs-max) {
+	.geo-map {
+		max-width: calc((100vw - 90px) * 0.75);
+		height: calc((100vw - 90px) * 0.75);
+	}
+}
+
+@media screen and (min-width: $screen-sm-min) {
+	.geo-map {
+		max-width: 364px;
+		height: 364px;
+	}
+}
+
+@media screen and (min-width: $screen-md-min) {
+	.geo-map {
+		max-width: 487px;
+		height: 487px;
+	}
+}
+
+@media screen and (min-width: $screen-lg-min) {
+	.geo-map {
+		max-width: 600px;
+		height: 600px;
+	}
+}
+
+.leaflet-control-container {
+	.leaflet-top, .leaflet-bottom {
+		z-index: 929;
+	}
+
+}
+
 /* Forms */
 
 legend {
