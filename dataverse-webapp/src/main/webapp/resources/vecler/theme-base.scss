@@ -2090,6 +2090,13 @@ $navbar-height: 102px;
 					text-decoration: none;
 				}
 			}
+
+			> form.navbar-highlighted-link a {
+				margin-top: 3px;
+				padding: 7px 20px;
+				background: #2ba7df;
+				color: #fff;
+			}
 		}
 
 		> form {
@@ -5167,6 +5174,11 @@ body.font-size-percent-200 {
 
 			> li > a .caret, .navbar-nav > form > a .caret {
 				color: $contrast-foreground-color;
+			}
+
+			> li > form.navbar-highlighted-link a {
+				color: $contrast-background-color;
+				background: $contrast-foreground-color;
 			}
 		}
 

@@ -159,7 +159,7 @@
                     <nav class="main-menu">
                         <ul class="nav navbar-nav">
                             <li jsf:rendered="#{dataverseSession.user.authenticated}">
-                                <h:form styleClass="navbar-form navbar-left navbar-form-link">
+                                <h:form styleClass="navbar-form navbar-left navbar-form-link navbar-highlighted-link">
                                     <p:commandLink action="#{CreateDatasetDialog.init()}" update="create-dataset-dialog"
                                                    oncomplete="primeFacesShowModal('createDatasetDialog', this)">
                                         <h:outputText value="#{bundle['add.dataset.button']}"/>
