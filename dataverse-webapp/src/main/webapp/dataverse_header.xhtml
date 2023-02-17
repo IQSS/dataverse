@@ -500,7 +500,7 @@
                                         placeholder="#{bundle['add.dataset.dialog.lookup.placeholder']}"
                                         minQueryLength="3" queryDelay="1000" size="50"
                                         completeMethod="#{CreateDatasetDialog.fetchLookupData}"
-                                        panelStyleClass="DropdownPopupPanel"
+                                        panelStyleClass="DropdownPopupPanel autocomplete-panel-maxwidth"
                                         required="#{CreateDatasetDialog.selectedMode eq Mode.LOOKUP}"
                                         requiredMessage="#{bundle['add.dataset.dialog.lookup.required']}"
                                         disabled="#{CreateDatasetDialog.selectedMode ne Mode.LOOKUP}"
