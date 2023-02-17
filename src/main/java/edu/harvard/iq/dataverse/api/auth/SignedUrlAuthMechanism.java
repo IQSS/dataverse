@@ -11,6 +11,9 @@ import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriInfo;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 import static edu.harvard.iq.dataverse.util.UrlSignerUtil.SIGNED_URL_TOKEN;
 import static edu.harvard.iq.dataverse.util.UrlSignerUtil.SIGNED_URL_USER;
 
@@ -54,7 +57,7 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(userId);
         ApiToken userApiToken = authSvc.findApiTokenByUser(targetUser);
         if (targetUser != null && userApiToken != null) {
-            String signedUrl = uriInfo.getRequestUri().toString();
+            String signedUrl = URLDecoder.decode(uriInfo.getRequestUri().toString(), StandardCharsets.UTF_8);
             String requestMethod = containerRequestContext.getMethod();
             String signedUrlSigningKey = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + userApiToken.getTokenString();
             boolean isSignedUrlValid = UrlSignerUtil.isValidUrl(signedUrl, userId, requestMethod, signedUrlSigningKey);
