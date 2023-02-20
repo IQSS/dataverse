@@ -6,7 +6,7 @@
 Dataverse Documentation v. |version|
 ====================================
 
-These documentation guides are for the |version| version of Dataverse. To find guides belonging to previous versions, :ref:`guides_versions` has a list of all available versions.
+These documentation guides are for the |version| version of Dataverse. To find guides belonging to previous or future versions, :ref:`guides_versions` has a list of all available versions.
 
 .. toctree::
   :glob:
@@ -70,7 +70,7 @@ The support email address is `support@dataverse.org <mailto:support@dataverse.or
 Report bugs and add feature requests in `GitHub Issues <https://github.com/IQSS/dataverse/issues>`__
 or use `GitHub pull requests <http://guides.dataverse.org/en/latest/developers/version-control.html#how-to-make-a-pull-request>`__,
 if you have some code, scripts or documentation that you'd like to share.
-If you have a **security issue** to report, please email `security@dataverse.org <mailto:security@dataverse.org>`__.
+If you have a **security issue** to report, please email `security@dataverse.org <mailto:security@dataverse.org>`__. See also :ref:`reporting-security-issues`.
 
 
 Indices and Tables

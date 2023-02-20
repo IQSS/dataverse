@@ -58,11 +58,6 @@ public class SystemConfig {
    public static final String DATAVERSE_PATH = "/dataverse/";
    
     /**
-     * A JVM option for where files are stored on the file system.
-     */
-    public static final String FILES_DIRECTORY = "dataverse.files.directory";
-
-    /**
      * Some installations may not want download URLs to their files to be
      * available in Schema.org JSON-LD output.
      */
@@ -767,7 +762,13 @@ public class SystemConfig {
          * Upload through Globus of large files
          */
 
-        GLOBUS("globus")
+        GLOBUS("globus"), 
+        
+        /**
+         * Upload folders of files through dvwebloader app
+         */
+
+        WEBLOADER("dvwebloader");
         ;
 
 
@@ -903,6 +904,10 @@ public class SystemConfig {
 
     public boolean isGlobusUpload(){
         return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), true);
+    }
+    
+    public boolean isWebloaderUpload(){
+        return getMethodAvailable(FileUploadMethods.WEBLOADER.toString(), true);
     }
 
     // Controls if HTTP upload is enabled for both GUI and API.
