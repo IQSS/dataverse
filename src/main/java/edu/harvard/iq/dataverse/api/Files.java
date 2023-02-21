@@ -507,7 +507,7 @@ public class Files extends AbstractApiBean {
         } 
         
         return Response.ok(Json.createObjectBuilder()
-                .add("status", STATUS_OK)
+                .add("status", ApiConstants.STATUS_OK)
                 .add("data", json(fm)).build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
