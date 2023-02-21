@@ -14,13 +14,13 @@ A variety of integrations are oriented toward making it easier for your research
 GitHub
 ++++++
 
-Dataverse integration with GitHub is implemented via a Dataverse Uploader GitHub Action. It is a reusable, composite workflow for uploading a git repository or subdirectory into a dataset on a target Dataverse installation. The action is customizable, allowing users to choose to replace a dataset, add to the dataset, publish it or leave it as a draft version on Dataverse. The action provides some metadata to the dataset, such as the origin GitHub repository, and it preserves the directory tree structure. 
+GitHub can be integrated with a Dataverse installaion in multiple ways.
+
+One Dataverse integration is implemented via a Dataverse Uploader GitHub Action. It is a reusable, composite workflow for uploading a git repository or subdirectory into a dataset on a target Dataverse installation. The action is customizable, allowing users to choose to replace a dataset, add to the dataset, publish it or leave it as a draft version in the Dataverse installation. The action provides some metadata to the dataset, such as the origin GitHub repository, and it preserves the directory tree structure. 
 
 For instructions on using Dataverse Uploader GitHub Action, visit https://github.com/marketplace/actions/dataverse-uploader-action
 
-In addition to the Dataverse Uploader GitHub Action, the integrations dashboard also enables a pull of data from Github to a dataset.
-
-The relevant dashboard is described in the Integrations dashboard :ref:`integrations-dashboard` section of this page.
+In addition to the Dataverse Uploader GitHub Action, the :ref:`integrations-dashboard` also enables a pull of data from GitHub to a dataset.
 
 Dropbox
 +++++++
@@ -32,11 +32,11 @@ Open Science Framework (OSF)
 
 The Center for Open Science's Open Science Framework (OSF) is an open source software project that facilitates open collaboration in science research across the lifespan of a scientific project.
 
-For instructions on depositing data from OSF to your Dataverse installation, your researchers can visit https://help.osf.io/hc/en-us/articles/360019737314-Connect-Dataverse-to-a-Project
+OSF can be integrated with a Dataverse installaion in multiple ways.
 
-In addition to the method mentioned above, the integrations dashboard also enables a pull of data from OSF to a dataset.
+Researcher can configure OSF itself to deposit to your Dataverse installation by following `instructions from OSF <https://help.osf.io/article/208-connect-dataverse-to-a-project>`_.
 
-The relevant dashboard is described in the Integrations dashboard  :ref:`integrations-dashboard` section of this page.
+In addition to the method mentioned above, the :ref:`integrations-dashboard` also enables a pull of data from OSF to a dataset.
 
 RSpace
 ++++++
@@ -90,42 +90,36 @@ RedCap
 
 RedCap is a web-based application to capture data for clinical research and create databases and projects.
 
-The integrations dashboard enables a pull of data from RedCap to a dataset in Dataverse.
+The :ref:`integrations-dashboard` enables a pull of data from RedCap to a dataset in Dataverse.
 
-The relevant dashboard is described in the Integrations dashboard :ref:`integrations-dashboard` section of this page.
-
-Gitlab
+GitLab
 ++++++
 
 GitLab is an open source Git repository and platform that provides free open and private repositories, issue-following capabilities, and wikis for collaborative software development.
 
-The integrations dashboard enables a pull of data from Gitlab to a dataset in Dataverse.
+The :ref:`integrations-dashboard` enables a pull of data from GitLab to a dataset in Dataverse.
 
-The relevant dashboard is described in the Integrations dashboard :ref:`integrations-dashboard` section of this page.
-
-iRods
+iRODS
 +++++
 
 An open source, metadata driven data management system that is accessible through a host of different clients.
 
-The integrations dashboard enables a pull of data from Gitlab to a dataset in Dataverse.
-
-The relevant dashboard is described in the Integrations dashboard :ref:`integrations-dashboard` section of this page.
+The :ref:`integrations-dashboard` enables a pull of data from iRODs to a dataset in Dataverse.
 
 .. _integrations-dashboard:
 
-Integrations dashboard
+Integrations Dashboard
 ++++++++++++++++++++++
 
-The integrations dashboard is a development by the Dataverse community to enable easy data transfer from an existing data management platform to a dataset in a Dataverse collection.
+The integrations dashboard is software by the Dataverse community to enable easy data transfer from an existing data management platform to a dataset in a Dataverse collection.
 
-Instead of trying to set-up dataverse plug-ins in existing tools and systems to push data to a dataverse installation, the dashboard works in reverse by being a portal to pull data from tools such as iRods and Github into a dataset.
+Instead of trying to set up Dataverse plug-ins in existing tools and systems to push data to a Dataverse installation, the dashboard works in reverse by being a portal to pull data from tools such as iRODS and GitHub into a dataset.
 
-Its aim is to make integrations more flexible and less dependent on the integration's provider's cooperation. You can use it to either create a dataset from scratch and add metadata after files have been transferred or you can use it to compare what is already in an existing dataset to make updating files in datasets easier.
+Its aim is to make integrations more flexible and less dependent on the cooperation of system to integrate with. You can use it to either create a dataset from scratch and add metadata after files have been transferred, or you can use it to compare what is already in an existing dataset to make updating files in datasets easier.
 
-Its goal is to make the dashboard adjustable for an Dataverse installation's needs and easy to connect other systems to as well.
+Its goal is to make the dashboard adjustable for a Dataverse installation's needs and easy to connect other systems to as well.
 
-The integrations dashboard is currently in development, a preview and more information can be found at: `rdm-integration GitHub repository <https://github.com/libis/rdm-integration>`_
+The integrations dashboard is currently in development. A preview and more information can be found at: `rdm-integration GitHub repository <https://github.com/libis/rdm-integration>`_
 
 Embedding Data on Websites
 --------------------------
