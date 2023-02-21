@@ -22,12 +22,14 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -542,37 +544,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             String[] pathParts = param.split("/");
                             logger.fine("PP: " + String.join(", ", pathParts));
                             JsonValue curPath = readObject;
-                            for (int j = 0; j < pathParts.length - 1; j++) {
-                                if (pathParts[j].contains("=")) {
-                                    JsonArray arr = ((JsonArray) curPath);
-                                    for (int k = 0; k < arr.size(); k++) {
-                                        String[] keyVal = pathParts[j].split("=");
-                                        logger.fine("Looking for object where " + keyVal[0] + " is " + keyVal[1]);
-                                        JsonObject jo = arr.getJsonObject(k);
-                                        String val = jo.getString(keyVal[0]);
-                                        String expected = keyVal[1];
-                                        if (expected.equals("@id")) {
-                                            expected = termUri;
-                                        }
-                                        if (val.equals(expected)) {
-                                            logger.fine("Found: " + jo.toString());
-                                            curPath = jo;
-                                            break;
-                                        }
-                                    }
-                                } else {
-                                    curPath = ((JsonObject) curPath).get(pathParts[j]);
-                                    logger.fine("Found next Path object " + curPath.toString());
-                                }
-                            }
-                            JsonValue jv = ((JsonObject) curPath).get(pathParts[pathParts.length - 1]);
-                            if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
-                                vals.add(i, ((JsonString) jv).getString());
-                            } else if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
-                                vals.add(i, jv);
-                            } else if (jv.getValueType().equals(JsonValue.ValueType.OBJECT)) {
-                                vals.add(i, jv);
-                            }
+                            vals.add(i, processPathSegment(0, pathParts, curPath, termUri));
                             logger.fine("Added param value: " + i + ": " + vals.get(i));
                         } else {
                             logger.fine("Param is: " + param);
@@ -615,6 +587,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 } catch (Exception e) {
                     logger.warning("External Vocabulary: " + termUri + " - Failed to find value for " + filterKey + ": "
                             + e.getMessage());
+                    e.printStackTrace();
                 }
             }
         }
@@ -628,6 +601,66 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         }
     }
 
+    Object processPathSegment(int index, String[] pathParts, JsonValue curPath, String termUri) {
+        if (index < pathParts.length - 1) {
+            if (pathParts[index].contains("=")) {
+                JsonArray arr = ((JsonArray) curPath);
+                String[] keyVal = pathParts[index].split("=");
+                logger.fine("Looking for object where " + keyVal[0] + " is " + keyVal[1]);
+                String expected = keyVal[1];
+        
+                if (!expected.equals("*")) {
+                    if (expected.equals("@id")) {
+                        expected = termUri;
+                    }
+                    for (int k = 0; k < arr.size(); k++) {
+                        JsonObject jo = arr.getJsonObject(k);
+                        String val = jo.getString(keyVal[0]);
+                        if (val.equals(expected)) {
+                            logger.fine("Found: " + jo.toString());
+                            curPath = jo;
+                            return processPathSegment(index + 1, pathParts, curPath, termUri);
+                        }
+                    }
+                } else {
+                    JsonArrayBuilder parts = Json.createArrayBuilder();
+                    for (JsonValue subPath : arr) {
+                        if (subPath instanceof JsonObject) {
+                            JsonValue nextValue = ((JsonObject) subPath).get(keyVal[0]);
+                            Object obj = processPathSegment(index + 1, pathParts, nextValue, termUri);
+                            if (obj instanceof String) {
+                                parts.add((String) obj);
+                            } else {
+                                parts.add((JsonValue) obj);
+                            }
+                        }
+                    }
+                    return parts.build();
+                }
+                
+            } else {
+                curPath = ((JsonObject) curPath).get(pathParts[index]);
+                logger.fine("Found next Path object " + curPath.toString());
+                return processPathSegment(index + 1, pathParts, curPath, termUri);
+            }
+        } else {
+            logger.fine("Last segment: " + curPath.toString());
+            logger.fine("Looking for : " + pathParts[index]);
+            JsonValue jv = ((JsonObject) curPath).get(pathParts[index]);
+            ValueType type =jv.getValueType(); 
+            if (type.equals(JsonValue.ValueType.STRING)) {
+                return ((JsonString) jv).getString();
+            } else if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
+                return jv;
+            } else if (jv.getValueType().equals(JsonValue.ValueType.OBJECT)) {
+                return jv;
+            }
+        }
+
+        return null;
+
+    }
+   
     /**
      * Supports validation of externally controlled values. If the value is a URI it
      * must be in the namespace (start with) one of the uriSpace values of an
