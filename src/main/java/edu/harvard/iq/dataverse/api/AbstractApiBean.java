@@ -30,8 +30,6 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
@@ -43,14 +41,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
-import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -58,7 +53,6 @@ import java.io.StringReader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -77,7 +71,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -97,6 +90,7 @@ public abstract class AbstractApiBean {
     private static final String ALIAS_KEY=":alias";
     public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
     public static final String DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME = "X-Dataverse-invocationID";
+    public static final String RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED = "Only authenticated users can perform the requested operation";
 
     /**
      * Utility class to convey a proper error response using Java's exceptions.
@@ -210,9 +204,6 @@ public abstract class AbstractApiBean {
     protected SavedSearchServiceBean savedSearchSvc;
 
     @EJB
-    protected PrivateUrlServiceBean privateUrlSvc;
-
-    @EJB
     protected ConfirmEmailServiceBean confirmEmailSvc;
 
     @EJB
@@ -278,7 +269,7 @@ public abstract class AbstractApiBean {
     /**
      * Functional interface for handling HTTP requests in the APIs.
      *
-     * @see #response(edu.harvard.iq.dataverse.api.AbstractApiBean.DataverseRequestHandler)
+     * @see #response(edu.harvard.iq.dataverse.api.AbstractApiBean.DataverseRequestHandler, edu.harvard.iq.dataverse.authorization.users.User)
      */
     protected static interface DataverseRequestHandler {
         Response handle( DataverseRequest u ) throws WrappedResponse;
@@ -319,13 +310,6 @@ public abstract class AbstractApiBean {
         String queryParamApiKey = httpRequest.getParameter("key");
                 
         return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
-    }
-    
-    protected String getRequestWorkflowInvocationID() {
-        String headerParamWFKey = httpRequest.getHeader(DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME);
-        String queryParamWFKey = httpRequest.getParameter("invocationID");
-                
-        return headerParamWFKey!=null ? headerParamWFKey : queryParamWFKey;
     }
 
     protected User getRequestUser(ContainerRequestContext crc) {
@@ -371,123 +355,11 @@ public abstract class AbstractApiBean {
     }
 
     /**
-     *
      * @param apiKey the key to find the user with
      * @return the user, or null
-     * @see #findUserOrDie(java.lang.String)
      */
     protected AuthenticatedUser findUserByApiToken( String apiKey ) {
         return authSvc.lookupUser(apiKey);
-    }
-
-    /**
-     * Returns the user of pointed by the API key, or the guest user
-     * @return a user, may be a guest user.
-     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse iff there is an api key present, but it is invalid.
-     *
-     * @deprecated  Do not use this method.
-     *    This method is expected to be removed once all API endpoints use the filter-based authentication.
-     *    @see <a href="https://github.com/IQSS/dataverse/issues/9293">#9293</a>
-     *    In case you are implementing a new endpoint that requires user authentication, here is an example of how to apply the new filter-based authentication:
-     *    {@link edu.harvard.iq.dataverse.api.Datasets#getDataset(ContainerRequestContext, String, UriInfo, HttpHeaders, HttpServletResponse)}
-     */
-    @Deprecated
-    protected User findUserOrDie() throws WrappedResponse {
-        final String requestApiKey = getRequestApiKey();
-        final String requestWFKey = getRequestWorkflowInvocationID();
-        if (requestApiKey == null && requestWFKey == null && getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN)==null) {
-            return GuestUser.get();
-        }
-        PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
-        // For privateUrlUsers restricted to anonymized access, all api calls are off-limits except for those used in the UI
-        // to download the file or image thumbs
-        if (privateUrlUser != null) {
-            if (privateUrlUser.hasAnonymizedAccess()) {
-                String pathInfo = httpRequest.getPathInfo();
-                String prefix= "/access/datafile/";
-                if (!(pathInfo.startsWith(prefix) && !pathInfo.substring(prefix.length()).contains("/"))) {
-                    logger.info("Anonymized access request for " + pathInfo);
-                    throw new WrappedResponse(error(Status.UNAUTHORIZED, "API Access not allowed with this Key"));
-                }
-            }
-            return privateUrlUser;
-        }
-        return findAuthenticatedUserOrDie(requestApiKey, requestWFKey);
-    }
-
-    /**
-     * Finds the authenticated user, based on (in order):
-     * <ol>
-     *  <li>The key in the HTTP header {@link #DATAVERSE_KEY_HEADER_NAME}</li>
-     *  <li>The key in the query parameter {@code key}
-     * </ol>
-     *
-     * If no user is found, throws a wrapped bad api key (HTTP UNAUTHORIZED) response.
-     *
-     * @return The authenticated user which owns the passed api key.
-     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse in case said user is not found.
-     *
-     * @deprecated  Do not use this method.
-     *    This method is expected to be removed once all API endpoints use the filter-based authentication.
-     *    @see <a href="https://github.com/IQSS/dataverse/issues/9293">#9293</a>
-     *    Replaced by:
-     *    {@link #getRequestAuthenticatedUserOrDie(ContainerRequestContext)}
-     */
-    @Deprecated
-    protected AuthenticatedUser findAuthenticatedUserOrDie() throws WrappedResponse {
-        return findAuthenticatedUserOrDie(getRequestApiKey(), getRequestWorkflowInvocationID());
-    }
-
-
-    private AuthenticatedUser findAuthenticatedUserOrDie( String key, String wfid ) throws WrappedResponse {
-        if (key != null) {
-            // No check for deactivated user because it's done in authSvc.lookupUser.
-            AuthenticatedUser authUser = authSvc.lookupUser(key);
-
-            if (authUser != null) {
-                authUser = userSvc.updateLastApiUseTime(authUser);
-
-                return authUser;
-            }
-            else {
-                throw new WrappedResponse(badApiKey(key));
-            }
-        } else if (wfid != null) {
-            AuthenticatedUser authUser = authSvc.lookupUserForWorkflowInvocationID(wfid);
-            if (authUser != null) {
-                return authUser;
-            } else {
-                throw new WrappedResponse(badWFKey(wfid));
-            }
-        } else if (getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN) != null) {
-            AuthenticatedUser authUser = getAuthenticatedUserFromSignedUrl();
-            if (authUser != null) {
-                return authUser;
-            }
-        }
-        //Just send info about the apiKey - workflow users will learn about invocationId elsewhere
-        throw new WrappedResponse(badApiKey(null));
-    }
-    
-    private AuthenticatedUser getAuthenticatedUserFromSignedUrl() {
-        AuthenticatedUser authUser = null;
-        // The signedUrl contains a param telling which user this is supposed to be for.
-        // We don't trust this. So we lookup that user, and get their API key, and use
-        // that as a secret in validating the signedURL. If the signature can't be
-        // validated with their key, the user (or their API key) has been changed and
-        // we reject the request.
-        // ToDo - add null checks/ verify that calling methods catch things.
-        String user = httpRequest.getParameter("user");
-        AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(user);
-        String key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("")
-                + authSvc.findApiTokenByUser(targetUser).getTokenString();
-        String signedUrl = httpRequest.getRequestURL().toString() + "?" + httpRequest.getQueryString();
-        String method = httpRequest.getMethod();
-        boolean validated = UrlSignerUtil.isValidUrl(signedUrl, user, method, key);
-        if (validated) {
-            authUser = targetUser;
-        }
-        return authUser;
     }
 
     protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {
@@ -745,36 +617,6 @@ public abstract class AbstractApiBean {
         }
     }
 
-    /**
-     * The preferred way of handling a request that requires a user. The system
-     * looks for the user and, if found, handles it to the handler for doing the
-     * actual work.
-     *
-     * This is a relatively secure way to handle things, since if the user is not
-     * found, the response is about the bad API key, rather than something else
-     * (say, 404 NOT FOUND which leaks information about the existence of the
-     * sought object).
-     *
-     * @param hdl handling code block.
-     * @return HTTP Response appropriate for the way {@code hdl} executed.
-     *
-     * @deprecated  Do not use this method.
-     *    This method is expected to be removed once all API endpoints use the filter-based authentication.
-     *    @see <a href="https://github.com/IQSS/dataverse/issues/9293">#9293</a>
-     *    Replaced by:
-     *    {@link #response(DataverseRequestHandler, User)}
-     */
-    @Deprecated
-    protected Response response( DataverseRequestHandler hdl ) {
-        try {
-            return hdl.handle(createDataverseRequest(findUserOrDie()));
-        } catch ( WrappedResponse rr ) {
-            return rr.getResponse();
-        } catch ( Exception ex ) {
-            return handleDataverseRequestHandlerException(ex);
-        }
-    }
-
     /***
      * The preferred way of handling a request that requires a user. The method
      * receives a user and handles it to the handler for doing the actual work.
@@ -916,19 +758,9 @@ public abstract class AbstractApiBean {
     protected Response conflict( String msg ) {
         return error( Status.CONFLICT, msg );
     }
-    
-    protected Response badApiKey( String apiKey ) {
-        return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME);
-    }
-
-    protected Response badWFKey( String wfId ) {
-        String message = (wfId != null ) ? "Bad workflow invocationId " : "Please provide an invocationId query parameter (?invocationId=XXX) or via the HTTP header " + DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME;
-        return error(Status.UNAUTHORIZED, message );
-    }
 
     protected Response authenticatedUserRequired() {
-        String message = "Only authenticated users can perform the requested operation";
-        return error(Status.UNAUTHORIZED, message );
+        return error(Status.UNAUTHORIZED, RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED);
     }
 
     protected Response permissionError( PermissionException pe ) {
