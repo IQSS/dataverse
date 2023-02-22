@@ -3149,4 +3149,19 @@ public class UtilIT {
                 .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
         return response;
     }
+
+    static Response createSignedUrl(String apiToken, String apiPath, String username) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(String.format("{\"url\":\"%s\",\"timeOut\":35,\"user\":\"%s\"}", getRestAssuredBaseUri() + apiPath, username))
+                .contentType("application/json")
+                .post("/api/admin/requestSignedUrl");
+        return response;
+    }
+
+    static String getSignedUrlFromResponse(Response createSignedUrlResponse) {
+        JsonPath jsonPath = JsonPath.from(createSignedUrlResponse.body().asString());
+        String signedUrl = jsonPath.getString("data.signedUrl");
+        return signedUrl;
+    }
 }
