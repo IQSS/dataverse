@@ -14,7 +14,7 @@ A variety of integrations are oriented toward making it easier for your research
 GitHub
 ++++++
 
-GitHub can be integrated with a Dataverse installaion in multiple ways.
+GitHub can be integrated with a Dataverse installation in multiple ways.
 
 One Dataverse integration is implemented via a Dataverse Uploader GitHub Action. It is a reusable, composite workflow for uploading a git repository or subdirectory into a dataset on a target Dataverse installation. The action is customizable, allowing users to choose to replace a dataset, add to the dataset, publish it or leave it as a draft version in the Dataverse installation. The action provides some metadata to the dataset, such as the origin GitHub repository, and it preserves the directory tree structure. 
 
@@ -32,7 +32,7 @@ Open Science Framework (OSF)
 
 The Center for Open Science's Open Science Framework (OSF) is an open source software project that facilitates open collaboration in science research across the lifespan of a scientific project.
 
-OSF can be integrated with a Dataverse installaion in multiple ways.
+OSF can be integrated with a Dataverse installation in multiple ways.
 
 Researcher can configure OSF itself to deposit to your Dataverse installation by following `instructions from OSF <https://help.osf.io/article/208-connect-dataverse-to-a-project>`_.
 
