@@ -596,7 +596,7 @@ For these secret keys, a password alias the "dir config source" of Payara are re
 
    .. code-block:: shell
 
-      echo "AS_ADMIN_ALIASBLOCKKEY=1234ChangeMeToSomethingLong" > /tmp/key.txt
+      echo "AS_ADMIN_ALIASPASSWORD=1234ChangeMeToSomethingLong" > /tmp/key.txt
       asadmin create-password-alias --passwordfile /tmp/key.txt dataverse.metadata.block-system-metadata-keys.codemeta
       rm /tmp/key.txt
 
