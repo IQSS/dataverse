@@ -576,7 +576,15 @@ public class SettingsServiceBean {
         /**
          * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
          */
-        WebloaderUrl
+        WebloaderUrl, 
+        /**
+         * Enforce storage quotas:
+         */
+        UseStorageQuotas, 
+        /** 
+         * Placeholder storage quota (defines the same quota setting for every user; used to test the concept of a quota.
+         */
+        StorageQuotaSizeInBytes
 
         ;
 

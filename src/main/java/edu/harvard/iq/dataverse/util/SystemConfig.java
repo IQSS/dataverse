@@ -892,7 +892,7 @@ public class SystemConfig {
         }
 
     }
-
+    
     public boolean isPublicInstall(){
         boolean saneDefault = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
@@ -1148,5 +1148,19 @@ public class SystemConfig {
         }
         
         return !ret; 
+    }
+    
+    public boolean isStorageQuotasEnforced() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.UseStorageQuotas, false);
+    }
+    
+    /**
+     * This method should only be used for testing of the new storage quota 
+     * mechanism, temporarily. (it uses the same value as the quota for 
+     * *everybody* regardless of the circumstances, defined as a database 
+     * setting)
+     */
+    public Long getTestStorageQuotaLimit() {
+        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.StorageQuotaSizeInBytes);
     }
 }

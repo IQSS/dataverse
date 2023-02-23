@@ -28,6 +28,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDataFilesCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
@@ -187,7 +188,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     // Used to store results of permissions checks
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
+    // Size limit of an individual file: (set for the storage volume used)
     private Long maxFileUploadSizeInBytes = null;
+    // Total amount of data that the user should be allowed to upload.
+    // Will be calculated in real time based on various level quotas - 
+    // for this user and/or this collection/dataset, etc. We should 
+    // assume that it may change during the user session.
+    private Long maxTotalUploadSizeInBytes = null;
     private Long maxIngestSizeInBytes = null;
     // CSV: 4.8 MB, DTA: 976.6 KB, XLSX: 5.7 MB, etc.
     private String humanPerFormatTabularLimits = null;
@@ -335,6 +342,14 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public String getHumanMaxFileUploadSizeInBytes() {
         return FileSizeChecker.bytesToHumanReadable(this.maxFileUploadSizeInBytes);
+    }
+    
+    public Long getMaxTotalUploadSizeInBytes() {
+        return maxTotalUploadSizeInBytes;
+    }
+    
+    public String getHumanMaxTotalUploadSizeInBytes() {
+        return FileSizeChecker.bytesToHumanReadable(maxTotalUploadSizeInBytes);
     }
 
     public boolean isUnlimitedUploadFileSize() {
@@ -563,7 +578,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
         
         hasValidTermsOfAccess = isHasValidTermsOfAccess();
         if (!hasValidTermsOfAccess) {
@@ -2024,7 +2038,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Note: A single uploaded file may produce multiple datafiles - 
             // for example, multiple files can be extracted from an uncompressed
             // zip file.
-            CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
+            ///CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
+            
+            Command<CreateDataFileResult> cmd;
+            cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null);
+            CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
+
+        
             dFileList = createDataFilesResult.getDataFiles();
             String createDataFilesError = editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult);
             if(createDataFilesError != null) {
@@ -2033,7 +2053,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
 
         } catch (IOException ioex) {
+            // shouldn't we try and communicate to the user what happened?
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
+            return;
+        } catch (CommandException cex) {
+            // shouldn't we try and communicate to the user what happened?
+            errorMessages.add(cex.getMessage());
+            uploadComponentId = event.getComponent().getClientId();
             return;
         }
         /*catch (FileExceedsMaxSizeException ex) {

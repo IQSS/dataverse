@@ -105,6 +105,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
@@ -411,7 +412,7 @@ public class FileUtil implements java.io.Serializable  {
      *  Returns a content type string for a FileObject
      * 
      */
-    private static String determineContentType(File fileObject) {
+    public static String determineContentType(File fileObject) {
         if (fileObject==null){
             return null;
         }
@@ -902,7 +903,7 @@ public class FileUtil implements java.io.Serializable  {
                     uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
                     File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit);
                     datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm());
-                } catch (IOException | FileExceedsMaxSizeException ioex) {
+                } catch (IOException | FileExceedsMaxSizeException | FileExceedsStorageQuotaException ioex) {
                     datafile = null;
                 } finally {
                     if (uncompressedIn != null) {
@@ -1068,7 +1069,7 @@ public class FileUtil implements java.io.Serializable  {
                     }
 
                     datafiles.clear();
-                } catch (FileExceedsMaxSizeException femsx) {
+                } catch (FileExceedsMaxSizeException | FileExceedsStorageQuotaException femsx) {
                     logger.warning("One of the unzipped files exceeds the size limit; resorting to saving the file as is. " + femsx.getMessage());
                     warningMessage =  BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed.size", Arrays.asList(FileSizeChecker.bytesToHumanReadable(fileSizeLimit)));
                     datafiles.clear();
@@ -1154,7 +1155,7 @@ public class FileUtil implements java.io.Serializable  {
                         finalFileInputStream.close();
 
                     }
-                } catch (FileExceedsMaxSizeException femsx) {
+                } catch (FileExceedsMaxSizeException | FileExceedsStorageQuotaException femsx) {
                     logger.severe("One of the unzipped shape files exceeded the size limit; giving up. " + femsx.getMessage());
                     datafiles.clear();
                 }
@@ -1271,7 +1272,12 @@ public class FileUtil implements java.io.Serializable  {
 	}
 
 	public static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
-            throws IOException, FileExceedsMaxSizeException {
+            throws IOException, FileExceedsMaxSizeException, FileExceedsStorageQuotaException {
+            return saveInputStreamInTempFile(inputStream, fileSizeLimit, null);
+        }
+        
+        public static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit, Long storageQuotaLimit)
+            throws IOException, FileExceedsMaxSizeException, FileExceedsStorageQuotaException {
         Path tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
         
         if (inputStream != null && tempFile != null) {
@@ -1283,6 +1289,11 @@ public class FileUtil implements java.io.Serializable  {
             if (fileSizeLimit != null && fileSize > fileSizeLimit) {
                 try {tempFile.toFile().delete();} catch (Exception ex) {}
                 throw new FileExceedsMaxSizeException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)));  
+            }
+            
+            if (storageQuotaLimit != null && fileSize > storageQuotaLimit) {
+                try {tempFile.toFile().delete();} catch (Exception ex) {}
+                throw new FileExceedsStorageQuotaException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_quota"), bytesToHumanReadable(fileSize), bytesToHumanReadable(storageQuotaLimit)));  
             }
             
             return tempFile.toFile();
@@ -1325,7 +1336,6 @@ public class FileUtil implements java.io.Serializable  {
         datafile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
         FileMetadata fmd = new FileMetadata();
 
-        // TODO: add directoryLabel?
         fmd.setLabel(fileName);
 
         if (addToDataset) {
@@ -1341,13 +1351,13 @@ public class FileUtil implements java.io.Serializable  {
             fmd.setDatasetVersion(version);
             version.getDataset().getFiles().add(datafile);
         }
-        if(storageIdentifier==null) {
-        generateStorageIdentifier(datafile);
-        if (!tempFile.renameTo(new File(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()))) {
-            return null;
-        }
+        if (storageIdentifier == null) {
+            generateStorageIdentifier(datafile);
+            if (!tempFile.renameTo(new File(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()))) {
+                return null;
+            }
         } else {
-        	datafile.setStorageIdentifier(storageIdentifier);
+            datafile.setStorageIdentifier(storageIdentifier);
         }
 
         if ((checksum !=null)&&(!checksum.isEmpty())) {
@@ -1372,7 +1382,7 @@ public class FileUtil implements java.io.Serializable  {
     
         Naming convention: getFilesTempDirectory() + "shp_" + "yyyy-MM-dd-hh-mm-ss-SSS"
     */
-    private static File getShapefileUnzipTempDirectory(){
+    public static File getShapefileUnzipTempDirectory(){
         
         String tempDirectory = getFilesTempDirectory();
         if (tempDirectory == null){
