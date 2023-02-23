@@ -63,6 +63,7 @@ import org.ocpsoft.common.util.Strings;
 
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.STATUS_ERROR;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.STATUS_OK;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDataFilesCommand;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 /**
@@ -1205,17 +1206,20 @@ public class AddReplaceFileHelper{
             clone = workingVersion.cloneDatasetVersion();
         }
         try {
-            CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
+            /*CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,
                     this.newFileName,
                     this.newFileContentType,
                     this.newStorageIdentifier,
                     this.newCheckSum,
                     this.newCheckSumType,
-                    this.systemConfig);
-            initialFileList = result.getDataFiles();
+                    this.systemConfig);*/
+            
+            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier, newCheckSum, newCheckSumType);
+            CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
+            initialFileList = createDataFilesResult.getDataFiles();
 
-        } catch (IOException ex) {
+        } catch (CommandException ex) {
             if (!Strings.isNullOrEmpty(ex.getMessage())) {
                 this.addErrorSevere(getBundleErr("ingest_create_file_err") + " " + ex.getMessage());
             } else {

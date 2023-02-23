@@ -805,7 +805,7 @@ public class FileUtil implements java.io.Serializable  {
         return "";
     }
     
-    public static CreateDataFileResult createDataFiles(DatasetVersion version, InputStream inputStream,
+    /*public static CreateDataFileResult createDataFiles(DatasetVersion version, InputStream inputStream,
             String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum,
             SystemConfig systemConfig)  throws IOException {
         ChecksumType checkSumType = DataFile.ChecksumType.MD5;
@@ -813,7 +813,7 @@ public class FileUtil implements java.io.Serializable  {
             checkSumType = systemConfig.getFileFixityChecksumAlgorithm();
         }
         return createDataFiles(version, inputStream, fileName, suppliedContentType, newStorageIdentifier, newCheckSum, checkSumType, systemConfig);
-    }
+    }*/
     
     public static CreateDataFileResult createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, ChecksumType newCheckSumType, SystemConfig systemConfig) throws IOException {
         List<DataFile> datafiles = new ArrayList<>();
@@ -1293,7 +1293,7 @@ public class FileUtil implements java.io.Serializable  {
             
             if (storageQuotaLimit != null && fileSize > storageQuotaLimit) {
                 try {tempFile.toFile().delete();} catch (Exception ex) {}
-                throw new FileExceedsStorageQuotaException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_quota"), bytesToHumanReadable(fileSize), bytesToHumanReadable(storageQuotaLimit)));  
+                throw new FileExceedsStorageQuotaException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(fileSize), bytesToHumanReadable(storageQuotaLimit)));  
             }
             
             return tempFile.toFile();

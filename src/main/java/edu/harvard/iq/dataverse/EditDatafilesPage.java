@@ -1508,14 +1508,16 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // for example, multiple files can be extracted from an uncompressed
                 // zip file.
                 //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", null, null, systemConfig);
+                //CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", null, null, systemConfig);
+                Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, dropBoxStream, fileName, "application/octet-stream", null, null);
+                CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
                 datafiles = createDataFilesResult.getDataFiles();
                 Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));
 
-            } catch (IOException ex) {
+            } catch (CommandException ex) {
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
                 continue;
-            }/*catch (FileExceedsMaxSizeException ex){
+            } /*catch (FileExceedsMaxSizeException ex){
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}: {2}", new Object[]{fileName, fileLink, ex.getMessage()});
                 continue;
             }*/ finally {
@@ -2040,8 +2042,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // zip file.
             ///CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
             
-            Command<CreateDataFileResult> cmd;
-            cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null);
+            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null);
             CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
 
         
@@ -2165,10 +2166,13 @@ public class EditDatafilesPage implements java.io.Serializable {
                     // for example, multiple files can be extracted from an uncompressed
                     // zip file.
                     //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                    CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType, systemConfig);
+                    ///CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType, systemConfig);
+                    
+                    Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType);
+                    CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
                     datafiles = createDataFilesResult.getDataFiles();
                     Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));
-                } catch (IOException ex) {
+                } catch (CommandException ex) {
                     logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
                 }
 
