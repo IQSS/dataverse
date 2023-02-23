@@ -61,6 +61,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     @EJB
     DatasetFieldServiceBean fieldService;
+    
+    @EJB
+    MetadataBlockServiceBean mdbService;
 
     private Map<String, String> settingsMap;
     
@@ -117,7 +120,7 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private Boolean customLicenseAllowed = null;
     
-    private JsonObject systemMetadataBlocks;
+    private List<MetadataBlock> systemMetadataBlocks;
     
     private Set<Type> alwaysMuted = null;
 
@@ -705,16 +708,19 @@ public class SettingsWrapper implements java.io.Serializable {
         return customLicenseAllowed;
     }
 
-    public JsonObject getSystemMetadataBlocks() {
+    public List<MetadataBlock> getSystemMetadataBlocks() {
+
         if (systemMetadataBlocks == null) {
-            String smdbString = JvmSettings.METADATA_BLOCK_SYSTEM_METADATA_KEYS.lookupOptional().orElse(null);
+            systemMetadataBlocks = new ArrayList<MetadataBlock>();
+        }
+        List<MetadataBlock> blocks = mdbService.listMetadataBlocks();
+        for (MetadataBlock mdb : blocks) {
+            String smdbString = JvmSettings.MDB_SYSTEM_KEY_FOR.lookupOptional(mdb.getName()).orElse(null);
             if (smdbString != null) {
-                systemMetadataBlocks = JsonUtil.getJsonObject(smdbString);
-            }
-            if (systemMetadataBlocks == null) {
-                systemMetadataBlocks = Json.createObjectBuilder().build();
+                systemMetadataBlocks.add(mdb);
             }
         }
+
         return systemMetadataBlocks;
     }
 }

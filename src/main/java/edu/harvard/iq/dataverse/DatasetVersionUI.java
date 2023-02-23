@@ -399,7 +399,7 @@ public class DatasetVersionUI implements Serializable {
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
         
-        JsonObject systemMDBlocks = settingsWrapper.getSystemMetadataBlocks();
+        List<MetadataBlock> systemMDBlocks = settingsWrapper.getSystemMetadataBlocks();
         
         Long dvIdForInputLevel = datasetVersion.getDataset().getOwner().getId();
         
@@ -443,7 +443,7 @@ public class DatasetVersionUI implements Serializable {
             if (!datasetFieldsForView.isEmpty()) {
                 metadataBlocksForView.put(mdb, datasetFieldsForView);
             }
-            if (!datasetFieldsForEdit.isEmpty() && !systemMDBlocks.containsKey(mdb.getName())) {
+            if (!datasetFieldsForEdit.isEmpty() && !systemMDBlocks.contains(mdb)) {
                 metadataBlocksForEdit.put(mdb, datasetFieldsForEdit);
             }
         }

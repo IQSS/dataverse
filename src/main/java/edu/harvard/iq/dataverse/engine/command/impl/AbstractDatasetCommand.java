@@ -226,11 +226,13 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         Set<MetadataBlock> changedMDBs = DatasetVersionDifference.getBlocksWithChanges(newVersion, persistedVersion);
         for (MetadataBlock mdb : changedMDBs) {
             logger.fine(mdb.getName() + " has been changed");
-            String smdbString = JvmSettings.METADATA_BLOCK_SYSTEM_METADATA_KEYS.lookupOptional(mdb.getName())
+            String smdbString = JvmSettings.MDB_SYSTEM_KEY_FOR.lookupOptional(mdb.getName())
                     .orElse(null);
             if (smdbString != null) {
+                logger.info("Found key: " + smdbString);
                 String mdKey = getRequest().getSystemMetadataBlockKeyFor(mdb.getName());
-                if (mdKey == null || !mdKey.equals(smdbString)) {
+                logger.info("Found supplied key: " + mdKey);
+                if (mdKey == null || !mdKey.equalsIgnoreCase(smdbString)) {
                     throw new IllegalCommandException("Updating system metadata in block " + mdb.getName() + " requires a valid key", this);
                 }
             }
