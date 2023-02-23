@@ -577,6 +577,46 @@ The scripts required can be hosted locally or retrieved dynamically from https:/
 
 Please note that in addition to the :ref:`:CVocConf` described above, an alternative is the :ref:`:ControlledVocabularyCustomJavaScript` setting.
 
+Protecting MetadataBlocks
+-------------------------
+
+Dataverse can be configured to only allow entries for a metadata block to be changed (created, edited, deleted) by entities that know a defined secret key. 
+Metadata blocks protected by such a key are referred to as "System" metadata blocks. 
+A primary use case for system metadata blocks is to handle metadata created by third-party tools interacting with Dataverse where unintended changes to the metadata could cause a failure. Examples might include archiving systems or workflow engines.
+To protect an existing metadatablock, one must set a key (recommended to be long and un-guessable) for that block:
+
+dataverse.metadata.block-system-metadata-keys.<block name>=<key value>
+
+This can be done using system properties (see :ref:`jvm-options`), environment variables or other MicroProfile Config mechanisms supported by the app server.
+   `See Payara docs for supported sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html#config-sources>`_.
+
+For these secret keys, a password alias the "dir config source" of Payara are recommended.
+
+   Alias creation example using the codemeta metadata block:
+
+   .. code-block:: shell
+
+      echo "AS_ADMIN_ALIASBLOCKKEY=1234ChangeMeToSomethingLong" > /tmp/key.txt
+      asadmin create-password-alias --passwordfile /tmp/key.txt dataverse.metadata.block-system-metadata-keys.codemeta
+      rm /tmp/key.txt
+
+When protected via a key, a metadata block will not be shown in the user interface when a dataset is being created or when metadata is being edited. Entries in such a system metadata block will be shown to users, consistent with Dataverse's design in which all metadata in published datasets is publicly visible.
+
+To add metadata to a system metadata block via API, one must include an additional key of the form 
+
+mdkey.<blockName>=<key value>
+
+as an HTTP Header or query parameter for each system metadata block to any API call in which metadata values are changed in that block. Multiple keys are allowed if more than one system metadatablock is being changed in a given API call.
+
+For example, following the :ref:`Add Dataset Metadata <add-semantic-metadata>` example from the :doc:`/developers/dataset-semantic-metadata-api`:
+
+.. code-block:: bash
+
+  curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -H 'mdkey.codemeta=1234' -d '{"title": "Submit menu test", "@context":{"title": "http://purl.org/dc/terms/title"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata
+  
+  curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"title": "Submit menu test", "@context":{"title": "http://purl.org/dc/terms/title"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata?mdkey.codemeta=1234
+    
+
 Tips from the Dataverse Community
 ---------------------------------
 
