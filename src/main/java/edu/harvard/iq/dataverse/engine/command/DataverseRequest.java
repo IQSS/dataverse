@@ -194,4 +194,11 @@ public class DataverseRequest {
         return httpServletRequest;
     }
     
+    public String getHttpServletRequestParameter(String paramName) {
+        if(httpServletRequest != null) {
+            return httpServletRequest.getParameter(paramName);
+        }
+        return null;
+    }
+    
 }

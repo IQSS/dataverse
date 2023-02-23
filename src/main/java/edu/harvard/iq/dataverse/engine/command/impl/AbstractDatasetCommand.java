@@ -224,25 +224,17 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
 
     protected void checkSystemMetadataKeyIfNeeded(DatasetVersion newVersion, DatasetVersion persistedVersion) throws IllegalCommandException {
         Set<MetadataBlock> changedMDBs = DatasetVersionDifference.getBlocksWithChanges(newVersion, persistedVersion);
-        changedMDBs.forEach(mdb -> {
+        for (MetadataBlock mdb : changedMDBs) {
             logger.fine(mdb.getName() + " has been changed");
-        });
-        
-        String smdbString = JvmSettings.METADATA_BLOCK_SYSTEM_METADATA_KEYS.lookupOptional().orElse(null);
-        if (smdbString != null) {
-            JsonObject systemMetadataBlocks = JsonUtil.getJsonObject(smdbString);
-            HttpServletRequest httpServletRequest = getRequest().getHttpServletRequest();
-            if (httpServletRequest != null) {
-                String mdKey = httpServletRequest.getParameter(MetadataBlockServiceBean.SYSTEM_MD_KEY);
-                for (MetadataBlock mdb : changedMDBs) {
-                    if (systemMetadataBlocks.containsKey(mdb.getName())) {
-                        if (mdKey==null || !mdKey.equals(systemMetadataBlocks.getString(mdb.getName()))) {
-                            throw new IllegalCommandException("Updating system metadata requires a key", this);
-                        }
-                    }
+            String smdbString = JvmSettings.METADATA_BLOCK_SYSTEM_METADATA_KEYS.lookupOptional(mdb.getName())
+                    .orElse(null);
+            if (smdbString != null) {
+                String mdKey = getRequest()
+                        .getHttpServletRequestParameter(MetadataBlockServiceBean.SYSTEM_MD_KEY + "." + mdb.getName());
+                if (mdKey == null || !mdKey.equals(smdbString)) {
+                    throw new IllegalCommandException("Updating system metadata in block " + mdb.getName() + " requires a valid key", this);
                 }
             }
         }
-        
     }
 }

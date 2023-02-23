@@ -70,7 +70,7 @@ public enum JvmSettings {
     
  // METADATA SETTINGS
     SCOPE_METADATA(PREFIX, "metadata"),
-    METADATA_BLOCK_SYSTEM_METADATA_KEYS(SCOPE_METADATA, "block-system-metadata-keys"),
+    METADATA_BLOCK_SYSTEM_METADATA_KEYS(SCOPE_METADATA, "block-system-metadata-keys.%1$s"),
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
