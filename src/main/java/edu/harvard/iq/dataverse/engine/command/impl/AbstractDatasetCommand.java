@@ -229,8 +229,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             String smdbString = JvmSettings.METADATA_BLOCK_SYSTEM_METADATA_KEYS.lookupOptional(mdb.getName())
                     .orElse(null);
             if (smdbString != null) {
-                String mdKey = getRequest()
-                        .getHttpServletRequestParameter(MetadataBlockServiceBean.SYSTEM_MD_KEY + "." + mdb.getName());
+                String mdKey = getRequest().getSystemMetadataBlockKeyFor(mdb.getName());
                 if (mdKey == null || !mdKey.equals(smdbString)) {
                     throw new IllegalCommandException("Updating system metadata in block " + mdb.getName() + " requires a valid key", this);
                 }

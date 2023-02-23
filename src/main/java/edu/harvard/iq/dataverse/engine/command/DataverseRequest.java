@@ -28,6 +28,8 @@ public class DataverseRequest {
     
     private final static String undefined = "0.0.0.0";
     
+    private final static String MDKEY_PREFIX="mdkey.";
+    
     private static final Logger logger = Logger.getLogger(DataverseRequest.class.getName());
     
     private static String headerToUse = null;
@@ -194,11 +196,15 @@ public class DataverseRequest {
         return httpServletRequest;
     }
     
-    public String getHttpServletRequestParameter(String paramName) {
-        if(httpServletRequest != null) {
-            return httpServletRequest.getParameter(paramName);
+    public String getSystemMetadataBlockKeyFor(String blockName) {
+        String key = null;
+        if (httpServletRequest != null) {
+            key = httpServletRequest.getHeader(MDKEY_PREFIX + blockName);
+            if (key == null) {
+                key = httpServletRequest.getParameter(MDKEY_PREFIX + blockName);
+            }
         }
-        return null;
+        return key;
     }
     
 }
