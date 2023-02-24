@@ -343,6 +343,11 @@ public class EditDatafilesPage implements java.io.Serializable {
     public String getHumanMaxFileUploadSizeInBytes() {
         return FileSizeChecker.bytesToHumanReadable(this.maxFileUploadSizeInBytes);
     }
+
+    public boolean isUnlimitedUploadFileSize() {
+
+        return this.maxFileUploadSizeInBytes == null;
+    }
     
     public Long getMaxTotalUploadSizeInBytes() {
         return maxTotalUploadSizeInBytes;
@@ -351,10 +356,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     public String getHumanMaxTotalUploadSizeInBytes() {
         return FileSizeChecker.bytesToHumanReadable(maxTotalUploadSizeInBytes);
     }
-
-    public boolean isUnlimitedUploadFileSize() {
-
-        return this.maxFileUploadSizeInBytes == null;
+    
+    public boolean isStorageQuotaEnforced() {
+        return maxTotalUploadSizeInBytes != null; 
     }
 
     public Long getMaxIngestSizeInBytes() {
@@ -524,6 +528,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         selectedFiles = selectedFileMetadatasList;
 
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        if (systemConfig.isStorageQuotasEnforced()) {
+            this.maxTotalUploadSizeInBytes = datafileService.getUserStorageQuota((AuthenticatedUser) session.getUser(), dataset).getRemainingQuotaInBytes();
+        } else {
+            this.maxTotalUploadSizeInBytes = null; 
+        }
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
@@ -575,6 +584,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         clone = workingVersion.cloneDatasetVersion();
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        if (systemConfig.isStorageQuotasEnforced()) {
+            this.maxTotalUploadSizeInBytes = datafileService.getUserStorageQuota((AuthenticatedUser) session.getUser(), dataset).getRemainingQuotaInBytes();
+        }
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        

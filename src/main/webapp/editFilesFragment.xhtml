@@ -80,6 +80,11 @@
                                                     rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()}">
                                         <f:param value="#{EditDatafilesPage.getHumanMaxFileUploadSizeInBytes()}"/>
                                     </h:outputFormat>
+                                    
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipQuotaRemaining']}" escape="false" 
+                                                    rendered="#{EditDatafilesPage.isStorageQuotaEnforced()}">
+                                        <f:param value="#{EditDatafilesPage.getHumanMaxTotalUploadSizeInBytes()}"/>
+                                    </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipTabularLimit']}" escape="false"
                                                     rendered="#{EditDatafilesPage.maxIngestSizeInBytes != -1}">
                                         <f:param value="#{systemConfig.guidesBaseUrl}"/>
