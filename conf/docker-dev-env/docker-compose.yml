@@ -15,11 +15,25 @@ services:
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
 
+  dev_solr_initializer:
+    container_name: "dev_solr_initializer"
+    image: alpine
+    restart: "no"
+    entrypoint: |
+      /bin/sh -c "chown 8983:8983 /conf"
+    volumes:
+      - ./solr/conf:/conf
+
   dev_solr:
     container_name: "dev_solr"
     image: solr:8.11.1
+    depends_on:
+      - dev_solr_initializer
     restart: on-failure
     ports:
       - "8983:8983"
+    entrypoint: |
+      bash -c "chown -R 8983:8983 /var/solr && cd /opt/solr-8.11.1/server/solr/configsets/_default/conf && cp -R -n . /opt/solr-8.11.1/server/solr/collection1 && solr-create -c collection1 -d /opt/solr-8.11.1/server/solr/collection1"
     volumes:
       - ./solr/data:/var/solr
+      - ./solr/conf:/opt/solr-8.11.1/server/solr/collection1

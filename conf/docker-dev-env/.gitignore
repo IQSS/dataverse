@@ -2,4 +2,7 @@
 /postgresql
 
 # Solr volumes
-/solr
+/solr/data
+/solr/conf/*
+!/solr/conf/schema.xml
+!/solr/conf/solrconfig.xml
