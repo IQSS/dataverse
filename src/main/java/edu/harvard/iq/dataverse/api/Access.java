@@ -114,6 +114,7 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.ServiceUnavailableException;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Response;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import jakarta.ws.rs.core.StreamingOutput;

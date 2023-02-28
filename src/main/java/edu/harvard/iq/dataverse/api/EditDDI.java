@@ -34,11 +34,14 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;

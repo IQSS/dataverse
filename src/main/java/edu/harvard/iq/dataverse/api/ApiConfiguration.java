@@ -4,6 +4,8 @@ import jakarta.ws.rs.ApplicationPath;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
+import edu.harvard.iq.dataverse.api.auth.AuthFilter;
+
 @ApplicationPath("api/v1")
 public class ApiConfiguration extends ResourceConfig {
    

@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.api.Util;
-import edu.harvard.iq.dataverse.api.Files;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -63,8 +62,6 @@ import jakarta.ws.rs.core.Response;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import org.apache.commons.io.IOUtils;
 
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.STATUS_ERROR;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.STATUS_OK;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
 /**

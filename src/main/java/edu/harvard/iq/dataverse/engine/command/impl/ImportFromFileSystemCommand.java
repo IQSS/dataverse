@@ -12,6 +12,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.File;
 import java.util.Properties;
@@ -30,6 +32,10 @@ public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
     private static final Logger logger = Logger.getLogger(ImportFromFileSystemCommand.class.getName());
 
     final Dataset dataset;
+    final String uploadFolder;
+    final Long totalSize;
+    final String mode;
+    final ImportMode importMode;
 
     public ImportFromFileSystemCommand(DataverseRequest aRequest, Dataset theDataset, String theUploadFolder, Long theTotalSize, ImportMode theImportMode) {
         super(aRequest, theDataset);

@@ -15,8 +15,9 @@ import io.gdcc.xoai.dataprovider.request.RequestBuilder.RawRequest;
 import io.gdcc.xoai.dataprovider.repository.ItemRepository;
 import io.gdcc.xoai.dataprovider.repository.SetRepository;
 import io.gdcc.xoai.model.oaipmh.DeletedRecord;
+import io.gdcc.xoai.model.oaipmh.Granularity;
 import io.gdcc.xoai.model.oaipmh.OAIPMH;
-
+import io.gdcc.xoai.services.impl.SimpleResumptionTokenFormat;
 import io.gdcc.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;

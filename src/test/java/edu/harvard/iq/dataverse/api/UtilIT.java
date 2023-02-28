@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
 import io.restassured.path.xml.XmlPath;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;

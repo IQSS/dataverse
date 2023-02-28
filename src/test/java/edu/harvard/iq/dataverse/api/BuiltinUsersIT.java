@@ -5,6 +5,7 @@ import static io.restassured.RestAssured.given;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -16,11 +17,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertTrue;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+public class BuiltinUsersIT {
+        
     private static final Logger logger = Logger.getLogger(BuiltinUsersIT.class.getCanonicalName());
 
     private static final String builtinUserKey = "burrito";

@@ -121,6 +121,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
 import javax.xml.stream.XMLStreamException;
