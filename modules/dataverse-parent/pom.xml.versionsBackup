@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd;">
     <modelVersion>4.0.0</modelVersion>
  
     <groupId>edu.harvard.iq</groupId>
@@ -130,7 +130,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.0.0</revision>
+        <revision>5.12.1</revision>
     
         <target.java.version>11</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -147,26 +147,26 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>6.2023.2</payara.version>
-        <postgresql.version>42.5.4</postgresql.version>
+        <payara.version>6.2022.2</payara.version>
+        <postgresql.version>42.5.0</postgresql.version>
         <solr.version>8.11.1</solr.version>
-        <aws.version>1.12.415</aws.version>
-        <google.cloud.version>0.190.0</google.cloud.version>
+        <aws.version>1.12.290</aws.version>
+        <google.cloud.version>0.177.0</google.cloud.version>
     
         <!-- Basic libs, logging -->
-        <slf4j.version>2.0.6</slf4j.version>
+        <slf4j.version>1.7.35</slf4j.version>
         <commons.io.version>2.11.0</commons.io.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
-        <commons.compress.version>1.22</commons.compress.version>
-        <apache.httpcomponents.client.version>4.5.14</apache.httpcomponents.client.version>
-        <apache.httpcomponents.core.version>4.4.16</apache.httpcomponents.core.version>
+        <commons.compress.version>1.21</commons.compress.version>
+        <apache.httpcomponents.client.version>4.5.13</apache.httpcomponents.client.version>
+        <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         
         <!-- NEW gdcc XOAI library implementation -->
         <gdcc.xoai.version>5.0.0-RC2</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
-        <testcontainers.version>1.17.6</testcontainers.version>
+        <testcontainers.version>1.15.0</testcontainers.version>
         <smallrye-mpconfig.version>2.10.1</smallrye-mpconfig.version>
     
         <junit.version>4.13.1</junit.version>
@@ -174,23 +174,21 @@
         <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
         <mockito.version>2.28.2</mockito.version>
         
-        <checkstyle.version>10.8.0</checkstyle.version>
+        <checkstyle.version>9.3</checkstyle.version>
         
         <!-- Official Maven Plugins -->
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
-        <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
         <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
-        <maven-dependency-plugin.version>3.5.0</maven-dependency-plugin.version>
-        <maven-install-plugin.version>3.1.0</maven-install-plugin.version>
-        <maven-surefire-plugin.version>3.0.0-M9</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.0.0-M9</maven-failsafe-plugin.version>
+        <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
+        <maven-install-plugin.version>3.0.0-M1</maven-install-plugin.version>
+        <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
-        <maven-checkstyle-plugin.version>3.2.1</maven-checkstyle-plugin.version>
-
-        <git.commit.id.maven.plugin.version>3.2.1</git.commit.id.maven.plugin.version>
+        <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.41.0</fabric8-dmp.version>
+        <fabric8-dmp.version>0.40.2</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>
@@ -366,7 +364,7 @@
                     <plugin>
                         <groupId>io.github.git-commit-id</groupId>
                         <artifactId>git-commit-id-maven-plugin</artifactId>
-                        <version>${git.commit.id.maven.plugin.version}</version>
+                        <version>5.0.0</version>
                         <executions>
                             <execution>
                                 <id>retrieve-git-details</id>

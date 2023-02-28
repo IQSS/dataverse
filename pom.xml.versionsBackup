@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd;">
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
@@ -20,61 +20,12 @@
     <properties>
         <skipUnitTests>false</skipUnitTests>
         <reload4j.version>1.2.18.4</reload4j.version>
-        <flyway.version>9.15.1</flyway.version>
+        <flyway.version>8.5.10</flyway.version>
         <jhove.version>1.20.1</jhove.version>
-        <jacoco.version>0.8.8</jacoco.version>
-        <poi.version>5.2.3</poi.version>
-        <tika.version>2.7.0</tika.version>
-        <netcdf.version>6.0.0-beta1</netcdf.version>
-        <abdera.version>1.1.3</abdera.version>
-        <passay.version>1.6.2</passay.version>
-        <httpclient.version>3.1</httpclient.version>
-        <sword2.version>2.0.0-SNAPSHOT</sword2.version>
-        <apicatalog.version>1.3.1</apicatalog.version>
-        <gson.version>2.10.1</gson.version>
-        <everit.version>1.5.1</everit.version>
-        <jbcrypt.version>0.4</jbcrypt.version>
-        <guava.version>31.1-jre</guava.version>
-        <primefaces.version>12.0.0</primefaces.version>
-        <primefaces.themes.version>1.0.10</primefaces.themes.version>
-        <commons.text.version>1.10.0</commons.text.version>
-        <commons.math.version>2.2</commons.math.version>
-        <commons.validator.version>1.7</commons.validator.version>
-        <solr.version>8.11.2</solr.version>
-        <colt.version>1.2.0</colt.version>
-        <fits.version>2012-10-25-generated</fits.version>
-        <handle.version>8.1.1</handle.version>
-        <unf5.version>5.0</unf5.version>
-        <unf.version>6.0</unf.version>
-        <rengine.version>1.8-5</rengine.version>
-        <rserve.version>1.8-5</rserve.version>
-        <imageio.version>1.4.0</imageio.version>
-        <omnifaces.version>4.1</omnifaces.version>
-        <rewrite.version>6.0.0-SNAPSHOT</rewrite.version>
-        <nceas.version>1.0.3</nceas.version>
-        <jsoup.version>1.15.4</jsoup.version>
-        <searchbox.version>6.3.1</searchbox.version>
-        <commons.codec.version>1.15</commons.codec.version>
-        <javaswift.version>0.10.4</javaswift.version>
-        <apache.commons.version>1.10.0</apache.commons.version>
-        <scribejava.version>8.3.3</scribejava.version>
-        <nimbusds.version>10.7</nimbusds.version>
-        <auto.service.version>1.0.1</auto.service.version>
-        <unirest.version>1.4.9</unirest.version>
-        <duracloud.version>7.1.2</duracloud.version>
-        <opennlp.version>2.1.1</opennlp.version>
-        <auth0.version>4.3.0</auth0.version>
-        <erdtman.version>1.1</erdtman.version>
-        <hamcrest.version>2.2</hamcrest.version>
-        <assertj.version>3.24.2</assertj.version>
-        <xmlunit.version>2.9.1</xmlunit.version>
-        <restassured.version>5.3.0</restassured.version>
-        <skyscreamer.version>1.5.1</skyscreamer.version>
-        <maven.version>3.8.7</maven.version>
-        <enforcer.version>3.2.1</enforcer.version>
-        <qaware.version>1.2.8</qaware.version>
-        <coveralls.version>4.3.0</coveralls.version>
-        <jaxb.api.version>2.4.0-b180830.0359</jaxb.api.version>
+        <jacoco.version>0.8.7</jacoco.version>
+        <poi.version>5.2.1</poi.version>
+        <tika.version>2.4.1</tika.version>
+        <netcdf.version>5.5.3</netcdf.version>
     </properties>
     
     <!-- Versions of dependencies used both directly and transitive are managed here.
@@ -87,12 +38,12 @@
             <dependency>
                 <groupId>org.apache.abdera</groupId>
                 <artifactId>abdera-core</artifactId>
-                <version>${abdera.version}</version>
+                <version>1.1.3</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.abdera</groupId>
                 <artifactId>abdera-i18n</artifactId>
-                <version>${abdera.version}</version>
+                <version>1.1.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -115,7 +66,7 @@
 	    <dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>
-            <version>${passay.version}</version>
+            <version>1.6.0</version>
         </dependency>
         
         <!-- TECHNICAL DEBT
@@ -132,14 +83,14 @@
         <dependency>
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
-            <version>${httpclient.version}</version>
+            <version>3.1</version>
         </dependency>
     
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
         <dependency>
             <groupId>io.gdcc</groupId>
             <artifactId>sword2-server</artifactId>
-            <version>${sword2.version}</version>
+            <version>2.0.0-SNAPSHOT</version>
         </dependency>
         <!-- Dependency to use sword2-server in our codebase -->
         <dependency>
@@ -162,12 +113,12 @@
         <dependency>
           <groupId>com.apicatalog</groupId>
           <artifactId>titanium-json-ld</artifactId>
-          <version>${apicatalog.version}</version>
+          <version>1.3.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>${gson.version}</version>
+            <version>2.8.9</version>
             <scope>compile</scope>
         </dependency>
         <!-- Should be refactored and moved to transitive section above once on Java EE 8 (makes WAR smaller) -->
@@ -187,12 +138,12 @@
                  but it seemed better to not add another repo. -->
             <groupId>org.everit.json</groupId>
             <artifactId>org.everit.json.schema</artifactId>
-            <version>${everit.version}</version>
+            <version>1.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
-            <version>${jbcrypt.version}</version>
+            <version>0.4</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -212,7 +163,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
+            <version>29.0-jre</version>
             <type>jar</type>
         </dependency>
         
@@ -253,18 +204,18 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>${primefaces.version}</version>
+            <version>11.0.0</version>
             <classifier>jakarta</classifier>
         </dependency>
         <dependency>
             <groupId>org.primefaces.themes</groupId>
             <artifactId>all-themes</artifactId>
-            <version>${primefaces.themes.version}</version>
+            <version>1.0.10</version>
         </dependency>
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>${omnifaces.version}</version> <!-- Or 1.8-SNAPSHOT -->
+            <version>4.0-M13</version> <!-- Or 1.8-SNAPSHOT -->
         </dependency>
         
         <!-- Jakarta Validation API & runtime -->
@@ -301,63 +252,63 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>${commons.text.version}</version>
+            <version>1.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math</artifactId>
-            <version>${commons.math.version}</version>
+            <version>2.2</version>
         </dependency>
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>${commons.validator.version}</version>
+            <version>1.7</version>
         </dependency>
         
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>${solr.version}</version>
+            <version>8.11.1</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
             <artifactId>colt</artifactId>
-            <version>${colt.version}</version>
+            <version>1.2.0</version>
         </dependency>
         <!-- fits.jar, not available from network repos, supplied in local_lib -->
         <dependency>
             <groupId>nom.tam.fits</groupId>
             <artifactId>fits</artifactId>
-            <version>${fits.version}</version>
+            <version>2012-10-25-generated</version>
         </dependency>
         <dependency>
             <groupId>net.handle</groupId>
             <artifactId>handle</artifactId>
-            <version>${handle.version}</version>
+            <version>8.1.1</version>
         </dependency>
         <!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
         <dependency>
             <groupId>edu.harvard.iq.dvn</groupId>
             <artifactId>unf5</artifactId>
-            <version>${unf5.version}</version>
+            <version>5.0</version>
         </dependency>
         <!-- (new) UNF v6: -->
         <dependency>
             <groupId>org.dataverse</groupId>
             <artifactId>unf</artifactId>
-            <version>${unf.version}</version>
+            <version>6.0</version>
         </dependency>
         <!-- Rosuda Rengine and Rserve, packaged by org.nuiton.thirdparty -->
         <!-- TODO: see if there's another, better maintained maven repository for Rosuda libraries? - L.A. -->
         <dependency>
             <groupId>org.nuiton.thirdparty</groupId>
             <artifactId>REngine</artifactId>
-            <version>${rengine.version}</version>
+            <version>0.6-1</version>
         </dependency>
         <dependency>
             <groupId>org.nuiton.thirdparty</groupId>
             <artifactId>Rserve</artifactId>
-            <version>${rserve.version}</version>
+            <version>0.6-1</version>
         </dependency>
         <!-- Apache POI - used by ingest to parse MS Excel xslx files -->
         <dependency>
@@ -394,61 +345,61 @@
         <dependency>
             <groupId>com.github.jai-imageio</groupId>
             <artifactId>jai-imageio-core</artifactId>
-            <version>${imageio.version}</version>
+            <version>1.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-servlet</artifactId>
-            <version>${rewrite.version}</version>
+            <version>6.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-config-prettyfaces</artifactId>
-            <version>${rewrite.version}</version>
+            <version>6.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>edu.ucsb.nceas</groupId>
             <artifactId>ezid</artifactId>
-            <version>${nceas.version}</version>
+            <version>1.0.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>${jsoup.version}</version>
+            <version>1.15.3</version>
         </dependency>
         <dependency>
             <groupId>io.searchbox</groupId>
             <artifactId>jest</artifactId>
-            <version>${searchbox.version}</version>
+            <version>0.1.7</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>${commons.codec.version}</version>
+            <version>1.15</version>
         </dependency>
         <!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
         <dependency>
             <groupId>org.javaswift</groupId>
             <artifactId>joss</artifactId>
-            <version>${javaswift.version}</version>
+            <version>0.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-            <version>${apache.commons.version}</version>
+            <version>1.2</version>
         </dependency>
         <!-- OAuth2 authentication. -->
         <dependency>
             <groupId>com.github.scribejava</groupId>
             <artifactId>scribejava-apis</artifactId>
-            <version>${scribejava.version}</version>
+            <version>6.9.0</version>
         </dependency>
         <!-- OpenID Connect authentication -->
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>${nimbusds.version}</version>
+            <version>9.41.1</version>
         </dependency>
         <!-- New and Improved GDCC XOAI library! --> 
         <dependency>
@@ -465,7 +416,7 @@
         <dependency>
             <groupId>com.google.auto.service</groupId>
             <artifactId>auto-service</artifactId>
-            <version>${auto.service.version}</version>
+            <version>1.0-rc2</version>
             <optional>true</optional>
             <type>jar</type>
         </dependency>
@@ -482,7 +433,7 @@
         <dependency>
             <groupId>com.mashape.unirest</groupId>
             <artifactId>unirest-java</artifactId>
-            <version>${unirest.version}</version>
+            <version>1.4.9</version>
         </dependency>
         <!-- BagIt export -->
         <dependency>
@@ -493,7 +444,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>common</artifactId>
-            <version>${duracloud.version}</version>
+            <version>7.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -508,7 +459,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>storeclient</artifactId>
-            <version>${duracloud.version}</version>
+            <version>7.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -539,7 +490,7 @@
         <dependency>
             <groupId>org.apache.opennlp</groupId>
             <artifactId>opennlp-tools</artifactId>
-            <version>${opennlp.version}</version>
+            <version>1.9.1</version>
         </dependency>
         <dependency>
           <groupId>com.google.cloud</groupId>
@@ -551,13 +502,13 @@
         <dependency>
           <groupId>com.auth0</groupId>
           <artifactId>java-jwt</artifactId>
-          <version>${auth0.version}</version>
+          <version>3.19.1</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.github.erdtman/java-json-canonicalization -->
         <dependency>
           <groupId>io.github.erdtman</groupId>
           <artifactId>java-json-canonicalization</artifactId>
-          <version>${erdtman.version}</version>
+          <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>edu.ucar</groupId>
@@ -587,31 +538,31 @@
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>
-            <version>${hamcrest.version}</version>
+            <version>2.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
+            <version>3.20.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-assertj3</artifactId>
-            <version>${xmlunit.version}</version>
+            <version>2.8.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.rest-assured</groupId>
+            <groupId>io.restassured</groupId>
             <artifactId>rest-assured</artifactId>
-            <version>${restassured.version}</version>
+            <version>2.4.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.skyscreamer</groupId>
             <artifactId>jsonassert</artifactId>
-            <version>${skyscreamer.version}</version>
+            <version>1.5.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -704,7 +655,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>${enforcer.version}</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>enforce-maven</id>
@@ -714,7 +665,7 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <version>${maven.version}</version>
+                                    <version>3.8.7</version>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
@@ -759,7 +710,7 @@
             <plugin>
                 <groupId>de.qaware.maven</groupId>
                 <artifactId>go-offline-maven-plugin</artifactId>
-                <version>${qaware.version}</version>
+                <version>1.2.1</version>
                 <configuration>
                     <dynamicDependencies>
                     </dynamicDependencies>
@@ -792,12 +743,12 @@
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>${coveralls.version}</version>
+                <version>4.3.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>javax.xml.bind</groupId>
                         <artifactId>jaxb-api</artifactId>
-                        <version>${jaxb.api.version}</version>
+                        <version>2.3.1</version>
                     </dependency>
                 </dependencies>
             </plugin>

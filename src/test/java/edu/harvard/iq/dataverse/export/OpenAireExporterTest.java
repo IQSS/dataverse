@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.export;
 
-import com.jayway.restassured.path.xml.XmlPath;
+import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayInputStream;

@@ -31,6 +31,7 @@ public class DatasetUtilTest {
         dataFile.setOwner(dataset);
         System.setProperty("dataverse.files.testfile.type", "file");
         dataFile.setStorageIdentifier("testfile://src/test/resources/images/coffeeshop.png");
+        dataset.setAuthority("");
 
         System.out.println(ImageThumbConverter.isThumbnailAvailable(dataFile));
         DatasetVersion version = dataset.getCreateVersion(null);
@@ -49,6 +50,7 @@ public class DatasetUtilTest {
         System.setProperty("dataverse.files.testfile.type", "file");
         dataset.setStorageIdentifier("testfile://");
         dataset.setUseGenericThumbnail(true);
+        dataset.setAuthority("");
 
         assertNull(DatasetUtil.getThumbnail(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
         assertNull(DatasetUtil.getThumbnail(dataset, new DatasetVersion(), ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
