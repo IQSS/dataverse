@@ -6,3 +6,6 @@
 /solr/conf/*
 !/solr/conf/schema.xml
 !/solr/conf/solrconfig.xml
+
+# Maildev volumes
+/smtp

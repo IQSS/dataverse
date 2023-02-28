@@ -37,3 +37,13 @@ services:
     volumes:
       - ./solr/data:/var/solr
       - ./solr/conf:/opt/solr-8.11.1/server/solr/collection1
+
+  dev_smtp:
+    container_name: "dev_smtp"
+    image: maildev/maildev:2.0.5
+    restart: on-failure
+    ports:
+      - "25:1025" # smtp server
+      - "1080:1080" # web ui
+    volumes:
+      - ./smtp/data:/tmp/maildev-1
