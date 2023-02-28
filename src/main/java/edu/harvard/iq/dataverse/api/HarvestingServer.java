@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
@@ -104,14 +105,15 @@ public class HarvestingServer extends AbstractApiBean {
      * "description":$optional_set_description,"definition":$set_search_query_string}.
      */
     @POST
+    @AuthRequired
     @Path("/add")
-    public Response createOaiSet(String jsonBody, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+    public Response createOaiSet(@Context ContainerRequestContext crc, String jsonBody, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         /*
 	     * authorization modeled after the UI (aka HarvestingSetsPage)
          */
         AuthenticatedUser dvUser;
         try {
-            dvUser = findAuthenticatedUserOrDie();
+            dvUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -173,12 +175,13 @@ public class HarvestingServer extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("{specname}")
-    public Response modifyOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+    public Response modifyOaiSet(@Context ContainerRequestContext crc, String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
 
         AuthenticatedUser dvUser;
         try {
-            dvUser = findAuthenticatedUserOrDie();
+            dvUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -225,12 +228,13 @@ public class HarvestingServer extends AbstractApiBean {
     }
     
     @DELETE
+    @AuthRequired
     @Path("{specname}")
-    public Response deleteOaiSet(@PathParam("specname") String spec, @QueryParam("key") String apiKey) {
+    public Response deleteOaiSet(@Context ContainerRequestContext crc, @PathParam("specname") String spec, @QueryParam("key") String apiKey) {
         
         AuthenticatedUser dvUser;
         try {
-            dvUser = findAuthenticatedUserOrDie();
+            dvUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

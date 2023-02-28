@@ -21,13 +21,6 @@ import static jakarta.ws.rs.core.Response.Status.OK;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-public class BuiltinUsersIT {
-
     private static final Logger logger = Logger.getLogger(BuiltinUsersIT.class.getCanonicalName());
 
     private static final String builtinUserKey = "burrito";
@@ -92,8 +85,8 @@ public class BuiltinUsersIT {
         getUserAsJsonByToken = UtilIT.getAuthenticatedUserByToken("badcode");
         getUserAsJsonByToken.then().assertThat()
                 .body("status", equalTo("ERROR"))
-                .body("message", equalTo("User with token badcode not found."))
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .body("message", equalTo(ApiKeyAuthMechanism.RESPONSE_MESSAGE_BAD_API_KEY))
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
     }
 

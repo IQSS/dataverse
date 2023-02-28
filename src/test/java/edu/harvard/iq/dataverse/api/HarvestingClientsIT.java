@@ -130,7 +130,7 @@ public class HarvestingClientsIT {
         // ... and validate the values:
         
         getClientResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("status", equalTo(ApiConstants.STATUS_OK))
                 .body("data.type", equalTo("oai"))
                 .body("data.nickName", equalTo(nickName))
                 .body("data.archiveDescription", equalTo(ARCHIVE_DESCRIPTION))
@@ -215,7 +215,7 @@ public class HarvestingClientsIT {
             assertEquals(OK.getStatusCode(), getClientResponse.getStatusCode());
             JsonPath responseJsonPath = getClientResponse.body().jsonPath();
             assertNotNull("Invalid JSON in GET client response", responseJsonPath);
-            assertEquals(AbstractApiBean.STATUS_OK, responseJsonPath.getString("status")); 
+            assertEquals(ApiConstants.STATUS_OK, responseJsonPath.getString("status"));
             
             String clientStatus = responseJsonPath.getString("data.status");
             assertNotNull(clientStatus);

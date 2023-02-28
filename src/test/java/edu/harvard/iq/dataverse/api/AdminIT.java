@@ -38,6 +38,8 @@ public class AdminIT {
 
     private static final Logger logger = Logger.getLogger(AdminIT.class.getCanonicalName());
 
+    private final String testNonSuperuserApiToken = createTestNonSuperuserApiToken();
+
     @BeforeClass
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -45,16 +47,11 @@ public class AdminIT {
 
     @Test
     public void testListAuthenticatedUsers() throws Exception {
-        Response anon = UtilIT.listAuthenticatedUsers("");
+        Response anon = UtilIT.listAuthenticatedUsers(testNonSuperuserApiToken);
         anon.prettyPrint();
         anon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
-        Response createNonSuperuser = UtilIT.createRandomUser();
-        
-        String nonSuperuserUsername = UtilIT.getUsernameFromResponse(createNonSuperuser);
-        String nonSuperuserApiToken = UtilIT.getApiTokenFromResponse(createNonSuperuser);
-
-        Response nonSuperuser = UtilIT.listAuthenticatedUsers(nonSuperuserApiToken);
+        Response nonSuperuser = UtilIT.listAuthenticatedUsers(testNonSuperuserApiToken);
         nonSuperuser.prettyPrint();
         nonSuperuser.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
         
@@ -68,6 +65,9 @@ public class AdminIT {
         Response superuser = UtilIT.listAuthenticatedUsers(superuserApiToken);
         superuser.prettyPrint();
         superuser.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createNonSuperuser = UtilIT.createRandomUser();
+        String nonSuperuserUsername = UtilIT.getUsernameFromResponse(createNonSuperuser);
 
         Response deleteNonSuperuser = UtilIT.deleteUser(nonSuperuserUsername);
         assertEquals(200, deleteNonSuperuser.getStatusCode());
@@ -84,7 +84,7 @@ public class AdminIT {
         // --------------------------------------------
         Response anon = UtilIT.filterAuthenticatedUsers("", null, null, null, null);
         anon.prettyPrint();
-        anon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        anon.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
         // --------------------------------------------
         // Forbidden: Try with a regular user--*not a superuser*
@@ -285,7 +285,7 @@ public class AdminIT {
         String newEmailAddressToUse = "builtin2shib." + UUID.randomUUID().toString().substring(0, 8) + "@mailinator.com";
         String data = emailOfUserToConvert + ":" + password + ":" + newEmailAddressToUse;
 
-        Response builtinToShibAnon = UtilIT.migrateBuiltinToShib(data, "");
+        Response builtinToShibAnon = UtilIT.migrateBuiltinToShib(data, testNonSuperuserApiToken);
         builtinToShibAnon.prettyPrint();
         builtinToShibAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
@@ -315,11 +315,11 @@ public class AdminIT {
          * the Shib user has an invalid email address:
          * https://github.com/IQSS/dataverse/issues/2998
          */
-        Response shibToBuiltinAnon = UtilIT.migrateShibToBuiltin(Long.MAX_VALUE, "", "");
+        Response shibToBuiltinAnon = UtilIT.migrateShibToBuiltin(Long.MAX_VALUE, "", testNonSuperuserApiToken);
         shibToBuiltinAnon.prettyPrint();
         shibToBuiltinAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
-        Response nonSuperuser = UtilIT.migrateShibToBuiltin(Long.MAX_VALUE, "", "");
+        Response nonSuperuser = UtilIT.migrateShibToBuiltin(Long.MAX_VALUE, "", testNonSuperuserApiToken);
         nonSuperuser.prettyPrint();
         nonSuperuser.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
@@ -379,7 +379,7 @@ public class AdminIT {
         String newEmailAddressToUse = "builtin2shib." + UUID.randomUUID().toString().substring(0, 8) + "@mailinator.com";
         String data = emailOfUserToConvert + ":" + password + ":" + newEmailAddressToUse;
 
-        Response builtinToShibAnon = UtilIT.migrateBuiltinToShib(data, "");
+        Response builtinToShibAnon = UtilIT.migrateBuiltinToShib(data, testNonSuperuserApiToken);
         builtinToShibAnon.prettyPrint();
         builtinToShibAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
@@ -434,7 +434,7 @@ public class AdminIT {
         String data = emailOfUserToConvert + ":" + password + ":" + newEmailAddressToUse + ":" + providerIdToConvertTo + ":" + newPersistentUserIdInLookupTable;
 
         System.out.println("data: " + data);
-        Response builtinToOAuthAnon = UtilIT.migrateBuiltinToOAuth(data, "");
+        Response builtinToOAuthAnon = UtilIT.migrateBuiltinToOAuth(data, testNonSuperuserApiToken);
         builtinToOAuthAnon.prettyPrint();
         builtinToOAuthAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
@@ -465,11 +465,7 @@ public class AdminIT {
          * the OAuth user has an invalid email address:
          * https://github.com/IQSS/dataverse/issues/2998
          */
-        Response oauthToBuiltinAnon = UtilIT.migrateOAuthToBuiltin(Long.MAX_VALUE, "", "");
-        oauthToBuiltinAnon.prettyPrint();
-        oauthToBuiltinAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
-
-        Response nonSuperuser = UtilIT.migrateOAuthToBuiltin(Long.MAX_VALUE, "", "");
+        Response nonSuperuser = UtilIT.migrateOAuthToBuiltin(Long.MAX_VALUE, "", testNonSuperuserApiToken);
         nonSuperuser.prettyPrint();
         nonSuperuser.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
@@ -841,5 +837,11 @@ public class AdminIT {
         status = JsonPath.from(body).getString("status");
         assertEquals("OK", status);
         
+    }
+
+    private String createTestNonSuperuserApiToken() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        return UtilIT.getApiTokenFromResponse(createUserResponse);
     }
 }

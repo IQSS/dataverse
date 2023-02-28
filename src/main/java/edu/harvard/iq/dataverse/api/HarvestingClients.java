@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -55,8 +56,9 @@ public class HarvestingClients extends AbstractApiBean {
      *  optionally, plain text output may be provided as well.
      */
     @GET
+    @AuthRequired
     @Path("/")
-    public Response harvestingClients(@QueryParam("key") String apiKey) throws IOException {
+    public Response harvestingClients(@Context ContainerRequestContext crc, @QueryParam("key") String apiKey) throws IOException {
         
         List<HarvestingClient> harvestingClients = null; 
         try {
@@ -80,7 +82,7 @@ public class HarvestingClients extends AbstractApiBean {
             // the permission to view this harvesting client config. -- L.A. 4.4
             HarvestingClient retrievedHarvestingClient = null; 
             try {
-                DataverseRequest req = createDataverseRequest(findUserOrDie());
+                DataverseRequest req = createDataverseRequest(getRequestUser(crc));
                 retrievedHarvestingClient = execCommand( new GetHarvestingClientCommand(req, harvestingClient));
             } catch (Exception ex) {
                 // Don't do anything. 
@@ -89,7 +91,7 @@ public class HarvestingClients extends AbstractApiBean {
             }
             
             if (retrievedHarvestingClient != null) {
-                hcArr.add(harvestingConfigAsJson(retrievedHarvestingClient));
+                hcArr.add(JsonPrinter.json(retrievedHarvestingClient));
             }
         }
         
@@ -97,8 +99,9 @@ public class HarvestingClients extends AbstractApiBean {
     } 
     
     @GET
+    @AuthRequired
     @Path("{nickName}")
-    public Response harvestingClient(@PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException {
+    public Response harvestingClient(@Context ContainerRequestContext crc, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException {
         
         HarvestingClient harvestingClient = null; 
         try {
@@ -122,7 +125,7 @@ public class HarvestingClients extends AbstractApiBean {
             // findUserOrDie() and execCommand() both throw WrappedResponse 
             // exception, that already has a proper HTTP response in it. 
             
-            retrievedHarvestingClient = execCommand(new GetHarvestingClientCommand(createDataverseRequest(findUserOrDie()), harvestingClient));
+            retrievedHarvestingClient = execCommand(new GetHarvestingClientCommand(createDataverseRequest(getRequestUser(crc)), harvestingClient));
             logger.fine("retrieved Harvesting Client " + retrievedHarvestingClient.getName() + " with the GetHarvestingClient command.");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -137,7 +140,7 @@ public class HarvestingClients extends AbstractApiBean {
         }
         
         try {
-            return ok(harvestingConfigAsJson(retrievedHarvestingClient));  
+            return ok(JsonPrinter.json(retrievedHarvestingClient));  
         } catch (Exception ex) {
             logger.warning("Unknown exception caught while trying to format harvesting client config as json: "+ex.getMessage());
             return error( Response.Status.BAD_REQUEST, 
@@ -146,12 +149,13 @@ public class HarvestingClients extends AbstractApiBean {
     }
     
     @POST
+    @AuthRequired
     @Path("{nickName}")
-    public Response createHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+    public Response createHarvestingClient(@Context ContainerRequestContext crc, String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         // Per the discussion during the QA of PR #9174, we decided to make 
         // the create/edit APIs superuser-only (the delete API was already so)
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if ((!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can create harvesting clients."));
             }
@@ -215,9 +219,9 @@ public class HarvestingClients extends AbstractApiBean {
             }
             ownerDataverse.getHarvestingClientConfigs().add(harvestingClient);
                         
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             harvestingClient = execCommand(new CreateHarvestingClientCommand(req, harvestingClient));
-            return created( "/harvest/clients/" + nickName, harvestingConfigAsJson(harvestingClient));
+            return created( "/harvest/clients/" + nickName, JsonPrinter.json(harvestingClient));
                     
         } catch (JsonParseException ex) {
             return error( Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage() );
@@ -230,10 +234,11 @@ public class HarvestingClients extends AbstractApiBean {
     }
     
     @PUT
+    @AuthRequired
     @Path("{nickName}")
-    public Response modifyHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+    public Response modifyHarvestingClient(@Context ContainerRequestContext crc, String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if ((!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can modify harvesting clients."));
             }
@@ -256,7 +261,7 @@ public class HarvestingClients extends AbstractApiBean {
         String ownerDataverseAlias = harvestingClient.getDataverse().getAlias();
         
         try ( StringReader rdr = new StringReader(jsonBody) ) {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             JsonObject json = Json.createReader(rdr).readObject();
             
             HarvestingClient newHarvestingClient = new HarvestingClient(); 
@@ -269,6 +274,8 @@ public class HarvestingClients extends AbstractApiBean {
             }
             
             // Go through the supported editable fields and update the client accordingly: 
+            // TODO: We may want to reevaluate whether we really want/need *all*
+            // of these fields to be editable.
             
             if (newHarvestingClient.getHarvestingUrl() != null) {
                 harvestingClient.setHarvestingUrl(newHarvestingClient.getHarvestingUrl());
@@ -288,10 +295,13 @@ public class HarvestingClients extends AbstractApiBean {
             if (newHarvestingClient.getHarvestStyle() != null) {
                 harvestingClient.setHarvestStyle(newHarvestingClient.getHarvestStyle());
             }
+            if (newHarvestingClient.getCustomHttpHeaders() != null) {
+                harvestingClient.setCustomHttpHeaders(newHarvestingClient.getCustomHttpHeaders());
+            }
             // TODO: Make schedule configurable via this API too. 
             
             harvestingClient = execCommand( new UpdateHarvestingClientCommand(req, harvestingClient));
-            return ok( "/harvest/clients/" + nickName, harvestingConfigAsJson(harvestingClient));
+            return ok( "/harvest/clients/" + nickName,  JsonPrinter.json(harvestingClient)); // harvestingConfigAsJson(harvestingClient));
                     
         } catch (JsonParseException ex) {
             return error( Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage() );
@@ -304,15 +314,16 @@ public class HarvestingClients extends AbstractApiBean {
     }
     
     @DELETE
+    @AuthRequired
     @Path("{nickName}")
-    public Response deleteHarvestingClient(@PathParam("nickName") String nickName) throws IOException {
+    public Response deleteHarvestingClient(@Context ContainerRequestContext crc, @PathParam("nickName") String nickName) throws IOException {
         // Deleting a client can take a while (if there's a large amnount of 
         // harvested content associated with it). So instead of calling the command
         // directly, we will be calling an async. service bean method. 
 
         
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if ((!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can delete harvesting clients."));
             }
@@ -361,14 +372,15 @@ public class HarvestingClients extends AbstractApiBean {
     
     // This POST starts a new harvesting run:
     @POST
+    @AuthRequired
     @Path("{nickName}/run")
-    public Response startHarvestingJob(@PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws IOException {
+    public Response startHarvestingJob(@Context ContainerRequestContext crc, @PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws IOException {
         
         try {
             AuthenticatedUser authenticatedUser = null; 
             
             try {
-                authenticatedUser = findAuthenticatedUserOrDie();
+                authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             } catch (WrappedResponse wr) {
                 return error(Response.Status.UNAUTHORIZED, "Authentication required to use this API method");
             }
@@ -390,33 +402,5 @@ public class HarvestingClients extends AbstractApiBean {
             return this.error(Response.Status.BAD_REQUEST, "Exception thrown when running harvesting client\""+clientNickname+"\" via REST API; " + e.getMessage());
         }
         return this.accepted();
-    }
-    
-    /* Auxiliary, helper methods: */ 
-    
-    public static JsonObjectBuilder harvestingConfigAsJson(HarvestingClient harvestingConfig) {
-        if (harvestingConfig == null) {
-            return null; 
-        }
-        
-        
-        return jsonObjectBuilder().add("nickName", harvestingConfig.getName()).
-                add("dataverseAlias", harvestingConfig.getDataverse().getAlias()).
-                add("type", harvestingConfig.getHarvestType()).
-                add("style", harvestingConfig.getHarvestStyle()).
-                add("harvestUrl", harvestingConfig.getHarvestingUrl()).
-                add("archiveUrl", harvestingConfig.getArchiveUrl()).
-                add("archiveDescription",harvestingConfig.getArchiveDescription()).
-                add("metadataFormat", harvestingConfig.getMetadataPrefix()).
-                add("set", harvestingConfig.getHarvestingSet() == null ? "N/A" : harvestingConfig.getHarvestingSet()).
-                add("schedule", harvestingConfig.isScheduled() ? harvestingConfig.getScheduleDescription() : "none").
-                add("status", harvestingConfig.isHarvestingNow() ? "inProgress" : "inActive").
-                add("lastHarvest", harvestingConfig.getLastHarvestTime() == null ? "N/A" : harvestingConfig.getLastHarvestTime().toString()).
-                add("lastResult", harvestingConfig.getLastResult()).
-                add("lastSuccessful", harvestingConfig.getLastSuccessfulHarvestTime() == null ? "N/A" : harvestingConfig.getLastSuccessfulHarvestTime().toString()).
-                add("lastNonEmpty", harvestingConfig.getLastNonEmptyHarvestTime() == null ? "N/A" : harvestingConfig.getLastNonEmptyHarvestTime().toString()).
-                add("lastDatasetsHarvested", harvestingConfig.getLastHarvestedDatasetCount() == null ? "N/A" : harvestingConfig.getLastHarvestedDatasetCount().toString()).
-                add("lastDatasetsDeleted", harvestingConfig.getLastDeletedDatasetCount() == null ? "N/A" : harvestingConfig.getLastDeletedDatasetCount().toString()).
-                add("lastDatasetsFailed", harvestingConfig.getLastFailedDatasetCount() == null ? "N/A" : harvestingConfig.getLastFailedDatasetCount().toString());
     }
 }

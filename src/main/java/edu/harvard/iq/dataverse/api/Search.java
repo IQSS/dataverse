@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
@@ -55,7 +56,9 @@ public class Search extends AbstractApiBean {
     SolrIndexServiceBean SolrIndexService;
 
     @GET
+    @AuthRequired
     public Response search(
+            @Context ContainerRequestContext crc,
             @QueryParam("q") String query,
             @QueryParam("type") final List<String> types,
             @QueryParam("subtree") final List<String> subtrees,
@@ -78,7 +81,7 @@ public class Search extends AbstractApiBean {
 
         User user;
         try {
-            user = getUser();
+            user = getUser(crc);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -226,10 +229,10 @@ public class Search extends AbstractApiBean {
         }
     }
 
-    private User getUser() throws WrappedResponse {
+    private User getUser(ContainerRequestContext crc) throws WrappedResponse {
         User userToExecuteSearchAs = GuestUser.get();
         try {
-            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (authenticatedUser != null) {
                 userToExecuteSearchAs = authenticatedUser;
             }

@@ -743,10 +743,11 @@ public class UtilIT {
     }
     
     static Response downloadAuxFile(Long fileId, String formatTag, String formatVersion, String apiToken) {
-        Response response = given()
-            .header(API_TOKEN_HTTP_HEADER, apiToken)
-            .get("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
-        return response;
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
     }
     
     static Response listAuxFilesByOrigin(Long fileId, String origin, String apiToken) {
@@ -998,6 +999,12 @@ public class UtilIT {
             .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + optionalQueryParam);
     }
     
+    static Response getFileData(String fileId, String apiToken) {       
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId );
+    }
+
     static Response testIngest(String fileName, String fileType) {
         return given()
             .get("/api/ingest/test/file?fileName=" + fileName + "&fileType=" + fileType);
@@ -1170,7 +1177,14 @@ public class UtilIT {
             .post("/api/files/" + fileId + "/uningest/?key=" + apiToken);
         return uningestFileResponse;
     }
-    
+
+    public static Response extractNcml(Long fileId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/files/" + fileId + "/extractNcml");
+        return response;
+    }
+
     //I don't understand why this blows up when I remove the key
     public static Response getDataFileMetadata(Long fileId, String apiToken) {
         Response fileResponse = given()
@@ -3122,5 +3136,31 @@ public class UtilIT {
         
         
         return importDDI.post(postString);
+    }
+
+    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json; charset=utf-8")
+                .queryParam("role_ids", roleIds)
+                .queryParam("dvobject_types", MyDataFilterParams.defaultDvObjectTypes)
+                .queryParam("published_states", MyDataFilterParams.defaultPublishedStates)
+                .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
+        return response;
+    }
+
+    static Response createSignedUrl(String apiToken, String apiPath, String username) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(String.format("{\"url\":\"%s\",\"timeOut\":35,\"user\":\"%s\"}", getRestAssuredBaseUri() + apiPath, username))
+                .contentType("application/json")
+                .post("/api/admin/requestSignedUrl");
+        return response;
+    }
+
+    static String getSignedUrlFromResponse(Response createSignedUrlResponse) {
+        JsonPath jsonPath = JsonPath.from(createSignedUrlResponse.body().asString());
+        String signedUrl = jsonPath.getString("data.signedUrl");
+        return signedUrl;
     }
 }

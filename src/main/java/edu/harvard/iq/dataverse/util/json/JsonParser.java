@@ -908,6 +908,7 @@ public class JsonParser {
         harvestingClient.setArchiveDescription(obj.getString("archiveDescription", null));
         harvestingClient.setMetadataPrefix(obj.getString("metadataFormat",null));
         harvestingClient.setHarvestingSet(obj.getString("set",null));
+        harvestingClient.setCustomHttpHeaders(obj.getString("customHeaders", null));
 
         return dataverseAlias;
     }
