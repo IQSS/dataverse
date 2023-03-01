@@ -82,6 +82,8 @@ While Postgres can accomodate usernames and database names containing hyphens, i
 
 For more information, please see https://docs.payara.fish/documentation/payara-server/password-aliases/password-alias-asadmin-commands.html
 
+.. _importance-of-siteUrl:
+
 **IMPORTANT:** The installer will also ask for an external site URL for the Dataverse installation. It is *imperative* that this value be supplied accurately, or a long list of functions will be inoperable, including:
 
 - email confirmation links
@@ -133,6 +135,11 @@ Dataset Cannot Be Published
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check to make sure you used a fully qualified domain name when installing the Dataverse Software. You can change the ``dataverse.fqdn`` JVM option after the fact per the :doc:`config` section.
+
+Got ERR_ADDRESS_UNREACHABLE While Navigating on Interface or API Calls
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are receiving an ``ERR_ADDRESS_UNREACHABLE`` while navigating the GUI or making an API call, make sure the ``siteUrl`` JVM option is defined. For details on how to set ``siteUrl``, please refer to :ref:`dataverse.siteUrl` from the :doc:`config` section. For context on why setting this option is necessary, refer to :ref:`dataverse.fqdn` from the :doc:`config` section.
 
 Problems Sending Email
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -207,7 +214,7 @@ Fresh Reinstall
 Early on when you're installing the Dataverse Software, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Payara, PostgreSQL and Solr, but you should be conscious of how to clear out their data. For Payara, a common helpful process is to:
 
 - Stop Payara; 
-- Remove the ``generated`` and ``osgi-cache`` directories;
+- Remove the ``generated``, ``lib/databases`` and ``osgi-cache`` directories from the ``domain1`` directory;
 - Start Payara
 
 Drop database

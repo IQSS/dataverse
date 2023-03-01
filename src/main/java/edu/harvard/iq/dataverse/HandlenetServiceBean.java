@@ -25,8 +25,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +33,7 @@ import javax.ejb.Stateless;
 import java.security.PrivateKey;
 
 /* Handlenet imports: */
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import net.handle.hdllib.AbstractMessage;
 import net.handle.hdllib.AbstractResponse;
 import net.handle.hdllib.AdminRecord;
@@ -248,21 +247,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     }
  
     public String getSiteUrl() {
-        logger.log(Level.FINE,"getSiteUrl");
-        String hostUrl = System.getProperty("dataverse.siteUrl");
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
-        }
-        String hostName = System.getProperty("dataverse.fqdn");
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
+        return SystemConfig.getDataverseSiteUrlStatic();
     }
     
     private byte[] readKey(final String file) {

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -35,7 +36,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.Path;
@@ -92,16 +93,14 @@ public class EditDDI  extends AbstractApiBean {
 
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
-    @Context
-    protected HttpServletRequest httpRequest;
-
     private VariableMetadataUtil variableMetadataUtil;
 
 
     @PUT
-    @Consumes("application/xml")
+    @AuthRequired
     @Path("{fileId}")
-    public Response edit (InputStream body, @PathParam("fileId") String fileId) {
+    @Consumes("application/xml")
+    public Response edit(@Context ContainerRequestContext crc, InputStream body, @PathParam("fileId") String fileId) {
         DataFile dataFile = null;
         try {
             dataFile = findDataFileOrDie(fileId);
@@ -109,7 +108,7 @@ public class EditDDI  extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-        User apiTokenUser = checkAuth(dataFile);
+        User apiTokenUser = checkAuth(getRequestUser(crc), dataFile);
 
         if (apiTokenUser == null) {
             return unauthorized("Cannot edit metadata, access denied" );
@@ -193,7 +192,7 @@ public class EditDDI  extends AbstractApiBean {
         Command<Dataset> cmd;
         try {
 
-            DataverseRequest dr = new DataverseRequest(apiTokenUser, httpRequest);
+            DataverseRequest dr = createDataverseRequest(apiTokenUser);
             cmd = new UpdateDatasetVersionCommand(dataset, dr, fm);
             ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             dataset = commandEngine.submit(cmd);
@@ -335,7 +334,7 @@ public class EditDDI  extends AbstractApiBean {
         }
         Command<Dataset> cmd;
         try {
-            DataverseRequest dr = new DataverseRequest(apiTokenUser, httpRequest);
+            DataverseRequest dr = createDataverseRequest(apiTokenUser);
             cmd = new UpdateDatasetVersionCommand(dataset, dr);
             ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             commandEngine.submit(cmd);
@@ -430,27 +429,10 @@ public class EditDDI  extends AbstractApiBean {
     }
 
 
-    private User checkAuth(DataFile dataFile) {
-
-        User apiTokenUser = null;
-
-        try {
-            apiTokenUser = findUserOrDie();
-        } catch (WrappedResponse wr) {
-            apiTokenUser = null;
-            logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
+    private User checkAuth(User requestUser, DataFile dataFile) {
+        if (!permissionService.requestOn(createDataverseRequest(requestUser), dataFile.getOwner()).has(Permission.EditDataset)) {
+            return null;
         }
-
-        if (apiTokenUser != null) {
-            // used in an API context
-            if (!permissionService.requestOn(createDataverseRequest(apiTokenUser), dataFile.getOwner()).has(Permission.EditDataset)) {
-                apiTokenUser = null;
-            }
-        }
-
-        return apiTokenUser;
-
+        return requestUser;
     }
 }
-
-

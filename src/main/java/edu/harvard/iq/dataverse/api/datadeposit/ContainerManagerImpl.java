@@ -137,7 +137,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
                     }
-                    DatasetVersion datasetVersion = dataset.getEditVersion();
+                    DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
                     // erase all metadata before creating populating dataset version
                     List<DatasetField> emptyDatasetFields = new ArrayList<>();
                     datasetVersion.setDatasetFields(emptyDatasetFields);

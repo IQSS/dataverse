@@ -25,6 +25,7 @@
         <jacoco.version>0.8.7</jacoco.version>
         <poi.version>5.2.1</poi.version>
         <tika.version>2.4.1</tika.version>
+        <netcdf.version>5.5.3</netcdf.version>
     </properties>
     
     <!-- Versions of dependencies used both directly and transitive are managed here.
@@ -117,7 +118,7 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.2.4</version>
+            <version>2.8.9</version>
             <scope>compile</scope>
         </dependency>
         <!-- Should be refactored and moved to transitive section above once on Java EE 8 (makes WAR smaller) -->
@@ -233,7 +234,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.9</version>
+            <version>1.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -347,7 +348,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.14.2</version>
+            <version>1.15.3</version>
         </dependency>
         <dependency>
             <groupId>io.searchbox</groupId>
@@ -380,54 +381,18 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>9.9.1</version>
+            <version>9.41.1</version>
         </dependency>
-        <!-- EXPERIMENTAL: -->
-        <!-- lyncode xoai OAI-PMH implementation: -->
-        <!-- unfortunately, their 4.10 version -->
-        <!-- is still buggy. As an experiment, I'm using -->
-        <!-- a patched version I built locally. -->
-        <!-- (pull requests pending - L.A. -->
-        <!-- These locally-built XOAI libraries are still a serious debt -->
-        <!-- that needs to be addressed. Adding explicit "exclusion" entries -->
-        <!-- below for the immediate purpose of getting rid of the log4j library -->
-        <!-- that was being added to the project via these dependencies. (L.A. - Jan. 2022) -->
-        <!-- (note the reload4j explicitly added below as a replacement! -->
+        <!-- New and Improved GDCC XOAI library! --> 
         <dependency>
-            <groupId>com.lyncode</groupId>
-            <artifactId>xoai-common</artifactId>
-            <version>4.1.0-header-patch</version>
-        </dependency>
-        <dependency>
-            <groupId>com.lyncode</groupId>
+            <groupId>io.gdcc</groupId>
             <artifactId>xoai-data-provider</artifactId>
-            <version>4.1.0-header-patch</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>${gdcc.xoai.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.lyncode</groupId>
+            <groupId>io.gdcc</groupId>
             <artifactId>xoai-service-provider</artifactId>
-            <version>4.1.0-header-patch</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- reload4j is a drop-in security patch/replacement for log4j1. -->
-        <!-- it is here because the XOAI libraries above need it. -->
-        <!-- (https://reload4j.qos.ch/) -->
-        <dependency>
-            <groupId>ch.qos.reload4j</groupId>
-            <artifactId>reload4j</artifactId>
-            <version>${reload4j.version}</version>
-            <scope>runtime</scope>
+            <version>${gdcc.xoai.version}</version>
         </dependency>
         <!-- Added for AutoService -->
         <dependency>
@@ -529,7 +494,12 @@
           <artifactId>java-json-canonicalization</artifactId>
           <version>1.1</version>
         </dependency>
-        
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-core</artifactId>
+            <version>${netcdf.version}</version>
+        </dependency>
+
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
