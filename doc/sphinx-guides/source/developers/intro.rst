@@ -32,8 +32,6 @@ We make use of a variety of Jakarta EE technologies such as JPA, JAX-RS, JMS, an
 
 In addition, we start to adopt parts of Eclipse MicroProfile, namely `MicroProfile Config <https://github.com/eclipse/microprofile-config>`_.
 
-We thank EJ Technologies for granting us a free open source project license for their Java profiler `JProfiler <https://www.ej-technologies.com/products/jprofiler/overview.html>`_.
-
 Roadmap
 -------
 
