@@ -15,8 +15,6 @@ We love contributors! Please see our [Contributing Guide][] for ways you can hel
 
 Dataverse is a trademark of President and Fellows of Harvard College and is registered in the United States.
 
-We thank EJ Technologies for granting us a free open source project license for their Java profiler [JProfiler][].
-
 [![Dataverse Project logo](src/main/webapp/resources/images/dataverseproject_logo.jpg?raw=true "Dataverse Project")](http://dataverse.org)
 
 [![API Test Status](https://jenkins.dataverse.org/buildStatus/icon?job=IQSS-dataverse-develop&subject=API%20Test%20Status)](https://jenkins.dataverse.org/job/IQSS-dataverse-develop/)
@@ -40,4 +38,3 @@ We thank EJ Technologies for granting us a free open source project license for 
 [chat.dataverse.org]: http://chat.dataverse.org
 [Dataverse Community Meeting]: https://dataverse.org/events
 [open source]: LICENSE.md
-[JProfiler]: https://www.ej-technologies.com/products/jprofiler/overview.html
