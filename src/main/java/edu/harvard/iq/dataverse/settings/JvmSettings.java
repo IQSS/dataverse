@@ -86,10 +86,10 @@ public enum JvmSettings {
     
     // PROVIDER HANDLE
     SCOPE_PID_HANDLENET(SCOPE_PID, "handlenet"),
-    HANDLENET_INDEX(SCOPE_PID_HANDLENET, "index"),
+    HANDLENET_INDEX(SCOPE_PID_HANDLENET, "index", "dataverse.handlenet.index"),
     SCOPE_PID_HANDLENET_KEY(SCOPE_PID_HANDLENET, "key"),
-    HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path"),
-    HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase"),
+    HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path", "dataverse.handlenet.admcredfile"),
+    HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase", "dataverse.handlenet.admprivphrase"),
     
     ;
     
