@@ -14,7 +14,7 @@ docker build -t dv0 -f c8.dockerfile .
 # cleanup from previous runs if necessary
 docker rm -f dv
 # start container
-docker run -d -p 8084:80 -p 8083:8080 -p 9010:9009 --name dv dv0
+docker run -d -p 8084:80 -p 8083:8080 -p 9010:9009 -p 8983:8983 --name dv dv0
 # wait for glassfish to be healthy
 i_wait=0
 d_wait=10

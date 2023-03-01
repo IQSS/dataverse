@@ -15,6 +15,7 @@ export RSERVE_PASS=rserve
 export SMTP_SERVER=localhost
 export MEM_HEAP_SIZE=2048
 export GLASSFISH_DOMAIN=domain1
+export SOLR_LOCATION=LOCAL
 cd scripts/installer
 #cp ../../conf/jhove/jhove.conf $GLASSFISH_ROOT/glassfish/domains/$GLASSFISH_DOMAIN/config/jhove.conf
 cp /opt/dv/testdata/jhove.conf $GLASSFISH_ROOT/glassfish/domains/$GLASSFISH_DOMAIN/config/jhove.conf

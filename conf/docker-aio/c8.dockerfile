@@ -5,7 +5,7 @@ RUN dnf -qy module disable postgresql
 RUN yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 
 RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf
-RUN yum install -y java-11-openjdk-devel postgresql13-server sudo epel-release unzip curl httpd python2 diffutils
+RUN yum install -y java-17-openjdk-devel postgresql13-server sudo epel-release unzip curl httpd python2 diffutils procps
 RUN yum install -y jq lsof awscli
 
 # for older search scripts
@@ -24,7 +24,7 @@ COPY disableipv6.conf /etc/sysctl.d/
 RUN rm /etc/httpd/conf/*
 COPY httpd.conf /etc/httpd/conf 
 RUN cd /opt ; tar zxf /tmp/dv/deps/solr-8.11.1dv.tgz
-RUN cd /opt ; unzip /tmp/dv/deps/payara-6.2022.1.zip ; ln -s /opt/payara6 /opt/glassfish4
+RUN cd /opt ; unzip /tmp/dv/deps/payara-6.2023.2.zip ; ln -s /opt/payara6 /opt/glassfish4
 
 # this copy of domain.xml is the result of running `asadmin set server.monitoring-service.module-monitoring-levels.jvm=LOW` on a default glassfish installation (aka - enable the glassfish REST monitir endpoint for the jvm`
 # this dies under Java 11, do we keep it?

@@ -615,7 +615,7 @@ public class UtilIT {
     }
     
     public static Response uploadRandomFile(String persistentId, String apiToken) {
-        String zipfilename = "trees.zip";
+        String zipfilename = "trees.zip"; //uploading zip files is broken
         return uploadFile(persistentId, zipfilename, apiToken);
     }
     

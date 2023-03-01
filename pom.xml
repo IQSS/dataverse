@@ -40,7 +40,7 @@
         <commons.text.version>1.10.0</commons.text.version>
         <commons.math.version>2.2</commons.math.version>
         <commons.validator.version>1.7</commons.validator.version>
-        <solr.version>8.11.2</solr.version>
+        <solr.version>8.11.1</solr.version>
         <colt.version>1.2.0</colt.version>
         <fits.version>2012-10-25-generated</fits.version>
         <handle.version>8.1.1</handle.version>

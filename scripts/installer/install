@@ -685,7 +685,7 @@ print "can publish datasets. Once you receive the account name and password, add
 print "as the following two JVM options:\n";
 print "\t<jvm-options>-Ddoi.username=...</jvm-options>\n";
 print "\t<jvm-options>-Ddoi.password=...</jvm-options>\n";
-print "and restart payara5\n";
+print "and restart payara6\n";
 print "If this is a production Dataverse and you are planning to register datasets as \n";
 print "\"real\", non-test DOIs or Handles, consult the \"Persistent Identifiers and Publishing Datasets\"\n";
 print "section of the Installataion guide, on how to configure your Dataverse with the proper registration\n";
@@ -954,9 +954,9 @@ sub setup_appserver {
 # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
 # - so it may need to be readjusted here: 
 
-    if ( $glassfish_dir ne "/usr/local/payara5" )
+    if ( $glassfish_dir ne "/usr/local/payara6" )
     {
-	system( "sed 's:/usr/local/payara5:$glassfish_dir:g' < " . $JHOVE_CONFIG_DIST . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
+	system( "sed 's:/usr/local/payara6:$glassfish_dir:g' < " . $JHOVE_CONFIG_DIST . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
     }
     else 
     {

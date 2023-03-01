@@ -18,7 +18,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                jdk: [ '11' ]
+                jdk: [ '17' ]
                 experimental: [false]
                 status:  ["Stable"]
                 #

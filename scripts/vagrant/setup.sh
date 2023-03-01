@@ -19,8 +19,8 @@ cp /dataverse/conf/vagrant/etc/yum.repos.d/shibboleth.repo /etc/yum.repos.d
 #yum install -y shibboleth shibboleth-embedded-ds
 
 # java configuration et alia
-dnf install -qy java-11-openjdk-devel httpd mod_ssl unzip
-alternatives --set java /usr/lib/jvm/jre-11-openjdk/bin/java
+dnf install -qy java-17-openjdk-devel httpd mod_ssl unzip
+alternatives --set java /usr/lib/jvm/jre-17-openjdk/bin/java
 java -version
 
 # maven included in centos8 requires 1.8.0 - download binary instead
@@ -51,7 +51,7 @@ SOLR_USER=solr
 echo "Ensuring Unix user '$SOLR_USER' exists"
 useradd $SOLR_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
-PAYARA_ZIP="$DOWNLOAD_DIR/payara-6.2022.1.zip"
+PAYARA_ZIP="$DOWNLOAD_DIR/payara-6.2023.2.zip"
 SOLR_TGZ="$DOWNLOAD_DIR/solr-8.11.1.tgz"
 if [ ! -f $PAYARA_ZIP ] || [ ! -f $SOLR_TGZ ]; then
     echo "Couldn't find $PAYARA_ZIP or $SOLR_TGZ! Running download script...."
