@@ -13,16 +13,18 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./postgresql/data:/var/lib/postgresql/data
+      - ./docker-dev-volumes/postgresql/data:/var/lib/postgresql/data
 
   dev_solr_initializer:
     container_name: "dev_solr_initializer"
     image: alpine
     restart: "no"
     entrypoint: |
-      /bin/sh -c "chown 8983:8983 /conf"
+      /bin/sh -c "chown 8983:8983 /conf && cp *.xml /conf"
     volumes:
-      - ./solr/conf:/conf
+      - ./docker-dev-volumes/solr/conf:/conf
+      - ./conf/solr/8.11.1/schema.xml:/schema.xml
+      - ./conf/solr/8.11.1/solrconfig.xml:/solrconfig.xml
 
   dev_solr:
     container_name: "dev_solr"
@@ -35,8 +37,8 @@ services:
     entrypoint: |
       bash -c "cd /opt/solr-8.11.1/server/solr/configsets/_default/conf && cp -R -n . /opt/solr-8.11.1/server/solr/collection1 && solr-create -c collection1 -d /opt/solr-8.11.1/server/solr/collection1"
     volumes:
-      - ./solr/data:/var/solr
-      - ./solr/conf:/opt/solr-8.11.1/server/solr/collection1
+      - ./docker-dev-volumes/solr/data:/var/solr
+      - ./docker-dev-volumes/solr/conf:/opt/solr-8.11.1/server/solr/collection1
 
   dev_smtp:
     container_name: "dev_smtp"
@@ -46,4 +48,4 @@ services:
       - "25:1025" # smtp server
       - "1080:1080" # web ui
     volumes:
-      - ./smtp/data:/tmp/maildev-1
+      - ./docker-dev-volumes/smtp/data:/tmp/maildev-1
