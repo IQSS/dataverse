@@ -64,7 +64,6 @@ services:
       - "8983:8983"
     networks:
       - dataverse
-    user: root
     command:
       - bash
       - -c
