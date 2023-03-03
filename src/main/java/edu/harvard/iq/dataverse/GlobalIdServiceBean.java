@@ -46,8 +46,8 @@ public interface GlobalIdServiceBean {
     String generateDataFileIdentifier(DataFile datafile);
     boolean isGlobalIdUnique(GlobalId globalId);
     
-    public String getUrlPrefix();
-    public String getSeparator();
+    String getUrlPrefix();
+    String getSeparator();
     
     static GlobalIdServiceBean getBean(String protocol, CommandContext ctxt) {
         final Function<CommandContext, GlobalIdServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
