@@ -28,7 +28,17 @@ Build Instructions
 Run Instructions
 ++++++++++++++++
 
+First, start all the containers.
+
 ``mvn -Pct docker:run``
+
+Once all containers have been started, run the script :download:`dev-rebuild-docker.sh <../../../../scripts/dev/dev-rebuild-docker.sh>` script below. This is a simplified version of the script described in :ref:`rebuilding-dev-environment`.
+
+``scripts/dev/dev-rebuild-docker.sh``
+
+.. literalinclude:: ../../../../scripts/dev/dev-rebuild-docker.sh
+
+Check that you can log in to http://localhost:8080
 
 Tunables
 ++++++++
