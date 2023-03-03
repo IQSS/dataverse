@@ -5,6 +5,7 @@ import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -16,9 +17,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
@@ -93,8 +94,8 @@ public class BuiltinUsersIT {
         getUserAsJsonByToken = UtilIT.getAuthenticatedUserByToken("badcode");
         getUserAsJsonByToken.then().assertThat()
                 .body("status", equalTo("ERROR"))
-                .body("message", equalTo("User with token badcode not found."))
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .body("message", equalTo(ApiKeyAuthMechanism.RESPONSE_MESSAGE_BAD_API_KEY))
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
     }
 
