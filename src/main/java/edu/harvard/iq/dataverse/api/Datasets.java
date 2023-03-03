@@ -571,17 +571,20 @@ public class Datasets extends AbstractApiBean {
      * @return
      */
     @GET
+    @AuthRequired
     @Path("{id}/versions/{versionId}/linkset")
-    public Response getLinkset( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getLinkset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         if ( ":draft".equals(versionId) ) {
             return badRequest("Signposting is not supported on the :draft version");
         }
-        return response( req -> {
+        User user = getRequestUser(crc);
+        return response(req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             return ok(Json.createObjectBuilder().add("linkset", new SignpostingResources(systemConfig, dsv, settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingMaxAuthors),
                     settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingMaxItems)).getJsonLinkset()));
-        });
+        }, user);
     }
+
     @GET
     @AuthRequired
     @Path("{id}/modifyRegistration")
