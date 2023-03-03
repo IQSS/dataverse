@@ -29,6 +29,8 @@ FROM $BASE_IMAGE
 COPY --chown=payara:payara maven/deps ${DEPLOY_DIR}/dataverse/WEB-INF/lib/
 COPY --chown=payara:payara maven/app ${DEPLOY_DIR}/dataverse/
 COPY --chown=payara:payara maven/supplements ${DEPLOY_DIR}/dataverse/supplements/
+COPY --chown=payara:payara maven/scripts ${SCRIPT_DIR}/
+RUN chmod +x "${SCRIPT_DIR}"/*
 
 # Create symlinks for jHove
 RUN ln -s "${DEPLOY_DIR}/dataverse/supplements/jhove.conf" "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/jhove.conf" && \

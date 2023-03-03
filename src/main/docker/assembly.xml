@@ -37,7 +37,7 @@
         </fileSet>
         <!-- Init scripts and usage scripts (bootstrapping, configuration, ...) -->
         <fileSet>
-            <directory>conf/container/scripts</directory>
+            <directory>src/main/docker/scripts</directory>
             <outputDirectory>scripts</outputDirectory>
         </fileSet>
     </fileSets>
