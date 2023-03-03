@@ -23,7 +23,7 @@ AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2). (Easy to extend.)
 Build Instructions
 ++++++++++++++++++
 
-``mvn -Pct clean package docker:build``
+``mvn -Pct clean package``
 
 Run Instructions
 ++++++++++++++++
