@@ -257,7 +257,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path(retrieveDataPartialAPIPath)
-    @GET
     @Produces({"application/json"})
     public String retrieveMyDataAsJsonString(
             @Context ContainerRequestContext crc,
@@ -283,6 +282,16 @@ public class DataRetrieverAPI extends AbstractApiBean {
             }
         }
 
+        // For superusers, the searchUser may differ from the authUser
+        AuthenticatedUser searchUser = null;
+        // If the user is a superuser, see if a userIdentifier has been specified and use that instead
+        if ((authUser.isSuperuser()) && (userIdentifier != null) && (!userIdentifier.isEmpty())) {
+            searchUser = getUserFromIdentifier(userIdentifier);
+            if (searchUser != null) {
+                authUser = searchUser;
+                OTHER_USER = true;
+            } else {
+                return this.getJSONErrorString("No user found for: \"" + userIdentifier + "\"", null);
             }
         }
 
