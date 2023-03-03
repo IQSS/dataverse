@@ -59,6 +59,7 @@ services:
     depends_on:
       - solr_initializer
     restart: on-failure
+    hostname: solr
     ports:
       - "8983:8983"
     networks:
