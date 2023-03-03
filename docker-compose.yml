@@ -8,9 +8,7 @@ services:
     user: payara
     environment:
       - DATAVERSE_DB_HOST=postgres
-      - DATAVERSE_DB_USER=dataverse
       - DATAVERSE_DB_PASSWORD=secret
-      - DATAVERSE_SOLR_HOST=solr
     hostname: dataverse
     ports:
       - "8080:8080" # HTTP

@@ -25,6 +25,8 @@
 ARG BASE_IMAGE="gdcc/base:unstable"
 FROM $BASE_IMAGE
 
+ENV MP_CONFIG_PROFILE=ct
+
 # Copy app and deps from assembly in proper layers
 COPY --chown=payara:payara maven/deps ${DEPLOY_DIR}/dataverse/WEB-INF/lib/
 COPY --chown=payara:payara maven/app ${DEPLOY_DIR}/dataverse/
