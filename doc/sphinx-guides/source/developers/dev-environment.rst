@@ -91,7 +91,7 @@ To install Payara, run the following commands:
 
 ``sudo chown -R $USER /usr/local/payara5``
 
-Install service dependencies directly on localhost
+Install Service Dependencies Directly on localhost
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install PostgreSQL
@@ -156,7 +156,7 @@ To install Solr, execute the following commands:
 
 ``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
 
-Install service dependencies using Docker Compose
+Install Service Dependencies Using Docker Compose
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 To avoid having to install service dependencies like PostgreSQL or Solr directly on your localhost, there is the alternative of using the ``docker-compose-dev.yml`` file available in the repository root. For this option you need to have Docker and Docker Compose installed on your machine.
 
