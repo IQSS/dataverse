@@ -34,10 +34,29 @@
                                 <p:watermark for="searchFiles" value="#{bundle['dashboard.list_users.searchTerm.watermark']}"/>
                                 <p:remoteCommand name="submitsearch" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
                                 <span class="input-group-btn">
-                                    <p:commandLink styleClass="btn btn-default" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
-                                        <span class="glyphicon glyphicon-search"></span> #{bundle['dataverse.search.btn.find']}
+                                    <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                                        <span class="glyphicon glyphicon-search no-text"/>
                                     </p:commandLink>
                                 </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12" style="margin-bottom: 1em;">
+                            <div class="btn-group pull-right">
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                    <span class="glyphicon glyphicon-sort"></span> #{bundle['dataverse.results.btn.sort']} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu pull-right text-left">
+                                    <ui:repeat value="#{DashboardUsersPage.getSortingMap().entrySet()}" var="sortFieldEntry">
+                                        <li>
+                                            <p:commandLink action="#{DashboardUsersPage.runUserSearchWithSort(sortFieldEntry.key)}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                                                <h:outputText value="#{bundle[sortFieldEntry.value]}" styleClass="#{DashboardUsersPage.isSortedBy(sortFieldEntry.key) ? 'highlightBold' : ''}"/>
+                                            </p:commandLink>
+                                        </li>
+                                    </ui:repeat>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -65,6 +84,7 @@
                         </p:column>
                         <p:column width="12%" headerText="#{bundle['dashboard.list_users.tbl_header.authProviderFactoryAlias']}">
                             <h:outputText value="#{DashboardUsersPage.getAuthProviderFriendlyName(user.authProviderId)}" />
+                            <h:outputText rendered="#{user.deactivated}" value=" (#{bundle['dashboard.list_users.tbl_header.deactivated']})" />
                         </p:column>
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.roles']}">
                             <h:outputText value="#{user.roles}" />
@@ -84,7 +104,8 @@
                             <!-- Uses our standard approach, of showing a confirmation popup ("are you sure you want to toggle this? ...") first,  -->
                             <!-- before saving the toggled value. -->
                             <!-- The current user, the admin user viewing the dashboard, should not be allowed to toggle the superuser status on him- or herself: -->
-                            <p:selectBooleanCheckbox id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"  disabled="#{user.id == dataverseSession.user.id}">
+                            <!-- Additionally, deactivated users cannot become superusers so we disable the checkbox. -->
+                            <p:selectBooleanCheckbox id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"  disabled="#{user.id == dataverseSession.user.id or user.deactivated}">
                                 <p:ajax event="change" process="@this" oncomplete="PF('toggleSuperuserConfirmation').show();"  update=":dashboardUsersForm:toggleSuperuserConfirmation"/>
                             </p:selectBooleanCheckbox>
                         </p:column>

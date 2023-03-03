@@ -1,20 +1,16 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import edu.harvard.iq.dataverse.AuxiliaryFile;
+import edu.harvard.iq.dataverse.AuxiliaryFileServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+import edu.harvard.iq.dataverse.util.URLTokenUtil.ReservedWord;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Scope;
 
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DESCRIPTION;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_PARAMETERS;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_URL;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TYPE;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.SCOPE;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.CONTENT_TYPE;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.HAS_PREVIEW_MODE;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +29,12 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.ejb.EJB;
+import javax.json.JsonValue;
+
 @Stateless
 @Named
 public class ExternalToolServiceBean {
@@ -42,68 +44,54 @@ public class ExternalToolServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
+    @EJB
+    AuxiliaryFileServiceBean auxiliaryFileService;
+
     public List<ExternalTool> findAll() {
         TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o ORDER BY o.id", ExternalTool.class);
         return typedQuery.getResultList();
     }
 
     /**
-     * @param type explore or configure
+     * @param type explore, configure or preview
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findDatasetToolsByType(Type type) {
         String nullContentType = null;
-        String nullPreviewAvailable = null;
-        return findByScopeTypeAndContentType(ExternalTool.Scope.DATASET, type, nullContentType, nullPreviewAvailable);
+        return findByScopeTypeAndContentType(ExternalTool.Scope.DATASET, type, nullContentType);
     }
 
     /**
-     * @param type explore or configure
+     * @param type explore, configure or preview
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findFileToolsByType(Type type) {
         String nullContentType = null;
-        String nullPreviewAvailable = null;
-        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, nullContentType, nullPreviewAvailable);
+        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, nullContentType);
     }
 
     /**
-     * @param type explore or configure
+     * @param type explore, configure or preview
      * @param contentType file content type (MIME type)
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findFileToolsByTypeAndContentType(Type type, String contentType) {
-        String nullPreviewAvailable = null;
-        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType, nullPreviewAvailable);
-    }
-    
-    /**
-     * @param type explore or configure
-     * @param contentType file content type (MIME type)
-     * @return A list of tools or an empty list.
-     */
-    public List<ExternalTool> findFileToolsByTypeContentTypeAndAvailablePreview(Type type, String contentType) {
-        String previewAvailable = "true";
-        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType, previewAvailable);
+        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType);
     }
 
     /**
      * @param scope dataset or file
-     * @param type explore or configure
+     * @param type explore, configure, or preview
      * @param contentType file content type (MIME type)
      * @return A list of tools or an empty list.
      */
-    private List<ExternalTool> findByScopeTypeAndContentType(Scope scope, Type type, String contentType, String previewAvailable) {
+    private List<ExternalTool> findByScopeTypeAndContentType(Scope scope, Type type, String contentType) {
         List<ExternalTool> externalTools = new ArrayList<>();
         String contentTypeClause = "";
         if (contentType != null) {
             contentTypeClause = "AND o.contentType = :contentType";
         }
-        String previewAvailableClause = "";
-        if (previewAvailable != null) {
-            previewAvailableClause = " AND o.hasPreviewMode = 'true'";
-        }
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.scope = :scope AND o.type = :type " + contentTypeClause + previewAvailableClause, ExternalTool.class);
+        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o JOIN o.externalToolTypes t WHERE o.scope = :scope AND t.type = :type " + contentTypeClause, ExternalTool.class);
         typedQuery.setParameter("scope", scope);
         typedQuery.setParameter("type", type);
         if (contentType != null) {
@@ -139,6 +127,10 @@ public class ExternalToolServiceBean {
     }
 
     public ExternalTool save(ExternalTool externalTool) {
+        for (ExternalToolType externalToolType : externalTool.getExternalToolTypes()) {
+            // Avoid ERROR: null value in column "externaltool_id" violates not-null constraint
+            externalToolType.setExternalTool(externalTool);
+        }
         em.persist(externalTool);
         return em.merge(externalTool);
     }
@@ -148,13 +140,13 @@ public class ExternalToolServiceBean {
      * file supports The list of tools is passed in so it doesn't hit the
      * database each time
      */
-    public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
+    public List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
         List<ExternalTool> externalTools = new ArrayList<>();
         //Map tabular data to it's mimetype (the isTabularData() check assures that this code works the same as before, but it may need to change if tabular data is split into subtypes with differing mimetypes)
         final String contentType = file.isTabularData() ? DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
         allExternalTools.forEach((externalTool) -> {
-            //Match tool and file type 
-            if (contentType.equals(externalTool.getContentType())) {
+            //Match tool and file type, then check requirements
+            if (contentType.equals(externalTool.getContentType()) && meetsRequirements(externalTool, file)) {
                 externalTools.add(externalTool);
             }
         });
@@ -162,23 +154,46 @@ public class ExternalToolServiceBean {
         return externalTools;
     }
 
+    public boolean meetsRequirements(ExternalTool externalTool, DataFile dataFile) {
+        String requirements = externalTool.getRequirements();
+        if (requirements == null) {
+            logger.fine("Data file id" + dataFile.getId() + ": no requirements for tool id " + externalTool.getId());
+            return true;
+        }
+        boolean meetsRequirements = true;
+        JsonObject requirementsObj = JsonUtil.getJsonObject(requirements);
+        JsonArray auxFilesExist = requirementsObj.getJsonArray("auxFilesExist");
+        for (JsonValue jsonValue : auxFilesExist) {
+            String formatTag = jsonValue.asJsonObject().getString("formatTag");
+            String formatVersion = jsonValue.asJsonObject().getString("formatVersion");
+            AuxiliaryFile auxFile = auxiliaryFileService.lookupAuxiliaryFile(dataFile, formatTag, formatVersion);
+            if (auxFile == null) {
+                logger.fine("Data file id" + dataFile.getId() + ": cannot find required aux file. formatTag=" + formatTag + ". formatVersion=" + formatVersion);
+                meetsRequirements = false;
+                break;
+            } else {
+                logger.fine("Data file id" + dataFile.getId() + ": found required aux file. formatTag=" + formatTag + ". formatVersion=" + formatVersion);
+                meetsRequirements = true;
+            }
+        }
+        return meetsRequirements;
+    }
+
     public static ExternalTool parseAddExternalToolManifest(String manifest) {
 
         if (manifest == null || manifest.isEmpty()) {
             throw new IllegalArgumentException("External tool manifest was null or empty!");
         }
-        JsonReader jsonReader = Json.createReader(new StringReader(manifest));
-        JsonObject jsonObject = jsonReader.readObject();
+        JsonObject jsonObject = JsonUtil.getJsonObject(manifest);
         //Note: ExternalToolServiceBeanTest tests are dependent on the order of these retrievals
         String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
+        String toolName = getOptionalTopLevelField(jsonObject, TOOL_NAME);
         String description = getRequiredTopLevelField(jsonObject, DESCRIPTION);
-        String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
+        // Types are complicated enough to warrant their own method.
+        List<ExternalToolType> externalToolTypes = getAndValidateTypes(jsonObject);
         String scopeUserInput = getRequiredTopLevelField(jsonObject, SCOPE);
         String contentType = getOptionalTopLevelField(jsonObject, CONTENT_TYPE);
-        
 
-        // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
-        ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
         ExternalTool.Scope scope = ExternalTool.Scope.fromString(scopeUserInput);
         if (scope.equals(Scope.FILE) && (contentType == null || contentType.isEmpty())) {
             contentType = getRequiredTopLevelField(jsonObject, CONTENT_TYPE);
@@ -186,6 +201,9 @@ public class ExternalToolServiceBean {
         String toolUrl = getRequiredTopLevelField(jsonObject, TOOL_URL);
         JsonObject toolParametersObj = jsonObject.getJsonObject(TOOL_PARAMETERS);
         JsonArray queryParams = toolParametersObj.getJsonArray("queryParameters");
+        JsonArray allowedApiCallsArray = jsonObject.getJsonArray(ALLOWED_API_CALLS);
+        JsonObject requirementsObj = jsonObject.getJsonObject(REQUIREMENTS);
+ 
         boolean allRequiredReservedWordsFound = false;
         if (scope.equals(Scope.FILE)) {
             List<ReservedWord> requiredReservedWordCandidates = new ArrayList<>();
@@ -238,15 +256,16 @@ public class ExternalToolServiceBean {
 
         }
         String toolParameters = toolParametersObj.toString();
-
-        String hasPreviewMode = getOptionalTopLevelField(jsonObject, HAS_PREVIEW_MODE);
-
-        boolean hasPreviewModeBoolean = false;
-        if(hasPreviewMode != null && hasPreviewMode.equals("true")){
-            hasPreviewModeBoolean = true;
+        String allowedApiCalls = null;
+        if(allowedApiCallsArray !=null) {
+            allowedApiCalls = allowedApiCallsArray.toString();
+        }
+        String requirements = null;
+        if (requirementsObj != null) {
+            requirements = requirementsObj.toString();
         }
 
-        return new ExternalTool(displayName, description, type, scope, toolUrl, toolParameters, contentType, hasPreviewModeBoolean);
+        return new ExternalTool(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType, allowedApiCalls, requirements);
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {
@@ -263,6 +282,57 @@ public class ExternalToolServiceBean {
         } catch (NullPointerException ex) {
             return null;
         }
+    }
+
+    private static List<String> getRequiredTopLevelFieldArray(JsonObject jsonObject, String key) {
+        try {
+            List<String> returnList = new ArrayList<>();
+            JsonArray jsonArray = jsonObject.getJsonArray(key);
+            for (int i = 0; i < jsonArray.size(); i++) {
+                String listItem = jsonArray.getString(i);
+                returnList.add(listItem);
+            }
+            return returnList;
+        } catch (NullPointerException ex) {
+            throw new IllegalArgumentException(key + " is required.");
+        }
+    }
+
+    /**
+     * Throws exceptions to enforce that a type is present in the manifest and
+     * that each type is one of the supported types.
+     *
+     * While the newer "types: [string]" form is greatly preferred, the older
+     * "type: string" form is supported for backward compatibility.
+     */
+    private static List<ExternalToolType> getAndValidateTypes(JsonObject jsonObject) {
+        List<ExternalToolType> externalToolTypes = new ArrayList<>();
+        try {
+            // Try to get the preferred "types" form, which supports multiple.
+            List<String> typesUserInput = getRequiredTopLevelFieldArray(jsonObject, TYPES);
+            for (String typeUserInput : typesUserInput) {
+                ExternalToolType externalToolType = new ExternalToolType();
+                try {
+                    externalToolType.setType(ExternalTool.Type.fromString(typeUserInput));
+                } catch (IllegalArgumentException ex) {
+                    // The error we return here might be something like
+                    // "Type must be one of these values:...".
+                    // To let it bubble up we throw something other than
+                    // IllegalArgumentException so it isn't caught below.
+                    throw new RuntimeException(ex.getLocalizedMessage());
+                }
+                externalToolTypes.add(externalToolType);
+            }
+        } catch (IllegalArgumentException ex) {
+            // Fallback to the legacy "type" form, a single type.
+            // Known issue: If you pass an array in, you get a weird error.
+            String typeUserInput = getRequiredTopLevelField(jsonObject, LEGACY_SINGLE_TYPE);
+            ExternalToolType externalToolType = new ExternalToolType();
+            // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
+            externalToolType.setType(ExternalTool.Type.fromString(typeUserInput));
+            externalToolTypes.add(externalToolType);
+        }
+        return externalToolTypes;
     }
 
     public ApiToken getApiToken(String apiTokenString) {

@@ -92,7 +92,7 @@ public class ApiTokenPage implements java.io.Serializable {
     }
     
     public Boolean tokenIsExpired(){
-        return apiToken.getExpireTime().before(new Timestamp(System.currentTimeMillis()));
+        return apiToken.isExpired();
     }
     
     public void revoke() {

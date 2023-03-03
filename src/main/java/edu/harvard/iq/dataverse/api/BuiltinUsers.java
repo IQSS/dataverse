@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -84,8 +85,11 @@ public class BuiltinUsers extends AbstractApiBean {
     //and use the values to create BuiltinUser/AuthenticatedUser.
     //--MAD 4.9.3
     @POST
-    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
-        return internalSave(user, password, key);
+    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key, @QueryParam("sendEmailNotification") Boolean sendEmailNotification) {   
+        if( sendEmailNotification == null )
+            sendEmailNotification = true;
+        
+        return internalSave(user, password, key, sendEmailNotification);
     }
 
     /**
@@ -105,7 +109,29 @@ public class BuiltinUsers extends AbstractApiBean {
         return internalSave(user, password, key);
     }
     
+    /**
+     * Created this new endpoint to resolve issue #6915, optionally preventing 
+     * the email notification to the new user on account creation by adding 
+     * "false" as the third path parameter.
+     *
+     * @param user
+     * @param password
+     * @param key
+     * @param sendEmailNotification
+     * @return
+     */
+    @POST
+    @Path("{password}/{key}/{sendEmailNotification}")
+    public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key, @PathParam("sendEmailNotification") Boolean sendEmailNotification) {
+        return internalSave(user, password, key, sendEmailNotification);
+    }
+    
+    // internalSave without providing an explicit "sendEmailNotification"
     private Response internalSave(BuiltinUser user, String password, String key) {
+        return internalSave(user, password, key, true);
+    }
+    
+    private Response internalSave(BuiltinUser user, String password, String key, Boolean sendEmailNotification) {
         String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
         
         if (expectedKey == null) {
@@ -149,7 +175,7 @@ public class BuiltinUsers extends AbstractApiBean {
             } catch (Exception e) {
                 logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
             }
-            if (rootDataversePresent) {
+            if (rootDataversePresent && sendEmailNotification) {
                 userNotificationSvc.sendNotification(au,
                         new Timestamp(new Date().getTime()),
                         UserNotification.Type.CREATEACC, null);
@@ -187,4 +213,14 @@ public class BuiltinUsers extends AbstractApiBean {
         }
     }
 
+    /***
+     * This method was moved here from AbstractApiBean during the filter-based auth
+     * refactoring, in order to preserve the existing BuiltinUsers endpoints behavior.
+     *
+     * @param apiKey from request
+     * @return error Response
+     */
+    private Response badApiKey(String apiKey) {
+        return error(Status.UNAUTHORIZED, (apiKey != null) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + ApiKeyAuthMechanism.DATAVERSE_API_KEY_REQUEST_HEADER_NAME);
+    }
 }

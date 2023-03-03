@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.passwordreset;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.SettingsWrapper;
-import edu.harvard.iq.dataverse.ValidateEmail;
+import edu.harvard.iq.dataverse.validation.ValidateEmail;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.List;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 
 @ViewScoped
@@ -91,6 +91,8 @@ public class PasswordResetPage implements java.io.Serializable {
     String newPassword;
     
     PasswordResetData passwordResetData;
+
+    boolean validationFailed = true;
     
     private List<String> passwordErrors;
 
@@ -100,6 +102,10 @@ public class PasswordResetPage implements java.io.Serializable {
             passwordResetData = passwordResetExecResponse.getPasswordResetData();
             if (passwordResetData != null) {
                 user = passwordResetData.getBuiltinUser();
+                if (passwordResetData.getReason().equals(PasswordResetData.Reason.UPGRADE_REQUIRED)){
+                    newPassword = (String) FacesContext.getCurrentInstance().getExternalContext().getFlash().get("silentUpgradePasswd");
+                    validationFailed = false;
+                }
             } else {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, 
                         BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkTitle"),
@@ -121,13 +127,15 @@ public class PasswordResetPage implements java.io.Serializable {
                 actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetSent")
                             .setInfo("Email Address: " + emailAddress) );
             } else {
-                /**
-                 * @todo remove "single" when it's no longer necessary. See
-                 * https://github.com/IQSS/dataverse/issues/844 and
-                 * https://github.com/IQSS/dataverse/issues/1141
-                 */
-                logger.log(Level.INFO, "Couldn''t find single account using {0}", emailAddress);
+                logger.log(Level.INFO, "Cannot find account (or it's deactivated) given {0}", emailAddress);
             }
+            /**
+             * We show this "an email will be sent" message no matter what (if
+             * the account can be found or not, if the account has been
+             * deactivated or not) to prevent hackers from figuring out if you
+             * have an account based on your email address. Yes, this is a white
+             * lie sometimes, in the name of security.
+             */
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetInitiated"), 
                     BundleUtil.getStringFromBundle("passwdReset.successSubmit.tip", Arrays.asList(emailAddress))));
         } catch (PasswordResetException ex) {
@@ -141,12 +149,12 @@ public class PasswordResetPage implements java.io.Serializable {
 
     public String resetPassword() {
         PasswordChangeAttemptResponse response = passwordResetService.attemptPasswordReset(user, newPassword, this.token);
+        validationFailed = response.getMessageDetail().contains("Password Reset Problem");
         if (response.isChanged()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, response.getMessageSummary(), response.getMessageDetail()));
             String builtinAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
             AuthenticatedUser au = authSvc.lookupUser(builtinAuthProviderId, user.getUserName());
             session.setUser(au);
-            session.configureSessionTimeout();
             return "/dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "faces-redirect=true";
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, response.getMessageSummary(), response.getMessageDetail()));
@@ -197,6 +205,10 @@ public class PasswordResetPage implements java.io.Serializable {
         this.token = token;
     }
 
+    public boolean isFailedValidation(){
+        return validationFailed;
+    }
+
     public BuiltinUser getUser() {
         return user;
     }
@@ -233,14 +245,13 @@ public class PasswordResetPage implements java.io.Serializable {
         // FIXME: Pass the errors in.
         return passwordValidatorService.getGoodPasswordDescription(null);
     }
-    
+
     public String getCustomPasswordResetAlertMessage() {
         String customPasswordResetAlertMessage = settingsWrapper.getValueForKey(SettingsServiceBean.Key.PVCustomPasswordResetAlertMessage);
         if(customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()){
             return customPasswordResetAlertMessage;
         } else {
-            String defaultPasswordResetAlertMessage = BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");
-            return defaultPasswordResetAlertMessage;
+            return BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");
         }
     }
 }

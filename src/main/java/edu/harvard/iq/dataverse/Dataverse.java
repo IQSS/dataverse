@@ -2,8 +2,11 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,6 +34,8 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -40,11 +45,15 @@ import org.hibernate.validator.constraints.NotEmpty;
  * @author mbarsinai
  */
 @NamedQueries({
+    @NamedQuery(name = "Dataverse.findIdStale",query = "SELECT d.id FROM Dataverse d WHERE d.indexTime is NULL OR d.indexTime < d.modificationTime"),
+    @NamedQuery(name = "Dataverse.findIdStalePermission",query = "SELECT d.id FROM Dataverse d WHERE d.permissionIndexTime is NULL OR d.permissionIndexTime < d.permissionModificationTime"),
     @NamedQuery(name = "Dataverse.ownedObjectsById", query = "SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "Dataverse.findAll", query = "SELECT d FROM Dataverse d order by d.name"),
     @NamedQuery(name = "Dataverse.findRoot", query = "SELECT d FROM Dataverse d where d.owner.id=null"),
     @NamedQuery(name = "Dataverse.findByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias)=:alias"),
     @NamedQuery(name = "Dataverse.findByOwnerId", query="select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name"),
+    @NamedQuery(name = "Dataverse.findByCreatorId", query="select object(o) from Dataverse as o where o.creator.id =:creatorId order by o.name"),
+    @NamedQuery(name = "Dataverse.findByReleaseUserId", query="select object(o) from Dataverse as o where o.releaseUser.id =:releaseUserId order by o.name"),
     @NamedQuery(name = "Dataverse.filterByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias) LIKE :alias order by dv.alias"),
     @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias"),
     @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias")
@@ -147,6 +156,8 @@ public class Dataverse extends DvObjectContainer {
     }
 
     private String affiliation;
+    
+    ///private String storageDriver=null;
 
 	// Note: We can't have "Remove" here, as there are role assignments that refer
     //       to this role. So, adding it would mean violating a forign key contstraint.
@@ -313,8 +324,31 @@ public class Dataverse extends DvObjectContainer {
         return harvestingClient != null; 
     }
     */
-    
-    
+    private boolean metadataBlockFacetRoot;
+
+    public boolean isMetadataBlockFacetRoot() {
+        return metadataBlockFacetRoot;
+    }
+
+    public void setMetadataBlockFacetRoot(boolean metadataBlockFacetRoot) {
+        this.metadataBlockFacetRoot = metadataBlockFacetRoot;
+    }
+
+    @OneToMany(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST }, orphanRemoval=true)
+    private List<DataverseMetadataBlockFacet> metadataBlockFacets = new ArrayList<>();
+
+    public List<DataverseMetadataBlockFacet> getMetadataBlockFacets() {
+        if (isMetadataBlockFacetRoot() || getOwner() == null) {
+            return metadataBlockFacets;
+        } else {
+            return getOwner().getMetadataBlockFacets();
+        }
+    }
+
+    public void setMetadataBlockFacets(List<DataverseMetadataBlockFacet> metadataBlockFacets) {
+        this.metadataBlockFacets = metadataBlockFacets;
+    }
+
     public List<Guestbook> getParentGuestbooks() {
         List<Guestbook> retList = new ArrayList<>();
         Dataverse testDV = this;
@@ -755,5 +789,9 @@ public class Dataverse extends DvObjectContainer {
             other = other.getOwner();
         }
         return false;
+    }
+    
+    public String getLocalURL() {
+        return  SystemConfig.getDataverseSiteUrlStatic() + "/dataverse/" + this.getAlias();
     }
 }

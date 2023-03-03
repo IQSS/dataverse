@@ -184,7 +184,7 @@ public class MetricsUtilTest {
             JsonArray jsonArrayBefore = MetricsUtil.datasetsBySubjectToJson(list).build();
             System.out.println(JsonUtil.prettyPrint(jsonArrayBefore));
 
-            JsonArray jsonArrayAfter = MetricsUtil.stringToJsonArrayBuilder(jsonArrayBefore.toString()).build();
+            JsonArray jsonArrayAfter = MetricsUtil.stringToJsonArray(jsonArrayBefore.toString());
             System.out.println(JsonUtil.prettyPrint(jsonArrayAfter));
 
             assertEquals(jsonArrayBefore.getJsonObject(0).getString("subject"),
@@ -200,7 +200,7 @@ public class MetricsUtilTest {
             JsonObject jsonObjBefore = Json.createObjectBuilder().add("Test", "result").build();
             System.out.println(JsonUtil.prettyPrint(jsonObjBefore));
 
-            JsonObject jsonObjAfter = MetricsUtil.stringToJsonObjectBuilder(jsonObjBefore.toString()).build();
+            JsonObject jsonObjAfter = MetricsUtil.stringToJsonObject(jsonObjBefore.toString());
             System.out.println(JsonUtil.prettyPrint(jsonObjAfter));
 
             assertEquals(jsonObjBefore.getString("Test"), jsonObjAfter.getString("Test"));

@@ -9,7 +9,9 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -150,18 +152,27 @@ public class DuplicateFileChecker {
         List<FileMetadata> wvCopy = new ArrayList<>(workingVersion.getFileMetadatas());
         Iterator<FileMetadata> fmIt = wvCopy.iterator();
 
-        while (fmIt.hasNext()) {
+        while (fmIt.hasNext()) {            
             FileMetadata fm = fmIt.next();
-            String currentCheckSum = fm.getDataFile().getChecksumValue();
+            String currentCheckSum = fm.getDataFile().getChecksumValue();            
             if (currentCheckSum != null) {
+                if (currentCheckSum.equals(selectedCheckSum)) {
+                    DataFile existingFile = fm.getDataFile();
+                    List<String> args = Arrays.asList(existingFile.getDisplayName());
+                    String inLineMessage = BundleUtil.getStringFromBundle("dataset.file.inline.message", args);
+                    fileMetadata.getDataFile().setDuplicateFilename(inLineMessage);
+                    return true;
+                }
+                /*
                 if (checkSumMap.get(currentCheckSum) != null) {
                     checkSumMap.put(currentCheckSum, checkSumMap.get(currentCheckSum).intValue() + 1);
                 } else {
                     checkSumMap.put(currentCheckSum, 1);
-                }
+                }*/
             }
         }
-        return checkSumMap.get(selectedCheckSum) != null; // && checkSumMap.get(selectedCheckSum).intValue() > 1;
+        return false;
+       // return checkSumMap.get(selectedCheckSum) != null; // && checkSumMap.get(selectedCheckSum).intValue() > 1;
             
     }
     

@@ -1,0 +1,129 @@
+{
+  "metadataBlocks": {
+    "citation": {
+      "displayName": "Citation Metadata",
+      "fields": [
+        {
+          "typeName": "title",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Update Version with Files"
+        },
+        {
+          "typeName": "author",
+          "multiple": true,
+          "typeClass": "compound",
+          "value": [
+            {
+              "authorName": {
+                "typeName": "authorName",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "Spruce, Sabrina"
+              }
+            }
+          ]
+        },
+        {
+          "typeName": "datasetContact",
+          "multiple": true,
+          "typeClass": "compound",
+          "value": [
+            {
+              "datasetContactName": {
+                "typeName": "datasetContactName",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "Spruce, Sabrina"
+              },
+              "datasetContactEmail": {
+                "typeName": "datasetContactEmail",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "spruce@mailinator.com"
+              }
+            }
+          ]
+        },
+        {
+          "typeName": "dsDescription",
+          "multiple": true,
+          "typeClass": "compound",
+          "value": [
+            {
+              "dsDescriptionValue": {
+                "typeName": "dsDescriptionValue",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "test"
+              }
+            }
+          ]
+        },
+        {
+          "typeName": "subject",
+          "multiple": true,
+          "typeClass": "controlledVocabulary",
+          "value": [
+            "Other"
+          ]
+        },
+        {
+          "typeName": "depositor",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Spruce, Sabrina"
+        },
+        {
+          "typeName": "dateOfDeposit",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "2017-04-19"
+        }
+      ]
+    }
+  },
+        "files": [
+        {
+          "description": "",
+          "label": "yn152_4_001.img",
+          "directoryLabel": "data/subdir1",
+          "version": 1,
+          "datasetVersionId": 2,
+          "dataFile": {
+            "id": 424,
+            "filename": "yn152_4_001.img",
+            "contentType": "application/octet-stream",
+            "storageIdentifier": "data/subdir/yn152_4_001.img",
+            "originalFormatLabel": "UNKNOWN",
+            "checksum": {
+              "type": "MD5",
+              "value": "fc4ac06da6fd84785ed1b79cab9b714a73621ac7"
+            },
+            "description": ""
+          }
+        },
+        {
+          "description": "",
+          "label": "yn152_4_002.img",
+          "directoryLabel": "data/subdir2",
+          "version": 1,
+          "datasetVersionId": 2,
+          "categories": ["Data"],
+          "dataFile": {
+            "id": 425,
+            "filename": "yn152_4_002.img",
+            "contentType": "application/octet-stream",
+            "storageIdentifier": "data/subdir/yn152_4_002.img",
+            "originalFormatLabel": "UNKNOWN",
+            "checksum": {
+              "type": "MD5",
+              "value": "756c1963e34eb6dd8bb5b48333c4f20ce64a0307"
+            },
+            "description": ""
+          }
+        }
+      ]
+}
+
+

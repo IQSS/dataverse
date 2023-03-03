@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema name="default-config" version="1.7">
+    <field name="filePersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <!-- SCHEMA-FIELDS::BEGIN -->
+    
+    <copyField source="name" dest="_text_"/>
+    <!-- SCHEMA-COPY-FIELDS::BEGIN -->
+    <!-- SCHEMA-COPY-FIELDS::END -->
+</schema>

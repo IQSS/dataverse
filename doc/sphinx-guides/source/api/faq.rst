@@ -11,13 +11,13 @@ What is an API?
 
 See "What is an API?" in the :doc:`intro` section.
 
-What Are Common Use Cases for Dataverse APIs?
----------------------------------------------
+What Are Common Use Cases for Dataverse Software APIs?
+----------------------------------------------------------
 
 See the :doc:`getting-started` section for common use cases for researchers and curators. Other types of API users should find starting points at :ref:`types-of-api-users`.
 
-Where Can I Find Examples of Using Dataverse APIs?
---------------------------------------------------
+Where Can I Find Examples of Using Dataverse Software APIs?
+-----------------------------------------------------------
 
 See the :doc:`getting-started` section links to examples using curl.
 
@@ -26,7 +26,7 @@ For examples in Javascript, Python, R, and Java, and PHP, see the :doc:`apps` an
 When Should I Use the Native API vs. the SWORD API?
 ---------------------------------------------------
 
-The :doc:`sword` is based on a standard, works fine, and is fully supported, but much more development effort has been going into the :doc:`native-api`, which is not based on a standard. It is specific to Dataverse.
+The :doc:`sword` is based on a standard, works fine, and is fully supported, but much more development effort has been going into the :doc:`native-api`, which is not based on a standard. It is specific to the Dataverse Software.
 
 SWORD uses XML. The Native API uses JSON.
 
@@ -35,7 +35,7 @@ SWORD only supports a dozen or so operations. The Native API supports many more.
 To Operate on a Dataset Should I Use Its DOI (or Handle) or Its Database ID?
 ----------------------------------------------------------------------------
 
-It is fine to target a datasets using either its Persistent ID (PID such as DOI or Handle) or its database id.
+It is fine to target a dataset using either its Persistent ID (PID such as DOI or Handle) or its database id.
 
 Here's an example from :ref:`publish-dataset-api` of targeting a dataset using its DOI:
 
@@ -54,9 +54,9 @@ Note that when multiple query parameters are used (such as ``persistentId`` and 
 Where is the Comprehensive List of All API Functionality?
 ---------------------------------------------------------
 
-There are so many Dataverse APIs that a single page in this guide would probably be overwhelming. See :ref:`list-of-dataverse-apis` for links to various pages.
+There are so many Dataverse Software APIs that a single page in this guide would probably be overwhelming. See :ref:`list-of-dataverse-apis` for links to various pages.
 
-It is possible to get a complete list of API functionality in Swagger/OpenAPI format if you deploy Dataverse to Payara 5+. For details, see https://github.com/IQSS/dataverse/issues/5794
+It is possible to get a complete list of API functionality in Swagger/OpenAPI format if you deploy Dataverse Software 5.x. For details, see https://github.com/IQSS/dataverse/issues/5794
 
 Is There a Changelog of API Functionality That Has Been Added Over Time?
 ------------------------------------------------------------------------
@@ -70,8 +70,8 @@ What Functionality is GUI Only and Not Available Via API
 
 The following tasks cannot currently be automated via API because no API exists for them. The web interface should be used instead for these GUI-only features:
 
-- Setting a logo image, URL, and tagline when creating a dataverse.
-- Editing properties of an existing dataverse.
+- Setting a logo image, URL, and tagline when creating a Dataverse collection.
+- Editing properties of an existing Dataverse collection.
 - Set "Enable Access Request" for Terms of Use: https://groups.google.com/d/msg/dataverse-community/oKdesT9rFGc/qM6wrsnnBAAJ
 - Downloading a guestbook.
 - Set guestbook_id for a dataset: https://groups.google.com/d/msg/dataverse-community/oKdesT9rFGc/qM6wrsnnBAAJ

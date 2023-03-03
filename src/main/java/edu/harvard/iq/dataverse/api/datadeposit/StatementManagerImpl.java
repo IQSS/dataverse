@@ -74,6 +74,7 @@ public class StatementManagerImpl implements StatementManager {
             // in the statement, the element is called "updated"
             Date lastUpdatedFinal = new Date();
             Date lastUpdateTime = dataset.getLatestVersion().getLastUpdateTime();
+            dataset.getLatestVersion().getTermsOfUseAndAccess().setDatasetVersion(dataset.getLatestVersion());
             if (lastUpdateTime != null) {
                 lastUpdatedFinal = lastUpdateTime;
             } else {

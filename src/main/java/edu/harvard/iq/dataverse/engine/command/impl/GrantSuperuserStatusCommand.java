@@ -40,6 +40,10 @@ public class GrantSuperuserStatusCommand extends AbstractVoidCommand  {
                     this, null, null);
         }
 
+        if (targetUser.isDeactivated()) {
+            throw new CommandException("User " + targetUser.getIdentifier() + " has been deactivated and cannot become a superuser.", this);
+        }
+
         try {
             targetUser.setSuperuser(true);
             ctxt.em().merge(targetUser);

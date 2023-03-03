@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.io.filefilter.NotFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
@@ -54,7 +55,7 @@ import java.util.logging.Logger;
 @Dependent
 public class FileRecordReader extends AbstractItemReader {
     
-    public static final String SEP = System.getProperty("file.separator");
+    public static final String SEP = File.separator;
 
     @Inject
     JobContext jobContext;
@@ -96,9 +97,21 @@ public class FileRecordReader extends AbstractItemReader {
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
- 
-        directory = new File(System.getProperty("dataverse.files.directory")
-                + SEP + dataset.getAuthority() + SEP + dataset.getIdentifier() + SEP + uploadFolder);
+    
+        // Retrieve via MPCONFIG. Has sane default /tmp/dataverse from META-INF/microprofile-config.properties
+        String baseDir = JvmSettings.FILES_DIRECTORY.lookup();
+        
+        directory = new File(baseDir + SEP + dataset.getAuthority() + SEP + dataset.getIdentifier() + SEP + uploadFolder);
+        // TODO: 
+        // The above goes directly to the filesystem directory configured by the 
+        // old "dataverse.files.directory" JVM option (otherwise used for temp
+        // files only, after the Multistore implementation (#6488). 
+        // We probably want package files to be able to use specific stores instead.
+        // More importantly perhaps, the approach above does not take into account
+        // if the dataset may have an AlternativePersistentIdentifier, that may be 
+        // designated isStorageLocationDesignator() - i.e., if a different identifer
+        // needs to be used to name the storage directory, instead of the main/current
+        // persistent identifier above. 
         getJobLogger().log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath() 
                 + " (excluding: " + excludes + ")");
         if (isValidDirectory(directory)) {

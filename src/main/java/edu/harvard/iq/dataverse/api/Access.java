@@ -6,6 +6,8 @@
 
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.AuxiliaryFile;
+import edu.harvard.iq.dataverse.AuxiliaryFileServiceBean;
 import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -20,6 +22,7 @@ import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -28,6 +31,9 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
+
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -41,27 +47,29 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataaccess.StoredOriginalFile;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -69,6 +77,7 @@ import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Timestamp;
@@ -80,32 +89,28 @@ import java.util.Properties;
 import java.util.logging.Level;
 import javax.inject.Inject;
 import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Consumer;
-import javax.faces.context.FacesContext;
+import java.net.URI;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.TypedQuery;
-import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 
 
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServiceUnavailableException;
@@ -114,8 +119,17 @@ import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.StreamingOutput;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.net.URISyntaxException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.json.JsonObjectBuilder;
+import javax.ws.rs.RedirectionException;
+import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.MediaType;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -159,8 +173,6 @@ public class Access extends AbstractApiBean {
     PermissionServiceBean permissionService;
     @Inject
     DataverseSession session;
-    @EJB
-    WorldMapTokenServiceBean worldMapTokenServiceBean;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @EJB
@@ -169,41 +181,40 @@ public class Access extends AbstractApiBean {
     DataverseRoleServiceBean roleService;
     @EJB
     UserNotificationServiceBean userNotificationService;
+    @EJB
+    FileDownloadServiceBean fileDownloadService; 
+    @EJB
+    AuxiliaryFileServiceBean auxiliaryFileService;
     @Inject
     PermissionsWrapper permissionsWrapper;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
     
-    
-    private static final String API_KEY_HEADER = "X-Dataverse-key";    
-    
     //@EJB
     
     // TODO: 
     // versions? -- L.A. 4.0 beta 10
-    @Path("datafile/bundle/{fileId}")
     @GET
+    @AuthRequired
+    @Path("datafile/bundle/{fileId}")
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundle(@PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId,@QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public BundleDownloadInstance datafileBundle(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId,@QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
  
 
         GuestbookResponse gbr = null;
         
         DataFile df = findDataFileOrDieWrapper(fileId);
         
-        if (apiToken == null || apiToken.equals("")) {
-            apiToken = headers.getHeaderString(API_KEY_HEADER);
-        }
-        
         // This will throw a ForbiddenException if access isn't authorized: 
-        checkAuthorization(df, apiToken);
+        checkAuthorization(getRequestUser(crc), df);
         
         if (gbrecs != true && df.isReleased()){
             // Write Guestbook record if not done previously and file is released
-            User apiTokenUser = findAPITokenUser(apiToken);
+            //This calls findUserOrDie which will retrieve the key param or api token header, or the workflow token header.
+            User apiTokenUser = findAPITokenUser(getRequestUser(crc));
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
             guestbookResponseService.save(gbr);
-            MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);                                        
+            MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
             mdcLogService.logEntry(entry);
         }
         
@@ -262,11 +273,27 @@ public class Access extends AbstractApiBean {
     }
         
             
-    @Path("datafile/{fileId}")
     @GET
+    @AuthRequired
+    @Path("datafile/{fileId:.+}")
     @Produces({"application/xml"})
-    public DownloadInstance datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-
+    public Response datafile(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+        
+        // check first if there's a trailing slash, and chop it: 
+        while (fileId.lastIndexOf('/') == fileId.length() - 1) {
+            fileId = fileId.substring(0, fileId.length() - 1);
+        }
+            
+        if (fileId.indexOf('/') > -1) {
+            // This is for embedding folder names into the Access API URLs;
+            // something like /api/access/datafile/folder/subfolder/1234
+            // instead of the normal /api/access/datafile/1234 notation. 
+            // this is supported only for recreating folders during recursive downloads - 
+            // i.e. they are embedded into the URL for the remote client like wget,
+            // but can be safely ignored here.
+            fileId = fileId.substring(fileId.lastIndexOf('/') + 1);
+        }
+                
         DataFile df = findDataFileOrDieWrapper(fileId);
         GuestbookResponse gbr = null;
         
@@ -275,20 +302,16 @@ public class Access extends AbstractApiBean {
             throw new NotFoundException(errorMessage);
             // (nobody should ever be using this API on a harvested DataFile)!
         }
-        
-        if (apiToken == null || apiToken.equals("")) {
-            apiToken = headers.getHeaderString(API_KEY_HEADER);
-        }
-         
-        if (gbrecs != true && df.isReleased()){
-            // Write Guestbook record if not done previously and file is released
-            User apiTokenUser = findAPITokenUser(apiToken);
-            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
-        }
                
         // This will throw a ForbiddenException if access isn't authorized: 
-        checkAuthorization(df, apiToken);
-        
+        checkAuthorization(getRequestUser(crc), df);
+
+        if (gbrecs != true && df.isReleased()){
+            // Write Guestbook record if not done previously and file is released
+            User apiTokenUser = findAPITokenUser(getRequestUser(crc));
+            gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
+        }
+
         DownloadInfo dInfo = new DownloadInfo(df);
 
         logger.fine("checking if thumbnails are supported on this file.");
@@ -304,6 +327,11 @@ public class Access extends AbstractApiBean {
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
             dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
         }
+        
+        if(systemConfig.isGlobusFileDownload() && systemConfig.getGlobusStoresList().contains(DataAccess.getStorageDriverFromIdentifier(df.getStorageIdentifier()))) {
+            dInfo.addServiceAvailable(new OptionalAccessService("GlobusTransfer", df.getContentType(), "format=GlobusTransfer", "Download via Globus"));
+        }
+        
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
         downloadInstance.setRequestUriInfo(uriInfo);
         downloadInstance.setRequestHttpHeaders(headers);
@@ -323,6 +351,14 @@ public class Access extends AbstractApiBean {
             // So we need to identify when a service is being called and then let checkIfServiceSupportedAndSetConverter see if the required one exists
             if (key.equals("imageThumb") || key.equals("format") || key.equals("variables") || key.equals("noVarHeader")) {
                 serviceRequested = true;
+                //In the dataset file table context a user is allowed to select original as the format
+                //for download
+                // if the dataset has tabular files - it should not be applied to instances 
+                // where the file selected is not tabular see #6972
+                if("format".equals(key) && "original".equals(value) && !df.isTabularData()) {
+                    serviceRequested = false;
+                    break;
+                }
                 //Only need to check if this key is associated with a service
                 if (downloadInstance.checkIfServiceSupportedAndSetConverter(key, value)) {
                     // this automatically sets the conversion parameters in
@@ -387,7 +423,10 @@ public class Access extends AbstractApiBean {
         /* 
          * Provide some browser-friendly headers: (?)
          */
-        return downloadInstance;
+        if (headers.getRequestHeaders().containsKey("Range")) {
+            return Response.status(Response.Status.PARTIAL_CONTENT).entity(downloadInstance).build();
+        }
+        return Response.ok(downloadInstance).build();
     }
     
     
@@ -398,11 +437,12 @@ public class Access extends AbstractApiBean {
     
     
     // Metadata format defaults to DDI:
-    @Path("datafile/{fileId}/metadata")
     @GET
+    @AuthRequired
+    @Path("datafile/{fileId}/metadata")
     @Produces({"text/xml"})
-    public String tabularDatafileMetadata(@PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
-        return tabularDatafileMetadataDDI(fileId, fileMetadataId, exclude, include, header, response);
+    public String tabularDatafileMetadata(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+        return tabularDatafileMetadataDDI(crc, fileId, fileMetadataId, exclude, include, header, response);
     }
     
     /* 
@@ -410,9 +450,10 @@ public class Access extends AbstractApiBean {
      * which we are going to retire.
      */
     @Path("datafile/{fileId}/metadata/ddi")
+    @AuthRequired
     @GET
     @Produces({"text/xml"})
-    public String tabularDatafileMetadataDDI(@PathParam("fileId") String fileId,  @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String tabularDatafileMetadataDDI(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
         DataFile dataFile = null; 
@@ -424,6 +465,20 @@ public class Access extends AbstractApiBean {
            throw new BadRequestException("tabular data required");
         }
         
+        if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
+            boolean hasPermissionToDownloadFile = false;
+            DataverseRequest dataverseRequest;
+            dataverseRequest = createDataverseRequest(getRequestUser(crc));
+            if (dataverseRequest != null && dataverseRequest.getUser() instanceof GuestUser) {
+                // We must be in the UI. Try to get a non-GuestUser from the session.
+                dataverseRequest = dvRequestService.getDataverseRequest();
+            }
+            hasPermissionToDownloadFile = permissionService.requestOn(dataverseRequest, dataFile).has(Permission.DownloadFile);
+            if (!hasPermissionToDownloadFile) {
+                throw new BadRequestException("no permission to download file");
+            }
+        }
+
         response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
 
         FileMetadata fm = null;
@@ -460,98 +515,294 @@ public class Access extends AbstractApiBean {
 
         return retValue;
     }
-    
-    @Path("variable/{varId}/metadata/ddi")
-    @GET
-    @Produces({ "application/xml" })
 
-    public String dataVariableMetadataDDI(@PathParam("varId") Long varId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        String retValue = "";
-        
-        ByteArrayOutputStream outStream = null;
-        try {
-            outStream = new ByteArrayOutputStream();
 
-            ddiExportService.exportDataVariable(
-                    varId,
-                    outStream,
-                    exclude,
-                    include,
-                    fileMetadataId);
-        } catch (Exception e) {
-            // For whatever reason we've failed to generate a partial 
-            // metadata record requested. We simply return an empty string.
-            return retValue;
-        }
-
-        retValue = outStream.toString();
-        
-        return retValue; 
-    }
-    
     /*
-     * "Preprocessed data" metadata format:
-     * (this was previously provided as a "format conversion" option of the 
-     * file download form of the access API call)
+     * GET method for retrieving a list of auxiliary files associated with 
+     * a tabular datafile.
      */
     
-    @Path("datafile/{fileId}/metadata/preprocessed")
     @GET
-    @Produces({"text/xml"})
+    @AuthRequired
+    @Path("datafile/{fileId}/auxiliary")
+    public Response listDatafileMetadataAux(@Context ContainerRequestContext crc,
+                                            @PathParam("fileId") String fileId,
+                                            @Context UriInfo uriInfo,
+                                            @Context HttpHeaders headers,
+                                            @Context HttpServletResponse response) throws ServiceUnavailableException {
+        return listAuxiliaryFiles(getRequestUser(crc), fileId, null, uriInfo, headers, response);
+    }
+    /*
+     * GET method for retrieving a list auxiliary files associated with
+     * a tabular datafile and having the specified origin.
+     */
+
+    @GET
+    @AuthRequired
+    @Path("datafile/{fileId}/auxiliary/{origin}")
+    public Response listDatafileMetadataAuxByOrigin(@Context ContainerRequestContext crc,
+                                                    @PathParam("fileId") String fileId,
+                                                    @PathParam("origin") String origin,
+                                                    @Context UriInfo uriInfo,
+                                                    @Context HttpHeaders headers,
+                                                    @Context HttpServletResponse response) throws ServiceUnavailableException {
+        return listAuxiliaryFiles(getRequestUser(crc), fileId, origin, uriInfo, headers, response);
+    } 
     
-    public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") String fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws ServiceUnavailableException {
+    private Response listAuxiliaryFiles(User user, String fileId, String origin, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) {
+          DataFile df = findDataFileOrDieWrapper(fileId);
+
+        List<AuxiliaryFile> auxFileList = auxiliaryFileService.findAuxiliaryFiles(df, origin);
+
+        if (auxFileList == null || auxFileList.isEmpty()) {
+            throw new NotFoundException("No Auxiliary files exist for datafile " + fileId + (origin==null ? "": " and the specified origin"));
+        }
+        boolean isAccessAllowed = isAccessAuthorized(user, df);
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        auxFileList.forEach(auxFile -> {
+            if (isAccessAllowed || auxFile.getIsPublic()) {
+                NullSafeJsonBuilder job = NullSafeJsonBuilder.jsonObjectBuilder();
+                job.add("formatTag", auxFile.getFormatTag());
+                job.add("formatVersion", auxFile.getFormatVersion());
+                job.add("fileSize", auxFile.getFileSize());
+                job.add("contentType", auxFile.getContentType());
+                job.add("isPublic", auxFile.getIsPublic());
+                job.add("type", auxFile.getType());
+                jab.add(job);
+            }
+        });
+        return ok(jab);
+    }
+
+    /*
+     * GET method for retrieving various auxiliary files associated with 
+     * a tabular datafile.
+     *
+     */
+    
+    @GET
+    @AuthRequired
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
+    public DownloadInstance downloadAuxiliaryFile(@Context ContainerRequestContext crc,
+                                                  @PathParam("fileId") String fileId,
+                                                  @PathParam("formatTag") String formatTag,
+                                                  @PathParam("formatVersion") String formatVersion,
+                                                  @Context UriInfo uriInfo,
+                                                  @Context HttpHeaders headers,
+                                                  @Context HttpServletResponse response) throws ServiceUnavailableException {
     
         DataFile df = findDataFileOrDieWrapper(fileId);
         
-        if (apiToken == null || apiToken.equals("")) {
-            apiToken = headers.getHeaderString(API_KEY_HEADER);
-        }
-        
-        // This will throw a ForbiddenException if access isn't authorized: 
-        checkAuthorization(df, apiToken);
         DownloadInfo dInfo = new DownloadInfo(df);
+        boolean publiclyAvailable = false; 
 
-        if (df.isTabularData()) {
+        DownloadInstance downloadInstance;
+        AuxiliaryFile auxFile = null;
+        
+        /* 
+          The special case for "preprocessed" metadata should not be here at all. 
+          Access to the format should be handled by the /api/access/datafile/{id}?format=prep
+          form exclusively (this is what Data Explorer has been using all along).
+          We may have advertised /api/access/datafile/{id}/metadata/preprocessed
+          in the past - but it has been broken since 5.3 anyway, since the /{formatVersion}
+          element was added to the @Path. 
+          Now that the api method has been renamed /api/access/datafile/{id}/auxiliary/..., 
+          nobody should be using it to access the "preprocessed" format. 
+          Leaving the special case below commented-out, for now. - L.A.
+        
+        // formatTag=preprocessed is handled as a special case. 
+        // This is (as of now) the only aux. tabular metadata format that Dataverse
+        // can generate (and cache) itself. (All the other formats served have 
+        // to be deposited first, by the @POST version of this API).
+        
+        if ("preprocessed".equals(formatTag)) {
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
-        } else {
-            throw new BadRequestException("tabular data required");
+            downloadInstance = new DownloadInstance(dInfo);
+            if (downloadInstance.checkIfServiceSupportedAndSetConverter("format", "prep")) {
+                logger.fine("Preprocessed data for tabular file "+fileId);
+            }
+        } else { */
+        // All other (deposited) formats:
+        auxFile = auxiliaryFileService.lookupAuxiliaryFile(df, formatTag, formatVersion);
+
+        if (auxFile == null) {
+            throw new NotFoundException("Auxiliary metadata format " + formatTag + " is not available for datafile " + fileId);
         }
-        DownloadInstance downloadInstance = new DownloadInstance(dInfo);
-        if (downloadInstance.checkIfServiceSupportedAndSetConverter("format", "prep")) {
-            logger.fine("Preprocessed data for tabular file "+fileId);
+
+        // Don't consider aux file public unless data file is published.
+        if (auxFile.getIsPublic() && df.getPublicationDate() != null) {
+            publiclyAvailable = true;
+        }
+        downloadInstance = new DownloadInstance(dInfo);
+        downloadInstance.setAuxiliaryFile(auxFile);
+        /*}*/
+        
+        // Unless this format is explicitly authorized to be publicly available, 
+        // the following will check access authorization (based on the access rules
+        // as defined for the DataFile itself), and will throw a ForbiddenException 
+        // if access is denied:
+        if (!publiclyAvailable) {
+            checkAuthorization(getRequestUser(crc), df);
         }
         
         return downloadInstance;
     }
     
     /* 
-     * API method for downloading zipped bundles of multiple files:
+     * API method for downloading zipped bundles of multiple files. Uses POST to avoid long lists of file IDs that can make the URL longer than what's supported by browsers/servers
     */
     
-    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
-    @Path("datafiles/{fileIds}")
-    @GET
-    @Produces({"application/zip"})
-    public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    // TODO: Rather than only supporting looking up files by their database IDs,
+    // consider supporting persistent identifiers.
+    @POST
+    @AuthRequired
+    @Path("datafiles")
+    @Consumes("text/plain")
+    @Produces({ "application/zip" })
+    public Response postDownloadDatafiles(@Context ContainerRequestContext crc, String fileIds, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+        
 
-        long setLimit = systemConfig.getZipDownloadLimit();
-        if (!(setLimit > 0L)) {
-            setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
+        return downloadDatafiles(getRequestUser(crc), fileIds, gbrecs, uriInfo, headers, response);
+    }
+
+    @GET
+    @AuthRequired
+    @Path("dataset/{id}")
+    @Produces({"application/zip"})
+    public Response downloadAllFromLatest(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+        try {
+            User user = getRequestUser(crc);
+            DataverseRequest req = createDataverseRequest(user);
+            final Dataset retrieved = findDatasetOrDie(datasetIdOrPersistentId);
+            if (!(user instanceof GuestUser)) {
+                // The reason we are only looking up a draft version for a NON-guest user
+                // is that we know that guest never has the Permission.ViewUnpublishedDataset. 
+                final DatasetVersion draft = versionService.getDatasetVersionById(retrieved.getId(), DatasetVersion.VersionState.DRAFT.toString());
+                if (draft != null && permissionService.requestOn(req, retrieved).has(Permission.ViewUnpublishedDataset)) {                    
+                    String fileIds = getFileIdsAsCommaSeparated(draft.getFileMetadatas());
+                    // We don't want downloads from Draft versions to be counted, 
+                    // so we are setting the gbrecs (aka "do not write guestbook response") 
+                    // variable accordingly:
+                    return downloadDatafiles(getRequestUser(crc), fileIds, true, uriInfo, headers, response);
+                }
+            }
+            
+            // OK, it was not the draft. Let's see if we can serve a published version.
+            
+            final DatasetVersion latest = versionService.getLatestReleasedVersionFast(retrieved.getId()); 
+            
+            // Make sure to throw a clean error code if we have failed to locate an 
+            // accessible version:
+            // (A "Not Found" would be more appropriate here, I believe, than a "Bad Request". 
+            // But we've been using the latter for a while, and it's a popular API... 
+            // and this return code is expected by our tests - so I'm choosing it to keep 
+            // -- L.A.)
+            
+            if (latest == null) {
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.exception.dataset.not.found"));
+                //throw new NotFoundException();
+            }
+            
+            String fileIds = getFileIdsAsCommaSeparated(latest.getFileMetadatas());
+            return downloadDatafiles(getRequestUser(crc), fileIds, gbrecs, uriInfo, headers, response);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
-        
-        final long zipDownloadSizeLimit = setLimit; //to use via anon inner class
-        
+    }
+
+    @GET
+    @AuthRequired
+    @Path("dataset/{id}/versions/{versionId}")
+    @Produces({"application/zip"})
+    public Response downloadAllFromVersion(@Context ContainerRequestContext crc, @PathParam("id") String datasetIdOrPersistentId, @PathParam("versionId") String versionId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+        try {
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            final Dataset ds = execCommand(new GetDatasetCommand(req, findDatasetOrDie(datasetIdOrPersistentId)));
+            DatasetVersion dsv = execCommand(handleVersion(versionId, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
+
+                @Override
+                public Command<DatasetVersion> handleLatest() {
+                    return new GetLatestAccessibleDatasetVersionCommand(req, ds);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleDraft() {
+                    return new GetDraftDatasetVersionCommand(req, ds);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleSpecific(long major, long minor) {
+                    return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleLatestPublished() {
+                    return new GetLatestPublishedDatasetVersionCommand(req, ds);
+                }
+            }));
+            if (dsv == null) {
+                // (A "Not Found" would be more appropriate here, I believe, than a "Bad Request". 
+                // But we've been using the latter for a while, and it's a popular API... 
+                // and this return code is expected by our tests - so I'm choosing it to keep 
+                // -- L.A.)
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.exception.version.not.found"));
+            }
+            String fileIds = getFileIdsAsCommaSeparated(dsv.getFileMetadatas());
+            // We don't want downloads from Draft versions to be counted, 
+            // so we are setting the gbrecs (aka "do not write guestbook response") 
+            // variable accordingly:
+            if (dsv.isDraft()) {
+                gbrecs = true;
+            }
+            return downloadDatafiles(getRequestUser(crc), fileIds, gbrecs, uriInfo, headers, response);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    private static String getFileIdsAsCommaSeparated(List<FileMetadata> fileMetadatas) {
+        List<String> ids = new ArrayList<>();
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            Long fileId = fileMetadata.getDataFile().getId();
+            ids.add(String.valueOf(fileId));
+        }
+        return String.join(",", ids);
+    }
+
+    /*
+     * API method for downloading zipped bundles of multiple files:
+     */
+    @GET
+    @AuthRequired
+    @Path("datafiles/{fileIds}")
+    @Produces({"application/zip"})
+    public Response datafiles(@Context ContainerRequestContext crc, @PathParam("fileIds") String fileIds, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+        return downloadDatafiles(getRequestUser(crc), fileIds, gbrecs, uriInfo, headers, response);
+    }
+
+    private Response downloadDatafiles(User user, String rawFileIds, boolean donotwriteGBResponse, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+        final long zipDownloadSizeLimit = systemConfig.getZipDownloadLimit();
+                
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         
-        if (fileIds == null || fileIds.equals("")) {
+        if (rawFileIds == null || rawFileIds.equals("")) {
             throw new BadRequestException();
         }
-
-        String apiToken = (apiTokenParam == null || apiTokenParam.equals("")) 
-                ? headers.getHeaderString(API_KEY_HEADER) 
-                : apiTokenParam;
         
-        User apiTokenUser = findAPITokenUser(apiToken); //for use in adding gb records if necessary
+        final String fileIds;
+        if(rawFileIds.startsWith("fileIds=")) {
+            fileIds = rawFileIds.substring(8); // String "fileIds=" from the front
+        } else {
+            fileIds=rawFileIds;
+        }
+        /* Note - fileIds coming from the POST ends in '\n' and a ',' has been added after the last file id number and before a
+         * final '\n' - this stops the last item from being parsed in the fileIds.split(","); line below.
+         */
+        
+        String customZipServiceUrl = settingsService.getValueForKey(SettingsServiceBean.Key.CustomZipDownloadServiceUrl);
+        boolean useCustomZipService = customZipServiceUrl != null; 
+        
+        User apiTokenUser = findAPITokenUser(user); //for use in adding gb records if necessary
         
         Boolean getOrig = false;
         for (String key : uriInfo.getQueryParameters().keySet()) {
@@ -560,6 +811,24 @@ public class Access extends AbstractApiBean {
                 getOrig = true;
             }
         }
+        
+        if (useCustomZipService) {
+            URI redirect_uri = null; 
+            try {
+                redirect_uri = handleCustomZipDownload(user, customZipServiceUrl, fileIds, apiTokenUser, uriInfo, headers, donotwriteGBResponse, true);
+            } catch (WebApplicationException wae) {
+                throw wae;
+            }
+            
+            Response redirect = Response.seeOther(redirect_uri).build();
+            logger.fine("Issuing redirect to the file location on S3.");
+            throw new RedirectionException(redirect);
+
+        }
+        
+        // Not using the "custom service" - API will zip the file,  
+        // and stream the output, in the "normal" manner:
+        
         final boolean getOriginal = getOrig; //to use via anon inner class
         
         StreamingOutput stream = new StreamingOutput() {
@@ -578,7 +847,7 @@ public class Access extends AbstractApiBean {
                         logger.fine("token: " + fileIdParams[i]);
                         Long fileId = null;
                         try {
-                            fileId = new Long(fileIdParams[i]);
+                            fileId = Long.parseLong(fileIdParams[i]);
                         } catch (NumberFormatException nfe) {
                             fileId = null;
                         }
@@ -586,11 +855,11 @@ public class Access extends AbstractApiBean {
                             logger.fine("attempting to look up file id " + fileId);
                             DataFile file = dataFileService.find(fileId);
                             if (file != null) {
-                                if (isAccessAuthorized(file, apiToken)) { 
-                                    
+                                if (isAccessAuthorized(user, file)) {
+
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
-                                    if (gbrecs != true && file.isReleased()){
+                                    if (donotwriteGBResponse != true && file.isReleased()){
                                         GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                                         guestbookResponseService.save(gbr);
                                         MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, file);                                        
@@ -648,14 +917,21 @@ public class Access extends AbstractApiBean {
                                         
                                         zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
                                     }
-                                } else if(file.isRestricted()) {
-                                    if (zipper == null) {
-                                        fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
+                                } else { 
+                                    boolean embargoed = FileUtil.isActivelyEmbargoed(file);
+                                    if (file.isRestricted() || embargoed) {
+                                        if (zipper == null) {
+                                            fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS "
+                                                    + (embargoed ? "EMBARGOED" : "RESTRICTED")
+                                                    + " AND CANNOT BE DOWNLOADED\r\n";
+                                        } else {
+                                            zipper.addToManifest(file.getFileMetadata().getLabel() + " IS "
+                                                    + (embargoed ? "EMBARGOED" : "RESTRICTED")
+                                                    + " AND CANNOT BE DOWNLOADED\r\n");
+                                        }
                                     } else {
-                                        zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
+                                        fileId = null;
                                     }
-                                } else {
-                                    fileId = null;
                                 }
                             
                             } if (null == fileId) {
@@ -959,6 +1235,113 @@ public class Access extends AbstractApiBean {
     */
     
     /**
+     * 
+     * @param fileId
+     * @param formatTag
+     * @param formatVersion
+     * @param origin
+     * @param isPublic
+     * @param type
+     * @param fileInputStream
+     * @param contentDispositionHeader
+     * @param formDataBodyPart
+     * @return 
+     *
+     */
+    @POST
+    @AuthRequired
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response saveAuxiliaryFileWithVersion(@Context ContainerRequestContext crc,
+                                                 @PathParam("fileId") Long fileId,
+                                                 @PathParam("formatTag") String formatTag,
+                                                 @PathParam("formatVersion") String formatVersion,
+                                                 @FormDataParam("origin") String origin,
+                                                 @FormDataParam("isPublic") boolean isPublic,
+                                                 @FormDataParam("type") String type,
+                                                 @FormDataParam("file") final FormDataBodyPart formDataBodyPart,
+                                                 @FormDataParam("file") InputStream fileInputStream) {
+        AuthenticatedUser authenticatedUser;
+        try {
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(FORBIDDEN, "Authorized users only.");
+        }
+
+        DataFile dataFile = dataFileService.find(fileId);
+        if (dataFile == null) {
+            return error(BAD_REQUEST, "File not found based on id " + fileId + ".");
+        }
+        
+         if (!permissionService.userOn(authenticatedUser, dataFile.getOwner()).has(Permission.EditDataset)) {
+            return error(FORBIDDEN, "User not authorized to edit the dataset.");
+        }
+
+        MediaType mediaType = null;
+        if (formDataBodyPart != null) {
+            mediaType = formDataBodyPart.getMediaType();
+        }
+
+        AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic, type, mediaType);
+
+        if (saved!=null) {
+            return ok(json(saved));
+        } else {
+            return error(BAD_REQUEST, "Error saving Auxiliary file.");
+        }
+    }
+  
+    
+
+    /**
+     * 
+     * @param fileId
+     * @param formatTag
+     * @param formatVersion
+     * @param origin
+     * @param isPublic
+     * @param fileInputStream
+     * @param contentDispositionHeader
+     * @param formDataBodyPart
+     * @return 
+     */
+    @DELETE
+    @AuthRequired
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
+    public Response deleteAuxiliaryFileWithVersion(@Context ContainerRequestContext crc,
+                                                   @PathParam("fileId") Long fileId,
+                                                   @PathParam("formatTag") String formatTag,
+                                                   @PathParam("formatVersion") String formatVersion) {
+        AuthenticatedUser authenticatedUser;
+        try {
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(FORBIDDEN, "Authorized users only.");
+        }
+
+        DataFile dataFile = dataFileService.find(fileId);
+        if (dataFile == null) {
+            return error(BAD_REQUEST, "File not found based on id " + fileId + ".");
+        }
+
+        if (!permissionService.userOn(authenticatedUser, dataFile.getOwner()).has(Permission.EditDataset)) {
+            return error(FORBIDDEN, "User not authorized to edit the dataset.");
+        }
+
+        try {
+            auxiliaryFileService.deleteAuxiliaryFile(dataFile, formatTag, formatVersion);
+        } catch (FileNotFoundException e) {
+            throw new NotFoundException();
+        } catch(IOException io) {
+            throw new ServerErrorException("IO Exception trying remove auxiliary file", Response.Status.INTERNAL_SERVER_ERROR, io);
+        }
+
+        return ok("Auxiliary file deleted.");
+    }
+
+  
+    
+    /**
      * Allow (or disallow) access requests to Dataset
      *
      * @author sekmiller
@@ -968,8 +1351,9 @@ public class Access extends AbstractApiBean {
      * @return
      */
     @PUT
+    @AuthRequired
     @Path("{id}/allowAccessRequest")
-    public Response allowAccessRequest(@PathParam("id") String datasetToAllowAccessId, String requestStr) {
+    public Response allowAccessRequest(@Context ContainerRequestContext crc, @PathParam("id") String datasetToAllowAccessId, String requestStr) {
 
         DataverseRequest dataverseRequest = null;
         Dataset dataset;
@@ -983,14 +1367,9 @@ public class Access extends AbstractApiBean {
 
         boolean allowRequest = Boolean.valueOf(requestStr);
 
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(wr.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
-        }
+        dataverseRequest = createDataverseRequest(getRequestUser(crc));
 
-        dataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
+        dataset.getOrCreateEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
 
         try {
             engineSvc.submit(new UpdateDatasetVersionCommand(dataset, dataverseRequest));
@@ -1010,14 +1389,15 @@ public class Access extends AbstractApiBean {
      *
      * @author sekmiller
      *
+     * @param crc
      * @param fileToRequestAccessId
-     * @param apiToken
      * @param headers
      * @return
      */
     @PUT
+    @AuthRequired
     @Path("/datafile/{id}/requestAccess")
-    public Response requestFileAccess(@PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
+    public Response requestFileAccess(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
         
         DataverseRequest dataverseRequest;
         DataFile dataFile;
@@ -1036,14 +1416,14 @@ public class Access extends AbstractApiBean {
         AuthenticatedUser requestor;
 
         try {
-            requestor = findAuthenticatedUserOrDie();
+            requestor = getRequestAuthenticatedUserOrDie(crc);
             dataverseRequest = createDataverseRequest(requestor);
         } catch (WrappedResponse wr) {
             List<String> args = Arrays.asList(wr.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
-
-        if (isAccessAuthorized(dataFile, getRequestApiKey())) {
+        //Already have access
+        if (isAccessAuthorized(getRequestUser(crc), dataFile)) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.invalidRequest"));
         }
 
@@ -1074,8 +1454,9 @@ public class Access extends AbstractApiBean {
      * @return
      */
     @GET
+    @AuthRequired
     @Path("/datafile/{id}/listRequests")
-    public Response listFileAccessRequests(@PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
+    public Response listFileAccessRequests(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
 
         DataverseRequest dataverseRequest;
 
@@ -1088,21 +1469,20 @@ public class Access extends AbstractApiBean {
         }
 
         try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
+            dataverseRequest = createDataverseRequest(getRequestAuthenticatedUserOrDie(crc));
         } catch (WrappedResponse wr) {
             List<String> args = Arrays.asList(wr.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+            return error(UNAUTHORIZED, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
         }
-
-        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile.getOwner()).has(Permission.ManageDatasetPermissions))) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
+        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
         List<AuthenticatedUser> requesters = dataFile.getFileAccessRequesters();
 
         if (requesters == null || requesters.isEmpty()) {
             List<String> args = Arrays.asList(dataFile.getDisplayName());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound"));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
         }
 
         JsonArrayBuilder userArray = Json.createArrayBuilder();
@@ -1120,15 +1500,16 @@ public class Access extends AbstractApiBean {
      *
      * @author sekmiller
      *
+     * @param crc
      * @param fileToRequestAccessId
      * @param identifier
-     * @param apiToken
      * @param headers
      * @return
      */
     @PUT
+    @AuthRequired
     @Path("/datafile/{id}/grantAccess/{identifier}")
-    public Response grantFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
+    public Response grantFileAccess(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
         
         DataverseRequest dataverseRequest;
         DataFile dataFile;
@@ -1147,12 +1528,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
         }
 
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
-        }
+        dataverseRequest = createDataverseRequest(getRequestUser(crc));
 
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
 
@@ -1184,15 +1560,16 @@ public class Access extends AbstractApiBean {
      *
      * @author sekmiller
      *
+     * @param crc
      * @param fileToRequestAccessId
      * @param identifier
-     * @param apiToken
      * @param headers
      * @return
      */
     @DELETE
+    @AuthRequired
     @Path("/datafile/{id}/revokeAccess/{identifier}")
-    public Response revokeFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
+    public Response revokeFileAccess(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
 
         DataverseRequest dataverseRequest;
         DataFile dataFile;
@@ -1204,12 +1581,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
         }
 
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(wr.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
-        }
+        dataverseRequest = createDataverseRequest(getRequestUser(crc));
 
         if (identifier == null || identifier.equals("")) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.noKey"));
@@ -1254,15 +1626,16 @@ public class Access extends AbstractApiBean {
      *
      * @author sekmiller
      *
+     * @param crc
      * @param fileToRequestAccessId
      * @param identifier
-     * @param apiToken
      * @param headers
      * @return
      */
     @PUT
+    @AuthRequired
     @Path("/datafile/{id}/rejectAccess/{identifier}")
-    public Response rejectFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
+    public Response rejectFileAccess(@Context ContainerRequestContext crc, @PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
 
         DataverseRequest dataverseRequest;
         DataFile dataFile;
@@ -1281,14 +1654,9 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
         }
 
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
-        }
-        
-        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile.getOwner()).has(Permission.ManageDatasetPermissions))) {
+        dataverseRequest = createDataverseRequest(getRequestUser(crc));
+
+        if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
@@ -1315,19 +1683,22 @@ public class Access extends AbstractApiBean {
     // checkAuthorization is a convenience method; it calls the boolean method
     // isAccessAuthorized(), the actual workhorse, tand throws a 403 exception if not.
     
-    private void checkAuthorization(DataFile df, String apiToken) throws WebApplicationException {
+    private void checkAuthorization(User user, DataFile df) throws WebApplicationException {
 
-        if (!isAccessAuthorized(df, apiToken)) {
+        if (!isAccessAuthorized(user, df)) {
             throw new ForbiddenException();
         }        
     }
     
 
-    
-    private boolean isAccessAuthorized(DataFile df, String apiToken) {
+    private boolean isAccessAuthorized(User requestUser, DataFile df) {
     // First, check if the file belongs to a released Dataset version: 
         
         boolean published = false; 
+        
+        //True if there's an embargo that hasn't yet expired
+        //In this state, we block access as though the file is restricted (even if it is not restricted)
+        boolean embargoed = FileUtil.isActivelyEmbargoed(df);
         
         
         /*
@@ -1391,37 +1762,42 @@ public class Access extends AbstractApiBean {
             }
         }
         
-        if (!restricted) {
-            // And if they are not published, they can still be downloaded, if the user
+        
+
+        //The one case where we don't need to check permissions
+        if (!restricted && !embargoed && published) {
+            // If they are not published, they can still be downloaded, if the user
             // has the permission to view unpublished versions! (this case will 
             // be handled below)
-            if (published) { 
-                return true;
-            }
+            return true;
         }
         
-        User user = null;
+        //For permissions check decide if we have a session user, or an API user
+        User sessionUser = null;
         
         /** 
          * Authentication/authorization:
-         * 
-         * note that the fragment below - that retrieves the session object
-         * and tries to find the user associated with the session - is really
-         * for logging/debugging purposes only; for practical purposes, it 
-         * would be enough to just call "permissionService.on(df).has(Permission.DownloadFile)"
-         * and the method does just that, tries to authorize for the user in 
-         * the current session (or guest user, if no session user is available):
          */
-        
-        if (session != null) {
+
+        User apiUser = requestUser;
+
+        /*
+         * If API user is not authenticated, and a session user exists, we use that.
+         * If the API user indicates a GuestUser, we will use that if there's no session.
+         * 
+         * This is currently the only API call that supports sessions. If the rest of
+         * the API is opened up, the custom logic here wouldn't be needed.
+         */
+
+        if ((apiUser instanceof GuestUser) && session != null) {
             if (session.getUser() != null) {
-                if (session.getUser().isAuthenticated()) {
-                    user = session.getUser();
-                } else {
+                sessionUser = session.getUser();
+                apiUser = null;
+                //Fine logging
+                if (!session.getUser().isAuthenticated()) {
                     logger.fine("User associated with the session is not an authenticated user.");
                     if (session.getUser() instanceof PrivateUrlUser) {
                         logger.fine("User associated with the session is a PrivateUrlUser user.");
-                        user = session.getUser();
                     }
                     if (session.getUser() instanceof GuestUser) {
                         logger.fine("User associated with the session is indeed a guest user.");
@@ -1433,216 +1809,142 @@ public class Access extends AbstractApiBean {
         } else {
             logger.fine("Session is null.");
         } 
-        
-        User apiTokenUser = null;
-        
-        if ((apiToken != null)&&(apiToken.length()!=64)) {
-            // We'll also try to obtain the user information from the API token, 
-            // if supplied: 
-        
-            try {
-                logger.fine("calling apiTokenUser = findUserOrDie()...");
-                apiTokenUser = findUserOrDie();
-            } catch (WrappedResponse wr) {
-                logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
-            }
-            
-            if (apiTokenUser == null) {
-                logger.warning("API token-based auth: Unable to find a user with the API token provided.");
-            }
+        //If we don't have a user, nothing more to do. (Note session could have returned GuestUser)
+        if (sessionUser == null && apiUser == null) {
+            logger.warning("Unable to find a user via session or with a token.");
+            return false;
         }
-        
-        // OK, let's revisit the case of non-restricted files, this time in        
-        // an unpublished version:         
-        // (if (published) was already addressed above)
-        
-        if (!restricted) {
+
+        /*
+         * Since published and not restricted/embargoed is handled above, the main split
+         * now is whether it is published or not. If it's published, the only case left
+         * is with restricted/embargoed. With unpublished, both the restricted/embargoed
+         * and not restricted/embargoed both get handled the same way.
+         */
+
+        DataverseRequest dvr = null;
+        if (apiUser != null) {
+            dvr = createDataverseRequest(apiUser);
+        } else {
+            // used in JSF context, user may be Guest
+            dvr = dvRequestService.getDataverseRequest();
+        }
+        if (!published) { // and restricted or embargoed (implied by earlier processing)
             // If the file is not published, they can still download the file, if the user
             // has the permission to view unpublished versions:
-            
-            if ( user != null ) {
-                // used in JSF context
-                if (permissionService.requestOn(dvRequestService.getDataverseRequest(), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                    // it's not unthinkable, that a null user (i.e., guest user) could be given
-                    // the ViewUnpublished permission!
-                    logger.log(Level.FINE, "Session-based auth: user {0} has access rights on the non-restricted, unpublished datafile.", user.getIdentifier());
-                    return true;
-                }
-            }
 
-            if (apiTokenUser != null) {
-                // used in an API context
-                if (permissionService.requestOn( createDataverseRequest(apiTokenUser), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                    logger.log(Level.FINE, "Session-based auth: user {0} has access rights on the non-restricted, unpublished datafile.", apiTokenUser.getIdentifier());
-                    return true;
-                }
-            }
-
-            // last option - guest user in either contexts
-            // Guset user is impled by the code above.
-            if ( permissionService.requestOn(dvRequestService.getDataverseRequest(), df.getOwner()).has(Permission.ViewUnpublishedDataset) ) {
+            // This line handles all three authenticated session user, token user, and guest cases.
+            if (permissionService.requestOn(dvr, df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                // it's not unthinkable, that a GuestUser could be given
+                // the ViewUnpublished permission!
+                logger.log(Level.FINE,
+                        "Session-based auth: user {0} has access rights on the non-restricted, unpublished datafile.",
+                        dvr.getUser().getIdentifier());
                 return true;
             }
-                    
-            
-            // We don't want to return false just yet. 
-            // If all else fails, we'll want to use the special WorldMapAuth 
-            // token authentication before we give up. 
-            //return false;
-        } else {
-            
-            // OK, this is a restricted file. 
-            
-            boolean hasAccessToRestrictedBySession = false; 
-            boolean hasAccessToRestrictedByToken = false; 
-            
-            if (permissionService.on(df).has(Permission.DownloadFile)) {
-            // Note: PermissionServiceBean.on(Datafile df) will obtain the 
-            // User from the Session object, just like in the code fragment 
-            // above. That's why it's not passed along as an argument.
-                hasAccessToRestrictedBySession = true; 
-            } else if (apiTokenUser != null && permissionService.requestOn(createDataverseRequest(apiTokenUser), df).has(Permission.DownloadFile)) {
-                hasAccessToRestrictedByToken = true; 
+        } else { // published and restricted and/or embargoed
+            // This line also handles all three authenticated session user, token user, and guest cases.
+            if (permissionService.requestOn(dvr, df).has(Permission.DownloadFile)) {
+                return true;
             }
-            
-            if (hasAccessToRestrictedBySession || hasAccessToRestrictedByToken) {
-                if (published) {
-                    if (hasAccessToRestrictedBySession) {
-                        if (user != null) {
-                            logger.log(Level.FINE, "Session-based auth: user {0} is granted access to the restricted, published datafile.", user.getIdentifier());
-                        } else {
-                            logger.fine("Session-based auth: guest user is granted access to the restricted, published datafile.");
-                        }
-                    } else {
-                        logger.log(Level.FINE, "Token-based auth: user {0} is granted access to the restricted, published datafile.", apiTokenUser.getIdentifier());
-                    }
-                    return true;
-                } else {
-                    // if the file is NOT published, we will let them download the 
-                    // file ONLY if they also have the permission to view 
-                    // unpublished versions:
-                    // Note that the code below does not allow a case where it is the
-                    // session user that has the permission on the file, and the API token 
-                    // user with the ViewUnpublished permission, or vice versa!
-                    if (hasAccessToRestrictedBySession) {
-                        if (permissionService.on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                            if (user != null) {
-                                logger.log(Level.FINE, "Session-based auth: user {0} is granted access to the restricted, unpublished datafile.", user.getIdentifier());
-                            } else {
-                                logger.fine("Session-based auth: guest user is granted access to the restricted, unpublished datafile.");
-                            }
-                            return true;
-                        } 
-                    } else {
-                        if (apiTokenUser != null && permissionService.requestOn(createDataverseRequest(apiTokenUser), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                            logger.log(Level.FINE, "Token-based auth: user {0} is granted access to the restricted, unpublished datafile.", apiTokenUser.getIdentifier());
-                            return true;
-                        }
-                    }
-                }
-            }
-        } 
-        
-        
-        // And if all that failed, we'll still check if the download can be authorized based
-        // on the special WorldMap token:
-
-        
-        if ((apiToken != null)&&(apiToken.length()==64)){
-            /* 
-                WorldMap token check
-                - WorldMap tokens are 64 chars in length
-            
-                - Use the worldMapTokenServiceBean to verify token 
-                    and check permissions against the requested DataFile
-            */
-            if (!(this.worldMapTokenServiceBean.isWorldMapTokenAuthorizedForDataFileDownload(apiToken, df))){
-                return false;
-            }
-            
-            // Yes! User may access file
-            //
-            logger.fine("WorldMap token-based auth: Token is valid for the requested datafile");
-            return true;
-            
-        } else if ((apiToken != null)&&(apiToken.length()!=64)) {
-            // Will try to obtain the user information from the API token, 
-            // if supplied: 
-        
-            try {
-                logger.fine("calling user = findUserOrDie()...");
-                user = findUserOrDie();
-            } catch (WrappedResponse wr) {
-                logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
-            }
-            
-            if (user == null) {
-                logger.warning("API token-based auth: Unable to find a user with the API token provided.");
-                return false;
-            } 
-            
-        if (permissionService.requestOn(createDataverseRequest(user), df).has(Permission.DownloadFile)) { 
-                if (published) {
-                    logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the datafile.", user.getIdentifier());
-                    return true; 
-                } else {
-                    // if the file is NOT published, we will let them download the 
-                    // file ONLY if they also have the permission to view 
-                    // unpublished versions:
-                    if (permissionService.requestOn(createDataverseRequest(user), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                        logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the (unpublished) datafile.", user.getIdentifier());
-                        return true;
-                    } else {
-                        logger.log(Level.FINE, "API token-based auth: User {0} is not authorized to access the (unpublished) datafile.", user.getIdentifier());
-                    }
-                }
-            } else {
-                logger.log(Level.FINE, "API token-based auth: User {0} is not authorized to access the datafile.", user.getIdentifier());
-            }
-            
-            return false;
-        } 
-        
-        if (user != null) {
-            logger.log(Level.FINE, "Session-based auth: user {0} has NO access rights on the requested datafile.", user.getIdentifier());
-        } 
-        
-        if (apiTokenUser != null) {
-            logger.log(Level.FINE, "Token-based auth: user {0} has NO access rights on the requested datafile.", apiTokenUser.getIdentifier());
-        } 
-        
-        if (user == null && apiTokenUser == null) {
-            logger.fine("Unauthenticated access: No guest access to the datafile.");
         }
+        if (sessionUser != null) {
+            logger.log(Level.FINE, "Session-based auth: user {0} has NO access rights on the requested datafile.", sessionUser.getIdentifier());
+        } 
         
+        if (apiUser != null) {
+            logger.log(Level.FINE, "Token-based auth: user {0} has NO access rights on the requested datafile.", apiUser.getIdentifier());
+        } 
         return false; 
     }   
     
 
         
-    private User findAPITokenUser(String apiToken) {
-        User apiTokenUser = null;
-
-        if ((apiToken != null) && (apiToken.length() != 64)) {
-            // We'll also try to obtain the user information from the API token, 
-            // if supplied: 
-
-            try {
-                logger.fine("calling apiTokenUser = findUserOrDie()...");
-                apiTokenUser = findUserOrDie();
-                return apiTokenUser;
-            } catch (WrappedResponse wr) {
-                logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
-                return null;
+    private User findAPITokenUser(User requestUser) {
+        User apiTokenUser = requestUser;
+        /*
+         * The idea here is to not let a guest user coming from the request (which
+         * happens when there is no key/token, and which we want if there's no session)
+         * from overriding an authenticated session user.
+         */
+        if(apiTokenUser instanceof GuestUser) {
+            if(session!=null && session.getUser()!=null) {
+            //The apiTokenUser, if set, will override the sessionUser in permissions calcs, so set it to null if we have a session user
+            apiTokenUser=null;
             }
-
         }
         return apiTokenUser;
     }
 
+    private URI handleCustomZipDownload(User user, String customZipServiceUrl, String fileIds, User apiTokenUser, UriInfo uriInfo, HttpHeaders headers, boolean donotwriteGBResponse, boolean orig) throws WebApplicationException {
+        
+        String zipServiceKey = null; 
+        Timestamp timestamp = null; 
+        
+        String fileIdParams[] = fileIds.split(",");
+        int validIdCount = 0; 
+        int validFileCount = 0;
+        int downloadAuthCount = 0; 
 
+        if (fileIdParams == null || fileIdParams.length == 0) {
+            throw new BadRequestException();
+        }
+        
+        for (int i = 0; i < fileIdParams.length; i++) {
+            Long fileId = null;
+            try {
+                fileId = Long.parseLong(fileIdParams[i]);
+                validIdCount++;
+            } catch (NumberFormatException nfe) {
+                fileId = null;
+            }
+            if (fileId != null) {
+                DataFile file = dataFileService.find(fileId);
+                if (file != null) {
+                    validFileCount++;
+                    if (isAccessAuthorized(user, file)) {
+                        logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
+                        if (donotwriteGBResponse != true && file.isReleased()) {
+                            GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
+                            guestbookResponseService.save(gbr);
+                            MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, file);
+                            mdcLogService.logEntry(entry);
+                        }
 
-            
-            
-            
+                        if (zipServiceKey == null) {
+                            zipServiceKey = fileDownloadService.generateServiceKey();
+                        }
+                        if (timestamp == null) {
+                            timestamp = new Timestamp(new Date().getTime());
+                        }
+
+                        fileDownloadService.addFileToCustomZipJob(zipServiceKey, file, timestamp, true);
+                        downloadAuthCount++;
+                    }
+                }
+            }
+        }
+
+        if (validIdCount == 0) {
+            throw new BadRequestException();
+        }
+        
+        if (validFileCount == 0) {
+            // no supplied id translated into an existing DataFile
+            throw new NotFoundException();
+        }
+        
+        if (downloadAuthCount == 0) {
+            // none of the DataFiles were authorized for download
+            throw new ForbiddenException();
+        }
+        
+        URI redirectUri = null;
+        try {
+            redirectUri = new URI(customZipServiceUrl + "?" + zipServiceKey);
+        } catch (URISyntaxException use) {
+            throw new BadRequestException(); 
+        }
+        return redirectUri;
+    }   
 }

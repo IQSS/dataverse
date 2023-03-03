@@ -15,6 +15,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -46,6 +48,10 @@ public class Metric implements Serializable {
     @Column(columnDefinition = "TEXT", nullable = true)
     private String dayString;
 
+    @ManyToOne(optional=true)
+    @JoinColumn(name="dataverse_id", nullable=true)
+    private Dataverse dataverse;
+    
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date lastCalledDate;
@@ -55,16 +61,21 @@ public class Metric implements Serializable {
     }
 
     //For monthly and day metrics
-    
-    public Metric(String name, String dayString, String dataLocation, String value) throws IOException {
-        if(null == name || null == value) {
-            throw new IOException("A created metric must have a metricName and metricValue");
-        }
+    /**
+     * 
+     * @param name - metric name
+     * @param dayString - how many days (day metric only)
+     * @param dataLocation - local, remote, all
+     * @param d - the parent dataverse
+     * @param value - the value to cache
+     */
+    public Metric(String name, String dayString, String dataLocation, Dataverse d, String value) {
         this.name = name;
         this.valueJson = value;
         this.dataLocation = dataLocation;
         this.dayString = dayString;
         this.lastCalledDate = new Timestamp(new Date().getTime());
+        this.dataverse = d;
     }
 
     /**
@@ -119,6 +130,14 @@ public class Metric implements Serializable {
      */
     public void setLastCalledDate(Date calledDate) {
         this.lastCalledDate = calledDate;
+    }
+
+    public Dataverse getDataverse() {
+        return dataverse;
+    }
+
+    public void setDataverse(Dataverse dataverse) {
+        this.dataverse = dataverse;
     }
 
 }

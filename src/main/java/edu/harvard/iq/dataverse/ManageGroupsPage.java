@@ -33,7 +33,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+
 
 /**
  * @author michaelsuo
@@ -78,7 +79,6 @@ public class ManageGroupsPage implements java.io.Serializable {
     private Dataverse dataverse;
     private Long dataverseId;
     private ExplicitGroup selectedGroup = null;
-    private Boolean showDeletePopup = false;
 
     public String init() {
         setDataverse(dataverseService.find(getDataverseId()));
@@ -96,13 +96,26 @@ public class ManageGroupsPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         explicitGroups = new LinkedList<>(explicitGroupService.findByOwner(getDataverseId()));
-
+        renderDeletePopup = false;
         return null;
     }
+    
+    private boolean renderDeletePopup = false;
 
+    public boolean isRenderDeletePopup() {
+        return renderDeletePopup;
+    }
+
+    public void setRenderDeletePopup(boolean renderDeletePopup) {
+        this.renderDeletePopup = renderDeletePopup;
+    }
+    
+    public void clickDeleteGroup(ExplicitGroup selectedGroup) {
+        setRenderDeletePopup(true);
+        this.selectedGroup = selectedGroup;
+    }
 
     public void setSelectedGroup(ExplicitGroup selectedGroup) {
-        setShowDeletePopup(true);
         this.selectedGroup = selectedGroup;
     }
 
@@ -237,18 +250,6 @@ public class ManageGroupsPage implements java.io.Serializable {
 
     public void removeMemberFromSelectedGroup(RoleAssignee ra) {
         selectedGroup.remove(ra);
-    }
-    
-    public Boolean getShowDeletePopup() {
-        return showDeletePopup;
-    }
-
-    public void setShowDeletePopup(Boolean showDeletePopup) {
-        this.showDeletePopup = showDeletePopup;
-    }
-    
-    public void unrenderDeletePopup() {
-        setShowDeletePopup(false);
     }
 
     public List<RoleAssignee> completeRoleAssignee( String query ) {

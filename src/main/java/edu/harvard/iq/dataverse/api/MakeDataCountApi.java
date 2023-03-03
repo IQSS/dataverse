@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -43,6 +45,8 @@ public class MakeDataCountApi extends AbstractApiBean {
     DatasetExternalCitationsServiceBean datasetExternalCitationsService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    SystemConfig systemConfig;
 
     /**
      * TODO: For each dataset, send the following:
@@ -136,13 +140,8 @@ public class MakeDataCountApi extends AbstractApiBean {
             String persistentId = dataset.getGlobalId().toString();
             // DataCite wants "doi=", not "doi:".
             String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
-            String baseUrl = System.getProperty("doi.mdcbaseurlstring");
-            if (null == baseUrl) {
-                // Backward compatible default to the production server
-                baseUrl = "https://api.datacite.org";
-            }
             // Request max page size and then loop to handle multiple pages
-            URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=1000");
+            URL url = new URL(systemConfig.getDataCiteRestApiUrlString() + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=1000");
             logger.fine("Retrieving Citations from " + url.toString());
             boolean nextPage = true;
             JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
@@ -170,7 +169,13 @@ public class MakeDataCountApi extends AbstractApiBean {
             } while (nextPage == true);
             JsonArray allData = dataBuilder.build();
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
-
+            /*
+             * ToDo: If this is the only source of citations, we should remove all the existing ones for the dataset and repopuate them.
+             * As is, this call doesn't remove old citations if there are now none (legacy issue if we decide to stop counting certain types of citation
+             * as we've done for 'hasPart').
+             * If there are some, this call individually checks each one and if a matching item exists, it removes it and adds it back. Faster and better to delete all and
+             * add the new ones.
+             */
             if (!datasetExternalCitations.isEmpty()) {
                 for (DatasetExternalCitations dm : datasetExternalCitations) {
                     datasetExternalCitationsService.save(dm);

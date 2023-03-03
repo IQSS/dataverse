@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -35,6 +36,11 @@ public class WidgetWrapper implements java.io.Serializable {
                 widgetScope = widgetParam.substring(0, widgetParam.indexOf(WIDGET_SEPARATOR));
                 widgetHome = widgetParam.substring(widgetParam.indexOf(WIDGET_SEPARATOR) + 1);
             }
+        }
+        if (!widgetView) {
+            // Prevent non-widgets from being embedded in iframes.
+            HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+            response.setHeader("Content-Security-Policy", "frame-ancestors 'none'");
         }
         return widgetView;
     }

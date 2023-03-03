@@ -1,9 +1,16 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -11,7 +18,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 
 /**
  * A specification or definition for how an external tool is intended to
@@ -23,12 +31,15 @@ public class ExternalTool implements Serializable {
 
     public static final String DISPLAY_NAME = "displayName";
     public static final String DESCRIPTION = "description";
-    public static final String TYPE = "type";
+    public static final String LEGACY_SINGLE_TYPE = "type";
+    public static final String TYPES = "types";
     public static final String SCOPE = "scope";
     public static final String TOOL_URL = "toolUrl";
     public static final String TOOL_PARAMETERS = "toolParameters";
     public static final String CONTENT_TYPE = "contentType";
-    public static final String HAS_PREVIEW_MODE = "hasPreviewMode";
+    public static final String TOOL_NAME = "toolName";
+    public static final String ALLOWED_API_CALLS = "allowedApiCalls";
+    public static final String REQUIREMENTS = "requirements";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,6 +53,12 @@ public class ExternalTool implements Serializable {
     private String displayName;
 
     /**
+     * Type of tool such as dct, explorer, etc
+     */
+    @Column(nullable = true)
+    private String toolName;
+
+    /**
      * The description of the tool in English.
      */
     // TODO: How are we going to internationalize the description?
@@ -49,11 +66,11 @@ public class ExternalTool implements Serializable {
     private String description;
 
     /**
-     * Whether the tool is an "explore" tool or a "configure" tool, for example.
+     * A tool can be multiple types, "explore", "configure", "preview", etc.
      */
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Type type;
+    @OneToMany(mappedBy = "externalTool", cascade = CascadeType.ALL)
+    @JoinColumn(nullable = false)
+    private List<ExternalToolType> externalToolTypes;
 
     /**
      * Whether the tool operates at the dataset or file level.
@@ -78,22 +95,23 @@ public class ExternalTool implements Serializable {
      */
     @Column(nullable = true, columnDefinition = "TEXT")
     private String contentType;
-    
-    @Column(nullable = false)
-    private boolean hasPreviewMode;   
 
+    /**
+     * Set of API calls the tool would like to be able to use (e,.g. for retrieving
+     * data through the Dataverse REST API). Used to build signedUrls for POST
+     * headers, as in DP Creator
+     */
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String allowedApiCalls;
 
-    
-    @Transient
-    private boolean worldMapTool;
-    
-    public boolean isWorldMapTool() {
-        return worldMapTool;
-    }
-
-    public void setWorldMapTool(boolean worldMapTool) {
-        this.worldMapTool = worldMapTool;
-    }
+    /**
+     * When non-null, the tool has indicated that it has certain requirements
+     * that must be met before it should be shown to the user. This
+     * functionality was added for tools that operate on aux files rather than
+     * data files so "auxFilesExist" is one of the possible values.
+     */
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String requirements;
 
     /**
      * This default constructor is only here to prevent this error at
@@ -109,32 +127,28 @@ public class ExternalTool implements Serializable {
     public ExternalTool() {
     }
 
-    public ExternalTool(String displayName, String description, Type type, Scope scope, String toolUrl, String toolParameters, String contentType) {
-        this.displayName = displayName;
-        this.description = description;
-        this.type = type;
-        this.scope = scope;
-        this.toolUrl = toolUrl;
-        this.toolParameters = toolParameters;
-        this.contentType = contentType;
-        this.hasPreviewMode = false;
+    public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType) {
+       this(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType, null, null);
     }
-    
-    public ExternalTool(String displayName, String description, Type type, Scope scope, String toolUrl, String toolParameters, String contentType, boolean hasPreviewMode) {
+
+    public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType, String allowedApiCalls, String requirements) {
         this.displayName = displayName;
+        this.toolName = toolName;
         this.description = description;
-        this.type = type;
+        this.externalToolTypes = externalToolTypes;
         this.scope = scope;
         this.toolUrl = toolUrl;
         this.toolParameters = toolParameters;
         this.contentType = contentType;
-        this.hasPreviewMode = hasPreviewMode;
+        this.allowedApiCalls = allowedApiCalls;
+        this.requirements = requirements;
     }
 
     public enum Type {
 
         EXPLORE("explore"),
-        CONFIGURE("configure");
+        CONFIGURE("configure"),
+        PREVIEW("preview");
 
         private final String text;
 
@@ -199,9 +213,13 @@ public class ExternalTool implements Serializable {
         return displayName;
     }
 
+    public String  getToolName() { return toolName; }
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
+
+    public void setToolName(String toolName) { this.toolName = toolName; }
 
     public String getDescription() {
         return description;
@@ -211,8 +229,23 @@ public class ExternalTool implements Serializable {
         this.description = description;
     }
 
-    public Type getType() {
-        return type;
+    public List<ExternalToolType> getExternalToolTypes() {
+        return externalToolTypes;
+    }
+
+    public void setExternalToolTypes(List<ExternalToolType> externalToolTypes) {
+        this.externalToolTypes = externalToolTypes;
+    }
+
+    public boolean isExploreTool() {
+        boolean isExploreTool = false;
+        for (ExternalToolType externalToolType : externalToolTypes) {
+            if (externalToolType.getType().equals(Type.EXPLORE)) {
+                isExploreTool = true;
+                break;
+            }
+        }
+        return isExploreTool;
     }
 
     public Scope getScope() {
@@ -242,90 +275,74 @@ public class ExternalTool implements Serializable {
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
-    
-    public boolean getHasPreviewMode() {
-        return hasPreviewMode;
-    }
 
-    public void setHasPreviewMode(boolean hasPreviewMode) {
-        this.hasPreviewMode = hasPreviewMode;
-    }
-    
     public JsonObjectBuilder toJson() {
         JsonObjectBuilder jab = Json.createObjectBuilder();
         jab.add("id", getId());
         jab.add(DISPLAY_NAME, getDisplayName());
+        if (getToolName() != null) {
+            jab.add(TOOL_NAME, getToolName());
+        }
         jab.add(DESCRIPTION, getDescription());
-        jab.add(TYPE, getType().text);
+        JsonArrayBuilder types = Json.createArrayBuilder();
+        for (ExternalToolType externalToolType : externalToolTypes) {
+            types.add(externalToolType.getType().text);
+        }
+        jab.add(TYPES, types);
         jab.add(SCOPE, getScope().text);
         jab.add(TOOL_URL, getToolUrl());
         jab.add(TOOL_PARAMETERS, getToolParameters());
         if (getContentType() != null) {
             jab.add(CONTENT_TYPE, getContentType());
         }
-        if (getHasPreviewMode()) {
-            jab.add(HAS_PREVIEW_MODE, getHasPreviewMode());
-        } else {
-            
+        if (getAllowedApiCalls()!= null) {
+            jab.add(ALLOWED_API_CALLS,getAllowedApiCalls());
         }
         return jab;
     }
 
-    public enum ReservedWord {
-
-        // TODO: Research if a format like "{reservedWord}" is easily parse-able or if another format would be
-        // better. The choice of curly braces is somewhat arbitrary, but has been observed in documenation for
-        // various REST APIs. For example, "Variable substitutions will be made when a variable is named in {brackets}."
-        // from https://swagger.io/specification/#fixed-fields-29 but that's for URLs.
-        FILE_ID("fileId"),
-        FILE_PID("filePid"),
-        SITE_URL("siteUrl"),
-        API_TOKEN("apiToken"),
-        // datasetId is the database id
-        DATASET_ID("datasetId"),
-        // datasetPid is the DOI or Handle
-        DATASET_PID("datasetPid"),
-        DATASET_VERSION("datasetVersion"),
-        FILE_METADATA_ID("fileMetadataId"),
-        LOCALE_CODE("localeCode");
-
-        private final String text;
-        private final String START = "{";
-        private final String END = "}";
-
-        private ReservedWord(final String text) {
-            this.text = START + text + END;
+    public String getDescriptionLang() {
+        String description = "";
+        if (this.toolName != null) {
+            description = (BundleUtil.getStringFromBundle("externaltools." + this.toolName + ".description"));
+        } 
+        if (StringUtil.isEmpty(description)) {
+            description = this.getDescription();
         }
+        return description;
+    }
 
-        /**
-         * This is a centralized method that enforces that only reserved words
-         * are allowed to be used by external tools. External tool authors
-         * cannot pass their own query parameters through Dataverse such as
-         * "mode=mode1".
-         *
-         * @throws IllegalArgumentException
-         */
-        public static ReservedWord fromString(String text) throws IllegalArgumentException {
-            if (text != null) {
-                for (ReservedWord reservedWord : ReservedWord.values()) {
-                    if (text.equals(reservedWord.text)) {
-                        return reservedWord;
-                    }
-                }
-            }
-            // TODO: Consider switching to a more informative message that enumerates the valid reserved words.
-            boolean moreInformativeMessage = false;
-            if (moreInformativeMessage) {
-                throw new IllegalArgumentException("Unknown reserved word: " + text + ". A reserved word must be one of these values: " + Arrays.asList(ReservedWord.values()) + ".");
-            } else {
-                throw new IllegalArgumentException("Unknown reserved word: " + text);
-            }
+    public String getDisplayNameLang() {
+        String displayName = "";
+        if (this.toolName != null) {
+            displayName = (BundleUtil.getStringFromBundle("externaltools." + this.toolName + ".displayname"));
+        } 
+        if (StringUtil.isEmpty(displayName)) {
+            displayName = this.getDisplayName();
         }
+        return displayName;
+    }
 
-        @Override
-        public String toString() {
-            return text;
-        }
+    /**
+     * @return the allowedApiCalls
+     */
+    public String getAllowedApiCalls() {
+        return allowedApiCalls;
+    }
+
+    /**
+     * @param allowedApiCalls the allowedApiCalls to set
+     */
+    public void setAllowedApiCalls(String allowedApiCalls) {
+        this.allowedApiCalls = allowedApiCalls;
+    }
+
+    public String getRequirements() {
+        return requirements;
+    }
+
+    public void setRequirements(String requirements) {
+        this.requirements = requirements;
     }
 
 }

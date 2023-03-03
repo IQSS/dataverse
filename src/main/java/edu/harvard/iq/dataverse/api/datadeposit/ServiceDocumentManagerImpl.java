@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.ServiceDocument;
 import org.swordapp.server.ServiceDocumentManager;
@@ -43,12 +45,9 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
         String warning = urlManager.processUrl(sdUri);
         ServiceDocument service = new ServiceDocument();
         SwordWorkspace swordWorkspace = new SwordWorkspace();
-        Dataverse rootDataverse = dataverseService.findRootDataverse();
-        if (rootDataverse != null) {
-            String name = rootDataverse.getName();
-            if (name != null) {
-                swordWorkspace.setTitle(name);
-            }
+        String name = dataverseService.getRootDataverseName();
+        if (!StringUtils.isEmpty(name)) {
+            swordWorkspace.setTitle(name);
         }
         if (warning != null) {
             swordWorkspace.getWrappedWorkspace().setAttributeValue("warning", warning);

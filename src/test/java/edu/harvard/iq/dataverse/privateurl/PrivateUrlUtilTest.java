@@ -312,7 +312,7 @@ public class PrivateUrlUtilTest {
 
     @Test
     public void testGetRequiredPermissions() {
-        CreatePrivateUrlCommand createPrivateUrlCommand = new CreatePrivateUrlCommand(null, null);
+        CreatePrivateUrlCommand createPrivateUrlCommand = new CreatePrivateUrlCommand(null, null, false);
         CommandException ex = new CommandException(null, createPrivateUrlCommand);
         List<String> strings = PrivateUrlUtil.getRequiredPermissions(ex);
         assertEquals(Arrays.asList("ManageDatasetPermissions"), strings);

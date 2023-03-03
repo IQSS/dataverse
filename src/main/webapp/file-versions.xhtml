@@ -130,12 +130,13 @@
         </p:column>
         <!-- contributor column -->
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-3">
-            <h:outputText value="#{versionTab.contributorNames}" />
+            <h:outputText value="#{versionTab.contributorNames}" rendered="#{!anonymized}" />
+            <h:outputText value="#{bundle['file.dataFilesTab.versions.headers.contributors.withheld']}" rendered="#{anonymized}" />
         </p:column>
         <!-- end: contributor column -->
         <!-- date column -->
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.published']}" class="col-sm-2">
-            <h:outputText id="versionDate" value="#{versionTab.datasetVersion.versionDate}" />
+            <h:outputText id="versionDate" value="#{versionTab.datasetVersion.publicationDateAsString}" />
         </p:column>
         <!-- end: date column -->
     </p:dataTable>

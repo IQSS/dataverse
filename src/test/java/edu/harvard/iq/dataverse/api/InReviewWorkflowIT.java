@@ -57,9 +57,7 @@ public class InReviewWorkflowIT {
         // Whoops, the curator forgot to give the author permission to create a dataset.
         Response noPermToCreateDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
         noPermToCreateDataset.prettyPrint();
-        noPermToCreateDataset.then().assertThat()
-                .body("message", equalTo("User @" + authorUsername + " is not permitted to perform requested action."))
-                .statusCode(UNAUTHORIZED.getStatusCode());
+        noPermToCreateDataset.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
         Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, curatorApiToken);
         grantAuthorAddDataset.prettyPrint();

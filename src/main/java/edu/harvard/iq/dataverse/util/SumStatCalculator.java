@@ -19,13 +19,13 @@
 */
 
 package edu.harvard.iq.dataverse.util;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang.*;
-import org.apache.commons.math.stat.*;
-//import cern.colt.list.*;
-//import cern.jet.stat.Descriptive;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.math.stat.StatUtils;
 
 
 /**

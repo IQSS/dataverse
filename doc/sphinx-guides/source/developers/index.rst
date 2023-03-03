@@ -19,9 +19,11 @@ Developer Guide
    sql-upgrade-scripts
    testing
    documentation
+   security
    dependencies
    debugging
    coding-style
+   configuration
    deployment
    containers
    making-releases
@@ -32,4 +34,10 @@ Developer Guide
    geospatial
    selinux
    big-data-support
+   aux-file-support
+   s3-direct-upload-api
+   dataset-semantic-metadata-api
+   dataset-migration-api 
    workflows
+   fontcustom
+   

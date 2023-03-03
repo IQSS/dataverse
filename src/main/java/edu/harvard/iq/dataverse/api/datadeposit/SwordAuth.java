@@ -36,6 +36,7 @@ public class SwordAuth extends AbstractApiBean {
             throw new SwordAuthException(msg);
         }
 
+        // Checking if the user is deactivated is done inside findUserByApiToken.
         AuthenticatedUser authenticatedUserFromToken = findUserByApiToken(username);
         if (authenticatedUserFromToken == null) {
             String msg = "User not found based on API token.";

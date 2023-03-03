@@ -6,7 +6,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.UriRegistry;
 

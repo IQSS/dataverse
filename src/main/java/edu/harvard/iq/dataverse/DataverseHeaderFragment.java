@@ -6,14 +6,16 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,7 +24,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -38,13 +40,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     DataverseServiceBean dataverseService;
 
     @EJB
-    SettingsServiceBean settingsService;
-
-    @EJB
     GroupServiceBean groupService;
-
-    @EJB
-    PermissionServiceBean permissionService;
 
     @EJB
     SystemConfig systemConfig;
@@ -54,6 +50,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean datafileService;
+    
+    @EJB
+    BannerMessageServiceBean bannerMessageService;
 
     @Inject
     DataverseSession dataverseSession;
@@ -68,6 +67,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     
     List<Breadcrumb> breadcrumbs = new ArrayList<>();
+    
+    private List<BannerMessage> bannerMessages = null; 
 
     private Long unreadNotificationCount = null;
     
@@ -153,7 +154,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             this.unreadNotificationCount = userNotificationService.getUnreadNotificationCountByUser(userId);
         }catch (Exception e){
             logger.warning("Error trying to retrieve unread notification count for user." + e.getMessage());
-            this.unreadNotificationCount = new Long("0");
+            this.unreadNotificationCount = 0L; 
         }
         return this.unreadNotificationCount;
     }
@@ -253,7 +254,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     private Boolean signupAllowed = null;
     
     private String redirectToRoot(){
-        return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
+        return "dataverse.xhtml?alias=" + settingsWrapper.getRootDataverse().getAlias();
     }
     
     public boolean isSignupAllowed() {
@@ -275,6 +276,43 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         } else {
             return false;
         }
+    }
+    
+    
+    public List<BannerMessage> getBannerMessages() {
+        if (bannerMessages == null) {
+            bannerMessages = new ArrayList<>();
+            
+            User user = dataverseSession.getUser();
+            AuthenticatedUser au = null;
+            if (user.isAuthenticated()) {
+                au = (AuthenticatedUser) user;
+            }           
+        
+            if  (au == null)    {
+                bannerMessages = bannerMessageService.findBannerMessages();
+            } else  {
+                bannerMessages = bannerMessageService.findBannerMessages(au.getId());
+            } 
+        
+            if (!dataverseSession.getDismissedMessages().isEmpty()) {           
+                for (BannerMessage dismissed : dataverseSession.getDismissedMessages()) {
+                    Iterator<BannerMessage> itr = bannerMessages.iterator();
+                    while (itr.hasNext()) {
+                        BannerMessage test = itr.next();
+                        if (test.equals(dismissed)) {
+                            itr.remove();
+                        }
+                    }
+                }            
+            }
+        }
+        
+        return bannerMessages;
+    }
+
+    public void setBannerMessages(List<BannerMessage> bannerMessages) {
+        this.bannerMessages = bannerMessages;
     }
 
     public String getSignupUrl(String loginRedirect) {

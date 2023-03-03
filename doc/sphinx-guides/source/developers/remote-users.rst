@@ -1,6 +1,6 @@
-====================
-Shibboleth and OAuth
-====================
+==========================
+Shibboleth, OAuth and OIDC
+==========================
 
 .. contents:: |toctitle|
 	:local:
@@ -8,9 +8,9 @@ Shibboleth and OAuth
 Shibboleth and OAuth
 --------------------
 
-If you are working on anything related to users, please keep in mind that your changes will likely affect Shibboleth and OAuth users. For some background on user accounts in Dataverse, see "Auth Modes: Local vs. Remote vs. Both" in the :doc:`/installation/config` section of the Installation Guide.
+If you are working on anything related to users, please keep in mind that your changes will likely affect Shibboleth and OAuth users. For some background on user accounts in the Dataverse Software, see :ref:`auth-modes` section of Configuration in the Installation Guide.
 
-Rather than setting up Shibboleth on your laptop, developers are advised to simply add a value to their database to enable Shibboleth "dev mode" like this:
+Rather than setting up Shibboleth on your laptop, developers are advised to add the Shibboleth auth provider (see "Add the Shibboleth Authentication Provider to Your Dataverse Installation" at :doc:`/installation/shibboleth`) and add a value to their database to enable Shibboleth "dev mode" like this:
 
 ``curl http://localhost:8080/api/admin/settings/:DebugShibAccountType -X PUT -d RANDOM``
 
@@ -26,7 +26,39 @@ In addition to setting up OAuth on your laptop for real per above, you can also 
 
 For a list of possible values, please "find usages" on the settings key above and look at the enum.
 
-Now when you go to http://localhost:8080/oauth2/firstLogin.xhtml you should be prompted to create a Shibboleth account.
+Now when you go to http://localhost:8080/oauth2/firstLogin.xhtml you should be prompted to create an OAuth account.
+
+----
+
+OpenID Connect (OIDC)
+---------------------
+
+If you are working on the OpenID Connect (OIDC) user authentication flow, you do not need to connect to a remote provider (as explained in :doc:`/installation/oidc`) to test this feature. Instead, you can use the available configuration that allows you to run a test Keycloak OIDC identity management service locally through a Docker container.
+
+(Please note! The client secret (``ss6gE8mODCDfqesQaSG3gwUwZqZt547E``) is hard-coded in ``oidc-realm.json`` and ``oidc-keycloak-auth-provider.json``. Do not use this config in production! This is only for developers.)
+
+You can find this configuration in ``conf/keycloak``. There are two options available in this directory to run a Keycloak container: bash script or docker-compose.
+
+To run the container via bash script, execute the following command (positioned in ``conf/keycloak``):
+
+``./run-keycloak.sh``
+
+The script will create a Keycloak container or restart it if the container was already created and stopped. Once the script is executed, Keycloak should be accessible from http://localhost:8090/
+
+Now load the configuration defined in ``oidc-keycloak-auth-provider.json`` into your Dataverse installation to enable Keycloak as an authentication provider.
+
+``curl -X POST -H 'Content-type: application/json' --upload-file oidc-keycloak-auth-provider.json http://localhost:8080/api/admin/authenticationProviders``
+
+You should see the new provider, called "OIDC-Keycloak", under "Other options" on the Log In page.
+
+You should be able to log into Keycloak with the following credentials:
+
+- username: kcuser
+- password: kcpassword
+
+In case you want to stop and remove the Keycloak container, just run the other available bash script:
+
+``./rm-keycloak.sh``
 
 ----
 

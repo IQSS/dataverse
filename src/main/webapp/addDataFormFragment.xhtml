@@ -1,0 +1,19 @@
+<ui:composition xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:jsf="http://xmlns.jcp.org/jsf">
+    <!-- Add Data Form - not logged in... -->
+    <p:dialog id="addDataGuest" header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" widgetVar="addData_popup" modal="true">
+        <p class="help-block">
+            <h:outputText value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false"></h:outputText>
+        </p>
+        <div class="button-block">
+            <ui:fragment rendered="#{dataverseHeaderFragment.signupAllowed}">
+                <a class="btn btn-default" href="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}" title="#{bundle['dataverse.results.dialog.addDataGuest.signup.title']}">#{bundle['signup']}</a>
+            </ui:fragment>
+            <a class="btn btn-default" href="/loginpage.xhtml#{navigationWrapper.redirectPage}" title="#{bundle['dataverse.results.dialog.addDataGuest.login.title']}">#{bundle['login']}</a>
+        </div>
+    </p:dialog>
+</ui:composition>

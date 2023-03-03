@@ -7,12 +7,15 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SessionUtil;
+
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
@@ -29,6 +32,7 @@ import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -163,13 +167,12 @@ public class LoginPage implements java.io.Serializable {
         for ( FilledCredential fc : filledCredentialsList ) {       
             authReq.putCredential(fc.getCredential().getKey(), fc.getValue());
         }
+
         authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );
         try {
             AuthenticatedUser r = authSvc.getUpdateAuthenticatedUser(credentialsAuthProviderId, authReq);
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
-            session.configureSessionTimeout();
-            
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectToRoot();
             }
@@ -204,6 +207,7 @@ public class LoginPage implements java.io.Serializable {
                     logger.log( Level.WARNING, "Error logging in: " + response.getMessage(), response.getError() );
                     return null;
                 case BREAKOUT:
+                    FacesContext.getCurrentInstance().getExternalContext().getFlash().put("silentUpgradePasswd",authReq.getCredential(BuiltinAuthenticationProvider.KEY_PASSWORD));
                     return response.getMessage();
                 default:
                     JsfHelper.addErrorMessage("INTERNAL ERROR");

@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.BannerMessage;
+import edu.harvard.iq.dataverse.BannerMessageServiceBean;
+import edu.harvard.iq.dataverse.BannerMessageText;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -8,12 +11,16 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.Template;
+import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -29,10 +36,12 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
@@ -41,19 +50,22 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -69,16 +81,22 @@ import org.apache.commons.io.IOUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
@@ -86,13 +104,20 @@ import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.rolesToJson;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import javax.inject.Inject;
+import javax.json.JsonArray;
 import javax.persistence.Query;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
@@ -109,6 +134,8 @@ public class Admin extends AbstractApiBean {
 
 	private static final Logger logger = Logger.getLogger(Admin.class.getName());
 
+        @EJB
+        AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationSvc;
 	@EJB
 	BuiltinUserServiceBean builtinUserService;
 	@EJB
@@ -123,6 +150,8 @@ public class Admin extends AbstractApiBean {
 	DataFileServiceBean fileService;
 	@EJB
 	DatasetServiceBean datasetService;
+        @EJB
+	DataverseServiceBean dataverseService;
 	@EJB
 	DatasetVersionServiceBean datasetversionService;
         @Inject
@@ -133,6 +162,14 @@ public class Admin extends AbstractApiBean {
         GroupServiceBean groupService;
         @EJB
         SettingsServiceBean settingsService;
+        @EJB
+        DatasetVersionServiceBean datasetVersionService;
+        @EJB
+        ExplicitGroupServiceBean explicitGroupService;
+        @EJB
+        BannerMessageServiceBean bannerMessageService;
+        @EJB
+        TemplateServiceBean templateService;
 
 	// Make the session available
 	@Inject
@@ -185,6 +222,75 @@ public class Admin extends AbstractApiBean {
 		settingsSvc.delete(name, lang);
 		return ok("Setting " + name + " - " + lang + " deleted.");
 	}
+        
+    @Path("template/{id}")
+    @DELETE
+    public Response deleteTemplate(@PathParam("id") long id) {
+        
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        if (superuser == null) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DeleteTemplateCommand.");
+        }
+
+        Template doomed = templateService.find(id);
+        if (doomed == null) {
+            return error(Response.Status.NOT_FOUND, "Template with id " + id + " -  not found.");
+        }
+
+        Dataverse dv = doomed.getDataverse();
+        List <Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
+
+        try {
+            commandEngine.submit(new DeleteTemplateCommand(createDataverseRequest(superuser), dv, doomed, dataverseWDefaultTemplate));
+        } catch (CommandException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+            return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+        }
+
+        return ok("Template " + doomed.getName() + " deleted.");
+    }
+    
+    
+    @Path("templates")
+    @GET
+    public Response findAllTemplates() {
+        return findTemplates("");
+    }
+    
+    @Path("templates/{alias}")
+    @GET
+    public Response findTemplates(@PathParam("alias") String alias) {
+        List<Template> templates;
+
+            if (alias.isEmpty()) {
+                templates = templateService.findAll();
+            } else {
+                try{
+                    Dataverse owner = findDataverseOrDie(alias);
+                    templates = templateService.findByOwnerId(owner.getId());
+                } catch (WrappedResponse r){
+                    return r.getResponse();
+                }
+            }
+
+            JsonArrayBuilder container = Json.createArrayBuilder();
+            for (Template t : templates) {
+                JsonObjectBuilder bld = Json.createObjectBuilder();
+                bld.add("templateId", t.getId());
+                bld.add("templateName", t.getName());
+                Dataverse loopowner = t.getDataverse();
+                if (loopowner != null) {
+                    bld.add("owner", loopowner.getDisplayName());
+                } else {
+                    bld.add("owner", "This an orphan template, it may be safely removed");
+                }
+                container.add(bld);
+            }
+
+            return ok(container);
+
+        
+    }
 
 	@Path("authenticationProviderFactories")
 	@GET
@@ -213,9 +319,9 @@ public class Admin extends AbstractApiBean {
 				managed = row;
 			}
 			if (managed.isEnabled()) {
-				AuthenticationProvider provider = authSvc.loadProvider(managed);
-				authSvc.deregisterProvider(provider.getId());
-				authSvc.registerProvider(provider);
+				AuthenticationProvider provider = authProvidersRegistrationSvc.loadProvider(managed);
+				authProvidersRegistrationSvc.deregisterProvider(provider.getId());
+				authProvidersRegistrationSvc.registerProvider(provider);
 			}
 			return created("/api/admin/authenticationProviders/" + managed.getId(), json(managed));
 		} catch (AuthorizationSetupException e) {
@@ -261,7 +367,7 @@ public class Admin extends AbstractApiBean {
 				return ok(String.format("Authentication provider '%s' already enabled", id));
 			}
 			try {
-				authSvc.registerProvider(authSvc.loadProvider(row));
+				authProvidersRegistrationSvc.registerProvider(authProvidersRegistrationSvc.loadProvider(row));
 				return ok(String.format("Authentication Provider %s enabled", row.getId()));
 
 			} catch (AuthenticationProviderFactoryNotFoundException ex) {
@@ -275,7 +381,7 @@ public class Admin extends AbstractApiBean {
 
 		} else {
 			// disable a provider
-			authSvc.deregisterProvider(id);
+			authProvidersRegistrationSvc.deregisterProvider(id);
 			return ok("Authentication Provider '" + id + "' disabled. "
 					+ (authSvc.getAuthenticationProviderIds().isEmpty()
 							? "WARNING: no enabled authentication providers left."
@@ -299,7 +405,7 @@ public class Admin extends AbstractApiBean {
 	@DELETE
 	@Path("authenticationProviders/{id}/")
 	public Response deleteAuthenticationProvider(@PathParam("id") String id) {
-		authSvc.deregisterProvider(id);
+		authProvidersRegistrationSvc.deregisterProvider(id);
 		AuthenticationProviderRow row = em.find(AuthenticationProviderRow.class, id);
 		if (row != null) {
 			em.remove(row);
@@ -311,29 +417,89 @@ public class Admin extends AbstractApiBean {
 						: ""));
 	}
 
-	@GET
-	@Path("authenticatedUsers/{identifier}/")
-	public Response getAuthenticatedUser(@PathParam("identifier") String identifier) {
-		AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
-		if (authenticatedUser != null) {
-			return ok(json(authenticatedUser));
-		}
-		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
-	}
+    @GET
+    @Path("authenticatedUsers/{identifier}/")
+    public Response getAuthenticatedUserByIdentifier(@PathParam("identifier") String identifier) {
+        AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
+        if (authenticatedUser != null) {
+            return ok(json(authenticatedUser));
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
 
-	@DELETE
-	@Path("authenticatedUsers/{identifier}/")
-	public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
-		AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
-		if (user != null) {
-			authSvc.deleteAuthenticatedUser(user.getId());
-			return ok("AuthenticatedUser " + identifier + " deleted. ");
-		}
-		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
-	}
+    @DELETE
+    @Path("authenticatedUsers/{identifier}/")
+    public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+        if (user != null) {
+            return deleteAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
+    
+    @DELETE
+    @Path("authenticatedUsers/id/{id}/")
+    public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
+        AuthenticatedUser user = authSvc.findByID(id);
+        if (user != null) {
+            return deleteAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+    }
+
+    private Response deleteAuthenticatedUser(AuthenticatedUser au) {
         
+        //getDeleteUserErrorMessages does all of the tests to see
+        //if the user is 'deletable' if it returns an empty string the user 
+        //can be safely deleted.
         
+        String errorMessages = authSvc.getDeleteUserErrorMessages(au);
         
+        if (!errorMessages.isEmpty()) {
+            return badRequest(errorMessages);
+        }
+        
+        //if the user is deletable we will delete access requests and group membership
+        // many-to-many relationships that couldn't be cascade deleted
+        authSvc.removeAuthentictedUserItems(au);
+        
+        authSvc.deleteAuthenticatedUser(au.getId());
+        return ok("AuthenticatedUser " + au.getIdentifier() + " deleted.");
+    }
+
+    @POST
+    @Path("authenticatedUsers/{identifier}/deactivate")
+    public Response deactivateAuthenticatedUser(@PathParam("identifier") String identifier) {
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+        if (user != null) {
+            return deactivateAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
+
+    @POST
+    @Path("authenticatedUsers/id/{id}/deactivate")
+    public Response deactivateAuthenticatedUserById(@PathParam("id") Long id) {
+        AuthenticatedUser user = authSvc.findByID(id);
+        if (user != null) {
+            return deactivateAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+    }
+
+    private Response deactivateAuthenticatedUser(AuthenticatedUser userToDisable) {
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        if (superuser == null) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DeactivateUserCommand.");
+        }
+        try {
+            execCommand(new DeactivateUserCommand(createDataverseRequest(superuser), userToDisable));
+            return ok("User " + userToDisable.getIdentifier() + " deactivated.");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
 	public Response publishDataverseAsCreator(@PathParam("id") long id) {
@@ -353,10 +519,11 @@ public class Admin extends AbstractApiBean {
 
 	@Deprecated
 	@GET
+	@AuthRequired
 	@Path("authenticatedUsers")
-	public Response listAuthenticatedUsers() {
+	public Response listAuthenticatedUsers(@Context ContainerRequestContext crc) {
 		try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
+			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -371,18 +538,18 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@GET
+	@AuthRequired
 	@Path(listUsersPartialAPIPath)
 	@Produces({ "application/json" })
-	public Response filterAuthenticatedUsers(@QueryParam("searchTerm") String searchTerm,
-			@QueryParam("selectedPage") Integer selectedPage, @QueryParam("itemsPerPage") Integer itemsPerPage) {
+	public Response filterAuthenticatedUsers(
+			@Context ContainerRequestContext crc,
+			@QueryParam("searchTerm") String searchTerm,
+			@QueryParam("selectedPage") Integer selectedPage,
+			@QueryParam("itemsPerPage") Integer itemsPerPage,
+			@QueryParam("sortKey") String sortKey
+	) {
 
-		User authUser;
-		try {
-			authUser = this.findUserOrDie();
-		} catch (AbstractApiBean.WrappedResponse ex) {
-			return error(Response.Status.FORBIDDEN,
-					BundleUtil.getStringFromBundle("dashboard.list_users.api.auth.invalid_apikey"));
-		}
+		User authUser = getRequestUser(crc);
 
 		if (!authUser.isSuperuser()) {
 			return error(Response.Status.FORBIDDEN,
@@ -391,7 +558,7 @@ public class Admin extends AbstractApiBean {
 
 		UserListMaker userListMaker = new UserListMaker(userService);
 
-		String sortKey = null;
+		// String sortKey = null;
 		UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, sortKey);
 
 		return ok(userListResult.toJSON());
@@ -435,11 +602,12 @@ public class Admin extends AbstractApiBean {
 	 *             Shib-specfic one.
 	 */
 	@PUT
+	@AuthRequired
 	@Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
 	@Deprecated
-	public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-                try {
-                        AuthenticatedUser user = findAuthenticatedUserOrDie();
+	public Response convertShibUserToBuiltin(@Context ContainerRequestContext crc, @PathParam("id") Long id, String newEmailAddress) {
+		try {
+			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -472,10 +640,11 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@PUT
+	@AuthRequired
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
-	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-                try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
+	public Response convertOAuthUserToBuiltin(@Context ContainerRequestContext crc, @PathParam("id") Long id, String newEmailAddress) {
+		try {
+			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -512,12 +681,13 @@ public class Admin extends AbstractApiBean {
 	 * This is used in testing via AdminIT.java but we don't expect sysadmins to use
 	 * this.
 	 */
-	@Path("authenticatedUsers/convert/builtin2shib")
 	@PUT
-	public Response builtin2shib(String content) {
+	@AuthRequired
+	@Path("authenticatedUsers/convert/builtin2shib")
+	public Response builtin2shib(@Context ContainerRequestContext crc, String content) {
 		logger.info("entering builtin2shib...");
 		try {
-			AuthenticatedUser userToRunThisMethod = findAuthenticatedUserOrDie();
+			AuthenticatedUser userToRunThisMethod = getRequestAuthenticatedUserOrDie(crc);
 			if (!userToRunThisMethod.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -572,7 +742,7 @@ public class Admin extends AbstractApiBean {
 		String overwriteEmail = randomUser.get("email");
 		overwriteEmail = newEmailAddressToUse;
 		logger.info("overwriteEmail: " + overwriteEmail);
-		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail, null);
+		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail);
 		if (!validEmail) {
 			// See https://github.com/IQSS/dataverse/issues/2998
 			return error(Response.Status.BAD_REQUEST, "invalid email: " + overwriteEmail);
@@ -603,6 +773,10 @@ public class Admin extends AbstractApiBean {
 			boolean knowsExistingPassword = false;
 			BuiltinUser oldBuiltInUser = builtinUserService.findByUserName(builtInUserToConvert.getUserIdentifier());
 			if (oldBuiltInUser != null) {
+                                if (builtInUserToConvert.isDeactivated()) {
+                                        problems.add("builtin account has been deactivated");
+                                        return error(Status.BAD_REQUEST, problems.build().toString());
+                                }
 				String usernameOfBuiltinAccountToConvert = oldBuiltInUser.getUserName();
 				response.add("old username", usernameOfBuiltinAccountToConvert);
 				AuthenticatedUser authenticatedUser = authSvc.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert,
@@ -658,12 +832,13 @@ public class Admin extends AbstractApiBean {
 	 * This is used in testing via AdminIT.java but we don't expect sysadmins to use
 	 * this.
 	 */
-	@Path("authenticatedUsers/convert/builtin2oauth")
 	@PUT
-	public Response builtin2oauth(String content) {
+	@AuthRequired
+	@Path("authenticatedUsers/convert/builtin2oauth")
+	public Response builtin2oauth(@Context ContainerRequestContext crc, String content) {
 		logger.info("entering builtin2oauth...");
 		try {
-			AuthenticatedUser userToRunThisMethod = findAuthenticatedUserOrDie();
+			AuthenticatedUser userToRunThisMethod = getRequestAuthenticatedUserOrDie(crc);
 			if (!userToRunThisMethod.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -725,7 +900,7 @@ public class Admin extends AbstractApiBean {
 		String overwriteEmail = randomUser.get("email");
 		overwriteEmail = newEmailAddressToUse;
 		logger.info("overwriteEmail: " + overwriteEmail);
-		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail, null);
+		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail);
 		if (!validEmail) {
 			// See https://github.com/IQSS/dataverse/issues/2998
 			return error(Response.Status.BAD_REQUEST, "invalid email: " + overwriteEmail);
@@ -808,16 +983,8 @@ public class Admin extends AbstractApiBean {
 		return ok(response);
 	}
 
-	@DELETE
-	@Path("authenticatedUsers/id/{id}/")
-	public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
-		AuthenticatedUser user = authSvc.findByID(id);
-		if (user != null) {
-			authSvc.deleteAuthenticatedUser(user.getId());
-			return ok("AuthenticatedUser " + id + " deleted. ");
-		}
-		return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
-	}
+
+
 
 	@Path("roles")
 	@POST
@@ -845,6 +1012,18 @@ public class Admin extends AbstractApiBean {
 		}
 	}
 
+    @DELETE
+	@AuthRequired
+    @Path("roles/{id}")
+    public Response deleteRole(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+
+        return response(req -> {
+            DataverseRole doomed = findRoleOrDie(id);
+            execCommand(new DeleteRoleCommand(req, doomed));
+            return ok("role " + doomed.getName() + " deleted.");
+        }, getRequestUser(crc));
+    }
+
 	@Path("superuser/{identifier}")
 	@POST
 	public Response toggleSuperuser(@PathParam("identifier") String identifier) {
@@ -852,6 +1031,9 @@ public class Admin extends AbstractApiBean {
 				.setInfo(identifier);
 		try {
 			AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+                        if (user.isDeactivated()) {
+                            return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
+                        }
 
 			user.setSuperuser(!user.isSuperuser());
 
@@ -1001,6 +1183,77 @@ public class Admin extends AbstractApiBean {
         }
         return ok(msg);
     }
+    
+    // This API does the same thing as /validateDataFileHashValue/{fileId}, 
+    // but for all the files in the dataset, with streaming output.
+    @GET
+    @Path("validate/dataset/files/{id}")
+    @Produces({"application/json"})
+    public Response validateDatasetDatafiles(@PathParam("id") String id) {
+        
+        // Streaming output: the API will start producing 
+        // the output right away, as it goes through the list 
+        // of the datafiles in the dataset.
+        // The streaming mechanism is modeled after validate/datasets API.
+        StreamingOutput stream = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException,
+                    WebApplicationException {
+                Dataset dataset;
+        
+                try {
+                    dataset = findDatasetOrDie(id);
+                } catch (Exception ex) {
+                    throw new IOException(ex.getMessage());
+                }
+                
+                os.write("{\"dataFiles\": [\n".getBytes());
+                
+                boolean wroteObject = false;
+                for (DataFile dataFile : dataset.getFiles()) {
+                    // Potentially, there's a godzillion datasets in this Dataverse. 
+                    // This is why we go through the list of ids here, and instantiate 
+                    // only one dataset at a time. 
+                    boolean success = false;
+                    boolean constraintViolationDetected = false;
+                     
+                    JsonObjectBuilder output = Json.createObjectBuilder();
+                    output.add("datafileId", dataFile.getId());
+                    output.add("storageIdentifier", dataFile.getStorageIdentifier());
+
+                    
+                    try {
+                        FileUtil.validateDataFileChecksum(dataFile);
+                        success = true;
+                    } catch (IOException ex) {
+                        output.add("status", "invalid");
+                        output.add("errorMessage", ex.getMessage());
+                    }
+                    
+                    if (success) {
+                        output.add("status", "valid");
+                    } 
+                    
+                    // write it out:
+                    
+                    if (wroteObject) {
+                        os.write(",\n".getBytes());
+                    }
+
+                    os.write(output.build().toString().getBytes("UTF8"));
+                    
+                    if (!wroteObject) {
+                        wroteObject = true;
+                    }
+                }
+                
+                os.write("\n]\n}\n".getBytes());
+            }
+            
+        };
+        return Response.ok(stream).build();
+    }
 
 	@Path("assignments/assignees/{raIdtf: .*}")
 	@GET
@@ -1075,23 +1328,20 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@Path("permissions/{dvo}")
+	@AuthRequired
 	@GET
-	public Response findPermissonsOn(@PathParam("dvo") String dvo) {
+	public Response findPermissonsOn(@Context ContainerRequestContext crc, @PathParam("dvo") String dvo) {
 		try {
 			DvObject dvObj = findDvo(dvo);
 			if (dvObj == null) {
 				return notFound("DvObject " + dvo + " not found");
 			}
-			try {
-				User aUser = findUserOrDie();
-				JsonObjectBuilder bld = Json.createObjectBuilder();
-				bld.add("user", aUser.getIdentifier());
-				bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
-				return ok(bld);
+			User aUser = getRequestUser(crc);
+			JsonObjectBuilder bld = Json.createObjectBuilder();
+			bld.add("user", aUser.getIdentifier());
+			bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
+			return ok(bld);
 
-			} catch (WrappedResponse wr) {
-				return wr.getResponse();
-			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Error while testing permissions", e);
 			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -1175,9 +1425,9 @@ public class Admin extends AbstractApiBean {
 			return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
 		}
 		JsonObjectBuilder data = Json.createObjectBuilder();
-		DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+		DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 		data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
-		data.add("datasetLogoPresent", DatasetUtil.isDatasetLogoPresent(dataset));
+		data.add("datasetLogoPresent", DatasetUtil.isDatasetLogoPresent(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
 		if (datasetThumbnail != null) {
 			data.add("datasetThumbnailBase64image", datasetThumbnail.getBase64image());
 			DataFile dataFile = datasetThumbnail.getDataFile();
@@ -1217,8 +1467,9 @@ public class Admin extends AbstractApiBean {
 	}
 
     @POST
+	@AuthRequired
     @Path("{id}/reregisterHDLToPID")
-    public Response reregisterHdlToPID(@PathParam("id") String id) {
+    public Response reregisterHdlToPID(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
         try {
             if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
@@ -1226,7 +1477,7 @@ public class Admin extends AbstractApiBean {
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
             }
             
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
                 logger.info("Bad Request Unauthor " );
                 return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
@@ -1253,12 +1504,13 @@ public class Admin extends AbstractApiBean {
     }
 
 	@GET
+	@AuthRequired
 	@Path("{id}/registerDataFile")
-	public Response registerDataFile(@PathParam("id") String id) {
+	public Response registerDataFile(@Context ContainerRequestContext crc, @PathParam("id") String id) {
 		logger.info("Starting to register  " + id + " file id. " + new Date());
 
 		try {
-			User u = findUserOrDie();
+			User u = getRequestUser(crc);
 			DataverseRequest r = createDataverseRequest(u);
 			DataFile df = findDataFileOrDie(id);
 			if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
@@ -1276,8 +1528,9 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@GET
+	@AuthRequired
 	@Path("/registerDataFileAll")
-	public Response registerDataFileAll() {
+	public Response registerDataFileAll(@Context ContainerRequestContext crc) {
 		Integer count = fileService.findAll().size();
 		Integer successes = 0;
 		Integer alreadyRegistered = 0;
@@ -1290,7 +1543,7 @@ public class Admin extends AbstractApiBean {
 				if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
 					if (df.isReleased()) {
 						released++;
-						User u = findAuthenticatedUserOrDie();
+						User u = getRequestAuthenticatedUserOrDie(crc);
 						DataverseRequest r = createDataverseRequest(u);
 						execCommand(new RegisterDvObjectCommand(r, df));
 						successes++;
@@ -1325,8 +1578,9 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@GET
+	@AuthRequired
 	@Path("/updateHashValues/{alg}")
-	public Response updateHashValues(@PathParam("alg") String alg, @QueryParam("num") int num) {
+	public Response updateHashValues(@Context ContainerRequestContext crc, @PathParam("alg") String alg, @QueryParam("num") int num) {
 		Integer count = fileService.findAll().size();
 		Integer successes = 0;
 		Integer alreadyUpdated = 0;
@@ -1345,7 +1599,7 @@ public class Admin extends AbstractApiBean {
 		logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
 				+ alg);
 		try {
-			User u = findAuthenticatedUserOrDie();
+			User u = getRequestAuthenticatedUserOrDie(crc);
 			if (!u.isSuperuser())
 				return error(Status.UNAUTHORIZED, "must be superuser");
 		} catch (WrappedResponse e1) {
@@ -1433,11 +1687,12 @@ public class Admin extends AbstractApiBean {
 	}
         
     @POST
+	@AuthRequired
     @Path("/computeDataFileHashValue/{fileId}/algorithm/{alg}")
-    public Response computeDataFileHashValue(@PathParam("fileId") String fileId, @PathParam("alg") String alg) {
+    public Response computeDataFileHashValue(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @PathParam("alg") String alg) {
 
         try {
-            User u = findAuthenticatedUserOrDie();
+            User u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser()) {
                 return error(Status.UNAUTHORIZED, "must be superuser");
             }
@@ -1494,11 +1749,12 @@ public class Admin extends AbstractApiBean {
     }
     
     @POST
+	@AuthRequired
     @Path("/validateDataFileHashValue/{fileId}")
-    public Response validateDataFileHashValue(@PathParam("fileId") String fileId) {
+    public Response validateDataFileHashValue(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId) {
 
         try {
-            User u = findAuthenticatedUserOrDie();
+            User u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser()) {
                 return error(Status.UNAUTHORIZED, "must be superuser");
             }
@@ -1559,27 +1815,48 @@ public class Admin extends AbstractApiBean {
 
     }
 
-    @GET
-    @Path("/submitDataVersionToArchive/{id}/{version}")
-    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid, @PathParam("version") String versionNumber) {
+    @POST
+	@AuthRequired
+    @Path("/submitDatasetVersionToArchive/{id}/{version}")
+    public Response submitDatasetVersionToArchive(@Context ContainerRequestContext crc, @PathParam("id") String dsid,
+            @PathParam("version") String versionNumber) {
 
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
-            session.setUser(au);
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
+
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
+            if(dv==null) {
+                return error(Status.BAD_REQUEST, "Requested version not found.");
+            }
             if (dv.getArchivalCopyLocation() == null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
-                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
+                // Note - the user is being sent via the createDataverseRequest(au) call to the
+                // back-end command where it is used to get the API Token which is
+                // then used to retrieve files (e.g. via S3 direct downloads) to create the Bag
+                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className,
+                        createDataverseRequest(au), dv);
+                // createSubmitToArchiveCommand() tries to find and instantiate an non-abstract
+                // implementation of AbstractSubmitToArchiveCommand based on the provided
+                // className. If a class with that name isn't found (or can't be instatiated), it
+                // will return null
                 if (cmd != null) {
+                    if(ArchiverUtil.onlySingleVersionArchiving(cmd.getClass(), settingsService)) {
+                        for (DatasetVersion version : ds.getVersions()) {
+                            if ((dv != version) && version.getArchivalCopyLocation() != null) {
+                                return error(Status.CONFLICT, "Dataset already archived.");
+                            }
+                        } 
+                    }
                     new Thread(new Runnable() {
                         public void run() {
                             try {
                                 DatasetVersion dv = commandEngine.submit(cmd);
-                                if (dv.getArchivalCopyLocation() != null) {
-                                    logger.info("DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber + " submitted to Archive at: "
-                                            + dv.getArchivalCopyLocation());
+                                if (!dv.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
+                                    logger.info(
+                                            "DatasetVersion id=" + ds.getGlobalId().toString() + " v" + versionNumber
+                                                    + " submitted to Archive, status: " + dv.getArchivalCopyLocationStatus());
                                 } else {
                                     logger.severe("Error submitting version due to conflict/error at Archive");
                                 }
@@ -1588,16 +1865,109 @@ public class Admin extends AbstractApiBean {
                             }
                         }
                     }).start();
-                    return ok("Archive submission using " + cmd.getClass().getCanonicalName() + " started. Processing can take significant time for large datasets. View log and/or check archive for results.");
+                    return ok("Archive submission using " + cmd.getClass().getCanonicalName()
+                            + " started. Processing can take significant time for large datasets and requires that the user have permission to publish the dataset. View log and/or check archive for results.");
                 } else {
                     logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
                     return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
                 }
             } else {
-                return error(Status.BAD_REQUEST, "Version already archived at: " + dv.getArchivalCopyLocation());
+                return error(Status.BAD_REQUEST, "Version was already submitted for archiving.");
             }
         } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return e1.getResponse();
+        }
+    }
+
+    
+    /**
+     * Iteratively archives all unarchived dataset versions
+     * @param
+     * listonly - don't archive, just list unarchived versions
+     * limit - max number to process
+     * lastestonly - only archive the latest versions
+     * @return
+     */
+    @POST
+	@AuthRequired
+    @Path("/archiveAllUnarchivedDatasetVersions")
+    public Response archiveAllUnarchivedDatasetVersions(@Context ContainerRequestContext crc, @QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
+
+        try {
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
+
+            List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
+            if (dsl != null) {
+                if (listonly) {
+                    JsonArrayBuilder jab = Json.createArrayBuilder();
+                    logger.fine("Unarchived versions found: ");
+                    int current = 0;
+                    for (DatasetVersion dv : dsl) {
+                        if (limit != null && current >= limit) {
+                            break;
+                        }
+                        if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
+                            jab.add(dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
+                            logger.fine("    " + dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
+                            current++;
+                        }
+                    }
+                    return ok(jab); 
+                }
+                String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
+                // Note - the user is being sent via the createDataverseRequest(au) call to the
+                // back-end command where it is used to get the API Token which is
+                // then used to retrieve files (e.g. via S3 direct downloads) to create the Bag
+                final DataverseRequest request = createDataverseRequest(au);
+                // createSubmitToArchiveCommand() tries to find and instantiate an non-abstract
+                // implementation of AbstractSubmitToArchiveCommand based on the provided
+                // className. If a class with that name isn't found (or can't be instatiated, it
+                // will return null
+                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dsl.get(0));
+                if (cmd != null) {
+                    //Found an archiver to use
+                    new Thread(new Runnable() {
+                        public void run() {
+                            int total = dsl.size();
+                            int successes = 0;
+                            int failures = 0;
+                            for (DatasetVersion dv : dsl) {
+                                if (limit != null && (successes + failures) >= limit) {
+                                    break;
+                                }
+                                if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
+                                    try {
+                                        AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, request, dv);
+
+                                        dv = commandEngine.submit(cmd);
+                                        if (!dv.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
+                                            successes++;
+                                            logger.info("DatasetVersion id=" + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber() + " submitted to Archive, status: "
+                                                    + dv.getArchivalCopyLocationStatus());
+                                        } else {
+                                            failures++;
+                                            logger.severe("Error submitting version due to conflict/error at Archive for " + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber());
+                                        }
+                                    } catch (CommandException ex) {
+                                        failures++;
+                                        logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
+                                    }
+                                }
+                                logger.fine(successes + failures + " of " + total + " archive submissions complete");
+                            }
+                            logger.info("Archiving complete: " + successes + " Successes, " + failures + " Failures. See prior log messages for details.");
+                        }
+                    }).start();
+                    return ok("Starting to archive all unarchived published dataset versions using " + cmd.getClass().getCanonicalName() + ". Processing can take significant time for large datasets/ large numbers of dataset versions  and requires that the user have permission to publish the dataset(s). View log and/or check archive for results.");
+                } else {
+                    logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
+                    return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
+                }
+            } else {
+                return error(Status.BAD_REQUEST, "No unarchived published dataset versions found");
+            }
+        } catch (WrappedResponse e1) {
+            return e1.getResponse();
         }
     }
     
@@ -1618,14 +1988,15 @@ public class Admin extends AbstractApiBean {
 	}
 
     @GET
+	@AuthRequired
     @Path("/dataverse/{alias}/addRoleAssignmentsToChildren")
-    public Response addRoleAssignementsToChildren(@PathParam("alias") String alias) throws WrappedResponse {
+    public Response addRoleAssignementsToChildren(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse owner = dataverseSvc.findByAlias(alias);
         if (owner == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -1647,5 +2018,303 @@ public class Admin extends AbstractApiBean {
                 "InheritParentRoleAssignments does not list any roles on this instance");
     }
     
+    @GET
+	@AuthRequired
+    @Path("/dataverse/{alias}/storageDriver")
+    public Response getStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
+    	Dataverse dataverse = dataverseSvc.findByAlias(alias);
+    	if (dataverse == null) {
+    		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+    	}
+    	try {
+    		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+    		if (!user.isSuperuser()) {
+    			return error(Response.Status.FORBIDDEN, "Superusers only.");
+    		}
+    	} catch (WrappedResponse wr) {
+    		return wr.getResponse();
+    	}
+    	//Note that this returns what's set directly on this dataverse. If null/DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER, the user would have to recurse the chain of parents to find the effective storageDriver
+    	return ok(dataverse.getStorageDriverId());
+    }
+    
+    @PUT
+	@AuthRequired
+    @Path("/dataverse/{alias}/storageDriver")
+    public Response setStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias, String label) throws WrappedResponse {
+    	Dataverse dataverse = dataverseSvc.findByAlias(alias);
+    	if (dataverse == null) {
+    		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+    	}
+    	try {
+    		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+    		if (!user.isSuperuser()) {
+    			return error(Response.Status.FORBIDDEN, "Superusers only.");
+    		}
+    	} catch (WrappedResponse wr) {
+    		return wr.getResponse();
+    	}
+    	for (Entry<String, String> store: DataAccess.getStorageDriverLabels().entrySet()) {
+    		if(store.getKey().equals(label)) {
+    			dataverse.setStorageDriverId(store.getValue());
+    			return ok("Storage set to: " + store.getKey() + "/" + store.getValue());
+    		}
+    	}
+    	return error(Response.Status.BAD_REQUEST,
+    			"No Storage Driver found for : " + label);
+    }
 
+    @DELETE
+	@AuthRequired
+    @Path("/dataverse/{alias}/storageDriver")
+    public Response resetStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
+    	Dataverse dataverse = dataverseSvc.findByAlias(alias);
+    	if (dataverse == null) {
+    		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+    	}
+    	try {
+    		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+    		if (!user.isSuperuser()) {
+    			return error(Response.Status.FORBIDDEN, "Superusers only.");
+    		}
+    	} catch (WrappedResponse wr) {
+    		return wr.getResponse();
+    	}
+    	dataverse.setStorageDriverId("");
+    	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+    }
+    
+    @GET
+	@AuthRequired
+    @Path("/dataverse/storageDrivers")
+    public Response listStorageDrivers(@Context ContainerRequestContext crc) throws WrappedResponse {
+    	try {
+    		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+    		if (!user.isSuperuser()) {
+    			return error(Response.Status.FORBIDDEN, "Superusers only.");
+    		}
+    	} catch (WrappedResponse wr) {
+    		return wr.getResponse();
+    	}
+    	JsonObjectBuilder bld = jsonObjectBuilder();
+    	DataAccess.getStorageDriverLabels().entrySet().forEach(s -> bld.add(s.getKey(), s.getValue()));
+		return ok(bld);
+    }
+    
+    @GET
+	@AuthRequired
+    @Path("/dataverse/{alias}/curationLabelSet")
+    public Response getCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
+        Dataverse dataverse = dataverseSvc.findByAlias(alias);
+        if (dataverse == null) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+        }
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        // Note that this returns what's set directly on this dataverse. If
+        // null/SystemConfig.DEFAULTCURATIONLABELSET, the user would have to recurse the
+        // chain of parents to find the effective curationLabelSet
+        return ok(dataverse.getCurationLabelSetName());
+    }
+
+    @PUT
+	@AuthRequired
+    @Path("/dataverse/{alias}/curationLabelSet")
+    public Response setCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias, @QueryParam("name") String name) throws WrappedResponse {
+        Dataverse dataverse = dataverseSvc.findByAlias(alias);
+        if (dataverse == null) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+        }
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        if (SystemConfig.CURATIONLABELSDISABLED.equals(name) || SystemConfig.DEFAULTCURATIONLABELSET.equals(name)) {
+            dataverse.setCurationLabelSetName(name);
+            return ok("Curation Label Set Name set to: " + name);
+        } else {
+            for (String setName : systemConfig.getCurationLabels().keySet()) {
+                if (setName.equals(name)) {
+                    dataverse.setCurationLabelSetName(name);
+                    return ok("Curation Label Set Name set to: " + setName);
+                }
+            }
+        }
+        return error(Response.Status.BAD_REQUEST,
+                "No Curation Label Set found for : " + name);
+    }
+
+    @DELETE
+	@AuthRequired
+    @Path("/dataverse/{alias}/curationLabelSet")
+    public Response resetCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
+        Dataverse dataverse = dataverseSvc.findByAlias(alias);
+        if (dataverse == null) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+        }
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        dataverse.setCurationLabelSetName(SystemConfig.DEFAULTCURATIONLABELSET);
+        return ok("Curation Label Set reset to default: " + SystemConfig.DEFAULTCURATIONLABELSET);
+    }
+
+    @GET
+	@AuthRequired
+    @Path("/dataverse/curationLabelSets")
+    public Response listCurationLabelSets(@Context ContainerRequestContext crc) throws WrappedResponse {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        JsonObjectBuilder bld = Json.createObjectBuilder();
+
+        systemConfig.getCurationLabels().entrySet().forEach(s -> {
+            JsonArrayBuilder labels = Json.createArrayBuilder();
+            Arrays.asList(s.getValue()).forEach(l -> labels.add(l));
+            bld.add(s.getKey(), labels);
+        });
+        return ok(bld);
+    }
+    
+    @POST
+    @Path("/bannerMessage")
+    public Response addBannerMessage(JsonObject jsonObject) throws WrappedResponse {
+
+        BannerMessage toAdd = new BannerMessage();
+        try {
+            String dismissible = jsonObject.getString("dismissibleByUser");
+
+            boolean dismissibleByUser = false;
+            if (dismissible.equals("true")) {
+                dismissibleByUser = true;
+            }
+            toAdd.setDismissibleByUser(dismissibleByUser);
+            toAdd.setBannerMessageTexts(new ArrayList());
+            toAdd.setActive(true);
+            JsonArray jsonArray = jsonObject.getJsonArray("messageTexts");
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JsonObject obj = (JsonObject) jsonArray.get(i);
+                String message = obj.getString("message");
+                String lang = obj.getString("lang");
+                BannerMessageText messageText = new BannerMessageText();
+                messageText.setMessage(message);
+                messageText.setLang(lang);
+                messageText.setBannerMessage(toAdd);
+                toAdd.getBannerMessageTexts().add(messageText);
+            }
+                bannerMessageService.save(toAdd);
+                return ok("Banner Message added successfully.");
+
+        } catch (Exception e) {
+            logger.warning("Unexpected Exception: " + e.getMessage());
+            return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: " + e.getMessage());
+        }
+
+    }
+    
+    @DELETE
+    @Path("/bannerMessage/{id}")
+    public Response deleteBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
+ 
+        BannerMessage message = em.find(BannerMessage.class, id);
+        if (message == null){
+            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        }
+        bannerMessageService.deleteBannerMessage(id);
+        
+        return ok("Message id =  " + id + " deleted.");
+
+    }
+    
+    @PUT
+    @Path("/bannerMessage/{id}/deactivate")
+    public Response deactivateBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
+        BannerMessage message = em.find(BannerMessage.class, id);
+        if (message == null){
+            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        }
+        bannerMessageService.deactivateBannerMessage(id);
+        
+        return ok("Message id =  " + id + " deactivated.");
+
+    }
+    
+    @GET
+    @Path("/bannerMessage")
+    public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
+
+        return ok(bannerMessageService.findAllBannerMessages().stream()
+                .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
+                .collect(toJsonArray()));
+
+    }
+    
+    @POST
+	@AuthRequired
+    @Consumes("application/json")
+    @Path("/requestSignedUrl")
+    public Response getSignedUrl(@Context ContainerRequestContext crc, JsonObject urlInfo) {
+        AuthenticatedUser superuser = null;
+        try {
+            superuser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        if (superuser == null || !superuser.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Requesting signed URLs is restricted to superusers.");
+        }
+        
+        String userId = urlInfo.getString("user");
+        String key=null;
+        if (userId != null) {
+            AuthenticatedUser user = authSvc.getAuthenticatedUser(userId);
+            // If a user param was sent, we sign the URL for them, otherwise on behalf of
+            // the superuser who made this api call
+            if (user != null) {
+                ApiToken apiToken = authSvc.findApiTokenByUser(user);
+                if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
+                    key = apiToken.getTokenString();
+                }
+            } else {
+                userId = superuser.getUserIdentifier();
+                // We ~know this exists - the superuser just used it and it was unexpired/not
+                // disabled. (ToDo - if we want this to work with workflow tokens (or as a
+                // signed URL), we should do more checking as for the user above))
+                key = authSvc.findApiTokenByUser(superuser).getTokenString();
+            }
+            if (key == null) {
+                return error(Response.Status.CONFLICT, "Do not have a valid user with apiToken");
+            }
+            key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
+        }
+        
+        String baseUrl = urlInfo.getString("url");
+        int timeout = urlInfo.getInt(ExternalToolHandler.TIMEOUT, 10);
+        String method = urlInfo.getString(ExternalToolHandler.HTTP_METHOD, "GET");
+        
+        String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
+        
+        return ok(Json.createObjectBuilder().add(ExternalToolHandler.SIGNED_URL, signedUrl));
+    }
+ 
 }

@@ -19,6 +19,7 @@ import com.google.gson.Gson;
 
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -255,7 +256,10 @@ public class OpenAireExportUtil {
                                     creator_map.put("nameType", "Personal");
                                     nameType_check = true;
                                 }
-
+                                // ToDo - the algorithm to determine if this is a Person or Organization here
+                                // has been abstracted into a separate
+                                // edu.harvard.iq.dataverse.util.PersonOrOrgUtil class that could be used here
+                                // to avoid duplication/variants of the algorithm
                                 creatorName = Cleanup.normalize(creatorName);
                                 // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
                                 if (creatorName.contains(",")) {
@@ -276,11 +280,16 @@ public class OpenAireExportUtil {
                                     if ((nameType_check) && (!creatorName.replaceFirst(",", "").contains(","))) {
                                         // creatorName=<FamilyName>, <FirstName>
                                         String[] fullName = creatorName.split(", ");
-                                        givenName = fullName[1];
-                                        String familyName = fullName[0];
+                                        if (fullName.length == 2) {
+                                            givenName = fullName[1];
+                                            String familyName = fullName[0];
 
-                                        writeFullElement(xmlw, null, "givenName", null, givenName, language);
-                                        writeFullElement(xmlw, null, "familyName", null, familyName, language);
+                                            writeFullElement(xmlw, null, "givenName", null, givenName, language);
+                                            writeFullElement(xmlw, null, "familyName", null, familyName, language);
+                                        } else {
+                                            // It's possible to get here if "Smith," is entered as an author name.
+                                            logger.info("Unable to write givenName and familyName based on creatorName '" + creatorName + "'.");
+                                        }
                                     }
                                 } else {
                                     String givenName = FirstNames.getInstance().getFirstName(creatorName);
@@ -700,6 +709,11 @@ public class OpenAireExportUtil {
         boolean nameType_check = false;
         Map<String, String> contributor_map = new HashMap<String, String>();
 
+        // ToDo - the algorithm to determine if this is a Person or Organization here
+        // has been abstracted into a separate
+        // edu.harvard.iq.dataverse.util.PersonOrOrgUtil class that could be used here
+        // to avoid duplication/variants of the algorithm
+
         contributorName = Cleanup.normalize(contributorName);
         // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
         if (contributorName.contains(",")) {
@@ -711,6 +725,9 @@ public class OpenAireExportUtil {
                 // givenName ok
                 contributor_map.put("nameType", "Personal");
                 nameType_check = true;
+                // re: the above toDo - the ("ContactPerson".equals(contributorType) &&
+                // !isValidEmailAddress(contributorName)) clause in the next line could/should
+                // be sent as the OrgIfTied boolean parameter
             } else if (isOrganization || ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName))) {
                 contributor_map.put("nameType", "Organizational");
             }
@@ -1125,28 +1142,10 @@ public class OpenAireExportUtil {
         }
         xmlw.writeEndElement(); // </rights>
 
-        // check if getLicense() method contains CC0
-        // check if getTermsOfUse() method starts with http://
         writeRightsHeader(xmlw, language);
-        if (StringUtils.isNotBlank(datasetVersionDTO.getLicense())) {
-            if (StringUtils.containsIgnoreCase(datasetVersionDTO.getLicense(), "cc0")) {
-                xmlw.writeAttribute("rightsURI", "https://creativecommons.org/publicdomain/zero/1.0/");
-                if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
-                    xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
-                }
-            } else if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
-                if (StringUtils.startsWithIgnoreCase(datasetVersionDTO.getTermsOfUse().trim(), "http")) {
-                    xmlw.writeAttribute("rightsURI", datasetVersionDTO.getTermsOfUse());
-                } else {
-                    xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
-                }
-            }
-        } else if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
-            if (StringUtils.startsWithIgnoreCase(datasetVersionDTO.getTermsOfUse().trim(), "http")) {
-                xmlw.writeAttribute("rightsURI", datasetVersionDTO.getTermsOfUse());
-            } else {
-                xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
-            }
+        if (datasetVersionDTO.getLicense() != null) {
+            xmlw.writeAttribute("rightsURI", datasetVersionDTO.getLicense().getUri());
+            xmlw.writeCharacters(datasetVersionDTO.getLicense().getName());
         }
         xmlw.writeEndElement(); // </rights>
         xmlw.writeEndElement(); // </rightsList>

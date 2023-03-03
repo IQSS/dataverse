@@ -1,0 +1,23 @@
+In the next Dataverse release, we are adding a database constraint to
+prevent duplicate DataFile objects pointing to the same physical file
+from being created.
+
+Before the next release can be deployed, your database must be checked
+for any such duplicates that may already exist. If present,
+the duplicates will need to be deleted, and the integrity of the 
+stored physical files verified.
+
+Please run the diagnostic script provided at
+https://github.com/IQSS/dataverse/raw/develop/scripts/issues/6522/find_duplicates.sh.
+The script relies on the PostgreSQL utility psql to access the
+database. You will need to edit the credentials at the top of the script
+to match your database configuration.
+
+If this issue is not present in your database, you will see a message
+"... no duplicate dvObjects in your database. Your installation is
+ready to be upgraded to Dataverse 4.20"
+
+If duplicates are detected, it will provide further instructions. We
+will need you to send us the produced output. We will then assist you
+in resolving this problem in your database.
+

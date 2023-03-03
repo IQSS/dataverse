@@ -1,0 +1,82 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+        
+        <ui:fragment rendered="#{enableEdit}">
+            <div class="text-right">
+                <h:outputLink styleClass="btn btn-default"                             
+                              value="/guestbook.xhtml?id=#{selectedGuestbook.id}&#38;ownerId=#{ownerId}">
+                    <span class="glyphicon glyphicon-pencil"></span> #{bundle['dataset.manageGuestbooks.tab.action.btn.edit']}
+                </h:outputLink>
+            </div>
+        </ui:fragment>
+    
+        <div class="form-horizontal">
+            <p class="help-block">
+                #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}
+            </p>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">
+                    #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
+                </label>
+                <div class="col-sm-8">
+                    <p class="form-control-static">
+                        #{selectedGuestbook.name}
+                    </p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">
+                    #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}"></span>
+                </label>
+                <div class="col-sm-8">
+                    <p class="form-control-static">
+                        <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.accountInformation']}"/>
+                        <ul>
+                            <ui:repeat value="#{selectedGuestbook.requiredAccountInformation}" var="ai">
+                                <li>
+                                    <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
+                                </li>
+                            </ui:repeat>
+                            <ui:repeat value="#{selectedGuestbook.optionalAccountInformation}" var="ai">
+                                <li>
+                                    <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                    </p>
+                    
+                    <ui:fragment rendered="#{!empty selectedGuestbook.requiredQuestionsList or !empty selectedGuestbook.optionalQuestionsList}">
+                    <p class="form-control-static">
+                        <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions']}"/>
+                        <ul>
+                            <ui:repeat value="#{selectedGuestbook.requiredQuestionsList}" var="q">
+                                <li>
+                                    <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
+                                </li>
+                            </ui:repeat>
+                            <ui:repeat value="#{selectedGuestbook.optionalQuestionsList}" var="q">
+                                <li>
+                                    <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                    </p>
+                    </ui:fragment>
+                </div>
+            </div>
+        </div>
+        <div class="button-block">
+            <button class="btn btn-default" onclick="PF('viewGuestbook').hide()" type="button">
+                #{bundle.close}
+            </button>
+        </div>
+</ui:composition>

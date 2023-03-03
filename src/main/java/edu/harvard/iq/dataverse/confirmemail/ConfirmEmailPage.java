@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -49,18 +50,27 @@ public class ConfirmEmailPage implements java.io.Serializable {
     ConfirmEmailData confirmEmailData;
 
     public String init() {
+        String failureDetails = "";
         if (token != null) {
-            ConfirmEmailExecResponse confirmEmailExecResponse = confirmEmailService.processToken(token);
-            confirmEmailData = confirmEmailExecResponse.getConfirmEmailData();
-            if (confirmEmailData != null) {
-                user = confirmEmailData.getAuthenticatedUser();
-                session.setUser(user);
-                session.configureSessionTimeout(); // TODO: is this needed here? (it can't hurt, but still)
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.details.success"));
-                return "/dataverse.xhtml?faces-redirect=true";
+            ConfirmEmailExecResponse confirmEmailExecResponse = null;
+            try {
+                confirmEmailExecResponse = confirmEmailService.processToken(token);
+                confirmEmailData = confirmEmailExecResponse.getConfirmEmailData();
+                if (confirmEmailData != null) {
+                    user = confirmEmailData.getAuthenticatedUser();
+                    session.setUser(user);
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.details.success"));
+                    return "/dataverse.xhtml?faces-redirect=true";
+                } else {
+                    failureDetails = BundleUtil.getStringFromBundle("confirmEmail.details.failure.noConfirmEmailDataFromToken");
+                }
+            } catch (Exception ex) {
+                failureDetails = ex.getLocalizedMessage();
             }
+        } else {
+            failureDetails = BundleUtil.getStringFromBundle("confirmEmail.details.failure.noToken");
         }
-        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("confirmEmail.details.failure"));
+        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("confirmEmail.details.failure", Arrays.asList(failureDetails)));
         /**
          * @todo It would be nice to send a 404 response but if we enable this
          * then the user sees the contents of 404.xhtml rather than the contents

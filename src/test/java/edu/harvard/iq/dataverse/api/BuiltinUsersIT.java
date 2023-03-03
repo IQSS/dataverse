@@ -5,6 +5,7 @@ import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
@@ -72,6 +74,31 @@ public class BuiltinUsersIT {
                 .statusCode(OK.getStatusCode());
 
     }
+    
+        @Test
+    public void testFindByToken() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response getUserAsJsonByToken = UtilIT.getAuthenticatedUserByToken(apiToken);
+
+        getUserAsJsonByToken.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        getUserAsJsonByToken = UtilIT.getAuthenticatedUserByToken("badcode");
+        getUserAsJsonByToken.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo(ApiKeyAuthMechanism.RESPONSE_MESSAGE_BAD_API_KEY))
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+    }
+
 
     @Test
     public void testLastApiUse() {

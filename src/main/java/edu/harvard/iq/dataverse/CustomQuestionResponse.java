@@ -103,17 +103,6 @@ public class CustomQuestionResponse implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dvn.core.vdc.CustomQuestionResponse[ id=" + id + " ]";
     }
-    
-    @Transient private String validationMessage;
 
-    public String getValidationMessage() {
-        return validationMessage;
-    }
-
-    public void setValidationMessage(String validationMessage) {
-        this.validationMessage = validationMessage;
-    }
-    
-    
 }
 

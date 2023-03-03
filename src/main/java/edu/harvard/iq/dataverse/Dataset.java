@@ -3,10 +3,12 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,13 +33,20 @@ import javax.persistence.StoredProcedureParameter;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 
 /**
  *
  * @author skraffmiller
  */
 @NamedQueries({
+    @NamedQuery(name = "Dataset.findIdStale",
+               query = "SELECT d.id FROM Dataset d WHERE d.indexTime is NULL OR d.indexTime < d.modificationTime"),
+    @NamedQuery(name = "Dataset.findIdStalePermission",
+               query = "SELECT d.id FROM Dataset d WHERE d.permissionIndexTime is NULL OR d.permissionIndexTime < d.permissionModificationTime"),
     @NamedQuery(name = "Dataset.findByIdentifier",
                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier"),
     @NamedQuery(name = "Dataset.findByIdentifierAuthorityProtocol",
@@ -48,32 +57,29 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
                 query = "SELECT o.id FROM Dataset o WHERE o.owner.id=:ownerId"),
     @NamedQuery(name = "Dataset.findByOwnerId", 
                 query = "SELECT o FROM Dataset o WHERE o.owner.id=:ownerId"),
+    @NamedQuery(name = "Dataset.findByCreatorId",
+                query = "SELECT o FROM Dataset o WHERE o.creator.id=:creatorId"),
+    @NamedQuery(name = "Dataset.findByReleaseUserId",
+                query = "SELECT o FROM Dataset o WHERE o.releaseUser.id=:releaseUserId"),
 })
 
 /*
-    Below is the stored procedure for getting a numeric value from a database 
-    sequence. Used when the Dataverse is (optionally) configured to use 
-    incremental numeric values for dataset ids, instead of the default 
+    Below is the database stored procedure for getting a string dataset id.
+    Used when the Dataverse is (optionally) configured to use
+    procedurally generated values for dataset ids, instead of the default
     random strings. 
 
-    Unfortunately, there's no standard EJB way of handling sequences. So in the 
-    past we would simply use a NativeQuery to call a proprietary Postgres
-    sequence query. A better way of handling this however is to define any 
-    proprietary SQL functionality outside of the application, in the database, 
-    and call it using the standard JPA @StoredProcedureQuery. 
-
-    The identifier sequence and the stored procedure for accessing it are currently 
-    implemented with PostgresQL "CREATE SEQUENCE ..." and "CREATE FUNCTION ..."; 
-    (we explain how to create these in the installation documentation and supply 
-    a script). If necessary, it can be implemented using other SQL flavors -
+    The use of a stored procedure to create an identifier is explained in the
+    installation documentation (where an example script is supplied).
+    The stored procedure can be implemented using other SQL flavors -
     without having to modify the application code. 
-            -- L.A. 4.6.2
+            -- L.A. 4.6.2 (modified by C.S. for version 5.4.1+)
 */ 
 @NamedStoredProcedureQuery(
-        name = "Dataset.generateIdentifierAsSequentialNumber",
-        procedureName = "generateIdentifierAsSequentialNumber",
+        name = "Dataset.generateIdentifierFromStoredProcedure",
+        procedureName = "generateIdentifierFromStoredProcedure",
         parameters = {
-            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Integer.class, name = "identifier")
+            @StoredProcedureParameter(mode = ParameterMode.OUT, type = String.class)
         }
 )
 @Entity
@@ -147,6 +153,19 @@ public class Dataset extends DvObjectContainer {
     public void setCitationDateDatasetFieldType(DatasetFieldType citationDateDatasetFieldType) {
         this.citationDateDatasetFieldType = citationDateDatasetFieldType;
     }    
+
+    
+    @ManyToOne
+    @JoinColumn(name="template_id",nullable = true)
+    private Template template;
+    
+    public Template getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
+    }
 
     public Dataset() {
         DatasetVersion datasetVersion = new DatasetVersion();
@@ -290,6 +309,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     private DatasetVersion createNewDatasetVersion(Template template, FileMetadata fmVarMet) {
+        
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setFileMetadatas(new ArrayList<>());
@@ -298,7 +318,7 @@ public class Dataset extends DvObjectContainer {
         //if the latest version has values get them copied over
         if (template != null) {
             dsv.updateDefaultValuesFromTemplate(template);
-            setVersions(new ArrayList());
+            setVersions(new ArrayList<>());
         } else {
             latestVersion = getLatestVersionForCopy();
             
@@ -309,16 +329,11 @@ public class Dataset extends DvObjectContainer {
             if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
                 dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
             }
-            
-            if (latestVersion.getTermsOfUseAndAccess()!= null){
-                dsv.setTermsOfUseAndAccess(latestVersion.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setDatasetVersion(dsv);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
-                dsv.setTermsOfUseAndAccess(terms);
-            }
-
+            /*
+            adding file metadatas here and updating terms
+            because the terms need to know about the files
+            in a pre-save validation SEK 12/6/2021
+            */
             for (FileMetadata fm : latestVersion.getFileMetadatas()) {
                 FileMetadata newFm = new FileMetadata();
                 // TODO: 
@@ -335,6 +350,7 @@ public class Dataset extends DvObjectContainer {
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
                 newFm.setProvFreeForm(fm.getProvFreeForm());
+                newFm.setInPriorVersion(true);
 
                 //fmVarMet would be updated in DCT
                 if ((fmVarMet != null && !fmVarMet.getId().equals(fm.getId())) || (fmVarMet == null))  {
@@ -347,6 +363,18 @@ public class Dataset extends DvObjectContainer {
                 }
                 
                 dsv.getFileMetadatas().add(newFm);
+            }
+            
+            if (latestVersion.getTermsOfUseAndAccess()!= null){
+                TermsOfUseAndAccess terms = latestVersion.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+                dsv.setTermsOfUseAndAccess(terms);
+            } else {
+                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+                terms.setDatasetVersion(dsv);
+                terms.setLicense(null);
+                terms.setFileAccessRequest(true);
+                dsv.setTermsOfUseAndAccess(terms);
             }
         }
 
@@ -365,19 +393,21 @@ public class Dataset extends DvObjectContainer {
 
     /**
      * The "edit version" is the most recent *draft* of a dataset, and if the
-     * latest version of a dataset is published, a new draft will be created.
-     * 
+     * latest version of a dataset is published, a new draft will be created. If
+     * you don't want to create a new version, you should be using
+     * getLatestVersion.
+     *
      * @return The edit version {@code this}.
      */
-    public DatasetVersion getEditVersion() {
-        return getEditVersion(null, null);
+    public DatasetVersion getOrCreateEditVersion() {
+        return getOrCreateEditVersion(null, null);
     }
 
-    public DatasetVersion getEditVersion(FileMetadata fm) {
-        return getEditVersion(null, fm);
+    public DatasetVersion getOrCreateEditVersion(FileMetadata fm) {
+        return getOrCreateEditVersion(null, fm);
     }
 
-    public DatasetVersion getEditVersion(Template template, FileMetadata fm) {
+    public DatasetVersion getOrCreateEditVersion(Template template, FileMetadata fm) {
         DatasetVersion latestVersion = this.getLatestVersion();
         if (!latestVersion.isWorkingCopy() || template != null) {
             // if the latest version is released or archived, create a new version for editing
@@ -392,11 +422,11 @@ public class Dataset extends DvObjectContainer {
      * @todo Investigate if this method should be deprecated in favor of
      * createNewDatasetVersion.
      */
-    public DatasetVersion getCreateVersion() {
+    public DatasetVersion getCreateVersion(License license) {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setDataset(this);
-        dsv.initDefaultValues();
+        dsv.initDefaultValues(license);
         this.setVersions(new ArrayList<>());
         getVersions().add(0, dsv);
         return dsv;
@@ -423,6 +453,15 @@ public class Dataset extends DvObjectContainer {
         }
         return null;
     }
+    
+    public DatasetVersion getVersionFromId(Long datasetVersionId) {
+        for (DatasetVersion version : this.getVersions()) {
+            if (datasetVersionId == version.getId().longValue()) {
+                return version;
+            }
+        }
+        return null;
+    }
 
     public List<DataFileCategory> getCategories() {
         return dataFileCategories;
@@ -437,24 +476,6 @@ public class Dataset extends DvObjectContainer {
             dataFileCategories = new ArrayList<>();
         }
         dataFileCategories.add(category);
-    }
-
-    public Collection<String> getCategoriesByName() {
-        Collection<String> ret = getCategoryNames();
-
-        // "Documentation", "Data" and "Code" are the 3 default categories that we 
-        // present by default:
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.documentation"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.documentation"));
-        }
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.data"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.data"));
-        }
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.code"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.code"));
-        }
-
-        return ret;
     }
 
     public void setCategoriesByName(List<String> newCategoryNames) {
@@ -504,13 +525,15 @@ public class Dataset extends DvObjectContainer {
         }
     }
 
+    /* Only used with packageFiles after the implementation of multi-store in #6488
+     * DO NOT USE THIS METHOD FOR ANY OTHER PURPOSES - it's @Deprecated for a reason.
+     * 
+     */
+    @Deprecated 
     public Path getFileSystemDirectory() {
         Path studyDir = null;
-
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-            filesRootDirectory = "/tmp/files";
-        }
+        
+        String filesRootDirectory = JvmSettings.FILES_DIRECTORY.lookup();
         
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
             for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
@@ -542,30 +565,36 @@ public class Dataset extends DvObjectContainer {
     }
     
     public String getProtocolForFileStorage(){
-         String retVal = getProtocol();            
+        String retVal = getProtocol();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getProtocol();
+            for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
+                if (altpid.isStorageLocationDesignator()) {
+                    retVal = altpid.getProtocol();
+                }
             }
         }
         return retVal;         
     }
     
     public String getAuthorityForFileStorage(){
-         String retVal = getAuthority();            
+        String retVal = getAuthority();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getAuthority();
+            for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
+                if (altpid.isStorageLocationDesignator()) {
+                    retVal = altpid.getAuthority();
+                }
             }
         }
         return retVal;         
     }
     
     public String getIdentifierForFileStorage(){
-         String retVal = getIdentifier();            
+        String retVal = getIdentifier();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getIdentifier();
+            for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
+                if (altpid.isStorageLocationDesignator()) {
+                    retVal = altpid.getIdentifier();
+                }
             }
         }
         return retVal;         
@@ -625,12 +654,47 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getCitation(boolean isOnlineVersion, DatasetVersion version) {
-        return version.getCitation(isOnlineVersion);
+        return getCitation(isOnlineVersion, version, false);
+    }
+    
+    public String getCitation(boolean isOnlineVersion, DatasetVersion version, boolean anonymized) {
+        return version.getCitation(isOnlineVersion, anonymized);
     }
 
     public String getPublicationDateFormattedYYYYMMDD() {
         if (getPublicationDate() != null){
                    return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate()); 
+        }
+        return null;
+    }
+    
+    public Timestamp getCitationDate() {
+        Timestamp citationDate = null;
+        //Only calculate if this dataset doesn't use an alternate date field for publication date
+        if (citationDateDatasetFieldType == null) {
+            List<DatasetVersion> versions = this.versions;
+            // TODo - is this ever not version 1.0 (or draft if not published yet)
+            DatasetVersion oldest = versions.get(versions.size() - 1);
+            citationDate = super.getPublicationDate();
+            if (oldest.isPublished()) {
+                List<FileMetadata> fms = oldest.getFileMetadatas();
+                for (FileMetadata fm : fms) {
+                    Embargo embargo = fm.getDataFile().getEmbargo();
+                    if (embargo != null) {
+                        Timestamp embDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
+                        if (citationDate.compareTo(embDate) < 0) {
+                            citationDate = embDate;
+                        }
+                    }
+                }
+            }
+        }
+        return citationDate;
+    }
+    
+    public String getCitationDateFormattedYYYYMMDD() {
+        if (getCitationDate() != null){
+                   return new SimpleDateFormat("yyyy-MM-dd").format(getCitationDate()); 
         }
         return null;
     }
@@ -693,6 +757,11 @@ public class Dataset extends DvObjectContainer {
         this.harvestIdentifier = harvestIdentifier;
     }
 
+    public String getLocalURL() {
+        //Assumes GlobalId != null
+        return  SystemConfig.getDataverseSiteUrlStatic() + "/dataset.xhtml?persistentId=" + this.getGlobalId().asString();
+    }
+    
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
             if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {
@@ -748,7 +817,32 @@ public class Dataset extends DvObjectContainer {
                     }
                 }
                 return this.getHarvestedFrom().getArchiveUrl();
+            } else if (HarvestingClient.HARVEST_STYLE_DEFAULT.equals(this.getHarvestedFrom().getHarvestStyle())) {
+                // This is a generic OAI archive. 
+                // The metadata we harvested for this dataset is most likely a 
+                // simple DC record that does not contain a URL pointing back at 
+                // the specific location on the source archive. But, it probably
+                // has a global identifier, a DOI or a Handle - so we should be 
+                // able to redirect to the proper global resolver. 
+                // But since this is a harvested dataset, we will assume that 
+                // there is a possibility tha this object does NOT have all the 
+                // valid persistent identifier components.
+                
+                if (StringUtil.nonEmpty(this.getProtocol()) 
+                        && StringUtil.nonEmpty(this.getAuthority())
+                        && StringUtil.nonEmpty(this.getIdentifier())) {
+                    return this.getPersistentURL();    
+                }
+                
+                // All we can do is redirect them to the top-level URL we have 
+                // on file for this remote archive:
+                return this.getHarvestedFrom().getArchiveUrl();
             } else {
+                // This is really not supposed to happen - this is a harvested
+                // dataset for which we don't have ANY information on the nature
+                // of the archive we got it from. So all we can do is redirect 
+                // the user to the top-level URL we have on file for this remote 
+                // archive:
                 return this.getHarvestedFrom().getArchiveUrl();
             }
         }
@@ -805,8 +899,8 @@ public class Dataset extends DvObjectContainer {
         return equals(other) || equals(other.getOwner());
     }
 
-    public DatasetThumbnail getDatasetThumbnail() {
-        return DatasetUtil.getThumbnail(this);
+    public DatasetThumbnail getDatasetThumbnail(int size) {
+        return DatasetUtil.getThumbnail(this, size);
     }
     
     /** 
@@ -817,8 +911,8 @@ public class Dataset extends DvObjectContainer {
      * @param datasetVersion
      * @return A thumbnail of the dataset (may be {@code null}).
      */
-    public DatasetThumbnail getDatasetThumbnail(DatasetVersion datasetVersion) {
-        return DatasetUtil.getThumbnail(this, datasetVersion);
+    public DatasetThumbnail getDatasetThumbnail(DatasetVersion datasetVersion, int size) {
+        return DatasetUtil.getThumbnail(this, datasetVersion, size);
     }
 
 }
