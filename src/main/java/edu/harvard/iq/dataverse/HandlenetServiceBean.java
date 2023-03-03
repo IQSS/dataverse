@@ -419,6 +419,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         return super.parsePersistentId(pidString);
     }
 
+    @Override
     public GlobalId parsePersistentId(String protocol, String identifierString) {
         if (!HDL_PROTOCOL.equals(protocol)) {
             return null;
@@ -427,6 +428,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         return globalId;
     }
     
+    @Override
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
         if (!HDL_PROTOCOL.equals(protocol)) {
             return null;

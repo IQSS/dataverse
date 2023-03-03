@@ -7,6 +7,7 @@ public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
     public static final String HTTP_DOI_RESOLVER_URL = "http://doi.org/";
     public static final String DXDOI_RESOLVER_URL = "https://dx.doi.org/";
     public static final String HTTP_DXDOI_RESOLVER_URL = "http://dx.doi.org/";
+
     public DOIServiceBean() {
         super();
     }
@@ -26,7 +27,9 @@ public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
         return super.parsePersistentId(pidString);
     }
 
+    @Override
     public GlobalId parsePersistentId(String protocol, String identifierString) {
+
         if (!DOI_PROTOCOL.equals(protocol)) {
             return null;
         }
@@ -37,7 +40,9 @@ public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
         return globalId;
     }
     
+    @Override
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
+
         if (!DOI_PROTOCOL.equals(protocol)) {
             return null;
         }

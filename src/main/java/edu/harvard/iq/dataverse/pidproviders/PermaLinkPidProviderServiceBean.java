@@ -19,7 +19,8 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 
-/*PermaLink provider
+/**
+ * PermaLink provider
  * This is a minimalist permanent ID provider intended for use with 'real' datasets/files where the use case none-the-less doesn't lend itself to the use of DOIs or Handles, e.g.
  * * due to cost
  * * for a catalog/archive where Dataverse has a dataset representing a dataset with DOI/handle stored elsewhere
@@ -133,6 +134,7 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
         return new GlobalId(PERMA_PROTOCOL, authority, identifier, separator, getUrlPrefix(), PERMA_PROVIDER_NAME);
     }
     
+    @Override
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
         if (!PERMA_PROTOCOL.equals(protocol)) {
             return null;
