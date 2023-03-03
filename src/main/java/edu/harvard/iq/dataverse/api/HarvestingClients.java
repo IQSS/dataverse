@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -34,6 +35,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 @Path("harvest/clients")
@@ -55,8 +58,9 @@ public class HarvestingClients extends AbstractApiBean {
      *  optionally, plain text output may be provided as well.
      */
     @GET
+    @AuthRequired
     @Path("/")
-    public Response harvestingClients(@QueryParam("key") String apiKey) throws IOException {
+    public Response harvestingClients(@Context ContainerRequestContext crc, @QueryParam("key") String apiKey) throws IOException {
         
         List<HarvestingClient> harvestingClients = null; 
         try {
@@ -80,7 +84,7 @@ public class HarvestingClients extends AbstractApiBean {
             // the permission to view this harvesting client config. -- L.A. 4.4
             HarvestingClient retrievedHarvestingClient = null; 
             try {
-                DataverseRequest req = createDataverseRequest(findUserOrDie());
+                DataverseRequest req = createDataverseRequest(getRequestUser(crc));
                 retrievedHarvestingClient = execCommand( new GetHarvestingClientCommand(req, harvestingClient));
             } catch (Exception ex) {
                 // Don't do anything. 
@@ -97,8 +101,9 @@ public class HarvestingClients extends AbstractApiBean {
     } 
     
     @GET
+    @AuthRequired
     @Path("{nickName}")
-    public Response harvestingClient(@PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException {
+    public Response harvestingClient(@Context ContainerRequestContext crc, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException {
         
         HarvestingClient harvestingClient = null; 
         try {
@@ -122,7 +127,7 @@ public class HarvestingClients extends AbstractApiBean {
             // findUserOrDie() and execCommand() both throw WrappedResponse 
             // exception, that already has a proper HTTP response in it. 
             
-            retrievedHarvestingClient = execCommand(new GetHarvestingClientCommand(createDataverseRequest(findUserOrDie()), harvestingClient));
+            retrievedHarvestingClient = execCommand(new GetHarvestingClientCommand(createDataverseRequest(getRequestUser(crc)), harvestingClient));
             logger.fine("retrieved Harvesting Client " + retrievedHarvestingClient.getName() + " with the GetHarvestingClient command.");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -146,12 +151,13 @@ public class HarvestingClients extends AbstractApiBean {
     }
     
     @POST
+    @AuthRequired
     @Path("{nickName}")
-    public Response createHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+    public Response createHarvestingClient(@Context ContainerRequestContext crc, String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         // Per the discussion during the QA of PR #9174, we decided to make 
         // the create/edit APIs superuser-only (the delete API was already so)
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if ((!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can create harvesting clients."));
             }
@@ -215,7 +221,7 @@ public class HarvestingClients extends AbstractApiBean {
             }
             ownerDataverse.getHarvestingClientConfigs().add(harvestingClient);
                         
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             harvestingClient = execCommand(new CreateHarvestingClientCommand(req, harvestingClient));
             return created( "/harvest/clients/" + nickName, JsonPrinter.json(harvestingClient));
                     
@@ -230,10 +236,11 @@ public class HarvestingClients extends AbstractApiBean {
     }
     
     @PUT
+    @AuthRequired
     @Path("{nickName}")
-    public Response modifyHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+    public Response modifyHarvestingClient(@Context ContainerRequestContext crc, String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if ((!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can modify harvesting clients."));
             }
@@ -256,7 +263,7 @@ public class HarvestingClients extends AbstractApiBean {
         String ownerDataverseAlias = harvestingClient.getDataverse().getAlias();
         
         try ( StringReader rdr = new StringReader(jsonBody) ) {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             JsonObject json = Json.createReader(rdr).readObject();
             
             HarvestingClient newHarvestingClient = new HarvestingClient(); 
@@ -309,15 +316,16 @@ public class HarvestingClients extends AbstractApiBean {
     }
     
     @DELETE
+    @AuthRequired
     @Path("{nickName}")
-    public Response deleteHarvestingClient(@PathParam("nickName") String nickName) throws IOException {
+    public Response deleteHarvestingClient(@Context ContainerRequestContext crc, @PathParam("nickName") String nickName) throws IOException {
         // Deleting a client can take a while (if there's a large amnount of 
         // harvested content associated with it). So instead of calling the command
         // directly, we will be calling an async. service bean method. 
 
         
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if ((!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can delete harvesting clients."));
             }
@@ -366,14 +374,15 @@ public class HarvestingClients extends AbstractApiBean {
     
     // This POST starts a new harvesting run:
     @POST
+    @AuthRequired
     @Path("{nickName}/run")
-    public Response startHarvestingJob(@PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws IOException {
+    public Response startHarvestingJob(@Context ContainerRequestContext crc, @PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws IOException {
         
         try {
             AuthenticatedUser authenticatedUser = null; 
             
             try {
-                authenticatedUser = findAuthenticatedUserOrDie();
+                authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             } catch (WrappedResponse wr) {
                 return error(Response.Status.UNAUTHORIZED, "Authentication required to use this API method");
             }
