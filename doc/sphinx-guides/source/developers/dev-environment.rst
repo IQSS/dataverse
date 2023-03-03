@@ -170,17 +170,15 @@ Note that this command will run the containers in detached mode. If you want to 
 
 Data volumes of each dependency will be persisted inside the ``docker-dev-volumes`` folder, inside the repository root.
 
-To stop and remove containers, you can use the docker-compose stop and down commands respectively.
-
-To stop the containers (for detached mode only, otherwise use Ctrl + C):
+If you want to stop the containers, then run (for detached mode only, otherwise use ``Ctrl + C``):
 
 ``docker-compose -f docker-compose-dev.yml stop``
 
-To remove the containers:
+If you want to remove the containers, then run:
 
 ``docker-compose -f docker-compose-dev.yml down``
 
-For a fresh installation before running the Software Installer Script, it is recommended to delete the docker-dev-env folder if it already exists so that containers are not initialized from existing data.
+For a fresh installation, and before running the Software Installer Script, it is recommended to delete the docker-dev-env folder to avoid installation problems due to existing data in the containers.
 
 Run the Dataverse Software Installer Script
 -------------------------------------------
