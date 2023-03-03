@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
 import java.util.*;
@@ -76,7 +77,8 @@ class BeanDispatcher {
     static {
         DISPATCHER.put("hdl", ctxt->ctxt.handleNet() );
         DISPATCHER.put("doi", ctxt->{
-            String doiProvider = ctxt.settings().getValueForKey(Key.DoiProvider, "");
+            // Looking up the provider from MPCONFIG here is a hack! It shall be done cleaner in SettingsServiceBean!!!
+            String doiProvider = ctxt.settings().getValueForKey(Key.DoiProvider, JvmSettings.DOI_PROVIDER.lookupOptional().orElse(""));
             switch ( doiProvider ) {
                 case "EZID": return ctxt.doiEZId();
                 case "DataCite": return ctxt.doiDataCite();

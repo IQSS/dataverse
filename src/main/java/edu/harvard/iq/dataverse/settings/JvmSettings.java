@@ -68,6 +68,11 @@ public enum JvmSettings {
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
     
+    // PERSISTENT IDENTIFIER SETTINGS
+    SCOPE_PID(PREFIX, "pid"),
+    SCOPE_DOI(SCOPE_PID, "doi"),
+    DOI_PROVIDER(SCOPE_DOI, "provider"),
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
