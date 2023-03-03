@@ -92,10 +92,10 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
     }
 
     @Override
-    public HashMap getIdentifierMetadata(DvObject dvObject) {
+    public Map<String, String> getIdentifierMetadata(DvObject dvObject) {
         logger.log(Level.FINE,"getIdentifierMetadata");
         String identifier = getIdentifier(dvObject);
-        HashMap<String, String> metadata = new HashMap<>();
+        Map<String, String> metadata = new HashMap<>();
         try {
             metadata = doiDataCiteRegisterService.getMetadata(identifier);
         } catch (Exception e) {

@@ -1,23 +1,3 @@
-/*
-   Copyright (C) 2005-2012, by the President and Fellows of Harvard College.
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-         http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-
-   Dataverse Network - A web application to share, preserve and analyze research data.
-   Developed at the Institute for Quantitative Social Science, Harvard University.
-   Version 3.0.
-*/
-
 package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean;
@@ -30,13 +10,9 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import org.apache.commons.lang3.NotImplementedException;
 
-/**
- *
- * @author Leonid Andreev
+/** This class is just used to parse Handles that are not managed by any account configured in Dataverse
+ * It does not implement any of the methods related to PID CRUD
  * 
- *         This is a *partial* implementation of the Handles global id service.
- *         As of now, it only does the registration updates, to accommodate the
- *         modifyRegistration datasets API sub-command.
  */
 @Stateless
 public class UnmanagedHandlenetServiceBean extends AbstractGlobalIdServiceBean {
@@ -54,14 +30,6 @@ public class UnmanagedHandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean registerWhenPublished() {
-        throw new NotImplementedException();
-    }
-
-    public void reRegisterHandle(DvObject dvObject) {
-        throw new NotImplementedException();
-    }
-
-    public Throwable registerNewHandle(DvObject dvObject) {
         throw new NotImplementedException();
     }
 

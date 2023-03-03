@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.pidproviders;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -16,8 +16,10 @@ import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 
-// This class is just used to parse DOIs that are not managed by any account configured in Dataverse
-// It does not implement any of the methods related to PID CRUD 
+/** This class is just used to parse DOIs that are not managed by any account configured in Dataverse
+ * It does not implement any of the methods related to PID CRUD
+ * 
+ */
 
 @Stateless
 public class UnmanagedDOIServiceBean extends DOIServiceBean {
@@ -51,7 +53,7 @@ public class UnmanagedDOIServiceBean extends DOIServiceBean {
     }
 
     @Override
-    public HashMap<String, String> getIdentifierMetadata(DvObject dvObject) {
+    public Map<String, String> getIdentifierMetadata(DvObject dvObject) {
         throw new NotImplementedException();
     }
 
@@ -62,14 +64,6 @@ public class UnmanagedDOIServiceBean extends DOIServiceBean {
 
     @Override
     public void deleteIdentifier(DvObject dvObject) throws IOException, HttpException {
-        throw new NotImplementedException();
-    }
-
-    /**
-     * Deletes DOI from the DataCite side, if possible. Only "draft" DOIs can be
-     * deleted.
-     */
-    private void deleteDraftIdentifier(DvObject dvObject) throws IOException {
         throw new NotImplementedException();
     }
 

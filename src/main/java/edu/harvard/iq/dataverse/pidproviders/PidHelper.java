@@ -17,7 +17,7 @@ import edu.harvard.iq.dataverse.HandlenetServiceBean;
      */
     @Startup
     @Singleton
-    public class PIDHelper {
+    public class PidHelper {
 
         @EJB
         DOIDataCiteServiceBean datacitePidSvc;
