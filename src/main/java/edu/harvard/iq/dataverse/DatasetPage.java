@@ -1855,6 +1855,7 @@ public class DatasetPage implements java.io.Serializable {
         if(sortOrder != null) {
             FileMetadata.setCategorySortOrder(sortOrder);
         }
+        
         if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
 
             DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
@@ -2238,8 +2239,17 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getSortOrder() {
-        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.CategorySortOrder, null);
+        return settingsWrapper.getValueForKey(SettingsServiceBean.Key.CategoryOrder, null);
     }
+    
+    public boolean orderByFolder() {
+        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.OrderByFolder, true);
+    }
+    
+    public boolean allowUserManagementOfOrder() {
+        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.AllowUserManagementOfOrder, false);
+    }
+
 
     private Boolean fileTreeViewRequired = null;
 
@@ -5706,11 +5716,11 @@ public class DatasetPage implements java.io.Serializable {
 
         public void setFolderPresort(boolean folderPresort) {
             //Record the new value
-            newFolderPresort = folderPresort;
+            newFolderPresort = folderPresort && orderByFolder();
             // If this is not a page flip, it should be a real change to the presort
             // boolean that we should use.
             if (!isPageFlip) {
-                this.folderPresort = folderPresort;
+                this.folderPresort = folderPresort && orderByFolder();
             }
         }
 

@@ -583,8 +583,17 @@ public class SettingsServiceBean {
          * alphabetically by default. If set, files will be sorted by these categories
          * and alphabetically within each category.
          */
-        CategorySortOrder;
-
+        CategoryOrder,
+        /**
+         * True(default)/false option deciding whether ordering by folder should be applied to the 
+         * dataset listing of datafiles.
+         */
+        OrderByFolder,
+        /**
+         * True/false(default) option deciding whether the dataset file table display should include checkboxes
+         * allowing users to dynamically turn folder and category ordering on/off.
+         */
+        AllowUserManagementOfOrder
         ;
 
         @Override
