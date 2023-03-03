@@ -1,0 +1,93 @@
+version: "2.4"
+
+services:
+
+  # Configured from Docker Maven Plugin
+  dataverse:
+    image: gdcc/dataverse:unstable
+    user: payara
+    environment:
+      - DATAVERSE_DB_HOST=postgres
+      - DATAVERSE_DB_USER=dataverse
+      - DATAVERSE_DB_PASSWORD=secret
+    hostname: dataverse
+    ports:
+      - "8080:8080" # HTTP
+      - "9009:9009" # JDWP
+      - "8686:8686" # JMX
+    networks:
+      - dataverse
+    depends_on:
+      - postgres
+      - solr
+    tmpfs:
+      - /dv:mode=770,size=128M,uid=1000,gid=1000
+      - /secrets:mode=770,size=128M,uid=1000,gid=1000
+      - /dumps:mode=770,size=128M,uid=1000,gid=1000
+      - /tmp:mode=770,size=128M,uid=1000,gid=1000
+
+  postgres:
+    image: "postgres:${POSTGRES_VERSION}"
+    hostname: postgres
+    restart: on-failure
+    environment:
+      - POSTGRES_USER=dataverse
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"
+    networks:
+      - dataverse
+    user: postgres
+    tmpfs:
+      - /var/lib/postgresql/data:mode=770,size=128M,uid=999,gid=999
+
+  solr_initializer:
+    image: alpine
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - "cp *.xml /conf && chown -R 8983:8983 /conf"
+    volumes:
+      - solr-conf:/conf
+      - ./conf/solr/8.11.1/schema.xml:/schema.xml
+      - ./conf/solr/8.11.1/solrconfig.xml:/solrconfig.xml
+
+  solr:
+    image: solr:${SOLR_VERSION}
+    depends_on:
+      - solr_initializer
+    restart: on-failure
+    ports:
+      - "8983:8983"
+    networks:
+      - dataverse
+    user: root
+    command:
+      - bash
+      - -c
+      - "cd /opt/solr-${SOLR_VERSION}/server/solr/configsets/_default/conf && cp -R -n . /template && solr-precreate collection1 /template"
+    volumes:
+      - solr-conf:/template
+        #- solr-data:/var/solr
+    tmpfs:
+      - /var/solr:mode=770,size=256M,uid=8983,gid=8983
+
+  smtp:
+    image: mailhog/mailhog:v1.0.1
+    restart: on-failure
+    hostname: postfix
+    ports:
+      - "25:25" # smtp server
+      - "8025:8025" # web ui
+    environment:
+      - MH_STORAGE=memory
+      - MH_SMTP_BIND_ADDR=0.0.0.0:25
+
+networks:
+  dataverse:
+    driver: bridge
+
+volumes:
+  solr-conf: {}
+    #solr-data: {}
