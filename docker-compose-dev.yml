@@ -49,3 +49,12 @@ services:
       - "1080:1080" # web ui
     volumes:
       - ./docker-dev-volumes/smtp/data:/tmp/maildev-1
+
+  dev_sphinx:
+    container_name: "dev_sphinx"
+    image: sphinxdoc/sphinx:5.3.0
+    restart: "no"
+    entrypoint: |
+      bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"
+    volumes:
+      - ./:/docs
