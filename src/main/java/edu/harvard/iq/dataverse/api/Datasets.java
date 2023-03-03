@@ -2544,17 +2544,11 @@ public class Datasets extends AbstractApiBean {
      * @return
      */
     @GET
+    @AuthRequired
     @Path("{id}/cleanStorage")
-    public Response cleanStorage(@PathParam("id") String idSupplied, @QueryParam("dryrun") Boolean dryrun) {
+    public Response cleanStorage(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @QueryParam("dryrun") Boolean dryrun) {
         // get user and dataset
-        User authUser;
-        try {
-            authUser = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN,
-                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
-            );
-        }
+        User authUser = getRequestUser(crc);
 
         Dataset dataset;
         try {
