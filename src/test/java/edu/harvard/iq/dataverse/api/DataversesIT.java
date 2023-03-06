@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -516,11 +517,12 @@ public class DataversesIT {
 //        Response destroy2 = UtilIT.destroyDataset("doi:10.5072/FK2/ABCD22", apiToken);
 //        destroy2.prettyPrint();
 
-        Response importDDIPid = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  "doi:10.5072/FK2/ABCD11", "no");
+        int randomNum = ThreadLocalRandom.current().nextInt(11, 99);
+        Response importDDIPid = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  "doi:10.5072/FK2/ABCD" + randomNum, "no");
         logger.info(importDDIPid.prettyPrint());
         assertEquals(201, importDDIPid.getStatusCode());
 
-        Response importDDIPidRel = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  "doi:10.5072/FK2/ABCD22", "yes");
+        Response importDDIPidRel = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  "doi:10.5072/FK2/ABCD" + (randomNum + 1), "yes");
         logger.info(importDDIPidRel.prettyPrint());
         assertEquals(201, importDDIPidRel.getStatusCode());
 
