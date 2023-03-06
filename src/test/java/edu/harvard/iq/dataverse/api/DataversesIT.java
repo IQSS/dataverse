@@ -552,7 +552,7 @@ public class DataversesIT {
         search3.then().assertThat()
                 .body("data.total_count", CoreMatchers.is(0))
                 .body("data.count_in_response", CoreMatchers.is(0))
-                .body("data.items", Matchers.nullValue())
+                .body("data.items", Matchers.empty())
                 .statusCode(OK.getStatusCode());
 
         //cleanup
