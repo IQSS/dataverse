@@ -3,10 +3,9 @@ package edu.harvard.iq.dataverse.search.advanced;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
-import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
@@ -22,14 +21,11 @@ public class SolrQueryCreator {
 
     @Inject
     LicenseRepository licenseRepository;
-    
+
     // -------------------- LOGIC --------------------
 
     /**
      * Creates solr query for given Search Blocks
-     *
-     * @param searchBlocks
-     * @return solr string query
      */
     public String constructQuery(List<SearchBlock> searchBlocks) {
         StringBuilder queryBuilder = new StringBuilder();
@@ -63,7 +59,7 @@ public class SolrQueryCreator {
             return constructQueryForSelectOneField((SelectOneSearchField) searchField);
         } else if (searchField.getSearchFieldType().equals(SearchFieldType.DATE)) {
             return constructQueryForDateField((DateSearchField) searchField);
-        } 
+        }
 
         return StringUtils.EMPTY;
     }
@@ -75,7 +71,7 @@ public class SolrQueryCreator {
 
         StringBuilder textQueryBuilder = new StringBuilder();
 
-        List<String> fieldValues = Arrays.asList(textSearchField.getFieldValue().split(" "));
+        List<String> fieldValues = textSearchField.getValidatableValues();
 
         fieldValues.forEach(fieldValue ->
                                     textQueryBuilder
@@ -126,7 +122,7 @@ public class SolrQueryCreator {
                 checkboxQueryBuilder.insert(0, "(")
                                     .append(")");
             }
-            
+
             checkboxQueryBuilder.append(" AND ")
                                 .append(SearchFields.TYPE)
                                 .append(":")
@@ -164,9 +160,9 @@ public class SolrQueryCreator {
             intQueryBuilder
                     .append(numberSearchField.getName())
                     .append(":[")
-                    .append(numberSearchField.getMinimum() == null ? "*" : numberSearchField.getMinimum())
+                    .append(StringUtils.isBlank(numberSearchField.getMinimum()) ? "*" : numberSearchField.getMinimum())
                     .append(" TO ")
-                    .append(numberSearchField.getMaximum() == null ? "*" : numberSearchField.getMaximum())
+                    .append(StringUtils.isBlank(numberSearchField.getMaximum()) ? "*" : numberSearchField.getMaximum())
                     .append("]");
         }
 
@@ -190,7 +186,6 @@ public class SolrQueryCreator {
     }
 
     private boolean isOneNumberPresent(NumberSearchField numberField) {
-        return numberField.getMinimum() != null || numberField.getMaximum() != null;
+        return StringUtils.isNotBlank(numberField.getMinimum()) || StringUtils.isNotBlank(numberField.getMaximum());
     }
-    
 }

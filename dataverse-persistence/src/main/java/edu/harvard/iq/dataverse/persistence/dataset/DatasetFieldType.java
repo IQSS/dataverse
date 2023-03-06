@@ -46,16 +46,16 @@ import java.util.TreeMap;
  */
 @NamedQueries({
         @NamedQuery(name = "DatasetFieldType.findByName",
-                query = "SELECT dsfType FROM DatasetFieldType dsfType WHERE dsfType.name=:name"),
+                query = "SELECT dft FROM DatasetFieldType dft WHERE dft.name=:name"),
         @NamedQuery(name = "DatasetFieldType.findAllFacetable",
-                query = "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true " +
-                        "and dsfType.title != '' order by dsfType.id"),
+                query = "select dft from DatasetFieldType dft WHERE dft.facetable = true " +
+                        "and dft.title != '' order by dft.id"),
         @NamedQuery(name = "DatasetFieldType.findFacetableByMetadataBlock",
-                query = "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true " +
-                        "and dsfType.title != '' and dsfType.metadataBlock.id = :metadataBlockId order by dsfType.id"),
+                query = "select dft from DatasetFieldType dft WHERE dft.facetable = true " +
+                        "and dft.title != '' and dft.metadataBlock.id = :metadataBlockId order by dft.id"),
         @NamedQuery(name = "DatasetFieldType.findAdvancedSearchFieldsByMetadataBlocks",
-                query = "select dsfType from DatasetFieldType dsfType WHERE dsfType.advancedSearchFieldType = true " +
-                        "and dsfType.title != '' and dsfType.metadataBlock.id IN :metadataBlockIds order by dsfType.metadataBlock.id, dsfType.displayOrder")
+                query = "select dft from DatasetFieldType dft WHERE dft.advancedSearchFieldType = true " +
+                        "and dft.title != '' and dft.metadataBlock.id IN :metadataBlockIds order by dft.metadataBlock.id, dft.displayOrder")
 })
 @Entity
 @Table(indexes = {@Index(columnList = "metadatablock_id"), @Index(columnList = "parentdatasetfieldtype_id")})

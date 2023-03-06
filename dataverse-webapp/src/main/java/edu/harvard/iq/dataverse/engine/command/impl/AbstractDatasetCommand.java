@@ -19,7 +19,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionUser;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.ValidationResult;
 import io.vavr.control.Try;
 
 import javax.validation.ConstraintViolation;
@@ -114,12 +114,13 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                 // populate invalid fields with N/A
                 validationResults.stream()
                         .map(ValidationResult::getField)
+                        .map(DatasetField.class::cast)
                         .forEach(f -> f.setFieldValue(DatasetField.NA_VALUE));
 
             } else {
                 // explode with a helpful message
                 String validationMessage = validationResults.stream()
-                        .map(r -> String.format("%s (Invalid value:%s)", r.getMessage(), r.getField().getValue()))
+                        .map(r -> String.format("%s (Invalid value:%s)", r.getMessage(), r.getField().getSingleValue()))
                         .collect(joining(", ", "Validation Failed: ", "."));
                 throw new IllegalCommandException(validationMessage, this);
             }

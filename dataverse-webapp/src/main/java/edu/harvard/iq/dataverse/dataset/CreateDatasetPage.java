@@ -31,7 +31,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.ValidationResult;
 import io.vavr.control.Try;
 import org.apache.commons.lang3.StringUtils;
 import org.omnifaces.cdi.ViewScoped;

@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.search.index.geobox;
 
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.validation.datasetfield.validators.geobox.GeoboxComponentValidator;
-import edu.harvard.iq.dataverse.validation.datasetfield.validators.geobox.GeoboxFields;
+import edu.harvard.iq.dataverse.validation.field.validators.geobox.GeoboxComponentValidator;
+import edu.harvard.iq.dataverse.validation.field.validators.geobox.GeoboxFields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

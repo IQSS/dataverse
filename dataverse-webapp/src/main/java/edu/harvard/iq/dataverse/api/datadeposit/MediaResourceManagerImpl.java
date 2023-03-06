@@ -23,7 +23,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.ValidationResult;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
@@ -327,7 +327,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 if (!validationResults.isEmpty()) {
                     ValidationResult firstError = validationResults.get(0);
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
-                            String.format("Unable to add file(s) to dataset: %s The invalid value was \"%s\".", firstError.getMessage(), firstError.getField().getValue()));
+                            String.format("Unable to add file(s) to dataset: %s The invalid value was \"%s\".", firstError.getMessage(), firstError.getField().getSingleValue()));
                 } else if (!constraintViolations.isEmpty()) {
                     ConstraintViolation<FileMetadata> violation = constraintViolations.iterator().next();
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,

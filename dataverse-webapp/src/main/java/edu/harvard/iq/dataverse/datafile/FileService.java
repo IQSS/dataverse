@@ -16,7 +16,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.ValidationResult;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;

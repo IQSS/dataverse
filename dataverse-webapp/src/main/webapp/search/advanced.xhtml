@@ -64,8 +64,7 @@
                                                               style="width: 100%" panelStyleClass="without-select-all"
                                                               multiple="true" label="#{bundle.select}"
                                                               updateLabel="true"
-                                                              filter="true" filterMatchMode="contains"
-                                        >
+                                                              filter="true" filterMatchMode="contains">
                                             <f:selectItems value="#{searchField.checkboxLabelAndValue}"
                                                            var="cvs"
                                                            itemLabel="#{cvs._1()}"
@@ -76,13 +75,11 @@
                                                              value="#{searchField.checkedFieldValue}"
                                                              layout="pageDirection"
                                                              filter="true"
-                                                             filterMatchMode="contains"
-                                            >
+                                                             filterMatchMode="contains">
                                                 <f:selectItem itemLabel="#{bundle['advanced.search.selectItem']}"
                                                               noSelectionOption="true"
                                                               itemValue="#{null}"
-                                                              itemDisabled="false"
-                                                />
+                                                              itemDisabled="false"/>
                                                 <f:selectItems value="#{searchField.listLabelAndValue}"
                                                                var="sov"
                                                                itemLabel="#{sov._1()}"
@@ -101,15 +98,13 @@
                             <a data-toggle="collapse"
                                  href="#panelCollapseCitationFieldList#{status.index}"
                                  class="panel-heading">
-                                <h:outputText
-                                        value="#{bundle['advanced.search.header.datasets']}: #{mdb.blockDisplayName}"/> &#160;<span
+                                <h:outputText value="#{bundle['advanced.search.header.datasets']}: #{mdb.blockDisplayName}"/> &#160;<span
                                     class="glyphicon #{status.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
                             </a>
                             <div id="panelCollapseCitationFieldList#{status.index}"
                                  class="collapse #{status.first?'in':''} panel-body form-horizontal">
 
-                                <ui:repeat value="#{mdb.searchFields}"
-                                           var="item">
+                                <ui:repeat value="#{mdb.searchFields}" var="item">
 
                                     <div class="form-group">
                                         <label class="col-sm-4 control-label">
@@ -127,38 +122,27 @@
                                                          value="#{item.fieldValue}"
                                                          rendered="#{item.searchFieldType == fieldTypeEnums.TEXT}"/>
                                             <div jsf:rendered="#{item.searchFieldType == fieldTypeEnums.DATE}">
-                                                <h:inputHidden id="dateRangeValidator" value="true" >
-                                                    <f:validator validatorId="dateRangeValidator" />
-                                                    <f:attribute name="dateFrom" value="#{dateFrom}" />
-                                                    <f:attribute name="dateTo" value="#{dateTo}" />
-                                                </h:inputHidden>
                                                 <div style="display: inline-block; ">
                                                     <p:outputLabel for="daterangeSearchMinimum"
                                                                    value="#{bundle['advanced.search.metadata.from']} "
                                                                    style="white-space: pre"
-                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"
-                                                                   />
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"/>
                                                     <p:inputText id="daterangeSearchMinimum" style="padding-right: 5px"
                                                                    value="#{item.lowerLimit}"
                                                                    binding="#{dateFrom}"
-                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"
-                                                    >
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.DATE}">
                                                     </p:inputText>
-                                                    <p:message for="daterangeSearchMinimum" display="text" />
                                                 </div>
                                                 <div style="display: inline-block;" >
                                                     <p:outputLabel for="daterangeSearchMaximum"
                                                                    value=" #{bundle['advanced.search.metadata.to']} "
                                                                    style="white-space: pre"
-                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"
-                                                    />
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"/>
                                                     <p:inputText id="daterangeSearchMaximum" style="padding-left: 5px"
                                                                    value="#{item.upperLimit}"
                                                                    binding="#{dateTo}"
-                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"
-                                                    >
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.DATE}">
                                                     </p:inputText>
-                                                    <p:message for="daterangeSearchMaximum" display="text" />
                                                 </div>
                                             </div>
                                             <div>
@@ -166,8 +150,7 @@
                                                     <p:outputLabel for="rangeSearchMinimum"
                                                                    value="#{bundle['advanced.search.metadata.from']} "
                                                                    style="white-space: pre"
-                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"
-                                                    />
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
                                                     <p:inputNumber id="rangeSearchMinimum" class="input-number-right"
                                                                    value="#{item.minimum}"
                                                                    rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
@@ -176,8 +159,7 @@
                                                     <p:outputLabel for="rangeSearchMaximum"
                                                                    value=" #{bundle['advanced.search.metadata.to']} "
                                                                    style="white-space: pre"
-                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"
-                                                    />
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
                                                     <p:inputNumber id="rangeSearchMaximum" class="input-number-left"
                                                                    value="#{item.maximum}"
                                                                    rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
@@ -202,18 +184,22 @@
                                                                  styleClass="facet-category-default"
                                                                  layout="pageDirection"
                                                                  filter="true"
-                                                                 filterMatchMode="contains"
-                                                >
+                                                                 filterMatchMode="contains">
                                                     <f:selectItem itemLabel="#{bundle['advanced.search.selectItem']}"
                                                                   noSelectionOption="true"
                                                                   itemValue="#{null}"
-                                                                  itemDisabled="false"
-                                                                  />
+                                                                  itemDisabled="false"/>
                                                     <f:selectItems value="#{item.listLabelAndValue}"
                                                                    var="selectOneTuple"
                                                                    itemLabel="#{selectOneTuple._1()}"
                                                                    itemValue="#{selectOneTuple._2()}"/>
                                                 </p:selectOneMenu>
+                                            </div>
+                                            <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite"
+                                                 jsf:rendered="#{not empty item.getValidationMessage()}">
+                                                <span class="ui-message-error-detail">
+                                                    <h:outputText value="#{item.getValidationMessage()}" escape="false"/>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -237,8 +223,7 @@
                                               jsf:rendered="#{not empty fileSearchFields.description}"
                                               tabindex="0" role="button"
                                               data-toggle="tooltip" data-placement="top"
-                                              data-original-title="#{fileSearchFields.description}"
-                                        />
+                                              data-original-title="#{fileSearchFields.description}"/>
                                     </label>
                                     <div class="col-sm-6">
                                         <p:inputText id="fileFieldName" styleClass="form-control"
@@ -249,14 +234,13 @@
                                                               style="width: 100%" panelStyleClass="without-select-all"
                                                               multiple="true" label="#{bundle.select}"
                                                               updateLabel="true"
-                                                              filter="true" filterMatchMode="contains"
-                                        >
+                                                              filter="true" filterMatchMode="contains">
                                             <f:selectItems value="#{fileSearchFields.checkboxLabelAndValue}"
                                                            var="cvs"
                                                            itemLabel="#{cvs._1()}"
                                                            itemValue="#{cvs._2()}"/>
                                         </p:selectCheckboxMenu>
-                                        
+
                                     </div>
                                 </div>
                             </ui:repeat>

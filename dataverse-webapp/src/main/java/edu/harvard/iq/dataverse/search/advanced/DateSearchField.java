@@ -1,5 +1,10 @@
 package edu.harvard.iq.dataverse.search.advanced;
 
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Class responsible for holding field value represented as Date String.
  */
@@ -8,24 +13,37 @@ public class DateSearchField extends SearchField {
     private String lowerLimit;
     private String upperLimit;
 
+    // -------------------- CONSTRUCTORS --------------------
+
+    public DateSearchField(DatasetFieldType datasetFieldType) {
+        super(datasetFieldType.getName(), datasetFieldType.getDisplayName(), datasetFieldType.getDescription(),
+                SearchFieldType.DATE, datasetFieldType);
+    }
+	// -------------------- GETTERS --------------------
+
     public String getLowerLimit() {
-		return lowerLimit;
-	}
+        return lowerLimit;
+    }
 
-	public void setLowerLimit(String lowerLimit) {
-		this.lowerLimit = lowerLimit;
-	}
+    public String getUpperLimit() {
+        return upperLimit;
+    }
 
-	public String getUpperLimit() {
-		return upperLimit;
-	}
+    // -------------------- LOGIC --------------------
 
-	public void setUpperLimit(String upperLimit) {
-		this.upperLimit = upperLimit;
-	}
+    @Override
+    public List<String> getValidatableValues() {
+        return Arrays.asList(lowerLimit, upperLimit);
+    }
 
-	public DateSearchField(String name, String displayName, String description) {
-        super(name, displayName, description, SearchFieldType.DATE);
+    // -------------------- SETTERS --------------------
+
+    public void setLowerLimit(String lowerLimit) {
+        this.lowerLimit = lowerLimit;
+    }
+
+    public void setUpperLimit(String upperLimit) {
+        this.upperLimit = upperLimit;
     }
 
 }

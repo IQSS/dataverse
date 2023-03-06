@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.search.index.geobox;
 
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.validation.datasetfield.validators.geobox.GeoboxTestUtil;
+import edu.harvard.iq.dataverse.validation.field.validators.geobox.GeoboxTestUtil;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

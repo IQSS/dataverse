@@ -18,7 +18,7 @@ import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.ValidationResult;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -141,7 +141,7 @@ public class ImportServiceBean {
             List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(versionToValidate);
             if (!validationResults.isEmpty()) {
                 // For migration and harvest, add NA for missing required values
-                validationResults.forEach(r -> r.getField().setFieldValue(DatasetField.NA_VALUE));
+                validationResults.forEach(r -> ((DatasetField) r.getField()).setFieldValue(DatasetField.NA_VALUE));
             }
 
             // A Global ID is required, in order for us to be able to harvest and import

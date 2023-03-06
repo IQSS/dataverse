@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @Entity
 @Table(indexes = {@Index(columnList = "datasetfieldtype_id"), @Index(columnList = "datasetversion_id"),
         @Index(columnList = "template_id")})
-public class DatasetField implements Serializable {
+public class DatasetField implements Serializable, ValidatableField {
 
     private static final long serialVersionUID = 1L;
 
@@ -378,6 +378,23 @@ public class DatasetField implements Serializable {
         return getDatasetFieldParent()
                 .map(DatasetField::getTopParentDatasetField)
                 .getOrElse(this);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Option<ValidatableField> getParent() {
+        return (Option<ValidatableField>)(Option<?>) getDatasetFieldParent();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<ValidatableField> getChildren() {
+        return (List<ValidatableField>)(List<?>) getDatasetFieldsChildren();
+    }
+
+    @Override
+    public List<String> getValidatableValues() {
+        return Collections.singletonList(getValue());
     }
 
     // -------------------- PRIVATE --------------------
