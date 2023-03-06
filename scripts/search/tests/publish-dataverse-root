@@ -1,6 +1,4 @@
 #!/bin/sh
-. scripts/search/export-keys
+export ADMINKEY=`cat /tmp/setup-all.sh.out | grep apiToken| jq .data.apiToken | tr -d \"`
 OUTPUT=`cat /dev/null | curl -s --insecure -u $ADMINKEY: -X POST -H 'In-Progress: false' --data-binary @- https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit/dataverse/root`
 echo $OUTPUT
-echo
-echo $OUTPUT | xmllint -format -

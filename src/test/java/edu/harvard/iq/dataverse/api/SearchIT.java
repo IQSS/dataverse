@@ -302,7 +302,7 @@ public class SearchIT {
         subFieldsNotSupported.then().assertThat()
                 .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
                 // No fields returned. authorAffiliation is a subfield of author and not supported.
-                .body("data.items[0].metadataBlocks.citation.fields", Matchers.empty())
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.nullValue())
                 .statusCode(OK.getStatusCode());
 
         Response allFieldsFromCitation = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&metadata_fields=citation:*");

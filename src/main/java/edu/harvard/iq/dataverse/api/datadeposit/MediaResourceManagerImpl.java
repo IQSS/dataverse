@@ -259,7 +259,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
              * for us, the following *does* work:
              *
              * curl--data-binary @path/to/trees.png -H "Content-Disposition:
-             * filename=trees.png" -H "Content-Type: image/png" -H "Packaging:
+             * attachment;filename=trees.png" -H "Content-Type: image/png" -H "Packaging:
              * http://purl.org/net/sword/package/SimpleZip"
              *
              * We *might* want to continue to force API users to only upload zip

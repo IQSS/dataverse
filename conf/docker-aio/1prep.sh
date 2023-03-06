@@ -23,6 +23,7 @@ echo "export PATH=../maven/bin:${PATH}" >> maven/maven.sh
 chmod 0755 maven/maven.sh
 
 # not using dvinstall.zip for setupIT.bash; but still used in install.bash for normal ops
+cp conf/docker-aio/microprofile-config.properties src/main/resources/META-INF/microprofile-config.properties
 source maven/maven.sh && mvn clean
 ./scripts/installer/custom-build-number
 source maven/maven.sh && mvn package

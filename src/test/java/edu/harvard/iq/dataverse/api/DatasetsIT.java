@@ -643,7 +643,7 @@ public class DatasetsIT {
 
         // This is now returning [] instead of sammi@sample.com. Not sure why.
         // :ExcludeEmailFromExport is absent so the email should be shown.
-        assertEquals("[]", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+        assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
         Response reexportAllFormats = UtilIT.reexportDatasetAllFormats(datasetPersistentId);
@@ -733,7 +733,7 @@ public class DatasetsIT {
 
         assertEquals("Dataverse, Admin", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact"));
         // no "sammi@sample.com" to be found https://github.com/IQSS/dataverse/issues/3443
-        assertEquals("[]", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@email"));
+        assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@email"));
         assertEquals("Sample Datasets, inc.", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@affiliation"));
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
@@ -933,6 +933,7 @@ public class DatasetsIT {
 
         String urlWithToken = JsonPath.from(shouldExist.body().asString()).getString("data.link");
         logger.info("URL with token: " + urlWithToken);
+        urlWithToken = urlWithToken.replace(":8080", ":8084");
 
         assertEquals(tokenForPrivateUrlUser, urlWithToken.substring(urlWithToken.length() - UUID.randomUUID().toString().length()));
 

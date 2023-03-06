@@ -7,7 +7,7 @@ if [ -z "$1" ]; then
 else
   EDIT_MEDIA_URL=$1
 fi
-curl -s --insecure --data-binary @scripts/search/data/binary/trees.zip -H "Content-Disposition: filename=trees.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" -u $USERNAME:$PASSWORD $EDIT_MEDIA_URL \
+curl -s --insecure --data-binary @scripts/search/data/binary/trees.zip -H "Content-Disposition: attachment;filename=trees.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" -u $USERNAME:$PASSWORD $EDIT_MEDIA_URL \
 | xmllint -format -
-#curl -s --insecure --data-binary @scripts/search/data/binary/trees.zip -H "Content-Disposition: filename=trees.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit-media/study/doi:10.5072/FK2/19 \
+#curl -s --insecure --data-binary @scripts/search/data/binary/trees.zip -H "Content-Disposition: attachment;filename=trees.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit-media/study/doi:10.5072/FK2/19 \
 #| xmllint -format -

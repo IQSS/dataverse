@@ -7,7 +7,7 @@ scripts/search/create-psi-dvs > /tmp/psi-dvs1
 curl -s -X POST -H "Content-type:application/json" -d @scripts/search/tests/data/dataset-mali1.json "http://localhost:8080/api/dataverses/psimali/datasets/?key=$PSIADMINKEY" >/dev/null
 curl -s -X POST -H "Content-type:application/json" -d @scripts/search/tests/data/dataset-mali2.json "http://localhost:8080/api/dataverses/psimali/datasets/?key=$PSIADMINKEY" >/dev/null
 WOMEN_IN_MALI_DOI=`curl -s --globoff "http://localhost:8080/api/search?key=$ADMINKEY&q=title:\"Women+in+Mali+dataset+1\"" | jq '.data.items[].global_id' | sed 's/"//g'`
-curl -s --insecure --data-binary @scripts/search/data/binary/health.zip -H 'Content-Disposition: filename=health.zip' -H 'Content-Type: application/zip' -H 'Packaging: http://purl.org/net/sword/package/SimpleZip' -u $PSIADMINKEY: https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/$WOMEN_IN_MALI_DOI >/dev/null
+curl -s --insecure --data-binary @scripts/search/data/binary/health.zip -H 'Content-Disposition: attachment;filename=health.zip' -H 'Content-Type: application/zip' -H 'Packaging: http://purl.org/net/sword/package/SimpleZip' -u $PSIADMINKEY: https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/$WOMEN_IN_MALI_DOI >/dev/null
 scripts/search/saved-search-setup
 curl -s -X PUT http://localhost:8080/api/admin/savedsearches/makelinks/all | jq .
 echo "Running verification tests (silence is golden)"

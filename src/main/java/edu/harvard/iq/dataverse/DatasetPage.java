@@ -946,7 +946,7 @@ public class DatasetPage implements java.io.Serializable {
 
         try {
             queryResponse = solrClientService.getSolrClient().query(solrQuery);
-        } catch (HttpSolrClient.RemoteSolrException ex) {
+        } catch (org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException ex) {
             logger.fine("Remote Solr Exception: " + ex.getLocalizedMessage());
             String msg = ex.getLocalizedMessage();
             if (msg.contains(SearchFields.FILE_DELETED)) {

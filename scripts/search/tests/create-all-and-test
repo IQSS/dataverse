@@ -11,7 +11,7 @@ echo
 curl -s -X POST -H "Content-type:application/json" -d @scripts/search/tests/data/dataset-finch1.json "http://localhost:8080/api/dataverses/finches/datasets/?key=$FINCHKEY"
 echo "Uploading a file via the SWORD API"
 . scripts/search/assumptions
-curl -s --insecure --data-binary @scripts/search/data/binary/trees.zip -H 'Content-Disposition: filename=trees.zip' -H 'Content-Type: application/zip' -H 'Packaging: http://purl.org/net/sword/package/SimpleZip' -u $SPRUCEKEY: https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/$FIRST_SPRUCE_DOI
+curl -s --insecure --data-binary @scripts/search/data/binary/trees.zip -H 'Content-Disposition: attachment;filename=trees.zip' -H 'Content-Type: application/zip' -H 'Packaging: http://purl.org/net/sword/package/SimpleZip' -u $SPRUCEKEY: https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/$FIRST_SPRUCE_DOI
 echo
 echo "Uploading a file via the native API"
 # echo $FIRST_FINCH_DOI # FIXME: Why is this empty?

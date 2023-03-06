@@ -150,7 +150,7 @@
         <payara.version>6.2023.2</payara.version>
         <postgresql.version>42.5.4</postgresql.version>
         <solr.version>8.11.1</solr.version>
-        <aws.version>1.12.415</aws.version>
+        <aws.version>1.12.419</aws.version>
         <google.cloud.version>0.190.0</google.cloud.version>
     
         <!-- Basic libs, logging -->

@@ -36,6 +36,10 @@ if [ $err -ne 0 ]; then
 	echo "error - setupIT failure"
 	exit 1
 fi
+echo -n "Waiting for Dataverse ready "
+while [ "$(curl -sk -m 1 -I http://localhost:8084/api/info/version | head -n 1 | cut -d' ' -f2)" != "200" ]; do \
+		[[ $? -gt 0 ]] && echo -n 'x' || echo -n '.'; sleep 1; done && true
+echo	' OK.'
 # configure DOI provider based on docker build arguments / environmental variables
 docker exec dv /opt/dv/configure_doi.bash
 err=$?
@@ -43,9 +47,6 @@ if [ $err -ne 0 ]; then
 	echo "error - DOI configuration failure"
 	exit 1
 fi
-# handle config for the private url test (and things like publishing...)
-./seturl.bash
-
 
 cd ../..
 #echo "docker-aio ready to run integration tests ($i_retry)"
@@ -53,3 +54,5 @@ echo "docker-aio ready to run integration tests"
 curl http://localhost:8084/api/info/version
 echo $?
 
+cp conf/docker-aio/microprofile-config.properties2 src/main/resources/META-INF/microprofile-config.properties
+docker system prune -a -f

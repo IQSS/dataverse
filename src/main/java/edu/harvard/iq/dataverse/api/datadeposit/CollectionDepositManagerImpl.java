@@ -165,7 +165,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     }
                 } else if (deposit.isBinaryOnly()) {
                     // get here with this:
-                    // curl --insecure -s --data-binary "@example.zip" -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" https://sword:sword@localhost:8181/dvn/api/data-deposit/v1/swordv2/collection/dataverse/sword/
+                    // curl --insecure -s --data-binary "@example.zip" -H "Content-Disposition: attachment;filename=example.zip" -H "Content-Type: application/zip" https://sword:sword@localhost:8181/dvn/api/data-deposit/v1/swordv2/collection/dataverse/sword/
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Binary deposit to the collection IRI via POST is not supported. Please POST an Atom entry instead.");
                 } else if (deposit.isMultipart()) {
                     // get here with this:
