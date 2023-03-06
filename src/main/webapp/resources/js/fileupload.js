@@ -17,6 +17,8 @@ var directUploadEnabled = false;
 
 var directUploadReport = true;
 
+var fixityAlgorithm;
+
 //How many files have started being processed but aren't yet being uploaded
 var filesInProgress = 0;
 //The # of the current file being processed (total number of files for which upload has at least started)
@@ -34,53 +36,84 @@ var finishFile = (function() {
 
 
 function setupDirectUpload(enabled) {
-        if (enabled) {
-                directUploadEnabled = true;
-                //An indicator as to which version is being used - should keep updated.
-                console.log('Dataverse Direct Upload for v5.0');
-                $('.ui-fileupload-upload').hide();
-                $('.ui-fileupload-cancel').hide();
+    if (enabled) {
+        directUploadEnabled = true;
+        //An indicator as to which version is being used - should keep updated.
+        console.log('Dataverse Direct Upload for v5.0');
+        $('.ui-fileupload-upload').hide();
+        $('.ui-fileupload-cancel').hide();
+
+        fetch("api/files/fixityAlgorithm")
+            .then((response) => {
+                var fixityString = "MD5";
+                if (!response.ok) {
+                    console.log("Did not get fixityAlgorithm from Dataverse, using MD5");
+                } else {
+                    fixityAlgorithm = response.json().message;
+                }
+                switch (fixityString) {
+                    case 'MD5':
+                        fixityAlgortihm = CryptoJs.algo.MD5;
+                        break;
+                    case 'SHA-1':
+                        fixityAlgortihm = CryptoJs.algo.SHA1;
+                        break;
+                    case 'SHA-256':
+                        fixityAlgortihm = CryptoJs.algo.SHA256;
+                        break;
+                    case 'SHA-512':
+                        fixityAlgortihm = CryptoJs.algo.SHA512;
+                        break;
+                    default:
+                        console.log('$(fixityString) is not supported, using MD5 as the fixity Algorithm');
+                        fixityAlgortihm = CryptoJs.algo.MD5;
+                }
+
+            })
+            .then(() => {
+
                 //Catch files entered via upload dialog box. Since this 'select' widget is replaced by PF, we need to add a listener again when it is replaced
                 var fileInput = document.getElementById('datasetForm:fileUpload_input');
                 if (fileInput !== null) {
-                        fileInput.addEventListener('change', function(event) {
-                                fileList = [];
-                                for (var i = 0; i < fileInput.files.length; i++) {
-                                        queueFileForDirectUpload(fileInput.files[i]);
-                                }
-                        }, { once: false });
+                    fileInput.addEventListener('change', function(event) {
+                        fileList = [];
+                        for (var i = 0; i < fileInput.files.length; i++) {
+                            queueFileForDirectUpload(fileInput.files[i]);
+                        }
+                    }, { once: false });
                 }
                 //Add support for drag and drop. Since the fileUploadForm is not replaced by PF, catching changes with a mutationobserver isn't needed
                 var fileDropWidget = document.getElementById('datasetForm:fileUpload');
                 fileDropWidget.addEventListener('drop', function(event) {
-                        fileList = [];
-                        for (var i = 0; i < event.dataTransfer.files.length; i++) {
-                                queueFileForDirectUpload(event.dataTransfer.files[i]);
-                        }
+                    fileList = [];
+                    for (var i = 0; i < event.dataTransfer.files.length; i++) {
+                        queueFileForDirectUpload(event.dataTransfer.files[i]);
+                    }
                 }, { once: false });
 
                 var config = { childList: true };
                 var callback = function(mutations) {
-                        mutations.forEach(function(mutation) {
-                                for (i = 0; i < mutation.addedNodes.length; i++) {
-                                        //Add a listener on any replacement file 'select' widget
-                                        if (mutation.addedNodes[i].id == 'datasetForm:fileUpload_input') {
-                                                fileInput = mutation.addedNodes[i];
-                                                mutation.addedNodes[i].addEventListener('change', function(event) {
-                                                        for (var j = 0; j < mutation.addedNodes[i].files.length; j++) {
-                                                                queueFileForDirectUpload(mutation.addedNodes[i].files[j]);
-                                                        }
-                                                }, { once: false });
-                                        }
-                                }
-                        });
+                    mutations.forEach(function(mutation) {
+                        for (i = 0; i < mutation.addedNodes.length; i++) {
+                            //Add a listener on any replacement file 'select' widget
+                            if (mutation.addedNodes[i].id == 'datasetForm:fileUpload_input') {
+                                fileInput = mutation.addedNodes[i];
+                                mutation.addedNodes[i].addEventListener('change', function(event) {
+                                    for (var j = 0; j < mutation.addedNodes[i].files.length; j++) {
+                                        queueFileForDirectUpload(mutation.addedNodes[i].files[j]);
+                                    }
+                                }, { once: false });
+                            }
+                        }
+                    });
                 };
                 if (observer2 != null) {
-                        observer2.disconnect();
+                    observer2.disconnect();
                 }
                 observer2 = new MutationObserver(callback);
                 observer2.observe(document.getElementById('datasetForm:fileUpload'), config);
-        } //else ?
+            });
+    }//else ?
 }
 
 function sleep(ms) {
@@ -625,9 +658,9 @@ function readChunked(file, chunkCallback, endCallback) {
 
 function getMD5(blob, cbProgress) {
         return new Promise((resolve, reject) => {
-                var md5 = CryptoJS.algo.MD5.create();
+                var fixity = fixityAlgorithm.create();
                 readChunked(blob, (chunk, offs, total) => {
-                        md5.update(CryptoJS.enc.Latin1.parse(chunk));
+                        fixity.update(CryptoJS.enc.Latin1.parse(chunk));
                         if (cbProgress) {
                                 cbProgress(offs / total);
                         }
@@ -636,7 +669,7 @@ function getMD5(blob, cbProgress) {
                                 reject(err);
                         } else {
                                 // TODO: Handle errors
-                                var hash = md5.finalize();
+                                var hash = fixity.finalize();
                                 var hashHex = hash.toString(CryptoJS.enc.Hex);
                                 resolve(hashHex);
                         }
