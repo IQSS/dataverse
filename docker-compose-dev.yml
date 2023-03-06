@@ -4,10 +4,9 @@ services:
 
   dev_postgres:
     container_name: "dev_postgres"
-    image: postgres:13
+    image: postgres:${POSTGRES_VERSION}
     restart: on-failure
     environment:
-      - POSTGRES_HOST_AUTH_METHOD=trust
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=secret
     ports:
@@ -19,8 +18,10 @@ services:
     container_name: "dev_solr_initializer"
     image: alpine
     restart: "no"
-    entrypoint: |
-      /bin/sh -c "chown 8983:8983 /conf && cp *.xml /conf"
+    command:
+      - sh
+      - -c
+      - "chown 8983:8983 /conf && cp *.xml /conf"
     volumes:
       - ./docker-dev-volumes/solr/conf:/conf
       - ./conf/solr/8.11.1/schema.xml:/schema.xml
@@ -28,17 +29,19 @@ services:
 
   dev_solr:
     container_name: "dev_solr"
-    image: solr:8.11.1
+    image: solr:${SOLR_VERSION}
     depends_on:
       - dev_solr_initializer
     restart: on-failure
     ports:
       - "8983:8983"
-    entrypoint: |
-      bash -c "cd /opt/solr-8.11.1/server/solr/configsets/_default/conf && cp -R -n . /opt/solr-8.11.1/server/solr/collection1 && solr-create -c collection1 -d /opt/solr-8.11.1/server/solr/collection1"
+    command:
+      - bash
+      - -c
+      - "cd /opt/solr-${SOLR_VERSION}/server/solr/configsets/_default/conf && cp -R -n . /template && solr-precreate collection1 /template"
     volumes:
       - ./docker-dev-volumes/solr/data:/var/solr
-      - ./docker-dev-volumes/solr/conf:/opt/solr-8.11.1/server/solr/collection1
+      - ./docker-dev-volumes/solr/conf:/template
 
   dev_smtp:
     container_name: "dev_smtp"
@@ -49,12 +52,3 @@ services:
       - "1080:1080" # web ui
     volumes:
       - ./docker-dev-volumes/smtp/data:/tmp/maildev-1
-
-  dev_sphinx:
-    container_name: "dev_sphinx"
-    image: sphinxdoc/sphinx:5.3.0
-    restart: "no"
-    entrypoint: |
-      bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"
-    volumes:
-      - ./:/docs

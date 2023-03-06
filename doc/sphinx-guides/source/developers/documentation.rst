@@ -92,9 +92,7 @@ Open a terminal, change directories to ``doc/sphinx-guides``, activate (or react
 Building the Guides with a Sphinx Docker Container
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A Sphinx Docker container is already used in the ``docker-compose-dev.yml`` file, available in the repository root, to build the guides when starting the development environment. Please, see :doc:`/developers/dev-environment` for more information.
-
-If you want to build the guides at any time, execute the following command in the repository root:
+If you want to build the guides using a Docker container, execute the following command in the repository root:
 
 ``docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:5.3.0 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"``
 

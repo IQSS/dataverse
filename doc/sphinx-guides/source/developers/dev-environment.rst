@@ -160,7 +160,7 @@ Install Service Dependencies Using Docker Compose
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 To avoid having to install service dependencies like PostgreSQL or Solr directly on your localhost, there is the alternative of using the ``docker-compose-dev.yml`` file available in the repository root. For this option you need to have Docker and Docker Compose installed on your machine.
 
-The ``docker-compose-dev.yml`` file runs the necessary service dependencies to support a development Dataverse installation running on localhost. In addition to PostgreSQL and Solr, it also runs a SMTP server, as well as a ephemeral sphinx container which builds the documentation pages from the repository documentation files.
+The ``docker-compose-dev.yml`` file runs the necessary service dependencies to support a development Dataverse installation running on localhost. In addition to PostgreSQL and Solr, it also runs a SMTP server.
 
 To run the Docker Compose file, go to the Dataverse repository root, then run:
 
