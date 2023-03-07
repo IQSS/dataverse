@@ -94,7 +94,7 @@ Building the Guides with a Sphinx Docker Container
 
 If you want to build the guides using a Docker container, execute the following command in the repository root:
 
-``docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:5.3.0 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"``
+``docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:3.5.4 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"``
 
 Previewing the Guides
 ^^^^^^^^^^^^^^^^^^^^^
