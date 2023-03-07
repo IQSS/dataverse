@@ -17,7 +17,7 @@ var directUploadEnabled = false;
 
 var directUploadReport = true;
 
-var fixityAlgorithm;
+var checksumAlgName;
 
 //How many files have started being processed but aren't yet being uploaded
 var filesInProgress = 0;
@@ -45,33 +45,20 @@ function setupDirectUpload(enabled) {
 
         fetch("api/files/fixityAlgorithm")
             .then((response) => {
-                var fixityString = "MD5";
                 if (!response.ok) {
                     console.log("Did not get fixityAlgorithm from Dataverse, using MD5");
+                    return null;
                 } else {
-                    fixityAlgorithm = response.json().message;
+                    return response.json();
                 }
-                switch (fixityString) {
-                    case 'MD5':
-                        fixityAlgortihm = CryptoJs.algo.MD5;
-                        break;
-                    case 'SHA-1':
-                        fixityAlgortihm = CryptoJs.algo.SHA1;
-                        break;
-                    case 'SHA-256':
-                        fixityAlgortihm = CryptoJs.algo.SHA256;
-                        break;
-                    case 'SHA-512':
-                        fixityAlgortihm = CryptoJs.algo.SHA512;
-                        break;
-                    default:
-                        console.log('$(fixityString) is not supported, using MD5 as the fixity Algorithm');
-                        fixityAlgortihm = CryptoJs.algo.MD5;
+            }).then(checksumAlgJson => {
+                checksumAlgName = "MD5";
+                if (checksumAlgJson != null) {
+                    console.log(JSON.stringify(checksumAlgJson));
+                    checksumAlgName = checksumAlgJson.data.message;
                 }
-
             })
             .then(() => {
-
                 //Catch files entered via upload dialog box. Since this 'select' widget is replaced by PF, we need to add a listener again when it is replaced
                 var fileInput = document.getElementById('datasetForm:fileUpload_input');
                 if (fileInput !== null) {
@@ -350,15 +337,15 @@ var fileUpload = class fileUploadClass {
                 this.state = UploadState.UPLOADED;
                 console.log('S3 Upload complete for ' + this.file.name + ' : ' + this.storageId);
                 if (directUploadReport) {
-                        getMD5(this.file, prog => {
+                        getChecksum(this.file, prog => {
                                 var current = 1 + prog;
                                 $('[upid="' + this.id + '"] progress').attr({
                                         value: current,
                                         max: 2
                                 });
-                        }).then(md5 => {
-                                this.handleDirectUpload(md5);
-                        }, err => console.error(err));
+                        }).then(checksum => {
+                                this.handleDirectUpload(checksum);
+                        }).catch(err => console.error(err));
                 }
                 else {
                         console.log("Abandoned: " + this.storageId);
@@ -404,7 +391,7 @@ var fileUpload = class fileUploadClass {
                         }
             });        }
 
-        async handleDirectUpload(md5) {
+        async handleDirectUpload(checksum) {
                 this.state = UploadState.HASHED;
                 //Wait for each call to finish and update the DOM
                 while (inDataverseCall === true) {
@@ -413,7 +400,7 @@ var fileUpload = class fileUploadClass {
                 inDataverseCall = true;
                 //storageId is not the location - has a : separator and no path elements from dataset
                 //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
-                handleExternalUpload([{ name: 'uploadComponentId', value: 'datasetForm:fileUpload' }, { name: 'fullStorageIdentifier', value: this.storageId }, { name: 'fileName', value: this.file.name }, { name: 'contentType', value: this.file.type }, { name: 'checksumType', value: 'MD5' }, { name: 'checksumValue', value: md5 }]);
+                handleExternalUpload([{ name: 'uploadComponentId', value: 'datasetForm:fileUpload' }, { name: 'fullStorageIdentifier', value: this.storageId }, { name: 'fileName', value: this.file.name }, { name: 'contentType', value: this.file.type }, { name: 'checksumType', value: checksumAlgName }, { name: 'checksumValue', value: checksum }]);
         }
 }
 
@@ -465,6 +452,8 @@ function removeErrors() {
 
 var observer = null;
 
+// uploadStarted and uploadFinished are not related to direct upload.
+// They deal with clearing old errors and watching for new ones and then signaling when all uploads are done
 function uploadStarted() {
         // If this is not the first upload, remove error messages since
         // the upload of any files that failed will be tried again.
@@ -655,12 +644,35 @@ function readChunked(file, chunkCallback, endCallback) {
         }
         readNext();
 }
-
-function getMD5(blob, cbProgress) {
+function getChecksum(blob, cbProgress) {
         return new Promise((resolve, reject) => {
-                var fixity = fixityAlgorithm.create();
+console.log("checksumAlgName: " + checksumAlgName);
+
+        var checksumAlg; 
+        
+                        switch (checksumAlgName) {
+                    case 'MD5':
+                        checksumAlg = CryptoJS.algo.MD5.create();
+                        console.log("using md5");
+                        break;
+                    case 'SHA-1':
+                        console.log("using 1");
+                        checksumAlg = CryptoJS.algo.SHA1.create();
+                        break;
+                    case 'SHA-256':
+                        console.log("using `256");
+                        checksumAlg = CryptoJS.algo.SHA256.create();
+                        break;
+                    case 'SHA-512':
+                        console.log("using 512");
+                        checksumAlg = CryptoJS.algo.SHA512.create();
+                        break;
+                    default:
+                        console.log('$(checksumAlgName) is not supported, using MD5 as the checksumAlg checksum Algorithm');
+                                checksumAlg = CryptoJS.algo.MD5.create();
+                }
                 readChunked(blob, (chunk, offs, total) => {
-                        fixity.update(CryptoJS.enc.Latin1.parse(chunk));
+                        checksumAlg.update(CryptoJS.enc.Latin1.parse(chunk));
                         if (cbProgress) {
                                 cbProgress(offs / total);
                         }
@@ -669,7 +681,7 @@ function getMD5(blob, cbProgress) {
                                 reject(err);
                         } else {
                                 // TODO: Handle errors
-                                var hash = fixity.finalize();
+                                var hash = checksumAlg.finalize();
                                 var hashHex = hash.toString(CryptoJS.enc.Hex);
                                 resolve(hashHex);
                         }

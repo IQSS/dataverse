@@ -11,9 +11,20 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-    <script src="#{resource['js/fileupload.js']}?version=#{systemConfig.getVersion()}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/core.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/md5.js"></script>
+
+    <ui:param name="useDirectUpload" value="#{systemConfig.directUploadEnabled(dataset)}"/>
+    <ui:param name="checksumAlgName" value="#{systemConfig.getFileFixityChecksumAlgorithm().toString()}"/>
+    
+    <h:outputScript name='js/fileupload.js?version=#{systemConfig.getVersion()}' />
+    <ui:fragment rendered = '#{useDirectUpload}'>
+    <h:outputScript name='js/crypto-js/4.0.0/core.js'  />
+    <h:outputScript name='js/crypto-js/4.0.0/x64-core.js' rendered='#{(checksumAlgName eq "SHA-512")}'/>
+    <h:outputScript name='js/crypto-js/4.0.0/md5.js' rendered='#{true or checksumAlgName eq "MD5"}'/>
+    <h:outputScript name='js/crypto-js/4.0.0/sha1.js'  rendered='#{checksumAlgName eq "SHA-1"}'/>
+    <h:outputScript name='js/crypto-js/4.0.0/sha256.js'  rendered='#{checksumAlgName eq "SHA-256"}'/>
+    <h:outputScript name='js/crypto-js/4.0.0/sha512.js' rendered='#{checksumAlgName eq "SHA-512"}'/>
+    </ui:fragment>
+
     <!-- Static Tab Layout -->
     <div data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
         <ul role="tablist" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
@@ -109,7 +120,7 @@
                         
                         $(document).ready(function () {
                             uploadWidgetDropMsg();
-                            setupDirectUpload(#{systemConfig.directUploadEnabled(EditDatafilesPage.dataset)});
+                             #{useDirectUpload ? 'setupDirectUpload(true);':''}
                         });
                         //]]>
                     </script>
@@ -584,7 +595,7 @@
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForFileTypeDifferentPopUp}</p>
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" oncomplete="uploadWidgetDropMsg();
-                            setupDirectUpload(#{systemConfig.directUploadEnabled(EditDatafilesPage.dataset)});"
+																	 #{useDirectUpload ? 'setupDirectUpload(true);': ''}"
                              action="#{EditDatafilesPage.deleteFiles()}"
                              update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage"/>
             <button class="btn btn-default" onclick="PF('fileTypeDifferentPopup').hide();" type="button">
