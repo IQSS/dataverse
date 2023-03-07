@@ -54,7 +54,6 @@ function setupDirectUpload(enabled) {
             }).then(checksumAlgJson => {
                 checksumAlgName = "MD5";
                 if (checksumAlgJson != null) {
-                    console.log(JSON.stringify(checksumAlgJson));
                     checksumAlgName = checksumAlgJson.data.message;
                 }
             })
@@ -649,22 +648,17 @@ function getChecksum(blob, cbProgress) {
 console.log("checksumAlgName: " + checksumAlgName);
 
         var checksumAlg; 
-        
                         switch (checksumAlgName) {
                     case 'MD5':
                         checksumAlg = CryptoJS.algo.MD5.create();
-                        console.log("using md5");
                         break;
                     case 'SHA-1':
-                        console.log("using 1");
                         checksumAlg = CryptoJS.algo.SHA1.create();
                         break;
                     case 'SHA-256':
-                        console.log("using `256");
                         checksumAlg = CryptoJS.algo.SHA256.create();
                         break;
                     case 'SHA-512':
-                        console.log("using 512");
                         checksumAlg = CryptoJS.algo.SHA512.create();
                         break;
                     default:
