@@ -52,6 +52,13 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
         
     }
     
+    
+    //Only used in PidUtilTest - haven't figured out how to mock a PostConstruct call directly
+    // ToDo - remove after work to allow more than one Pid Provider which is expected to not use stateless beans
+    public void reInit() {
+        init();
+    }
+    
     @Override
     public String getSeparator() {
         //The perma default
@@ -108,8 +115,8 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
     @Override
     public GlobalId parsePersistentId(String pidString) {
         //ToDo - handle local PID resolver for dataset/file
-        if (pidString.startsWith(PERMA_RESOLVER_URL)) {
-            pidString = pidString.replace(PERMA_RESOLVER_URL,
+        if (pidString.startsWith(getUrlPrefix())) {
+            pidString = pidString.replace(getUrlPrefix(),
                     (PERMA_PROTOCOL + ":"));
         }
         return super.parsePersistentId(pidString);
