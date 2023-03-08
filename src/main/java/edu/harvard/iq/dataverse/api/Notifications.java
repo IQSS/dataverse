@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
@@ -20,6 +21,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.MailUtil;
@@ -34,17 +37,10 @@ public class Notifications extends AbstractApiBean {
     MailServiceBean mailService;
     
     @GET
+    @AuthRequired
     @Path("/all")
-    public Response getAllNotificationsForUser() {
-        User user;
-        try {
-            user = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.UNAUTHORIZED, "You must supply an API token.");
-        }
-        if (user == null) {
-            return error(Response.Status.BAD_REQUEST, "A user could not be found based on the API token.");
-        }
+    public Response getAllNotificationsForUser(@Context ContainerRequestContext crc) {
+        User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
             return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
@@ -88,17 +84,10 @@ public class Notifications extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("/{id}")
-    public Response deleteNotificationForUser(@PathParam("id") long id) {
-        User user;
-        try {
-            user = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.UNAUTHORIZED, "You must supply an API token.");
-        }
-        if (user == null) {
-            return error(Response.Status.BAD_REQUEST, "A user could not be found based on the API token.");
-        }
+    public Response deleteNotificationForUser(@Context ContainerRequestContext crc, @PathParam("id") long id) {
+        User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
             return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
@@ -117,17 +106,10 @@ public class Notifications extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("/mutedEmails")
-    public Response getMutedEmailsForUser() {
-        User user;
-        try {
-            user = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.UNAUTHORIZED, "You must supply an API token.");
-        }
-        if (user == null) {
-            return error(Response.Status.BAD_REQUEST, "A user could not be found based on the API token.");
-        }
+    public Response getMutedEmailsForUser(@Context ContainerRequestContext crc) {
+        User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
             return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
@@ -143,17 +125,10 @@ public class Notifications extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("/mutedEmails/{typeName}")
-    public Response muteEmailsForUser(@PathParam("typeName") String typeName) {
-        User user;
-        try {
-            user = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.UNAUTHORIZED, "You must supply an API token.");
-        }
-        if (user == null) {
-            return error(Response.Status.BAD_REQUEST, "A user could not be found based on the API token.");
-        }
+    public Response muteEmailsForUser(@Context ContainerRequestContext crc, @PathParam("typeName") String typeName) {
+        User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
             return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
@@ -174,17 +149,10 @@ public class Notifications extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("/mutedEmails/{typeName}")
-    public Response unmuteEmailsForUser(@PathParam("typeName") String typeName) {
-        User user;
-        try {
-            user = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.UNAUTHORIZED, "You must supply an API token.");
-        }
-        if (user == null) {
-            return error(Response.Status.BAD_REQUEST, "A user could not be found based on the API token.");
-        }
+    public Response unmuteEmailsForUser(@Context ContainerRequestContext crc, @PathParam("typeName") String typeName) {
+        User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
             return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
@@ -205,17 +173,10 @@ public class Notifications extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("/mutedNotifications")
-    public Response getMutedNotificationsForUser() {
-        User user;
-        try {
-            user = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.UNAUTHORIZED, "You must supply an API token.");
-        }
-        if (user == null) {
-            return error(Response.Status.BAD_REQUEST, "A user could not be found based on the API token.");
-        }
+    public Response getMutedNotificationsForUser(@Context ContainerRequestContext crc) {
+        User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
             return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
@@ -231,17 +192,10 @@ public class Notifications extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("/mutedNotifications/{typeName}")
-    public Response muteNotificationsForUser(@PathParam("typeName") String typeName) {
-        User user;
-        try {
-            user = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.UNAUTHORIZED, "You must supply an API token.");
-        }
-        if (user == null) {
-            return error(Response.Status.BAD_REQUEST, "A user could not be found based on the API token.");
-        }
+    public Response muteNotificationsForUser(@Context ContainerRequestContext crc, @PathParam("typeName") String typeName) {
+        User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
             return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
@@ -262,17 +216,10 @@ public class Notifications extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("/mutedNotifications/{typeName}")
-    public Response unmuteNotificationsForUser(@PathParam("typeName") String typeName) {
-        User user;
-        try {
-            user = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.UNAUTHORIZED, "You must supply an API token.");
-        }
-        if (user == null) {
-            return error(Response.Status.BAD_REQUEST, "A user could not be found based on the API token.");
-        }
+    public Response unmuteNotificationsForUser(@Context ContainerRequestContext crc, @PathParam("typeName") String typeName) {
+        User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
             return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");

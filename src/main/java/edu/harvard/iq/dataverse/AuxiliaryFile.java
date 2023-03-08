@@ -55,7 +55,10 @@ public class AuxiliaryFile implements Serializable {
     private String formatTag;
     
     private String formatVersion;
-    
+
+    /**
+     * The application/entity that created the auxiliary file.
+     */
     private String origin;
     
     private boolean isPublic;
