@@ -28,10 +28,7 @@ wget -q https://archive.apache.org/dist/maven/maven-3/3.8.2/binaries/apache-mave
 tar xfz apache-maven-3.8.2-bin.tar.gz
 mkdir /opt/maven
 mv apache-maven-3.8.2/* /opt/maven/
-echo "export JAVA_HOME=/usr/lib/jvm/jre-openjdk" > /etc/profile.d/maven.sh
-echo "export M2_HOME=/opt/maven" >> /etc/profile.d/maven.sh
-echo "export MAVEN_HOME=/opt/maven" >> /etc/profile.d/maven.sh
-echo "export PATH=/opt/maven/bin:${PATH}" >> /etc/profile.d/maven.sh
+{ echo "export JAVA_HOME=/usr/lib/jvm/jre-openjdk" ; echo "export M2_HOME=/opt/maven" ; echo "export MAVEN_HOME=/opt/maven" ; echo "export PATH=/opt/maven/bin:${PATH}" } >> /etc/profile.d/maven.sh
 chmod 0755 /etc/profile.d/maven.sh
 
 # disable centos8 postgresql module and install postgresql13-server
