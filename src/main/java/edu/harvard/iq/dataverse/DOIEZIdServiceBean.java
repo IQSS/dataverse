@@ -33,7 +33,7 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
         try {
             String doiProvider = settingsService.getValueForKey(Key.DoiProvider, "");
             if ("EZID".equals(doiProvider)) {
-                //Guessing these are SYstem.getProperty rather than using settingsService because this is a constructir rather than a @PostConstruct method
+                //Guessing these are System.getProperty rather than using settingsService because this is a constructor rather than a @PostConstruct method
                 baseURLString = System.getProperty("doi.baseurlstring");
                 ezidService = new EZIDService(baseURLString);
                 USERNAME = System.getProperty("doi.username");
