@@ -2133,7 +2133,7 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 **WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
 production context! Rely on password alias, secrets directory or cloud based sources instead!
 
-.. _doi.baseurlstring:
+.. _perma.baseurlstring:
 
 perma.baseurlstring
 +++++++++++++++++++
