@@ -38,7 +38,7 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
     public static final String PERMA_PROVIDER_NAME = "PERMA";
 
     //ToDo - handle dataset/file defaults for local system
-    public static final String PERMA_RESOLVER_URL = System.getProperty("pid.baseurlstring", SystemConfig.getDataverseSiteUrlStatic());
+    public static final String PERMA_RESOLVER_URL = System.getProperty("perma.baseurlstring", SystemConfig.getDataverseSiteUrlStatic());
     
     String authority = null; 
     private String separator = "";
