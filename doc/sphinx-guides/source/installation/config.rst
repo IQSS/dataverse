@@ -188,7 +188,7 @@ and restart Payara. The prefix can be configured via the API (where it is referr
 
 EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite;
 
-The PermaLink and FAKE DOI providers do not involve an external account. PermaLinks are described further below. Use of the FAKE provider is discussed in the :doc:`dev-environment` section.
+The PermaLink and FAKE DOI providers do not involve an external account. PermaLinks are described further below. Use of the FAKE provider is discussed in the :doc:`/developers/dev-environment` section.
 
 Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable, and they will only resolve from the DataCite test environment (and then only if the Dataverse installation from which you published them is accessible - DOIs minted from your laptop will not resolve). Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
 
