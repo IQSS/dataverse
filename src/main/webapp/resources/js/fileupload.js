@@ -252,7 +252,7 @@ var fileUpload = class fileUploadClass {
                     while((started-this.numEtags)>10) {
                       await sleep(delay);
                     }
-                if (typeof this.etags[key] === 'undefined' || this.etags[key] === -1) {
+                if (typeof this.etags[key] === 'undefined' || this.etags[key] == -1) {
                        this.etags[key]=-1;
                        var size = Math.min(partSize, this.file.size-(key-1)*partSize);
                        var offset=(key-1)*partSize;
@@ -318,7 +318,7 @@ var fileUpload = class fileUploadClass {
           var allGood=true;
           //Safety check - verify that all eTags were set
           for (let val in this.etags.values()) {
-            if (val === -1) {
+            if (val == -1) {
               allGood=false;
               break;
             }
@@ -428,10 +428,10 @@ async function uploadFileDirectly(urls, storageId, filesize) {
 
                 //As long as we have the right file size, we're OK
                 for (i = 0; i < fileList.length; i++) {
-            if (fileList[i].file.size === filesize) {
-                                upload = fileList.splice(i,1)[0];
-                                break;
-                        }
+                    if (fileList[i].file.size == filesize) {
+                        upload = fileList.splice(i,1)[0];
+                        break;
+                    }
                 }
                 upload.urls = JSON.parse(urls);
                 upload.storageId = storageId;
@@ -583,7 +583,7 @@ async function uploadFailure(jqXHR, upid, filename) {
         }
 
         //statusText for error 0 is the unhelpful 'error'
-    if (status === 0)
+    if (status == 0)
         statusText = 'Network Error';
         //Log the error
         console.log('Upload error:' + name + ' upid=' + id + ', Error ' + status + ': ' + statusText);
