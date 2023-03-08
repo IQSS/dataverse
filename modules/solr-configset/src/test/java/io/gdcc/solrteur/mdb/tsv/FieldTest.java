@@ -3,20 +3,35 @@ package io.gdcc.solrteur.mdb.tsv;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class FieldTest {
     
@@ -143,6 +158,7 @@ class FieldTest {
     }
     
     @Nested
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class ParseLineTest {
         Field.FieldsBuilder builder;
         
@@ -153,6 +169,7 @@ class FieldTest {
         
         @ParameterizedTest
         @NullAndEmptySource
+        @MethodSource("invalidFieldExamples")
         void failingParseLine(String line) throws ParserException {
             ParserException exception = assertThrows(ParserException.class, () -> builder.parseAndValidateLine(0, line));
             //assertFalse(builder.hasSucceeded());
@@ -160,18 +177,33 @@ class FieldTest {
         
         @ParameterizedTest
         @ValueSource(strings = {validFieldDef})
-        @CsvFileSource(files = "/testlines/valid_datasetfields.csv")
+        @MethodSource("validFieldExamples")
         void succeedingParseLine(String line) throws ParserException {
-            builder.parseAndValidateLine(0, line);
+            try {
+                System.out.println(line);
+                builder.parseAndValidateLine(0, line);
+            } catch (ParserException e) {
+                e.getSubExceptions().forEach(System.out::println);
+                fail(e);
+            }
             //assertTrue(builder.hasSucceeded());
         }
-        
-        @Test
-        void failingDoubleAdditionAttempt() throws ParserException {
-            builder.parseAndValidateLine(0, validFieldDef);
-            //assertTrue(builder.hasSucceeded());
-            ParserException exception = assertThrows(ParserException.class, () -> builder.parseAndValidateLine(0, validFieldDef));
-            //assertFalse(builder.hasSucceeded());
+    
+        Stream<String> validFieldExamples() throws IOException {
+            Path file = Path.of("", "src/test/resources", "fields", "valid_fields.csv");
+            return Files.readAllLines(file, StandardCharsets.UTF_8).stream().map(s -> s.replaceAll(";", "\t"));
         }
+    
+        Stream<String> invalidFieldExamples() throws IOException {
+            // TODO: write a file with such examples that fail already at parsing the line
+            Path file = Path.of("", "src/test/resources", "fields", "invalid_fields.csv");
+            return Files.readAllLines(file, StandardCharsets.UTF_8).stream().map(s -> s.replaceAll(";", "\t"));
+        }
+    }
+    
+    @Nested
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    class BuildFieldListTest {
+        // TODO: write tests for the checks at build time
     }
 }

@@ -1,0 +1,12 @@
+;title;Title;The main title of the Dataset;;text;0;;TRUE;FALSE;FALSE;FALSE;TRUE;TRUE;;citation;http://purl.org/dc/terms/title
+;subtitle;Subtitle;A secondary title that amplifies or states certain limitations on the main title;;text;1;;FALSE;FALSE;FALSE;FALSE;FALSE;FALSE;;citation;
+;alternativeURL;Alternative URL;Another URL where one can view or access the data in the Dataset, e.g. a project or personal webpage;https://;url;3;<a href="#VALUE" target="_blank">#VALUE</a>;FALSE;FALSE;FALSE;FALSE;FALSE;FALSE;;citation;https://schema.org/distribution
+;author;Author;The entity, e.g. a person or organization, that created the Dataset;;none;7;;FALSE;FALSE;TRUE;FALSE;TRUE;TRUE;;citation;http://purl.org/dc/terms/creator
+;authorName;Name;The name of the author, such as the person's name or the name of an organization;1) Family Name, Given Name or 2) Organization XYZ;text;8;#VALUE;TRUE;FALSE;FALSE;TRUE;TRUE;TRUE;author;citation;
+;authorAffiliation;Affiliation;The name of the entity affiliated with the author, e.g. an organization's name;Organization XYZ;text;9;(#VALUE);TRUE;FALSE;FALSE;TRUE;TRUE;FALSE;author;citation;
+;authorIdentifierScheme;Identifier Type;The type of identifier that uniquely identifies the author (e.g. ORCID, ISNI);;text;10;- #VALUE:;FALSE;TRUE;FALSE;FALSE;TRUE;FALSE;author;citation;http://purl.org/spar/datacite/AgentIdentifierScheme
+;authorIdentifier;Identifier;Uniquely identifies the author when paired with an identifier type;;text;11;#VALUE;FALSE;FALSE;FALSE;FALSE;TRUE;FALSE;author;citation;http://purl.org/spar/datacite/AgentIdentifier
+;datasetContactEmail;E-mail;The point of contact's email address;name@email.xyz;email;15;#EMAIL;FALSE;FALSE;FALSE;FALSE;TRUE;TRUE;datasetContact;citation;
+;dsDescriptionValue;Text;A summary describing the purpose, nature, and scope of the Dataset;;textbox;17;#VALUE;TRUE;FALSE;FALSE;FALSE;TRUE;TRUE;dsDescription;citation;
+;dsDescriptionDate;Date;The date when the description was added to the Dataset. If the Dataset contains more than one description, e.g. the data producer supplied one description and the data repository supplied another, this date is used to distinguish between the descriptions;YYYY-MM-DD;date;18;(#VALUE);FALSE;FALSE;FALSE;FALSE;TRUE;FALSE;dsDescription;citation;
+;keywordVocabularyURI;Controlled Vocabulary URL;The URL where one can access information about the term's controlled vocabulary;https://;url;23;<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>;FALSE;FALSE;FALSE;FALSE;TRUE;FALSE;keyword;citation;
