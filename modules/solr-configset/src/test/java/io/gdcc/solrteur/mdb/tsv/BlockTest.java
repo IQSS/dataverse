@@ -23,7 +23,8 @@ class BlockTest {
     
     static final Configuration config = Configuration.defaultConfig();
     static final String validHeaderLine = "#metadataBlock\tname\tdataverseAlias\tdisplayName\tblockURI";
-    static final String validBlockDef = "\tmyblock\tdataverse\tFooBar Block\thttps://foobar.com/";
+    static final String validBlockDef1 = "\tmyblock\t\tFooBar Block\thttps://foobar.com/";
+    static final String validBlockDef2 = "\tmyblock\tdataverse\tFooBar Block\thttps://foobar.com/";
     
     @Nested
     class HeaderTest {
@@ -77,7 +78,9 @@ class BlockTest {
             "\tmyblock\tdataverse\tFooBar Block",
             "\tmyblock\tdataverse\tFooBar Block\thttps://",
             "\tmyblock\tdataverse\tFooBar Block\thttps://foobar.com/\thello",
-            "myblock\tdataverse\tFooBar Block\thttps://foobar.com/"
+            "\tmyblock\t\tFooBar Block\thttps://foobar.com/\thello",
+            "myblock\tdataverse\tFooBar Block\thttps://foobar.com/",
+            "myblock\t\tFooBar Block\thttps://foobar.com/"
         })
         void failingParseLine(String line) throws ParserException {
             ParserException exception = assertThrows(ParserException.class, () -> builder.parseAndValidateLine(line));
@@ -86,7 +89,7 @@ class BlockTest {
     
         @ParameterizedTest
         @ValueSource(strings = {
-            validBlockDef
+            validBlockDef1, validBlockDef2
         })
         void succeedingParseLine(String line) throws ParserException {
             builder.parseAndValidateLine(line);
@@ -95,9 +98,9 @@ class BlockTest {
         
         @Test
         void failingDoubleAdditionAttempt() throws ParserException {
-            builder.parseAndValidateLine(validBlockDef);
+            builder.parseAndValidateLine(validBlockDef1);
             assertTrue(builder.hasSucceeded());
-            ParserException exception = assertThrows(ParserException.class, () -> builder.parseAndValidateLine(validBlockDef));
+            ParserException exception = assertThrows(ParserException.class, () -> builder.parseAndValidateLine(validBlockDef1));
             assertFalse(builder.hasSucceeded());
         }
     }

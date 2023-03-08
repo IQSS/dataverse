@@ -193,7 +193,7 @@ public final class Block {
          * @throws ParserException
          */
         Block parseAndValidateColumns(final String[] lineParts) throws ParserException {
-            if (lineParts == null || lineParts.length > header.size()) {
+            if (lineParts == null || lineParts.length != header.size()) {
                 throw new ParserException("Does not match length of metadata block headline");
             }
             
