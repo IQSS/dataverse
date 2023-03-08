@@ -10,8 +10,7 @@ var UploadState = {
         HASHED: 'hashed',
         FINISHED: 'finished',
         FAILED: 'failed'
-}
-
+};
 //true indicates direct upload is being used, but cancel may set it back to false at which point direct upload functions should not do further work
 var directUploadEnabled = false;
 
@@ -26,12 +25,18 @@ var curFile = 0;
 //The number of upload ids that have been assigned in the files table
 var getUpId = (function() {
         var counter = -1;
-        return function() { counter += 1; return counter }
+    return function () {
+        counter += 1;
+        return counter;
+    };
 })();
 //How many files are completely done
 var finishFile = (function() {
         var counter = 0;
-        return function() { counter += 1; return counter }
+    return function () {
+        counter += 1;
+        return counter;
+    };
 })();
 
 
@@ -82,7 +87,7 @@ function setupDirectUpload(enabled) {
                     mutations.forEach(function(mutation) {
                         for (i = 0; i < mutation.addedNodes.length; i++) {
                             //Add a listener on any replacement file 'select' widget
-                            if (mutation.addedNodes[i].id == 'datasetForm:fileUpload_input') {
+                    if (mutation.addedNodes[i].id === 'datasetForm:fileUpload_input') {
                                 fileInput = mutation.addedNodes[i];
                                 mutation.addedNodes[i].addEventListener('change', function(event) {
                                     for (var j = 0; j < mutation.addedNodes[i].files.length; j++) {
@@ -93,7 +98,7 @@ function setupDirectUpload(enabled) {
                         }
                     });
                 };
-                if (observer2 != null) {
+        if (observer2 !== null) {
                     observer2.disconnect();
                 }
                 observer2 = new MutationObserver(callback);
@@ -112,7 +117,7 @@ async function cancelDatasetCreate() {
                 fileList = [];
                 directUploadEnabled = false;
                 directUploadReport = false;
-                while (curFile != numDone) {
+        while (curFile !== numDone) {
                         $("#cancelCreate").prop('onclick', null).text("Cancel In Progress...").prop('disabled', true);
                         $("#datasetForm\\:save").prop('disabled', true);
                         await sleep(1000);
@@ -130,7 +135,7 @@ async function cancelDatasetEdit() {
                 fileList = [];
                 directUploadEnabled = false;
                 directUploadReport = false;
-                        while (curFile != numDone) {
+        while (curFile !== numDone) {
                         $("#doneFilesButtonnop").prop('onclick', null).text("Cancel In Progress...").prop('disabled', true);
                         await sleep(1000);
                 }
@@ -247,7 +252,7 @@ var fileUpload = class fileUploadClass {
                     while((started-this.numEtags)>10) {
                       await sleep(delay);
                     }
-                    if(typeof this.etags[key] == 'undefined' || this.etags[key]==-1) {
+                if (typeof this.etags[key] === 'undefined' || this.etags[key] === -1) {
                        this.etags[key]=-1;
                        var size = Math.min(partSize, this.file.size-(key-1)*partSize);
                        var offset=(key-1)*partSize;
@@ -265,7 +270,7 @@ var fileUpload = class fileUploadClass {
                                 //The header has quotes around the eTag
                                 this.etags[key]=response.getResponseHeader('ETag').replace(/["]+/g, '');
                                 this.numEtags = this.numEtags+1;
-                                if(this.numEtags == Object.keys(this.urls.urls).length) {
+                            if (this.numEtags === Object.keys(this.urls.urls).length) {
                                   this.multipartComplete();
                                 }
                         },
@@ -275,7 +280,7 @@ var fileUpload = class fileUploadClass {
                                 console.log(thisFile + ' : part' + key);
                                 this.numEtags = this.numEtags+1;
                                 this.etags[key]=-1;
-                                if(this.numEtags == Object.keys(this.urls.urls).length) {
+                            if (this.numEtags === Object.keys(this.urls.urls).length) {
                                   this.multipartComplete();
                                 }
                         },
@@ -312,8 +317,8 @@ var fileUpload = class fileUploadClass {
           console.log('reporting file ' + this.file.name);
           var allGood=true;
           //Safety check - verify that all eTags were set
-          for(val in this.etags.values()) {
-            if (val==-1) {
+          for (let val in this.etags.values()) {
+            if (val === -1) {
               allGood=false;
               break;
             }
@@ -423,7 +428,7 @@ async function uploadFileDirectly(urls, storageId, filesize) {
 
                 //As long as we have the right file size, we're OK
                 for (i = 0; i < fileList.length; i++) {
-                        if (fileList[i].file.size == filesize) {
+            if (fileList[i].file.size === filesize) {
                                 upload = fileList.splice(i,1)[0];
                                 break;
                         }
@@ -479,7 +484,7 @@ function uploadStarted() {
                 });
         };
         //uploadStarted appears to be called only once, but, if not, we should stop any current observer
-        if (observer != null) {
+    if (observer !== null) {
                 observer.disconnect();
         }
         observer = new MutationObserver(callback);
@@ -490,7 +495,7 @@ function uploadFinished(fileupload) {
         if (fileupload.files.length === 0) {
                 $('button[id$="AllUploadsFinished"]').trigger('click');
                 //stop observer when we're done
-                if (observer != null) {
+        if (observer !== null) {
                         observer.disconnect();
                         observer = null;
                 }
@@ -509,7 +514,7 @@ async function directUploadFinished() {
                         if (total === numDone) {
                                 $('button[id$="AllUploadsFinished"]').trigger('click');
                                 //stop observer when we're done
-                                if (observer != null) {
+                if (observer !== null) {
                                         observer.disconnect();
                                         observer = null;
                                 }
@@ -518,7 +523,7 @@ async function directUploadFinished() {
                         if ((inProgress < 4) && (inProgress < inList)) {
                                 filesInProgress = filesInProgress + 1;
                                 for (i = 0; i < fileList.length; i++) {
-                                  if(fileList[i].state==UploadState.QUEUED) {
+                    if (fileList[i].state === UploadState.QUEUED) {
                                     fileList[i].startRequestForDirectUploadUrl();
                                     break;
                                   }
@@ -578,8 +583,8 @@ async function uploadFailure(jqXHR, upid, filename) {
         }
 
         //statusText for error 0 is the unhelpful 'error'
-        if (status == 0) statusText = 'Network Error';
-
+    if (status === 0)
+        statusText = 'Network Error';
         //Log the error
         console.log('Upload error:' + name + ' upid=' + id + ', Error ' + status + ': ' + statusText);
         //Find the table
@@ -594,15 +599,15 @@ async function uploadFailure(jqXHR, upid, filename) {
         node.appendChild(textnode);
         //Add the error message to the correct row
         for (i = 0; i < rows.length; i++) {
-                if (rows[i].getAttribute('upid') == id) {
-                        //Remove any existing error message/only show last error (have seen two error 0 from one network disconnect)
-                        var err = rows[i].getElementsByClassName('ui-fileupload-error');
-                        if (err.length != 0) {
-                                err[0].remove();
-                        }
-                        rows[i].appendChild(node);
-                        break;
-                }
+        if (rows[i].getAttribute('upid') === id) {
+            //Remove any existing error message/only show last error (have seen two error 0 from one network disconnect)
+            var err = rows[i].getElementsByClassName('ui-fileupload-error');
+            if (err.length !== 0) {
+                err[0].remove();
+            }
+                rows[i].appendChild(node);
+                break;
+            }
         }
         if (directUploadEnabled) {
                 //Mark this file as processed and keep processing further files
@@ -645,7 +650,7 @@ function readChunked(file, chunkCallback, endCallback) {
 }
 function getChecksum(blob, cbProgress) {
         return new Promise((resolve, reject) => {
-console.log("checksumAlgName: " + checksumAlgName);
+
 
         var checksumAlg; 
                         switch (checksumAlgName) {
