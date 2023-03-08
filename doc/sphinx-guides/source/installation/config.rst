@@ -2138,7 +2138,7 @@ production context! Rely on password alias, secrets directory or cloud based sou
 perma.baseurlstring
 +++++++++++++++++++
 
-When using :ref:`PermaLinks <:permalinks>`, perma.baseurlstring can be used to configure an external resolver. Dataverse will associate a PermaLink PID with the URL:
+When using :ref:`PermaLinks <permalinks>`, perma.baseurlstring can be used to configure an external resolver. Dataverse will associate a PermaLink PID with the URL:
 ``<perma.baseurlstring>/citation?persistentId=perma:<permalink>``. The default value is your Dataverse site URL, which will result in PermaLinks correctly resolving to the appropriate dataset page.
 
 To set this option, issue a command such as:
