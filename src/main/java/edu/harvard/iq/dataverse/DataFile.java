@@ -51,8 +51,8 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author gdurand
  */
 @NamedQueries({
-	@NamedQuery( name="DataFile.removeFromDatasetVersion",
-		query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId"),
+    @NamedQuery( name="DataFile.removeFromDatasetVersion",
+        query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId"),
         @NamedQuery(name = "DataFile.findByCreatorId",
                 query = "SELECT o FROM DataFile o WHERE o.creator.id=:creatorId"),
         @NamedQuery(name = "DataFile.findByReleaseUserId",
@@ -64,9 +64,9 @@ import org.hibernate.validator.constraints.NotBlank;
 })
 @Entity
 @Table(indexes = {@Index(columnList="ingeststatus")
-		, @Index(columnList="checksumvalue")
-		, @Index(columnList="contenttype")
-		, @Index(columnList="restricted")})
+        , @Index(columnList="checksumvalue")
+        , @Index(columnList="contenttype")
+        , @Index(columnList="restricted")})
 public class DataFile extends DvObject implements Comparable {
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
     private static final long serialVersionUID = 1L;
@@ -819,11 +819,11 @@ public class DataFile extends DvObject implements Comparable {
         FileMetadata fmd = getLatestFileMetadata();
         return "label:" + (fmd!=null? fmd.getLabel() : "[no metadata]");
     }
-	
-	@Override
-	public <T> T accept( Visitor<T> v ) {
-		return v.visit(this);
-	}
+    
+    @Override
+    public <T> T accept( Visitor<T> v ) {
+        return v.visit(this);
+    }
         
     @Override
     public String getDisplayName() {

@@ -29,7 +29,7 @@ import jakarta.persistence.Transient;
  * @author skraffmiller
  */
 @Table(indexes = {@Index(columnList="name")
-		, @Index(columnList="owner_id")})
+        , @Index(columnList="owner_id")})
 @NamedQueries({
     @NamedQuery( name="MetadataBlock.listAll", query = "SELECT mdb FROM MetadataBlock mdb"),
     @NamedQuery( name="MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name")

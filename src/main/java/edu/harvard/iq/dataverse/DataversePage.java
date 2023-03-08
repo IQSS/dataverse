@@ -1199,35 +1199,35 @@ public class DataversePage implements java.io.Serializable {
     }
     
     public Set<Entry<String, String>> getStorageDriverOptions() {
-    	HashMap<String, String> drivers =new HashMap<String, String>();
-    	drivers.putAll(DataAccess.getStorageDriverLabels());
-    	//Add an entry for the default (inherited from an ancestor or the system default)
-    	drivers.put(getDefaultStorageDriverLabel(), DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER);
-    	return drivers.entrySet();
+        HashMap<String, String> drivers =new HashMap<String, String>();
+        drivers.putAll(DataAccess.getStorageDriverLabels());
+        //Add an entry for the default (inherited from an ancestor or the system default)
+        drivers.put(getDefaultStorageDriverLabel(), DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER);
+        return drivers.entrySet();
     }
     
     public String getDefaultStorageDriverLabel() {
-    	String storageDriverId = DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER;
-    	Dataverse parent = dataverse.getOwner();
-    	boolean fromAncestor=false;
-    	if(parent != null) {
-    		storageDriverId = parent.getEffectiveStorageDriverId();
-    		//recurse dataverse chain to root and if any have a storagedriver set, fromAncestor is true
-    	    while(parent!=null) {
-    	    	if(!parent.getStorageDriverId().equals(DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER)) {
-    	    		fromAncestor=true;
-    	    		break;
-    	    	}
-    	    	parent=parent.getOwner();
-    	    }
-    	}
-   		String label = DataAccess.getStorageDriverLabelFor(storageDriverId);
-   		if(fromAncestor) {
-   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
-   		} else {
-   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.default");
-   		}
-   		return label;
+        String storageDriverId = DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER;
+        Dataverse parent = dataverse.getOwner();
+        boolean fromAncestor=false;
+        if(parent != null) {
+            storageDriverId = parent.getEffectiveStorageDriverId();
+            //recurse dataverse chain to root and if any have a storagedriver set, fromAncestor is true
+            while(parent!=null) {
+                if(!parent.getStorageDriverId().equals(DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER)) {
+                    fromAncestor=true;
+                    break;
+                }
+                parent=parent.getOwner();
+            }
+        }
+           String label = DataAccess.getStorageDriverLabelFor(storageDriverId);
+           if(fromAncestor) {
+               label = label + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+           } else {
+               label = label + " " + BundleUtil.getStringFromBundle("dataverse.default");
+           }
+           return label;
     }
     
     public Set<Entry<String, String>> getMetadataLanguages() {

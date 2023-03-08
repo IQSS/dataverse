@@ -37,8 +37,8 @@ import jakarta.persistence.UniqueConstraint;
         ,  uniqueConstraints={
             @UniqueConstraint(columnNames={"dataverse_id", "datasetfieldtype_id"})}
         , indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="datasetfieldtype_id")
-		, @Index(columnList="required")}
+        , @Index(columnList="datasetfieldtype_id")
+        , @Index(columnList="required")}
 )
 @Entity
 public class DataverseFieldTypeInputLevel implements Serializable {

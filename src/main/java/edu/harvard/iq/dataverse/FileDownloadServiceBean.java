@@ -357,9 +357,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void downloadCitationXML(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
-    	DataCitation citation=null;
+        DataCitation citation=null;
         if (dataset != null){
-        	citation = new DataCitation(dataset.getLatestVersion());
+            citation = new DataCitation(dataset.getLatestVersion());
         } else {
             citation= new DataCitation(fileMetadata, direct);
         }
@@ -400,9 +400,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void downloadCitationRIS(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
-    	DataCitation citation=null;
+        DataCitation citation=null;
         if (dataset != null){
-        	citation = new DataCitation(dataset.getLatestVersion());
+            citation = new DataCitation(dataset.getLatestVersion());
         } else {
             citation= new DataCitation(fileMetadata, direct);
         }
@@ -450,9 +450,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void downloadCitationBibtex(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
-    	DataCitation citation=null;
+        DataCitation citation=null;
         if (dataset != null){
-        	citation = new DataCitation(dataset.getLatestVersion());
+            citation = new DataCitation(dataset.getLatestVersion());
         } else {
             citation= new DataCitation(fileMetadata, direct);
         }

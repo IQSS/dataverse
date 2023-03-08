@@ -24,16 +24,16 @@ import jakarta.persistence.Table;
  * @author gdurand
  */
 @NamedQueries({
-	@NamedQuery( name="DataverseFacet.removeByOwnerId",
-				 query="DELETE FROM DataverseFacet f WHERE f.dataverse.id=:ownerId"),
+    @NamedQuery( name="DataverseFacet.removeByOwnerId",
+                 query="DELETE FROM DataverseFacet f WHERE f.dataverse.id=:ownerId"),
     @NamedQuery( name="DataverseFacet.findByDataverseId",
                  query="select f from DataverseFacet f where f.dataverse.id = :dataverseId order by f.displayOrder")
 })
 
 @Entity
 @Table(indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="datasetfieldtype_id")
-		, @Index(columnList="displayorder")})
+        , @Index(columnList="datasetfieldtype_id")
+        , @Index(columnList="displayorder")})
 public class DataverseFacet implements Serializable {
     private static final long serialVersionUID = 1L;
 

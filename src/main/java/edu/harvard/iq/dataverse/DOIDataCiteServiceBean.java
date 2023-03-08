@@ -187,14 +187,14 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         //ToDo - PidUtils currently has a DataCite API call that would get the status at DataCite for this identifier - that could be more accurate than assuming based on whether the dvObject has been published
         String idStatus = DRAFT;
         if(dvObject.isReleased()) {
-        	idStatus = PUBLIC;
+            idStatus = PUBLIC;
         } 
         if ( idStatus != null ) {
             switch ( idStatus ) {
                 case RESERVED:
                 case DRAFT:    
                     logger.log(Level.INFO, "Delete status is reserved..");
-                  	//service only removes the identifier from the cache (since it was written before DOIs could be registered in draft state)
+                      //service only removes the identifier from the cache (since it was written before DOIs could be registered in draft state)
                     doiDataCiteRegisterService.deleteIdentifier(identifier);
                     //So we call the deleteDraftIdentifier method below until things are refactored
                     deleteDraftIdentifier(dvObject);
@@ -217,8 +217,8 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
      * deleted.
      */
     private void deleteDraftIdentifier(DvObject dvObject) throws IOException {
-    	
-    	//ToDo - incorporate into DataCiteRESTfulClient
+        
+        //ToDo - incorporate into DataCiteRESTfulClient
         String baseUrl = systemConfig.getDataCiteRestApiUrlString();
         String username = System.getProperty("doi.username");
         String password = System.getProperty("doi.password");
@@ -240,8 +240,8 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
             connection.setRequestProperty("Authorization", basicAuth);
             int status = connection.getResponseCode();
             if(status!=HttpStatus.SC_NO_CONTENT) {
-            	logger.warning("Incorrect Response Status from DataCite: " + status + " : " + connection.getResponseMessage());
-            	throw new HttpException("Status: " + status);
+                logger.warning("Incorrect Response Status from DataCite: " + status + " : " + connection.getResponseMessage());
+                throw new HttpException("Status: " + status);
             }
             logger.fine("deleteDoi status for " + doi.asString() + ": " + status);
     }

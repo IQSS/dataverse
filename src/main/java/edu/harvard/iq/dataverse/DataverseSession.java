@@ -42,7 +42,7 @@ public class DataverseSession implements Serializable{
 
     @EJB
     BuiltinUserServiceBean usersSvc;
-	
+    
     @EJB 
     ActionLogServiceBean logSvc;
     
@@ -137,11 +137,11 @@ public class DataverseSession implements Serializable{
             return;
         }
         FacesContext context = FacesContext.getCurrentInstance();
-		// Log the login/logout and Change the session id if we're using the UI and have
-		// a session, versus an API call with no session - (i.e. /admin/submitToArchive()
-		// which sets the user in the session to pass it through to the underlying command)
+        // Log the login/logout and Change the session id if we're using the UI and have
+        // a session, versus an API call with no session - (i.e. /admin/submitToArchive()
+        // which sets the user in the session to pass it through to the underlying command)
         // TODO: reformat to remove tabs etc.
-		if(context != null) {
+        if(context != null) {
           logSvc.log( 
                       new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement,(aUser==null) ? "logout" : "login")
                           .setUserIdentifier((aUser!=null) ? aUser.getIdentifier() : (user!=null ? user.getIdentifier() : "") ));

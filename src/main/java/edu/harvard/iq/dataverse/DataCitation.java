@@ -205,7 +205,7 @@ public class DataCitation {
         }
 
         if (persistentId != null) {
-        	// always show url format
+            // always show url format
             citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); 
         }
         citationList.add(formatString(publisher, html));
@@ -618,7 +618,7 @@ public class DataCitation {
 
     }
 
-	public Map<String, String> getDataCiteMetadata() {
+    public Map<String, String> getDataCiteMetadata() {
         Map<String, String> metadata = new HashMap<>();
         String authorString = getAuthorsString();
 
@@ -636,9 +636,9 @@ public class DataCitation {
         metadata.put("datacite.publisher", producerString);
         metadata.put("datacite.publicationyear", getYear());
         return metadata;
-	}
+    }
 
-	
+    
     // helper methods   
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");

@@ -1017,9 +1017,9 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public void deleteFromVersion( DatasetVersion d, DataFile f ) {
-		em.createNamedQuery("DataFile.removeFromDatasetVersion")
-			.setParameter("versionId", d.getId()).setParameter("fileId", f.getId())
-				.executeUpdate();
+        em.createNamedQuery("DataFile.removeFromDatasetVersion")
+            .setParameter("versionId", d.getId()).setParameter("fileId", f.getId())
+                .executeUpdate();
     }
 
     /* 
@@ -1436,7 +1436,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             prepend = datafile.getOwner().getIdentifier() + "/";
         } else {
             //If there's a shoulder prepend independent identifiers with it
-        	prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
+            prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
         }
  
         switch (doiIdentifierType) {

@@ -207,16 +207,16 @@ public class GlobalId implements java.io.Serializable {
         return str.replaceAll("\\s+|'|;","");  
         
         /*
-        < 	(%3C)
-> 	(%3E)
-{ 	(%7B)
-} 	(%7D)
-^ 	(%5E)
-[ 	(%5B)
-] 	(%5D)
-` 	(%60)
-| 	(%7C)
-\ 	(%5C)
+        <     (%3C)
+>     (%3E)
+{     (%7B)
+}     (%7D)
+^     (%5E)
+[     (%5B)
+]     (%5D)
+`     (%60)
+|     (%7C)
+\     (%5C)
 +
         */
         // http://www.doi.org/doi_handbook/2_Numbering.html

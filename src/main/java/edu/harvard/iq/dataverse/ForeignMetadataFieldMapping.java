@@ -12,8 +12,8 @@ import java.util.Collection;
  */
 @Table( uniqueConstraints = @UniqueConstraint(columnNames={"foreignMetadataFormatMapping_id","foreignFieldXpath"}) 
       , indexes = {@Index(columnList="foreignmetadataformatmapping_id")
-		, @Index(columnList="foreignfieldxpath")
-		, @Index(columnList="parentfieldmapping_id")})
+        , @Index(columnList="foreignfieldxpath")
+        , @Index(columnList="parentfieldmapping_id")})
 @NamedQueries({
   @NamedQuery( name="ForeignMetadataFieldMapping.findByPath",
                query="SELECT fmfm FROM ForeignMetadataFieldMapping fmfm WHERE fmfm.foreignMetadataFormatMapping.name=:formatName AND fmfm.foreignFieldXPath=:xPath")  

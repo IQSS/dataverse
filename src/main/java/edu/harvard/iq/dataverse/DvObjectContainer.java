@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 @MappedSuperclass
 public abstract class DvObjectContainer extends DvObject {
-	
+    
     
     public static final String UNDEFINED_METADATA_LANGUAGE_CODE = "undefined"; //Used in dataverse.xhtml as a non-null selection option value (indicating inheriting the default)
     
@@ -20,11 +20,11 @@ public abstract class DvObjectContainer extends DvObject {
     public void setOwner(Dataverse owner) {
         super.setOwner(owner);
     }
-	
-	@Override
-	public Dataverse getOwner() {
-		return super.getOwner()!=null ? (Dataverse)super.getOwner() : null;
-	}
+    
+    @Override
+    public Dataverse getOwner() {
+        return super.getOwner()!=null ? (Dataverse)super.getOwner() : null;
+    }
     
     protected abstract boolean isPermissionRoot();
     

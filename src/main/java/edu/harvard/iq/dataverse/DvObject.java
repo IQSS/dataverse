@@ -23,7 +23,7 @@ import jakarta.persistence.*;
     @NamedQuery(name = "DvObject.checkExists", 
             query = "SELECT count(o) from DvObject o WHERE o.id=:id"),
     @NamedQuery(name = "DvObject.ownedObjectsById",
-			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
+            query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",
             query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
 
@@ -45,10 +45,10 @@ import jakarta.persistence.*;
 // child tables). Tested, appears to be working properly. -- L.A. Nov. 4 2014
 @Inheritance(strategy=InheritanceType.JOINED)
 @Table(indexes = {@Index(columnList="dtype")
-		, @Index(columnList="owner_id")
-		, @Index(columnList="creator_id")
-		, @Index(columnList="releaseuser_id")},
-		uniqueConstraints = {@UniqueConstraint(columnNames = {"authority,protocol,identifier"}),@UniqueConstraint(columnNames = {"owner_id,storageidentifier"})})
+        , @Index(columnList="owner_id")
+        , @Index(columnList="creator_id")
+        , @Index(columnList="releaseuser_id")},
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"authority,protocol,identifier"}),@UniqueConstraint(columnNames = {"owner_id,storageidentifier"})})
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
     
     public static final String DATAVERSE_DTYPE_STRING = "Dataverse";
