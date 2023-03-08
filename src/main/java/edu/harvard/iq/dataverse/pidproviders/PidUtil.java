@@ -140,9 +140,9 @@ public class PidUtil {
      * @throws IllegalArgumentException if the passed string cannot be parsed.
      */
     public static GlobalId parseAsGlobalID(String identifier) {
-        logger.info("IN parseAsGlobalId: " + providerMap.size());
+        logger.fine("In parseAsGlobalId: " + providerMap.size());
         for (GlobalIdServiceBean pidProvider : providerMap.values()) {
-            logger.info(" Checking " + String.join(",", pidProvider.getProviderInformation()));
+            logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(identifier);
             if (globalId != null) {
                 return globalId;
@@ -150,7 +150,7 @@ public class PidUtil {
         }
         // If no providers can managed this PID, at least allow it to be recognized
         for (GlobalIdServiceBean pidProvider : unmanagedProviderMap.values()) {
-            logger.info(" Checking " + String.join(",", pidProvider.getProviderInformation()));
+            logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(identifier);
             if (globalId != null) {
                 return globalId;
@@ -165,16 +165,16 @@ public class PidUtil {
      * @throws IllegalArgumentException if the passed string cannot be parsed.
      */
     public static GlobalId parseAsGlobalID(String protocol, String authority, String identifier) {
-        logger.info("IN parseAsGlobalId: " + providerMap.size());
+        logger.fine("In parseAsGlobalId: " + providerMap.size());
         for (GlobalIdServiceBean pidProvider : providerMap.values()) {
-            logger.info(" Checking " + String.join(",", pidProvider.getProviderInformation()));
+            logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(protocol, authority, identifier);
             if (globalId != null) {
                 return globalId;
             }
         }
         for (GlobalIdServiceBean pidProvider : unmanagedProviderMap.values()) {
-            logger.info(" Checking " + String.join(",", pidProvider.getProviderInformation()));
+            logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(protocol, authority, identifier);
             if (globalId != null) {
                 return globalId;
