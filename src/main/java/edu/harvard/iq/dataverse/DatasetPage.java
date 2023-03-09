@@ -5797,7 +5797,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public List<String> getVocabScripts() {
-        return fieldService.getVocabScripts(settingsWrapper.getCVocConf());
+        return fieldService.getVocabScripts(settingsWrapper.getCVocConf(false));
     }
 
     public String getFieldLanguage(String languages) {
