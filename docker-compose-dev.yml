@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+
+  dev_postgres:
+    container_name: "dev_postgres"
+    image: postgres:${POSTGRES_VERSION}
+    restart: on-failure
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker-dev-volumes/postgresql/data:/var/lib/postgresql/data
+
+  dev_solr_initializer:
+    container_name: "dev_solr_initializer"
+    image: alpine
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - "chown 8983:8983 /conf && cp *.xml /conf"
+    volumes:
+      - ./docker-dev-volumes/solr/conf:/conf
+      - ./conf/solr/8.11.1/schema.xml:/schema.xml
+      - ./conf/solr/8.11.1/solrconfig.xml:/solrconfig.xml
+
+  dev_solr:
+    container_name: "dev_solr"
+    image: solr:${SOLR_VERSION}
+    depends_on:
+      - dev_solr_initializer
+    restart: on-failure
+    ports:
+      - "8983:8983"
+    command:
+      - bash
+      - -c
+      - "cd /opt/solr-${SOLR_VERSION}/server/solr/configsets/_default/conf && cp -R -n . /template && solr-precreate collection1 /template"
+    volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
+      - ./docker-dev-volumes/solr/conf:/template
+
+  dev_smtp:
+    container_name: "dev_smtp"
+    image: maildev/maildev:2.0.5
+    restart: on-failure
+    ports:
+      - "25:1025" # smtp server
+      - "1080:1080" # web ui
+    volumes:
+      - ./docker-dev-volumes/smtp/data:/tmp/maildev-1
