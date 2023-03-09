@@ -827,7 +827,7 @@ public class IndexServiceBean {
             }
 
             Set<String> langs = settingsService.getConfiguredLanguages();
-            Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
+            Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(true);
             Set<String> metadataBlocksWithValue = new HashSet<>();
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
