@@ -3,9 +3,6 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import java.util.*;
