@@ -165,6 +165,7 @@ public class PidUtil {
      * @throws IllegalArgumentException if the passed string cannot be parsed.
      */
     public static GlobalId parseAsGlobalID(String protocol, String authority, String identifier) {
+        logger.fine("Looking for " + protocol + " " + authority + " " + identifier);
         logger.fine("In parseAsGlobalId: " + providerMap.size());
         for (GlobalIdServiceBean pidProvider : providerMap.values()) {
             logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
