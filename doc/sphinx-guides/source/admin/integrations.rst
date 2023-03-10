@@ -104,7 +104,7 @@ iRODS
 
 An open source, metadata driven data management system that is accessible through a host of different clients.
 
-The :ref:`integrations-dashboard` enables a pull of data from iRODs to a dataset in Dataverse.
+The :ref:`integrations-dashboard` enables a pull of data from iRODS to a dataset in Dataverse.
 
 .. _integrations-dashboard:
 
