@@ -326,10 +326,6 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}")
     public Response deleteFileInDataset(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId){
-
-        if (!systemConfig.isHTTPUpload()) {
-            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
-        }
         // (1) Get the user from the API key and create request
         User authUser = getRequestUser(crc);
         DataverseRequest dvRequest = createDataverseRequest(authUser);
