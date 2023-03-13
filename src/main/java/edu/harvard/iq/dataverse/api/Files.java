@@ -340,10 +340,10 @@ public class Files extends AbstractApiBean {
             List<FileMetadata> fileToDelete = dataFile.getFileMetadatas();
             Dataset dataset = dataFile.getOwner();
             DatasetVersion v = dataset.getOrCreateEditVersion();
-            DataverseRequest dvRequest2 = createDataverseRequest(authUser);
+            DataverseRequest dvRequest = createDataverseRequest(authUser);
             deletePhysicalFile = !dataFile.isReleased();
 
-            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest2,  fileToDelete, v);
+            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest,  fileToDelete, v);
             update_cmd.setValidateLenient(true);
 
             try {
