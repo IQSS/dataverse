@@ -3530,8 +3530,8 @@ The URL for main HTML file in https://github.com/gdcc/dvwebloader when that app 
 
 .. _:SignPostingMaxAuthors:
 
-:SignpostingMaxItems
-++++++++++++++++++++
+:SignpostingMaxAuthors
+++++++++++++++++++++++
 
 Limits the number of authors shown in the :ref:`:Signposting` Level 1 Header. The default is 5.
 

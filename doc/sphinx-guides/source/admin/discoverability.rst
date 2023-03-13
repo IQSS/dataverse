@@ -14,12 +14,12 @@ If you are using `DataCite <https://datacite.org>`_ as your DOI provider, when d
 OAI-PMH (Harvesting)
 --------------------
 
-The Dataverse Software supports a protocol called OAI-PMH that facilitates harvesting dataset metadata from one system into another. For details on harvesting, see the :doc:`harvestserver` section.
+The Dataverse software supports a protocol called OAI-PMH that facilitates harvesting dataset metadata from one system into another. For details on harvesting, see the :doc:`harvestserver` section.
 
 Machine-Readable Metadata on Dataset Landing Pages
 --------------------------------------------------
 
-As recommended in `A Data Citation Roadmap for Scholarly Data Repositories <https://doi.org/10.1101/097196>`_, the Dataverse Software embeds metadata on dataset landing pages in a variety of machine-readable ways. 
+As recommended in `A Data Citation Roadmap for Scholarly Data Repositories <https://doi.org/10.1101/097196>`_, the Dataverse software embeds metadata on dataset landing pages in a variety of machine-readable ways. 
 
 Dublin Core HTML Meta Tags
 ++++++++++++++++++++++++++
@@ -29,8 +29,6 @@ The HTML source of a dataset landing page includes "DC" (Dublin Core) ``<meta>``
         <meta name="DC.identifier" content="..."
         <meta name="DC.type" content="Dataset"
         <meta name="DC.title" content="..."
-
-https://github.com/IQSS/dataverse/pull/3828
 
 Schema.org JSON-LD Metadata
 +++++++++++++++++++++++++++
@@ -46,14 +44,14 @@ The HTML source of a dataset landing page includes Schema.org JSON-LD metadata l
 Signposting
 +++++++++++
 
-The Dataverse Software supports `Signposting <https://signposting.org>`_. This allows machines to request more information about a dataset through the `Link <https://tools.ietf.org/html/rfc5988>`_ HTTP header.
+The Dataverse software supports `Signposting <https://signposting.org>`_. This allows machines to request more information about a dataset through the `Link <https://tools.ietf.org/html/rfc5988>`_ HTTP header.
 
 There are 2 Signposting profile levels, level 1 and level 2. In this implementation, 
- * level 1 links are shown [as recommended](https://signposting.org/FAIR/) in an
-   HTTP header, which can be fetched by sending an HTTP HEAD request, e.g. `curl -I https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/KPY4ZC`.
+ * Level 1 links are shown `as recommended <https://signposting.org/FAIR/>`_ in the "Link"
+   HTTP header, which can be fetched by sending an HTTP HEAD request, e.g. ``curl -I https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.5072/FK2/KPY4ZC``.
    The number of author and file links in the level 1 header can be configured as described below. 
  * The level 2 linkset can be fetched by visiting the dedicated linkset page for 
-   that artifact. The link can be seen in level 1 links with key name `rel="linkset"`.
+   that artifact. The link can be seen in level 1 links with key name ``rel="linkset"``.
 
 Note: Authors without author link will not be counted nor shown in any profile/linkset. 
 The following configuration options are available:
