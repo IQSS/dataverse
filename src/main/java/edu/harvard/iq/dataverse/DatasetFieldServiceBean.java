@@ -345,24 +345,24 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     public void registerExternalVocabValues(DatasetField df) {
         DatasetFieldType dft =df.getDatasetFieldType(); 
         logger.fine("Registering for field: " + dft.getName());
-        JsonObject cvocEntry = getCVocConf(false).get(dft.getId());
-        if(dft.isPrimitive()) {
-            for(DatasetFieldValue dfv: df.getDatasetFieldValues()) {
+        JsonObject cvocEntry = getCVocConf(true).get(dft.getId());
+        if (dft.isPrimitive()) {
+            for (DatasetFieldValue dfv : df.getDatasetFieldValues()) {
                 registerExternalTerm(cvocEntry, dfv.getValue());
             }
-            } else {
-                if (df.getDatasetFieldType().isCompound()) {
-                    DatasetFieldType termdft = findByNameOpt(cvocEntry.getString("term-uri-field"));
-                    for (DatasetFieldCompoundValue cv : df.getDatasetFieldCompoundValues()) {
-                        for (DatasetField cdf : cv.getChildDatasetFields()) {
-                            logger.fine("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
-                            if(cdf.getDatasetFieldType().equals(termdft)) {
-                                registerExternalTerm(cvocEntry, cdf.getValue());
-                            }
+        } else {
+            if (df.getDatasetFieldType().isCompound()) {
+                DatasetFieldType termdft = findByNameOpt(cvocEntry.getString("term-uri-field"));
+                for (DatasetFieldCompoundValue cv : df.getDatasetFieldCompoundValues()) {
+                    for (DatasetField cdf : cv.getChildDatasetFields()) {
+                        logger.fine("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
+                        if (cdf.getDatasetFieldType().equals(termdft)) {
+                            registerExternalTerm(cvocEntry, cdf.getValue());
                         }
                     }
                 }
             }
+        }
     }
     
     /**
