@@ -330,8 +330,9 @@ public class Files extends AbstractApiBean {
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
         }
-        // (1) Get the user from the API key
+        // (1) Get the user from the API key and create request
         User authUser = getRequestUser(crc);
+        DataverseRequest dvRequest = createDataverseRequest(authUser);
 
         // (2) Delete
         boolean deletePhysicalFile = false;
@@ -340,7 +341,6 @@ public class Files extends AbstractApiBean {
             List<FileMetadata> fileToDelete = dataFile.getFileMetadatas();
             Dataset dataset = dataFile.getOwner();
             DatasetVersion v = dataset.getOrCreateEditVersion();
-            DataverseRequest dvRequest = createDataverseRequest(authUser);
             deletePhysicalFile = !dataFile.isReleased();
 
             UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest,  fileToDelete, v);
