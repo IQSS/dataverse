@@ -1896,4 +1896,41 @@ public class FilesIT {
 
     }
 
+    @Test
+    public void testDeleteFile() {
+        msgt("testDeleteFile");
+         // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        // Upload file
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        JsonObjectBuilder json = Json.createObjectBuilder()
+            .add("description", "my description")
+            .add("directoryLabel", "data/subdir1")
+            .add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Integer fileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Check file uploaded
+        Response downloadResponse = UtilIT.downloadFile(fileId, null, null, null, apiToken);
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        //-------------//
+        // Delete file //
+        //-------------//
+
+        Response deleteResponse = UtilIT.deleteFile(datasetId.toString(), fileId, apiToken);
+        deleteResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Check file deleted
+        Response downloadResponse2 = UtilIT.downloadFile(fileId, null, null, null, apiToken);
+        downloadResponse2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
 }

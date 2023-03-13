@@ -808,6 +808,18 @@ public class UtilIT {
         return requestSpecification
                 .post("/api/files/" + idInPath + "/replace" + optionalQueryParam);
     }
+
+    static Response deleteFile(String fileIdOrPersistentId, Integer fileId, String apiToken) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/files/" + idInPath + "/id" + fileId + optionalQueryParam);
+    }
     
     static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
