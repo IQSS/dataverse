@@ -1,16 +1,46 @@
-version: "3.9"
+version: "2.4"
 
 services:
 
+  dev_dataverse:
+    hostname: dataverse
+    image: gdcc/dataverse:unstable
+    restart: on-failure
+    user: payara
+    environment:
+      - DATAVERSE_DB_HOST=postgres
+      - DATAVERSE_DB_PASSWORD=secret
+    ports:
+      - "8080:8080" # HTTP
+      - "9009:9009" # JDWP
+      - "8686:8686" # JMX
+    networks:
+      - dataverse
+    depends_on:
+      - dev_postgres
+      - dev_solr
+    volumes:
+      - ./docker-dev-volumes/app/data:/dv
+      - ./docker-dev-volumes/app/secrets:/secrets
+    tmpfs:
+      - /dumps:mode=770,size=2052M,uid=1000,gid=1000
+      - /tmp:mode=770,size=2052M,uid=1000,gid=1000
+    mem_limit: 2147483648 # 2 GiB
+    mem_reservation: 1024m
+    privileged: false
+
   dev_postgres:
     container_name: "dev_postgres"
+    hostname: postgres
     image: postgres:${POSTGRES_VERSION}
     restart: on-failure
     environment:
-      - POSTGRES_USER=postgres
+      - POSTGRES_USER=dataverse
       - POSTGRES_PASSWORD=secret
     ports:
       - "5432:5432"
+    networks:
+      - dataverse
     volumes:
       - ./docker-dev-volumes/postgresql/data:/var/lib/postgresql/data
 
@@ -21,20 +51,24 @@ services:
     command:
       - sh
       - -c
-      - "chown 8983:8983 /conf && cp *.xml /conf"
+      - "chown 8983:8983 /conf /var/solr && cp *.xml /conf"
     volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
       - ./docker-dev-volumes/solr/conf:/conf
       - ./conf/solr/8.11.1/schema.xml:/schema.xml
       - ./conf/solr/8.11.1/solrconfig.xml:/solrconfig.xml
 
   dev_solr:
     container_name: "dev_solr"
+    hostname: "solr"
     image: solr:${SOLR_VERSION}
     depends_on:
       - dev_solr_initializer
     restart: on-failure
     ports:
       - "8983:8983"
+    networks:
+      - dataverse
     command:
       - bash
       - -c
@@ -45,10 +79,17 @@ services:
 
   dev_smtp:
     container_name: "dev_smtp"
+    hostname: "postfix"
     image: maildev/maildev:2.0.5
     restart: on-failure
     ports:
       - "25:1025" # smtp server
       - "1080:1080" # web ui
+    networks:
+      - dataverse
     volumes:
       - ./docker-dev-volumes/smtp/data:/tmp/maildev-1
+
+networks:
+  dataverse:
+    driver: bridge
