@@ -73,6 +73,7 @@
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                         </th>
+                                        <c:set var="cvocOnDsf" value="#{cvocConf.containsKey(dsf.datasetFieldType.id)}"/>
                                         <td jsf:rendered="#{!anonymized or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                             <!-- Primitive datasetFields -->
                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
@@ -83,7 +84,7 @@
                                                   </div>
                                                 </ui:fragment>
                                                 <h:outputText value="#{dsf.value}"
-                                                    rendered="#{!dsf.datasetFieldType.allowMultiples and cvocConf.containsKey(dsf.datasetFieldType.id)}"
+                                                    rendered="#{!dsf.datasetFieldType.allowMultiples and cvocOnDsf}"
                                                     escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
                                                     <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(dsf.datasetFieldType.id).getString('languages'))}" />
                                                     <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
@@ -91,9 +92,9 @@
                                                     <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
                                                 </h:outputText>
                                                 <h:outputText value="#{dsf.getDisplayValue(mdLangCode)}"
-                                                    rendered="#{!dsf.datasetFieldType.allowMultiples and !cvocConf.containsKey(dsf.datasetFieldType.id)}"
+                                                    rendered="#{!dsf.datasetFieldType.allowMultiples and !cvocOnDsf}"
                                                     escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                                <ui:repeat value="#{dsf.getValues_nondisplay()}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and cvocConf.containsKey(dsf.datasetFieldType.id)}">
+                                                <ui:repeat value="#{dsf.getValues_nondisplay()}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and cvocOnDsf}">
                                                     <h:outputText value="#{loop.first?'':'; '}"/>
                                                     <h:outputText value="#{ value }"
                                                                   escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
@@ -103,7 +104,7 @@
                                                         <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
                                                     </h:outputText>
                                                 </ui:repeat>
-                                                <ui:repeat value="#{dsf.getValues(mdLangCode)}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and !cvocConf.containsKey(dsf.datasetFieldType.id)}">
+                                                <ui:repeat value="#{dsf.getValues(mdLangCode)}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and !cvocOnDsf}">
                                                     <h:outputText value="#{loop.first?'':'; '}#{ value }"
                                                                   escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
                                                 </ui:repeat>
@@ -123,9 +124,11 @@
                                                 </ui:fragment>
           
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="compoundValuesstatus">
+                                                    
                                                     <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
-                                                        <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !cvocConf.containsKey(dsf.datasetFieldType.id)}"/>
-                                                        <ui:fragment rendered="#{!(cvocConf.containsKey(dsf.datasetFieldType.id) or cvocConf.containsKey(dsf.datasetFieldType.id))}">
+                                                        <c:set var="cvocOnCvPart" value="#{cvocConf.containsKey(cvPart.key.datasetFieldType.id)}"/>
+                                                        <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !(cvocOnDsf or cvocOnCvPart)}"/>
+                                                        <ui:fragment rendered="#{!(cvocOnDsf or cvocOnCvPart)}">
                                                             <ui:fragment rendered="#{compoundValue.isLink(cvPart.key)}">
                                                                 <h:outputLink value="#{compoundValue.getLink()}" target="_blank">
                                                                     <h:outputText value="#{cvPart.value}"
@@ -140,7 +143,7 @@
                                                         <!--  Cvoc for single child field -->
                                                         <h:outputText value="#{cvPart.key.value}"
                                                                       escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}" 
-                                                                      rendered="${cvocConf.containsKey(cvPart.key.datasetFieldType.id) and cvPart.key.datasetFieldType.name.equals(cvocConf.get(cvPart.key.datasetFieldType.id).getString('term-uri-field'))}">
+                                                                      rendered="${cvocOnCvPart and cvPart.key.datasetFieldType.name.equals(cvocConf.get(cvPart.key.datasetFieldType.id).getString('term-uri-field'))}">
                                                                       <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(cvPart.key.datasetFieldType.id).getString('languages'))}" />
                                                                       <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(cvPart.key.datasetFieldType.id).getString('cvoc-url','')}" />
                                                                       <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(cvPart.key.datasetFieldType.id).getString('protocol','')}" />
@@ -150,7 +153,7 @@
                                                         <!--  Cvoc on parent field -->
                                                         <h:outputText value="#{cvPart.key.value}"
                                                                       escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}" 
-                                                                      rendered="${cvocConf.containsKey(dsf.datasetFieldType.id) and cvPart.key.datasetFieldType.name.equals(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field'))}">
+                                                                      rendered="${cvocOnDsf and cvPart.key.datasetFieldType.name.equals(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field'))}">
                                                                       <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(dsf.datasetFieldType.id).getString('languages'))}" />
                                                                       <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
                                                                       <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
