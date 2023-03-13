@@ -202,8 +202,12 @@ public class DdiExportUtil {
        
         writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title), datasetDto.getMetadataLanguage());
         writeFullElement(xmlw, "subTitl", dto2Primitive(version, DatasetFieldConstant.subTitle));
-        writeFullElement(xmlw, "altTitl", dto2Primitive(version, DatasetFieldConstant.alternativeTitle));
-        
+       
+        FieldDTO altField = dto2FieldDTO( version, DatasetFieldConstant.alternativeTitle, "citation"  );
+        if (altField != null) {
+            writeMultipleElement(xmlw, "altTitl", altField, datasetDto.getMetadataLanguage());
+        }
+
         xmlw.writeStartElement("IDNo");
         writeAttribute(xmlw, "agency", persistentAgency);
         

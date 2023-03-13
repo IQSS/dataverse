@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.List;
 
 import javax.json.JsonObject;
 import javax.xml.stream.XMLOutputFactory;
@@ -368,8 +369,8 @@ public class OpenAireExportUtil {
         String subtitle = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.subTitle);
         title_check = writeTitleElement(xmlw, "Subtitle", subtitle, title_check, language);
 
-        String alternativeTitle = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.alternativeTitle);
-        title_check = writeTitleElement(xmlw, "AlternativeTitle", alternativeTitle, title_check, language);
+        title_check = writeMultipleTitleElement(xmlw, "AlternativeTitle", datasetVersionDTO, "citation", title_check, language);
+
 
         writeEndTag(xmlw, title_check);
     }
@@ -404,6 +405,33 @@ public class OpenAireExportUtil {
         }
         return title_check;
     }
+    
+    private static boolean writeMultipleTitleElement(XMLStreamWriter xmlw, String titleType, DatasetVersionDTO datasetVersionDTO, String metadataBlockName, boolean title_check, String language) throws XMLStreamException {
+        MetadataBlockDTO block = datasetVersionDTO.getMetadataBlocks().get(metadataBlockName);
+        if (block != null) {
+            logger.info("Block is not empty");
+            List<FieldDTO> fieldsBlock =  block.getFields();
+            if (fieldsBlock != null) {
+                for (FieldDTO fieldDTO : fieldsBlock) {
+                    logger.info(titleType + " " + fieldDTO.getTypeName());
+                    if (titleType.toLowerCase().equals(fieldDTO.getTypeName().toLowerCase())) {
+                        logger.info("Found Alt title");
+                        List<String> fields = fieldDTO.getMultiplePrimitive();
+                        for (String value : fields) {
+                            if (!writeTitleElement(xmlw, titleType, value, title_check, language))
+                                title_check = false;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        return title_check;
+    }
+
+
+
 
     /**
      * 5, PublicationYear (M)
