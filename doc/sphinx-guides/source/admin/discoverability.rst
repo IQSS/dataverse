@@ -56,15 +56,17 @@ There are 2 Signposting profile levels, level 1 and level 2. In this implementat
 Note: Authors without author link will not be counted nor shown in any profile/linkset. 
 The following configuration options are available:
 
-- :ref:`:SignpostingMaxAuthors`
+- :ref:`dataverse.signposting.max-authors`
 
-  `maxAuthors` - sets the max number of authors to be shown in `level 1` profile. 
+  `max-authors` - sets the max number of authors to be shown in `level 1` profile.
   If the number of authors (with identifier URLs) exceeds this value, no author links will be shown in `level 1` profile.
+  The default is 5.
 
-- :ref:`:SignpostingMaxItems`
+- :ref:`dataverse.signposting.max-items`
 
-  `maxItems` - sets the max number of items/files which will be shown in `level 1` profile. Datasets with 
+  `max-items` - sets the max number of items/files which will be shown in `level 1` profile. Datasets with
   too many files will not show any file links in `level 1` profile. They will be shown in `level 2` linkset only. 
+  The default is 5.
 
 Additional Discoverability Through Integrations
 -----------------------------------------------

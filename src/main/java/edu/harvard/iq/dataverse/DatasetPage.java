@@ -143,6 +143,7 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 import java.util.Comparator;
@@ -6090,8 +6091,8 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
         SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion,
-                settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingMaxAuthors),
-                settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingMaxItems));
+                JvmSettings.SIGNPOSTING_MAX_AUTHORS.lookupOptional().orElse(""),
+                JvmSettings.SIGNPOSTING_MAX_ITEMS.lookupOptional().orElse(""));
         return sr.getLinks();
     }
 

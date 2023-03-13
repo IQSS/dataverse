@@ -159,6 +159,7 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import com.amazonaws.services.s3.model.PartETag;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -580,8 +581,16 @@ public class Datasets extends AbstractApiBean {
         User user = getRequestUser(crc);
         return response(req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            return ok(Json.createObjectBuilder().add("linkset", new SignpostingResources(systemConfig, dsv, settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingMaxAuthors),
-                    settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingMaxItems)).getJsonLinkset()));
+            return ok(Json.createObjectBuilder().add(
+                    "linkset",
+                    new SignpostingResources(
+                            systemConfig,
+                            dsv,
+                            JvmSettings.SIGNPOSTING_MAX_AUTHORS.lookupOptional().orElse(""),
+                            JvmSettings.SIGNPOSTING_MAX_ITEMS.lookupOptional().orElse("")
+                    ).getJsonLinkset()
+            )
+            );
         }, user);
     }
 

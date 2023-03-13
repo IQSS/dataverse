@@ -2098,7 +2098,23 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 **WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
 production context! Rely on password alias, secrets directory or cloud based sources instead!
 
+.. _dataverse.signposting.max-authors:
 
+dataverse.signposting.max-authors
++++++++++++++++++++++++++++++++++
+
+See :ref:`:Signposting` for details.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_MAX_AUTHORS``.
+
+.. _dataverse.signposting.max-items:
+
+dataverse.signposting.max-items
++++++++++++++++++++++++++++++++
+
+See :ref:`:Signposting` for details.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_MAX_ITEMS``.
 
 .. _:ApplicationServerSettings:
 
@@ -3526,23 +3542,3 @@ A true/false option to add a Globus transfer option to the file download menu wh
 The URL for main HTML file in https://github.com/gdcc/dvwebloader when that app is deployed. See also :ref:`:UploadMethods` for another required settings.
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
-
-
-.. _:SignPostingMaxAuthors:
-
-:SignpostingMaxAuthors
-++++++++++++++++++++++
-
-Limits the number of authors shown in the :ref:`:Signposting` Level 1 Header. The default is 5.
-
-``curl -X PUT -d 5 http://localhost:8080/api/admin/settings/:SignpostingMaxAuthors``
-
-.. _:SignPostingMaxItems:
-
-:SignpostingMaxItems
-++++++++++++++++++++
-
-Limits the number of items shown in the :ref:`:Signposting` Level 1 Header. The default is 5.
-
-``curl -X PUT -d 5 http://localhost:8080/api/admin/settings/:SignpostingMaxItems``
-
