@@ -150,6 +150,11 @@ Additional command line arguments are available to make the DVUploader list what
 
 DVUploader is a community-developed tool, and its creation was primarily supported by the Texas Digital Library. Further information and support for DVUploader can be sought at `the project's GitHub repository <https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader>`_ . 
 
+Integrations Dashboard Uploader
+-------------------------------
+
+There is an experimental uploader described at :ref:`integrations-dashboard` that provides a graphical user interface (GUI) for uploading files from a local file system and various remote locations such as GitHub.
+
 .. _duplicate-files:
 
 Duplicate Files
@@ -184,10 +189,31 @@ File Handling
 
 Certain file types in the Dataverse installation are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the sections below for information about special functionality for specific file types.
 
+.. _file-previews:
+
 File Previews
 -------------
 
 Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Private URL. See also :ref:`privateurl`.
+
+Previewers are available for the following file types:
+
+- Text
+- PDF
+- Tabular (CSV, Excel, etc., see :doc:`tabulardataingest/index`)
+- Code (R, etc.)
+- Images (PNG, GIF, JPG)
+- Audio (MP3, MPEG, WAV, OGG, M4A)
+- Video (MP4, OGG, Quicktime)
+- Zip (preview and extract/download)
+- HTML
+- GeoJSON
+- NetCDF/HDF5 (NcML format)
+- Hypothes.is
+
+Additional file types will be added to the `dataverse-previewers <https://github.com/gdcc/dataverse-previewers>`_ repo before they are listed above so please check there for the latest information or to request (or contribute!) an additional file previewer.
+
+Installation of previewers is explained in the :doc:`/admin/external-tools` section of in the Admin Guide.
 
 Tabular Data Files
 ------------------
@@ -305,6 +331,22 @@ Astronomy (FITS)
 ----------------
 
 Metadata found in the header section of `Flexible Image Transport System (FITS) files <http://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by the Dataverse Software, aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable and browsable (facets) at the Dataset-level.
+
+.. _geojson:
+
+GeoJSON
+-------
+
+A map will be shown as a preview of GeoJSON files when the previewer has been enabled (see :ref:`file-previews`). See also a `video demo <https://www.youtube.com/watch?v=EACJJaV3O1c&t=588s>`_ of the GeoJSON previewer by its author, Kaitlin Newson.
+
+.. _netcdf-and-hdf5:
+
+NetCDF and HDF5
+---------------
+
+For NetCDF and HDF5 files, an attempt will be made to extract metadata in NcML_ (XML) format and save it as an auxiliary file. (See also :doc:`/developers/aux-file-support` in the Developer Guide.) A previewer for these NcML files is available (see :ref:`file-previews`).
+
+.. _NcML: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
 
 Compressed Files
 ----------------
