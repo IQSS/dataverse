@@ -323,21 +323,15 @@ public class Files extends AbstractApiBean {
      * @param id file ID or peristent ID
      */
     @DELETE
+    @AuthRequired
     @Path("{id}")
-    public Response deleteFileInDataset(@PathParam("id") String fileIdOrPersistentId){
+    public Response deleteFileInDataset(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId){
 
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
         }
         // (1) Get the user from the API key
-        User authUser;
-        try {
-            authUser = findUserOrDie();
-        } catch (AbstractApiBean.WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth"));
-        }
-
-        msg("DELETE!");
+        User authUser = getRequestUser(crc);
 
         // (2) Delete
         boolean deletePhysicalFile = false;
