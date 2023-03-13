@@ -1,1 +1,1 @@
-FilesIT#testDeleteFile
+FilesIT,DownloadFilesIT,LinkIT,DeleteUsersIT,DeactivateUsersIT,AuxiliaryFilesIT,InvalidCharactersIT,LicensesIT,NotificationsIT,BagIT,MetadataBlocksIT,NetcdfIT
