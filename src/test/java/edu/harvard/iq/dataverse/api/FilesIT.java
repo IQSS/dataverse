@@ -1926,7 +1926,7 @@ public class FilesIT {
         // Delete file //
         //-------------//
 
-        Response deleteResponse = UtilIT.deleteFile(datasetId.toString(), fileId, apiToken);
+        Response deleteResponse = UtilIT.deleteFileApi(fileId, apiToken);
         deleteResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Check file deleted

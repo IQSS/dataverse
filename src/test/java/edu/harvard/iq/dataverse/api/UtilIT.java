@@ -809,16 +809,10 @@ public class UtilIT {
                 .post("/api/files/" + idInPath + "/replace" + optionalQueryParam);
     }
 
-    static Response deleteFile(String fileIdOrPersistentId, Integer fileId, String apiToken) {
-        String idInPath = fileIdOrPersistentId; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
-        }
+    static Response deleteFileApi(Integer fileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .delete("/api/files/" + idInPath + "/id" + fileId + optionalQueryParam);
+                .delete("/api/files/" + fileId);
     }
     
     static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken) {
