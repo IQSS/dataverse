@@ -264,7 +264,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         if(!isConfigured) {
             return null;
         }
-        logger.info("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getProviderInformation().get(0));
+        logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getProviderInformation().get(0));
         if(!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
             return null;
         }
