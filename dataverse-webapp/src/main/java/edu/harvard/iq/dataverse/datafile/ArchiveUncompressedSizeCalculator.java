@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -124,8 +123,8 @@ public class ArchiveUncompressedSizeCalculator {
                     size += zipEntry.getSize();
                 }
             }
-        } catch (IOException ioe) {
-            logger.warn("Exception encountered: ", ioe);
+        } catch (IOException | IllegalArgumentException ex) {
+            logger.warn("Exception encountered: ", ex);
         }
         return size;
     }
