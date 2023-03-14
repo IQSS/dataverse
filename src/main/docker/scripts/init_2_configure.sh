@@ -48,7 +48,7 @@ fi
 
 # JavaMail
 echo "INFO: Defining JavaMail."
-echo "create-javamail-resource --mailhost=${DATAVERSE_MAIL_HOST:-postfix} --mailuser=${DATAVERSE_MAIL_USER:-dataversenotify} --fromaddress=${DATAVERSE_MAIL_FROM:-dataverse@localhost} mail/notifyMailSession" >> "${DV_POSTBOOT}"
+echo "create-javamail-resource --mailhost=${DATAVERSE_MAIL_HOST:-smtp} --mailuser=${DATAVERSE_MAIL_USER:-dataversenotify} --fromaddress=${DATAVERSE_MAIL_FROM:-dataverse@localhost} mail/notifyMailSession" >> "${DV_POSTBOOT}"
 
 # 3. Domain based configuration options
 # Set Dataverse environment variables

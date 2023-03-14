@@ -80,7 +80,7 @@ services:
 
   dev_smtp:
     container_name: "dev_smtp"
-    hostname: "postfix"
+    hostname: "smtp"
     image: maildev/maildev:2.0.5
     restart: on-failure
     ports:
