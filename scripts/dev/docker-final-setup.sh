@@ -7,6 +7,9 @@ cd scripts/api || exit
 ./setup-all.sh --insecure -p=admin1 | tee /tmp/setup-all.sh.out
 cd ../..
 
+echo "Setting system mail address..."
+curl -X PUT -d "dataverse@localhost" "http://localhost:8080/api/admin/settings/:SystemEmail"
+
 echo "Setting DOI provider to \"FAKE\"..."
 curl "http://localhost:8080/api/admin/settings/:DoiProvider" -X PUT -d FAKE
 

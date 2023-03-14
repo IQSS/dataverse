@@ -84,12 +84,17 @@ services:
     image: maildev/maildev:2.0.5
     restart: on-failure
     ports:
-      - "25:1025" # smtp server
+      - "25:25" # smtp server
       - "1080:1080" # web ui
+    environment:
+      - MAILDEV_SMTP_PORT=25
+      - MAILDEV_MAIL_DIRECTORY=/mail
     networks:
       - dataverse
-    volumes:
-      - ./docker-dev-volumes/smtp/data:/tmp/maildev-1
+    #volumes:
+    #  - ./docker-dev-volumes/smtp/data:/mail
+    tmpfs:
+      - /mail:mode=770,size=128M,uid=1000,gid=1000
 
 networks:
   dataverse:
