@@ -229,9 +229,9 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             String smdbString = JvmSettings.MDB_SYSTEM_KEY_FOR.lookupOptional(mdb.getName())
                     .orElse(null);
             if (smdbString != null) {
-                logger.info("Found key: " + smdbString);
+                logger.fine("Found key: " + smdbString);
                 String mdKey = getRequest().getSystemMetadataBlockKeyFor(mdb.getName());
-                logger.info("Found supplied key: " + mdKey);
+                logger.fine("Found supplied key: " + mdKey);
                 if (mdKey == null || !mdKey.equalsIgnoreCase(smdbString)) {
                     throw new IllegalCommandException("Updating system metadata in block " + mdb.getName() + " requires a valid key", this);
                 }

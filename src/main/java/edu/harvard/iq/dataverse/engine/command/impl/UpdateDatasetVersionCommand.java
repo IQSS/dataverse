@@ -114,7 +114,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
          * 
          */
         if(persistedVersion==null) {
-            logger.info("No Clone");
             Long id = getDataset().getLatestVersion().getId();
             persistedVersion = ctxt.datasetVersion().find(id!=null ? id: getDataset().getLatestVersionForCopy().getId());
         }
