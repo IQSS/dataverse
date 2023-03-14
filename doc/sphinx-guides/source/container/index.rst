@@ -24,4 +24,4 @@ develop and extend them further are provided.
 .. toctree::
 
   base-image
-
+  app-image
