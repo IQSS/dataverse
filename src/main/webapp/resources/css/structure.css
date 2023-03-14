@@ -1048,6 +1048,10 @@ progress::-webkit-progress-value {
 
 /*External vocabulary support*/
 
+.select2-container {
+    display:block!important;
+}
+
 .select2-container .select2-selection--single {
         border:1px solid #cccccc;
         border-radius: 3px;
