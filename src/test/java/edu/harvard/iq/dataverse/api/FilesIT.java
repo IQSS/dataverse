@@ -1931,6 +1931,6 @@ public class FilesIT {
 
         // Check file deleted
         Response downloadResponse2 = UtilIT.downloadFile(fileId, null, null, null, apiToken);
-        downloadResponse2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        downloadResponse2.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
     }
 }
