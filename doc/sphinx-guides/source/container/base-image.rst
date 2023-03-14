@@ -61,7 +61,7 @@ Build Instructions
 Assuming you have `Docker <https://docs.docker.com/engine/install/>`_, `Docker Desktop <https://www.docker.com/products/docker-desktop/>`_,
 `Moby <https://mobyproject.org/>`_ or some remote Docker host configured, up and running from here on.
 
-Simply execute the Maven modules packaging target with activated "container profile. Either from the projects Git root:
+Simply execute the Maven modules packaging target with activated "container" profile. Either from the projects Git root:
 
 ``mvn -Pct -f modules/container-base install``
 
@@ -72,7 +72,7 @@ Or move to the module and execute:
 Some additional notes, using Maven parameters to change the build and use ...:
 
 - | ... a different tag only: add ``-Dbase.image.tag=tag``.
-  | *Note:* default is ``develop``
+  | *Note:* default is ``unstable``
 - | ... a different image name and tag: add ``-Dbase.image=name:tag``.
   | *Note:* default is ``gdcc/base:${base.image.tag}``
 - ... a different image registry than Docker Hub: add ``-Ddocker.registry=registry.example.org`` (see also
@@ -101,10 +101,10 @@ Processor Architecture and Multiarch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This image is created as a "multi-arch image", supporting the most common architectures Dataverse usually runs on:
-AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2), by using Maven Docker Plugin's *BuildX* mode.
+AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2), by using `Maven Docker Plugin's BuildX mode <https://dmp.fabric8.io/#build-buildx>`_.
 
 Building the image via ``mvn -Pct package`` or ``mvn -Pct install`` as above will only build for the architecture of
-the Docker maschine's CPU.
+the Docker machine's CPU.
 
 Only ``mvn -Pct deploy`` will trigger building on all enabled architectures.
 Yet, to enable building with non-native code on your build machine, you will need to setup a cross-platform builder.
@@ -114,6 +114,7 @@ your package management) on the host and run ``docker run --rm --privileged mult
 to enable that builder. The Docker plugin will setup everything else for you.
 
 
+.. _base-tunables:
 
 Tunables
 ++++++++
@@ -222,6 +223,7 @@ provides. These are mostly based on environment variables (very common with cont
 .. [dump-option] ``-XX:+HeapDumpOnOutOfMemoryError``
 
 
+.. _base-locations:
 
 Locations
 +++++++++
@@ -302,6 +304,8 @@ named Docker volume in these places to avoid data loss, gain performance and/or 
       - Default location where heap dumps will be stored (see above).
         You should mount some storage here (disk or ephemeral).
 
+
+.. _base-exposed-ports:
 
 Exposed Ports
 +++++++++++++
