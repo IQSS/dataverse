@@ -6091,8 +6091,8 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
         SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion,
-                JvmSettings.SIGNPOSTING_MAX_AUTHORS.lookupOptional().orElse(""),
-                JvmSettings.SIGNPOSTING_MAX_ITEMS.lookupOptional().orElse(""));
+                JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
+                JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""));
         return sr.getLinks();
     }
 

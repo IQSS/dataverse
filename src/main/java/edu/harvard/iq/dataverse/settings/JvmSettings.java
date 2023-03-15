@@ -70,8 +70,8 @@ public enum JvmSettings {
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),
-    SIGNPOSTING_MAX_AUTHORS(SCOPE_SIGNPOSTING, "max-authors"),
-    SIGNPOSTING_MAX_ITEMS(SCOPE_SIGNPOSTING, "max-items"),
+    SIGNPOSTING_LEVEL1_AUTHOR_LIMIT(SCOPE_SIGNPOSTING, "level1-author-limit"),
+    SIGNPOSTING_LEVEL1_ITEM_LIMIT(SCOPE_SIGNPOSTING, "level1-item-limit"),
     
     ;
     

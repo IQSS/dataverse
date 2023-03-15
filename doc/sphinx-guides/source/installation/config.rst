@@ -2098,23 +2098,23 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 **WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
 production context! Rely on password alias, secrets directory or cloud based sources instead!
 
-.. _dataverse.signposting.max-authors:
+.. _dataverse.signposting.level1-author-limit:
 
-dataverse.signposting.max-authors
-+++++++++++++++++++++++++++++++++
-
-See :ref:`:Signposting` for details.
-
-Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_MAX_AUTHORS``.
-
-.. _dataverse.signposting.max-items:
-
-dataverse.signposting.max-items
-+++++++++++++++++++++++++++++++
+dataverse.signposting.level1-author-limit
++++++++++++++++++++++++++++++++++++++++++
 
 See :ref:`:Signposting` for details.
 
-Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_MAX_ITEMS``.
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_AUTHOR_LIMIT``.
+
+.. _dataverse.signposting.level1-item-limit:
+
+dataverse.signposting.level1-item-limit
++++++++++++++++++++++++++++++++++++++++
+
+See :ref:`:Signposting` for details.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_ITEM_LIMIT``.
 
 .. _:ApplicationServerSettings:
 

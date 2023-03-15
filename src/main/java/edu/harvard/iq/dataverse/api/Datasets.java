@@ -586,8 +586,8 @@ public class Datasets extends AbstractApiBean {
                     new SignpostingResources(
                             systemConfig,
                             dsv,
-                            JvmSettings.SIGNPOSTING_MAX_AUTHORS.lookupOptional().orElse(""),
-                            JvmSettings.SIGNPOSTING_MAX_ITEMS.lookupOptional().orElse("")
+                            JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
+                            JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse("")
                     ).getJsonLinkset()
             )
             );
