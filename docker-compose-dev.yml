@@ -36,7 +36,7 @@ services:
     image: postgres:${POSTGRES_VERSION}
     restart: on-failure
     environment:
-      - POSTGRES_USER=dataverse
+      - POSTGRES_USER=${DATAVERSE_DB_USER}
       - POSTGRES_PASSWORD=secret
     ports:
       - "5432:5432"
