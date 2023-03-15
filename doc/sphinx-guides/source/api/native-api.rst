@@ -2447,7 +2447,13 @@ The fully expanded example above (without environment variables) looks like this
 Deleting Files
 ~~~~~~~~~~~~~~
 
-Delete an existing file where ``ID`` is the database id of the file to delete or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file.
+Delete an existing file where ``ID`` is the database id of the file to delete or ``PERSISTENT_ID`` is the persistent id (DOI or Handle, if it exists) of the file.
+
+Note that the behavior of deleting files depends on if the dataset has ever been published or not.
+
+- If the dataset has never been published, the file will be deleted forever.
+- If the dataset has published, the file is deleted from the draft (and future published versions).
+- If the dataset has published, the deleted file can still be downloaded because it was part of a published version.
 
 A curl example using an ``ID``
 
