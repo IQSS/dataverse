@@ -2091,7 +2091,7 @@ The response is a JSON object described in the :doc:`/api/external-tools` sectio
 Retrieve Signposting Information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dataverse supports :ref:`Signposting` as a discovery mechanism.
+Dataverse supports :ref:`SignPosting` as a discovery mechanism.
 Signposting involves the addition of a `Link <https://tools.ietf.org/html/rfc5988>`_ HTTP header providing summary information on GET and HEAD requests to retrieve the dataset page and a separate /linkset API call to retrieve additional information.
 Normally, the URL for linkset information would be discovered as the  ``rel="linkset";type="application/linkset+json`` entry in the Link header.
 
