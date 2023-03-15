@@ -5,10 +5,8 @@ import com.jayway.restassured.http.ContentType;
 
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.response.Response;
-import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Matcher;
