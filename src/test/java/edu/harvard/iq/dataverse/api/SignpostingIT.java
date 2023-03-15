@@ -1,12 +1,21 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.http.ContentType;
+
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.response.Response;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.json.JsonObject;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -18,15 +27,14 @@ public class SignpostingIT {
     }
 
     @Test
-    public void testBagItExport() {
+    public void testSignposting() {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         Response toggleSuperuser = UtilIT.makeSuperUser(username);
-        toggleSuperuser.then().assertThat()
-                .statusCode(OK.getStatusCode());
+        toggleSuperuser.then().assertThat().statusCode(OK.getStatusCode());
 
         Response createDataverse = UtilIT.createRandomDataverse(apiToken);
         createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
@@ -35,8 +43,7 @@ public class SignpostingIT {
 
         Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDataset.prettyPrint();
-        createDataset.then().assertThat()
-                .statusCode(CREATED.getStatusCode());
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
 
         String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
 
@@ -47,21 +54,51 @@ public class SignpostingIT {
 
         String datasetLandingPage = RestAssured.baseURI + "/dataset.xhtml?persistentId=" + datasetPid;
         System.out.println("Checking dataset landing page for Signposting: " + datasetLandingPage);
-        Response getHtml = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get(datasetLandingPage);
+        Response getHtml = given().get(datasetLandingPage);
 
         System.out.println("Link header: " + getHtml.getHeader("Link"));
 
-        getHtml.then().assertThat()
-                .statusCode(OK.getStatusCode());
+        getHtml.then().assertThat().statusCode(OK.getStatusCode());
 
         // Make sure there's Signposting stuff in the "Link" header such as
         // the dataset PID, cite-as, etc.
         String linkHeader = getHtml.getHeader("Link");
-        assertEquals(true, linkHeader.contains(datasetPid));
-        assertEquals(true, linkHeader.contains("cite-as"));
-        assertEquals(true, linkHeader.contains("describedby"));
+        assertTrue(linkHeader.contains(datasetPid));
+        assertTrue(linkHeader.contains("cite-as"));
+        assertTrue(linkHeader.contains("describedby"));
+
+        Response headHtml = given().head(datasetLandingPage);
+
+        System.out.println("Link header: " + headHtml.getHeader("Link"));
+
+        headHtml.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Make sure there's Signposting stuff in the "Link" header such as
+        // the dataset PID, cite-as, etc.
+        linkHeader = getHtml.getHeader("Link");
+        assertTrue(linkHeader.contains(datasetPid));
+        assertTrue(linkHeader.contains("cite-as"));
+        assertTrue(linkHeader.contains("describedby"));
+
+        Pattern pattern = Pattern.compile("<(.*)> ; rel=\"linkset\";type=\"application/linkset+json\"");
+        Matcher matcher = pattern.matcher(linkHeader);
+        matcher.find();
+        String linksetUrl = matcher.group(1);
+
+        System.out.println("Linkset URL: " + linksetUrl);
+
+        Response linksetResponse = given().accept(ContentType.JSON).get(linksetUrl);
+
+        JsonObject linkset = linksetResponse.getBody().jsonPath().getJsonObject("data/linkset");
+
+        System.out.println("Linkset: " + linkset.toString());
+
+        linksetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        assertTrue(linkset.getJsonObject("cite-as").getString("href")
+                .indexOf("/dataset.xhtml?persistentId=" + datasetPid) > 0);
+        assertTrue(linkset.containsKey("describedby"));
+
     }
 
 }
