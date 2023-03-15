@@ -1,6 +1,14 @@
 Development Usage
 =================
 
+Please note! This Docker setup is not for production!
+
+.. contents:: |toctitle|
+        :local:
+
+Intro
+-----
+
 Assuming you have `Docker <https://docs.docker.com/engine/install/>`_, `Docker Desktop <https://www.docker.com/products/docker-desktop/>`_,
 `Moby <https://mobyproject.org/>`_ or some remote Docker host configured, up and running from here on. Also assuming
 you have Java and Maven installed, as you are at least about to develop code changes.
@@ -9,7 +17,10 @@ To test drive these local changes to the Dataverse codebase in a containerized a
 setup described in :doc:`../developers/dev-environment`), you must a) build the application container and b)
 run it in addition to the necessary dependencies.
 
-To build the application image, run, as described in :doc:`app-image`:
+Building and Running
+--------------------
+
+To build the application image, run the following command, as described in :doc:`app-image`:
 
 ``mvn -Pct clean package``
 
@@ -24,7 +35,7 @@ at http://localhost:8080/api/info/version.
 
 If all looks good, run the :download:`docker-final-setup.sh <../../../../scripts/dev/docker-final-setup.sh>` script below.
 (This is a simplified version of the script described in :ref:`rebuilding-dev-environment`.)
-We are planning on running this script within a container as part of https://github.com/IQSS/dataverse/issues/9443
+In the future, we are planning on running this script within a container as part of https://github.com/IQSS/dataverse/issues/9443
 
 .. literalinclude:: ../../../../scripts/dev/docker-final-setup.sh
   :language: shell

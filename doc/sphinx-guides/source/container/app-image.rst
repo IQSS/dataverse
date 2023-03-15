@@ -1,11 +1,13 @@
 Dataverse Application Image
 ===========================
 
+The application image is a layer on top of the base image and contains the Dataverse software.
+
 .. contents:: |toctitle|
     :local:
 
 An "application image" offers you a deployment ready Dataverse application running on the underlying
-application server, which is provided by the :doc:`base-image`. It's sole purpose is to bundle the application
+application server, which is provided by the :doc:`base-image`. Its sole purpose is to bundle the application
 and any additional material necessary to successfully jumpstart the application.
 
 Until all :ref:`jvm-options` are *MicroProfile Config* enabled, it also adds the necessary scripting glue to

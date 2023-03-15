@@ -1,11 +1,13 @@
 Application Base Image
 ======================
 
+The base image contains Payara and other dependencies that the Dataverse software runs on. It is the foundation for the :doc:`app-image`. Note that some dependencies, such as PostgreSQL and Solr, run in their own containers and are not part of the base image.
+
 .. contents:: |toctitle|
     :local:
 
 A "base image" offers you a pre-installed and pre-tuned application server to deploy Dataverse software to.
-Adding basic functionality like executing scripts at container boot, monitoring, memory tweaks etc is all done
+Adding basic functionality like executing scripts at container boot, monitoring, memory tweaks etc. is all done
 at this layer, to make the application image focus on the app itself.
 
 **NOTE: The base image does not contain the Dataverse application itself.**
@@ -15,7 +17,7 @@ This Maven module uses the `Maven Docker Plugin <https://dmp.fabric8.io>`_ to bu
 You may use, extend, or alter this image to your liking and/or host in some different registry if you want to.
 
 **NOTE: This image is created, maintained and supported by the Dataverse community on a best-effort basis.**
-IQSS will not offer you support how to deploy or run it, please reach out to the community for help on using it.
+IQSS will not offer you support how to deploy or run it, please reach out to the community (:ref:`support`) for help on using it.
 You might be interested in taking a look at :doc:`../developers/containers`, linking you to some (community-based)
 efforts.
 
