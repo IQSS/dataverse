@@ -2092,10 +2092,10 @@ Retrieve Signposting Information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Dataverse supports :ref:`SignPosting` as a discovery mechanism.
-Signposting involves the addition of a `Link <https://tools.ietf.org/html/rfc5988>`_ HTTP header providing summary information on GET and HEAD requests to retrieve the dataset page and a separate /linkset API call to retrieve additional information.
+Signposting involves the addition of a `Link <https://tools.ietf.org/html/rfc5988>`__ HTTP header providing summary information on GET and HEAD requests to retrieve the dataset page and a separate /linkset API call to retrieve additional information.
 Normally, the URL for linkset information would be discovered as the  ``rel="linkset";type="application/linkset+json`` entry in the Link header.
 
-The reponse includes a JSON object conforming to the `Signposting <https://signposting.org>`_ specification.
+The reponse includes a JSON object conforming to the `Signposting <https://signposting.org>`__ specification.
 Signposting is not supported for draft dataset versions.
 
 .. code-block:: bash
