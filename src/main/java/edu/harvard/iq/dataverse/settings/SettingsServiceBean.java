@@ -215,16 +215,6 @@ public class SettingsServiceBean {
          * some other metrics app.
          */
         MetricsUrl,
-
-        /**
-         * The maximum number of author links to show in the signposting header 
-         */
-        SignpostingMaxAuthors,
-        /**
-         * The maximum number of file links to show in the signposting header 
-         */
-        SignpostingMaxItems,
-
         /**
          * Number of minutes before a metrics query can be rerun. Otherwise a cached value is returned.
          * Previous month dates always return cache. Only applies to new internal caching system (not miniverse).

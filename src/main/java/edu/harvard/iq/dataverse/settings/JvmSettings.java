@@ -67,6 +67,11 @@ public enum JvmSettings {
     // API SETTINGS
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
+
+    // SIGNPOSTING SETTINGS
+    SCOPE_SIGNPOSTING(PREFIX, "signposting"),
+    SIGNPOSTING_MAX_AUTHORS(SCOPE_SIGNPOSTING, "max-authors"),
+    SIGNPOSTING_MAX_ITEMS(SCOPE_SIGNPOSTING, "max-items"),
     
     ;
     

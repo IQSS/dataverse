@@ -44,8 +44,8 @@ public class SignpostingResources {
     public SignpostingResources(SystemConfig systemConfig, DatasetVersion workingDatasetVersion, String authorLimitSetting, String itemLimitSetting) {
         this.systemConfig = systemConfig;
         this.workingDatasetVersion = workingDatasetVersion;
-        maxAuthors = SystemConfig.getIntLimitFromStringOrDefault(itemLimitSetting, defaultMaxLinks);
-        maxItems = SystemConfig.getIntLimitFromStringOrDefault(authorLimitSetting, defaultMaxLinks);
+        maxAuthors = SystemConfig.getIntLimitFromStringOrDefault(authorLimitSetting, defaultMaxLinks);
+        maxItems = SystemConfig.getIntLimitFromStringOrDefault(itemLimitSetting, defaultMaxLinks);
     }
 
 
