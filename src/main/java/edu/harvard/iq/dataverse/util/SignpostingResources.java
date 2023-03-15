@@ -102,8 +102,7 @@ public class SignpostingResources {
         JsonArrayBuilder authors = getJsonAuthors(getAuthorURLs(false));
         JsonArrayBuilder items = getJsonItems();
 
-        License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
-        String licenseString = license.getUri().toString();
+        String licenseString = DatasetUtil.getLicenseURI(workingDatasetVersion);
 
         JsonArrayBuilder mediaTypes = Json.createArrayBuilder();
         mediaTypes.add(
