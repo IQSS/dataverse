@@ -18,6 +18,8 @@ on:
             - 'modules/container-base/**'
             - 'modules/dataverse-parent/pom.xml'
             - '.github/workflows/container_base_push.yml'
+    schedule:
+        - cron: '23 3 * * 0' # Run for 'develop' every Sunday at 03:23 UTC
 
 env:
     IMAGE_TAG: unstable
