@@ -2038,7 +2038,8 @@ public class DatasetVersion implements Serializable {
             for (FileMetadata fileMetadata : fileMetadatasSorted) {
                 JsonObjectBuilder fileObject = NullSafeJsonBuilder.jsonObjectBuilder();
                 String filePidUrlAsString = null;
-                filePidUrlAsString = fileMetadata.getDataFile().getGlobalId().asURL();
+                GlobalId gid = fileMetadata.getDataFile().getGlobalId();
+                filePidUrlAsString = gid != null ? gid.asURL() : null;
                 fileObject.add("@type", "DataDownload");
                 fileObject.add("name", fileMetadata.getLabel());
                 fileObject.add("encodingFormat", fileMetadata.getDataFile().getContentType());

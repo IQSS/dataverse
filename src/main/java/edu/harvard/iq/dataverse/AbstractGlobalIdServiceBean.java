@@ -97,7 +97,8 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     
     @Override
     public String getIdentifier(DvObject dvObject) {
-        return dvObject.getGlobalId().asString();
+        GlobalId gid = dvObject.getGlobalId();
+        return gid != null ? gid.asString() : null;
     }
 
     protected String generateYear (DvObject dvObjectIn){

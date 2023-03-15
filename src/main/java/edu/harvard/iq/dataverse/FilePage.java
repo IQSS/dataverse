@@ -364,7 +364,7 @@ public class FilePage implements java.io.Serializable {
                 // Not all metadata exports should be presented to the web users!
                 // Some are only for harvesting clients.
                 
-                String[] temp = new String[2];            
+                String[] temp = new String[2];
                 temp[0] = formatDisplayName;
                 temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + fileMetadata.getDatasetVersion().getDataset().getGlobalId().asString();
                 retList.add(temp);
