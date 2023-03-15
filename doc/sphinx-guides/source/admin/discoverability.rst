@@ -39,7 +39,7 @@ The HTML source of a dataset landing page includes Schema.org JSON-LD metadata l
         <script type="application/ld+json">{"@context":"http://schema.org","@type":"Dataset","@id":"https://doi.org/...
 
 
-.. _SignPosting:
+.. _discovery-sign-posting:
 
 Signposting
 +++++++++++
