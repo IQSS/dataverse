@@ -172,13 +172,15 @@ public class SignpostingResources {
             String authorURL = "";
             authorURL = getAuthorUrl(da);
             if (authorURL != null && !authorURL.isBlank()) {
-                authorURLs.add(authorURL);
-                visibleAuthorCounter++;
                 // return empty if number of visible author more than max allowed
+                // >= since we're comparing before incrementing visibleAuthorCounter
                 if (visibleAuthorCounter >= maxAuthors) {
                     authorURLs.clear();
                     break;
                 }
+                authorURLs.add(authorURL);
+                visibleAuthorCounter++;
+                
 
             }
         }
