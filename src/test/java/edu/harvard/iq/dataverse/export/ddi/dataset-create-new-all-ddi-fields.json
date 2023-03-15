@@ -409,9 +409,9 @@
           },
           {
             "typeName": "productionPlace",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "ProductionPlace"
+            "value": ["ProductionPlace"]
           },
           {
             "typeName": "contributor",
