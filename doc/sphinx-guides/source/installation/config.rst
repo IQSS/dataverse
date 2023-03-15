@@ -2103,7 +2103,7 @@ production context! Rely on password alias, secrets directory or cloud based sou
 dataverse.signposting.level1-author-limit
 +++++++++++++++++++++++++++++++++++++++++
 
-See :ref:`:Signposting` for details.
+See :ref:`discovery-sign-posting` for details.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_AUTHOR_LIMIT``.
 
@@ -2112,7 +2112,7 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 dataverse.signposting.level1-item-limit
 +++++++++++++++++++++++++++++++++++++++
 
-See :ref:`:Signposting` for details.
+See :ref:`discovery-sign-posting` for details.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_ITEM_LIMIT``.
 
