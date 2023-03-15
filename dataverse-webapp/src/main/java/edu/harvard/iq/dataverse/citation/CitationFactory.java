@@ -28,15 +28,17 @@ public class CitationFactory {
     // -------------------- LOGIC --------------------
 
     public Citation create(DatasetVersion datasetVersion) {
-        return new Citation(dataExtractor.create(datasetVersion), converter, BundleUtil.getCurrentLocale());
+        Locale currentLocale = BundleUtil.getCurrentLocale();
+        return new Citation(dataExtractor.create(datasetVersion, currentLocale), converter, currentLocale);
     }
 
     public Citation create(DatasetVersion datasetVersion, Locale locale) {
-        return new Citation(dataExtractor.create(datasetVersion), converter, locale);
+        return new Citation(dataExtractor.create(datasetVersion, locale), converter, locale);
     }
 
     public Citation create(FileMetadata fileMetadata, boolean direct) {
-        return new Citation(dataExtractor.create(fileMetadata, direct), converter, BundleUtil.getCurrentLocale());
+        Locale currentLocale = BundleUtil.getCurrentLocale();
+        return new Citation(dataExtractor.create(fileMetadata, direct, currentLocale), converter, currentLocale);
     }
 
     public Citation create(FileMetadata fileMetadata) {

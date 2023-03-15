@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,9 +39,9 @@ public class CitationDataExtractor {
 
     // -------------------- LOGIC --------------------
 
-    public CitationData create(DatasetVersion datasetVersion) {
+    public CitationData create(DatasetVersion datasetVersion, Locale locale) {
         CitationData data = new CitationData();
-        extractAndWriteCommonValues(datasetVersion, data);
+        extractAndWriteCommonValues(datasetVersion, data, locale);
 
         data.setDirect(false)
                 .setPersistentId(extractPID(datasetVersion, datasetVersion.getDataset(), false)) // Global Id: always part of citation for local datasets & some harvested
@@ -49,10 +50,10 @@ public class CitationDataExtractor {
         return data;
     }
 
-    public CitationData create(FileMetadata fileMetadata, boolean direct) {
+    public CitationData create(FileMetadata fileMetadata, boolean direct, Locale locale) {
         CitationData data = new CitationData();
         DatasetVersion dsv = fileMetadata.getDatasetVersion();
-        extractAndWriteCommonValues(dsv, data);
+        extractAndWriteCommonValues(dsv, data, locale);
 
         DataFile df = fileMetadata.getDataFile();
 
@@ -66,7 +67,7 @@ public class CitationDataExtractor {
 
     // -------------------- PRIVATE --------------------
 
-    private void extractAndWriteCommonValues(DatasetVersion dsv, CitationData data) {
+    private void extractAndWriteCommonValues(DatasetVersion dsv, CitationData data, Locale locale) {
         Date dataDate = extractCitationDate(dsv);
 
         data.getAuthors().addAll(extractAuthors(dsv));
@@ -91,7 +92,7 @@ public class CitationDataExtractor {
                     .setRootDataverseName(dsv.getRootDataverseNameForCitation())
                     .setSeriesTitle(getSeriesTitle(dsv))
                     .setPublisher(extractPublisher(dsv))
-                    .setVersion(extractVersion(dsv));
+                    .setVersion(extractVersion(dsv,locale));
         }
     }
 
@@ -267,14 +268,14 @@ public class CitationDataExtractor {
         return dsv.getRootDataverseNameForCitation();
     }
 
-    private String extractVersion(DatasetVersion dsv) {
+    private String extractVersion(DatasetVersion dsv, Locale locale) {
         String version = StringUtils.EMPTY;
         if (dsv.isDraft()) {
-            version = BundleUtil.getStringFromBundle("draftversion");
+            version = BundleUtil.getStringFromBundleWithLocale("draftversion", locale);
         } else if (dsv.getVersionNumber() != null) {
             version = "V" + dsv.getVersionNumber()
                     + (dsv.isDeaccessioned()
-                    ? ", " + BundleUtil.getStringFromBundle("deaccessionedversion")
+                    ? ", " + BundleUtil.getStringFromBundleWithLocale("deaccessionedversion", locale)
                     : StringUtils.EMPTY);
         }
         return version;

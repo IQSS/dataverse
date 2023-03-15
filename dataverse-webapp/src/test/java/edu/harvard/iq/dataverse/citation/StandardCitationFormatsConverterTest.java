@@ -24,6 +24,8 @@ class StandardCitationFormatsConverterTest {
 
     private CitationTestUtils utils = new CitationTestUtils();
 
+    private Locale locale = Locale.ENGLISH;
+
 
     // -------------------- TESTS --------------------
 
@@ -33,7 +35,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
 
@@ -57,7 +59,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
 
@@ -79,7 +81,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion("Dataset Title", false);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
@@ -102,7 +104,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion("Dataset Title", false);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
@@ -123,7 +125,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion(null, true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
@@ -146,7 +148,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion(null, true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
@@ -167,7 +169,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion(null, false);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
@@ -190,7 +192,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion(null, false);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
@@ -211,7 +213,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion("This Title \"Has Quotes\" In It", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
@@ -234,7 +236,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String ris = converter.toRISString(citationData, TEST_LOCALE);
@@ -263,7 +265,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String ris = converter.toRISString(citationData, TEST_LOCALE);
@@ -285,7 +287,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion(null, false);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String ris = converter.toRISString(citationData, TEST_LOCALE);
@@ -312,7 +314,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion(null, false);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String ris = converter.toRISString(citationData, TEST_LOCALE);
@@ -332,7 +334,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String endNote = converter.toEndNoteString(citationData, TEST_LOCALE);
@@ -369,7 +371,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String endNote = converter.toEndNoteString(citationData, TEST_LOCALE);
@@ -398,7 +400,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion(null, false);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String endNote = converter.toEndNoteString(citationData, TEST_LOCALE);
@@ -432,7 +434,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion(null, false);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String endNote = converter.toEndNoteString(citationData, TEST_LOCALE);
@@ -459,7 +461,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String citation = converter.toString(citationData, TEST_LOCALE, false);
@@ -475,7 +477,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String citation = converter.toString(citationData, TEST_LOCALE, false);
@@ -491,7 +493,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion(null, false);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String citation = converter.toString(citationData, TEST_LOCALE, false);
@@ -507,7 +509,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion(null, false);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String citation = converter.toString(citationData, TEST_LOCALE, false);
@@ -523,7 +525,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String citation = converter.toString(citationData, TEST_LOCALE, true);
@@ -540,7 +542,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String citation = converter.toString(citationData, TEST_LOCALE, true);
@@ -556,7 +558,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createATestDatasetVersion(null, false);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String citation = converter.toString(citationData, TEST_LOCALE, true);
@@ -573,7 +575,7 @@ class StandardCitationFormatsConverterTest {
 
         // given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion(null, false);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // when
         String citation = converter.toString(citationData, TEST_LOCALE, true);

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.time.Year;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,6 +17,8 @@ class CitationDataExtractorTest {
 
     private CitationTestUtils utils = new CitationTestUtils();
 
+    private Locale locale  = Locale.ENGLISH;
+
     // -------------------- TESTS --------------------
 
     @Test
@@ -24,7 +27,7 @@ class CitationDataExtractorTest {
 
         // given & when
         CitationData citationData = dataExtractor.create(
-                utils.createATestDatasetVersion("Dataset Title", true));
+                utils.createATestDatasetVersion("Dataset Title", true), locale);
 
         // then
         assertThat(citationData.getAuthorsString()).isEqualTo("First Last");
@@ -44,7 +47,7 @@ class CitationDataExtractorTest {
 
         // given & when
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersionWithDistributionDate("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
 
         // then
@@ -63,7 +66,7 @@ class CitationDataExtractorTest {
 
         // given & when
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         // then
         assertThat(citationData.getAuthorsString()).isEqualTo("First Last");
@@ -81,7 +84,7 @@ class CitationDataExtractorTest {
 
         //given
         CitationData citationData = dataExtractor.create(
-                utils.createATestDatasetVersion("Dataset Title", true));
+                utils.createATestDatasetVersion("Dataset Title", true), locale);
 
         //when
         Map<String, String> properties = citationData.getDataCiteMetadata();
@@ -99,7 +102,7 @@ class CitationDataExtractorTest {
 
         //given
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersion("Dataset Title", true);
-        CitationData citationData = dataExtractor.create(datasetVersion);
+        CitationData citationData = dataExtractor.create(datasetVersion, locale);
 
         //when
         Map<String, String> properties = citationData.getDataCiteMetadata();
