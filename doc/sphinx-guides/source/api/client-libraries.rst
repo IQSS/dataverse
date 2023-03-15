@@ -44,7 +44,9 @@ There is no official PHP library for Dataverse APIs (please :ref:`get in touch <
 Python
 ------
 
-There are two Python modules for interacting with Dataverse APIs.
+There are multiple Python modules for interacting with Dataverse APIs.
+
+`EasyDataverse <https://github.com/gdcc/easyDataverse>`_ is a Python library designed to simplify the management of Dataverse datasets in an object-oriented way, giving users the ability to upload, download, and update datasets with ease. By utilizing metadata block configurations, EasyDataverse automatically generates Python objects that contain all the necessary details required by the Dataverse JSON file, simplifying metadata report to mapping values to fields of interest. Adding files and directories is also possible with EasyDataverse and require no additional API calls. This library is particularly well-suited for client applications such as workflows and scripts, as it minimizes technical complexities and facilitates swift development.
 
 `pyDataverse <https://github.com/gdcc/pyDataverse>`_ primarily allows developers to manage Dataverse collections, datasets and datafiles. Its intention is to help with data migrations and DevOps activities such as testing and configuration management. The module is developed by `Stefan Kasberger <http://stefankasberger.at>`_ from `AUSSDA - The Austrian Social Science Data Archive <https://aussda.at>`_.  
 
