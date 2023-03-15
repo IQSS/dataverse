@@ -2088,6 +2088,27 @@ The response is a JSON object described in the :doc:`/api/external-tools` sectio
 
   curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/toolparams/$TOOL_ID?persistentId=$PERSISTENT_IDENTIFIER"
 
+Retrieve Signposting Information
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dataverse supports :ref:`Signposting` as a discovery mechanism.
+Signposting involves the addition of a `Link <https://tools.ietf.org/html/rfc5988>`_ HTTP header providing summary information on GET and HEAD requests to retrieve the dataset page and a separate /linkset API call to retrieve additional information.
+Normally, the URL for linkset information would be discovered as the  ``rel="linkset";type="application/linkset+json`` entry in the Link header.
+
+The reponse includes a JSON object conforming to the `Signposting <https://signposting.org>`_ specification.
+Signposting is not supported for draft dataset versions.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
+  export VERSION=1.0
+
+
+  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
+
+
+
 Files
 -----
 

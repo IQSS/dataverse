@@ -4,5 +4,5 @@ This release adds [Signposting](https://signposting.org/) support to Dataverse t
 
 The following MicroProfile Config options are now available (these can be treated as JVM options):
 
-- dataverse.signposting.max-authors
-- dataverse.signposting.max-items
+- dataverse.signposting.level1-author-limit
+- dataverse.signposting.level1-item-limit
