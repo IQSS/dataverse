@@ -21,6 +21,7 @@ public class UnmanagedHandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
     public UnmanagedHandlenetServiceBean() {
         logger.log(Level.FINE, "Constructor");
+        isConfigured = true;
     }
 
     @Override
