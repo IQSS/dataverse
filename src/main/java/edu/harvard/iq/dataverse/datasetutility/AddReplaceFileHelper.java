@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.Files;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -62,8 +63,6 @@ import jakarta.ws.rs.core.Response;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import org.apache.commons.io.IOUtils;
 
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.STATUS_ERROR;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.STATUS_OK;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
 /**
@@ -2173,7 +2172,7 @@ public class AddReplaceFileHelper{
 
 
         return Response.ok().entity(Json.createObjectBuilder()
-                .add("status", STATUS_OK)
+                .add("status", ApiConstants.STATUS_OK)
                 .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build() ).build();
     }
     
@@ -2341,14 +2340,14 @@ public class AddReplaceFileHelper{
                 .add("Number of files successfully replaced", successNumberofFiles);
 
         return Response.ok().entity(Json.createObjectBuilder()
-                .add("status", STATUS_OK)
+                .add("status", ApiConstants.STATUS_OK)
                 .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build() ).build();
     }
 
     protected static Response error(Response.Status sts, String msg ) {
         return Response.status(sts)
                 .entity( NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("status", STATUS_ERROR)
+                        .add("status", ApiConstants.STATUS_ERROR)
                         .add( "message", msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }

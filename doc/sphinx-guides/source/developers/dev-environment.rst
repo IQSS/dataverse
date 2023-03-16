@@ -91,8 +91,11 @@ To install Payara, run the following commands:
 
 ``sudo chown -R $USER /usr/local/payara6``
 
+Install Service Dependencies Directly on localhost
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Install PostgreSQL
-~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
 
 The Dataverse Software has been tested with PostgreSQL versions up to 13. PostgreSQL version 10+ is required. 
 
@@ -115,7 +118,7 @@ Next, to confirm the edit worked, launch the "pgAdmin" application from the same
 On Linux, you should just install PostgreSQL using your favorite package manager, such as ``yum``. (Consult the PostgreSQL section of :doc:`/installation/prerequisites` in the main Installation guide for more info and command line examples). Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
 Install Solr
-~~~~~~~~~~~~
+^^^^^^^^^^^^
 
 `Solr <http://lucene.apache.org/solr/>`_ 8.11.1 is required.
 
@@ -153,6 +156,30 @@ To install Solr, execute the following commands:
 
 ``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
 
+Install Service Dependencies Using Docker Compose
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To avoid having to install service dependencies like PostgreSQL or Solr directly on your localhost, there is the alternative of using the ``docker-compose-dev.yml`` file available in the repository root. For this option you need to have Docker and Docker Compose installed on your machine.
+
+The ``docker-compose-dev.yml`` file runs the necessary service dependencies to support a development Dataverse installation running on localhost. In addition to PostgreSQL and Solr, it also runs a SMTP server.
+
+To run the Docker Compose file, go to the Dataverse repository root, then run:
+
+``docker-compose -f docker-compose-dev.yml up -d``
+
+Note that this command will run the containers in detached mode. If you want to run them attached and thus view container logs in real time, remove the ``-d`` option from the above command.
+
+Data volumes of each dependency will be persisted inside the ``docker-dev-volumes`` folder, inside the repository root.
+
+If you want to stop the containers, then run (for detached mode only, otherwise use ``Ctrl + C``):
+
+``docker-compose -f docker-compose-dev.yml stop``
+
+If you want to remove the containers, then run:
+
+``docker-compose -f docker-compose-dev.yml down``
+
+For a fresh installation, and before running the Software Installer Script, it is recommended to delete the docker-dev-env folder to avoid installation problems due to existing data in the containers.
+
 Run the Dataverse Software Installer Script
 -------------------------------------------
 
@@ -168,7 +195,7 @@ Create a Python virtual environment, activate it, then install dependencies:
 
 ``pip install psycopg2-binary``
 
-The installer will try to connect to the SMTP server you tell it to use. If you don't have a mail server handy you can run ``nc -l 25`` in another terminal and choose "localhost" (the default) to get past this check.
+The installer will try to connect to the SMTP server you tell it to use. If you haven't used the Docker Compose option for setting up the dependencies, or you don't have a mail server handy, you can run ``nc -l 25`` in another terminal and choose "localhost" (the default) to get past this check.
 
 Finally, run the installer (see also :download:`README_python.txt <../../../../scripts/installer/README_python.txt>` if necessary):
 

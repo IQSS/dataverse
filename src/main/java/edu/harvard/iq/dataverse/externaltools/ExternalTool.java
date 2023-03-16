@@ -38,6 +38,7 @@ public class ExternalTool implements Serializable {
     public static final String CONTENT_TYPE = "contentType";
     public static final String TOOL_NAME = "toolName";
     public static final String ALLOWED_API_CALLS = "allowedApiCalls";
+    public static final String REQUIREMENTS = "requirements";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -103,6 +104,15 @@ public class ExternalTool implements Serializable {
     private String allowedApiCalls;
 
     /**
+     * When non-null, the tool has indicated that it has certain requirements
+     * that must be met before it should be shown to the user. This
+     * functionality was added for tools that operate on aux files rather than
+     * data files so "auxFilesExist" is one of the possible values.
+     */
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String requirements;
+
+    /**
      * This default constructor is only here to prevent this error at
      * deployment:
      *
@@ -117,10 +127,10 @@ public class ExternalTool implements Serializable {
     }
 
     public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType) {
-       this(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType, null);
+       this(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType, null, null);
     }
 
-    public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType, String allowedApiCalls) {
+    public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType, String allowedApiCalls, String requirements) {
         this.displayName = displayName;
         this.toolName = toolName;
         this.description = description;
@@ -130,6 +140,7 @@ public class ExternalTool implements Serializable {
         this.toolParameters = toolParameters;
         this.contentType = contentType;
         this.allowedApiCalls = allowedApiCalls;
+        this.requirements = requirements;
     }
 
     public enum Type {
@@ -325,5 +336,12 @@ public class ExternalTool implements Serializable {
         this.allowedApiCalls = allowedApiCalls;
     }
 
+    public String getRequirements() {
+        return requirements;
+    }
+
+    public void setRequirements(String requirements) {
+        this.requirements = requirements;
+    }
 
 }

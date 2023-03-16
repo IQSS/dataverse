@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
@@ -47,6 +48,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
@@ -59,8 +61,11 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+
 import org.apache.solr.client.solrj.SolrServerException;
 
 @Path("admin/index")
@@ -633,15 +638,16 @@ public class Index extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("filesearch")
-    public Response filesearch(@QueryParam("persistentId") String persistentId, @QueryParam("semanticVersion") String semanticVersion, @QueryParam("q") String userSuppliedQuery) {
+    public Response filesearch(@Context ContainerRequestContext crc, @QueryParam("persistentId") String persistentId, @QueryParam("semanticVersion") String semanticVersion, @QueryParam("q") String userSuppliedQuery) {
         Dataset dataset = datasetService.findByGlobalId(persistentId);
         if (dataset == null) {
             return error(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
         }
         User user = GuestUser.get();
         try {
-            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (authenticatedUser != null) {
                 user = authenticatedUser;
             }

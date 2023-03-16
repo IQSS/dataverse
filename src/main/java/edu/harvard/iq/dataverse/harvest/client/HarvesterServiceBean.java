@@ -229,11 +229,9 @@ public class HarvesterServiceBean {
             throw new IOException(errorMessage);
         }
 
-        if (DATAVERSE_PROPRIETARY_METADATA_FORMAT.equals(oaiHandler.getMetadataPrefix())) {
-            // If we are harvesting native Dataverse json, we'll also need this 
-            // jdk http client to make direct calls to the remote Dataverse API:
-            httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
-        }
+        // We will use this jdk http client to make direct calls to the remote 
+        // OAI (or remote Dataverse API) to obtain the metadata records 
+        httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
         
         try {
             for (Iterator<Header> idIter = oaiHandler.runListIdentifiers(); idIter.hasNext();) {
@@ -296,7 +294,7 @@ public class HarvesterServiceBean {
                 tempFile = retrieveProprietaryDataverseMetadata(httpClient, metadataApiUrl);
                 
             } else {
-                FastGetRecord record = oaiHandler.runGetRecord(identifier);
+                FastGetRecord record = oaiHandler.runGetRecord(identifier, httpClient);
                 errMessage = record.getErrorMessage();
                 deleted = record.isDeleted();
                 tempFile = record.getMetadataFile();
@@ -361,7 +359,7 @@ public class HarvesterServiceBean {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(remoteApiUrl))
                 .GET()
-                .header("User-Agent", "Dataverse Harvesting Client v5")
+                .header("User-Agent", "XOAI Service Provider v5 (Dataverse)")
                 .build();
         
         HttpResponse<InputStream> response;

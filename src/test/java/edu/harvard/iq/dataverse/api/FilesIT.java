@@ -4,6 +4,7 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import com.jayway.restassured.path.json.JsonPath;
@@ -121,7 +122,7 @@ public class FilesIT {
                  * @todo We have a need to show human readable success messages
                  * via API in a consistent location.
                  */
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("status", equalTo(ApiConstants.STATUS_OK))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].dataFile.description", equalTo("my description"))
@@ -192,7 +193,7 @@ public class FilesIT {
         String errMsg = BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(datasetId));
                 
          addResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
                 .body("message", equalTo(errMsg))
                 .statusCode(NOT_FOUND.getStatusCode());
     }
@@ -213,12 +214,11 @@ public class FilesIT {
 
         msgt("Here it is: " + addResponse.prettyPrint());
 
-        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.auth");
-        
+
         addResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
-                .body("message", equalTo(errMsg))
-                .statusCode(FORBIDDEN.getStatusCode());
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
+                .body("message", equalTo(ApiKeyAuthMechanism.RESPONSE_MESSAGE_BAD_API_KEY))
+                .statusCode(UNAUTHORIZED.getStatusCode());
     }
 
     @Test
@@ -243,7 +243,7 @@ public class FilesIT {
         
         addResponse.then().assertThat()
         .statusCode(BAD_REQUEST.getStatusCode())
-        .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+        .body("status", equalTo(ApiConstants.STATUS_ERROR))
         .body("message", equalTo(parseError));
     }
     
@@ -276,7 +276,7 @@ public class FilesIT {
       
         addResponse.then().assertThat()
                 .body("message", equalTo(errMsg))
-                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
                 .statusCode(FORBIDDEN.getStatusCode());
     }
 
@@ -351,7 +351,7 @@ public class FilesIT {
         replaceRespWrongCtype.prettyPrint();
         replaceRespWrongCtype.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
                 .body("message", equalTo(errMsgCtype));
                 //.body("data.rootDataFileId", equalTo(origFileId))    
         
@@ -433,7 +433,7 @@ public class FilesIT {
                  */
                 //                .body("message", equalTo(successMsg2))
                 .statusCode(OK.getStatusCode())
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("status", equalTo(ApiConstants.STATUS_OK))
                 .body("data.files[0].label", equalTo("005.txt"))
                 // yes, replacing a file blanks out the description (and categories)
                 .body("data.files[0].description", equalTo(""))
@@ -772,7 +772,7 @@ public class FilesIT {
         replaceResp2.then().assertThat()
                 // TODO: Some day, change this from BAD_REQUEST to NOT_FOUND and expect the standard error message.
                .statusCode(BAD_REQUEST.getStatusCode())
-               .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+               .body("status", equalTo(ApiConstants.STATUS_ERROR))
                .body("message", Matchers.equalTo(BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_to_replace_not_found_by_id", Arrays.asList(fakeFileId + ""))))
                ;
 
@@ -858,7 +858,7 @@ public class FilesIT {
         
         replaceResp.then().assertThat()
                .statusCode(BAD_REQUEST.getStatusCode())
-               .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+               .body("status", equalTo(ApiConstants.STATUS_ERROR))
                .body("message", Matchers.startsWith(errMsgDeleted))
                ;       
         
@@ -917,7 +917,7 @@ public class FilesIT {
         String parseError = BundleUtil.getStringFromBundle("file.addreplace.error.parsing");
         replaceResp.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+                .body("status", equalTo(ApiConstants.STATUS_ERROR))
                 .body("message", equalTo(parseError));
 
     }
@@ -1385,6 +1385,67 @@ public class FilesIT {
     }
     
     @Test
+    public void testGetFileInfo() {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        createUser = UtilIT.createRandomUser();
+        String apiTokenRegular = UtilIT.getApiTokenFromResponse(createUser);
+
+        msg("Add tabular file");
+        String pathToFile = "scripts/search/data/tabular/stata13-auto-withstrls.dta";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+        msgt("datafile id: " + dataFileId);
+
+        addResponse.prettyPrint();
+
+        Response getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
+
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo("stata13-auto-withstrls.dta"))
+                .body("data.dataFile.filename", equalTo("stata13-auto-withstrls.dta"))
+                .statusCode(OK.getStatusCode());
+
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular);
+        getFileDataResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // -------------------------
+        // Publish dataverse and dataset
+        // -------------------------
+        msg("Publish dataverse and dataset");
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        //regular user should get to see file data
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular);
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //cleanup
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
+    }
+    
+    @Test
     public void testValidateDDI_issue6027() throws InterruptedException {
         msgt("testValidateDDI_issue6027");
         String apiToken = createUserGetToken();
@@ -1473,7 +1534,7 @@ public class FilesIT {
         // zip archive etc. etc. - but this should be a good start. 
         // -- L.A. 2020/09
         addResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("status", equalTo(ApiConstants.STATUS_OK))
                 .body("data.files[0].dataFile.contentType", equalTo(extractedShapeType))
                 .body("data.files[0].label", equalTo(extractedShapeName))
                 .body("data.files[0].directoryLabel", equalTo(extractedFolderName))
@@ -1512,7 +1573,7 @@ public class FilesIT {
         msgt("Server response: " + addResponse.prettyPrint());
       
         addResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("status", equalTo(ApiConstants.STATUS_OK))
                 .body("data.files[0].label", equalTo(testFileName))
                 .body("data.files[0].directoryLabel", equalTo(folderName))
                 .body("data.files[0].description", equalTo(description))

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -25,6 +26,8 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
 import org.apache.solr.client.solrj.SolrServerException;
 
 import jakarta.ejb.EJB;
@@ -38,6 +41,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.PathParam;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -90,9 +94,10 @@ public class EditDDI  extends AbstractApiBean {
 
 
     @PUT
-    @Consumes("application/xml")
+    @AuthRequired
     @Path("{fileId}")
-    public Response edit (InputStream body, @PathParam("fileId") String fileId) {
+    @Consumes("application/xml")
+    public Response edit(@Context ContainerRequestContext crc, InputStream body, @PathParam("fileId") String fileId) {
         DataFile dataFile = null;
         try {
             dataFile = findDataFileOrDie(fileId);
@@ -100,7 +105,7 @@ public class EditDDI  extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-        User apiTokenUser = checkAuth(dataFile);
+        User apiTokenUser = checkAuth(getRequestUser(crc), dataFile);
 
         if (apiTokenUser == null) {
             return unauthorized("Cannot edit metadata, access denied" );
@@ -421,27 +426,10 @@ public class EditDDI  extends AbstractApiBean {
     }
 
 
-    private User checkAuth(DataFile dataFile) {
-
-        User apiTokenUser = null;
-
-        try {
-            apiTokenUser = findUserOrDie();
-        } catch (WrappedResponse wr) {
-            apiTokenUser = null;
-            logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
+    private User checkAuth(User requestUser, DataFile dataFile) {
+        if (!permissionService.requestOn(createDataverseRequest(requestUser), dataFile.getOwner()).has(Permission.EditDataset)) {
+            return null;
         }
-
-        if (apiTokenUser != null) {
-            // used in an API context
-            if (!permissionService.requestOn(createDataverseRequest(apiTokenUser), dataFile.getOwner()).has(Permission.EditDataset)) {
-                apiTokenUser = null;
-            }
-        }
-
-        return apiTokenUser;
-
+        return requestUser;
     }
 }
-
-

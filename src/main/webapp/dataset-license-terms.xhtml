@@ -237,11 +237,12 @@
                 </p:fragment>
             </div>
         </div>
-       <div class="panel panel-default" jsf:rendered="#{!empty editMode or empty editMode and ((!empty termsOfUseAndAccess.termsOfAccess and DatasetPage.restrictedFileCount > 0) 
+       <div class="panel panel-default" jsf:rendered="#{!empty editMode or DatasetPage.restrictedFileCount > 0 
+                                                        or !empty termsOfUseAndAccess.termsOfAccess
                                                         or !empty termsOfUseAndAccess.dataAccessPlace 
                                         or !empty termsOfUseAndAccess.originalArchive or !empty termsOfUseAndAccess.availabilityStatus 
                                         or !empty termsOfUseAndAccess.contactForAccess or !empty termsOfUseAndAccess.sizeOfCollection 
-                                        or !empty termsOfUseAndAccess.studyCompletion)}">
+                                        or !empty termsOfUseAndAccess.studyCompletion}">
            <div data-toggle="collapse" data-target="#panelCollapseTOA" class="panel-heading text-info">
                <h:outputText value="#{publicStore ? bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess'] : bundle['file.dataFilesTab.terms.list.termsOfAccess.header']}"/>
                &#160;<span class="glyphicon glyphicon-chevron-up"/>

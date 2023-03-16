@@ -1050,7 +1050,7 @@ public class DatasetsIT {
         Response downloadFile = UtilIT.downloadFile(fileId, tokenForPrivateUrlUser);
         assertEquals(OK.getStatusCode(), downloadFile.getStatusCode());
         Response downloadFileBadToken = UtilIT.downloadFile(fileId, "junk");
-        assertEquals(FORBIDDEN.getStatusCode(), downloadFileBadToken.getStatusCode());
+        assertEquals(UNAUTHORIZED.getStatusCode(), downloadFileBadToken.getStatusCode());
         Response notPermittedToListRoleAssignment = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, userWithNoRolesApiToken);
         assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignment.getStatusCode());
         Response roleAssignments = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, apiToken);
@@ -1473,7 +1473,7 @@ public class DatasetsIT {
         getRsyncScriptPermErrorGuest.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode())
                 .contentType(ContentType.JSON)
-                .body("message", equalTo("Please provide a key query parameter (?key=XXX) or via the HTTP header X-Dataverse-key"));
+                .body("message", equalTo(AbstractApiBean.RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED));
 
         Response createNoPermsUser = UtilIT.createRandomUser();
         String noPermsUsername = UtilIT.getUsernameFromResponse(createNoPermsUser);

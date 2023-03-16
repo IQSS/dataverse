@@ -1,11 +1,13 @@
 ---
 name: Bug report
-about: Did you encounter something unexpected or incorrect in the Dataverse software? We'd like to hear about it!
+about: Did you encounter something unexpected or incorrect in the Dataverse software?
+  We'd like to hear about it!
 title: ''
 labels: ''
 assignees: ''
 
 ---
+
 <!--
 Thank you for contributing to the Dataverse Project through the creation of a bug report!
 

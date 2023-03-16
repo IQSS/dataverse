@@ -70,9 +70,13 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
      * @param type how to group the files such as "DP" for "Differentially
      * @param mediaType user supplied content type (MIME type)
      * Private Statistics".
-     * @return success boolean - returns whether the save was successful
+     * @param save boolean - true to save immediately, false to let the cascade
+     * do persist to the database.
+     * @return an AuxiliaryFile with an id when save=true (assuming no
+     * exceptions) or an AuxiliaryFile without an id that will be persisted
+     * later through the cascade.
      */
-    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic, String type, MediaType mediaType) {
+    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic, String type, MediaType mediaType, boolean save) {
 
         StorageIO<DataFile> storageIO = null;
         AuxiliaryFile auxFile = new AuxiliaryFile();
@@ -114,7 +118,14 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             auxFile.setType(type);
             auxFile.setDataFile(dataFile);
             auxFile.setFileSize(storageIO.getAuxObjectSize(auxExtension));
-            auxFile = save(auxFile);
+            if (save) {
+                auxFile = save(auxFile);
+            } else {
+                if (dataFile.getAuxiliaryFiles() == null) {
+                    dataFile.setAuxiliaryFiles(new ArrayList<>());
+                }
+                dataFile.getAuxiliaryFiles().add(auxFile);
+            }
         } catch (IOException ioex) {
             logger.severe("IO Exception trying to save auxiliary file: " + ioex.getMessage());
             throw new InternalServerErrorException();
@@ -129,7 +140,11 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         }
         return auxFile;
     }
-    
+
+    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic, String type, MediaType mediaType) {
+        return processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic, type, mediaType, true);
+    }
+
     public AuxiliaryFile lookupAuxiliaryFile(DataFile dataFile, String formatTag, String formatVersion) {
         
         Query query = em.createNamedQuery("AuxiliaryFile.lookupAuxiliaryFile");

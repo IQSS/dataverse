@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -120,6 +121,8 @@ public class FilePage implements java.io.Serializable {
     ExternalToolServiceBean externalToolService;
     @EJB
     PrivateUrlServiceBean privateUrlService;
+    @EJB
+    AuxiliaryFileServiceBean auxiliaryFileService;
 
     @Inject
     DataverseRequestServiceBean dvRequestService;
@@ -280,8 +283,15 @@ public class FilePage implements java.io.Serializable {
         this.datasetVersionId = datasetVersionId;
     }
 
+    // findPreviewTools would be a better name
     private List<ExternalTool> sortExternalTools(){
-        List<ExternalTool> retList = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
+        List<ExternalTool> retList = new ArrayList<>();
+        List<ExternalTool> previewTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
+        for (ExternalTool previewTool : previewTools) {
+            if (externalToolService.meetsRequirements(previewTool, file)) {
+                retList.add(previewTool);
+            }
+        }
         Collections.sort(retList, CompareExternalToolName);
         return retList;
     }

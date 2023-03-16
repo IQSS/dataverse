@@ -16,9 +16,13 @@ import javax.sql.DataSource;
         // HINT: PGSimpleDataSource would work too, but as we use a connection pool, go with a javax.sql.ConnectionPoolDataSource
         // HINT: PGXADataSource is unnecessary (no distributed transactions used) and breaks ingest.
         className = "org.postgresql.ds.PGConnectionPoolDataSource",
-        user = "${MPCONFIG=dataverse.db.user}",
+        
+        // BEWARE: as this resource is created before defaults are read from META-INF/microprofile-config.properties,
+        // defaults must be provided in this Payara-proprietary manner.
+        user = "${MPCONFIG=dataverse.db.user:dataverse}",
         password = "${MPCONFIG=dataverse.db.password}",
-        url = "jdbc:postgresql://${MPCONFIG=dataverse.db.host}:${MPCONFIG=dataverse.db.port}/${MPCONFIG=dataverse.db.name}",
+        url = "jdbc:postgresql://${MPCONFIG=dataverse.db.host:localhost}:${MPCONFIG=dataverse.db.port:5432}/${MPCONFIG=dataverse.db.name:dataverse}?${MPCONFIG=dataverse.db.parameters:}",
+        
         // If we ever need to change these pool settings, we need to remove this class and create the resource
         // from web.xml. We can use MicroProfile Config in there for these values, impossible to do in the annotation.
         //
@@ -30,18 +34,30 @@ import javax.sql.DataSource;
         maxPoolSize = 100,
         // "The number of seconds that a physical connection should remain unused in the pool before the connection is closed for a connection pool. "
         // Payara DataSourceDefinitionDeployer default value = 300 (seconds)
-        maxIdleTime = 300)
-// It's possible to add additional properties like this...
-//
-//properties = {
-//    "fish.payara.log-jdbc-calls=true"
-//})
-//
-// ... but at this time we don't think we need any. The full list
-// of properties can be found at https://docs.payara.fish/community/docs/5.2021.6/documentation/payara-server/jdbc/advanced-connection-pool-properties.html#full-list-of-properties
-//
-// All these properties cannot be configured via MPCONFIG as Payara doesn't support this (yet). To be enhanced.
-// See also https://github.com/payara/Payara/issues/5024
+        maxIdleTime = 300,
+
+        // Set more options via MPCONFIG, including defaults where applicable.
+        // TODO: Future versions of Payara might support setting integer properties like pool size,
+        //       idle times, etc in a Payara-propietary way. See https://github.com/payara/Payara/pull/5272
+        properties = {
+            // The following options are documented here:
+            // https://docs.payara.fish/community/docs/documentation/payara-server/jdbc/advanced-connection-pool-properties.html
+            // VALIDATION
+            "fish.payara.is-connection-validation-required=${MPCONFIG=dataverse.db.is-connection-validation-required:false}",
+            "fish.payara.connection-validation-method=${MPCONFIG=dataverse.db.connection-validation-method:}",
+            "fish.payara.validation-table-name=${MPCONFIG=dataverse.db.validation-table-name:}",
+            "fish.payara.validation-classname=${MPCONFIG=dataverse.db.validation-classname:}",
+            "fish.payara.validate-atmost-once-period-in-seconds=${MPCONFIG=dataverse.db.validate-atmost-once-period-in-seconds:0}",
+            // LEAK DETECTION
+            "fish.payara.connection-leak-timeout-in-seconds=${MPCONFIG=dataverse.db.connection-leak-timeout-in-seconds:0}",
+            "fish.payara.connection-leak-reclaim=${MPCONFIG=dataverse.db.connection-leak-reclaim:false}",
+            "fish.payara.statement-leak-timeout-in-seconds=${MPCONFIG=dataverse.db.statement-leak-timeout-in-seconds:0}",
+            "fish.payara.statement-leak-reclaim=${MPCONFIG=dataverse.db.statement-leak-reclaim:false}",
+            // LOGGING, SLOWNESS, PERFORMANCE
+            "fish.payara.statement-timeout-in-seconds=${MPCONFIG=dataverse.db.statement-timeout-in-seconds:-1}",
+            "fish.payara.slow-query-threshold-in-seconds=${MPCONFIG=dataverse.db.slow-query-threshold-in-seconds:-1}",
+            "fish.payara.log-jdbc-calls=${MPCONFIG=dataverse.db.log-jdbc-calls:false}"
+        })
 public class DataSourceProducer {
 
     @Resource(lookup = "java:app/jdbc/dataverse")
