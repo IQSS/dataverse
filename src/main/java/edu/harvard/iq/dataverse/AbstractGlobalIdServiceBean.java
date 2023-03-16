@@ -353,11 +353,17 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         //ToDo - replace loop with one DB lookup for largest entry? (adding 1000 files, this loop would run ~n**2/2 db calls)
         retVal = Long.valueOf(0L);
 
+        Set existingIdentifiers = new HashSet();
+        List<DataFile> files = datafile.getOwner().getFiles();
+        for(DataFile f:files) {
+            existingIdentifiers.add(f.getIdentifier());
+        }
+        
         do {
             retVal++;
             identifier = prepend + retVal.toString();
 
-        } while (!isGlobalIdUnique(new GlobalId(datafile.getProtocol(), datafile.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0))));
+        } while (existingIdentifiers.contains(identifier) || !isGlobalIdUnique(new GlobalId(datafile.getProtocol(), datafile.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0))));
 
         return identifier;
     }
