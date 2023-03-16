@@ -354,9 +354,9 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, String prepend) {
         String identifier;
         Long retVal;
-        //ToDo - replace loop with one DB lookup for largest entry? (adding 1000 files, this loop would run ~n**2/2 db calls)
         retVal = Long.valueOf(0L);
-
+      //ToDo - replace loops with one lookup for largest entry? (the do loop runs ~n**2/2 calls). The check for existingIdentifiers means this is mostly a local loop now, versus involving db or PidProvider calls, but still...)
+        
         // This will catch identifiers already assigned in the current transaction (e.g.
         // in FinalizeDatasetPublicationCommand) that haven't been committed to the db
         // without having to make a call to the PIDProvider
@@ -365,7 +365,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         for(DataFile f:files) {
             existingIdentifiers.add(f.getIdentifier());
         }
-
+        
         do {
             retVal++;
             identifier = prepend + retVal.toString();
