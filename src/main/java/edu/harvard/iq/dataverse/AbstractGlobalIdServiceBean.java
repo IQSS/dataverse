@@ -283,18 +283,22 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     public String generateDataFileIdentifier(DataFile datafile) {
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
-
+        
         String prepend = "";
         if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
             //If format is dependent then pre-pend the dataset identifier 
             prepend = datafile.getOwner().getIdentifier() + "/";
+            datafile.setProtocol(datafile.getOwner().getProtocol());
+            datafile.setAuthority(datafile.getOwner().getAuthority());
         } else {
             //If there's a shoulder prepend independent identifiers with it
             prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
+            datafile.setProtocol(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol));
+            datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority));
         }
  
         switch (doiIdentifierType) {
-            case "randomString":               
+            case "randomString":
                 return generateIdentifierAsRandomString(datafile, prepend);
             case "storedProcGenerated":
                 if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
@@ -353,12 +357,15 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         //ToDo - replace loop with one DB lookup for largest entry? (adding 1000 files, this loop would run ~n**2/2 db calls)
         retVal = Long.valueOf(0L);
 
-        Set existingIdentifiers = new HashSet();
+        // This will catch identifiers already assigned in the current transaction (e.g.
+        // in FinalizeDatasetPublicationCommand) that haven't been committed to the db
+        // without having to make a call to the PIDProvider
+        Set<String> existingIdentifiers = new HashSet<String>();
         List<DataFile> files = datafile.getOwner().getFiles();
         for(DataFile f:files) {
             existingIdentifiers.add(f.getIdentifier());
         }
-        
+
         do {
             retVal++;
             identifier = prepend + retVal.toString();
