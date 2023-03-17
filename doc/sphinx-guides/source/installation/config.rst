@@ -255,7 +255,7 @@ Here are the configuration options for PermaLinks:
 
 **JVM Options:**
 
-- :ref:`doi.baseurlstring`
+- :ref:`perma.baseurlstring`
 
 **Database Settings:**
 
