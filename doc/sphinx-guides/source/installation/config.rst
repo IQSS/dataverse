@@ -259,7 +259,6 @@ Here are the configuration options for PermaLinks:
 
 **Database Settings:**
 
-- :ref:`:DoiProvider <:DoiProvider>`
 - :ref:`:Protocol <:Protocol>`
 - :ref:`:Authority <:Authority>`
 - :ref:`:Shoulder <:Shoulder>`
