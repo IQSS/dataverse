@@ -27,24 +27,28 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
     private String PASSWORD = "";
     public DOIEZIdServiceBean() {
         logger.log(Level.FINE,"Constructor");
-       logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
         try {
-            String doiProvider = settingsService.getValueForKey(Key.DoiProvider, "");
-            if ("EZID".equals(doiProvider)) {
-                //Guessing these are System.getProperty rather than using settingsService because this is a constructor rather than a @PostConstruct method
-                baseURLString = System.getProperty("doi.baseurlstring");
-                ezidService = new EZIDService(baseURLString);
-                USERNAME = System.getProperty("doi.username");
-                PASSWORD = System.getProperty("doi.password");
-                ezidService.login(USERNAME, PASSWORD);
-                isConfigured = true;
-            }
+            // Guessing these are System.getProperty rather than using settingsService
+            // because this is a constructor rather than a @PostConstruct method
+            baseURLString = System.getProperty("doi.baseurlstring");
+            logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
+            ezidService = new EZIDService(baseURLString);
+            USERNAME = System.getProperty("doi.username");
+            PASSWORD = System.getProperty("doi.password");
+            ezidService.login(USERNAME, PASSWORD);
+            configured = true;
         } catch (EZIDException e) {
-            logger.log(Level.WARNING, "login failed ");
-            logger.log(Level.WARNING, "Exception String: {0}", e.toString());
-            logger.log(Level.WARNING, "localized message: {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause: ", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            // As a stateless bean, this constructor runs even when we're not using ezid, so
+            // lowering the log level in that case
+            // (Future work is expected to change PidProviders from being stateless beans
+            // going forward and at that point we won't be initializing this unless it's
+            // configured.
+            Level level = (baseURLString.contains("ezid")) ? Level.WARNING : Level.FINE;
+            logger.log(level, "login failed ");
+            logger.log(level, "Exception String: {0}", e.toString());
+            logger.log(level, "localized message: {0}", e.getLocalizedMessage());
+            logger.log(level, "cause: ", e.getCause());
+            logger.log(level, "message {0}", e.getMessage());
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Other Error on ezidService.login(USERNAME, PASSWORD) - not EZIDException ", e.getMessage());
         }
