@@ -107,8 +107,12 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
     }
 
     @Override
-    public boolean publicizeIdentifier(DvObject studyIn) {
-      //Call external resolver and send landing URL?
+    public boolean publicizeIdentifier(DvObject dvObject) {
+        //Generate if needed (i.e. datafile case where we don't create/register early (even with reigsterWhenPublished == false))
+        if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+            dvObject = generateIdentifier(dvObject);
+        }
+        //Call external resolver and send landing URL?
         return true;
     }
 
