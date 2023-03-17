@@ -42,7 +42,7 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
     private void init() {
         String doiProvider = settingsService.getValueForKey(Key.DoiProvider, "");
         if("DataCite".equals(doiProvider)) {
-            isConfigured=true;
+            configured=true;
         }
     }
 

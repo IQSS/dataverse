@@ -23,7 +23,7 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
     private void init() {
         String doiProvider = settingsService.getValueForKey(Key.DoiProvider, "");
         if("FAKE".equals(doiProvider)) {
-            isConfigured=true;
+            configured=true;
         }
     }
     

@@ -21,6 +21,7 @@ public interface GlobalIdServiceBean {
 
     boolean registerWhenPublished();
     boolean canManagePID();
+    boolean isConfigured();
     
     List<String> getProviderInformation();
 
@@ -53,7 +54,7 @@ public interface GlobalIdServiceBean {
         final Function<CommandContext, GlobalIdServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
         if ( protocolHandler != null ) {
             GlobalIdServiceBean theBean = protocolHandler.apply(ctxt);
-            if(theBean != null) {
+            if(theBean != null && theBean.isConfigured()) {
                 logger.fine("getBean returns " + theBean.getProviderInformation().get(0) + " for protocol " + protocol);
             }
             return theBean;

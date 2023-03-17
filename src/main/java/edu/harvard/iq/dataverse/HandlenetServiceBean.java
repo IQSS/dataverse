@@ -74,7 +74,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     
     public HandlenetServiceBean() {
         logger.log(Level.FINE,"Constructor");
-        isConfigured = true;
+        configured = true;
     }
 
     @Override

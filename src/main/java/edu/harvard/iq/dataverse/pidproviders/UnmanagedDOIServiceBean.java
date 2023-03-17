@@ -29,7 +29,7 @@ public class UnmanagedDOIServiceBean extends DOIServiceBean {
     @PostConstruct
     private void init() {
         // Always on
-        isConfigured = true;
+        configured = true;
     }
 
     @Override

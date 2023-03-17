@@ -30,7 +30,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     @Inject
     SystemConfig systemConfig;
 
-    protected boolean isConfigured = false;
+    protected boolean configured = false;
     
     public static String UNAVAILABLE = ":unav";
 
@@ -217,7 +217,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
      */
     @Override
     public GlobalId parsePersistentId(String fullIdentifierString) {
-        if(!isConfigured) {
+        if(!configured) {
             return null;
         }
         int index1 = fullIdentifierString.indexOf(':');
@@ -231,7 +231,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     }
 
     protected GlobalId parsePersistentId(String protocol, String identifierString) {
-        if(!isConfigured) {
+        if(!configured) {
             return null;
         }
         String authority;
@@ -262,7 +262,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     }
     
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
-        if(!isConfigured) {
+        if(!configured) {
             return null;
         }
         logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getProviderInformation().get(0));
@@ -680,5 +680,10 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     public boolean canManagePID() {
         //The default expectation is that PID providers are configured to manage some set (i.e. based on protocol/authority/shoulder) of PIDs
         return true;
+    }
+    
+    @Override
+    public boolean isConfigured() {
+        return configured;
     }
 }

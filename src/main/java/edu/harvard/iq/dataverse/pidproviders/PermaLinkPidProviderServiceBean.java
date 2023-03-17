@@ -47,7 +47,7 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
     private void init() {
         if(PERMA_PROTOCOL.equals(settingsService.getValueForKey(Key.Protocol))){
             authority = settingsService.getValueForKey(Key.Authority);
-            isConfigured=true;
+            configured=true;
         };
         
     }
