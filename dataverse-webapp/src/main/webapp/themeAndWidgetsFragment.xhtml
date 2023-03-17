@@ -21,7 +21,7 @@
                             <div class="col-xs-12 col-sm-9">
                                 <div class="checkbox">
                                     <label class="metadata-blocks-default" for="themeRoot">
-                                        <h:selectBooleanCheckbox id="themeRoot" tabindex="7" styleClass="metadata-blocks-default" 
+                                        <h:selectBooleanCheckbox id="themeRoot" tabindex="7" styleClass="metadata-blocks-default"
                                                                  rendered="#{themeWidgetFragment.editDv.owner != null}"
                                                                  value="#{themeWidgetFragment.inheritCustomization}" >
                                             <p:ajax update="@widgetVar(content)"  listener="#{themeWidgetFragment.checkboxListener()}"/>
@@ -48,12 +48,12 @@
                                             <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name}"/>
                                         </p>
                                         <p:commandButton update=":themeWidgetsForm:themeWidgetsTabView" value="#{bundle.remove}" action="#{themeWidgetFragment.removeLogo()}" />
-                                    </p:column>                              
-                                    <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView"  dragDropSupport="true" auto="true" multiple="false"
+                                    </p:column>
+                                    <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|png|gif)$/" accept=".jpg,.jpeg,.png,.gif" update=":themeWidgetsForm:themeWidgetsTabView"  dragDropSupport="true" auto="true" multiple="false"
                                                   listener="#{themeWidgetFragment.handleImageFileUpload}" label="#{bundle['dataverse.theme.logo.image.upload']}"/>
                                 </p:panelGrid>
                                 <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="2" styleClass="noBorders">
-                                    <p:fileUpload id="uploadlogo" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView"  dragDropSupport="true" auto="true" multiple="false"
+                                    <p:fileUpload id="uploadlogo" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" accept=".jpg,.jpeg,.png,.gif" allowTypes="/(\.|\/)(jpg|jpeg|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView"  dragDropSupport="true" auto="true" multiple="false"
                                                   listener="#{themeWidgetFragment.handleImageFileUpload}" label="#{bundle['dataverse.theme.logo.image.uploadImgFile']}"/>
                                 </p:panelGrid>
                                 <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}">
@@ -76,7 +76,7 @@
                                         <div class="form-col-container col-xs-12 col-sm-3">
                                             <label for="logoAlignment" class="control-label">
                                                 #{bundle['dataverse.theme.logo.alignment']}
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button" 
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.logo.alignment.title']}"></span>
                                             </label>
                                             <div>
@@ -91,7 +91,7 @@
                                         <div class="form-col-container col-xs-12 col-sm-4">
                                             <label for="logoBackgroundColor" class="control-label">
                                                 #{bundle['dataverse.theme.logo.backColor']}
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button" 
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.logo.backColor.title']}"></span>
                                             </label>
                                             <div>
@@ -109,14 +109,14 @@
                             <div class="form-group">
                                 <label class="col-xs-12 col-sm-3 control-label">
                                     #{bundle['dataverse.theme.headerColor']}
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button" 
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.headerColor.tip']}"></span>
                                 </label>
                                 <div class="form-group col-xs-12 col-sm-9">
                                     <div class="form-col-container col-xs-12 col-sm-4">
                                         <label for="backgroundColor" class="control-label">
                                             #{bundle['dataverse.theme.backColor']}
-                                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button" 
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.backColor.title']}"></span>
                                         </label>
                                         <div>
@@ -127,7 +127,7 @@
                                     <div class="form-col-container col-xs-12 col-sm-4">
                                         <label for="linkColor" class="control-label">
                                             #{bundle['dataverse.theme.linkColor']}
-                                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button" 
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.linkColor.title']}"></span>
                                         </label>
                                         <div>
@@ -138,7 +138,7 @@
                                     <div class="form-col-container col-xs-12 col-sm-4">
                                         <label for="textColor" class="control-label">
                                             #{bundle['dataverse.theme.txtColor']}
-                                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button" 
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.txtColor.title']}"></span>
                                         </label>
                                         <div>
@@ -151,7 +151,7 @@
                             <div class="form-group">
                                 <label class="col-xs-12 col-sm-3 control-label" for="tagline">
                                     #{bundle['dataverse.theme.tagline']}
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button" 
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.tagline.title']}"></span>
                                 </label>
                                 <h:inputHidden id="linkAndUrl" value="true">
@@ -168,7 +168,7 @@
                             <div class="form-group">
                                 <label class="col-xs-12 col-sm-3 control-label" for="website">
                                     #{bundle['dataverse.theme.website']}
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button" 
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.theme.website.title']}"></span>
                                 </label>
                                 <div class="col-xs-12 col-sm-6">
@@ -220,9 +220,9 @@
                         </p>
                     </div>
                 </div>
-                
+
                 <ui:fragment rendered="#{themeWidgetFragment.editDv.released}">
-                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> 
+                    <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>
                         <h:outputFormat value=" #{bundle['dataverse.widgets.tip']}" escape="false">
                             <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                             <f:param value="#{settingsWrapper.guidesVersion}"/>
