@@ -44,7 +44,7 @@ There is no official PHP library for Dataverse APIs (please :ref:`get in touch <
 Python
 ------
 
-There are three Python packages for interacting with Dataverse APIs.
+There are multiple Python packages for interacting with Dataverse APIs.
 
 `pyDataverse <https://github.com/gdcc/pyDataverse>`_ primarily allows developers to manage Dataverse collections, datasets and datafiles. Its intention is to help with data migrations and DevOps activities such as testing and configuration management. The module is developed by `Stefan Kasberger <http://stefankasberger.at>`_ from `AUSSDA - The Austrian Social Science Data Archive <https://aussda.at>`_.  
 
