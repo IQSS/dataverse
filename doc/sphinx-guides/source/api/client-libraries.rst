@@ -50,7 +50,7 @@ There are multiple Python packages for interacting with Dataverse APIs.
 
 `dataverse-client-python <https://github.com/IQSS/dataverse-client-python>`_ had its initial release in 2015. `Robert Liebowitz <https://github.com/rliebz>`_ created this library while at the `Center for Open Science (COS) <https://centerforopenscience.org>`_ and the COS uses it to integrate the `Open Science Framework (OSF) <https://osf.io>`_ with Dataverse installations via an add-on which itself is open source and listed on the :doc:`/api/apps` page.
 
-`Pooch <https://github.com/fatiando/pooch>`_ is a Python library that allows library and application developers to download data. Among other features, it takes care of various protocols, caching in OS-specific locations, checksum verification and adds optional features like progressbars or log messages. Among other popular repositorise, Pooch supports DataVerse in the sense that you can reference DataVerse-hosted datasets by just a DOI and Pooch will determine the data repository type, query the DataVerse API for contained files and checksums, giving you an easy interface to download them.
+`Pooch <https://github.com/fatiando/pooch>`_ is a Python library that allows library and application developers to download data. Among other features, it takes care of various protocols, caching in OS-specific locations, checksum verification and adds optional features like progress bars or log messages. Among other popular repositories, Pooch supports Dataverse in the sense that you can reference Dataverse-hosted datasets by just a DOI and Pooch will determine the data repository type, query the Dataverse API for contained files and checksums, giving you an easy interface to download them.
 
 R
 -
