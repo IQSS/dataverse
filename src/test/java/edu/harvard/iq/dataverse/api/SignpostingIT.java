@@ -78,7 +78,7 @@ public class SignpostingIT {
         assertTrue(linkHeader.contains("cite-as"));
         assertTrue(linkHeader.contains("describedby"));
 
-        Pattern pattern = Pattern.compile("<(.*)> ; rel=\"linkset\";type=\"application/linkset+json\"");
+        Pattern pattern = Pattern.compile("<([^<]*)> ; rel=\"linkset\";type=\"application\\/linkset\\+json\"");
         Matcher matcher = pattern.matcher(linkHeader);
         matcher.find();
         String linksetUrl = matcher.group(1);
