@@ -1,6 +1,9 @@
-package edu.harvard.iq.dataverse.search.advanced;
+package edu.harvard.iq.dataverse.search.advanced.field;
 
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.search.advanced.SearchFieldType;
+import edu.harvard.iq.dataverse.search.advanced.query.QueryPart;
+import edu.harvard.iq.dataverse.search.advanced.query.QueryPartType;
 import io.vavr.Tuple2;
 
 import java.util.ArrayList;
@@ -41,6 +44,12 @@ public class SelectOneSearchField extends SearchField {
         return Collections.emptyList();
     }
 
+    @Override
+    public QueryPart getQueryPart() {
+        return checkedFieldValue == null
+                ? QueryPart.EMPTY
+                : new QueryPart(QueryPartType.QUERY, String.format("%s:\"%s\"", getName(), checkedFieldValue));
+    }
 
     // -------------------- SETTERS --------------------
 
@@ -50,5 +59,12 @@ public class SelectOneSearchField extends SearchField {
 
     public void setListLabelAndValue(List<Tuple2<String, String>> listLabelAndValue) {
         this.listLabelAndValue = listLabelAndValue;
+    }
+
+    // -------------------- toString --------------------
+
+    @Override
+    public String toString() {
+        return getCheckedFieldValue();
     }
 }

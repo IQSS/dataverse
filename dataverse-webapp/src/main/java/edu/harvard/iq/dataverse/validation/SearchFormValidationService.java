@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.validation;
 
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
-import edu.harvard.iq.dataverse.search.advanced.SearchField;
+import edu.harvard.iq.dataverse.search.advanced.field.SearchField;
 import edu.harvard.iq.dataverse.validation.field.SearchFormValidationDispatcherFactory;
 import edu.harvard.iq.dataverse.validation.field.ValidationResult;
 

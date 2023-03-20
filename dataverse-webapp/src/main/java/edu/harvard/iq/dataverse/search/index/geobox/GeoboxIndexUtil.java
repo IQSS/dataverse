@@ -49,7 +49,7 @@ public class GeoboxIndexUtil {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         return availableCoords.containsAll(COORD_FIELDS)
-                && componentValidator.isValid(field, Collections.emptyMap(), Collections.emptyMap()).isOk();
+                && componentValidator.validate(field, Collections.emptyMap(), Collections.emptyMap()).isOk();
     }
 
     // -------------------- INNER CLASSES --------------------

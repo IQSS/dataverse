@@ -21,7 +21,7 @@ class StandardInputValidatorTest {
             "asdf|^[a-zA-Z ]{5,5}$|false",
             "as DF|^[a-zA-Z ]{5,5}$|true"
     }, delimiter = '|')
-    void isValid(String value, String format, boolean expectedResult) {
+    void validate(String value, String format, boolean expectedResult) {
         // given
         DatasetField datasetField = new DatasetField();
         datasetField.setDatasetFieldType(new DatasetFieldType());
@@ -29,7 +29,7 @@ class StandardInputValidatorTest {
 
         // when
         ValidationResult result =
-                validator.isValid(datasetField,
+                validator.validate(datasetField,
                         StringUtils.isNotBlank(format)
                                 ? Collections.singletonMap("format", format)
                                 : Collections.emptyMap(),

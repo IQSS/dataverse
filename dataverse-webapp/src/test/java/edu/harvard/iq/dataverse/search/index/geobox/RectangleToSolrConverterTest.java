@@ -1,7 +1,15 @@
 package edu.harvard.iq.dataverse.search.index.geobox;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,5 +40,26 @@ class RectangleToSolrConverterTest {
 
         // then
         assertThat(shape).isEqualTo(expectedShape);
+    }
+
+    static Stream<Arguments> wrapIfNeeded() {
+        return Stream.of(
+                Arguments.of(Arrays.asList(
+                        new Rectangle("1", "2", "3", "4"),
+                        new Rectangle("1", "0", "1", "0"),
+                        new Rectangle("180", "0", "0", "0")),
+                    "GEOMETRYCOLLECTION(POLYGON((1 2,3 2,3 4,1 4,1 2)),POINT(1 0),LINESTRING(180 0,0 0))"),
+                Arguments.of(Collections.singletonList(new Rectangle("11", "22", "33", "44")),
+                    "POLYGON((11 22,33 22,33 44,11 44,11 22))"));
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void wrapIfNeeded(List<Rectangle> rects, String expected) {
+        // given & when
+        String result = converter.wrapIfNeeded(rects);
+
+        // then
+        assertThat(result).isEqualTo(expected);
     }
 }

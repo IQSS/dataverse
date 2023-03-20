@@ -3,8 +3,9 @@ package edu.harvard.iq.dataverse.validation.field;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
-import edu.harvard.iq.dataverse.search.advanced.SearchField;
+import edu.harvard.iq.dataverse.search.advanced.field.SearchField;
 import edu.harvard.iq.dataverse.search.advanced.SearchFieldType;
+import edu.harvard.iq.dataverse.search.advanced.query.QueryPart;
 import edu.harvard.iq.dataverse.validation.field.validators.FieldValidatorBase;
 import edu.harvard.iq.dataverse.validation.field.validators.StandardInputValidator;
 import edu.harvard.iq.dataverse.validation.field.validators.StandardIntegerValidator;
@@ -40,8 +41,8 @@ class SearchFormValidationDispatcherTest {
         }
 
         @Override
-        public ValidationResult isValid(ValidatableField field, Map<String, Object> params,
-                                        Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+        public ValidationResult validate(ValidatableField field, Map<String, Object> params,
+                                         Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
             return ValidationResult.invalid(field, "message");
         }
     };
@@ -183,6 +184,11 @@ class SearchFormValidationDispatcherTest {
         @Override
         public List<String> getValidatableValues() {
             return values;
+        }
+
+        @Override
+        public QueryPart getQueryPart() {
+            return QueryPart.EMPTY;
         }
     }
 }

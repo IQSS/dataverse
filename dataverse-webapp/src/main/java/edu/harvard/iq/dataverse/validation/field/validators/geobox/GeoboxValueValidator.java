@@ -22,7 +22,7 @@ class GeoboxValueValidator implements FieldValidator {
     }
 
     @Override
-    public ValidationResult isValid(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public ValidationResult validate(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         if (field.hasNonUniqueValue()) {
             return ValidationResult.invalid(field, BundleUtil.getStringFromBundle("validation.nonunique"));
         }

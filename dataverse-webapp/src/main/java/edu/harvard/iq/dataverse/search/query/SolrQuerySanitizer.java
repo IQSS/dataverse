@@ -61,10 +61,7 @@ public class SolrQuerySanitizer {
         datasetFields = datasetFields == null ? datasetFieldService.findAllOrderedById() : datasetFields;
         for (DatasetFieldType datasetFieldType : datasetFields) {
 
-            SolrField dsfSolrField = SolrField.of(datasetFieldType.getName(),
-                                                                   datasetFieldType.getFieldType(),
-                                                                   datasetFieldType.isThisOrParentAllowsMultipleValues(),
-                                                                   datasetFieldType.isFacetable());
+            SolrField dsfSolrField = SolrField.of(datasetFieldType);
             fieldNamesMapping.put(datasetFieldType.getName(), dsfSolrField.getNameSearchable());
         }
         return fieldNamesMapping;

@@ -19,8 +19,8 @@ class MultiValueValidatorBaseTest {
 
     private MultiValueValidatorBase validator = new MultiValueValidatorBase() {
         @Override
-        public ValidationResult isValueValid(String value, ValidatableField field, Map<String, Object> params,
-                                             Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+        public ValidationResult validateValue(String value, ValidatableField field, Map<String, Object> params,
+                                              Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
             return !"INVALID".equals(value)
                     ? ValidationResult.ok()
                     : ValidationResult.invalid(field, "Invalid value");
@@ -44,12 +44,12 @@ class MultiValueValidatorBaseTest {
             "       1 | INVALID |       3 |    false",
             " INVALID |       2 |       3 |    false",
     })
-    void isValid(String l1, String l2, String l3, boolean expected) {
+    void validate(String l1, String l2, String l3, boolean expected) {
         // given
         TestField field = new TestField(l1, l2, l3);
 
         // when
-        ValidationResult result = validator.isValid(field, Collections.emptyMap(), Collections.emptyMap());
+        ValidationResult result = validator.validate(field, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isEqualTo(expected);

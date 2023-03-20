@@ -35,12 +35,12 @@ class GeoboxValueValidatorTest {
             "Y2 | 90.00000001 |    false",
             "Y1 |     -100.12 |    false"
     })
-    void isValid(GeoboxFields field, String value, boolean expected) {
+    void validate(GeoboxFields field, String value, boolean expected) {
         // given
         DatasetField datasetField = geoboxUtil.buildSingle(field, value);
 
         // when
-        ValidationResult result = validator.isValid(datasetField, Collections.emptyMap(), Collections.emptyMap());
+        ValidationResult result = validator.validate(datasetField, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isEqualTo(expected);

@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.validation.field;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
-import edu.harvard.iq.dataverse.search.advanced.SearchField;
+import edu.harvard.iq.dataverse.search.advanced.field.SearchField;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -66,7 +66,7 @@ public class SearchFormValidationDispatcher {
                 continue;
             }
             FieldValidator validator = registry.getOrThrow(descriptor.getName());
-            ValidationResult result = validator.isValid(field, parameters, fieldIndex);
+            ValidationResult result = validator.validate(field, parameters, fieldIndex);
             if (!result.isOk()) {
                 return result;
             }

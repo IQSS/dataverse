@@ -188,8 +188,7 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TAG_SEARCHABLE, BundleUtil.getStringFromBundle("facets.search.fieldtype.fileTag.label"));
         for (DatasetFieldType datasetFieldType : datasetFields) {
 
-            SolrField dsfSolrField = SolrField.of(datasetFieldType.getName(), datasetFieldType.getFieldType(),
-                    datasetFieldType.isThisOrParentAllowsMultipleValues(), datasetFieldType.isFacetable());
+            SolrField dsfSolrField = SolrField.of(datasetFieldType);
 
             String solrField = dsfSolrField.getNameSearchable();
             String displayName = datasetFieldType.getDisplayName();
@@ -244,12 +243,8 @@ public class SearchServiceBean {
 
         if (dataverses != null) {
             for (Dataverse dataverse : dataverses) {
-
                 for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
-                    DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
-
-                    SolrField dsfSolrField = SolrField.of(datasetField.getName(), datasetField.getFieldType(),
-                            datasetField.isThisOrParentAllowsMultipleValues(), datasetField.isFacetable());
+                    SolrField dsfSolrField = SolrField.of(dataverseFacet.getDatasetFieldType());
                     solrQuery.addFacetField(dsfSolrField.getNameFacetable());
                 }
             };
@@ -289,10 +284,7 @@ public class SearchServiceBean {
 
         String titleSolrField = null;
         if (fieldIndex.containsKey(DatasetFieldConstant.title)) {
-            DatasetFieldType titleDatasetField = fieldIndex.get(DatasetFieldConstant.title);
-            titleSolrField = SolrField.of(titleDatasetField.getName(), titleDatasetField.getFieldType(),
-                    titleDatasetField.isThisOrParentAllowsMultipleValues(), titleDatasetField.isFacetable())
-                    .getNameSearchable();
+            titleSolrField = SolrField.of(fieldIndex.get(DatasetFieldConstant.title)).getNameSearchable();
         } else {
             logger.info("Couldn't find " + DatasetFieldConstant.title);
         }

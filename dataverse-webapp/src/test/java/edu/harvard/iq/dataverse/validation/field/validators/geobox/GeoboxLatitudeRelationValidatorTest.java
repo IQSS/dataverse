@@ -36,13 +36,13 @@ class GeoboxLatitudeRelationValidatorTest {
             "Y1 | -11.12 | -89.1 |    false",
             "Y2 | -11.12 | -89.1 |    false"
     })
-    void isValid(GeoboxFields field, String y1, String y2, boolean expected) {
+    void validate(GeoboxFields field, String y1, String y2, boolean expected) {
 
         // given
         DatasetField datasetField = geoboxUtil.selectFromGeobox(field, geoboxUtil.buildGeobox("1", y1, "1", y2));
 
         // when
-        ValidationResult result = validator.isValid(datasetField, Collections.emptyMap(), Collections.emptyMap());
+        ValidationResult result = validator.validate(datasetField, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isEqualTo(expected);

@@ -25,16 +25,16 @@ function initDvJS() {
     }
 
     // Store value from input field
-    function putValue(map, key, field, value) {
+    function putValue(dataMap, key, field, value) {
       if (!isNaN(value) && value !== '') {
-        let data = map.get(key);
+        let data = dataMap.get(key);
         data.values[field] = Number(value);
       }
     }
 
     // Mass initialization of maps (when section is shown/visible)
-    function initializeAll(map, keyPrefix, initializer) {
-      for (const [key, data] of map.entries()) {
+    function initializeAll(dataMap, keyPrefix, initializer) {
+      for (const [key, data] of dataMap) {
         if (!key.startsWith(keyPrefix) || data.leafMapInitialized) {
           continue;
         }
@@ -63,7 +63,7 @@ function initDvJS() {
         ? L.marker([values[Y1], values[X1]]).addTo(leafMap)
         : L.rectangle(bounds, { color: RECT_COLOR, weight: 1 }))
         .addTo(leafMap);
-      leafMap.fitBounds(bounds);
+      leafMap.fitBounds(bounds.pad(0.1));
     }
 
     let metadataMapsData = new Map();
@@ -86,7 +86,7 @@ function initDvJS() {
       }
     }
 
-    // EditView – methods & data for edit forms
+    // EditView – methods & data for edit forms (also in search)
 
     let editMapsData = new Map();
 
@@ -116,7 +116,7 @@ function initDvJS() {
     }
 
     function updateInputAndValue(data, coord, value) {
-      PF(data.widgetVars[coord]).jq.val(value.toFixed(6));
+      PF(data.widgetVars[coord]).jq.val(value.toFixed(5));
       data.values[coord] = Number(value);
     }
 
@@ -146,7 +146,7 @@ function initDvJS() {
               .addTo(data.leafMap);
     }
 
-    function initializeMapInEditView(key, data) {
+    function initializeMapInView(key, data) {
       data.leafMap = L.map(key, INIT_MAP_OPTS);
       let map = data.leafMap;
       map.invalidateSize();
@@ -155,39 +155,48 @@ function initDvJS() {
       this.updateMap(key);
     }
 
+    function updateEditableMap(dataMap, key) {
+      let data = dataMap.get(key);
+      if (!data || !isValidGeobox(data.values)) {
+        return;
+      }
+      let wrap = shouldWrapGeobox(data.values);
+      data.markerA = !data.markerA
+        ? addMarker([data.values[Y1], data.values[X1]], data)
+        : data.markerA.setLatLng([data.values[Y1], data.values[X1]]);
+      data.markerB = !data.markerB
+        ? addMarker([data.values[Y2], data.values[X2] + wrap * 360.0], data)
+        : data.markerB.setLatLng([data.values[Y2], data.values[X2] + wrap * 360.0]);
+      data.selection = !data.selection
+        ? addSelection(data)
+        : data.selection.setBounds([data.markerA.getLatLng(), data.markerB.getLatLng()]);
+      centerMap(data, data.selection.getBounds());
+    }
+
+    function createEmptyEntry() {
+      return {
+        leafMap: undefined,
+        leafMapInitialized: false,
+        markerA: undefined,
+        markerB: undefined,
+        selection: undefined,
+        values: {},
+        widgetVars: {},
+      };
+    }
+
     let editView = {
       // Update position of markers and selection rectangle using the stored values
       updateMap: function(key) {
-        let data = editMapsData.get(key);
-        if (!data || !isValidGeobox(data.values)) {
-          return;
-        }
-        let wrap = shouldWrapGeobox(data.values);
-        data.markerA = !data.markerA 
-          ? addMarker([data.values[Y1], data.values[X1]], data)
-          : data.markerA.setLatLng([data.values[Y1], data.values[X1]]);
-        data.markerB = !data.markerB 
-          ? addMarker([data.values[Y2], data.values[X2] + wrap * 360.0], data)
-          : data.markerB.setLatLng([data.values[Y2], data.values[X2] + wrap * 360.0]);
-        data.selection = !data.selection
-          ? addSelection(data)
-          : data.selection.setBounds([data.markerA.getLatLng(), data.markerB.getLatLng()]);
-        centerMap(data, data.selection.getBounds());
+        updateEditableMap(editMapsData, key);
       },
 
       prepare: function(key) {
         if (editMapsData.has(key)) {
+          // remove existing map on partial page update
           editMapsData.get(key).leafMap.remove();
         }
-        editMapsData.set(key, {
-          leafMap: undefined,
-          leafMapInitialized: false,
-          markerA: undefined,
-          markerB: undefined,
-          selection: undefined,
-          values: {},
-          widgetVars: {},
-        });
+        editMapsData.set(key, createEmptyEntry());
       },
 
       remove: function(key) {
@@ -204,14 +213,59 @@ function initDvJS() {
         data.widgetVars[field] = widgetVar;
       },
 
-      initializeAll: function (keyPrefix) {
-        initializeAll(editMapsData, keyPrefix, initializeMapInEditView.bind(this));
+      initializeAll: function(keyPrefix) {
+        initializeAll(editMapsData, keyPrefix, initializeMapInView.bind(this));
+      }
+    }
+
+    // SearchView – methods & data for advanced search form
+
+    let searchMapsData = new Map();
+
+    let searchView = {
+      // As the parent fields on advanced search form are not used to render 
+      // their subfields, we have to count coordinate fields with the same key
+      canCreateMap: function(key) {
+        let vars = searchMapsData.get(key).widgetVars;
+        return key && Object.keys(vars).length === 4;
+      },
+
+      updateMap: function (key) {
+        updateEditableMap(searchMapsData, key);
+      },
+
+      prepare: function(key) {
+        if (key && searchMapsData.has(key)) {
+          return;
+        }
+        searchMapsData.set(key, createEmptyEntry());
+      },
+
+      putValue: function (key, field, value) {
+        putValue(searchMapsData, key, field, value);
+      },
+
+      putWidgetVar: function (key, field, widgetVar) {
+        let data = searchMapsData.get(key);
+        data.widgetVars[field] = widgetVar;
+      },
+
+      initializeAll: function(keyPrefix) {
+        initializeAll(searchMapsData, keyPrefix, initializeMapInView.bind(this));
+      },
+
+      removeAll: function() {
+        for (const data of searchMapsData.values()) {
+          data.leafMap.remove();
+        }
+        searchMapsData.clear();
       }
     }
 
     return {
       MetadataView: metadataView,
-      EditView: editView
+      EditView: editView,
+      SearchView: searchView,
     };
   }
 

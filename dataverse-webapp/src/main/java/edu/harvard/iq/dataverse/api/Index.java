@@ -64,6 +64,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.common.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -443,9 +444,8 @@ public class Index extends AbstractApiBean {
 
         StringBuilder sb = new StringBuilder();
 
-        for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
-            SolrField dsfSolrField = SolrField.of(datasetField.getName(), datasetField.getFieldType(),
-                    datasetField.isThisOrParentAllowsMultipleValues(), datasetField.isFacetable());
+        for (DatasetFieldType datasetFieldType : datasetFieldService.findAllOrderedByName()) {
+            SolrField dsfSolrField = SolrField.of(datasetFieldType);
             String nameSearchable = dsfSolrField.getNameSearchable();
 
             SolrField.SolrType solrType = dsfSolrField.getSolrType();
@@ -480,8 +480,8 @@ public class Index extends AbstractApiBean {
             String staticSearchField = null;
             try {
                 staticSearchField = (String) fieldObject.get(searchFieldsObject);
-            } catch (IllegalArgumentException ex) {
-            } catch (IllegalAccessException ex) {
+            } catch (IllegalArgumentException | IllegalAccessException ex) {
+                logger.log(Level.WARNING, "Exception encountered", ex);
             }
 
             /**
@@ -496,9 +496,8 @@ public class Index extends AbstractApiBean {
 
         sb.append("---\n");
 
-        for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
-            SolrField dsfSolrField = SolrField.of(datasetField.getName(), datasetField.getFieldType(),
-                    datasetField.isThisOrParentAllowsMultipleValues(), datasetField.isFacetable());
+        for (DatasetFieldType datasetFieldType : datasetFieldService.findAllOrderedByName()) {
+            SolrField dsfSolrField = SolrField.of(datasetFieldType);
             String nameSearchable = dsfSolrField.getNameSearchable();
 
             String nameFacetable = dsfSolrField.getNameFacetable();

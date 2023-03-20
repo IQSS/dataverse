@@ -1,6 +1,8 @@
-package edu.harvard.iq.dataverse.search.advanced;
+package edu.harvard.iq.dataverse.search.advanced.field;
 
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.search.advanced.SearchFieldType;
+import edu.harvard.iq.dataverse.search.advanced.query.QueryPart;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,5 +21,10 @@ public class GroupingSearchField extends SearchField {
     @Override
     public List<String> getValidatableValues() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public QueryPart getQueryPart() {
+        return QueryPart.EMPTY;
     }
 }

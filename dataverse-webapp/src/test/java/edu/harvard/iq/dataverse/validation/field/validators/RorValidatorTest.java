@@ -32,14 +32,14 @@ class RorValidatorTest {
             "https://ror.org/, false",
             "11abcde12, false"
     })
-    void isValid(String value, boolean expectedResult) {
+    void validate(String value, boolean expectedResult) {
         // given
         DatasetField datasetField = new DatasetField();
         datasetField.setDatasetFieldType(new DatasetFieldType());
         datasetField.setValue(value);
 
         // when
-        ValidationResult result = validator.isValueValid(value, datasetField, Collections.emptyMap(), Collections.emptyMap());
+        ValidationResult result = validator.validateValue(value, datasetField, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isEqualTo(expectedResult);

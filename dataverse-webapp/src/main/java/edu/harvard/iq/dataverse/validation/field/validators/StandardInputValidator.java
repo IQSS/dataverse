@@ -20,8 +20,8 @@ public class StandardInputValidator extends MultiValueValidatorBase {
     }
 
     @Override
-    public ValidationResult isValueValid(String value, ValidatableField field, Map<String, Object> params,
-                                         Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public ValidationResult validateValue(String value, ValidatableField field, Map<String, Object> params,
+                                          Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         String validationFormat = (String) params.get("format");
         if (StringUtils.isNotBlank(validationFormat)) {
             return value.matches(validationFormat)

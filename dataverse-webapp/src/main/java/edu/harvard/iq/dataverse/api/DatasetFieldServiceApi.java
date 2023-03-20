@@ -109,10 +109,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             Long id = dsf.getId();
             String title = dsf.getTitle();
             FieldType fieldType = dsf.getFieldType();
-            SolrField dsfSolrField = SolrField.of(dsf.getName(),
-                                                                   dsf.getFieldType(),
-                                                                   dsf.isThisOrParentAllowsMultipleValues(),
-                                                                   dsf.isFacetable());
+            SolrField dsfSolrField = SolrField.of(dsf);
             String solrFieldSearchable = dsfSolrField.getNameSearchable();
             String solrFieldFacetable = dsfSolrField.getNameFacetable();
             String metadataBlock = dsf.getMetadataBlock().getName();

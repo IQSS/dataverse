@@ -16,9 +16,9 @@ public interface ValidatableField {
 
     DatasetFieldType getDatasetFieldType();
 
-    Option<ValidatableField> getParent();
+    Option<? extends ValidatableField> getParent();
 
-    List<ValidatableField> getChildren();
+    List<? extends ValidatableField> getChildren();
 
     void setValidationMessage(String message);
 

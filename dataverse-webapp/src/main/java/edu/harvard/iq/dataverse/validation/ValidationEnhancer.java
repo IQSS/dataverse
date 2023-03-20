@@ -11,6 +11,11 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * The class is used to add validation info for fields that are not
+ * DatasetFieldType-based (eg. some programmatically constructed search
+ * fields).
+ */
 public class ValidationEnhancer {
     private static final Logger logger = LoggerFactory.getLogger(ValidationEnhancer.class);
 
@@ -43,6 +48,10 @@ public class ValidationEnhancer {
 
     public static class SimpleDatasetFieldType extends DatasetFieldType {
         private String displayName;
+
+        public SimpleDatasetFieldType() {
+            setControlledVocabularyValues(Collections.emptyList());
+        }
 
         @Override
         public String getDisplayName() {

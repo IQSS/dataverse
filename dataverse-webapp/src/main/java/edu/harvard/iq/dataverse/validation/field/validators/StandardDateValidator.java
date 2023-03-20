@@ -32,8 +32,8 @@ public class StandardDateValidator extends MultiValueValidatorBase {
     }
 
     @Override
-    public ValidationResult isValueValid(String value, ValidatableField field, Map<String, Object> params,
-                                         Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public ValidationResult validateValue(String value, ValidatableField field, Map<String, Object> params,
+                                          Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         value = value.startsWith("-") ? value.substring(1) : value;
 
         for (DateTimeFormatter parser : PARSERS) {

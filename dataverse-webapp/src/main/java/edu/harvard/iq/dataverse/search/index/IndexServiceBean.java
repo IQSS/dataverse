@@ -826,8 +826,7 @@ public class IndexServiceBean {
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
                 DatasetFieldType dsfType = dsf.getDatasetFieldType();
-                SolrField dsfSolrField = SolrField.of(dsfType.getName(), dsfType.getFieldType(),
-                        dsfType.isThisOrParentAllowsMultipleValues(), dsfType.isFacetable());
+                SolrField dsfSolrField = SolrField.of(dsfType);
                 String solrFieldSearchable = dsfSolrField.getNameSearchable();
                 String solrFieldFacetable = dsfSolrField.getNameFacetable();
 

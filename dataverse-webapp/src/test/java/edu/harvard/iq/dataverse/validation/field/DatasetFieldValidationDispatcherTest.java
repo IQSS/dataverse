@@ -41,8 +41,8 @@ class DatasetFieldValidationDispatcherTest {
         }
 
         @Override
-        public ValidationResult isValid(ValidatableField field, Map<String, Object> params,
-                                        Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+        public ValidationResult validate(ValidatableField field, Map<String, Object> params,
+                                         Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
             return ValidationResult.invalid(field, "message");
         }
     };

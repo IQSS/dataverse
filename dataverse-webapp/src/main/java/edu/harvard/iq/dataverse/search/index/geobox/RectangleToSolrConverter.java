@@ -1,9 +1,15 @@
 package edu.harvard.iq.dataverse.search.index.geobox;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class RectangleToSolrConverter {
     private static final String POLY_TEMPLATE = "POLYGON((%s))";
     private static final String POINT_TEMPLATE = "POINT(%s)";
     private static final String LINE_TEMPLATE = "LINESTRING(%s)";
+    private static final String GEOMETRYCOLLECTION_TEMPLATE = "GEOMETRYCOLLECTION(%s)";
 
     // -------------------- LOGIC --------------------
 
@@ -34,6 +40,21 @@ public class RectangleToSolrConverter {
             default:
                 throw new IllegalStateException("Unrecognized degeneration type " + rect.getDegenerationType());
         }
+    }
+
+    /**
+     * Converts list of rectangles to GEOMETRYCOLLECTION or single shape if
+     * there's only one entry.
+     */
+    public String wrapIfNeeded(List<Rectangle> rects) {
+        if (rects == null || rects.isEmpty()) {
+            return StringUtils.EMPTY;
+        }
+        return rects.size() > 1
+                ? String.format(GEOMETRYCOLLECTION_TEMPLATE, rects.stream()
+                    .map(this::toSolrPolygon)
+                    .collect(Collectors.joining(",")))
+                : toSolrPolygon(rects.get(0));
     }
 
     // -------------------- PRIVATE --------------------

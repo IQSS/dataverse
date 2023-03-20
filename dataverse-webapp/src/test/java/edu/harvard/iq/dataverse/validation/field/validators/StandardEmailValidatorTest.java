@@ -21,14 +21,14 @@ class StandardEmailValidatorTest {
             "abcd.abcd@mail.com, true",
             "a@b.c, false"
     })
-    void isValid(String value, boolean expectedResult) {
+    void validate(String value, boolean expectedResult) {
         // given
         DatasetField datasetField = new DatasetField();
         datasetField.setDatasetFieldType(new DatasetFieldType());
         datasetField.setValue(value);
 
         // when
-        ValidationResult result = validator.isValid(datasetField, Collections.emptyMap(), Collections.emptyMap());
+        ValidationResult result = validator.validate(datasetField, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isEqualTo(expectedResult);

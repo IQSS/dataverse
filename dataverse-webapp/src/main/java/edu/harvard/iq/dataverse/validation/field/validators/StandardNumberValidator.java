@@ -19,8 +19,8 @@ public class StandardNumberValidator extends MultiValueValidatorBase {
     }
 
     @Override
-    public ValidationResult isValueValid(String value, ValidatableField field, Map<String, Object> params,
-                                         Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public ValidationResult validateValue(String value, ValidatableField field, Map<String, Object> params,
+                                          Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         try {
             Double.parseDouble(value);
             return ValidationResult.ok();

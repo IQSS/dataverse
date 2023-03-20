@@ -18,7 +18,7 @@ class StandardUrlValidatorTest {
             "http://repod.icm.edu.pl,true",
             "mxrdr.icm.edu.pl,false"
     })
-    void isValid(String value, boolean expectedResult) {
+    void validate(String value, boolean expectedResult) {
         // given
         DatasetField datasetField = new DatasetField();
         datasetField.setDatasetFieldType(new DatasetFieldType());
@@ -26,7 +26,7 @@ class StandardUrlValidatorTest {
 
         // when
         ValidationResult result =
-                validator.isValid(datasetField, Collections.emptyMap(), Collections.emptyMap());
+                validator.validate(datasetField, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isEqualTo(expectedResult);

@@ -1,11 +1,15 @@
-package edu.harvard.iq.dataverse.search.advanced;
+package edu.harvard.iq.dataverse.search.advanced.field;
 
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.search.advanced.SearchFieldType;
+import edu.harvard.iq.dataverse.search.advanced.query.QueryPart;
+import edu.harvard.iq.dataverse.search.advanced.query.QueryPartType;
 import io.vavr.Tuple2;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /** Class that holds fields for checkbox display and values that were checked. */
 public class CheckboxSearchField extends SearchField {
@@ -44,6 +48,15 @@ public class CheckboxSearchField extends SearchField {
         return Collections.emptyList();
     }
 
+    @Override
+    public QueryPart getQueryPart() {
+        return checkedFieldValues != null && !checkedFieldValues.isEmpty()
+                ? new QueryPart(QueryPartType.QUERY, checkedFieldValues.stream()
+                    .map(v -> String.format("%s:\"%s\"", getName(), v))
+                    .collect(Collectors.joining(" AND ")))
+                : QueryPart.EMPTY;
+    }
+
     // -------------------- SETTERS --------------------
 
     public void setCheckedFieldValues(List<String> checkedFieldValues) {
@@ -52,5 +65,12 @@ public class CheckboxSearchField extends SearchField {
 
     public void setCheckboxLabelAndValue(List<Tuple2<String, String>> checkboxLabelAndValue) {
         this.checkboxLabelAndValue = checkboxLabelAndValue;
+    }
+
+    // -------------------- toString --------------------
+
+    @Override
+    public String toString() {
+        return getCheckedFieldValues().toString();
     }
 }

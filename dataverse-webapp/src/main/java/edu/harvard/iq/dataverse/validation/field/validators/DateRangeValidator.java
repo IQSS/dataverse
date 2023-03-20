@@ -32,8 +32,8 @@ public class DateRangeValidator extends FieldValidatorBase {
     }
 
     @Override
-    public ValidationResult isValid(ValidatableField field, Map<String, Object> params,
-                                    Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public ValidationResult validate(ValidatableField field, Map<String, Object> params,
+                                     Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         List<String> validatableValues = field.getValidatableValues();
         if (validatableValues.size() != 2) {
             throw new IllegalArgumentException("The field is wrongly configured – exactly two values are expected!");

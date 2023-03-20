@@ -1,6 +1,9 @@
-package edu.harvard.iq.dataverse.search.advanced;
+package edu.harvard.iq.dataverse.search.advanced.field;
 
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.search.advanced.SearchFieldType;
+import edu.harvard.iq.dataverse.search.advanced.query.QueryPart;
+import edu.harvard.iq.dataverse.search.advanced.query.QueryPartType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -41,9 +44,26 @@ public class TextSearchField extends SearchField {
                 : Collections.emptyList();
     }
 
+    @Override
+    public QueryPart getQueryPart() {
+        return StringUtils.isBlank(fieldValue)
+                ? QueryPart.EMPTY
+                : new QueryPart(QueryPartType.QUERY,
+                    getValidatableValues().stream()
+                        .map(v -> getName() + ":" + v)
+                        .collect(Collectors.joining(" AND ")));
+    }
+
     // -------------------- SETTERS --------------------
 
     public void setFieldValue(String fieldValue) {
         this.fieldValue = fieldValue;
+    }
+
+    // -------------------- toString --------------------
+
+    @Override
+    public String toString() {
+        return fieldValue;
     }
 }

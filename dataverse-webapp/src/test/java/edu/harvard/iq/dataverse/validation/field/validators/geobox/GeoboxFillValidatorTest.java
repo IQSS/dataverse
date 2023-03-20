@@ -26,12 +26,12 @@ class GeoboxFillValidatorTest {
             "    |    |  1 |    |    false",
             "    |  1 |    |  1 |    false"
     })
-    void isValid(String x1, String y1, String x2, String y2, boolean expected) {
+    void validate(String x1, String y1, String x2, String y2, boolean expected) {
         // given
         DatasetField fieldX1 = geoboxUtil.selectFromGeobox(GeoboxFields.X1, geoboxUtil.buildGeobox(x1, y1, x2, y2));
 
         // when
-        ValidationResult result = validator.isValid(fieldX1, Collections.emptyMap(), Collections.emptyMap());
+        ValidationResult result = validator.validate(fieldX1, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isEqualTo(expected);

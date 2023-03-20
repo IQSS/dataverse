@@ -1,7 +1,9 @@
-package edu.harvard.iq.dataverse.search.advanced;
+package edu.harvard.iq.dataverse.search.advanced.field;
 
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
+import edu.harvard.iq.dataverse.search.advanced.SearchFieldType;
+import edu.harvard.iq.dataverse.search.advanced.query.QueryPart;
 import io.vavr.control.Option;
 
 import java.io.Serializable;
@@ -14,16 +16,21 @@ public abstract class SearchField implements Serializable, ValidatableField {
         @Override public List<String> getValidatableValues() {
             return Collections.emptyList();
         }
+
+        @Override public QueryPart getQueryPart() {
+            return QueryPart.EMPTY;
+        }
     };
 
     private String name;
     private String displayName;
     private String description;
+    private String displayId;
     private SearchFieldType searchFieldType;
 
     private DatasetFieldType datasetFieldType;
-    private ValidatableField parent;
-    private List<ValidatableField> subfields = new ArrayList<>();
+    private SearchField parent;
+    private List<SearchField> subfields = new ArrayList<>();
     private String validationMessage;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -72,26 +79,42 @@ public abstract class SearchField implements Serializable, ValidatableField {
     }
 
     @Override
-    public List<ValidatableField> getChildren() {
+    public List<SearchField> getChildren() {
         return subfields;
+    }
+
+    public String getDisplayId() {
+        return displayId;
     }
 
     // -------------------- LOGIC --------------------
 
     @Override
-    public Option<ValidatableField> getParent() {
+    public Option<SearchField> getParent() {
         return Option.of(parent);
     }
 
+    public abstract QueryPart getQueryPart();
 
     // -------------------- SETTERS --------------------
 
-    public void setParent(ValidatableField parent) {
+    public void setParent(SearchField parent) {
         this.parent = parent;
     }
 
     @Override
     public void setValidationMessage(String message) {
         this.validationMessage = message;
+    }
+
+    public void setDisplayId(String displayId) {
+        this.displayId = displayId;
+    }
+
+    // -------------------- toString --------------------
+
+    @Override
+    public String toString() {
+        return getValidatableValues().toString();
     }
 }

@@ -2,9 +2,15 @@ package edu.harvard.iq.dataverse.validation.field.validators.geobox;
 
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
+import edu.harvard.iq.dataverse.search.advanced.field.GeoboxCoordSearchField;
+import edu.harvard.iq.dataverse.search.advanced.field.GroupingSearchField;
+import edu.harvard.iq.dataverse.search.advanced.field.SearchField;
+import io.vavr.Tuple;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class GeoboxTestUtil {
 
@@ -39,5 +45,31 @@ public class GeoboxTestUtil {
         field.setDatasetFieldType(type);
         field.setValue(value);
         return field;
+    }
+
+    public SearchField buildGeoboxSearchField(String x1, String y1, String x2, String y2) {
+        DatasetFieldType parentType = new DatasetFieldType();
+        parentType.setName("GoespatialBox");
+        parentType.setFieldType(FieldType.GEOBOX);
+        GroupingSearchField parent = new GroupingSearchField("Geobox", "Geobox Field", "Description", null, parentType);
+        List<SearchField> children = parent.getChildren();
+        Stream.of(Tuple.of(GeoboxFields.X1, x1), Tuple.of(GeoboxFields.Y1, y1),
+                Tuple.of(GeoboxFields.X2, x2), Tuple.of(GeoboxFields.Y2, y2))
+                .filter(t -> t._2() != null)
+                .forEach(t -> {
+                    DatasetFieldType fieldType = new DatasetFieldType() {
+                        @Override public String getDisplayName() {
+                            return t._1().name();
+                        }
+                    };
+                    fieldType.setName("Coord – " + t._1().name());
+                    fieldType.setDescription("Coord descr.");
+                    fieldType.setMetadata(Collections.singletonMap("geoboxCoord", t._1().fieldType()));
+                    GeoboxCoordSearchField coordField = new GeoboxCoordSearchField(fieldType);
+                    coordField.setFieldValue(t._2());
+                    coordField.setParent(parent);
+                    children.add(coordField);
+                });
+        return parent;
     }
 }

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.validation.field;
 
-import edu.harvard.iq.dataverse.search.advanced.SearchField;
+import edu.harvard.iq.dataverse.search.advanced.field.SearchField;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;

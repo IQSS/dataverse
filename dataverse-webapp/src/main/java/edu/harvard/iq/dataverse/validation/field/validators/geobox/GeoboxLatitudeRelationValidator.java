@@ -24,7 +24,7 @@ class GeoboxLatitudeRelationValidator implements FieldValidator {
      * correctly (i.e. value can be safely converted to a number).
      */
     @Override
-    public ValidationResult isValid(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public ValidationResult validate(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         if (!(GeoboxFields.Y1.is(field) || GeoboxFields.Y2.is(field))) {
             return ValidationResult.ok();
         }

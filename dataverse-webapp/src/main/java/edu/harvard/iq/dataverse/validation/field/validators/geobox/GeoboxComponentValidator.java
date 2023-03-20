@@ -29,9 +29,9 @@ public class GeoboxComponentValidator extends FieldValidatorBase {
     }
 
     @Override
-    public ValidationResult isValid(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public ValidationResult validate(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         for (FieldValidator validator : INTERNAL_VALIDATORS) {
-            ValidationResult intermediateResult = validator.isValid(field, params, fieldIndex);
+            ValidationResult intermediateResult = validator.validate(field, params, fieldIndex);
             if (!intermediateResult.isOk()) {
                 return intermediateResult;
             }

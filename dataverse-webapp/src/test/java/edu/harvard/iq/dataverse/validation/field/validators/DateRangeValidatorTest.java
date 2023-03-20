@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.validation.field.validators;
 
-import edu.harvard.iq.dataverse.search.advanced.SearchField;
+import edu.harvard.iq.dataverse.search.advanced.field.SearchField;
+import edu.harvard.iq.dataverse.search.advanced.query.QueryPart;
 import edu.harvard.iq.dataverse.validation.field.ValidationResult;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -35,15 +36,18 @@ class DateRangeValidatorTest {
         " 0987-12-33 |            |           false",
         "       2000 |       1000 |           false",
     })
-    void isValid(String from, String to, boolean expected) {
+    void validate(String from, String to, boolean expected) {
         // given
         SearchField field = new SearchField(null, null, null, null) {
             @Override
             public List<String> getValidatableValues() { return Arrays.asList(from, to); }
+
+            @Override
+            public QueryPart getQueryPart() { return QueryPart.EMPTY; }
         };
 
         // when
-        ValidationResult result = validator.isValid(field, Collections.emptyMap(), Collections.emptyMap());
+        ValidationResult result = validator.validate(field, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isEqualTo(expected);

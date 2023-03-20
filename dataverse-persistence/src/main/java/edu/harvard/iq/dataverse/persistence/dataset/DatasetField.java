@@ -381,15 +381,13 @@ public class DatasetField implements Serializable, ValidatableField {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Option<ValidatableField> getParent() {
-        return (Option<ValidatableField>)(Option<?>) getDatasetFieldParent();
+    public Option<DatasetField> getParent() {
+        return getDatasetFieldParent();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public List<ValidatableField> getChildren() {
-        return (List<ValidatableField>)(List<?>) getDatasetFieldsChildren();
+    public List<DatasetField> getChildren() {
+        return getDatasetFieldsChildren();
     }
 
     @Override

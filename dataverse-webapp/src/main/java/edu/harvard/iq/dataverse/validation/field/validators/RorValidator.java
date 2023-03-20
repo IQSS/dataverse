@@ -28,8 +28,8 @@ public class RorValidator extends MultiValueValidatorBase {
     }
 
     @Override
-    public ValidationResult isValueValid(String fullRor, ValidatableField field, Map<String, Object> params,
-                                         Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public ValidationResult validateValue(String fullRor, ValidatableField field, Map<String, Object> params,
+                                          Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         String fieldName = field.getDatasetFieldType().getDisplayName();
         if (StringUtils.isBlank(fullRor)
             || !fullRor.matches("https://ror\\.org/0[a-hjkmnp-tv-z0-9]{6}[0-9]{2}")) {

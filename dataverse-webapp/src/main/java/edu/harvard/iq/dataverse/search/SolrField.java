@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 
 import java.util.Collections;
@@ -65,10 +66,10 @@ public class SolrField {
 
     // -------------------- LOGIC --------------------
 
-    public static SolrField of(String datasetFieldTypeName, FieldType fieldType, boolean isMultivaluedSolrField,
-                               boolean isSolrFieldCanBeUsedAsFacetable) {
-        SolrType solrType = FIELD_TYPE_TO_SOLR_TYPE.getOrDefault(fieldType, SolrType.TEXT_EN);
-        return new SolrField(datasetFieldTypeName, solrType, isMultivaluedSolrField, isSolrFieldCanBeUsedAsFacetable, true);
+    public static SolrField of(DatasetFieldType datasetFieldType) {
+        SolrType solrType = FIELD_TYPE_TO_SOLR_TYPE.getOrDefault(datasetFieldType.getFieldType(), SolrType.TEXT_EN);
+        return new SolrField(datasetFieldType.getName(), solrType, datasetFieldType.isThisOrParentAllowsMultipleValues(),
+                datasetFieldType.isFacetable(), true);
     }
 
     // -------------------- SETTERS --------------------

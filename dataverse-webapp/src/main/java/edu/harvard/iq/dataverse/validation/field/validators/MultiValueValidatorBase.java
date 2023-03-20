@@ -14,12 +14,12 @@ import java.util.Map;
 public abstract class MultiValueValidatorBase extends FieldValidatorBase {
 
     @Override
-    public ValidationResult isValid(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public ValidationResult validate(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         for (String value : field.getValidatableValues()) {
             if (StringUtils.isBlank(value)) {
                 continue;
             }
-            ValidationResult result = isValueValid(value, field, params, fieldIndex);
+            ValidationResult result = validateValue(value, field, params, fieldIndex);
             if (!result.isOk()) {
                 return result;
             }
@@ -27,5 +27,5 @@ public abstract class MultiValueValidatorBase extends FieldValidatorBase {
         return ValidationResult.ok();
     }
 
-    public abstract ValidationResult isValueValid(String value, ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex);
+    public abstract ValidationResult validateValue(String value, ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex);
 }

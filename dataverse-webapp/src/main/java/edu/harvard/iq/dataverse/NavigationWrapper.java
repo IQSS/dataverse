@@ -15,6 +15,7 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
@@ -27,8 +28,8 @@ import java.util.logging.Logger;
  */
 @ViewScoped
 @Named
-public class NavigationWrapper implements java.io.Serializable {
-    
+public class NavigationWrapper implements Serializable {
+
     /**
      * to regenerate the query string, we need to use the parameter map; however this can contain internal POST parameters
      * that we don't want, so we filter through a list of paramters we do allow
@@ -37,7 +38,7 @@ public class NavigationWrapper implements java.io.Serializable {
     private static final Set<String> ACCEPTABLE_REDIRECT_PARAMS = Sets.newHashSet(
             "id", "alias", "version", "ownerId", "persistentId", "versionId", "datasetId",
             "selectedFileIds", "mode", "dataverseId", "fileId", "datasetVersionId", "guestbookId",
-            "q", "types", "sort", "order", "fq0", "fq1", "fq2", "fq3", "fq4", "fq5", "fq6", "fq7", "fq8", "fq9");
+            "q", "types", "sort", "order");
 
     @Inject
     DataverseSession session;
@@ -60,7 +61,7 @@ public class NavigationWrapper implements java.io.Serializable {
                 StringBuilder queryString = new StringBuilder();
                 for (Map.Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
                     String name = entry.getKey();
-                    if (ACCEPTABLE_REDIRECT_PARAMS.contains(name)) {
+                    if (isAcceptableRedirectParam(name)) {
                         String value = entry.getValue()[0];
                         queryString.append(queryString.length() == 0 ? "?" : "&").append(name).append("=").append(value);
                     }
@@ -80,7 +81,6 @@ public class NavigationWrapper implements java.io.Serializable {
         return redirectPage;
     }
 
-
     public String notAuthorized() {
         if (!session.getUser().isAuthenticated()) {
             return "/loginpage.xhtml" + getRedirectPage();
@@ -93,6 +93,8 @@ public class NavigationWrapper implements java.io.Serializable {
         return sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 
+    // -------------------- PRIVATE --------------------
+
     private String sendError(int errorCode) {
         FacesContext context = FacesContext.getCurrentInstance();
         try {
@@ -104,5 +106,11 @@ public class NavigationWrapper implements java.io.Serializable {
         return "";
     }
 
+    private boolean isAcceptableRedirectParam(String paramName) {
+        return ACCEPTABLE_REDIRECT_PARAMS.contains(paramName) || isFilterQueryParam(paramName);
+    }
 
+    private boolean isFilterQueryParam(String paramName) {
+        return paramName.matches("fq[0-9]+");
+    }
 }

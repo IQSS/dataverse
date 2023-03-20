@@ -32,7 +32,7 @@ class GeoboxComponentValidatorTest {
         "  -180 |   -90 |        |  3 |    true |    true |   false |    true", // Empty X2
         "  -180 |   -90 | 179.99 |  3 |    true |    true |    true |    true", // Ok
     })
-    void isValid(String x1, String y1, String x2, String y2, boolean expX1, boolean expY1, boolean expX2, boolean expY2) {
+    void validate(String x1, String y1, String x2, String y2, boolean expX1, boolean expY1, boolean expX2, boolean expY2) {
         GeoboxFields[] components = new GeoboxFields[] { GeoboxFields.X1, GeoboxFields.Y1, GeoboxFields.X2, GeoboxFields.Y2 };
         boolean[] expected = new boolean[] { expX1, expY1, expX2, expY2 };
 
@@ -43,7 +43,7 @@ class GeoboxComponentValidatorTest {
             DatasetField datasetField = geoboxUtil.selectFromGeobox(components[i], geobox);
 
             // when
-            ValidationResult result = validator.isValid(datasetField, Collections.emptyMap(), Collections.emptyMap());
+            ValidationResult result = validator.validate(datasetField, Collections.emptyMap(), Collections.emptyMap());
 
             // then
             assertThat(result.isOk()).isEqualTo(expected[i]);
