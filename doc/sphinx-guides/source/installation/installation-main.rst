@@ -5,7 +5,7 @@ Installation
 Now that the :doc:`prerequisites` are in place, we are ready to execute the Dataverse Software installation script (the "installer") and verify that the installation was successful by logging in with a "superuser" account.
 
 .. contents:: |toctitle|
-	:local:
+ :local:
 
 .. _dataverse-installer:
 
@@ -40,7 +40,7 @@ Read the installer script directions like this::
         $ cd dvinstall
         $ less README_python.txt
 
-Alternatively you can download :download:`README_python.txt <../../../../scripts/installer/README_python.txt>` from this guides.
+Alternatively you can use the `README_python.txt` located at `/scripts/installer/README_python.txt` from this guide.
 
 Follow the instructions in the text file.
 
@@ -66,7 +66,7 @@ The script will prompt you for some configuration values. If this is a test/eval
 - Postgres admin password - We'll need it in order to create the database and user for the Dataverse Software installer to use, without having to run the installer as root. If you don't know your Postgres admin password, you may simply set the authorization level for localhost to "trust" in the PostgreSQL ``pg_hba.conf`` file (See the PostgreSQL section in the Prerequisites). If this is a production environment, you may want to change it back to something more secure, such as "password" or "md5", after the installation is complete.
 - Network address of a remote Solr search engine service (if needed) - In most cases, you will be running your Solr server on the same host as the Dataverse Software application (then you will want to leave this set to the default value of ``LOCAL``). But in a serious production environment you may set it up on a dedicated separate server.
 
-If desired, these default values can be configured by creating a ``default.config`` (example :download:`here <../../../../scripts/installer/default.config>`) file in the installer's working directory with new values (if this file isn't present, the above defaults will be used).
+If desired, these default values can be configured by creating a ``default.config`` (located at ``/scripts/installer/default.config``) file in the installer's working directory with new values (if this file isn't present, the above defaults will be used).
 
 This allows the installer to be run in non-interactive mode (with ``./install -y -f > install.out 2> install.err``), which can allow for easier interaction with automated provisioning tools.
 
@@ -163,15 +163,15 @@ For the Payara console, load a browser with your domain online, navigate to http
 
 When fine tuning your JavaMail Session, there are a number of fields you can edit. The most important are:
 
-+ **Mail Host:** Desired mail host’s DNS address (e.g. smtp.gmail.com)
++ **Mail Host:** Desired mail host's DNS address (e.g. smtp.gmail.com)
 + **Default User:** Username mail host will recognize (e.g. user\@gmail.com)
 + **Default Sender Address:** Email address that your Dataverse installation will send mail from
 
 Depending on the SMTP server you're using, you may need to add additional properties at the bottom of the page (below "Advanced").
 
-From the "Add Properties" utility at the bottom, use the “Add Property” button for each entry you need, and include the name / corresponding value as needed. Descriptions are optional, but can be used for your own organizational needs. 
+From the "Add Properties" utility at the bottom, use the "Add Property" button for each entry you need, and include the name / corresponding value as needed. Descriptions are optional, but can be used for your own organizational needs. 
 
-**Note:** These properties are just an example. You may need different/more/fewer properties all depending on the SMTP server you’re using.
+**Note:** These properties are just an example. You may need different/more/fewer properties all depending on the SMTP server you're using.
 
 ==============================	==============================
 			Name 							Value
@@ -181,9 +181,9 @@ mail.smtp.password				[Default User password*]
 mail.smtp.port					[Port number to route through]
 ==============================	==============================
 
-**\*WARNING**: Entering a password here will *not* conceal it on-screen. It’s recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
+**\*WARNING**: Entering a password here will *not* conceal it on-screen. It's recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
 
-If your installation’s mail host uses SSL (like smtp.gmail.com) you’ll need these name/value pair properties in place:
+If your installation's mail host uses SSL (like smtp.gmail.com) you'll need these name/value pair properties in place:
 
 ======================================	==============================
 				Name 								Value

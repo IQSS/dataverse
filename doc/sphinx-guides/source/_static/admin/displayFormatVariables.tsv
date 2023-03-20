@@ -1,0 +1,18 @@
+Variable	Description
+(blank)	"The displayFormat is left blank for primitive fields (e.g. subtitle) and fields that do not take values (e.g. author), since displayFormats do not work for these fields."
+#VALUE	The value of the field (instance level).
+#NAME	The name of the field (class level).
+#EMAIL	For displaying emails.
+"<a href=""#VALUE"" >#VALUE</a>"	For displaying the value as a link (if the value entered is a link).
+"<a href=""/#VALUE"" >#VALUE</a>"	"For displaying the value as a link, with the value included in the URL (e.g. if URL is \http://emsearch.rutgers.edu/atlas/#VALUE_summary.html, and the value entered is 1001, the field is displayed as `1001 <http://emsearch.rutgers.edu/atlas/1001_summary.html>`__ (hyperlinked to http://emsearch.rutgers.edu/atlas/1001_summary.html))."
+"<img src=""#VALUE"" alt=""#NAME"" class=""metadata-logo""/><br/>"	For displaying the image of an entered image URL (used to display images in the producer and distributor logos metadata fields).
+"#VALUE:
+
+#VALUE:
+
+(#VALUE)"	"Appends and/or prepends characters to the value of the field. e.g. if the displayFormat for the distributorAffiliation is (#VALUE) (wrapped with parens) and the value entered is University of North Carolina, the field is displayed in the UI as (University of North Carolina)."
+";
+
+:
+
+,"	"Displays the character (e.g. semicolon, comma) between the values of fields within compound fields. For example, if the displayFormat for the compound field ""series"" is a colon, and if the value entered for seriesName is IMPs and for seriesInformation is A collection of NMR data, the compound field is displayed in the UI as IMPs: A collection of NMR data."

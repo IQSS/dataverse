@@ -1,0 +1,18 @@
+Env. variable	Default	Type	Description
+`DEPLOY_PROPS`	(empty)	String	Set to add arguments to generated `asadmin deploy` commands.
+`PREBOOT_COMMANDS`	[preboot]_	Abs. path	Provide path to file with `asadmin` commands to run **before** boot of application server. See also `Pre/postboot script docs`_.
+`POSTBOOT_COMMANDS`	[postboot]_	Abs. path	Provide path to file with `asadmin` commands to run **after** boot of application server. See also `Pre/postboot script docs`_.
+`JVM_ARGS`	(empty)	String	Additional arguments to pass to application server's JVM on start.
+`MEM_MAX_RAM_PERCENTAGE`	`70.0`	Percentage	"Maximum amount of container's allocated RAM to be used as heap space. Make sure to leave some room for native memory, OS overhead etc!"
+`MEM_XSS`	512k	Size	Tune the maximum JVM stack size.
+`MEM_MIN_HEAP_FREE_RATIO`	`20`	Integer	Make the heap shrink aggressively and grow conservatively. See also `run-java-sh recommendations`_.
+`MEM_MAX_HEAP_FREE_RATIO`	`40`	Integer	Make the heap shrink aggressively and grow conservatively. See also `run-java-sh recommendations`_.
+`MEM_MAX_GC_PAUSE_MILLIS`	`500`	Milliseconds	Shorter pause times might result in lots of collections causing overhead without much gain. This needs monitoring and tuning. It's a complex matter.
+`MEM_METASPACE_SIZE`	`256m`	Size	"Initial size of memory reserved for class metadata, also used as trigger to run a garbage collection once passing this size."
+`MEM_MAX_METASPACE_SIZE`	`2g`	Size	The metaspace's size will not outgrow this limit.
+`ENABLE_DUMPS`	`0`	"Bool,`0|1`"	"If enabled, the argument(s) given in `JVM_DUMP_ARG` will be added to the JVM starting up. This means it will enable dumping the heap to `${DUMPS_DIR}` (see below) in out of memory"" cases. (You should back this location with disk space / ramdisk, so it does not write into an overlay filesystem!)"""
+`JVM_DUMPS_ARG`	[dump-option]_	String	Can be fine tuned for more grained controls of dumping behaviour.
+`ENABLE_JMX`	`0`	"Bool,`0|1`"	"Allow insecure JMX connections, enable AMX and tune all JMX monitoring levels to `HIGH`. See also `Payara Docs - Basic Monitoring <https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Logging%20and%20Monitoring/Monitoring%20Service/Basic%20Monitoring%20Configuration.html>`_. A basic JMX service is enabled by default in Payara, exposing basic JVM MBeans, but especially no Payara MBeans."
+`ENABLE_JDWP`	`0`	"Bool,`0|1`"	"Enable the Java Debug Wire Protocol"" to attach a remote debugger to the JVM in this container. Listens on port 9009 when enabled. Search the internet for numerous tutorials to use it."""
+`ENABLE_RELOAD`	`0`	"Bool,`0|1`"	"Enable the dynamic hot"" reloads of files when changed in a deployment. Useful for development, when new artifacts are copied into the running domain."""
+`DATAVERSE_HTTP_TIMEOUT`	900	Seconds	See :ref:`:ApplicationServerSettings` `http.request-timeout-seconds`. *Note:* can also be set using any other `MicroProfile Config Sources`_ available via `dataverse.http.timeout`.

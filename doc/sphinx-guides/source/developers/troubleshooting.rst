@@ -5,7 +5,7 @@ Troubleshooting
 Over in the :doc:`dev-environment` section we described the "happy path" of when everything goes right as you set up your Dataverse Software development environment. Here are some common problems and solutions for when things go wrong.
 
 .. contents:: |toctitle|
-	:local:
+ :local:
 
 context-root in glassfish-web.xml Munged by Netbeans
 ----------------------------------------------------
@@ -65,7 +65,7 @@ mail.smtp.socketFactory.fallback		false
 mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 ======================================	==============================
 
-**\*WARNING**: Entering a password here will *not* conceal it on-screen. It’s recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
+**\*WARNING**: Entering a password here will *not* conceal it on-screen. It's recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
 
 Save these changes at the top of the page and restart your app server to try it out.
 
@@ -89,7 +89,7 @@ As another example, here is how to create a Mail Host via command line for Amazo
 Rebuilding Your Dev Environment
 -------------------------------
 
-A script called :download:`dev-rebuild.sh <../../../../scripts/dev/dev-rebuild.sh>` is available that does the following:
+A script called ``dev-rebuild.sh`` located at ``/scripts/dev/dev-rebuild.sh`` is available that does the following:
 
 - Drops the database.
 - Clears our Solr.

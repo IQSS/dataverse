@@ -1,0 +1,7 @@
+Property	Purpose	Allowed values and restrictions
+name	A user-definable string used to identify a #metadataBlock	"- No spaces or punctuation, except underscore
+- By convention, should start with a letter, and use lower camel case [3]_
+- Must not collide with a field of the same name in the same or any other #datasetField definition, including metadata blocks defined elsewhere [4]_"
+dataverseAlias	"If specified, this metadata block will be available only to the Dataverse collection designated here by its alias and to children of that Dataverse collection."	"Free text. For an example, see ``/scripts/api/data/metadatablocks/custom_hbgdki.tsv``."
+displayName	Acts as a brief label for display related to this #metadataBlock.	"Should be relatively brief. The limit is 256 characters, but very long names might cause display problems."
+blockURI	Associates the properties in a block with an external URI. Properties will be assigned the global identifier blockURI<name> in the OAI_ORE metadata and archival Bags	The citation #metadataBlock has the blockURI https://dataverse.org/schema/citation/ which assigns a default global URI to terms such as https://dataverse.org/schema/citation/subtitle

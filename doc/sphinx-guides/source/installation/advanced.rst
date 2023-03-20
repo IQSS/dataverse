@@ -5,7 +5,7 @@ Advanced Installation
 Advanced installations are not officially supported but here we are at least documenting some tips and tricks that you might find helpful. You can find a diagram of an advanced installation in the :doc:`prep` section.
 
 .. contents:: |toctitle|
-	:local:
+ :local:
 
 Multiple App Servers
 --------------------
@@ -95,7 +95,7 @@ To install:
    tree. In the releases 5.0-5.9 it existed under the name ``ZipDownloadService-v1.0.0``. (A pre-built jar file was
    distributed under that name as part of the 5.0 release on GitHub. Aside from the name change, there have been no 
    changes in the functionality of the tool). 
-2. Copy it, together with the shell script :download:`cgi-bin/zipdownload <../../../../scripts/zipdownload/cgi-bin/zipdownload>`
+2. Copy it, together with the shell script ``cgi-bin/zipdownload`` located at ``/scripts/zipdownload/cgi-bin/zipdownload``
    to the ``cgi-bin`` directory of the chosen Apache server (``/var/www/cgi-bin`` standard).
 3. Make sure the shell script (``zipdownload``) is executable, and edit it to configure the database access credentials.
    Do note that the executable does not need access to the entire Dataverse installation database. A security-conscious

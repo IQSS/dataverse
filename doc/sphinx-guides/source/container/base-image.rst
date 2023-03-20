@@ -10,7 +10,7 @@ at this layer, to make the application image focus on the app itself.
 
 **NOTE: The base image does not contain the Dataverse application itself.**
 
-Within the main repository, you may find the base image's files at ``<git root>/modules/container-base``.
+Within the main repository, you may find the base image's files at `<git root>/modules/container-base`.
 This Maven module uses the `Maven Docker Plugin <https://dmp.fabric8.io>`_ to build and ship the image.
 You may use, extend, or alter this image to your liking and/or host in some different registry if you want to.
 
@@ -27,9 +27,9 @@ Development and maintenance of the `image's code <https://github.com/IQSS/datave
 happens there (again, by the community). Community-supported image tags are based on the two most important
 upstream branches:
 
-- The ``unstable`` tag corresponds to the ``develop`` branch, where pull requests are merged.
+- The `unstable` tag corresponds to the `develop` branch, where pull requests are merged.
   (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
-- The ``stable`` tag corresponds to the ``master`` branch, where releases are cut from.
+- The `stable` tag corresponds to the `master` branch, where releases are cut from.
   (`Dockerfile <https://github.com/IQSS/dataverse/tree/master/modules/container-base/src/main/docker/Dockerfile>`__)
 
 
@@ -41,7 +41,7 @@ The base image provides:
 
 - `Eclipse Temurin JRE using Java 11 <https://adoptium.net/temurin/releases?version=11>`_
 - `Payara Community Application Server <https://docs.payara.fish/community>`_
-- CLI tools necessary to run Dataverse (i. e. ``curl`` or ``jq`` - see also :doc:`../installation/prerequisites` in Installation Guide)
+- CLI tools necessary to run Dataverse (i. e. `curl` or `jq` - see also :doc:`../installation/prerequisites` in Installation Guide)
 - Linux tools for analysis, monitoring and so on
 - `Jattach <https://github.com/apangin/jattach>`__ (attach to running JVM)
 - `wait-for <https://github.com/eficode/wait-for>`__ (tool to "wait for" a service to be available)
@@ -63,27 +63,27 @@ Assuming you have `Docker <https://docs.docker.com/engine/install/>`_, `Docker D
 
 Simply execute the Maven modules packaging target with activated "container profile. Either from the projects Git root:
 
-``mvn -Pct -f modules/container-base install``
+`mvn -Pct -f modules/container-base install`
 
 Or move to the module and execute:
 
-``cd modules/container-base && mvn -Pct install``
+`cd modules/container-base && mvn -Pct install`
 
 Some additional notes, using Maven parameters to change the build and use ...:
 
-- | ... a different tag only: add ``-Dbase.image.tag=tag``.
-  | *Note:* default is ``develop``
-- | ... a different image name and tag: add ``-Dbase.image=name:tag``.
-  | *Note:* default is ``gdcc/base:${base.image.tag}``
-- ... a different image registry than Docker Hub: add ``-Ddocker.registry=registry.example.org`` (see also
+- | ... a different tag only: add `-Dbase.image.tag=tag`.
+  | *Note:* default is `develop`
+- | ... a different image name and tag: add `-Dbase.image=name:tag`.
+  | *Note:* default is `gdcc/base:${base.image.tag}`
+- ... a different image registry than Docker Hub: add `-Ddocker.registry=registry.example.org` (see also
   `DMP docs on registries <https://dmp.fabric8.io/#registry>`__)
-- ... a different Payara version: add ``-Dpayara.version=V.YYYY.R``.
-- | ... a different Temurin JRE version ``A``: add ``-Dtarget.java.version=A`` (i.e. ``11``, ``17``, ...).
-  | *Note:* must resolve to an available image tag ``A-jre`` of Eclipse Temurin!
+- ... a different Payara version: add `-Dpayara.version=V.YYYY.R`.
+- | ... a different Temurin JRE version `A`: add `-Dtarget.java.version=A` (i.e. `11`, `17`, ...).
+  | *Note:* must resolve to an available image tag `A-jre` of Eclipse Temurin!
     (See also `Docker Hub search example <https://hub.docker.com/_/eclipse-temurin/tags?page=1&name=11-jre>`_)
-- ... a different Java Distribution: add ``-Djava.image="name:tag"`` with precise reference to an
+- ... a different Java Distribution: add `-Djava.image="name:tag"` with precise reference to an
   image available local or remote.
-- ... a different UID/GID for the ``payara`` user/group: add ``-Dbase.image.uid=1234`` (or ``.gid``)
+- ... a different UID/GID for the `payara` user/group: add `-Dbase.image.uid=1234` (or `.gid`)
 
 Automated Builds & Publishing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -103,14 +103,14 @@ Processor Architecture and Multiarch
 This image is created as a "multi-arch image", supporting the most common architectures Dataverse usually runs on:
 AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2), by using Maven Docker Plugin's *BuildX* mode.
 
-Building the image via ``mvn -Pct package`` or ``mvn -Pct install`` as above will only build for the architecture of
+Building the image via `mvn -Pct package` or `mvn -Pct install` as above will only build for the architecture of
 the Docker maschine's CPU.
 
-Only ``mvn -Pct deploy`` will trigger building on all enabled architectures.
+Only `mvn -Pct deploy` will trigger building on all enabled architectures.
 Yet, to enable building with non-native code on your build machine, you will need to setup a cross-platform builder.
 
 On Linux, you should install `qemu-user-static <https://github.com/multiarch/qemu-user-static>`__ (preferably via
-your package management) on the host and run ``docker run --rm --privileged multiarch/qemu-user-static --reset -p yes``
+your package management) on the host and run `docker run --rm --privileged multiarch/qemu-user-static --reset -p yes`
 to enable that builder. The Docker plugin will setup everything else for you.
 
 
@@ -124,104 +124,16 @@ Many settings have been carefully selected for best performance and stability of
 As with any service, you should always monitor any metrics and make use of the tuning capabilities the base image
 provides. These are mostly based on environment variables (very common with containers) and provide sane defaults.
 
-.. list-table::
-    :align: left
-    :width: 100
-    :widths: 10 10 10 50
+.. csv-table::
+    :class: longtable
     :header-rows: 1
+    :delim: tab
+    :file: ../_static/container/tunables.tsv
+    :widths: 35, 15, 15, 35
 
-    * - Env. variable
-      - Default
-      - Type
-      - Description
-    * - ``DEPLOY_PROPS``
-      - (empty)
-      - String
-      - Set to add arguments to generated `asadmin deploy` commands.
-    * - ``PREBOOT_COMMANDS``
-      - [preboot]_
-      - Abs. path
-      - Provide path to file with ``asadmin`` commands to run **before** boot of application server.
-        See also `Pre/postboot script docs`_.
-    * - ``POSTBOOT_COMMANDS``
-      - [postboot]_
-      - Abs. path
-      - Provide path to file with ``asadmin`` commands to run **after** boot of application server.
-        See also `Pre/postboot script docs`_.
-    * - ``JVM_ARGS``
-      - (empty)
-      - String
-      - Additional arguments to pass to application server's JVM on start.
-    * - ``MEM_MAX_RAM_PERCENTAGE``
-      - ``70.0``
-      - Percentage
-      - Maximum amount of container's allocated RAM to be used as heap space.
-        Make sure to leave some room for native memory, OS overhead etc!
-    * - ``MEM_XSS``
-      - ``512k``
-      - Size
-      - Tune the maximum JVM stack size.
-    * - ``MEM_MIN_HEAP_FREE_RATIO``
-      - ``20``
-      - Integer
-      - Make the heap shrink aggressively and grow conservatively. See also `run-java-sh recommendations`_.
-    * - ``MEM_MAX_HEAP_FREE_RATIO``
-      - ``40``
-      - Integer
-      - Make the heap shrink aggressively and grow conservatively. See also `run-java-sh recommendations`_.
-    * - ``MEM_MAX_GC_PAUSE_MILLIS``
-      - ``500``
-      - Milliseconds
-      - Shorter pause times might result in lots of collections causing overhead without much gain.
-        This needs monitoring and tuning. It's a complex matter.
-    * - ``MEM_METASPACE_SIZE``
-      - ``256m``
-      - Size
-      - Initial size of memory reserved for class metadata, also used as trigger to run a garbage collection
-        once passing this size.
-    * - ``MEM_MAX_METASPACE_SIZE``
-      - ``2g``
-      - Size
-      - The metaspace's size will not outgrow this limit.
-    * - ``ENABLE_DUMPS``
-      - ``0``
-      - Bool, ``0|1``
-      - If enabled, the argument(s) given in ``JVM_DUMP_ARG`` will be added to the JVM starting up.
-        This means it will enable dumping the heap to ``${DUMPS_DIR}`` (see below) in "out of memory" cases.
-        (You should back this location with disk space / ramdisk, so it does not write into an overlay filesystem!)
-    * - ``JVM_DUMPS_ARG``
-      - [dump-option]_
-      - String
-      - Can be fine tuned for more grained controls of dumping behaviour.
-    * - ``ENABLE_JMX``
-      - ``0``
-      - Bool, ``0|1``
-      - Allow insecure JMX connections, enable AMX and tune all JMX monitoring levels to ``HIGH``.
-        See also `Payara Docs - Basic Monitoring <https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Logging%20and%20Monitoring/Monitoring%20Service/Basic%20Monitoring%20Configuration.html>`_.
-        A basic JMX service is enabled by default in Payara, exposing basic JVM MBeans, but especially no Payara MBeans.
-    * - ``ENABLE_JDWP``
-      - ``0``
-      - Bool, ``0|1``
-      - Enable the "Java Debug Wire Protocol" to attach a remote debugger to the JVM in this container.
-        Listens on port 9009 when enabled. Search the internet for numerous tutorials to use it.
-    * - ``ENABLE_RELOAD``
-      - ``0``
-      - Bool, ``0|1``
-      - Enable the dynamic "hot" reloads of files when changed in a deployment. Useful for development,
-        when new artifacts are copied into the running domain.
-    * - ``DATAVERSE_HTTP_TIMEOUT``
-      - ``900``
-      - Seconds
-      - See :ref:`:ApplicationServerSettings` ``http.request-timeout-seconds``.
-
-        *Note:* can also be set using any other `MicroProfile Config Sources`_ available via ``dataverse.http.timeout``.
-
-
-.. [preboot] ``${CONFIG_DIR}/pre-boot-commands.asadmin``
-.. [postboot] ``${CONFIG_DIR}/post-boot-commands.asadmin``
-.. [dump-option] ``-XX:+HeapDumpOnOutOfMemoryError``
-
-
+.. [preboot] `${CONFIG_DIR}/pre-boot-commands.asadmin`
+.. [postboot] `${CONFIG_DIR}/post-boot-commands.asadmin`
+.. [dump-option] `-XX:+HeapDumpOnOutOfMemoryError`
 
 Locations
 +++++++++
@@ -240,32 +152,31 @@ building upon it. You can also use these for references in scripts, etc.
 
 .. list-table::
     :align: left
-    :width: 100
-    :widths: 10 10 50
+    :widths: 25 25 50
     :header-rows: 1
 
     * - Env. variable
       - Value
       - Description
-    * - ``HOME_DIR``
-      - ``/opt/payara``
+    * - `HOME_DIR`
+      - `/opt/payara`
       - Home base to Payara and the application
-    * - ``PAYARA_DIR``
-      - ``${HOME_DIR}/appserver``
+    * - `PAYARA_DIR`
+      - `${HOME_DIR}/appserver`
       - Installation directory of Payara server
-    * - ``SCRIPT_DIR``
-      - ``${HOME_DIR}/scripts``
+    * - `SCRIPT_DIR`
+      - `${HOME_DIR}/scripts`
       - Any scripts like the container entrypoint, init scripts, etc
-    * - ``CONFIG_DIR``
-      - ``${HOME_DIR}/config``
+    * - `CONFIG_DIR`
+      - `${HOME_DIR}/config`
       - Payara Server configurations like pre/postboot command files go here
         (Might be reused for Dataverse one day)
-    * - ``DEPLOY_DIR``
-      - ``${HOME_DIR}/deployments``
+    * - `DEPLOY_DIR`
+      - `${HOME_DIR}/deployments`
       - Any EAR or WAR file, exploded WAR directory etc are autodeployed on start
-    * - ``DOMAIN_DIR``
-      - ``${PAYARA_DIR}/glassfish`` ``/domains/${DOMAIN_NAME}``
-      - Path to root of the Payara domain applications will be deployed into. Usually ``${DOMAIN_NAME}`` will be ``domain1``.
+    * - `DOMAIN_DIR`
+      - `${PAYARA_DIR}/glassfish` `/domains/${DOMAIN_NAME}`
+      - Path to root of the Payara domain applications will be deployed into. Usually `${DOMAIN_NAME}` will be `domain1`.
 
 
 **Writeable at runtime:**
@@ -287,18 +198,18 @@ named Docker volume in these places to avoid data loss, gain performance and/or 
     * - Env. variable
       - Value
       - Description
-    * - ``STORAGE_DIR``
-      - ``/dv``
+    * - `STORAGE_DIR`
+      - `/dv`
       - This place is writeable by the Payara user, making it usable as a place to store research data, customizations
         or other. Images inheriting the base image should create distinct folders here, backed by different
         mounted volumes.
-    * - ``SECRETS_DIR``
-      - ``/secrets``
+    * - `SECRETS_DIR`
+      - `/secrets`
       - Mount secrets or other here, being picked up automatically by
         `Directory Config Source <https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Directory.html>`_.
         See also various :doc:`../installation/config` options involving secrets.
-    * - ``DUMPS_DIR``
-      - ``/dumps``
+    * - `DUMPS_DIR`
+      - `/dumps`
       - Default location where heap dumps will be stored (see above).
         You should mount some storage here (disk or ephemeral).
 
@@ -311,7 +222,7 @@ The default ports that are exposed by this image are:
 - 8080 - HTTP listener
 - 4848 - Admin Service HTTPS listener
 - 8686 - JMX listener
-- 9009 - "Java Debug Wire Protocol" port (when ``ENABLE_JDWP=1``)
+- 9009 - "Java Debug Wire Protocol" port (when `ENABLE_JDWP=1`)
 
 The HTTPS listener (on port 8181) becomes deactivated during the build, as we will always need to reverse-proxy the
 application server and handle SSL/TLS termination at this point. Save the memory and some CPU cycles!
@@ -325,21 +236,21 @@ Entry & Extension Points
 
 The entrypoint shell script provided by this base image will by default ensure to:
 
-- Run any scripts named ``${SCRIPT_DIR}/init_*`` or in ``${SCRIPT_DIR}/init.d/*`` directory for initialization
+- Run any scripts named `${SCRIPT_DIR}/init_*` or in `${SCRIPT_DIR}/init.d/*` directory for initialization
   **before** the application server starts.
-- Run an executable script ``${SCRIPT_DIR}/startInBackground.sh`` in the background - if present.
-- Run the application server startup scripting in foreground (``${SCRIPT_DIR}/startInForeground.sh``).
+- Run an executable script `${SCRIPT_DIR}/startInBackground.sh` in the background - if present.
+- Run the application server startup scripting in foreground (`${SCRIPT_DIR}/startInForeground.sh`).
 
 If you need to create some scripting that runs in parallel under supervision of `dumb-init <https://github.com/Yelp/dumb-init>`_,
 e.g. to wait for the application to deploy before executing something, this is your point of extension: simply provide
-the ``${SCRIPT_DIR}/startInBackground.sh`` executable script with your application image.
+the `${SCRIPT_DIR}/startInBackground.sh` executable script with your application image.
 
 
 
 Other Hints
 +++++++++++
 
-By default, ``domain1`` is enabled to use the ``G1GC`` garbage collector.
+By default, `domain1` is enabled to use the `G1GC` garbage collector.
 
 For running a Java application within a Linux based container, the support for CGroups is essential. It has been
 included and activated by default since Java 8u192, Java 11 LTS and later. If you are interested in more details,

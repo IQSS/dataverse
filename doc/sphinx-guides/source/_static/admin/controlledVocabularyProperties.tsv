@@ -1,0 +1,5 @@
+Property	Purpose	Allowed values and restrictions
+DatasetField	Specifies the #datasetField to which #datasetField to which this entry applies.	"Must reference an existing #datasetField. As a best practice, the value should reference a #datasetField in the current metadata block definition. (It is technically possible to reference an existing #datasetField from another metadata block.)"
+Value	"A short display string, representing an enumerated value for this field. If the identifier property is empty, this value is used as the identifier."	Free text
+identifier	"A string used to encode the selected enumerated value of a field. If this property is empty, the value of the “Value” field is used as the identifier."	Free text
+displayOrder	Control the order in which the enumerated values are displayed for selection.	Non-negative integer.

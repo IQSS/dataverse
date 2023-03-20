@@ -9,7 +9,7 @@ Before running the Dataverse Software installation script, you must install and 
 After following all the steps below, you can proceed to the :doc:`installation-main` section.
 
 .. contents:: |toctitle|
-	:local:
+ :local:
 
 Linux
 -----
@@ -80,9 +80,9 @@ Launching Payara on System Boot
 
 The Dataverse Software installation script will start Payara if necessary, but you may find the following scripts helpful to launch Payara start automatically on boot. They were originally written for Glassfish but have been adjusted for Payara.
 
-- This :download:`Systemd file<../_static/installation/files/etc/systemd/payara.service>` may be serve as a reference for systems using Systemd (such as RHEL/derivative or Debian 10, Ubuntu 16+)
-- This :download:`init script<../_static/installation/files/etc/init.d/payara.init.service>` may be useful for RHEL/derivative or Ubuntu >= 14 if you're using a Payara service account, or
-- This :download:`Payara init script <../_static/installation/files/etc/init.d/payara.init.root>` may be helpful if you're just going to run Payara as root (not recommended).
+- The ``Systemd file`` located at ``/_static/installation/files/etc/systemd/payara.service`` may be serve as a reference for systems using Systemd (such as RHEL/derivative or Debian 10, Ubuntu 16+)
+- The ``init script`` located at ``/_static/installation/files/etc/init.d/payara.init.service`` may be useful for RHEL/derivative or Ubuntu >= 14 if you're using a Payara service account, or
+- The ``Payara init script`` located at ``/_static/installation/files/etc/init.d/payara.init.root`` may be helpful if you're just going to run Payara as root (not recommended).
 
 It is not necessary for Payara to be running before you execute the Dataverse Software installation script; it will start Payara for you.
 
@@ -211,14 +211,14 @@ Solr Init Script
 Please choose the right option for your underlying Linux operating system.
 It will not be necessary to execute both!
 
-For systems running systemd (like RedHat or derivatives since 7, Debian since 9, Ubuntu since 15.04), as root, download :download:`solr.service<../_static/installation/files/etc/systemd/solr.service>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+For systems running systemd (like RedHat or derivatives since 7, Debian since 9, Ubuntu since 15.04), as root, use the ``solr.service`` located at ``/_static/installation/files/etc/systemd/solr.service`` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
 
         cp /tmp/solr.service /etc/systemd/system
         systemctl daemon-reload
         systemctl start solr.service
         systemctl enable solr.service
 
-For systems using init.d (like CentOS 6), download this :download:`Solr init script <../_static/installation/files/etc/init.d/solr>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+For systems using init.d (like CentOS 6), use the ``Solr init script`` located at ``/_static/installation/files/etc/init.d/solr`` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
 
         cp /tmp/solr /etc/init.d
         service start solr
@@ -305,7 +305,7 @@ Installing R
 
 For RHEL/derivative, the EPEL distribution is strongly recommended:
 
-If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
+If :fixedwidthplain:`yum` isn't configured to use EPEL repositories (https://fedoraproject.org/wiki/EPEL):
 
 RHEL8/derivative users can install the epel-release RPM::
 
@@ -325,8 +325,8 @@ Rocky or AlmaLinux 8.3+ users will need to enable the PowerTools repository::
 
 RHEL 7 users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
 
-• click on "Subscribed Channels: Alter Channel Subscriptions"
-• enable EPEL, Server Extras, Server Optional
+- click on "Subscribed Channels: Alter Channel Subscriptions"
+- enable EPEL, Server Extras, Server Optional
 
 Finally, install R with :fixedwidthplain:`yum`::
 
@@ -377,8 +377,8 @@ for the daemon (:fixedwidthplain:`/etc/init.d/rserve`), so that it
 gets started automatically when the system boots.  This is an
 :fixedwidthplain:`init.d`-style startup file. If this is a
 RedHat/CentOS 7 system, you may want to use the
-:download:`rserve.service<../../../../scripts/r/rserve/rserve.service>`
-systemd unit file instead. Copy it into the /usr/lib/systemd/system/ directory, then::
+`/scripts/r/rserve/rserve.service` systemd unit file instead. 
+Copy it into the /usr/lib/systemd/system/ directory, then::
 
 	# systemctl daemon-reload
 	# systemctl enable rserve

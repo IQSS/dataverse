@@ -1,0 +1,9 @@
+Fieldtype	Definition
+none	"Used for compound fields, in which case the parent field would have no value and display no data entry control."
+date	"A date, expressed in one of three resolutions of the form YYYY-MM-DD, YYYY-MM, or YYYY."
+email	A valid email address. Not indexed for privacy reasons.
+text	Any text other than newlines may be entered into this field.
+textbox	"Any text may be entered. For input, the Dataverse Software presents a multi-line area that accepts newlines. While any HTML is permitted, only a subset of HTML tags will be rendered in the UI. See the :ref:`supported-html-fields` section of the Dataset + File Management page in the User Guide."
+url	"If not empty, field must contain a valid URL."
+int	An integer value destined for a numeric field.
+float	A floating point number destined for a numeric field.
