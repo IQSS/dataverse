@@ -90,7 +90,7 @@ public class SignpostingIT {
 
         Response linksetResponse = given().accept(ContentType.JSON).get(linksetUrl);
 
-        JsonObject data = JsonUtil.getJsonObject(linksetResponse.getBody().asString());
+        JsonObject data = JsonUtil.getJsonObject(linksetResponse.getBody().asString()).getJsonObject("data");
         JsonObject lso = data.getJsonArray("linkset").getJsonObject(0);
         System.out.println("Linkset: " + lso.toString());
 
