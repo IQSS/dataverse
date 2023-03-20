@@ -69,7 +69,7 @@ public class SignpostingResources {
             valueList.add(items);
         }
 
-        String describedby = "<" + ds.getGlobalId().toURL().toString() + ">;rel=\"describedby\"" + ";type=\"" + "application/vnd.citationstyles.csl+json\"";
+        String describedby = "<" + ds.getGlobalId().asURL().toString() + ">;rel=\"describedby\"" + ";type=\"" + "application/vnd.citationstyles.csl+json\"";
         describedby += ",<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId="
                 + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"application/json+ld\"";
         valueList.add(describedby);
@@ -92,7 +92,7 @@ public class SignpostingResources {
 
     public JsonArrayBuilder getJsonLinkset() {
         Dataset ds = workingDatasetVersion.getDataset();
-        GlobalId gid = new GlobalId(ds);
+        GlobalId gid = ds.getGlobalId();
         String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier();
         JsonArrayBuilder authors = getJsonAuthors(getAuthorURLs(false));
         JsonArrayBuilder items = getJsonItems();
@@ -103,7 +103,7 @@ public class SignpostingResources {
         mediaTypes.add(
                 jsonObjectBuilder().add(
                         "href",
-                        gid.toURL().toString()
+                        gid.asURL().toString()
                 ).add(
                         "type",
                         "application/vnd.citationstyles.csl+json"
