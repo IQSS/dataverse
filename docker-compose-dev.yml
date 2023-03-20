@@ -11,6 +11,7 @@ services:
     environment:
       - DATAVERSE_DB_HOST=postgres
       - DATAVERSE_DB_PASSWORD=secret
+      - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
     ports:
       - "8080:8080" # HTTP
       - "9009:9009" # JDWP

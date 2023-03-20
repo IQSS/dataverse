@@ -777,6 +777,7 @@
                 <APP_IMAGE>${app.image}</APP_IMAGE>
                 <POSTGRES_VERSION>${postgresql.server.version}</POSTGRES_VERSION>
                 <SOLR_VERSION>${solr.version}</SOLR_VERSION>
+                <DATAVERSE_DB_USER>dataverse</DATAVERSE_DB_USER>
             </properties>
         
             <build>
