@@ -91,16 +91,14 @@ public class SignpostingIT {
         Response linksetResponse = given().accept(ContentType.JSON).get(linksetUrl);
 
         String responseString = linksetResponse.getBody().asString();
-        System.out.println("response: " + responseString);
         
         JsonObject data = JsonUtil.getJsonObject(responseString).getJsonObject("data");
-        System.out.println("data: " + data.toString());
         JsonObject lso = data.getJsonArray("linkset").getJsonObject(0);
         System.out.println("Linkset: " + lso.toString());
 
         linksetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        assertTrue(lso.getJsonObject("cite-as").getString("href")
+        assertTrue(lso.getJsonArray("cite-as").getJsonObject(0).getString("href")
                 .indexOf("/dataset.xhtml?persistentId=" + datasetPid) > 0);
         assertTrue(lso.containsKey("describedby"));
 
