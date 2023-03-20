@@ -542,6 +542,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         saveEnabled = true;
         return null;
     }
+    
+    public boolean isQuotaExceeded() {
+        return systemConfig.isStorageQuotasEnforced() && datafileService.getUserStorageQuota((AuthenticatedUser) session.getUser(), dataset).getRemainingQuotaInBytes() == 0;
+    }
 
     public String init() {
         // default mode should be EDIT
