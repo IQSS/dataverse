@@ -219,6 +219,8 @@ Run the following command:
 
 This will disable DOI registration by using a fake (in-code) DOI provider. Please note that this feature is only available in Dataverse Software 4.10+ and that at present, the UI will give no indication that the DOIs thus minted are fake.
 
+Developers may also wish to consider using :ref:`PermaLinks <permalinks>`
+
 Configure Your Development Environment for GUI Edits
 ----------------------------------------------------
 
