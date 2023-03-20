@@ -5,6 +5,9 @@ import com.jayway.restassured.http.ContentType;
 
 import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.response.Response;
+
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.Assert.assertTrue;
@@ -87,7 +90,7 @@ public class SignpostingIT {
 
         Response linksetResponse = given().accept(ContentType.JSON).get(linksetUrl);
 
-        JsonObject data = linksetResponse.getBody().jsonPath().getJsonObject("data");
+        JsonObject data = JsonUtil.getJsonObject(linksetResponse.getBody().asString());
         JsonObject lso = data.getJsonArray("linkset").getJsonObject(0);
         System.out.println("Linkset: " + lso.toString());
 
