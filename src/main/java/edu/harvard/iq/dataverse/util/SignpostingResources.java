@@ -1,18 +1,17 @@
 package edu.harvard.iq.dataverse.util;
 
-/*
+/**
   Eko Indarto, DANS
   Vic Ding, DANS
 
   This file prepares the resources used in Signposting
 
-  It requires correspondence configuration to function well.
-  The configuration key used is SignpostingConf.
+  Two configurable options allow changing the limit for the number of authors or datafiles (items) allowed in the level-1 header.
+  If more than this number exists, no entries of that type are included in the level-1 header.
+  See the documentation for the dataverse.signposting.level1-author-limit, and dataverse.signposting.level1-item-limit
 
-  useDefaultFileType is an on/off switch during linkset creating time, it controls whether the default type is
-  used, which is always Dataset
-
-  The configuration can be modified during run time by the administrator.
+  Also note that per the signposting spec, authors for which no PID/URL has been provided are not included in the signposting output.
+  
  */
 
 import edu.harvard.iq.dataverse.*;
