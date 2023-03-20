@@ -135,6 +135,8 @@ provides. These are mostly based on environment variables (very common with cont
 .. [postboot] `${CONFIG_DIR}/post-boot-commands.asadmin`
 .. [dump-option] `-XX:+HeapDumpOnOutOfMemoryError`
 
+.. _base-locations:
+
 Locations
 +++++++++
 
