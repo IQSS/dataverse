@@ -1721,7 +1721,9 @@ of purposes:
    under certain conditions. This directory may also be used by file stores for :ref:`permanent file storage <storage-files-dir>`,
    but this is controlled by other, store-specific settings.
 
-Defaults to ``/tmp/dataverse``. Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_DIRECTORY``.
+Defaults to ``/tmp/dataverse``. Can also be set via *MicroProfile Config API* sources, e.g. the environment variable
+``DATAVERSE_FILES_DIRECTORY``. Defaults to ``${STORAGE_DIR}`` for profile ``ct``, important for the
+:ref:`Dataverse Application Image <app-locations>`.
 
 .. _dataverse.files.uploads:
 
@@ -1736,6 +1738,7 @@ Defaults to ``./uploads``, which resolves to ``/usr/local/payara5/glassfish/doma
 installation.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
+Defaults to ``${STORAGE_DIR}/uploads`` for profile ``ct``, important for the :ref:`Dataverse Application Image <app-locations>`.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2170,6 +2173,32 @@ See :ref:`discovery-sign-posting` for details.
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_ITEM_LIMIT``.
 
 
+.. _feature-flags:
+
+Feature Flags
+-------------
+
+Certain features might be deactivated because they are experimental and/or opt-in previews. If you want to enable these,
+please find all known feature flags below. Any of these flags can be activated using a boolean value
+(case-insensitive, one of "true", "1", "YES", "Y", "ON") for the setting.
+
+.. list-table::
+    :widths: 35 50 15
+    :header-rows: 1
+    :align: left
+
+    * - Flag Name
+      - Description
+      - Default status
+    * - Example flag
+      - Replace this with something real
+      - ``Off``
+
+**Note:** Can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_FEATURE_XXX``.
+
+
+
 .. _:ApplicationServerSettings:
 
 Application Server Settings
@@ -2195,6 +2224,8 @@ As per the spec, you will need to set the configuration value ``mp.config.profil
 This is best done with a system property:
 
 ``./asadmin create-system-properties 'mp.config.profile=ct'``
+
+*Note: the* :doc:`../container/app-image` *uses an (overrideable) environment variable to activate this.*
 
 You might also create your own profiles and use these, please refer to the upstream documentation linked above.
 

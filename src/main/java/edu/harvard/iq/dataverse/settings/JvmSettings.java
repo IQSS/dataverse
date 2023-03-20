@@ -73,6 +73,12 @@ public enum JvmSettings {
     SIGNPOSTING_LEVEL1_AUTHOR_LIMIT(SCOPE_SIGNPOSTING, "level1-author-limit"),
     SIGNPOSTING_LEVEL1_ITEM_LIMIT(SCOPE_SIGNPOSTING, "level1-item-limit"),
     
+    // FEATURE FLAGS SETTINGS
+    SCOPE_FLAGS(PREFIX, "feature"),
+    // This is a special placeholder-type setting entry, to be filled in by FeatureFlag entries during lookup.
+    // Avoids adding flag entries twice.
+    FEATURE_FLAG(SCOPE_FLAGS),
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
