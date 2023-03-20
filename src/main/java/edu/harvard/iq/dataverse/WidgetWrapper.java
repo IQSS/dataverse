@@ -62,7 +62,7 @@ public class WidgetWrapper implements java.io.Serializable {
                         case "dataverse": 
                             break; // keep looping
                         case "dataset":
-                            if (((Dataset) dvo).getGlobalIdString().equals(widgetHome)) {
+                            if (((Dataset) dvo).getGlobalId().asString().equals(widgetHome)) {
                                 return true;
                             }   break;
                         default:

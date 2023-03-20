@@ -258,7 +258,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getPersistentURL() {
-        return new GlobalId(this).toURL().toString();
+        return this.getGlobalId().asURL();
     }
     
     public List<DataFile> getFiles() {
@@ -765,13 +765,13 @@ public class Dataset extends DvObjectContainer {
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
             if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalIdString();
+                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId().asString();
             } else if (HarvestingClient.HARVEST_STYLE_VDC.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 String rootArchiveUrl = this.getHarvestedFrom().getHarvestingUrl();
                 int c = rootArchiveUrl.indexOf("/OAIHandler");
                 if (c > 0) {
                     rootArchiveUrl = rootArchiveUrl.substring(0, c);
-                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalIdString();
+                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId().asString();
                 }
             } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // For the ICPSR, it turns out that the best thing to do is to 
@@ -915,4 +915,8 @@ public class Dataset extends DvObjectContainer {
         return DatasetUtil.getThumbnail(this, datasetVersion, size);
     }
 
+    @Override
+    public String getTargetUrl() {
+        return Dataset.TARGET_URL;
+    }
 }
