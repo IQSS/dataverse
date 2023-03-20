@@ -138,6 +138,7 @@ public class MakeDataCountApi extends AbstractApiBean {
         try {
             Dataset dataset = findDatasetOrDie(id);
             String persistentId = dataset.getGlobalId().toString();
+            //ToDo - if this isn't a DOI?
             // DataCite wants "doi=", not "doi:".
             String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
             // Request max page size and then loop to handle multiple pages

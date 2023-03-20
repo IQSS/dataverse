@@ -64,14 +64,17 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     @EJB
     DataverseServiceBean dataverseService;
     @EJB 
-    SettingsServiceBean settingsService;    
+    SettingsServiceBean settingsService;
     private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
     
-    private static final String HANDLE_PROTOCOL_TAG = "hdl";
+    public static final String HDL_PROTOCOL = "hdl";
     int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+    public static final String HTTP_HDL_RESOLVER_URL = "http://hdl.handle.net/";
+    public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     
     public HandlenetServiceBean() {
         logger.log(Level.FINE,"Constructor");
+        configured = true;
     }
 
     @Override
@@ -81,7 +84,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
     public void reRegisterHandle(DvObject dvObject) {
         logger.log(Level.FINE,"reRegisterHandle");
-        if (!HANDLE_PROTOCOL_TAG.equals(dvObject.getProtocol())) {
+        if (!HDL_PROTOCOL.equals(dvObject.getProtocol())) {
             logger.log(Level.WARNING, "reRegisterHandle called on a dvObject with the non-handle global id: {0}", dvObject.getId());
         }
         
@@ -326,11 +329,6 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     @Override
-    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String identifier)  {
-        throw new NotImplementedException();
-    }
-
-    @Override
     public String modifyIdentifierTargetURL(DvObject dvObject) throws Exception  {
         logger.log(Level.FINE,"modifyIdentifier");
         reRegisterHandle(dvObject);
@@ -412,7 +410,37 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
     }
 
-}
+    @Override
+    public GlobalId parsePersistentId(String pidString) {
+        if (pidString.startsWith(HDL_RESOLVER_URL)) {
+            pidString = pidString.replace(HDL_RESOLVER_URL, (HDL_PROTOCOL + ":"));
+        } else if (pidString.startsWith(HTTP_HDL_RESOLVER_URL)) {
+            pidString = pidString.replace(HTTP_HDL_RESOLVER_URL, (HDL_PROTOCOL + ":"));
+        }
+        return super.parsePersistentId(pidString);
+    }
 
+    @Override
+    public GlobalId parsePersistentId(String protocol, String identifierString) {
+        if (!HDL_PROTOCOL.equals(protocol)) {
+            return null;
+        }
+        GlobalId globalId = super.parsePersistentId(protocol, identifierString);
+        return globalId;
+    }
+    
+    @Override
+    public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
+        if (!HDL_PROTOCOL.equals(protocol)) {
+            return null;
+        }
+        return super.parsePersistentId(protocol, authority, identifier);
+    }
+
+    @Override
+    public String getUrlPrefix() {
+        return HDL_RESOLVER_URL;
+    }
+}
 
 
