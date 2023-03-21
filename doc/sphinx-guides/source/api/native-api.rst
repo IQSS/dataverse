@@ -3371,6 +3371,8 @@ The fully expanded example above (without the environment variables) looks like 
 
 Only users with superuser permissions may delete harvesting sets.
 
+.. _managing-harvesting-clients-api:
+
 Managing Harvesting Clients
 ---------------------------
 
