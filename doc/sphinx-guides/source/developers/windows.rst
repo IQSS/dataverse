@@ -6,6 +6,8 @@ Development on Windows is not well supported, unfortunately. You will have a muc
 
 Vagrant commands appear below and were tested on Windows 10 but the Vagrant environment is currently broken. Please see https://github.com/IQSS/dataverse/issues/6849
 
+There is a newer, experimental Docker option described under :doc:`/container/dev-usage` in the Container Guide.
+
 .. contents:: |toctitle|
 	:local:
 

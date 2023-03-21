@@ -109,3 +109,17 @@ always like ``dataverse.<scope/....>.newname...=old.property.name``. Note this d
 aliases.
 
 Details can be found in ``edu.harvard.iq.dataverse.settings.source.AliasConfigSource``
+
+Adding a Feature Flag
+^^^^^^^^^^^^^^^^^^^^^
+
+Some parts of our codebase might be opt-in only. Experimental or optional feature previews can be switched on using our
+usual configuration mechanism, a JVM setting.
+
+Feature flags are implemented in the enumeration ``edu.harvard.iq.dataverse.settings.FeatureFlags``, which allows for
+convenient usage of it anywhere in the codebase. When adding a flag, please add it to the enum, think of a default
+status, add some Javadocs about the flagged feature and add a ``@since`` tag to make it easier to identify when a flag
+has been introduced.
+
+We want to maintain a list of all :ref:`feature flags <feature-flags>` in the :ref:`configuration guide <feature-flags>`,
+please add yours to the list.

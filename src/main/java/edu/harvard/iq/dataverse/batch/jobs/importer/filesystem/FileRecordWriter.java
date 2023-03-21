@@ -363,7 +363,7 @@ public class FileRecordWriter extends AbstractItemWriter {
 	
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
-            packageFile.setIdentifier(dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean));
+            packageFile.setIdentifier(idServiceBean.generateDataFileIdentifier(packageFile));
         }
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);

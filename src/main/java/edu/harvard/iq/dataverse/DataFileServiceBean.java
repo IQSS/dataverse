@@ -73,7 +73,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     // Assorted useful mime types:
     
     // 3rd-party and/or proprietary tabular data formasts that we know
-    // how to ingest: 
+    // how to ingest:
     
     private static final String MIME_TYPE_STATA = "application/x-stata";
     private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
@@ -155,7 +155,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }*/
     
     public DataFile findByGlobalId(String globalId) {
-            return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
+            return (DataFile) dvObjectService.findByGlobalId(globalId, DvObject.DType.DataFile);
     }
 
     public List<DataFile> findByCreatorId(Long creatorId) {
@@ -357,7 +357,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Object[] result;
 
         try {
-            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t2.AUTHORITY, t2.IDENTIFIER, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.AUTHORITY, T0.PROTOCOL, T0.IDENTIFIER FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
+            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t2.AUTHORITY, t2.IDENTIFIER, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.AUTHORITY, T0.PROTOCOL, T0.IDENTIFIER, t2.PROTOCOL FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
         } catch (Exception ex) {
             return null;
         }
@@ -501,7 +501,9 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (identifier != null) {
             dataFile.setIdentifier(identifier);
         }
-                
+        
+        owner.setProtocol((String) result[25]);
+        
         dataFile.setOwner(owner);
 
         // If content type indicates it's tabular data, spend 2 extra queries 
@@ -1426,75 +1428,6 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
     
-    public String generateDataFileIdentifier(DataFile datafile, GlobalIdServiceBean idServiceBean) {
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-
-        String prepend = "";
-        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
-            //If format is dependent then pre-pend the dataset identifier 
-            prepend = datafile.getOwner().getIdentifier() + "/";
-        } else {
-            //If there's a shoulder prepend independent identifiers with it
-        	prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
-        }
- 
-        switch (doiIdentifierType) {
-            case "randomString":               
-                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
-            case "storedProcGenerated":
-                if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
-                    return generateIdentifierFromStoredProcedureIndependent(datafile, idServiceBean, prepend);
-                } else {
-                    return generateIdentifierFromStoredProcedureDependent(datafile, idServiceBean, prepend);
-                }
-            default:
-                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
-        }
-    }
-    
-    private String generateIdentifierAsRandomString(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
-        String identifier = null;
-        do {
-            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
-
-        return identifier;
-    }
-
-
-    private String generateIdentifierFromStoredProcedureIndependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
-        String identifier; 
-        do {
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
-            query.execute();
-            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
-            // some diagnostics here maybe - is it possible to determine that it's failing 
-            // because the stored procedure hasn't been created in the database?
-            if (identifierFromStoredProcedure == null) {
-                return null; 
-            }
-            identifier = prepend + identifierFromStoredProcedure;
-        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
-        
-        return identifier;
-    }
-    
-    private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
-        String identifier;
-        Long retVal;
-
-        retVal = new Long(0);
-
-        do {
-            retVal++;
-            identifier = prepend + retVal.toString();
-
-        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
-
-        return identifier;
-    }
 
     /**
      * Check that a identifier entered by the user is unique (not currently used
@@ -1505,7 +1438,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      * @param idServiceBean
      * @return  {@code true} iff the global identifier is unique.
      */
-    public boolean isGlobalIdUnique(String userIdentifier, DataFile datafile, GlobalIdServiceBean idServiceBean) {
+/*    public boolean isGlobalIdUnique(String userIdentifier, DataFile datafile, GlobalIdServiceBean idServiceBean) {
         String testProtocol = "";
         String testAuthority = "";
         if (datafile.getAuthority() != null){
@@ -1536,11 +1469,15 @@ public class DataFileServiceBean implements java.io.Serializable {
        
         return u;
     }
-    
+*/    
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
         // Verify that the DataFile no longer exists: 
         if (find(dataFileId) != null) {
             throw new IOException("Attempted to permanently delete a physical file still associated with an existing DvObject "
+                    + "(id: " + dataFileId + ", location: " + storageLocation);
+        }
+        if(storageLocation == null || storageLocation.isBlank()) {
+            throw new IOException("Attempted to delete a physical file with no location "
                     + "(id: " + dataFileId + ", location: " + storageLocation);
         }
         StorageIO<DvObject> directStorageAccess = DataAccess.getDirectStorageIO(storageLocation);

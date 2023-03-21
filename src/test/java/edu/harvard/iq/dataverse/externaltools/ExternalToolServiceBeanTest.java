@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataTable;
@@ -19,7 +20,10 @@ import org.junit.Test;
 
 public class ExternalToolServiceBeanTest {
 
+    private final ExternalToolServiceBean externalToolService;
+
     public ExternalToolServiceBeanTest() {
+        this.externalToolService = new ExternalToolServiceBean();
     }
 
     @Test
@@ -49,7 +53,7 @@ public class ExternalToolServiceBeanTest {
         ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, null);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
-        List<ExternalTool> availableExternalTools = ExternalToolServiceBean.findExternalToolsByFile(externalTools, dataFile);
+        List<ExternalTool> availableExternalTools = externalToolService.findExternalToolsByFile(externalTools, dataFile);
         assertEquals(availableExternalTools.size(), 1);
     }
 
@@ -139,7 +143,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals("explorer", externalTool.getToolName());
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
-        dataFile.setGlobalId(new GlobalId("doi:10.5072/FK2/RMQT6J/G9F1A1"));
+        dataFile.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL,"10.5072","FK2/RMQT6J/G9F1A1", "/", DOIServiceBean.DOI_RESOLVER_URL, null));
         FileMetadata fmd = new FileMetadata();
         fmd.setId(2L);
         DatasetVersion dv = new DatasetVersion();
@@ -544,4 +548,47 @@ public class ExternalToolServiceBeanTest {
 
         return ExternalToolServiceBean.parseAddExternalToolManifest(tool);
     }
+
+    @Test
+    public void testParseAddFileToolRequireAuxFile() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("toolName", "explorer");
+        job.add("description", "This tool is awesome.");
+        job.add("types", Json.createArrayBuilder().add("explore"));
+        job.add("scope", "file");
+        job.add("hasPreviewMode", "false");
+        job.add("toolUrl", "http://awesometool.com");
+        job.add("toolParameters", Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("filePid", "{filePid}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("fileMetadataId", "{fileMetadataId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("dvLocale", "{localeCode}")
+                                .build())
+                        .build())
+                .build());
+        job.add("requirements", Json.createObjectBuilder()
+                .add("auxFilesExist", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("formatTag", "NcML")
+                                .add("formatVersion", "0.1")
+                        )
+                )
+        );
+        job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        String tool = job.build().toString();
+        ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        assertEquals("AwesomeTool", externalTool.getDisplayName());
+        assertEquals("explorer", externalTool.getToolName());
+        assertEquals("{\"auxFilesExist\":[{\"formatTag\":\"NcML\",\"formatVersion\":\"0.1\"}]}", externalTool.getRequirements());
+    }
+
 }

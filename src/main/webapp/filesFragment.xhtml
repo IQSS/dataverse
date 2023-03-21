@@ -499,7 +499,7 @@
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
                     <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
                         <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getPreviewToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
-                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
                             <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview} "#{empty(fileMetadata.directoryLabel) ? "":fileMetadata.directoryLabel.concat("/")}#{fileMetadata.label}"</span>
                         </a>
                     </ui:fragment>
@@ -597,7 +597,7 @@
             <!-- For a file, the payload data ("node") is the corresponding FileMetadata object: -->
             <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(node.dataFile)} text-muted"/>
             <!-- conditional render in file page links, if file has global id, use that; if not, we use database id -->
-            <a href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty node.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty node.dataFile.globalIdString ? node.dataFile.globalIdString : node.dataFile.id).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+            <a href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty node.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty node.dataFile.globalId ? node.dataFile.globalId.asString() : node.dataFile.id).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
                 #{node.label}
             </a>
             <span class="text-muted">(#{node.dataFile.friendlySize})</span>
