@@ -546,7 +546,7 @@ class DataCiteMetadataTemplate {
 
                 datafileIdentifiers = new ArrayList<>();
                 for (DataFile dataFile : dataset.getFiles()) {
-                    if (!dataFile.getGlobalId().asString().isEmpty()) {
+                    if (dataFile.getGlobalId() != null) {
                         if (sb.toString().isEmpty()) {
                             sb.append("<relatedIdentifiers>");
                         }

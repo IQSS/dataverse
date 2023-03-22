@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -21,7 +22,6 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
-import java.util.List;
 import java.util.Stack;
 import javax.persistence.EntityManager;
 
@@ -140,6 +140,11 @@ public class TestCommandContext implements CommandContext {
         return null;
     }
 
+    @Override
+    public PermaLinkPidProviderServiceBean permaLinkProvider() {
+        return null;
+    }
+    
     @Override
     public SettingsServiceBean settings() {
         return settings;
