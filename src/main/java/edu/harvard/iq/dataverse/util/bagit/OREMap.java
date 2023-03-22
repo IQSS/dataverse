@@ -87,7 +87,7 @@ public class OREMap {
         localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
 
         Dataset dataset = version.getDataset();
-        String id = dataset.getGlobalId().toURL().toExternalForm();
+        String id = dataset.getGlobalId().asURL();
         JsonArrayBuilder fileArray = Json.createArrayBuilder();
         // The map describes an aggregation
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
@@ -211,7 +211,7 @@ public class OREMap {
                 // File DOI if it exists
                 String fileId = null;
                 String fileSameAs = null;
-                if (df.getGlobalId().asString().length() != 0) {
+                if (df.getGlobalId()!=null) {
                     fileId = df.getGlobalId().asString();
                     fileSameAs = SystemConfig.getDataverseSiteUrlStatic()
                             + "/api/access/datafile/:persistentId?persistentId=" + fileId + (ingested ? "&format=original":"");
