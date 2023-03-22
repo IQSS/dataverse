@@ -15,9 +15,11 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.pidproviders.VersionPidMode;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
@@ -30,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.Properties;
-import java.util.concurrent.Future;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -927,6 +928,41 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         return em.createNativeQuery(cqString).getResultList();
     }
-
     
+    /**
+     * Check if a given Dataverse Collection has been configured to generate PIDs for any new version of a dataset
+     * contained in it.
+     * @param dataverse The collection to analyse
+     * @return true if enabled, false if disabled
+     * @throws java.util.NoSuchElementException When no or invalid configuration for version PID mode is given
+     */
+    public boolean wantsDatasetVersionPids(Dataverse collection) {
+        VersionPidMode vpm = JvmSettings.PID_VERSIONS_MODE.lookup(VersionPidMode.class);
+        
+        if (vpm.equals(VersionPidMode.GLOBAL)) {
+            return true;
+        } else if (vpm.equals(VersionPidMode.OFF)) {
+            return false;
+        }
+        // now mode = collection's choice - ask the collection and if necessary all ancestors what to do
+        return askForVersionPidConduct(collection);
+    }
+    
+    /**
+     * Recursively scan all ancestors if someone defines a proper conduct for version PIDs.
+     * @param collection The collection to ask for advice
+     * @return true if someone in the hierarchy has state "ACTIVE", false otherwise
+     */
+    private boolean askForVersionPidConduct(Dataverse collection) {
+        // Null safety here also matched the case where even root doesn't know, defaulting to save cycles.
+        if (collection == null) {
+            return false;
+        }
+        switch (collection.getDatasetVersionPidConduct()) {
+            case SKIP: return false;
+            case ACTIVE: return true;
+            case INHERIT: return askForVersionPidConduct(collection.getOwner());
+        }
+        return false;
+    }
 }
