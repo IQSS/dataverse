@@ -67,6 +67,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContri
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
+import edu.harvard.iq.dataverse.pidproviders.VersionPidMode;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
@@ -1328,5 +1329,19 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+    
+    @GET
+    @AuthRequired
+    @Path("{id}/versionPidState")
+    public Response getVersionPidsState(@Context ContainerRequestContext crc, @PathParam("id") String identifier) {
+        return error(Status.NOT_FOUND, "Not implemented yet.");
+    }
 
+    @POST
+    @AuthRequired
+    @Path("{id}/versionPidState")
+    public Response setVersionPidsState(@Context ContainerRequestContext crc, @PathParam("id") String identifier, String stringState) {
+        return error(Status.NOT_FOUND, "Not implemented yet.");
+    }
+    
 }
