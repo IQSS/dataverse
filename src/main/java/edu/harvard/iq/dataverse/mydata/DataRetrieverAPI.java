@@ -6,6 +6,7 @@ package edu.harvard.iq.dataverse.mydata;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
@@ -84,7 +85,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
     
     private List<DataverseRole> roleList;
     private DataverseRolePermissionHelper rolePermissionHelper;
-    private List<String> defaultDvObjectTypes = MyDataFilterParams.defaultDvObjectTypes;
     private MyDataFinder myDataFinder;
     private SolrQueryResponse solrQueryResponse;
     private AuthenticatedUser authUser = null;
@@ -99,11 +99,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
      */
     public DataRetrieverAPI(){
            
-    }
-    
-    private int randInt(int min, int max) {
-        Random rand = new Random();
-        return rand.nextInt((max - min) + 1) + min;
     }
     
     public String getRetrieveDataFullAPIPath(){
@@ -265,7 +260,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @Produces({"application/json"})
     public String retrieveMyDataAsJsonString(
             @Context ContainerRequestContext crc,
-            @QueryParam("dvobject_types") List<String> dvobject_types,
+            @QueryParam("dvobject_types") List<DvObject.DType> dvobject_types,
             @QueryParam("published_states") List<String> published_states,
             @QueryParam("selected_page") Integer selectedPage,
             @QueryParam("mydata_search_term") String searchTerm,
@@ -304,7 +299,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);    
         
        
-        List<String> dtypes;
+        List<DvObject.DType> dtypes;
         if (dvobject_types != null){
             dtypes = dvobject_types;
         }else{
