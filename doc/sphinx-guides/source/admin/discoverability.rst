@@ -58,15 +58,17 @@ The following configuration options are available:
 
 - :ref:`dataverse.signposting.level1-author-limit`
 
-  `max-authors` - sets the max number of authors to be shown in `level 1` profile.
+  Sets the max number of authors to be shown in `level 1` profile.
   If the number of authors (with identifier URLs) exceeds this value, no author links will be shown in `level 1` profile.
   The default is 5.
 
 - :ref:`dataverse.signposting.level1-item-limit`
 
-  `max-items` - sets the max number of items/files which will be shown in `level 1` profile. Datasets with
+  Sets the max number of items/files which will be shown in `level 1` profile. Datasets with
   too many files will not show any file links in `level 1` profile. They will be shown in `level 2` linkset only. 
   The default is 5.
+
+See also :ref:`signposting-api` in the API Guide.
 
 Additional Discoverability Through Integrations
 -----------------------------------------------
