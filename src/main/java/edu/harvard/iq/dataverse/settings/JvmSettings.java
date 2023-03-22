@@ -74,6 +74,12 @@ public enum JvmSettings {
     // Avoids adding flag entries twice.
     FEATURE_FLAG(SCOPE_FLAGS),
     
+    // PID SETTINGS
+    SCOPE_PID(PREFIX, "pid"),
+    
+    SCOPE_PID_VERSIONS(SCOPE_PID, "version"),
+    PID_VERSIONS_MODE(SCOPE_PID_VERSIONS, "mode"),
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
