@@ -274,7 +274,8 @@ public class JsonPrinter {
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
                 .add("name", dv.getName())
-                .add("affiliation", dv.getAffiliation());
+                .add("affiliation", dv.getAffiliation())
+                .add("versionPidsConduct", dv.getDatasetVersionPidConduct().toString());
         if(!hideEmail) { 
             bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
         }

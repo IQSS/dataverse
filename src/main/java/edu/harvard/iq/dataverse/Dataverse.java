@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.pidproviders.VersionPidMode.CollectionConduct;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -586,6 +586,26 @@ public class Dataverse extends DvObjectContainer {
 
     public void setCitationDatasetFieldTypes(List<DatasetFieldType> citationDatasetFieldTypes) {
         this.citationDatasetFieldTypes = citationDatasetFieldTypes;
+    }
+    
+    
+    
+    /**
+     * Indicate if this Dataverse Collection wants to publicize PIDs for each (major) {@link DatasetVersion}
+     * for any {@link Dataset} in it.
+     *
+     * @see edu.harvard.iq.dataverse.pidproviders.VersionPidMode#COLLECTION
+     * @see CollectionConduct
+     */
+    @Enumerated(EnumType.STRING)
+    private CollectionConduct datasetVersionPidConduct = CollectionConduct.INHERIT;
+    
+    public void setDatasetVersionPidConduct(CollectionConduct conduct) {
+        this.datasetVersionPidConduct = conduct;
+    }
+    
+    public CollectionConduct getDatasetVersionPidConduct() {
+        return this.datasetVersionPidConduct;
     }
     
     
