@@ -4,9 +4,11 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
+import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
@@ -33,7 +35,8 @@ public class RemoteOverlayAccessIOTest {
     private DataFile badDatafile;
     private String baseStoreId="182ad2bda2f-c3508e719076";
     private String logoPath = "images/dataverse_project_logo.svg";
-    private String pid = "10.5072/F2/ABCDEF";
+    private String authority = "10.5072";
+    private String identifier = "F2/ABCDEF";
 
     @BeforeEach
     public void setUp() {
@@ -48,7 +51,7 @@ public class RemoteOverlayAccessIOTest {
         System.setProperty("dataverse.files.file.label", "default");
         datafile = MocksFactory.makeDataFile();
         dataset = MocksFactory.makeDataset();
-        dataset.setGlobalId(GlobalId.parse("doi:" + pid).get());
+        dataset.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, authority, identifier, "/", DOIServiceBean.DOI_RESOLVER_URL, null));
         datafile.setOwner(dataset);
         datafile.setStorageIdentifier("test://" + baseStoreId + "//" + logoPath);
 
@@ -101,10 +104,10 @@ public class RemoteOverlayAccessIOTest {
         assertTrue(remoteIO.getSize() > 0);
         // If we ask for the path for an aux file, it is correct
         System.out.println(Paths
-                .get(System.getProperty("dataverse.files.file.directory", "/tmp/files"), pid, baseStoreId + ".auxobject").toString());
+                .get(System.getProperty("dataverse.files.file.directory", "/tmp/files"), authority, identifier, baseStoreId + ".auxobject").toString());
         System.out.println(remoteIO.getAuxObjectAsPath("auxobject").toString());
         assertTrue(Paths
-                .get(System.getProperty("dataverse.files.file.directory", "/tmp/files"), pid, baseStoreId + ".auxobject")
+                .get(System.getProperty("dataverse.files.file.directory", "/tmp/files"), authority, identifier, baseStoreId + ".auxobject")
                 .equals(remoteIO.getAuxObjectAsPath("auxobject")));
         IOException thrown = assertThrows(IOException.class, () -> DataAccess.getStorageIO(badDatafile),
                 "Expected getStorageIO() to throw, but it didn't");

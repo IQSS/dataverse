@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.api.dto.LicenseDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -102,12 +103,12 @@ public class DublinCoreExportUtil {
         String persistentAgency = datasetDto.getProtocol();
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
+        GlobalId globalId = PidUtil.parseAsGlobalID(persistentAgency, persistentAuthority, persistentId);
   
         writeFullElement(xmlw, dcFlavor+":"+"title", dto2Primitive(version, DatasetFieldConstant.title));                       
         
         xmlw.writeStartElement(dcFlavor+":"+"identifier");
-        xmlw.writeCharacters(globalId.toURL().toString());
+        xmlw.writeCharacters(globalId.asURL());
         xmlw.writeEndElement(); // decterms:identifier       
 
         writeAuthorsElement(xmlw, version, dcFlavor);
@@ -160,12 +161,12 @@ public class DublinCoreExportUtil {
         String persistentAgency = datasetDto.getProtocol();
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
+        GlobalId globalId = PidUtil.parseAsGlobalID(persistentAgency, persistentAuthority, persistentId);
   
         writeFullElement(xmlw, dcFlavor+":"+"title", dto2Primitive(version, DatasetFieldConstant.title));                       
         
         xmlw.writeStartElement(dcFlavor+":"+"identifier");
-        xmlw.writeCharacters(globalId.toURL().toString());
+        xmlw.writeCharacters(globalId.asURL());
         xmlw.writeEndElement(); // decterms:identifier       
 
         writeAuthorsElement(xmlw, version, dcFlavor); //creator
