@@ -73,7 +73,7 @@ import com.google.gson.JsonSyntaxException;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
-import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
 public class BagGenerator {
@@ -208,7 +208,7 @@ public class BagGenerator {
         aggregation = (JsonObject) new JsonParser().parse(oremapObject.getJsonObject(JsonLDTerm.ore("describes").getLabel()).toString());
 
         String pidUrlString = aggregation.get("@id").getAsString();
-        String pidString=GlobalId.getInternalFormOfPID(pidUrlString);
+        String pidString=PidUtil.parseAsGlobalID(pidUrlString).asString();
         bagID = pidString + "v."
                 + aggregation.get(JsonLDTerm.schemaOrg("version").getLabel()).getAsString();
         

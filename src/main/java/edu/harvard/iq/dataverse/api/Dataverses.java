@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -288,7 +289,7 @@ public class Dataverses extends AbstractApiBean {
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalIdString())
+                            .add("persistentId", managedDs.getGlobalId().asString())
             );
 
         } catch (WrappedResponse ex) {
@@ -331,7 +332,7 @@ public class Dataverses extends AbstractApiBean {
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalIdString())
+                            .add("persistentId", managedDs.getGlobalId().asString())
             );
 
         } catch (WrappedResponse ex) {
@@ -368,7 +369,7 @@ public class Dataverses extends AbstractApiBean {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
                     return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
                 }
-                Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
+                Optional<GlobalId> maybePid = GlobalIdServiceBean.parse(pidParam);
                 if (maybePid.isPresent()) {
                     ds.setGlobalId(maybePid.get());
                 } else {
@@ -399,7 +400,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                     .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalIdString());
+                    .add("persistentId", managedDs.getGlobalId().asString());
 
             if (shouldRelease) {
                 PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
@@ -443,7 +444,7 @@ public class Dataverses extends AbstractApiBean {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
                     return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
                 }
-                Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
+                Optional<GlobalId> maybePid = GlobalIdServiceBean.parse(pidParam);
                 if (maybePid.isPresent()) {
                     ds.setGlobalId(maybePid.get());
                 } else {
@@ -465,7 +466,7 @@ public class Dataverses extends AbstractApiBean {
 
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                     .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalIdString());
+                    .add("persistentId", managedDs.getGlobalId().toString());
 
             if (shouldRelease) {
                 DatasetVersion latestVersion = ds.getLatestVersion();
@@ -512,7 +513,7 @@ public class Dataverses extends AbstractApiBean {
             ds.getIdentifier().startsWith(settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder)))) {
                 throw new BadRequestException("Cannot recreate a dataset that has a PID that doesn't match the server's settings");
             }
-            if(!datasetSvc.isIdentifierLocallyUnique(ds)) {
+            if(!dvObjectSvc.isGlobalIdLocallyUnique(ds.getGlobalId())) {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
             
