@@ -3606,12 +3606,21 @@ A true/false option to add a Globus transfer option to the file download menu wh
 
 The URL for main HTML file in https://github.com/gdcc/dvwebloader when that app is deployed. See also :ref:`:UploadMethods` for another required settings.
 
-:CategorySortOrder
-++++++++++++++++++
+:CategoryOrder
+++++++++++++++
 
 A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. 
 The setting can include custom tag names along with the pre-defined Documentation, Data, and Code tags.
-The default is no setting and the Group-By-Tag functionality in the user interface.
+The default is category ordering disabled.
 
+:OrderByFolder
+++++++++++++++
+
+A true(default)/false option determining whether datafiles listed on the dataset page should be grouped by folder.
+
+:AllowUserManagementOfOrder
++++++++++++++++++++++++++++
+
+A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategorySortOrder) on and off dymanically. 
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html

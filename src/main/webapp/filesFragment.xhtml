@@ -264,8 +264,8 @@
 
                 
                 <div class="file-sort col-xs-5 text-right #{DatasetPage.indexedVersion ? '' : 'col-xs-offset-7'}">
-                    <div class="file-group-by col-xs-7 text-left text-muted small" style="font-weight:normal;">
-                                    <p:selectBooleanCheckbox id="fps" value="#{DatasetPage.folderPresort}" itemLabel="#{bundle['file.results.presort.folder']}" title="#{bundle['file.results.presort.folder.desc']}">
+                    <div class="file-group-by col-xs-7 text-left text-muted small" style="font-weight:normal;" jsf:rendered="#{DatasetPage.allowUserManagementOfOrder()}">
+                                    <p:selectBooleanCheckbox id="fps" value="#{DatasetPage.folderPresort}" itemLabel="#{bundle['file.results.presort.folder']}" title="#{bundle['file.results.presort.folder.desc']} rendered='#{DatasetPage.orderByFolder()}'">
                         <p:ajax update="filesTable, messagePanel" process="fps, tps" listener="#{DatasetPage.sort()}"/>
                     </p:selectBooleanCheckbox>
                     <p:selectBooleanCheckbox id="tps" value="#{DatasetPage.tagPresort}" itemLabel="#{bundle['file.results.presort.tag']}" title="#{bundle['file.results.presort.tag.desc']}"  rendered='#{null != DatasetPage.getSortOrder()}'>
