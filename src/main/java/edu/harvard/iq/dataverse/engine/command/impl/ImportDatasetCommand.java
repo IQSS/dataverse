@@ -58,8 +58,8 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
             throw new IllegalCommandException("Imported datasets must have a persistent global identifier.", this);
         }
         
-        if ( ! ctxt.datasets().isIdentifierLocallyUnique(ds) ) {
-            throw new IllegalCommandException("Persistent identifier " + ds.getGlobalIdString() + " already exists in this Dataverse installation.", this);
+        if ( ! ctxt.dvObjects().isGlobalIdLocallyUnique(ds.getGlobalId()) ) {
+            throw new IllegalCommandException("Persistent identifier " + ds.getGlobalId().asString() + " already exists in this Dataverse installation.", this);
         }
         
         String pid = ds.getPersistentURL();

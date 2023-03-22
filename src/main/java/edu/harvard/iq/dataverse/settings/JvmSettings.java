@@ -68,9 +68,16 @@ public enum JvmSettings {
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
     
+    // FEATURE FLAGS SETTINGS
+    SCOPE_FLAGS(PREFIX, "feature"),
+    // This is a special placeholder-type setting entry, to be filled in by FeatureFlag entries during lookup.
+    // Avoids adding flag entries twice.
+    FEATURE_FLAG(SCOPE_FLAGS),
+    
     // EXPORT SETTINGS
     SCOPE_EXPORTERS(PREFIX, "exporters"),
     EXPORTERS_DIRECTORY(SCOPE_EXPORTERS, "directory")
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
