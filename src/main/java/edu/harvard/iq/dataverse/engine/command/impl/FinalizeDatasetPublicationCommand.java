@@ -103,6 +103,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // sure we exit cleanly:
 
             	registerExternalIdentifier(theDataset, ctxt, false);
+                
+                // TODO: try to register an identifier for the version as well if necessary
             } catch (CommandException comEx) {
                 logger.warning("Failed to reserve the identifier "+theDataset.getGlobalId().asString()+"; notifying the user(s), unlocking the dataset");
                 // Send failure notification to the user: 
@@ -372,8 +374,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             try {
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
                 String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
+                
                 String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
                 boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
+                
                 // We will skip trying to register the global identifiers for datafiles 
                 // if "dependent" file-level identifiers are requested, AND the naming 
                 // protocol, or the authority of the dataset global id is different from 
@@ -399,6 +403,19 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                         df.setIdentifierRegistered(true);
                     }
                 }
+    
+                // Publish a PID for this dataset version if activated
+                // -> At this point, we have a latest version that is not in "released" state yet.
+                // ->
+                // TODO: might throw a NoSuchElementException. Adapt error message?
+                if (ctxt.dataverses().wantsDatasetVersionPids(dataset.getOwner())) {
+                    // TODO: check result like above
+                    // TODO: which version to pass? is at time of calling the latest version already released?
+                    // TODO: maybe we should check for this being a *new* major version before handing it over... (this is not meant to be at discretion of the id service!)
+                    //idServiceBean.publicizeIdentifier(dataset.getLatestVersion());
+                }
+                
+                // Publish the Dataset PID (after the version because we want to include the version in metadata updates)
                 if (!idServiceBean.publicizeIdentifier(dataset)) {
                     throw new Exception();
                 }

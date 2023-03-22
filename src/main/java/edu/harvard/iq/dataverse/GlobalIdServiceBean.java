@@ -43,6 +43,13 @@ public interface GlobalIdServiceBean {
     
     boolean publicizeIdentifier(DvObject studyIn);
     
+    /**
+     * Create and publish a PID for a given DatasetVersion.
+     * @param datasetVersion The version to publish
+     * @return true if successful, false otherwise
+     */
+    //boolean publicizeIdentifier(DatasetVersion datasetVersion);
+    
     String generateDatasetIdentifier(Dataset dataset);
     String generateDataFileIdentifier(DataFile datafile);
     boolean isGlobalIdUnique(GlobalId globalId);
