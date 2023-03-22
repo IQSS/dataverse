@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.validation.EMailValidator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -416,6 +417,13 @@ public class Shib implements java.io.Serializable {
         Object attribute = request.getAttribute(key);
         if (attribute != null) {
             String attributeValue = attribute.toString();
+            if(systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
+                try {
+                    attributeValue = new String(attributeValue.getBytes("ISO-8859-1"), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    logger.warning("Character conversion failed for Shib attribute (key, value) = (" + key + ", " + attributeValue + ") ; ignoring it");
+                }
+            }
             String trimmedValue = attributeValue.trim();
             if (!trimmedValue.isEmpty()) {
                 logger.fine("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
