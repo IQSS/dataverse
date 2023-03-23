@@ -9,13 +9,12 @@ class FeatureFlagsTest {
 
     @Test
     void testFlagDisabled() {
-        assertFalse(FeatureFlags.TEST_MODE.enabled());
-    }
-    
-    @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "on", varArgs = "test_mode")
-    void testFlagEnabled() {
-        assertTrue(FeatureFlags.TEST_MODE.enabled());
+        assertFalse(FeatureFlags.API_SESSION_AUTH.enabled());
     }
 
+    @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "on", varArgs = "api-session-auth")
+    void testFlagEnabled() {
+        assertTrue(FeatureFlags.API_SESSION_AUTH.enabled());
+    }
 }
