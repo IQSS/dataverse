@@ -1268,7 +1268,20 @@ public class ImportDDIServiceBean {
    
    private void processSerStmt(XMLStreamReader xmlr, MetadataBlockDTO citation) throws XMLStreamException {
           FieldDTO seriesName=null;
+          
+          
           FieldDTO seriesInformation=null;
+          List<HashSet<FieldDTO>> series = new ArrayList<>();
+          /*
+          SEK - start here 3/27 update series for multiple values
+          see ddi_dataset.xml for sample xml
+          if (xmlr.getLocalName().equals("contact")) {
+                    HashSet<FieldDTO> set = new HashSet<>();
+                    addToSet(set, "datasetContactEmail", xmlr.getAttributeValue(null, "email"));
+                    addToSet(set, "datasetContactAffiliation", xmlr.getAttributeValue(null, "affiliation"));
+                    addToSet(set, "datasetContactName", parseText(xmlr));
+                    datasetContacts.add(set);
+          */
           for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("serName")) {

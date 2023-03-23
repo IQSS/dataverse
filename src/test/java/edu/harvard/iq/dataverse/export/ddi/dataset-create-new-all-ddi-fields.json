@@ -653,7 +653,7 @@
           },
           {
             "typeName": "series",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "compound",
             "value": {
               "seriesName": {
