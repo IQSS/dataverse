@@ -387,61 +387,49 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); // verStmt
     }
     
+    /* (WORK IN PROGRESS) this ENTIRE method needs to be rewritten, because it is written under
+        an assumption that the individual fields inside can come in random order. 
+        No, the element is defined as an `<xs:sequence>`, meaning order is 
+        important! -L.A.
+        From the DDI 2.5 schema: 
+            <xs:sequence>
+               <xs:element ref="timePrd" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="collDate" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="nation" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="geogCover" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="geogUnit" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="geoBndBox" minOccurs="0"/>
+               <xs:element ref="boundPoly" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="anlyUnit" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="universe" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="dataKind" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+    */
     private static void writeSummaryDescriptionElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String lang) throws XMLStreamException {
         xmlw.writeStartElement("sumDscr");
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
+            FieldDTO timePeriodCoveredDTO = null;
+            FieldDTO dateOfCollectionDTO = null; 
+            FieldDTO geographicCoverageDTO = null;
+            FieldDTO geographicBoundingBoxDTO = null; 
+            FieldDTO unitOfAnalysisDTO = null; 
+            FieldDTO universeDTO = null; 
+
+            FieldDTO kindOfDataDTO = null; 
             if ("citation".equals(key)) {
-                Integer per = 0;
-                Integer coll = 0;
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.timePeriodCovered.equals(fieldDTO.getTypeName())) {
-                        String dateValStart = "";
-                        String dateValEnd = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            per++;
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
-                                FieldDTO next = iterator.next();
-                                if (DatasetFieldConstant.timePeriodCoveredStart.equals(next.getTypeName())) {
-                                    dateValStart = next.getSinglePrimitive();
-                                }
-                                if (DatasetFieldConstant.timePeriodCoveredEnd.equals(next.getTypeName())) {
-                                    dateValEnd = next.getSinglePrimitive();
-                                }
-                            }
-                            if (!dateValStart.isEmpty()) {
-                                writeDateElement(xmlw, "timePrd", "P"+ per.toString(), "start", dateValStart );
-                            }
-                            if (!dateValEnd.isEmpty()) {
-                                writeDateElement(xmlw, "timePrd",  "P"+ per.toString(), "end", dateValEnd );
-                            }
-                        }
+                        timePeriodCoveredDTO = fieldDTO; 
                     }
+                    
                     if (DatasetFieldConstant.dateOfCollection.equals(fieldDTO.getTypeName())) {
-                        String dateValStart = "";
-                        String dateValEnd = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            coll++;
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
-                                FieldDTO next = iterator.next();
-                                if (DatasetFieldConstant.dateOfCollectionStart.equals(next.getTypeName())) {
-                                    dateValStart = next.getSinglePrimitive();
-                                }
-                                if (DatasetFieldConstant.dateOfCollectionEnd.equals(next.getTypeName())) {
-                                    dateValEnd = next.getSinglePrimitive();
-                                }
-                            }
-                            if (!dateValStart.isEmpty()) {
-                                writeDateElement(xmlw, "collDate",  "P"+ coll.toString(), "start", dateValStart );
-                            }
-                            if (!dateValEnd.isEmpty()) {
-                                writeDateElement(xmlw,  "collDate",  "P"+ coll.toString(), "end", dateValEnd );
-                            }
-                        }
+                        dateOfCollectionDTO = fieldDTO; 
                     }
+                    
                     if (DatasetFieldConstant.kindOfData.equals(fieldDTO.getTypeName())) {
-                        writeMultipleElement(xmlw, "dataKind", fieldDTO, lang);
+                        kindOfDataDTO = fieldDTO;
                     }
                 }
             }
@@ -449,78 +437,170 @@ public class DdiExportUtil {
             if("geospatial".equals(key)){                
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.geographicCoverage.equals(fieldDTO.getTypeName())) {
-
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            HashMap<String, String> geoMap = new HashMap<>();
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
-                                FieldDTO next = iterator.next();
-                                if (DatasetFieldConstant.country.equals(next.getTypeName())) {
-                                    geoMap.put("country", next.getSinglePrimitive());
-                                }
-                                if (DatasetFieldConstant.city.equals(next.getTypeName())) {
-                                    geoMap.put("city", next.getSinglePrimitive());
-                                }
-                                if (DatasetFieldConstant.state.equals(next.getTypeName())) {
-                                    geoMap.put("state", next.getSinglePrimitive());
-                                } 
-                                if (DatasetFieldConstant.otherGeographicCoverage.equals(next.getTypeName())) {
-                                    geoMap.put("otherGeographicCoverage", next.getSinglePrimitive());
-                                } 
-                            }
-
-                            if (geoMap.get("country") != null) {
-                                writeFullElement(xmlw, "nation", geoMap.get("country"));
-                            }
-                            if (geoMap.get("city") != null) {
-                                writeFullElement(xmlw, "geogCover", geoMap.get("city"));
-                            }
-                            if (geoMap.get("state") != null) {
-                                writeFullElement(xmlw, "geogCover", geoMap.get("state"));
-                            }
-                            if (geoMap.get("otherGeographicCoverage") != null) {
-                                writeFullElement(xmlw, "geogCover", geoMap.get("otherGeographicCoverage"));
-                            }
-
-                        }
+                        geographicCoverageDTO = fieldDTO; 
                     }
                     if (DatasetFieldConstant.geographicBoundingBox.equals(fieldDTO.getTypeName())) {
-
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            xmlw.writeStartElement("geoBndBox");
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
-                                FieldDTO next = iterator.next();
-                                if (DatasetFieldConstant.westLongitude.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "westBL", next.getSinglePrimitive());
-                                }
-                                if (DatasetFieldConstant.eastLongitude.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "eastBL", next.getSinglePrimitive());
-                                }
-                                if (DatasetFieldConstant.northLatitude.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "northBL", next.getSinglePrimitive());
-                                }  
-                                if (DatasetFieldConstant.southLatitude.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "southBL", next.getSinglePrimitive());
-                                }
-
-                            }
-                            xmlw.writeEndElement();
-                        }
+                        
+                        geographicBoundingBoxDTO = fieldDTO;
 
                     }
                 }
-                    writeFullElementList(xmlw, "geogUnit", dto2PrimitiveList(datasetVersionDTO, DatasetFieldConstant.geographicUnit));
             }
 
-            if("socialscience".equals(key)){                
+            if("socialscience".equals(key)){
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.universe.equals(fieldDTO.getTypeName())) {
-                        writeMultipleElement(xmlw, "universe", fieldDTO, lang);
+                        universeDTO = fieldDTO; 
                     }
                     if (DatasetFieldConstant.unitOfAnalysis.equals(fieldDTO.getTypeName())) {
-                        writeI18NElementList(xmlw, "anlyUnit", fieldDTO.getMultipleVocab(), "unitOfAnalysis", fieldDTO.getTypeClass(), "socialscience", lang);
+                        unitOfAnalysisDTO = fieldDTO; 
                     }
                 }
             }
+            /* Finally, we can write the fields we have collected, in the correct order: -L.A.*/
+                        
+            if (timePeriodCoveredDTO != null) {
+                String dateValStart = "";
+                String dateValEnd = "";
+                Integer per = 0;
+                for (HashSet<FieldDTO> foo : timePeriodCoveredDTO.getMultipleCompound()) {
+                    per++;
+                    for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                        FieldDTO next = iterator.next();
+                        if (DatasetFieldConstant.timePeriodCoveredStart.equals(next.getTypeName())) {
+                            dateValStart = next.getSinglePrimitive();
+                        }
+                        if (DatasetFieldConstant.timePeriodCoveredEnd.equals(next.getTypeName())) {
+                            dateValEnd = next.getSinglePrimitive();
+                        }
+                    }
+                    if (!dateValStart.isEmpty()) {
+                        writeDateElement(xmlw, "timePrd", "P" + per.toString(), "start", dateValStart);
+                    }
+                    if (!dateValEnd.isEmpty()) {
+                        writeDateElement(xmlw, "timePrd", "P" + per.toString(), "end", dateValEnd);
+                    }
+                }
+            }
+            
+            if (dateOfCollectionDTO != null) {
+                String dateValStart = "";
+                String dateValEnd = "";
+                Integer coll = 0;
+                for (HashSet<FieldDTO> foo : dateOfCollectionDTO.getMultipleCompound()) {
+                    coll++;
+                    for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                        FieldDTO next = iterator.next();
+                        if (DatasetFieldConstant.dateOfCollectionStart.equals(next.getTypeName())) {
+                            dateValStart = next.getSinglePrimitive();
+                        }
+                        if (DatasetFieldConstant.dateOfCollectionEnd.equals(next.getTypeName())) {
+                            dateValEnd = next.getSinglePrimitive();
+                        }
+                    }
+                    if (!dateValStart.isEmpty()) {
+                        writeDateElement(xmlw, "collDate", "P" + coll.toString(), "start", dateValStart);
+                    }
+                    if (!dateValEnd.isEmpty()) {
+                        writeDateElement(xmlw, "collDate", "P" + coll.toString(), "end", dateValEnd);
+                    }
+                }
+            }
+            
+            /* <nation> and <geogCover> come next, in that order. -L.A. */
+            
+            if (geographicCoverageDTO != null) {
+
+                for (HashSet<FieldDTO> foo : geographicCoverageDTO.getMultipleCompound()) {
+                    HashMap<String, String> geoMap = new HashMap<>();
+                    for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                        FieldDTO next = iterator.next();
+                        if (DatasetFieldConstant.country.equals(next.getTypeName())) {
+                            geoMap.put("country", next.getSinglePrimitive());
+                        }
+                        if (DatasetFieldConstant.city.equals(next.getTypeName())) {
+                            geoMap.put("city", next.getSinglePrimitive());
+                        }
+                        if (DatasetFieldConstant.state.equals(next.getTypeName())) {
+                            geoMap.put("state", next.getSinglePrimitive());
+                        }
+                        if (DatasetFieldConstant.otherGeographicCoverage.equals(next.getTypeName())) {
+                            geoMap.put("otherGeographicCoverage", next.getSinglePrimitive());
+                        }
+                    }
+
+                    if (geoMap.get("country") != null) {
+                        writeFullElement(xmlw, "nation", geoMap.get("country"));
+                    }
+                    if (geoMap.get("city") != null) {
+                        writeFullElement(xmlw, "geogCover", geoMap.get("city"));
+                    }
+                    if (geoMap.get("state") != null) {
+                        writeFullElement(xmlw, "geogCover", geoMap.get("state"));
+                    }
+                    if (geoMap.get("otherGeographicCoverage") != null) {
+                        writeFullElement(xmlw, "geogCover", geoMap.get("otherGeographicCoverage"));
+                    }
+
+                }
+            }
+            
+            writeFullElementList(xmlw, "geogUnit", dto2PrimitiveList(datasetVersionDTO, DatasetFieldConstant.geographicUnit));
+
+            if (geographicBoundingBoxDTO != null) {
+                for (HashSet<FieldDTO> foo : geographicBoundingBoxDTO.getMultipleCompound()) {
+                    xmlw.writeStartElement("geoBndBox");
+                    HashMap<String, String> geoBndBoxMap = new HashMap<>();
+                    for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                        FieldDTO next = iterator.next();
+                        if (DatasetFieldConstant.westLongitude.equals(next.getTypeName())) {
+                            geoBndBoxMap.put("westBL", next.getSinglePrimitive());
+                        }
+                        if (DatasetFieldConstant.eastLongitude.equals(next.getTypeName())) {
+                            geoBndBoxMap.put("eastBL", next.getSinglePrimitive());
+                        }
+                        if (DatasetFieldConstant.northLatitude.equals(next.getTypeName())) {
+                            geoBndBoxMap.put("northBL", next.getSinglePrimitive());
+                        }
+                        if (DatasetFieldConstant.southLatitude.equals(next.getTypeName())) {
+                            geoBndBoxMap.put("southBL", next.getSinglePrimitive());
+                        }
+                    }
+                    
+                    if (geoBndBoxMap.get("westBL") != null) {
+                        writeFullElement(xmlw, "westBL", geoBndBoxMap.get("westBL"));
+                    }
+                    if (geoBndBoxMap.get("eastBL") != null) {
+                        writeFullElement(xmlw, "eastBL", geoBndBoxMap.get("eastBL"));
+                    }
+                    if (geoBndBoxMap.get("northBL") != null) {
+                        writeFullElement(xmlw, "northBL", geoBndBoxMap.get("northBL"));
+                    }
+                    if (geoBndBoxMap.get("southBL") != null) {
+                        writeFullElement(xmlw, "southBL", geoBndBoxMap.get("southBL"));
+                    }
+                    
+                    xmlw.writeEndElement();
+                }
+            }
+            
+            /* analyUnit: */
+            if (unitOfAnalysisDTO != null) {
+                writeI18NElementList(xmlw, "anlyUnit", unitOfAnalysisDTO.getMultipleVocab(), "unitOfAnalysis", unitOfAnalysisDTO.getTypeClass(), "socialscience", lang);
+
+            }
+            
+            /* universe: */
+            if (universeDTO != null) {
+                writeMultipleElement(xmlw, "universe", universeDTO, lang);
+            }
+
+            
+            /* finally, any "kind of data" entries we may have saved earlier: -L.A.*/
+            if (kindOfDataDTO != null) {
+                writeMultipleElement(xmlw, "dataKind", kindOfDataDTO, lang);
+            }
+
         }
         xmlw.writeEndElement(); //sumDscr     
     }
