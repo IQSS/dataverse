@@ -513,6 +513,7 @@ public class DdiExportUtil {
 
                 for (HashSet<FieldDTO> foo : geographicCoverageDTO.getMultipleCompound()) {
                     HashMap<String, String> geoMap = new HashMap<>();
+                    // TODO: the order may still be wrong -L.A. (because of multiples)
                     for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                         FieldDTO next = iterator.next();
                         if (DatasetFieldConstant.country.equals(next.getTypeName())) {
@@ -545,8 +546,10 @@ public class DdiExportUtil {
                 }
             }
             
+            /* TODO: if exists? - L.A. */
             writeFullElementList(xmlw, "geogUnit", dto2PrimitiveList(datasetVersionDTO, DatasetFieldConstant.geographicUnit));
 
+            /* TODO: it really looks like only 1 geoBndBox is allowed in the DDI - ? */
             if (geographicBoundingBoxDTO != null) {
                 for (HashSet<FieldDTO> foo : geographicBoundingBoxDTO.getMultipleCompound()) {
                     xmlw.writeStartElement("geoBndBox");
