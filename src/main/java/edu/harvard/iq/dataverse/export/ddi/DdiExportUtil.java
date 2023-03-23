@@ -236,9 +236,11 @@ public class DdiExportUtil {
         }
         writeDistributorsElement(xmlw, version, datasetDto.getMetadataLanguage());
         writeContactsElement(xmlw, version);
-        writeFullElement(xmlw, "distDate", dto2Primitive(version, DatasetFieldConstant.distributionDate));
+        /* per SCHEMA, depositr comes before depDate! - L.A. */
         writeFullElement(xmlw, "depositr", dto2Primitive(version, DatasetFieldConstant.depositor));
+        /* ... and depDate comes before distDate - L.A. */
         writeFullElement(xmlw, "depDate", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));
+        writeFullElement(xmlw, "distDate", dto2Primitive(version, DatasetFieldConstant.distributionDate));
 
         xmlw.writeEndElement(); // diststmt
 
@@ -880,9 +882,9 @@ public class DdiExportUtil {
                                 if (!producerLogo.isEmpty()) {
                                     writeAttribute(xmlw, "role", producerLogo);
                                 }
-                                if (!producerURL.isEmpty()) {
+                                /* NOT IN THE SCHEMA! -L.A. if (!producerURL.isEmpty()) {
                                     writeAttribute(xmlw, "URI", producerURL);
-                                }
+                                }*/
                                 xmlw.writeCharacters(producerName);
                                 xmlw.writeEndElement(); //AuthEnty
                             }
@@ -946,9 +948,10 @@ public class DdiExportUtil {
                                 if (!distributorURL.isEmpty()) {
                                     writeAttribute(xmlw, "URI", distributorURL);
                                 }
-                                if (!distributorLogoURL.isEmpty()) {
+                                /* NOT IN THE SCHEMA! -L.A.if (!distributorLogoURL.isEmpty()) {
+                                   (and why were we putting this logo into the "role" field anyway?? - same with producerLogo above!)
                                     writeAttribute(xmlw, "role", distributorLogoURL);
-                                }
+                                }*/
                                 xmlw.writeCharacters(distributorName);
                                 xmlw.writeEndElement(); //AuthEnty
                             }
