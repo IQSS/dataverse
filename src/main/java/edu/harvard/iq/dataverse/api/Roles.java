@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -19,6 +21,8 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
@@ -30,10 +34,11 @@ import javax.ws.rs.core.Response;
 public class Roles extends AbstractApiBean {
 	
 	@GET
+    @AuthRequired
 	@Path("{id}")
-	public Response viewRole( @PathParam("id") String id) {
+	public Response viewRole(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         return response( ()-> {
-            final User user = findUserOrDie(); 
+            final User user = getRequestUser(crc);
             final DataverseRole role = findRoleOrDie(id);
             return ( permissionSvc.userOn(user, role.getOwner()).has(Permission.ManageDataversePermissions) ) 
                     ? ok( json(role) ) : permissionError("Permission required to view roles.");
@@ -41,8 +46,9 @@ public class Roles extends AbstractApiBean {
 	}
 	
     @DELETE
+    @AuthRequired
     @Path("{id}")
-    public Response deleteRole(@PathParam("id") String id) {
+    public Response deleteRole(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         return response(req -> {
             DataverseRole role = findRoleOrDie(id);
             List<String> args = Arrays.asList(role.getName());
@@ -51,15 +57,17 @@ public class Roles extends AbstractApiBean {
             }
             execCommand(new DeleteRoleCommand(req, role));
             return ok("role " + role.getName() + " deleted.");
-        });
+        }, getRequestUser(crc));
     }
 	
 	@POST
-	public Response createNewRole( RoleDTO roleDto,
-                                   @QueryParam("dvo") String dvoIdtf ) {
+    @AuthRequired
+	public Response createNewRole(@Context ContainerRequestContext crc,
+                                  RoleDTO roleDto,
+                                  @QueryParam("dvo") String dvoIdtf) {
         return response( req -> ok(json(execCommand(
                                   new CreateRoleCommand(roleDto.asRole(),
-                                                        req,findDataverseOrDie(dvoIdtf))))));
+                                                        req,findDataverseOrDie(dvoIdtf))))), getRequestUser(crc));
 	}
     
 }
