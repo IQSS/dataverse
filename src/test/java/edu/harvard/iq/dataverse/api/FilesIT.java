@@ -1951,10 +1951,21 @@ public class FilesIT {
                 .add("description", "my description2")
                 .add("directoryLabel", "data/subdir1")
                 .add("categories", Json.createArrayBuilder().add("Data"));
-        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, json2.build(), apiToken);
-        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Response uploadResponse2 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, json2.build(), apiToken);
+        uploadResponse2.then().assertThat().statusCode(OK.getStatusCode());
 
-        Integer fileId2 = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Integer fileId2 = JsonPath.from(uploadResponse2.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Upload file 3
+        String pathToFile3 = "src/main/webapp/resources/images/cc0.png";
+        JsonObjectBuilder json3 = Json.createObjectBuilder()
+                .add("description", "my description3")
+                .add("directoryLabel", "data/subdir1")
+                .add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadResponse3 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile3, json3.build(), apiToken);
+        uploadResponse3.then().assertThat().statusCode(OK.getStatusCode());
+
+        Integer fileId3 = JsonPath.from(uploadResponse3.body().asString()).getInt("data.files[0].dataFile.id");
 
         // Publish collection and dataset
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
@@ -1981,5 +1992,8 @@ public class FilesIT {
         Response downloadResponse2 = UtilIT.downloadFile(fileId2, null, null, null, apiToken);
         downloadResponse2.then().assertThat().statusCode(OK.getStatusCode());
 
+        // Delete file 3, the current version is still draft
+        Response deleteResponse3 = UtilIT.deleteFileApi(fileId3, apiToken);
+        deleteResponse3.then().assertThat().statusCode(OK.getStatusCode());
     }
 }
