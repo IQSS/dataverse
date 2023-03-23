@@ -169,9 +169,15 @@ As the person installing the Dataverse Software, you may or may not be a local m
 Persistent Identifiers and Publishing Datasets
 ----------------------------------------------
 
-Persistent identifiers are a required and integral part of the Dataverse Software. They provide a URL that is guaranteed to resolve to the datasets or files they represent. The Dataverse Software currently supports creating identifiers using DOI and Handle.
+Persistent identifiers (PIDs) are a required and integral part of the Dataverse Software. They provide a URL that is guaranteed to resolve to the datasets or files they represent.
+The Dataverse Software currently supports creating identifiers using one of several PID providers.
+The most appropriate PIDs for public data are DOIs (provided by DataCite or EZID) and Handles. Dataverse also supports PermaLinks which could be useful for intranet or catalog use cases. A Fake "DOI" provider, recommended only for testing and development purposes, also exists.
 
-By default, the installer configures a default DOI namespace (10.5072) with DataCite as the registration provider. Please note that as of the release 4.9.3, we can no longer use EZID as the provider. Unlike EZID, DataCite requires that you register for a test account, configured with your own prefix (please contact support@datacite.org). Once you receive the login name, password, and prefix for the account, configure the credentials in your domain.xml, as the following two JVM options::
+Testing
++++++++
+
+By default, the installer configures the DataCite test service as the registration provider.
+DataCite requires that you register for a test account, configured with your own prefix (please contact support@datacite.org). Once you receive the login name, password, and prefix for the account, configure the credentials in your domain.xml, as the following two JVM options::
 
       <jvm-options>-Ddoi.username=...</jvm-options>
       <jvm-options>-Ddoi.password=...</jvm-options>
@@ -180,11 +186,15 @@ and restart Payara. The prefix can be configured via the API (where it is referr
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
+EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite;
+
+The PermaLink and FAKE DOI providers do not involve an external account. PermaLinks are described further below. Use of the FAKE provider is discussed in the :doc:`/developers/dev-environment` section.
+
 Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable, and they will only resolve from the DataCite test environment (and then only if the Dataverse installation from which you published them is accessible - DOIs minted from your laptop will not resolve). Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
 
 To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider (see https://dataversecommunity.global for more on joining DataCite) but **EZID** (http://ezid.cdlib.org) is an option for the University of California according to https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ . **Handle.Net** (https://www.handle.net) is the HDL provider.
 
-Once you have your DOI or Handle account credentials and a namespace, configure your Dataverse installation to use them using the JVM options and database settings below.
+Once you have a production DOI or Handle account credentials and a namespace, configure your Dataverse installation to use them using the JVM options and database settings below.
 
 Configuring Your Dataverse Installation for DOIs
 ++++++++++++++++++++++++++++++++++++++++++++++++
@@ -231,6 +241,30 @@ Here are the configuration options for handles:
 - :ref:`:HandleAuthHandle <:HandleAuthHandle>` (optional)
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
+
+.. _permalinks:
+
+Configuring Your Dataverse Installation for PermaLinks
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+PermaLinks are a simple mechanism to provide persistent URLs for datasets and datafiles (if configured) that does not involve an external service providing metadata-based search services.
+They are potentially appropriate for Intranet use cases as well as in cases where Dataverse is being used as a catalog or holding duplicate copies of datasets where the authoritative copy already has a DOI or Handle.
+PermaLinks use the protocol "perma" (versus "doi" or "handle") and do not use a "/" character as a separator between the authority and shoulder. It is recommended to choose an alphanumeric value for authority that does not resemble that of DOIs (which are primarily numeric and start with "10." as in "10.5072") to avoid PermaLinks being mistaken for DOIs.
+
+Here are the configuration options for PermaLinks:
+
+**JVM Options:**
+
+- :ref:`perma.baseurlstring`
+
+**Database Settings:**
+
+- :ref:`:Protocol <:Protocol>`
+- :ref:`:Authority <:Authority>`
+- :ref:`:Shoulder <:Shoulder>`
+- :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
+- :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
+- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
 
 .. _auth-modes:
 
@@ -1687,7 +1721,9 @@ of purposes:
    under certain conditions. This directory may also be used by file stores for :ref:`permanent file storage <storage-files-dir>`,
    but this is controlled by other, store-specific settings.
 
-Defaults to ``/tmp/dataverse``. Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_DIRECTORY``.
+Defaults to ``/tmp/dataverse``. Can also be set via *MicroProfile Config API* sources, e.g. the environment variable
+``DATAVERSE_FILES_DIRECTORY``. Defaults to ``${STORAGE_DIR}`` for profile ``ct``, important for the
+:ref:`Dataverse Application Image <app-locations>`.
 
 .. _dataverse.files.uploads:
 
@@ -1702,6 +1738,7 @@ Defaults to ``./uploads``, which resolves to ``/usr/local/payara5/glassfish/doma
 installation.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
+Defaults to ``${STORAGE_DIR}/uploads`` for profile ``ct``, important for the :ref:`Dataverse Application Image <app-locations>`.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2016,8 +2053,6 @@ By default, download URLs to files will be included in Schema.org JSON-LD output
 
 ``./asadmin create-jvm-options '-Ddataverse.files.hide-schema-dot-org-download-urls=true'``
 
-Please note that there are other reasons why download URLs may not be included for certain files such as if a guestbook entry is required or if the file is restricted.
-
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
 .. _useripaddresssourceheader:
@@ -2047,6 +2082,27 @@ This setting is useful in cases such as running your Dataverse installation behi
 	"HTTP_FORWARDED",
 	"HTTP_VIA",
 	"REMOTE_ADDR"
+	
+.. _dataverse.personOrOrg.assumeCommaInPersonName:
+
+dataverse.personOrOrg.assumeCommaInPersonName
++++++++++++++++++++++++++++++++++++++++++++++
+
+Please note that this setting is experimental.
+
+The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization. If you are sure that
+users are following the guidance to add people in the recommended family name, given name order, with a comma, you can set this true to always assume entries without a comma are for Organizations. The default is false.
+
+.. _dataverse.personOrOrg.orgPhraseArray:
+
+dataverse.personOrOrg.orgPhraseArray
+++++++++++++++++++++++++++++++++++++
+
+Please note that this setting is experimental.
+
+The Schema.org metadata and OpenAIRE exports and the Schema.org metadata included in DatasetPages try to infer whether each entry in the various fields (e.g. Author, Contributor) is a Person or Organization.
+If you have examples where an orgization name is being inferred to belong to a person, you can use this setting to force it to be recognized as an organization.
+The value is expected to be a JsonArray of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization. 
 
 
 .. _dataverse.api.signature-secret:
@@ -2079,6 +2135,48 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 **WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
 production context! Rely on password alias, secrets directory or cloud based sources instead!
 
+.. _perma.baseurlstring:
+
+perma.baseurlstring
++++++++++++++++++++
+
+When using :ref:`PermaLinks <permalinks>`, perma.baseurlstring can be used to configure an external resolver. Dataverse will associate a PermaLink PID with the URL:
+``<perma.baseurlstring>/citation?persistentId=perma:<permalink>``. The default value is your Dataverse site URL, which will result in PermaLinks correctly resolving to the appropriate dataset page.
+
+To set this option, issue a command such as:
+
+``./asadmin create-jvm-options '-Dperma.baseurlstring=https\://localresolver.yourdataverse.org'``
+
+See also these related database settings:
+
+- :ref:`:Protocol`
+- :ref:`:Authority`
+- :ref:`:Shoulder`
+
+.. _feature-flags:
+
+Feature Flags
+-------------
+
+Certain features might be deactivated because they are experimental and/or opt-in previews. If you want to enable these,
+please find all known feature flags below. Any of these flags can be activated using a boolean value
+(case-insensitive, one of "true", "1", "YES", "Y", "ON") for the setting.
+
+.. list-table::
+    :widths: 35 50 15
+    :header-rows: 1
+    :align: left
+
+    * - Flag Name
+      - Description
+      - Default status
+    * - Example flag
+      - Replace this with something real
+      - ``Off``
+
+**Note:** Can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_FEATURE_XXX``.
+
 
 
 .. _:ApplicationServerSettings:
@@ -2106,6 +2204,8 @@ As per the spec, you will need to set the configuration value ``mp.config.profil
 This is best done with a system property:
 
 ``./asadmin create-system-properties 'mp.config.profile=ct'``
+
+*Note: the* :doc:`../container/app-image` *uses an (overrideable) environment variable to activate this.*
 
 You might also create your own profiles and use these, please refer to the upstream documentation linked above.
 
@@ -2242,7 +2342,7 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 :DoiProvider
 ++++++++++++
 
-As of this writing "DataCite" and "EZID" are the only valid options for production installations. Developers using Dataverse Software 4.10+ are welcome to use the keyword "FAKE" to configure a non-production installation with an non-resolving, in-code provider, which will basically short-circuit the DOI publishing process. ``:DoiProvider`` is only needed if you are using DOI.
+As of this writing "DataCite", and "EZID" are the only valid options for production installations. Developers using Dataverse Software 4.10+ are welcome to use the keyword "FAKE" to configure a non-production installation with an non-resolving, in-code provider, which will basically short-circuit the DOI publishing process. ``:DoiProvider`` is only needed if you are using DOI.
 
 ``curl -X PUT -d DataCite http://localhost:8080/api/admin/settings/:DoiProvider``
 
@@ -2257,7 +2357,7 @@ This setting relates to the ``:Protocol``, ``:Authority``, ``:Shoulder``, and ``
 :Protocol
 +++++++++
 
-As of this writing "doi" and "hdl" are the only valid option for the protocol for a persistent ID.
+As of this writing "doi","hdl", and "perma" are the only valid option for the protocol for a persistent ID.
 
 ``curl -X PUT -d doi http://localhost:8080/api/admin/settings/:Protocol``
 
@@ -2266,9 +2366,9 @@ As of this writing "doi" and "hdl" are the only valid option for the protocol fo
 :Authority
 ++++++++++
 
-Use the authority assigned to you by your DoiProvider or HandleProvider.
+Use the authority assigned to you by your DoiProvider or HandleProvider, or your choice if using PermaLinks.
 
-Please note that the authority cannot have a slash ("/") in it.
+Please note that a DOI or Handle authority cannot have a slash ("/") in it (slash is also not recommended for PermaLink authorities).
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
@@ -2277,7 +2377,7 @@ Please note that the authority cannot have a slash ("/") in it.
 :Shoulder
 +++++++++
 
-Out of the box, the DOI shoulder is set to "FK2/" but this is for testing only! When you apply for your DOI namespace, you may have requested a shoulder. The following is only an example and a trailing slash is optional.
+The shoulder is used with DOIs and PermaLinks. Out of the box, the shoulder is set to "FK2/" but this is for testing only! When you apply for your DOI authority/namespace, you may have been assigned a shoulder. The following is only an example and a trailing slash is optional.
 
 ``curl -X PUT -d "MyShoulder/" http://localhost:8080/api/admin/settings/:Shoulder``
 

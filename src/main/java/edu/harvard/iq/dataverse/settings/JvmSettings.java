@@ -70,7 +70,9 @@ public enum JvmSettings {
 
     // FEATURE FLAGS SETTINGS
     SCOPE_FLAGS(PREFIX, "feature"),
-    FLAG_API_SESSION_AUTH(SCOPE_FLAGS, "api-session-auth")
+    // This is a special placeholder-type setting entry, to be filled in by FeatureFlag entries during lookup.
+    // Avoids adding flag entries twice.
+    FEATURE_FLAG(SCOPE_FLAGS),
     
     ;
     
