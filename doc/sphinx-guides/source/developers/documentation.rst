@@ -141,6 +141,25 @@ In order to make it clear to the crawlers that we only want the latest version d
         Allow: /en/latest/
         Disallow: /en/
 
+PDF Version of the Guides
+-------------------------
+
+The HTML version of the guides is the official one. Any other formats are maintained on a best effort basis.
+
+If you would like to build a PDF version of the guides and have Docker installed, please try the command below from the root of the git repo:
+
+``docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx-latexpdf:3.5.4 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make latexpdf LATEXMKOPTS=\"-interaction=nonstopmode\"; cd ../.. && ls -1 doc/sphinx-guides/build/latex/Dataverse.pdf"``
+
+A few notes about the command above:
+
+- Hopefully the PDF was created at ``doc/sphinx-guides/build/latex/Dataverse.pdf``.
+- For now, we are using "nonstopmode" but this masks some errors.
+- See requirements.txt for a note regarding the version of Sphinx we are using.
+
+Also, as of this writing we have enabled PDF builds from the "develop" branch. You download the PDF from http://preview.guides.gdcc.io/_/downloads/en/develop/pdf/
+
+If you would like to help improve the PDF version of the guides, please get in touch! Please see :ref:`getting-help-developers` for ways to contact the developer community.
+
 ----
 
 Previous: :doc:`testing` | Next: :doc:`dependencies`
