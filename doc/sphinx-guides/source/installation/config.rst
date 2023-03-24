@@ -2170,8 +2170,8 @@ please find all known feature flags below. Any of these flags can be activated u
     * - Flag Name
       - Description
       - Default status
-    * - Example flag
-      - Replace this with something real
+    * - api-session-auth
+      - Enables API authentication via session cookie (JSESSIONID). Caution: Enabling this feature flag exposes the installation to CSRF risks.
       - ``Off``
 
 **Note:** Can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
