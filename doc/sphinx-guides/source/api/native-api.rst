@@ -3392,6 +3392,8 @@ The fully expanded example above (without the environment variables) looks like 
 
 Only users with superuser permissions may delete harvesting sets.
 
+.. _managing-harvesting-clients-api:
+
 Managing Harvesting Clients
 ---------------------------
 
@@ -3478,6 +3480,9 @@ An example JSON file would look like this::
     "customHeaders": "x-oai-api-key: xxxyyyzzz",
     "set": "user-lmops"
   }
+
+Something important to keep in mind about this API is that, unlike the harvesting clients GUI, it will create a client with the values supplied without making any attempts to validate them in real time. In other words, for the `harvestUrl` it will accept anything that looks like a well-formed url, without making any OAI calls to verify that the name of the set and/or the metadata format entered are supported by it. This is by design, to give an admin an option to still be able to create a client, in a rare case when it cannot be done via the GUI because of some real time failures in an exchange with an otherwise valid OAI server. This however puts the responsibility on the admin to supply the values already confirmed to be valid. 
+
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
