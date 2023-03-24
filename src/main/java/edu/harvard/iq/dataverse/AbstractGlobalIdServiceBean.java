@@ -217,7 +217,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
      */
     @Override
     public GlobalId parsePersistentId(String fullIdentifierString) {
-        if(!configured) {
+        if(!isConfigured()) {
             return null;
         }
         int index1 = fullIdentifierString.indexOf(':');
@@ -231,7 +231,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     }
 
     protected GlobalId parsePersistentId(String protocol, String identifierString) {
-        if(!configured) {
+        if(!isConfigured()) {
             return null;
         }
         String authority;
@@ -262,7 +262,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     }
     
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
-        if(!configured) {
+        if(!isConfigured()) {
             return null;
         }
         logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getProviderInformation().get(0));
