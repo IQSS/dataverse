@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
+import edu.harvard.iq.dataverse.api.errorhandlers.ConstraintViolationExceptionHandler;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -67,7 +68,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContri
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
-import edu.harvard.iq.dataverse.pidproviders.VersionPidMode;
+import edu.harvard.iq.dataverse.pidproviders.VersionPidMode.CollectionConduct;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
@@ -76,17 +77,23 @@ import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
@@ -96,7 +103,10 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonParsingException;
+import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -160,7 +170,13 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     SwordServiceBean swordService;
-
+    
+    @Inject
+    Validator validator;
+    
+    @Resource
+    EJBContext ejbCtxt;
+    
     @POST
     @AuthRequired
     public Response addRoot(@Context ContainerRequestContext crc, String body) {
@@ -575,7 +591,76 @@ public class Dataverses extends AbstractApiBean {
             return ok("Dataverse " + idtf + " deleted");
         }, getRequestUser(crc));
     }
-
+    
+    /**
+     * Endpoint to change attributes of a Dataverse collection.
+     *
+     * @apiNote Example curl command:
+     *          <code>curl -X PUT -d "test" http://localhost:8080/api/dataverses/$ALIAS/attribute/alias</code>
+     *          to change the alias of the collection named $ALIAS to "test".
+     */
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/attribute/{attribute}")
+    public Response updateAttribute(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier,
+                                    @PathParam("attribute") String attribute, @NotNull String value) {
+        try {
+            Dataverse collection = findDataverseOrDie(identifier);
+            User user = getRequestUser(crc);
+            DataverseRequest dvRequest = createDataverseRequest(user);
+    
+            // TODO: The cases below use hard coded strings, because we have no place for definitions of those!
+            //       They are taken from util.json.JsonParser / util.json.JsonPrinter. This shall be changed.
+            //       This also should be extended to more attributes, like the type, theme, contacts, some booleans, etc.
+            switch (attribute) {
+                case "alias":
+                    collection.setAlias(value);
+                    break;
+                case "name":
+                    collection.setName(value);
+                    break;
+                case "description":
+                    collection.setDescription(value);
+                    break;
+                case "affiliation":
+                    collection.setAffiliation(value);
+                    break;
+                case "versionPidsConduct":
+                    CollectionConduct conduct = CollectionConduct.findBy(value);
+                    if (conduct == null) {
+                        return badRequest("'" + value + "' is not one of [" +
+                            String.join(",", CollectionConduct.asList()) + "]");
+                    }
+                    collection.setDatasetVersionPidConduct(conduct);
+                    break;
+                default:
+                    return badRequest("'" + attribute + "' is not a supported attribute");
+            }
+    
+            // Validate now to avoid hubbub in Command Engine
+            Set<ConstraintViolation<Dataverse>> violations = validator.validate(collection);
+            if (!violations.isEmpty()) {
+                // TODO: This is an ugly hack to avoid the EJB transaction this endpoint method is automatically
+                //       wrapped into (because this an EJB bean) trying to persist our changes from above to the
+                //       database on it's on (which would obviously fail!) Usually, we would throw an exception
+                //       to trigger the rollback, but that would cause noisy logs about them from the EJB container.
+                ejbCtxt.setRollbackOnly();
+                return ConstraintViolationExceptionHandler.createResponse(violations);
+            }
+    
+            // Off to persistence layer
+            execCommand(new UpdateDataverseCommand(collection, null, null, dvRequest, null));
+    
+            // Also return modified collection to user
+            return ok("Update successful", JsonPrinter.json(collection));
+        
+        // TODO: This is an anti-pattern, necessary due to this bean being an EJB, causing very noisy and unnecessary
+        //       logging by the EJB container for bubbling exceptions. (It would be handled by the error handlers.)
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+    
     @DELETE
     @AuthRequired
     @Path("{linkingDataverseId}/deleteLink/{linkedDataverseId}")
@@ -1328,20 +1413,6 @@ public class Dataverses extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-    }
-    
-    @GET
-    @AuthRequired
-    @Path("{id}/versionPidState")
-    public Response getVersionPidsState(@Context ContainerRequestContext crc, @PathParam("id") String identifier) {
-        return error(Status.NOT_FOUND, "Not implemented yet.");
-    }
-
-    @POST
-    @AuthRequired
-    @Path("{id}/versionPidState")
-    public Response setVersionPidsState(@Context ContainerRequestContext crc, @PathParam("id") String identifier, String stringState) {
-        return error(Status.NOT_FOUND, "Not implemented yet.");
     }
     
 }

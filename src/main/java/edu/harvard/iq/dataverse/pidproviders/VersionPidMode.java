@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse.pidproviders;
 import edu.harvard.iq.dataverse.Dataverse;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Enumlike class to bundle available options for PIDs of Dataset Versions.
@@ -58,6 +60,10 @@ public final class VersionPidMode {
                 .filter(cs -> cs.name.equalsIgnoreCase(name))
                 .findFirst()
                 .orElse(null);
+        }
+        
+        public static List<String> asList() {
+            return values.stream().map(Object::toString).collect(Collectors.toList());
         }
     }
     
