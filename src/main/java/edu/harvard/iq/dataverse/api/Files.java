@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -334,12 +333,12 @@ public class Files extends AbstractApiBean {
         boolean deletePhysicalFile = false;
         try {
             DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
-            List<FileMetadata> fileToDelete = dataFile.getFileMetadatas();
+            FileMetadata fileToDelete = dataFile.getLatestFileMetadata();
             Dataset dataset = dataFile.getOwner();
             DatasetVersion v = dataset.getOrCreateEditVersion();
             deletePhysicalFile = !dataFile.isReleased();
 
-            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest,  fileToDelete, v);
+            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest,  Arrays.asList(fileToDelete), v);
             update_cmd.setValidateLenient(true);
 
             try {

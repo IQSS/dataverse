@@ -1931,9 +1931,7 @@ public class FilesIT {
         Response downloadResponse1 = UtilIT.downloadFile(fileId1, null, null, null, apiToken);
         downloadResponse1.then().assertThat().statusCode(OK.getStatusCode());
 
-        //--------------//
-        // Delete file 1//
-        //--------------//
+        // Delete file 1
         Response deleteResponseFail = UtilIT.deleteFileApi(fileId1, apiTokenNoPerms);
         deleteResponseFail.prettyPrint();
         deleteResponseFail.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
@@ -1957,7 +1955,7 @@ public class FilesIT {
         Integer fileId2 = JsonPath.from(uploadResponse2.body().asString()).getInt("data.files[0].dataFile.id");
 
         // Upload file 3
-        String pathToFile3 = "src/main/webapp/resources/images/cc0.png";
+        String pathToFile3 = "src/main/webapp/resources/images/orcid_16x16.png";
         JsonObjectBuilder json3 = Json.createObjectBuilder()
                 .add("description", "my description3")
                 .add("directoryLabel", "data/subdir1")
@@ -1992,8 +1990,22 @@ public class FilesIT {
         Response downloadResponse2 = UtilIT.downloadFile(fileId2, null, null, null, apiToken);
         downloadResponse2.then().assertThat().statusCode(OK.getStatusCode());
 
+        // Check file 3 still in post v1.0 draft
+        Response postv1draft2 = UtilIT.getDatasetVersion(datasetPid, "1.0", apiToken);
+        postv1draft2.prettyPrint();
+        postv1draft2.then().assertThat()
+                .body("data.files[0].dataFile.filename", equalTo("orcid_16x16.png"))
+                .statusCode(OK.getStatusCode());
+
         // Delete file 3, the current version is still draft
         Response deleteResponse3 = UtilIT.deleteFileApi(fileId3, apiToken);
         deleteResponse3.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Check file 3 deleted from post v1.0 draft
+        Response postv1draft3 = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
+        postv1draft3.prettyPrint();
+        postv1draft3.then().assertThat()
+                .body("data.files[0]", equalTo(null))
+                .statusCode(OK.getStatusCode());
     }
 }
