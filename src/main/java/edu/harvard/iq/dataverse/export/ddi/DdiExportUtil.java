@@ -293,6 +293,13 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); //othrStdyMat
     }
 
+    /*
+            <xs:sequence>
+               <xs:element ref="setAvail" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="useStmt" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="notes" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+    */
     private static void writeDataAccess(XMLStreamWriter xmlw , DatasetVersionDTO version) throws XMLStreamException {
         xmlw.writeStartElement("dataAccs");
         if (version.getTermsOfUse() != null && !version.getTermsOfUse().trim().equals("")) {
@@ -300,13 +307,6 @@ public class DdiExportUtil {
             writeAttribute(xmlw, "type", NOTE_TYPE_TERMS_OF_USE);
             writeAttribute(xmlw, "level", LEVEL_DV);
             xmlw.writeCharacters(version.getTermsOfUse());
-            xmlw.writeEndElement(); //notes
-        }
-        if (version.getTermsOfAccess() != null && !version.getTermsOfAccess().trim().equals("")) {
-            xmlw.writeStartElement("notes");
-            writeAttribute(xmlw, "type", NOTE_TYPE_TERMS_OF_ACCESS);
-            writeAttribute(xmlw, "level", LEVEL_DV);
-            xmlw.writeCharacters(version.getTermsOfAccess());
             xmlw.writeEndElement(); //notes
         }
 
@@ -327,6 +327,14 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "conditions", version.getConditions());
         writeFullElement(xmlw, "disclaimer", version.getDisclaimer());
         xmlw.writeEndElement(); //useStmt
+        /* any <note>s: */
+        if (version.getTermsOfAccess() != null && !version.getTermsOfAccess().trim().equals("")) {
+            xmlw.writeStartElement("notes");
+            writeAttribute(xmlw, "type", NOTE_TYPE_TERMS_OF_ACCESS);
+            writeAttribute(xmlw, "level", LEVEL_DV);
+            xmlw.writeCharacters(version.getTermsOfAccess());
+            xmlw.writeEndElement(); //notes
+        }
         xmlw.writeEndElement(); //dataAccs
     }
     
@@ -627,6 +635,28 @@ public class DdiExportUtil {
 
     }
     
+    /** Again, <dataColl> is an xs:sequence - order is important and must follow
+      * the schema. -L.A. 
+      *     <xs:sequence>
+               <xs:element ref="timeMeth" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="dataCollector" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="collectorTraining" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="frequenc" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="sampProc" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="sampleFrame" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="targetSampleSize" minOccurs="0" maxOccurs="unbounded"/>
+	       <xs:element ref="deviat" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="collMode" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="resInstru" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="instrumentDevelopment" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="sources" minOccurs="0"/>
+	       <xs:element ref="collSitu" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="actMin" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="ConOps" minOccurs="0" maxOccurs="unbounded"/>
+	       <xs:element ref="weight" minOccurs="0" maxOccurs="unbounded"/>
+               <xs:element ref="cleanOps" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+      */
     private static void writeMethodElement(XMLStreamWriter xmlw , DatasetVersionDTO version, String lang) throws XMLStreamException{
         xmlw.writeStartElement("method");
         xmlw.writeStartElement("dataColl");
@@ -640,13 +670,7 @@ public class DdiExportUtil {
 
         writeI18NElement(xmlw, "deviat", version, DatasetFieldConstant.deviationsFromSampleDesign, lang);
 
-        xmlw.writeStartElement("sources");
-        writeFullElementList(xmlw, "dataSrc", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
-        writeI18NElement(xmlw, "srcOrig", version, DatasetFieldConstant.originOfSources, lang);
-        writeI18NElement(xmlw, "srcChar", version, DatasetFieldConstant.characteristicOfSources, lang);
-        writeI18NElement(xmlw, "srcDocu", version, DatasetFieldConstant.accessToSources, lang);
-        xmlw.writeEndElement(); //sources
-
+        /* <collMode> comes before <sources>: */
         FieldDTO collModeFieldDTO = dto2FieldDTO(version, DatasetFieldConstant.collectionMode, "socialscience");
         if (collModeFieldDTO != null) {
             // This field was made multiple as of 5.10
@@ -658,21 +682,33 @@ public class DdiExportUtil {
                 writeI18NElement(xmlw, "collMode", version, DatasetFieldConstant.collectionMode, lang);
             }
         }
+        /* and so does <resInstru>: */
         writeI18NElement(xmlw, "resInstru", version, DatasetFieldConstant.researchInstrument, lang); 
+        xmlw.writeStartElement("sources");
+        writeFullElementList(xmlw, "dataSrc", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
+        writeI18NElement(xmlw, "srcOrig", version, DatasetFieldConstant.originOfSources, lang);
+        writeI18NElement(xmlw, "srcChar", version, DatasetFieldConstant.characteristicOfSources, lang);
+        writeI18NElement(xmlw, "srcDocu", version, DatasetFieldConstant.accessToSources, lang);
+        xmlw.writeEndElement(); //sources
+
+        
         writeI18NElement(xmlw, "collSitu", version, DatasetFieldConstant.dataCollectionSituation, lang);
         writeI18NElement(xmlw, "actMin", version, DatasetFieldConstant.actionsToMinimizeLoss, lang);
-        writeI18NElement(xmlw, "conOps", version, DatasetFieldConstant.controlOperations, lang);
+        /* "<ConOps>" has the uppercase C: */
+        writeI18NElement(xmlw, "ConOps", version, DatasetFieldConstant.controlOperations, lang);
         writeI18NElement(xmlw, "weight", version, DatasetFieldConstant.weighting, lang);  
         writeI18NElement(xmlw, "cleanOps", version, DatasetFieldConstant.cleaningOperations, lang);
 
         xmlw.writeEndElement(); //dataColl
+        /* <notes> before <anlyInfo>: */
+        writeNotesElement(xmlw, version);
+
         xmlw.writeStartElement("anlyInfo");
         //writeFullElement(xmlw, "anylInfo", dto2Primitive(version, DatasetFieldConstant.datasetLevelErrorNotes));
         writeI18NElement(xmlw, "respRate", version, DatasetFieldConstant.responseRate, lang);
         writeI18NElement(xmlw, "EstSmpErr", version, DatasetFieldConstant.samplingErrorEstimates, lang);
         writeI18NElement(xmlw, "dataAppr", version, DatasetFieldConstant.otherDataAppraisal, lang); 
         xmlw.writeEndElement(); //anlyInfo
-        writeNotesElement(xmlw, version);
         
         xmlw.writeEndElement();//method
     }
@@ -1079,16 +1115,33 @@ public class DdiExportUtil {
                             if (citation != null && !citation.trim().equals("")) {
                                 xmlw.writeStartElement("relPubl");
                                 xmlw.writeStartElement("citation");
+                                /* <xs:sequence>
+                                    <xs:element ref="titlStmt"/>
+                                    <xs:element ref="rspStmt" minOccurs="0"/>
+                                    <xs:element ref="prodStmt" minOccurs="0"/>
+                                    <xs:element ref="distStmt" minOccurs="0"/>
+                                    <xs:element ref="serStmt" minOccurs="0" maxOccurs="unbounded"/>
+                                    <xs:element ref="verStmt" minOccurs="0" maxOccurs="unbounded"/>
+                                    <xs:element ref="biblCit" minOccurs="0" maxOccurs="unbounded"/>
+                                    <xs:element ref="holdings" minOccurs="0" maxOccurs="unbounded"/>
+                                    <xs:element ref="notes" minOccurs="0" maxOccurs="unbounded"/>
+                                    <xs:group ref="dc:elementsAndRefinementsGroup"/>
+                                   </xs:sequence>
+                                 (In other words - titlStmt is mandatory! -L.A.)
+                                */
+                                xmlw.writeStartElement("titlStmt");
+                                writeFullElement(xmlw, "titl", citation);
                                 if (IDNo != null && !IDNo.trim().equals("")) {
-                                    xmlw.writeStartElement("titlStmt");
+
                                     xmlw.writeStartElement("IDNo");
                                     if (IDType != null && !IDType.trim().equals("")) {
-                                        xmlw.writeAttribute("agency", IDType );
+                                        xmlw.writeAttribute("agency", IDType);
                                     }
                                     xmlw.writeCharacters(IDNo);
                                     xmlw.writeEndElement(); //IDNo
-                                    xmlw.writeEndElement(); // titlStmt
                                 }
+                                xmlw.writeEndElement(); // titlStmt
+
 
                                 writeFullElement(xmlw,"biblCit",citation);
                                 xmlw.writeEndElement(); //citation
@@ -1313,17 +1366,18 @@ public class DdiExportUtil {
                                 actualSize = next.getSinglePrimitive();
                             }
                         }
-
-                        if (!sizeFormula.isEmpty()) {
-                            xmlw.writeStartElement("sampleSizeFormula");
-                            xmlw.writeCharacters(sizeFormula);
-                            xmlw.writeEndElement(); //sampleSizeFormula
-                        }
+                        /* <sampleSize> must come before <sampleSizeFormula>! -L.A. */
                         if (!actualSize.isEmpty()) {
                             xmlw.writeStartElement("sampleSize");
                             xmlw.writeCharacters(actualSize);
                             xmlw.writeEndElement(); //sampleSize
                         }
+                        if (!sizeFormula.isEmpty()) {
+                            xmlw.writeStartElement("sampleSizeFormula");
+                            xmlw.writeCharacters(sizeFormula);
+                            xmlw.writeEndElement(); //sampleSizeFormula
+                        }
+                        
                         xmlw.writeEndElement(); // targetSampleSize
                     }
                 }
