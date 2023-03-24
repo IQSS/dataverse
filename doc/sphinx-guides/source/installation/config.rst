@@ -2153,6 +2153,26 @@ See also these related database settings:
 - :ref:`:Authority`
 - :ref:`:Shoulder`
 
+
+.. _dataverse.signposting.level1-author-limit:
+
+dataverse.signposting.level1-author-limit
++++++++++++++++++++++++++++++++++++++++++
+
+See :ref:`discovery-sign-posting` for details.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_AUTHOR_LIMIT``.
+
+.. _dataverse.signposting.level1-item-limit:
+
+dataverse.signposting.level1-item-limit
++++++++++++++++++++++++++++++++++++++++
+
+See :ref:`discovery-sign-posting` for details.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_ITEM_LIMIT``.
+
+
 .. _feature-flags:
 
 Feature Flags
