@@ -1,11 +1,13 @@
 Application Base Image
 ======================
 
+The base image contains Payara and other dependencies that the Dataverse software runs on. It is the foundation for the :doc:`app-image`. Note that some dependencies, such as PostgreSQL and Solr, run in their own containers and are not part of the base image.
+
 .. contents:: |toctitle|
     :local:
 
 A "base image" offers you a pre-installed and pre-tuned application server to deploy Dataverse software to.
-Adding basic functionality like executing scripts at container boot, monitoring, memory tweaks etc is all done
+Adding basic functionality like executing scripts at container boot, monitoring, memory tweaks etc. is all done
 at this layer, to make the application image focus on the app itself.
 
 **NOTE: The base image does not contain the Dataverse application itself.**
@@ -15,7 +17,7 @@ This Maven module uses the `Maven Docker Plugin <https://dmp.fabric8.io>`_ to bu
 You may use, extend, or alter this image to your liking and/or host in some different registry if you want to.
 
 **NOTE: This image is created, maintained and supported by the Dataverse community on a best-effort basis.**
-IQSS will not offer you support how to deploy or run it, please reach out to the community for help on using it.
+IQSS will not offer you support how to deploy or run it, please reach out to the community (:ref:`support`) for help on using it.
 You might be interested in taking a look at :doc:`../developers/containers`, linking you to some (community-based)
 efforts.
 
@@ -61,7 +63,7 @@ Build Instructions
 Assuming you have `Docker <https://docs.docker.com/engine/install/>`_, `Docker Desktop <https://www.docker.com/products/docker-desktop/>`_,
 `Moby <https://mobyproject.org/>`_ or some remote Docker host configured, up and running from here on.
 
-Simply execute the Maven modules packaging target with activated "container profile. Either from the projects Git root:
+Simply execute the Maven modules packaging target with activated "container" profile. Either from the projects Git root:
 
 ``mvn -Pct -f modules/container-base install``
 
@@ -72,7 +74,7 @@ Or move to the module and execute:
 Some additional notes, using Maven parameters to change the build and use ...:
 
 - | ... a different tag only: add ``-Dbase.image.tag=tag``.
-  | *Note:* default is ``develop``
+  | *Note:* default is ``unstable``
 - | ... a different image name and tag: add ``-Dbase.image=name:tag``.
   | *Note:* default is ``gdcc/base:${base.image.tag}``
 - ... a different image registry than Docker Hub: add ``-Ddocker.registry=registry.example.org`` (see also
@@ -101,10 +103,10 @@ Processor Architecture and Multiarch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This image is created as a "multi-arch image", supporting the most common architectures Dataverse usually runs on:
-AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2), by using Maven Docker Plugin's *BuildX* mode.
+AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2), by using `Maven Docker Plugin's BuildX mode <https://dmp.fabric8.io/#build-buildx>`_.
 
 Building the image via ``mvn -Pct package`` or ``mvn -Pct install`` as above will only build for the architecture of
-the Docker maschine's CPU.
+the Docker machine's CPU.
 
 Only ``mvn -Pct deploy`` will trigger building on all enabled architectures.
 Yet, to enable building with non-native code on your build machine, you will need to setup a cross-platform builder.
@@ -114,6 +116,7 @@ your package management) on the host and run ``docker run --rm --privileged mult
 to enable that builder. The Docker plugin will setup everything else for you.
 
 
+.. _base-tunables:
 
 Tunables
 ++++++++
@@ -222,6 +225,7 @@ provides. These are mostly based on environment variables (very common with cont
 .. [dump-option] ``-XX:+HeapDumpOnOutOfMemoryError``
 
 
+.. _base-locations:
 
 Locations
 +++++++++
@@ -302,6 +306,8 @@ named Docker volume in these places to avoid data loss, gain performance and/or 
       - Default location where heap dumps will be stored (see above).
         You should mount some storage here (disk or ephemeral).
 
+
+.. _base-exposed-ports:
 
 Exposed Ports
 +++++++++++++
