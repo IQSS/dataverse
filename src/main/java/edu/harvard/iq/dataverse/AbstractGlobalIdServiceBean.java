@@ -30,7 +30,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     @Inject
     SystemConfig systemConfig;
 
-    protected boolean configured = false;
+    protected Boolean configured = null;
     
     public static String UNAVAILABLE = ":unav";
 
@@ -684,6 +684,10 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     
     @Override
     public boolean isConfigured() {
-        return configured;
+        if(configured==null) {
+            return false;
+        } else {
+            return configured.booleanValue();
+        }
     }
 }
