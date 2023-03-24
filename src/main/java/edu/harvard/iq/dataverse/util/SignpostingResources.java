@@ -85,7 +85,7 @@ public class SignpostingResources {
                 + workingDatasetVersion.getVersionNumber() + "." + workingDatasetVersion.getMinorVersionNumber()
                 + "/linkset?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + "> ; rel=\"linkset\";type=\"application/linkset+json\"";
         valueList.add(linkset);
-        logger.info(String.format("valueList is: %s", valueList));
+        logger.fine(String.format("valueList is: %s", valueList));
 
         return String.join(", ", valueList);
     }
@@ -235,7 +235,7 @@ public class SignpostingResources {
 
     private String getItems(List<FileMetadata> fms) {
         if (fms.size() > maxItems) {
-            logger.info(String.format("maxItem is %s and fms size is %s", maxItems, fms.size()));
+            logger.fine(String.format("maxItem is %s and fms size is %s", maxItems, fms.size()));
             return null;
         }
 
