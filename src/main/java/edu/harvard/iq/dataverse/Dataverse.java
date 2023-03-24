@@ -597,6 +597,8 @@ public class Dataverse extends DvObjectContainer {
      * @see edu.harvard.iq.dataverse.pidproviders.VersionPidMode#COLLECTION
      * @see CollectionConduct
      */
+    @NotNull
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private CollectionConduct datasetVersionPidConduct = CollectionConduct.INHERIT;
     
