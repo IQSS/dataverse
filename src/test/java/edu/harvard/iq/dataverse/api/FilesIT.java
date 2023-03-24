@@ -1993,7 +1993,7 @@ public class FilesIT {
         downloadResponse2.then().assertThat().statusCode(OK.getStatusCode());
 
         // Delete file 3, the current version is still draft
-        //Response deleteResponse3 = UtilIT.deleteFileApi(fileId3, apiToken);
-        //deleteResponse3.then().assertThat().statusCode(OK.getStatusCode());
+        Response deleteResponse3 = UtilIT.deleteFileApi(fileId3, apiToken);
+        deleteResponse3.then().assertThat().statusCode(OK.getStatusCode());
     }
 }
