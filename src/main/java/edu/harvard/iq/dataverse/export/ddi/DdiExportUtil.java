@@ -511,38 +511,35 @@ public class DdiExportUtil {
             
             if (geographicCoverageDTO != null) {
 
+                List<String> nationList = new ArrayList<>();
+                List<String> geogCoverList = new ArrayList<>();
+
                 for (HashSet<FieldDTO> foo : geographicCoverageDTO.getMultipleCompound()) {
-                    HashMap<String, String> geoMap = new HashMap<>();
-                    // TODO: the order may still be wrong -L.A. (because of multiples)
                     for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                         FieldDTO next = iterator.next();
+                        /* our "country" field maps 1:1 to the DDI "<nation>": */
                         if (DatasetFieldConstant.country.equals(next.getTypeName())) {
-                            geoMap.put("country", next.getSinglePrimitive());
+                            nationList.add(next.getSinglePrimitive());
                         }
-                        if (DatasetFieldConstant.city.equals(next.getTypeName())) {
-                            geoMap.put("city", next.getSinglePrimitive());
-                        }
-                        if (DatasetFieldConstant.state.equals(next.getTypeName())) {
-                            geoMap.put("state", next.getSinglePrimitive());
-                        }
-                        if (DatasetFieldConstant.otherGeographicCoverage.equals(next.getTypeName())) {
-                            geoMap.put("otherGeographicCoverage", next.getSinglePrimitive());
+                        /* city, state and otherGeographicCoverage all exported as "<geogCover>": */
+                        if (DatasetFieldConstant.city.equals(next.getTypeName())
+                                || DatasetFieldConstant.state.equals(next.getTypeName())
+                                || DatasetFieldConstant.otherGeographicCoverage.equals(next.getTypeName())) {
+                            geogCoverList.add(next.getSinglePrimitive());
                         }
                     }
+                }
 
-                    if (geoMap.get("country") != null) {
-                        writeFullElement(xmlw, "nation", geoMap.get("country"));
-                    }
-                    if (geoMap.get("city") != null) {
-                        writeFullElement(xmlw, "geogCover", geoMap.get("city"));
-                    }
-                    if (geoMap.get("state") != null) {
-                        writeFullElement(xmlw, "geogCover", geoMap.get("state"));
-                    }
-                    if (geoMap.get("otherGeographicCoverage") != null) {
-                        writeFullElement(xmlw, "geogCover", geoMap.get("otherGeographicCoverage"));
-                    }
-
+                /** 
+                 * And now we can write all the fields encountered, first the "<nation>" entries, 
+                 * then all the "<geogCover>" ones:
+                */
+                
+                for (String nationEntry : nationList) {
+                    writeFullElement(xmlw, "nation", nationEntry);
+                }
+                for (String geogCoverEntry : geogCoverList) {
+                    writeFullElement(xmlw, "geogCover", geogCoverEntry);
                 }
             }
             
@@ -550,11 +547,13 @@ public class DdiExportUtil {
             writeFullElementList(xmlw, "geogUnit", dto2PrimitiveList(datasetVersionDTO, DatasetFieldConstant.geographicUnit));
 
             /* TODO: it really looks like only 1 geoBndBox is allowed in the DDI - ? */
+            /* So, I'm just going to arbitrarily use the first one, and ignore the rest! -L.A. */
             if (geographicBoundingBoxDTO != null) {
                 for (HashSet<FieldDTO> foo : geographicBoundingBoxDTO.getMultipleCompound()) {
                     xmlw.writeStartElement("geoBndBox");
                     HashMap<String, String> geoBndBoxMap = new HashMap<>();
-                    for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                    /*for (*/Iterator<FieldDTO> iterator = foo.iterator(); 
+                    if (iterator.hasNext()) {
                         FieldDTO next = iterator.next();
                         if (DatasetFieldConstant.westLongitude.equals(next.getTypeName())) {
                             geoBndBoxMap.put("westBL", next.getSinglePrimitive());
@@ -569,6 +568,8 @@ public class DdiExportUtil {
                             geoBndBoxMap.put("southBL", next.getSinglePrimitive());
                         }
                     }
+                    
+                    /* Once again, order is important! */
                     
                     if (geoBndBoxMap.get("westBL") != null) {
                         writeFullElement(xmlw, "westBL", geoBndBoxMap.get("westBL"));
@@ -599,7 +600,7 @@ public class DdiExportUtil {
             }
 
             
-            /* finally, any "kind of data" entries we may have saved earlier: -L.A.*/
+            /* finally, any "kind of data" entries: */
             if (kindOfDataDTO != null) {
                 writeMultipleElement(xmlw, "dataKind", kindOfDataDTO, lang);
             }
