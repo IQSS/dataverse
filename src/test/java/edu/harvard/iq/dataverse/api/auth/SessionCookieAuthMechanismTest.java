@@ -23,6 +23,7 @@ public class SessionCookieAuthMechanismTest {
     }
 
     @Test
+    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "false", varArgs = "api-session-auth")
     public void testFindUserFromRequest_FeatureFlagDisabled() throws WrappedAuthErrorResponse {
         sut.session = Mockito.mock(DataverseSession.class);
 
