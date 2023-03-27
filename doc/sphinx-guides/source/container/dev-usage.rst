@@ -45,7 +45,7 @@ In the future, we are planning on running this script within a container as part
 
 Check that you can log in to http://localhost:8080 using user ``dataverseAdmin`` and password ``admin1``.
 
-You can also access the Payara Admin Console if needed, which is available at http://localhost:4848. To log in, use user ``admin`` and password ``admin``.
+You can also access the Payara Admin Console if needed, which is available at http://localhost:4848. To log in, use user ``admin`` and password ``admin``. As a reminder, the application container is for development use only, so we are exposing the admin console for testing purposes. In a production environment, it may be more convenient to leave this console unopened.
 
 Note that data is persisted in ``./docker-dev-volumes`` in the root of the Git repo. For a clean start, you should
 remove this directory before running the ``mvn`` commands above.
