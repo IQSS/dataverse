@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
@@ -55,7 +56,8 @@ public class Pids extends AbstractApiBean {
         String password = JvmSettings.DATACITE_PASSWORD.lookup();
         
         try {
-            JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
+            GlobalId globalId = PidUtil.parseAsGlobalID(persistentId);
+            JsonObjectBuilder result = PidUtil.queryDoi(globalId, baseUrl, username, password);
             return ok(result);
         } catch (NotFoundException ex) {
             return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());

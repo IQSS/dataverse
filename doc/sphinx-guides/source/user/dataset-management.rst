@@ -150,6 +150,11 @@ Additional command line arguments are available to make the DVUploader list what
 
 DVUploader is a community-developed tool, and its creation was primarily supported by the Texas Digital Library. Further information and support for DVUploader can be sought at `the project's GitHub repository <https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader>`_ . 
 
+Integrations Dashboard Uploader
+-------------------------------
+
+There is an experimental uploader described at :ref:`integrations-dashboard` that provides a graphical user interface (GUI) for uploading files from a local file system and various remote locations such as GitHub.
+
 .. _duplicate-files:
 
 Duplicate Files
@@ -225,6 +230,8 @@ Additional download options available for tabular data (found in the same drop-d
 
 
 Differentially Private (DP) Metadata can also be accessed for restricted tabular files if the data depositor has created a DP Metadata Release. See :ref:`dp-release-create` for more information.
+
+.. _research-code:
 
 Research Code
 -------------
