@@ -231,6 +231,8 @@ Additional download options available for tabular data (found in the same drop-d
 
 Differentially Private (DP) Metadata can also be accessed for restricted tabular files if the data depositor has created a DP Metadata Release. See :ref:`dp-release-create` for more information.
 
+.. _research-code:
+
 Research Code
 -------------
 

@@ -10,7 +10,9 @@ These instructions are purposefully opinionated and terse to help you get your d
 Quick Start
 -----------
 
-The quickest way to get the Dataverse Software running is to use Vagrant as described in the :doc:`tools` section, but for day to day development work, we recommended the following setup.
+The quickest way to get the Dataverse Software running is to use Vagrant as described in the :doc:`tools` section, or use Docker containers as described the :doc:`../container/dev-usage` section of the Container Guide.
+
+For day to day development work, we recommended the following setup.
 
 Set Up Dependencies
 -------------------
@@ -97,7 +99,7 @@ Install Service Dependencies Directly on localhost
 Install PostgreSQL
 ^^^^^^^^^^^^^^^^^^
 
-The Dataverse Software has been tested with PostgreSQL versions up to 13. PostgreSQL version 10+ is required. 
+The Dataverse Software has been tested with PostgreSQL versions up to 13. PostgreSQL version 10+ is required.
 
 On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 13.5 is used in the command line examples below, but the process should be similar for other versions. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
@@ -160,13 +162,17 @@ Install Service Dependencies Using Docker Compose
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 To avoid having to install service dependencies like PostgreSQL or Solr directly on your localhost, there is the alternative of using the ``docker-compose-dev.yml`` file available in the repository root. For this option you need to have Docker and Docker Compose installed on your machine.
 
-The ``docker-compose-dev.yml`` file runs the necessary service dependencies to support a development Dataverse installation running on localhost. In addition to PostgreSQL and Solr, it also runs a SMTP server.
+The ``docker-compose-dev.yml`` can be configured to only run the service dependencies necessary to support a Dataverse installation running directly on localhost. In addition to PostgreSQL and Solr, it also runs a SMTP server.
+
+Before running the Docker Compose file, you need to update the value of the ``DATAVERSE_DB_USER`` environment variable to ``postgres``. The variable can be found inside the ``.env`` file in the repository root. This step is required as the Dataverse installation script expects that database user.
 
 To run the Docker Compose file, go to the Dataverse repository root, then run:
 
-``docker-compose -f docker-compose-dev.yml up -d``
+``docker-compose -f docker-compose-dev.yml up -d --scale dev_dataverse=0``
 
-Note that this command will run the containers in detached mode. If you want to run them attached and thus view container logs in real time, remove the ``-d`` option from the above command.
+Note that this command omits the Dataverse container defined in the Docker Compose file, since Dataverse is going to be installed directly on localhost in the next section.
+
+The command runs the containers in detached mode, but if you want to run them attached and thus view container logs in real time, remove the ``-d`` option from the command.
 
 Data volumes of each dependency will be persisted inside the ``docker-dev-volumes`` folder, inside the repository root.
 
@@ -218,6 +224,8 @@ Run the following command:
 ``curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d FAKE``
 
 This will disable DOI registration by using a fake (in-code) DOI provider. Please note that this feature is only available in Dataverse Software 4.10+ and that at present, the UI will give no indication that the DOIs thus minted are fake.
+
+Developers may also wish to consider using :ref:`PermaLinks <permalinks>`
 
 Configure Your Development Environment for GUI Edits
 ----------------------------------------------------
