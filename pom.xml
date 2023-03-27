@@ -429,6 +429,12 @@
             <artifactId>commons-compress</artifactId>
             <!-- no version here as managed by <dependencyManagement> above! -->
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.xmlgraphics/fop -->
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>fop</artifactId>
+            <version>2.8</version>
+        </dependency>
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>common</artifactId>
