@@ -73,6 +73,7 @@ public class JsonParser {
     MetadataBlockServiceBean blockService;
     SettingsServiceBean settingsService;
     LicenseServiceBean licenseService;
+    HarvestingClient harvestingClient = null; 
     
     /**
      * if lenient, we will accept alternate spellings for controlled vocabulary values
@@ -87,10 +88,15 @@ public class JsonParser {
     }
 
     public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService) {
+        this(datasetFieldSvc, blockService, settingsService, licenseService, null);
+    }
+    
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, HarvestingClient harvestingClient) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
         this.settingsService = settingsService;
         this.licenseService = licenseService;
+        this.harvestingClient = harvestingClient;
     }
 
     public JsonParser() {
@@ -528,7 +534,29 @@ public class JsonParser {
         if (contentType == null) {
             contentType = "application/octet-stream";
         }
-        String storageIdentifier = datafileJson.getString("storageIdentifier", " ");
+        String storageIdentifier = null;
+        /**
+         * When harvesting from other Dataverses using this json format, we 
+         * don't want to import their storageidentifiers verbatim. Instead, we 
+         * will modify them to point to the access API location on the remote
+         * archive side.
+         */
+        if (harvestingClient != null && datafileJson.containsKey("id")) {
+            String remoteId = datafileJson.getJsonNumber("id").toString();
+            storageIdentifier = harvestingClient.getArchiveUrl()
+                    + "/api/access/datafile/"
+                    + remoteId;
+            /**
+             * Note that we don't have any practical use for these urls as 
+             * of now. We used to, in the past, perform some tasks on harvested
+             * content that involved trying to access the files. In any event, it
+             * makes more sense to collect these urls, than the storage 
+             * identifiers imported as is, which become completely meaningless 
+             * on the local system.
+             */
+        } else {
+            storageIdentifier = datafileJson.getString("storageIdentifier", null);
+        }
         JsonObject checksum = datafileJson.getJsonObject("checksum");
         if (checksum != null) {
             // newer style that allows for SHA-1 rather than MD5
