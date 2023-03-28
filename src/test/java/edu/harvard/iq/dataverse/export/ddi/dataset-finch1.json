@@ -1,73 +1,389 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ddi:codebook:2_5 https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd" version="2.5" xml:lang="en">
-  <docDscr>
-    <citation>
-      <titlStmt>
-        <titl xml:lang="en">Darwin's Finches</titl>
-        <IDNo agency="DOI">doi:10.5072/FK2/PCA2E3</IDNo>
-      </titlStmt>
-      <distStmt/>
-      <verStmt source="archive">
-        <version date="2015-09-24" type="RELEASED">1</version>
-      </verStmt>
-      <biblCit>Finch, Fiona, 2015, "Darwin's Finches", https://doi.org/10.5072/FK2/PCA2E3,  Root Dataverse,  V1</biblCit>
-    </citation>
-  </docDscr>
-  <stdyDscr>
-    <citation>
-      <titlStmt>
-        <titl xml:lang="en">Darwin's Finches</titl>
-        <IDNo agency="DOI">doi:10.5072/FK2/PCA2E3</IDNo>
-      </titlStmt>
-      <rspStmt>
-        <AuthEnty affiliation="Birds Inc.">Finch, Fiona</AuthEnty>
-      </rspStmt>
-      <prodStmt>
-        <producer affiliation="Hawk Institute" abbr="ProdAbb" role="http://www.hawk.edu/logo">Johnny Hawk</producer>
-      </prodStmt>
-      <distStmt>
-        <distrbtr xml:lang="en" affiliation="Valhalla Polytechnic" abbr="Dist-Abb" URI="http://www.valhalla.edu/url">Odin Raven</distrbtr>
-        <contact affiliation="Finch Academy" email="finch@mailinator.com">Jimmy Finch</contact>
-        <depositr>Added, Depositor</depositr>
-      </distStmt>
-      <holdings URI="https://doi.org/10.5072/FK2/PCA2E3"/>
-    </citation>
-    <stdyInfo>
-      <subject>
-        <keyword xml:lang="en">Medicine, Health and Life Sciences</keyword>
-        <keyword vocab="Keyword Vocabulary" vocabURI="http://www.keyword.com/one">Keyword Value 1</keyword>
-        <keyword vocab="Keyword Vocabulary" vocabURI="http://www.keyword.com/one">Keyword Value Two</keyword>
-        <topcClas vocab="TC Vocabulary" vocabURI="http://www.topicClass.com/one">TC Value 1</topcClas>
-      </subject>
-      <abstract xml:lang="en">Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</abstract>
-      <sumDscr>
-        <timePrd cycle="P1" event="start" date="20020816">20020816</timePrd>
-        <timePrd cycle="P1" event="end" date="20160630">20160630</timePrd>
-        <collDate cycle="P1" event="start" date="20070831">20070831</collDate>
-        <collDate cycle="P1" event="end" date="20130630">20130630</collDate>
-        <nation>USA</nation>
-        <geogCover>Cambridge</geogCover>
-        <geogCover>MA</geogCover>
-        <geogCover>Other Geographic Coverage</geogCover>
-        <geoBndBox>
-          <westBL>60.3</westBL>
-          <eastBL>59.8</eastBL>
-          <southBL>41.6</southBL>
-          <northBL>43.8</northBL>
-        </geoBndBox>
-        <dataKind>Kind of Data</dataKind>
-      </sumDscr>
-    </stdyInfo>
-    <method>
-      <dataColl>
-        <sources/>
-      </dataColl>
-      <anlyInfo/>
-    </method>
-    <dataAccs>
-      <setAvail/>
-      <useStmt/>
-    </dataAccs>
-    <othrStdyMat/>
-  </stdyDscr>
-</codeBook>
+{
+  "id": 11,
+  "identifier": "PCA2E3",
+  "persistentUrl": "https://doi.org/10.5072/FK2/PCA2E3",
+  "protocol": "doi",
+  "authority": "10.5072/FK2",
+  "metadataLanguage": "en",
+  "datasetVersion": {
+    "id": 2,
+    "versionNumber": 1,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "productionDate": "Production Date",
+    "lastUpdateTime": "2015-09-24T17:07:57Z",
+    "releaseTime": "2015-09-24T17:07:57Z",
+    "createTime": "2015-09-24T16:47:51Z",
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+    },
+    "metadataBlocks": {
+      "citation": {
+        "displayName": "Citation Metadata",
+        "name":"citation",
+        "fields": [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Darwin's Finches"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "authorName": {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Finch, Fiona"
+                },
+                "authorAffiliation": {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Birds Inc."
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "timePeriodCovered",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "timePeriodStart": {
+                  "typeName": "timePeriodCoveredStart",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "20020816"
+                },
+                "timePeriodEnd": {
+                  "typeName": "timePeriodCoveredEnd",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "20160630"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "dateOfCollection",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "timePeriodStart": {
+                  "typeName": "dateOfCollectionStart",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "20070831"
+                },
+                "timePeriodEnd": {
+                  "typeName": "dateOfCollectionEnd",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "20130630"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "datasetContactEmail": {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "finch@mailinator.com"
+                },
+                "datasetContactName": {
+                  "typeName": "datasetContactName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Jimmy Finch"
+                },
+                "datasetContactAffiliation": {
+                  "typeName": "datasetContactAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Finch Academy"
+                }               
+              }
+            ]
+          },
+          {
+            "typeName": "producer",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "producerAbbreviation": {
+                  "typeName": "producerAbbreviation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "ProdAbb"
+                },
+                "producerName": {
+                  "typeName": "producerName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Johnny Hawk"
+                },
+                "producerAffiliation": {
+                  "typeName": "producerAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Hawk Institute"
+                },
+                "producerURL": {
+                  "typeName": "producerURL",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://www.hawk.edu/url"
+                },
+                "producerLogoURL": {
+                  "typeName": "producerLogoURL",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://www.hawk.edu/logo"
+                }               
+              }
+            ]
+          },
+          {
+            "typeName": "distributor",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "distributorAbbreviation": {
+                  "typeName": "distributorAbbreviation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Dist-Abb"
+                },
+                "producerName": {
+                  "typeName": "distributorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Odin Raven"
+                },
+                "distributorAffiliation": {
+                  "typeName": "distributorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Valhalla Polytechnic"
+                },
+                "distributorURL": {
+                  "typeName": "distributorURL",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://www.valhalla.edu/url"
+                },
+                "distributorLogoURL": {
+                  "typeName": "distributorLogoURL",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://www.valhalla.edu/logo"
+                }               
+              }
+            ]
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds."
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Medicine, Health and Life Sciences"
+            ]
+          },
+          {
+            "typeName": "keyword",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "keywordValue": {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Keyword Value 1"
+                },
+                "keywordVocabulary": {
+                  "typeName": "keywordVocabulary",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Keyword Vocabulary"
+                },
+                "keywordVocabularyURI": {
+                  "typeName": "keywordVocabularyURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://www.keyword.com/one"
+                }
+              },
+               {
+                "keywordValue": {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Keyword Value Two"
+                },
+                "keywordVocabulary": {
+                  "typeName": "keywordVocabulary",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Keyword Vocabulary"
+                },
+                "keywordVocabularyURI": {
+                  "typeName": "keywordVocabularyURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://www.keyword.com/one"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "topicClassification",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "topicClassValue": {
+                  "typeName": "topicClassValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "TC Value 1"
+                },
+                "topicClassVocab": {
+                  "typeName": "topicClassVocab",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "TC Vocabulary"
+                },
+                "topicClassVocabURI": {
+                  "typeName": "topicClassVocabURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://www.topicClass.com/one"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "kindOfData",
+            "multiple": true,
+            "typeClass": "primitive",
+            "value": [
+              "Kind of Data"
+            ]
+          },
+          {
+            "typeName": "depositor",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Added, Depositor"
+          }
+        ]
+            },
+            "geospatial": {
+                "displayName": "Geospatial",
+                "name":"geospatial",
+                "fields": [
+                    {
+                        "typeName": "geographicCoverage",
+                        "multiple": true,
+                        "typeClass": "compound",
+                        "value": [
+                            {
+                                "country": {
+                                    "typeName": "country",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "USA"
+                                },
+                                "state": {
+                                    "typeName": "state",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "MA"
+                                },
+                                "city": {
+                                    "typeName": "city",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "Cambridge"
+                                },
+                                "otherGeographicCoverage": {
+                                    "typeName": "otherGeographicCoverage",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "Other Geographic Coverage"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "typeName": "geographicBoundingBox",
+                        "multiple": true,
+                        "typeClass": "compound",
+                        "value": [
+                            {
+                                "westLongitude": {
+                                    "typeName": "westLongitude",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "60.3"
+                                },
+                                "eastLongitude": {
+                                    "typeName": "eastLongitude",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "59.8"
+                                },
+                                "southLongitude": {
+                                    "typeName": "southLongitude",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "41.6"
+                                },
+                                "northLongitude": {
+                                    "typeName": "northLongitude",
+                                    "multiple": false,
+                                    "typeClass": "primitive",
+                                    "value": "43.8"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+    "files": [],
+    "citation": "Finch, Fiona, 2015, \"Darwin's Finches\", https://doi.org/10.5072/FK2/PCA2E3,  Root Dataverse,  V1"
+  }
+}
