@@ -27,107 +27,109 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IngestUtilTest {
 
+    // -------------------- LOGIC --------------------
+    
     @Test
     public void checkForDuplicateFileNamesFinal_noDirectories_expectedSuffix() throws Exception {
 
-        //GIVEN
+        // given
         Dataset dataset = makeDataset();
         DatasetVersion datasetVersion = getDatasetVersion(dataset);
 
         List<DataFile> dataFileList = createDataFilesNoDirectories(dataset, datasetVersion);
 
-        //WHEN
+        // when
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
-        //THEN
+        // then
         assertAll(
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile1-1.txt"))),
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2-1.txt")))
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile1_1.txt"))),
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2_1.txt")))
         );
     }
 
     @Test
     public void checkForDuplicateFileNamesFinal_noDirectories_expectedIncrementedNumber() throws Exception {
 
-        //GIVEN
+        // given
         Dataset dataset = makeDataset();
         DatasetVersion datasetVersion = getDatasetVersion(dataset);
 
         List<DataFile> dataFileList = createDataFilesNoDirectories(dataset, datasetVersion);
 
-        //WHEN
+        // when
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
-        // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
+        // try to add data files with "_1" duplicates and see if it gets incremented to "_2"
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
-        //THEN
+        // then
         assertAll(
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile1-2.txt"))),
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2-2.txt")))
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile1_2.txt"))),
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2_2.txt")))
         );
     }
 
     @Test
     public void checkForDuplicateFileNamesFinal_emptyDirectoryLabels_expectedSuffix() throws Exception {
-        //GIVEN
+        // given
         Dataset dataset = makeDataset();
         DatasetVersion datasetVersion = getDatasetVersion(dataset);
 
         List<DataFile> dataFileList = createDataFilesWithEmptyDirectories(dataset, datasetVersion);
 
-        //WHEN
+        // when
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
-        //THEN
+        // then
         assertAll(
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile1-1.txt"))),
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2-1.txt")))
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile1_1.txt"))),
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2_1.txt")))
         );
     }
 
     @Test
     public void checkForDuplicateFileNamesFinal_emptyDirectoryLabels_expectedIncrementedNumber() throws Exception {
-        //GIVEN
+        // given
         Dataset dataset = makeDataset();
         DatasetVersion datasetVersion = getDatasetVersion(dataset);
 
         List<DataFile> dataFileList = createDataFilesWithEmptyDirectories(dataset, datasetVersion);
 
-        //WHEN
+        // when
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
-        // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
+        // try to add data files with "_1" duplicates and see if it gets incremented to "_2"
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
-        //THEN
+        // then
         assertAll(
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile1-2.txt"))),
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2-2.txt")))
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile1_2.txt"))),
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2_2.txt")))
         );
     }
 
     @Test
     public void checkForDuplicateFileNamesFinal_withDirectories() throws Exception {
-        //GIVEN
+        // given
         Dataset dataset = makeDataset();
         DatasetVersion datasetVersion = getDatasetVersion(dataset);
 
         List<DataFile> dataFileList = new ArrayList<>();
         FileMetadata fmd3 = createDataFilesWithDirectories(dataset, datasetVersion, dataFileList);
 
-        //WHEN
+        // when
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
-        //THEN
+        // then
         assertAll(
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile1-1.txt"))),
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2-1.txt"))),
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile1_1.txt"))),
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2_1.txt"))),
                 () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2.txt")))
         );
     }
 
     @Test
     public void checkForDuplicateFileNamesFinal_withDirectoriesAndDuplicateFile() throws Exception {
-        //GIVEN
+        // given
         Dataset dataset = makeDataset();
         DatasetVersion datasetVersion = getDatasetVersion(dataset);
 
@@ -139,21 +141,21 @@ public class IngestUtilTest {
         datasetVersion.getFileMetadatas().add(fmd3);
         fmd3.setDatasetVersion(datasetVersion);
 
-        //WHEN
-        // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
+        // when
+        // try to add data files with "_1" duplicates and see if it gets incremented to "_2"
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
-        //THEN
+        // then
         assertAll(
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile1-2.txt"))),
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2-2.txt"))),
-                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2-1.txt")))
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile1_2.txt"))),
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2_2.txt"))),
+                () -> assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("datafile2_1.txt")))
         );
     }
 
     @Test
     public void checkForDuplicateFileNamesFinal_tabularFiles() throws Exception {
-        //GIVEN
+        // given
         Dataset dataset = makeDataset();
         DatasetVersion datasetVersion = getDatasetVersion(dataset);
 
@@ -174,29 +176,35 @@ public class IngestUtilTest {
 
         dataFileList.add(datafile2);
 
-        //WHEN
+        // when
         IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
 
-        //THEN
+        // then
         // check filename is altered since tabular and will change to .tab after ingest
-        assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("foobar-1.dta")));
+        assertTrue(dataFileList.stream().anyMatch(fileMetadataHasLabel("foobar_1.dta")));
     }
 
     @Test
     public void recalculateDatasetVersionUNF_nullVersion_expectedNoException() {
+        // when & then
         IngestUtil.recalculateDatasetVersionUNF(null);
     }
 
     @Test
     public void recalculateDatasetVersionUNF_noFileVersion_expectedNullUnf() {
+        // given
         DatasetVersion dsvNoFile = new DatasetVersion();
+
+        // when
         IngestUtil.recalculateDatasetVersionUNF(dsvNoFile);
+
+        // then
         assertNull(dsvNoFile.getUNF());
     }
 
     @Test
     public void recalculateDatasetVersionUNF() {
-        //GIVEN
+        // given
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");
         dataset.setAuthority("fakeAuthority");
@@ -222,10 +230,10 @@ public class IngestUtilTest {
         dataFile.getFileMetadatas().add(fileMetadata);
         datasetVersion.getFileMetadatas().add(fileMetadata);
 
-        //WHEN
+        // when
         IngestUtil.recalculateDatasetVersionUNF(datasetVersion);
 
-        //THEN
+        // then
         assertAll(
                 () -> assertEquals("UNF:6:rDlgOhoEkEQQdwtLRHjmtw==", datasetVersion.getUNF()),
                 () -> assertTrue(dataFile.isTabularData())
@@ -234,13 +242,17 @@ public class IngestUtilTest {
 
     @Test
     public void getUnfValuesOfFiles_null_expectedEmptyList() {
+        // when & then
         assertEquals(Collections.emptyList(), IngestUtil.getUnfValuesOfFiles(null));
     }
 
     @Test
     public void shouldHaveUnf_null_expectedFalse() {
+        // when & then
         assertFalse(IngestUtil.shouldHaveUnf(null));
     }
+
+    // -------------------- PRIVATE --------------------
 
     @NotNull
     private List<DataFile> createDataFilesNoDirectories(Dataset dataset, DatasetVersion datasetVersion) {

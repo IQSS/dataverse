@@ -128,14 +128,14 @@ public class IngestUtil {
             baseName = fileName;
         }
 
-        if (baseName.matches(".*-[0-9][0-9]*$")) {
-            int dashIndex = baseName.lastIndexOf("-");
+        if (baseName.matches(".*_[0-9][0-9]*$")) {
+            int dashIndex = baseName.lastIndexOf("_");
             String numSuffix = baseName.substring(dashIndex + 1);
             String basePrefix = baseName.substring(0, dashIndex);
             int numSuffixValue = Integer.parseInt(numSuffix) + 1;
-            baseName = basePrefix + "-" + numSuffixValue;
+            baseName = basePrefix + "_" + numSuffixValue;
         } else {
-            baseName = baseName + "-1";
+            baseName = baseName + "_1";
         }
 
         newName = baseName;
