@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import com.jayway.restassured.path.json.JsonPath;
+import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
 import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -23,6 +24,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -1985,6 +1987,10 @@ public class FilesIT {
         v1.then().assertThat()
                 .body("data.files[0].dataFile.filename", equalTo("cc0.png"))
                 .statusCode(OK.getStatusCode());
+        
+        Map<String, Object> v1files1 = with(v1.body().asString()).param("fileToFind", "cc0.png")
+                .getJsonObject("data.files.find { files -> files.label == fileToFind }");
+        assertEquals("cc0.png", v1files1.get("label"));
 
         // Check file 2 still downloadable (published in in v1.0)
         Response downloadResponse2 = UtilIT.downloadFile(fileId2, null, null, null, apiToken);
@@ -1996,6 +2002,10 @@ public class FilesIT {
         postv1draft2.then().assertThat()
                 .body("data.files[0].dataFile.filename", equalTo("orcid_16x16.png"))
                 .statusCode(OK.getStatusCode());
+        
+        Map<String, Object> v1files2 = with(postv1draft2.body().asString()).param("fileToFind", "orcid_16x16.png")
+                .getJsonObject("data.files.find { files -> files.label == fileToFind }");
+        assertEquals("orcid_16x16.png", v1files2.get("label"));
 
         // Delete file 3, the current version is still draft
         Response deleteResponse3 = UtilIT.deleteFileApi(fileId3, apiToken);
