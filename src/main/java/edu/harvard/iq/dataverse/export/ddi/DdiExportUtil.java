@@ -302,14 +302,7 @@ public class DdiExportUtil {
     */
     private static void writeDataAccess(XMLStreamWriter xmlw , DatasetVersionDTO version) throws XMLStreamException {
         xmlw.writeStartElement("dataAccs");
-        if (version.getTermsOfUse() != null && !version.getTermsOfUse().trim().equals("")) {
-            xmlw.writeStartElement("notes");
-            writeAttribute(xmlw, "type", NOTE_TYPE_TERMS_OF_USE);
-            writeAttribute(xmlw, "level", LEVEL_DV);
-            xmlw.writeCharacters(version.getTermsOfUse());
-            xmlw.writeEndElement(); //notes
-        }
-
+        
         xmlw.writeStartElement("setAvail");
         writeFullElement(xmlw, "accsPlac", version.getDataAccessPlace());
         writeFullElement(xmlw, "origArch", version.getOriginalArchive());
@@ -317,6 +310,7 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "collSize", version.getSizeOfCollection());
         writeFullElement(xmlw, "complete", version.getStudyCompletion());
         xmlw.writeEndElement(); //setAvail
+        
         xmlw.writeStartElement("useStmt");
         writeFullElement(xmlw, "confDec", version.getConfidentialityDeclaration());
         writeFullElement(xmlw, "specPerm", version.getSpecialPermissions());
@@ -327,6 +321,7 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "conditions", version.getConditions());
         writeFullElement(xmlw, "disclaimer", version.getDisclaimer());
         xmlw.writeEndElement(); //useStmt
+        
         /* any <note>s: */
         if (version.getTermsOfAccess() != null && !version.getTermsOfAccess().trim().equals("")) {
             xmlw.writeStartElement("notes");
@@ -415,205 +410,207 @@ public class DdiExportUtil {
     */
     private static void writeSummaryDescriptionElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String lang) throws XMLStreamException {
         xmlw.writeStartElement("sumDscr");
+        FieldDTO timePeriodCoveredDTO = null;
+        FieldDTO dateOfCollectionDTO = null;
+        FieldDTO geographicCoverageDTO = null;
+        FieldDTO geographicBoundingBoxDTO = null;
+        FieldDTO unitOfAnalysisDTO = null;
+        FieldDTO universeDTO = null;
+        FieldDTO kindOfDataDTO = null;
+
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            FieldDTO timePeriodCoveredDTO = null;
-            FieldDTO dateOfCollectionDTO = null; 
-            FieldDTO geographicCoverageDTO = null;
-            FieldDTO geographicBoundingBoxDTO = null; 
-            FieldDTO unitOfAnalysisDTO = null; 
-            FieldDTO universeDTO = null; 
 
-            FieldDTO kindOfDataDTO = null; 
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.timePeriodCovered.equals(fieldDTO.getTypeName())) {
-                        timePeriodCoveredDTO = fieldDTO; 
+                        timePeriodCoveredDTO = fieldDTO;
                     }
-                    
+
                     if (DatasetFieldConstant.dateOfCollection.equals(fieldDTO.getTypeName())) {
-                        dateOfCollectionDTO = fieldDTO; 
+                        dateOfCollectionDTO = fieldDTO;
                     }
-                    
+
                     if (DatasetFieldConstant.kindOfData.equals(fieldDTO.getTypeName())) {
                         kindOfDataDTO = fieldDTO;
                     }
                 }
             }
-            
-            if("geospatial".equals(key)){                
+
+            if ("geospatial".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.geographicCoverage.equals(fieldDTO.getTypeName())) {
-                        geographicCoverageDTO = fieldDTO; 
+                        geographicCoverageDTO = fieldDTO;
                     }
                     if (DatasetFieldConstant.geographicBoundingBox.equals(fieldDTO.getTypeName())) {
-                        
+
                         geographicBoundingBoxDTO = fieldDTO;
 
                     }
                 }
             }
 
-            if("socialscience".equals(key)){
+            if ("socialscience".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.universe.equals(fieldDTO.getTypeName())) {
-                        universeDTO = fieldDTO; 
+                        universeDTO = fieldDTO;
                     }
                     if (DatasetFieldConstant.unitOfAnalysis.equals(fieldDTO.getTypeName())) {
-                        unitOfAnalysisDTO = fieldDTO; 
+                        unitOfAnalysisDTO = fieldDTO;
                     }
                 }
             }
-            /* Finally, we can write the fields we have collected, in the correct order: -L.A.*/
-                        
-            if (timePeriodCoveredDTO != null) {
-                String dateValStart = "";
-                String dateValEnd = "";
-                Integer per = 0;
-                for (HashSet<FieldDTO> foo : timePeriodCoveredDTO.getMultipleCompound()) {
-                    per++;
-                    for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
-                        FieldDTO next = iterator.next();
-                        if (DatasetFieldConstant.timePeriodCoveredStart.equals(next.getTypeName())) {
-                            dateValStart = next.getSinglePrimitive();
-                        }
-                        if (DatasetFieldConstant.timePeriodCoveredEnd.equals(next.getTypeName())) {
-                            dateValEnd = next.getSinglePrimitive();
-                        }
-                    }
-                    if (!dateValStart.isEmpty()) {
-                        writeDateElement(xmlw, "timePrd", "P" + per.toString(), "start", dateValStart);
-                    }
-                    if (!dateValEnd.isEmpty()) {
-                        writeDateElement(xmlw, "timePrd", "P" + per.toString(), "end", dateValEnd);
-                    }
-                }
-            }
-            
-            if (dateOfCollectionDTO != null) {
-                String dateValStart = "";
-                String dateValEnd = "";
-                Integer coll = 0;
-                for (HashSet<FieldDTO> foo : dateOfCollectionDTO.getMultipleCompound()) {
-                    coll++;
-                    for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
-                        FieldDTO next = iterator.next();
-                        if (DatasetFieldConstant.dateOfCollectionStart.equals(next.getTypeName())) {
-                            dateValStart = next.getSinglePrimitive();
-                        }
-                        if (DatasetFieldConstant.dateOfCollectionEnd.equals(next.getTypeName())) {
-                            dateValEnd = next.getSinglePrimitive();
-                        }
-                    }
-                    if (!dateValStart.isEmpty()) {
-                        writeDateElement(xmlw, "collDate", "P" + coll.toString(), "start", dateValStart);
-                    }
-                    if (!dateValEnd.isEmpty()) {
-                        writeDateElement(xmlw, "collDate", "P" + coll.toString(), "end", dateValEnd);
-                    }
-                }
-            }
-            
-            /* <nation> and <geogCover> come next, in that order. -L.A. */
-            
-            if (geographicCoverageDTO != null) {
+        }
+        /* Finally, we can write the fields we have collected, in the correct order: -L.A.*/
 
-                List<String> nationList = new ArrayList<>();
-                List<String> geogCoverList = new ArrayList<>();
-
-                for (HashSet<FieldDTO> foo : geographicCoverageDTO.getMultipleCompound()) {
-                    for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
-                        FieldDTO next = iterator.next();
-                        /* our "country" field maps 1:1 to the DDI "<nation>": */
-                        if (DatasetFieldConstant.country.equals(next.getTypeName())) {
-                            nationList.add(next.getSinglePrimitive());
-                        }
-                        /* city, state and otherGeographicCoverage all exported as "<geogCover>": */
-                        if (DatasetFieldConstant.city.equals(next.getTypeName())
-                                || DatasetFieldConstant.state.equals(next.getTypeName())
-                                || DatasetFieldConstant.otherGeographicCoverage.equals(next.getTypeName())) {
-                            geogCoverList.add(next.getSinglePrimitive());
-                        }
+        if (timePeriodCoveredDTO != null) {
+            String dateValStart = "";
+            String dateValEnd = "";
+            Integer per = 0;
+            for (HashSet<FieldDTO> foo : timePeriodCoveredDTO.getMultipleCompound()) {
+                per++;
+                for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                    FieldDTO next = iterator.next();
+                    if (DatasetFieldConstant.timePeriodCoveredStart.equals(next.getTypeName())) {
+                        dateValStart = next.getSinglePrimitive();
+                    }
+                    if (DatasetFieldConstant.timePeriodCoveredEnd.equals(next.getTypeName())) {
+                        dateValEnd = next.getSinglePrimitive();
                     }
                 }
-
-                /** 
-                 * And now we can write all the fields encountered, first the "<nation>" entries, 
-                 * then all the "<geogCover>" ones:
-                */
-                
-                for (String nationEntry : nationList) {
-                    writeFullElement(xmlw, "nation", nationEntry);
+                if (!dateValStart.isEmpty()) {
+                    writeDateElement(xmlw, "timePrd", "P" + per.toString(), "start", dateValStart);
                 }
-                for (String geogCoverEntry : geogCoverList) {
-                    writeFullElement(xmlw, "geogCover", geogCoverEntry);
+                if (!dateValEnd.isEmpty()) {
+                    writeDateElement(xmlw, "timePrd", "P" + per.toString(), "end", dateValEnd);
                 }
             }
-            
-            /* TODO: if exists? - L.A. */
-            writeFullElementList(xmlw, "geogUnit", dto2PrimitiveList(datasetVersionDTO, DatasetFieldConstant.geographicUnit));
+        }
 
-            /* TODO: it really looks like only 1 geoBndBox is allowed in the DDI - ? */
-            /* So, I'm just going to arbitrarily use the first one, and ignore the rest! -L.A. */
-            if (geographicBoundingBoxDTO != null) {
-                for (HashSet<FieldDTO> foo : geographicBoundingBoxDTO.getMultipleCompound()) {
-                    xmlw.writeStartElement("geoBndBox");
-                    HashMap<String, String> geoBndBoxMap = new HashMap<>();
-                    /*for (*/Iterator<FieldDTO> iterator = foo.iterator(); 
-                    if (iterator.hasNext()) {
-                        FieldDTO next = iterator.next();
-                        if (DatasetFieldConstant.westLongitude.equals(next.getTypeName())) {
-                            geoBndBoxMap.put("westBL", next.getSinglePrimitive());
-                        }
-                        if (DatasetFieldConstant.eastLongitude.equals(next.getTypeName())) {
-                            geoBndBoxMap.put("eastBL", next.getSinglePrimitive());
-                        }
-                        if (DatasetFieldConstant.northLatitude.equals(next.getTypeName())) {
-                            geoBndBoxMap.put("northBL", next.getSinglePrimitive());
-                        }
-                        if (DatasetFieldConstant.southLatitude.equals(next.getTypeName())) {
-                            geoBndBoxMap.put("southBL", next.getSinglePrimitive());
-                        }
+        if (dateOfCollectionDTO != null) {
+            String dateValStart = "";
+            String dateValEnd = "";
+            Integer coll = 0;
+            for (HashSet<FieldDTO> foo : dateOfCollectionDTO.getMultipleCompound()) {
+                coll++;
+                for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                    FieldDTO next = iterator.next();
+                    if (DatasetFieldConstant.dateOfCollectionStart.equals(next.getTypeName())) {
+                        dateValStart = next.getSinglePrimitive();
                     }
-                    
-                    /* Once again, order is important! */
-                    
-                    if (geoBndBoxMap.get("westBL") != null) {
-                        writeFullElement(xmlw, "westBL", geoBndBoxMap.get("westBL"));
+                    if (DatasetFieldConstant.dateOfCollectionEnd.equals(next.getTypeName())) {
+                        dateValEnd = next.getSinglePrimitive();
                     }
-                    if (geoBndBoxMap.get("eastBL") != null) {
-                        writeFullElement(xmlw, "eastBL", geoBndBoxMap.get("eastBL"));
-                    }
-                    if (geoBndBoxMap.get("northBL") != null) {
-                        writeFullElement(xmlw, "northBL", geoBndBoxMap.get("northBL"));
-                    }
-                    if (geoBndBoxMap.get("southBL") != null) {
-                        writeFullElement(xmlw, "southBL", geoBndBoxMap.get("southBL"));
-                    }
-                    
-                    xmlw.writeEndElement();
+                }
+                if (!dateValStart.isEmpty()) {
+                    writeDateElement(xmlw, "collDate", "P" + coll.toString(), "start", dateValStart);
+                }
+                if (!dateValEnd.isEmpty()) {
+                    writeDateElement(xmlw, "collDate", "P" + coll.toString(), "end", dateValEnd);
                 }
             }
-            
-            /* analyUnit: */
-            if (unitOfAnalysisDTO != null) {
-                writeI18NElementList(xmlw, "anlyUnit", unitOfAnalysisDTO.getMultipleVocab(), "unitOfAnalysis", unitOfAnalysisDTO.getTypeClass(), "socialscience", lang);
+        }
 
-            }
-            
-            /* universe: */
-            if (universeDTO != null) {
-                writeMultipleElement(xmlw, "universe", universeDTO, lang);
+        /* <nation> and <geogCover> come next, in that order. -L.A. */
+        if (geographicCoverageDTO != null) {
+
+            List<String> nationList = new ArrayList<>();
+            List<String> geogCoverList = new ArrayList<>();
+
+            for (HashSet<FieldDTO> foo : geographicCoverageDTO.getMultipleCompound()) {
+                for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                    FieldDTO next = iterator.next();
+                    /* our "country" field maps 1:1 to the DDI "<nation>": */
+                    if (DatasetFieldConstant.country.equals(next.getTypeName())) {
+                        nationList.add(next.getSinglePrimitive());
+                    }
+                    /* city, state and otherGeographicCoverage all exported as "<geogCover>": */
+                    if (DatasetFieldConstant.city.equals(next.getTypeName())
+                            || DatasetFieldConstant.state.equals(next.getTypeName())
+                            || DatasetFieldConstant.otherGeographicCoverage.equals(next.getTypeName())) {
+                        geogCoverList.add(next.getSinglePrimitive());
+                    }
+                }
             }
 
-            
-            /* finally, any "kind of data" entries: */
-            if (kindOfDataDTO != null) {
-                writeMultipleElement(xmlw, "dataKind", kindOfDataDTO, lang);
+            /**
+             * And now we can write all the fields encountered, first the
+             * "<nation>" entries, then all the "<geogCover>" ones:
+             */
+            for (String nationEntry : nationList) {
+                writeFullElement(xmlw, "nation", nationEntry);
             }
+            for (String geogCoverEntry : geogCoverList) {
+                writeFullElement(xmlw, "geogCover", geogCoverEntry);
+            }
+        }
+
+        /* TODO: if exists? - L.A. */
+        writeFullElementList(xmlw, "geogUnit", dto2PrimitiveList(datasetVersionDTO, DatasetFieldConstant.geographicUnit));
+
+        /* TODO: it really looks like only 1 geoBndBox is allowed in the DDI - ? */
+ /* So, I'm just going to arbitrarily use the first one, and ignore the rest! -L.A. */
+        if (geographicBoundingBoxDTO != null) {
+            HashSet<FieldDTO> bndBoxSet = geographicBoundingBoxDTO.getMultipleCompound().get(0);
+            xmlw.writeStartElement("geoBndBox");
+            HashMap<String, String> geoBndBoxMap = new HashMap<>();
+            for (FieldDTO next : bndBoxSet) {
+                if (DatasetFieldConstant.westLongitude.equals(next.getTypeName())) {
+                    geoBndBoxMap.put("westBL", next.getSinglePrimitive());
+                }
+                if (DatasetFieldConstant.eastLongitude.equals(next.getTypeName())) {
+                    geoBndBoxMap.put("eastBL", next.getSinglePrimitive());
+                }
+                if (DatasetFieldConstant.northLatitude.equals(next.getTypeName())) {
+                    geoBndBoxMap.put("northBL", next.getSinglePrimitive());
+                }
+                if (DatasetFieldConstant.southLatitude.equals(next.getTypeName())) {
+                    geoBndBoxMap.put("southBL", next.getSinglePrimitive());
+                }
+            }
+
+            /* Once again, order is important! */
+ /*
+                        <xs:sequence>
+                            <xs:element ref="westBL"/>
+                            <xs:element ref="eastBL"/>
+                            <xs:element ref="southBL"/>
+                            <xs:element ref="northBL"/>
+                        </xs:sequence>
+             */
+            if (geoBndBoxMap.get("westBL") != null) {
+                writeFullElement(xmlw, "westBL", geoBndBoxMap.get("westBL"));
+            }
+            if (geoBndBoxMap.get("eastBL") != null) {
+                writeFullElement(xmlw, "eastBL", geoBndBoxMap.get("eastBL"));
+            }
+            if (geoBndBoxMap.get("southBL") != null) {
+                writeFullElement(xmlw, "southBL", geoBndBoxMap.get("southBL"));
+            }
+            if (geoBndBoxMap.get("northBL") != null) {
+                writeFullElement(xmlw, "northBL", geoBndBoxMap.get("northBL"));
+            }
+
+            xmlw.writeEndElement();
+        }
+
+        /* analyUnit: */
+        if (unitOfAnalysisDTO != null) {
+            writeI18NElementList(xmlw, "anlyUnit", unitOfAnalysisDTO.getMultipleVocab(), "unitOfAnalysis", unitOfAnalysisDTO.getTypeClass(), "socialscience", lang);
 
         }
+
+        /* universe: */
+        if (universeDTO != null) {
+            writeMultipleElement(xmlw, "universe", universeDTO, lang);
+        }
+
+        /* finally, any "kind of data" entries: */
+        if (kindOfDataDTO != null) {
+            writeMultipleElement(xmlw, "dataKind", kindOfDataDTO, lang);
+        }
+
         xmlw.writeEndElement(); //sumDscr     
     }
     
