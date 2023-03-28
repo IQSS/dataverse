@@ -143,6 +143,8 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 import java.util.Comparator;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -6048,8 +6050,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-    
-    
+
     //Determines whether this Dataset uses a public store and therefore doesn't support embargoed or restricted files
     public boolean isHasPublicStore() {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(dataset.getEffectiveStorageDriverId()));
@@ -6081,6 +6082,20 @@ public class DatasetPage implements java.io.Serializable {
             logger.warning("getWebloaderUrlForDataset called for non-Authenticated user");
             return null;
         }
+    }
+    
+    /**
+     * Add Signposting
+     * @return String
+     */
+    public String getSignpostingLinkHeader() {
+        if (!workingVersion.isReleased()) {
+            return null;
+        }
+        SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion,
+                JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
+                JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""));
+        return sr.getLinks();
     }
 
 }

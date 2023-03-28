@@ -976,4 +976,23 @@ public class JsonPrinter {
         in.keySet().forEach( k->b.add(k, in.get(k)) );
         return b;
     }
+
+
+    /**
+     * Get signposting from Dataset
+     * @param ds the designated Dataset
+     * @return json linkset
+     */
+    public static JsonObjectBuilder jsonLinkset(Dataset ds) {
+        return jsonObjectBuilder()
+                .add("anchor", ds.getPersistentURL())
+                .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
+                .add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage")))
+                .add("author", ds.getPersistentURL())
+                .add("protocol", ds.getProtocol())
+                .add("authority", ds.getAuthority())
+                .add("publisher", BrandingUtil.getInstallationBrandName())
+                .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
+                .add("storageIdentifier", ds.getStorageIdentifier());
+    }
 }
