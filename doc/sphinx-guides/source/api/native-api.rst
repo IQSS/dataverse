@@ -2835,25 +2835,18 @@ The response is a JSON object described in the :doc:`/api/external-tools` sectio
 
   curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/files/$FILE_ID/metadata/$FILEMETADATA_ID/toolparams/$TOOL_ID
 
-Get Checksum Algorithm
+Get Fixity Algorithm
 ~~~~~~~~~~~~~~~~~~~~~~
 
-This API call can be used to discover the configured checksum algorithm being used by a Dataverse installation. 
-Currently, the allowed values are MD5, SHA-1, SHA-256, and SHA-512.
-This algorithm will be used when the Dataverse software manages a file upload and should be used by external clients uploading files to a Dataverse instance. (Existing files may or may not have checksums with this algorithm
-It can be called directly as well. (Note that the required FILEMETADATA_ID is the "id" returned in the JSON response from the /api/files/$FILE_ID/metadata call.)
-
-The response is a JSON object described in the :doc:`/api/external-tools` section of the API guide.
+This API call can be used to discover the configured fixity/checksum algorithm being used by a Dataverse installation (as configured by - :ref:`:FileFixityChecksumAlgorithm`).
+Currently, the possible values are MD5, SHA-1, SHA-256, and SHA-512.
+This algorithm will be used when the Dataverse software manages a file upload and should be used by external clients uploading files to a Dataverse instance. (Existing files may or may not have checksums with this algorithm.) 
 
 .. code-block:: bash
 
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export FILE_ID=3
-  export FILEMETADATA_ID=1
-  export TOOL_ID=1
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/files/$FILE_ID/metadata/$FILEMETADATA_ID/toolparams/$TOOL_ID
+  curl "$SERVER_URL/api/files/fixityAlgorithm
 
 
 Users Token Management
