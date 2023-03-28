@@ -64,7 +64,7 @@ public class FilesIT {
         
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
+        System.out.println(apiToken);
         return apiToken;
     }
     
@@ -1991,7 +1991,7 @@ public class FilesIT {
         downloadResponse2.then().assertThat().statusCode(OK.getStatusCode());
 
         // Check file 3 still in post v1.0 draft
-        Response postv1draft2 = UtilIT.getDatasetVersion(datasetPid, "1.0", apiToken);
+        Response postv1draft2 = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
         postv1draft2.prettyPrint();
         postv1draft2.then().assertThat()
                 .body("data.files[0].dataFile.filename", equalTo("orcid_16x16.png"))
