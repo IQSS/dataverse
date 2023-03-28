@@ -1976,7 +1976,7 @@ public class FilesIT {
         Response postv1draft = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
         postv1draft.prettyPrint();
         postv1draft.then().assertThat()
-                .body("data.files.size()", is(1))
+                .body("data.files.size()", equalTo(1))
                 .statusCode(OK.getStatusCode());
 
         // Check file 2 still in v1.0
