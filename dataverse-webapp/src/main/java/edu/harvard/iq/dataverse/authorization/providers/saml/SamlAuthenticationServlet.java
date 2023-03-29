@@ -17,6 +17,8 @@ import edu.harvard.iq.dataverse.authorization.SamlLoginIssue;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.common.ExternalIdpUserRecord;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.users.SamlSessionRegistry;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Either;
@@ -30,11 +32,15 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +57,7 @@ public class SamlAuthenticationServlet extends HttpServlet {
     private AuthenticationServiceBean authenticationService;
     private DataverseSession session;
     private SystemConfig systemConfig;
+    private SettingsServiceBean settingsService;
     private SamlConfigurationService samlConfigurationService;
     private SamlDataUpdateService samlDataUpdateService;
     private SamlSessionRegistry samlSessionRegistry;
@@ -59,11 +66,13 @@ public class SamlAuthenticationServlet extends HttpServlet {
 
     @Inject
     public SamlAuthenticationServlet(AuthenticationServiceBean authenticationService, DataverseSession session,
-                                     SystemConfig systemConfig, SamlConfigurationService samlConfigurationService,
+                                     SystemConfig systemConfig, SettingsServiceBean settingsService,
+                                     SamlConfigurationService samlConfigurationService,
                                      SamlDataUpdateService samlDataUpdateService, SamlSessionRegistry samlSessionRegistry) {
         this.authenticationService = authenticationService;
         this.session = session;
         this.systemConfig = systemConfig;
+        this.settingsService = settingsService;
         this.samlConfigurationService = samlConfigurationService;
         this.samlDataUpdateService = samlDataUpdateService;
         this.samlSessionRegistry = samlSessionRegistry;
@@ -77,16 +86,18 @@ public class SamlAuthenticationServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, SAML_DISABLED);
             return;
         }
+        HttpServletRequest wrapped = wrapHttpRequest(request);
+        
         String path = request.getPathInfo();
         switch (path) {
             case "/metadata":
                 metadata(response);
                 break;
             case "/sls":
-                logout(request, response);
+                logout(wrapped, response);
                 break;
             default:
-                super.doGet(request, response);
+                super.doGet(wrapped, response);
         }
     }
 
@@ -96,16 +107,19 @@ public class SamlAuthenticationServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, SAML_DISABLED);
             return;
         }
+
+        HttpServletRequest wrapped = wrapHttpRequest(request);
+
         String path = request.getPathInfo();
         switch (path) {
             case "/acs":
-                login(request, response);
+                login(wrapped, response);
                 break;
             case "/sls":
-                logout(request, response);
+                logout(wrapped, response);
                 break;
             default:
-                super.doPost(request, response);
+                super.doPost(wrapped, response);
         }
     }
 
@@ -266,5 +280,41 @@ public class SamlAuthenticationServlet extends HttpServlet {
             throws IOException {
         request.getSession().setAttribute(SAML_LOGIN_ISSUE_SESSION_PARAM, issue);
         response.sendRedirect("/failedLogin.xhtml");
+    }
+
+    private HttpServletRequest wrapHttpRequest(HttpServletRequest httpRequest) throws MalformedURLException {
+        
+        if (!settingsService.isTrueForKey(Key.SamlWrapHttpRequestUrl)) {
+            return httpRequest;
+        }
+        
+        String siteUrl = systemConfig.getDataverseSiteUrl();
+        URL url = new URL(siteUrl);
+        int port = url.getPort();
+        if (port == -1) {
+            port = siteUrl.startsWith("https://") ? 443 : 80;
+        }
+        final int finalPort = port;
+
+        return new HttpServletRequestWrapper(httpRequest) {
+
+            @Override
+            public String getServerName() {
+                return url.getHost();
+            }
+            @Override
+            public String getScheme() {
+                return url.getProtocol();
+            }
+            @Override
+            public int getServerPort() {
+                return finalPort;
+            }
+            @Override
+            public StringBuffer getRequestURL() {
+                String url = ServletUtils.getSelfURL(this);
+                return new StringBuffer(url);
+            }
+        };
     }
 }

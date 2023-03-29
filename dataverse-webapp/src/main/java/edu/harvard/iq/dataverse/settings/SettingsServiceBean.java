@@ -694,7 +694,15 @@ public class SettingsServiceBean {
          * Default value: empty.
          */
         
-        ReindexAfterEmbargoTimerExpression
+        ReindexAfterEmbargoTimerExpression,
+        
+        /**
+         * Wrap http requests with url from SiteUrl property
+         * It is needed when glassfish is behind reverse proxy
+         * for matching url in saml assertions with the server
+         * url
+         */
+        SamlWrapHttpRequestUrl
         ;
 
 

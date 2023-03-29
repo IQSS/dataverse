@@ -127,6 +127,8 @@ public class ExternalIdpFirstLoginPage implements Serializable {
 
     private Boolean disableSamlFilledFields = false;
 
+    private boolean isSamlUser;
+
     // -------------------- GETTERS --------------------
 
     public AuthenticationProvider getAuthProvider() {
@@ -176,6 +178,8 @@ public class ExternalIdpFirstLoginPage implements Serializable {
      */
     public String init() throws IOException {
         notificationLanguageSelectionEnabled = settingsWrapper.isLocalesConfigured();
+        isSamlUser = false;
+        disableSamlFilledFields = false;
         if (systemConfig.isReadonlyMode()) {
             return "/403.xhtml";
         }
@@ -190,15 +194,14 @@ public class ExternalIdpFirstLoginPage implements Serializable {
             // and the newUser object is somehow cached in viewscope
             return redirectToHome();
         }
-        if (newUser == null) {
+        HttpSession httpSession = JsfHelper.getCurrentSession();
+        if (httpSession != null && httpSession.getAttribute(SamlAuthenticationServlet.NEW_USER_SESSION_PARAM) != null) {
             // If new user tries to sign up with SAML then the user data
             // will is stored in the http session
-            HttpSession httpSession = JsfHelper.getCurrentSession();
-            if (httpSession != null) {
-                newUser = (ExternalIdpUserRecord) httpSession.getAttribute(SamlAuthenticationServlet.NEW_USER_SESSION_PARAM);
-                disableSamlFilledFields = true;
-                httpSession.removeAttribute(SamlAuthenticationServlet.NEW_USER_SESSION_PARAM);
-            }
+            newUser = (ExternalIdpUserRecord) httpSession.getAttribute(SamlAuthenticationServlet.NEW_USER_SESSION_PARAM);
+            disableSamlFilledFields = true;
+            isSamlUser = true;
+            httpSession.removeAttribute(SamlAuthenticationServlet.NEW_USER_SESSION_PARAM);
         }
         if (newUser == null) {
             // There's no new user to welcome, so we're out of the "normal" OAuth2 flow.
@@ -332,7 +335,8 @@ public class ExternalIdpFirstLoginPage implements Serializable {
     }
 
     public boolean isConvertFromBuiltinIsPossible() {
-        return authenticationSvc.getAuthenticationProvider(BuiltinAuthenticationProvider.PROVIDER_ID) != null;
+        return authenticationSvc.getAuthenticationProvider(BuiltinAuthenticationProvider.PROVIDER_ID) != null
+                && !isSamlUser;
     }
 
     public String getSuggestConvertInsteadOfCreate() {

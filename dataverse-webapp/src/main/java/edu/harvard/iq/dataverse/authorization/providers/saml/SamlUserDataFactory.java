@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class SamlUserDataFactory {
     private static final String[] NAME = new String[] {"urn:oid:2.5.4.42", "firstName", "givenName", "cn"};
     private static final String[] SURNAME = new String[] {"urn:oid:2.5.4.4", "lastName", "surname", "sn"};
-    private static final String[] EMAIL = new String[] {"urn:oid:1.2.840.113549.1.9.1", "email", "mail"};
+    private static final String[] EMAIL = new String[] {"urn:oid:1.2.840.113549.1.9.1", "urn:oid:0.9.2342.19200300.100.1.3", "email", "mail"};
 
     // -------------------- LOGIC --------------------
 
