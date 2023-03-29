@@ -33,16 +33,11 @@ public class HtmlCodeBookExporter implements Exporter {
 
     @Override
     public void exportDataset(ExportDataProviderInterface dataProvider, OutputStream outputStream) throws ExportException {
-        try {
-            InputStream ddiInputStream;
-            try {
-                ddiInputStream = ExportService.getInstance().getExport
-                        (version.getDataset(), "ddi");
-            } catch(ExportException | IOException e) {
+            try (InputStream ddiInputStream = dataProvider.getPrerequisiteInputStream()) {
+                DdiExportUtil.datasetHtmlDDI(ddiInputStream, outputStream);
+            } catch (IOException e) {
                 throw new ExportException ("Cannot open export_ddi cached file");
-            }
-            DdiExportUtil.datasetHtmlDDI(ddiInputStream, outputStream);
-        } catch (XMLStreamException xse) {
+            } catch (XMLStreamException xse) {
             throw new ExportException ("Caught XMLStreamException performing DDI export");
         }
     }
@@ -82,8 +77,9 @@ public class HtmlCodeBookExporter implements Exporter {
     }
 
     @Override
-    public void setParam(String name, Object value) {
-        // this exporter does not uses or supports any parameters as of now.
+    public  String getPrerequisiteExporterName() {
+        //This exporter relies on being able to get the output of the ddi exporter
+        return "ddi";
     }
 
     @Override

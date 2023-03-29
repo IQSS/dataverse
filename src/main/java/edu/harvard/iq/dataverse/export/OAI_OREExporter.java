@@ -76,11 +76,6 @@ public class OAI_OREExporter implements Exporter {
     public String getXMLSchemaVersion() throws ExportException {
         throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
     }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter doesn't need/doesn't currently take any parameters
-    }
     
     @Override
     public String getMediaType() {

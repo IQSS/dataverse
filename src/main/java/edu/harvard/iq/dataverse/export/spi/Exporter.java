@@ -5,10 +5,8 @@
  */
 package edu.harvard.iq.dataverse.export.spi;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ExportException;
 import java.io.OutputStream;
-import javax.json.JsonObject;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -32,6 +30,10 @@ public interface Exporter {
     
     public String getDisplayName();
     
+    public default String getPrerequisiteExporterName() {
+        return null;
+    }
+    
     public Boolean isXMLFormat();
     
     public Boolean isHarvestable();
@@ -43,8 +45,6 @@ public interface Exporter {
     public String getXMLSchemaLocation() throws ExportException; 
     public String getXMLSchemaVersion() throws ExportException; 
     
-    public void setParam(String name, Object value);
-
 	public default String getMediaType() {
 	    return MediaType.APPLICATION_XML;
 	};

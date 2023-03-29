@@ -84,10 +84,5 @@ public class DDIExporter implements Exporter {
     public String getXMLSchemaVersion() throws ExportException {
         return DDIExporter.DEFAULT_XML_VERSION;
     }
-    
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter does not uses or supports any parameters as of now.
-    }
 }
 

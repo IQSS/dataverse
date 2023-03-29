@@ -68,9 +68,5 @@ public class DCTermsExporter implements Exporter {
     public String getXMLSchemaVersion() throws ExportException {
         return DublinCoreExportUtil.DEFAULT_XML_VERSION;
     }
-    
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter doesn't need/doesn't currently take any parameters
-    }
+
 }

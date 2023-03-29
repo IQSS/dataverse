@@ -68,11 +68,7 @@ public class JSONExporter implements Exporter {
         throw new ExportException ("JSONExporter: not an XML format."); 
     }
     
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter doesn't need/doesn't currently take any parameters
-    }
-    
+
     @Override
     public String getMediaType() {
         return MediaType.APPLICATION_JSON;

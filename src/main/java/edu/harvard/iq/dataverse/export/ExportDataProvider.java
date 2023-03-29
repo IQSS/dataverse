@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse.export;
 
+import java.io.InputStream;
+
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -26,9 +28,15 @@ public class ExportDataProvider implements ExportDataProviderInterface {
     private JsonObject jsonRepresentation = null;
     private JsonObject schemaDotOrgRepresentation = null;
     private JsonObject oreRepresentation = null;
+    private InputStream is = null;
 
     ExportDataProvider(DatasetVersion dv) {
         this.dv = dv;
+    }
+    
+    ExportDataProvider(DatasetVersion dv, InputStream is) {
+        this.dv = dv;
+        this.is=is;
     }
 
     @Override
@@ -61,6 +69,10 @@ public class ExportDataProvider implements ExportDataProviderInterface {
     public String getDataCiteXml() {
         // TODO Auto-generated method stub
         return DOIDataCiteRegisterService.getMetadataFromDvObject(
-                dv.getDataset().getGlobalId().asString(), new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());;
+                dv.getDataset().getGlobalId().asString(), new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
+    }
+    @Override
+    public InputStream getPrerequisiteInputStream() {
+        return is;
     }
 }

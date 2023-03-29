@@ -68,9 +68,4 @@ public class OpenAireExporter implements Exporter {
     public String getXMLSchemaVersion() throws ExportException {
         return OpenAireExportUtil.SCHEMA_VERSION;
     }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // not used
-    }
 }

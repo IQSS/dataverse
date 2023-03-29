@@ -80,9 +80,4 @@ public class DataCiteExporter implements Exporter {
         return DataCiteExporter.DEFAULT_XML_VERSION;
     }
 
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter does not uses or supports any parameters as of now.
-    }
-
 }

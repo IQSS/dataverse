@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse.export.spi;
 
+import java.io.InputStream;
+
 import javax.json.JsonObject;
 
 import edu.harvard.iq.dataverse.DataCitation;
@@ -22,4 +24,8 @@ public interface ExportDataProviderInterface {
     public JsonObject getDatasetORE();
 
     public String getDataCiteXml();
+
+    public default InputStream getPrerequisiteInputStream() {
+        return null;
+    }
 }
