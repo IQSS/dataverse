@@ -29,7 +29,10 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
         try {
             // Guessing these are System.getProperty rather than using settingsService
             // because this is a constructor rather than a @PostConstruct method
-            baseURLString = System.getProperty("doi.baseurlstring");
+            String urlFromProperty = System.getProperty("doi.baseurlstring");
+            if(urlFromProperty!=null) {
+                baseURLString = urlFromProperty;
+            }
             logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
             ezidService = new EZIDService(baseURLString);
             USERNAME = System.getProperty("doi.username");
