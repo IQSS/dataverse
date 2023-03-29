@@ -128,6 +128,18 @@ public class DatasetVersion implements Serializable {
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
     
+    /**
+     * A (globally) unique persisten identifier for this version.
+     * The version PID will always be dependent on the protocol and authority of the containing dataset.
+     * This identifier may contain {@link edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key#Shoulder} if
+     * configured and some more unique characters, also depending on the admin's choice to make version PIDs dependent
+     * on the dataset PID.
+     *
+     * The PID may be null (feature disabled, old entry, etc), but if present, it must be unique.
+     */
+    @Column(unique = true)
+    private String persistentIdentifier;
+    
     /*
      * @todo versionState should never be null so when we are ready, uncomment
      * the `nullable = false` below.
@@ -231,6 +243,14 @@ public class DatasetVersion implements Serializable {
     }
 
     public void setVersion(Long version) {
+    }
+    
+    public String getPersistentIdentifier() {
+        return this.persistentIdentifier;
+    }
+    
+    public void setPersistentIdentifier(String identifier) {
+        this.persistentIdentifier = identifier;
     }
 
     public String getDataverseSiteUrl() {
