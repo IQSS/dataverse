@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
 import edu.ucsb.nceas.ezid.EZIDServiceRequest;
@@ -283,6 +282,11 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
      */
     private <T> HashMap<T,T> asHashMap(Map<T,T> map) {
         return (map instanceof HashMap) ? (HashMap)map : new HashMap<>(map);
+    }
+
+    @Override
+    protected String getProviderKeyName() {
+        return "EZID";
     }
 
 }

@@ -2153,6 +2153,26 @@ See also these related database settings:
 - :ref:`:Authority`
 - :ref:`:Shoulder`
 
+
+.. _dataverse.signposting.level1-author-limit:
+
+dataverse.signposting.level1-author-limit
++++++++++++++++++++++++++++++++++++++++++
+
+See :ref:`discovery-sign-posting` for details.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_AUTHOR_LIMIT``.
+
+.. _dataverse.signposting.level1-item-limit:
+
+dataverse.signposting.level1-item-limit
++++++++++++++++++++++++++++++++++++++++
+
+See :ref:`discovery-sign-posting` for details.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_ITEM_LIMIT``.
+
+
 .. _feature-flags:
 
 Feature Flags
@@ -2170,14 +2190,12 @@ please find all known feature flags below. Any of these flags can be activated u
     * - Flag Name
       - Description
       - Default status
-    * - Example flag
-      - Replace this with something real
+    * - api-session-auth
+      - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and removed once support for bearer tokens has been implemented (see `#9229 <https://github.com/IQSS/dataverse/issues/9229>`_).
       - ``Off``
 
-**Note:** Can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
-``DATAVERSE_FEATURE_XXX``.
-
-
+**Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
 
 .. _:ApplicationServerSettings:
 
