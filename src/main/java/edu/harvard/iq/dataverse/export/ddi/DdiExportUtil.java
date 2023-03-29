@@ -546,11 +546,10 @@ public class DdiExportUtil {
             }
         }
 
-        /* TODO: if exists? - L.A. */
         writeFullElementList(xmlw, "geogUnit", dto2PrimitiveList(datasetVersionDTO, DatasetFieldConstant.geographicUnit));
 
-        /* TODO: it really looks like only 1 geoBndBox is allowed in the DDI - ? */
- /* So, I'm just going to arbitrarily use the first one, and ignore the rest! -L.A. */
+        /* Only 1 geoBndBox is allowed in the DDI.
+           So, I'm just going to arbitrarily use the first one, and ignore the rest! -L.A. */
         if (geographicBoundingBoxDTO != null) {
             HashSet<FieldDTO> bndBoxSet = geographicBoundingBoxDTO.getMultipleCompound().get(0);
             xmlw.writeStartElement("geoBndBox");
