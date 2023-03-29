@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -22,10 +23,11 @@ public class OAI_OREExporter implements Exporter {
     public static final String NAME = "OAI_ORE";
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
+    public void exportDataset(ExportDataProviderInterface dataProvider, OutputStream outputStream)
             throws ExportException {
         try {
-            new OREMap(version).writeOREMap(outputStream);
+            outputStream.write(dataProvider.getDatasetORE().toString().getBytes("UTF8"));
+            outputStream.flush();
         } catch (Exception e) {
             logger.severe(e.getMessage());
             e.printStackTrace();

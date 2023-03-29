@@ -6,6 +6,7 @@ import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
@@ -39,14 +40,10 @@ public class DataCiteExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
+    public void exportDataset(ExportDataProviderInterface dataProvider, OutputStream outputStream)
             throws ExportException {
         try {
-            DataCitation dc = new DataCitation(version);
-            
-            Map<String, String> metadata = dc.getDataCiteMetadata();
-            String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
-                    version.getDataset().getGlobalId().asString(), metadata, version.getDataset());
+            String xml = dataProvider.getDataCiteXml();
             outputStream.write(xml.getBytes(Charset.forName("utf-8")));
         } catch (IOException e) {
             throw new ExportException("Caught IOException performing DataCite export");

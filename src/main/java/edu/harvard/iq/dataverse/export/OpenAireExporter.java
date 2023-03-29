@@ -9,6 +9,7 @@ import com.google.auto.service.AutoService;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
+import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
@@ -29,10 +30,10 @@ public class OpenAireExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
+    public void exportDataset(ExportDataProviderInterface dataProvider, OutputStream outputStream)
             throws ExportException {
         try {
-            OpenAireExportUtil.datasetJson2openaire(json, outputStream);
+            OpenAireExportUtil.datasetJson2openaire(dataProvider.getDatasetJson(), outputStream);
         } catch (XMLStreamException xse) {
             throw new ExportException("Caught XMLStreamException performing DataCite OpenAIRE export", xse);
         }

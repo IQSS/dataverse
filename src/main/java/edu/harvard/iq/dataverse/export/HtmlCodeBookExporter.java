@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
@@ -31,11 +32,12 @@ public class HtmlCodeBookExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
+    public void exportDataset(ExportDataProviderInterface dataProvider, OutputStream outputStream) throws ExportException {
         try {
             InputStream ddiInputStream;
             try {
-                ddiInputStream = ExportService.getInstance().getExport(version.getDataset(), "ddi");
+                ddiInputStream = ExportService.getInstance().getExport
+                        (version.getDataset(), "ddi");
             } catch(ExportException | IOException e) {
                 throw new ExportException ("Cannot open export_ddi cached file");
             }

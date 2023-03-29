@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -246,13 +247,12 @@ public class ExportService {
             if (releasedVersion == null) {
                 throw new ExportException("No released version for dataset " + dataset.getGlobalId().toString());
             }
-
-            final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
-            JsonObject datasetAsJson = datasetAsJsonBuilder.build();
-
+            ExportDataProvider dataProvider = new ExportDataProvider(releasedVersion);
+            
             for (Exporter e : exporterMap.values()) {
                 String formatName = e.getProviderName();
-                cacheExport(releasedVersion, formatName, datasetAsJson, e);
+                
+                cacheExport(dataset, dataProvider, formatName, e);
             }
             // Finally, if we have been able to successfully export in all available
             // formats, we'll increment the "last exported" time stamp:
@@ -295,8 +295,8 @@ public class ExportService {
                 if (releasedVersion == null) {
                     throw new IllegalStateException("No Released Version");
                 }
-                final JsonObjectBuilder datasetAsJsonBuilder = JsonPrinter.jsonAsDatasetDto(releasedVersion);
-                cacheExport(releasedVersion, formatName, datasetAsJsonBuilder.build(), e);
+                ExportDataProvider dataProvider = new ExportDataProvider(releasedVersion);
+                cacheExport(dataset, dataProvider, formatName, e);
                 // As with exportAll, we should update the lastexporttime for the dataset
                 dataset.setLastExportTime(new Timestamp(new Date().getTime()));
             } else {
@@ -318,12 +318,12 @@ public class ExportService {
 
     // This method runs the selected metadata exporter, caching the output
     // in a file in the dataset directory / container based on its DOI:
-    private void cacheExport(DatasetVersion version, String format, JsonObject datasetAsJson, Exporter exporter)
+    private void cacheExport(Dataset dataset, ExportDataProviderInterface dataProvider, String format, Exporter exporter)
             throws ExportException {
         boolean tempFileUsed = false;
         File tempFile = null;
         OutputStream outputStream = null;
-        Dataset dataset = version.getDataset();
+
         StorageIO<Dataset> storageIO = null;
         try {
             // With some storage drivers, we can open a WritableChannel, or OutputStream
@@ -348,7 +348,7 @@ public class ExportService {
             try {
                 // Write the metadata export file to the outputStream, which may be the final
                 // location or a temp file
-                exporter.exportDataset(version, datasetAsJson, outputStream);
+                exporter.exportDataset(dataProvider, outputStream);
                 outputStream.flush();
                 outputStream.close();
                 if (tempFileUsed) {

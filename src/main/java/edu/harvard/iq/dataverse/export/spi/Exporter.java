@@ -26,7 +26,7 @@ public interface Exporter {
     */
     //public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException;
     
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException;
+    public void exportDataset(ExportDataProviderInterface dataProvider, OutputStream outputStream) throws ExportException;
     
     public String getProviderName();
     

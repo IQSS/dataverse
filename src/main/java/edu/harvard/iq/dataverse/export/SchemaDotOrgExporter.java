@@ -2,8 +2,11 @@ package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
@@ -75,20 +78,17 @@ public class SchemaDotOrgExporter implements Exporter {
     public static final String NAME = "schema.org";
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
-        String jsonLdAsString = version.getJsonLd();
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonLdAsString));) {
-            JsonObject jsonLdJsonObject = jsonReader.readObject();
-            try {
-                outputStream.write(jsonLdJsonObject.toString().getBytes("UTF8"));
-            } catch (IOException ex) {
-                logger.info("IOException calling outputStream.write: " + ex);
-            }
-            try {
-                outputStream.flush();
-            } catch (IOException ex) {
-                logger.info("IOException calling outputStream.flush: " + ex);
-            }
+    public void exportDataset(ExportDataProviderInterface dataProvider, OutputStream outputStream)
+            throws ExportException {
+                try {
+            outputStream.write(dataProvider.getDatasetSchemaDotOrg().toString().getBytes("UTF8"));
+        } catch (IOException ex) {
+            logger.info("IOException calling outputStream.write: " + ex);
+        }
+        try {
+            outputStream.flush();
+        } catch (IOException ex) {
+            logger.info("IOException calling outputStream.flush: " + ex);
         }
     }
 
