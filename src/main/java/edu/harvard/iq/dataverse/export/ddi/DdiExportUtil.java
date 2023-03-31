@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
@@ -45,11 +46,17 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -153,9 +160,16 @@ public class DdiExportUtil {
             writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
         }
         createStdyDscr(xmlw, datasetDto);
-        createFileDscr(xmlw, version);
-        createDataDscr(xmlw, version);
-        createOtherMatsFromFileMetadatas(xmlw, version.getFileMetadatas());
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        for (FileMetadata fileMetadata : version.getFileMetadatas()) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            jab.add(JsonPrinter.json(dataFile, fileMetadata));
+        }
+        JsonArray fileDetails = jab.build();
+        
+        createFileDscr(xmlw, fileDetails);
+        createDataDscr(xmlw, fileDetails);
+        createOtherMatsFromFileMetadatas(xmlw, fileDetails);
         xmlw.writeEndElement(); // codeBook
         xmlw.flush();
     }
@@ -1335,46 +1349,43 @@ public class DdiExportUtil {
     // otherMat, or a fileDscr section. 
     // -- L.A. 4.5 
     
-    private static void createOtherMatsFromFileMetadatas(XMLStreamWriter xmlw, List<FileMetadata> fileMetadatas) throws XMLStreamException {
+    private static void createOtherMatsFromFileMetadatas(XMLStreamWriter xmlw, JsonArray fileDetails) throws XMLStreamException {
         // The preferred URL for this dataverse, for cooking up the file access API links:
         String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         
-        for (FileMetadata fileMetadata : fileMetadatas) {
+        for (int i=0;i<fileDetails.size();i++) {
+            JsonObject fileJson = fileDetails.getJsonObject(i);
             // We'll continue using the scheme we've used before, in DVN2-3: non-tabular files are put into otherMat,
             // tabular ones - in fileDscr sections. (fileDscr sections have special fields for numbers of variables
             // and observations, etc.)
-            if (fileMetadata.getDataFile() != null && !fileMetadata.getDataFile().isTabularData()) {
+            if (!fileJson.containsKey("dataTables")) {
                 xmlw.writeStartElement("otherMat");
-                writeAttribute(xmlw, "ID", "f" + fileMetadata.getDataFile().getId());
-                String dfIdentifier = fileMetadata.getDataFile().getIdentifier();
-                if (dfIdentifier != null && !dfIdentifier.isEmpty()){
-                    GlobalId globalId = fileMetadata.getDataFile().getGlobalId();
-                    writeAttribute(xmlw, "URI",  globalId.asURL()); 
+                writeAttribute(xmlw, "ID", "f" + fileJson.getString("id"));
+                if (fileJson.containsKey("pidUrl")){
+                    writeAttribute(xmlw, "URI",  fileJson.getString("pidUrl")); 
                 }  else {
-                    writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileMetadata.getDataFile().getId()); 
+                    writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileJson.getString("id")); 
                 }
 
                 writeAttribute(xmlw, "level", "datafile");
                 xmlw.writeStartElement("labl");
-                xmlw.writeCharacters(fileMetadata.getLabel());
+                xmlw.writeCharacters(fileJson.getString("filename"));
                 xmlw.writeEndElement(); // labl
                 
-                String description = fileMetadata.getDescription();
-                if (description != null) {
+                if (fileJson.containsKey("description")) {
                     xmlw.writeStartElement("txt");
-                    xmlw.writeCharacters(description);
+                    xmlw.writeCharacters(fileJson.getString("description"));
                     xmlw.writeEndElement(); // txt
                 }
                 // there's no readily available field in the othermat section 
                 // for the content type (aka mime type); so we'll store it in this
                 // specially formatted notes section:
-                String contentType = fileMetadata.getDataFile().getContentType();
-                if (!StringUtilisEmpty(contentType)) {
+                if (fileJson.containsKey("contentType")) {
                     xmlw.writeStartElement("notes");
                     writeAttribute(xmlw, "level", LEVEL_FILE);
                     writeAttribute(xmlw, "type", NOTE_TYPE_CONTENTTYPE);
                     writeAttribute(xmlw, "subject", NOTE_SUBJECT_CONTENTTYPE);
-                    xmlw.writeCharacters(contentType);
+                    xmlw.writeCharacters(fileJson.getString("contentType"));
                     xmlw.writeEndElement(); // notes
                 }
                 xmlw.writeEndElement(); // otherMat
@@ -1568,9 +1579,9 @@ public class DdiExportUtil {
     // plus, the structure of file-level metadata is currently being re-designed, 
     // so we probably should not invest any time into it right now). -- L.A. 4.5
     
-    public static void createDataDscr(XMLStreamWriter xmlw, DatasetVersion datasetVersion) throws XMLStreamException {
+    public static void createDataDscr(XMLStreamWriter xmlw, JsonArray fileDetails) throws XMLStreamException {
 
-        if (datasetVersion.getFileMetadatas() == null || datasetVersion.getFileMetadatas().isEmpty()) {
+        if (fileDetails.isEmpty()) {
             return;
         }
 
@@ -1578,8 +1589,8 @@ public class DdiExportUtil {
 
         // we're not writing the opening <dataDscr> tag until we find an actual 
         // tabular datafile.
-        for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();
+        for (int i=0;i<fileDetails.size();i++) {
+            JsonObject fileJson = fileDetails.getJsonObject(0);
 
             /**
              * Previously (in Dataverse 5.3 and below) the dataDscr section was
@@ -1588,23 +1599,35 @@ public class DdiExportUtil {
              * should instead use the "Data Variable Metadata Access" endpoint.)
              * These days we skip restricted files to avoid this exposure.
              */
-            if (dataFile.isRestricted()|| FileUtil.isActivelyEmbargoed(dataFile)) {
+            if (fileJson.getBoolean("restricted")) {
                 continue;
             }
+            if(fileJson.containsKey("embargo")) {
+             String dateString = fileJson.getJsonObject("embargo").getString("dateAvailable");
+             LocalDate endDate = LocalDate.parse(dateString);
+             if (endDate != null && endDate.isAfter(LocalDate.now())) {
+                 //Embargo is active so skip
+                 continue;
+             }
+            }
+        
 
-            if (dataFile != null && dataFile.isTabularData()) {
+            if (fileJson.containsKey("dataTables")) {
                 if (!tabularData) {
                     xmlw.writeStartElement("dataDscr");
                     tabularData = true;
                 }
-                for (VarGroup varGrp : fileMetadata.getVarGroups()) {
-                    createVarGroupDDI(xmlw, varGrp);
+                if(fileJson.containsKey("varGroups")) {
+                    JsonArray varGroups = fileJson.getJsonArray("varGroups");
+                    for (int j=0;j<varGroups.size();j++){
+                        createVarGroupDDI(xmlw, varGroups.getJsonObject(j));
+                    }
                 }
+                JsonObject dataTable = fileJson.getJsonArray("dataTables").getJsonObject(0);
+                JsonArray vars = dataTable.getJsonArray("dataVariables");
 
-                List<DataVariable> vars = dataFile.getDataTable().getDataVariables();
-
-                for (DataVariable var : vars) {
-                    createVarDDI(xmlw, var, fileMetadata);
+                for (int j=0;j<vars.size();j++) {
+                    createVarDDI(xmlw, vars.getJsonObject(j), fileJson.getString("id"), fileJson.getString("fileMetadataId"));
                 }
             }
         }
@@ -1613,108 +1636,106 @@ public class DdiExportUtil {
             xmlw.writeEndElement(); // dataDscr
         }
     }
-    private static void createVarGroupDDI(XMLStreamWriter xmlw, VarGroup varGrp) throws XMLStreamException {
+    private static void createVarGroupDDI(XMLStreamWriter xmlw, JsonObject varGrp) throws XMLStreamException {
         xmlw.writeStartElement("varGrp");
-        writeAttribute(xmlw, "ID", "VG" + varGrp.getId().toString());
+        writeAttribute(xmlw, "ID", "VG" + varGrp.getString("id"));
         String vars = "";
-        Set<DataVariable> varsInGroup = varGrp.getVarsInGroup();
-        for (DataVariable var : varsInGroup) {
-            vars = vars + " v" + var.getId();
+        JsonArray varsInGroup = varGrp.getJsonArray("dataVariableIds");
+        for (int j=0;j<varsInGroup.size();j++){
+            vars = vars + " v" + varsInGroup.getString(j);
         }
         vars = vars.trim();
         writeAttribute(xmlw, "var", vars );
 
 
-        if (!StringUtilisEmpty(varGrp.getLabel())) {
+        if (varGrp.containsKey("label")) {
             xmlw.writeStartElement("labl");
-            xmlw.writeCharacters(varGrp.getLabel());
+            xmlw.writeCharacters(varGrp.getString("label"));
             xmlw.writeEndElement(); // group label (labl)
         }
 
         xmlw.writeEndElement(); //varGrp
     }
     
-    private static void createVarDDI(XMLStreamWriter xmlw, DataVariable dv, FileMetadata fileMetadata) throws XMLStreamException {
+    private static void createVarDDI(XMLStreamWriter xmlw, JsonObject dvar, String fileId, String fileMetadataId) throws XMLStreamException {
         xmlw.writeStartElement("var");
-        writeAttribute(xmlw, "ID", "v" + dv.getId().toString());
-        writeAttribute(xmlw, "name", dv.getName());
+        writeAttribute(xmlw, "ID", "v" + dvar.getString("id"));
+        writeAttribute(xmlw, "name", dvar.getString("name"));
 
-        VariableMetadata vm = null;
-        for (VariableMetadata vmIter : dv.getVariableMetadatas()) {
-            FileMetadata fm = vmIter.getFileMetadata();
-            if (fm != null && fm.equals(fileMetadata) ){
-                vm = vmIter;
+        JsonObject vm = null;
+        JsonArray vmArray = dvar.getJsonArray("variableMetadata"); 
+        for (int i=0;i< vmArray.size();i++) {
+            JsonObject curVm =vmArray.getJsonObject(i); 
+            if (curVm.containsKey("fileMetadataId") && curVm.getString("fileMetadataId").equals(fileMetadataId) ){
+                vm = curVm;
                 break;
             }
         }
 
-        if (dv.getNumberOfDecimalPoints() != null) {
-            writeAttribute(xmlw, "dcml", dv.getNumberOfDecimalPoints().toString());
+        if (dvar.containsKey("numberOfDecimalPoints")) {
+            writeAttribute(xmlw, "dcml", dvar.getString("numberOfDecimalPoints"));
         }
 
-        if (dv.isOrderedCategorical()) {
+        if (dvar.getBoolean("isOrderedCategorical")) {
             writeAttribute(xmlw, "nature", "ordinal");
         }
 
-        if (dv.getInterval() != null) {
-            String interval = dv.getIntervalLabel();
-            if (interval != null) {
-                writeAttribute(xmlw, "intrvl", interval);
-            }
+        if (dvar.containsKey("variableIntervalType")) {
+            writeAttribute(xmlw, "intrvl", dvar.getString("variableIntervalType"));
         }
 
         if (vm != null) {
-            if (vm.isIsweightvar()) {
+            if (vm.getBoolean("isWeightvar")) {
                 writeAttribute(xmlw, "wgt", "wgt");
             }
-            if (vm.isWeighted() && vm.getWeightvariable() != null) {
-                writeAttribute(xmlw, "wgt-var", "v"+vm.getWeightvariable().getId().toString());
+            if (vm.containsKey("isWeighted") && vm.containsKey("weightVariableId")) {
+                writeAttribute(xmlw, "wgt-var", "v"+vm.getString("weightVariableId"));
             }
         }
 
         // location
         xmlw.writeEmptyElement("location");
-        if (dv.getFileStartPosition() != null) {
-            writeAttribute(xmlw, "StartPos", dv.getFileStartPosition().toString());
+        if (dvar.containsKey("fileStartPosition")) {
+            writeAttribute(xmlw, "StartPos", dvar.getString("fileStartPosition"));
         }
-        if (dv.getFileEndPosition() != null) {
-            writeAttribute(xmlw, "EndPos", dv.getFileEndPosition().toString());
+        if (dvar.containsKey("fileEndPosition")) {
+            writeAttribute(xmlw, "EndPos", dvar.getString("fileEndPosition"));
         }
-        if (dv.getRecordSegmentNumber() != null) {
-            writeAttribute(xmlw, "RecSegNo", dv.getRecordSegmentNumber().toString());
+        if (dvar.containsKey("recordSegmentNumber")) {
+            writeAttribute(xmlw, "RecSegNo", dvar.getString("recordSegmentNumber"));
         }
 
-        writeAttribute(xmlw, "fileid", "f" + dv.getDataTable().getDataFile().getId().toString());
+        writeAttribute(xmlw, "fileid", "f" + fileId);
 
         // labl
-        if ((vm == null || StringUtilisEmpty(vm.getLabel())) && !StringUtilisEmpty(dv.getLabel())) {
+        if ((vm == null || !vm.containsKey("label"))) {
             xmlw.writeStartElement("labl");
             writeAttribute(xmlw, "level", "variable");
-            xmlw.writeCharacters(dv.getLabel());
+            xmlw.writeCharacters(dvar.getString("label"));
             xmlw.writeEndElement(); //labl
-        } else if (vm != null && !StringUtilisEmpty(vm.getLabel())) {
+        } else if (vm != null && vm.containsKey("label")) {
             xmlw.writeStartElement("labl");
             writeAttribute(xmlw, "level", "variable");
-            xmlw.writeCharacters(vm.getLabel());
+            xmlw.writeCharacters(vm.getString("label"));
             xmlw.writeEndElement(); //labl
         }
 
         if (vm != null) {
-            if (!StringUtilisEmpty(vm.getLiteralquestion()) || !StringUtilisEmpty(vm.getInterviewinstruction()) || !StringUtilisEmpty(vm.getPostquestion())) {
+            if (vm.containsKey("literalQuestion") || vm.containsKey("interviewInstruction") || vm.containsKey("postQuestion")) {
                 xmlw.writeStartElement("qstn");
-                if (!StringUtilisEmpty(vm.getLiteralquestion())) {
+                if (vm.containsKey("literalQuestion")) {
                     xmlw.writeStartElement("qstnLit");
-                    xmlw.writeCharacters(vm.getLiteralquestion());
+                    xmlw.writeCharacters(vm.getString("literalQuestion"));
                     xmlw.writeEndElement(); // qstnLit
                 }
-                if (!StringUtilisEmpty(vm.getInterviewinstruction())) {
+                if (vm.containsKey("interviewInstruction")) {
                     xmlw.writeStartElement("ivuInstr");
-                    xmlw.writeCharacters(vm.getInterviewinstruction());
+                    xmlw.writeCharacters(vm.getString("interviewInstruction"));
                     xmlw.writeEndElement(); //ivuInstr
                 }
-                if (!StringUtilisEmpty(vm.getPostquestion())) {
+                if (vm.containsKey("postQuestion")) {
                     xmlw.writeStartElement("postQTxt");
-                    xmlw.writeCharacters(vm.getPostquestion());
+                    xmlw.writeCharacters(vm.getString("postQuestion"));
                     xmlw.writeEndElement(); //ivuInstr
                 }
                 xmlw.writeEndElement(); //qstn
@@ -1723,29 +1744,31 @@ public class DdiExportUtil {
 
         // invalrng
         boolean invalrngAdded = false;
-        for (VariableRange range : dv.getInvalidRanges()) {
+        JsonArray ranges = dvar.getJsonArray("invalidRanges");
+        for (int i=0;i<ranges.size();i++) {
+            JsonObject range = ranges.getJsonObject(0); 
             //if (range.getBeginValueType() != null && range.getBeginValueType().getName().equals(DB_VAR_RANGE_TYPE_POINT)) {
-            if (range.getBeginValueType() != null && range.isBeginValueTypePoint()) {
-                if (range.getBeginValue() != null) {
+            if (range.getBoolean("hasBeginValueType") && range.getBoolean("isBeginValueTypePoint")) {
+                if (range.containsKey("beginValue")) {
                     invalrngAdded = checkParentElement(xmlw, "invalrng", invalrngAdded);
                     xmlw.writeEmptyElement("item");
-                    writeAttribute(xmlw, "VALUE", range.getBeginValue());
+                    writeAttribute(xmlw, "VALUE", range.getString("beginValue"));
                 }
             } else {
                 invalrngAdded = checkParentElement(xmlw, "invalrng", invalrngAdded);
                 xmlw.writeEmptyElement("range");
-                if (range.getBeginValueType() != null && range.getBeginValue() != null) {
-                    if (range.isBeginValueTypeMin()) {
-                        writeAttribute(xmlw, "min", range.getBeginValue());
-                    } else if (range.isBeginValueTypeMinExcl()) {
-                        writeAttribute(xmlw, "minExclusive", range.getBeginValue());
+                if (range.getBoolean("hasBeginValueType") && range.containsKey("beginValue")) {
+                    if (range.getBoolean("isBeginValueTypeMin")) {
+                        writeAttribute(xmlw, "min", range.getString("beginValue"));
+                    } else if (range.getBoolean("isBeginValueTypeMinExcl")) {
+                        writeAttribute(xmlw, "minExclusive", range.getString("beginValue"));
                     }
                 }
-                if (range.getEndValueType() != null && range.getEndValue() != null) {
-                    if (range.isEndValueTypeMax()) {
-                        writeAttribute(xmlw, "max", range.getEndValue());
-                    } else if (range.isEndValueTypeMaxExcl()) {
-                        writeAttribute(xmlw, "maxExclusive", range.getEndValue());
+                if (range.getBoolean("hasEndValueType") && range.containsKey("endValue")) {
+                    if (range.getBoolean("isEndValueTypeMax")) {
+                        writeAttribute(xmlw, "max", range.getString("endValue"));
+                    } else if (range.getBoolean("isEndValueTypeMaxExcl")) {
+                        writeAttribute(xmlw, "maxExclusive", range.getString("endValue"));
                     }
                 }
             }
@@ -1756,66 +1779,67 @@ public class DdiExportUtil {
 
         //universe
         if (vm != null) {
-            if (!StringUtilisEmpty(vm.getUniverse())) {
+            if (vm.containsKey("universe")) {
                 xmlw.writeStartElement("universe");
-                xmlw.writeCharacters(vm.getUniverse());
+                xmlw.writeCharacters(vm.getString("universe"));
                 xmlw.writeEndElement(); //universe
             }
         }
 
         //sum stats
-        for (SummaryStatistic sumStat : dv.getSummaryStatistics()) {
+        for (Entry<String, JsonValue> sumStat : dvar.getJsonObject("summaryStatistics").entrySet()) {
             xmlw.writeStartElement("sumStat");
-            if (sumStat.getTypeLabel() != null) {
-                writeAttribute(xmlw, "type", sumStat.getTypeLabel());
-            } else {
-                writeAttribute(xmlw, "type", "unknown");
-            }
-            xmlw.writeCharacters(sumStat.getValue());
+            writeAttribute(xmlw, "type", sumStat.getKey());
+            xmlw.writeCharacters(sumStat.getValue().toString());
             xmlw.writeEndElement(); //sumStat
         }
 
         // categories
-        for (VariableCategory cat : dv.getCategories()) {
+        JsonArray varCats = dvar.getJsonArray("variableCategories");
+        for (int i=0;i<varCats.size();i++) {
+            JsonObject varCat = varCats.getJsonObject(i);
             xmlw.writeStartElement("catgry");
-            if (cat.isMissing()) {
+            if (varCat.getBoolean("isMissing")) {
                 writeAttribute(xmlw, "missing", "Y");
             }
 
             // catValu
             xmlw.writeStartElement("catValu");
-            xmlw.writeCharacters(cat.getValue());
+            xmlw.writeCharacters(varCat.getString("value"));
             xmlw.writeEndElement(); //catValu
 
             // label
-            if (!StringUtilisEmpty(cat.getLabel())) {
+            if (varCat.containsKey("label")) {
                 xmlw.writeStartElement("labl");
                 writeAttribute(xmlw, "level", "category");
-                xmlw.writeCharacters(cat.getLabel());
+                xmlw.writeCharacters(varCat.getString("label"));
                 xmlw.writeEndElement(); //labl
             }
 
             // catStat
-            if (cat.getFrequency() != null) {
+            if (varCat.containsKey("frequency")) {
                 xmlw.writeStartElement("catStat");
                 writeAttribute(xmlw, "type", "freq");
+                Double freq = Double.parseDouble(varCat.getString("frequency"));
                 // if frequency is actually a long value, we want to write "100" instead of "100.0"
-                if (Math.floor(cat.getFrequency()) == cat.getFrequency()) {
-                    xmlw.writeCharacters(new Long(cat.getFrequency().longValue()).toString());
+                if (Math.floor(freq) == freq) {
+                    xmlw.writeCharacters(Long.valueOf(freq.longValue()).toString());
                 } else {
-                    xmlw.writeCharacters(cat.getFrequency().toString());
+                    xmlw.writeCharacters(freq.toString());
                 }
                 xmlw.writeEndElement(); //catStat
             }
 
             //catStat weighted freq
-            if (vm != null && vm.isWeighted()) {
-                for (CategoryMetadata cm : vm.getCategoriesMetadata()) {
-                    if (cm.getCategory().getValue().equals(cat.getValue())) {
+            if (vm != null && vm.getBoolean("isWeighted")) {
+                JsonArray catMetas = vm.getJsonArray("categoryMetadatas");
+                for (int j=0;i<catMetas.size();j++) {
+                    JsonObject cm = catMetas.getJsonObject(j);
+                    if (cm.getString("categoryValue").equals(varCat.getString("value"))) {
                         xmlw.writeStartElement("catStat");
                         writeAttribute(xmlw, "wgtd", "wgtd");
                         writeAttribute(xmlw, "type", "freq");
-                        xmlw.writeCharacters(cm.getWfreq().toString());
+                        xmlw.writeCharacters(cm.getString("wFreq"));
                         xmlw.writeEndElement(); //catStat
                         break;
                     }
@@ -1828,31 +1852,29 @@ public class DdiExportUtil {
 
         // varFormat
         xmlw.writeEmptyElement("varFormat");
-        if (dv.isTypeNumeric()) {
-            writeAttribute(xmlw, "type", "numeric");
-        } else if (dv.isTypeCharacter()) {
-            writeAttribute(xmlw, "type", "character");
+        if(dvar.containsKey("variableFormatType")) {
+            writeAttribute(xmlw, "type", dvar.getString("variableFormatType").toLowerCase());
         } else {
             throw new XMLStreamException("Illegal Variable Format Type!");
         }
-        writeAttribute(xmlw, "formatname", dv.getFormat());
+        writeAttribute(xmlw, "formatname", dvar.getString("format"));
         //experiment writeAttribute(xmlw, "schema", dv.getFormatSchema());
-        writeAttribute(xmlw, "category", dv.getFormatCategory());
+        writeAttribute(xmlw, "category", dvar.getString("formatCategory"));
 
         // notes
-        if (dv.getUnf() != null && !"".equals(dv.getUnf())) {
+        if (dvar.containsKey("UNF") && !dvar.getString("UNF").isBlank()) {
             xmlw.writeStartElement("notes");
             writeAttribute(xmlw, "subject", "Universal Numeric Fingerprint");
             writeAttribute(xmlw, "level", "variable");
             writeAttribute(xmlw, "type", "Dataverse:UNF");
-            xmlw.writeCharacters(dv.getUnf());
+            xmlw.writeCharacters(dvar.getString("UNF"));
             xmlw.writeEndElement(); //notes
         }
 
         if (vm != null) {
-            if (!StringUtilisEmpty(vm.getNotes())) {
+            if (vm.containsKey("notes")) {
                 xmlw.writeStartElement("notes");
-                xmlw.writeCData(vm.getNotes());
+                xmlw.writeCData(vm.getString("notes"));
                 xmlw.writeEndElement(); //notes CDATA
             }
         }
@@ -1863,40 +1885,41 @@ public class DdiExportUtil {
 
     }
     
-    private static void createFileDscr(XMLStreamWriter xmlw, DatasetVersion datasetVersion) throws XMLStreamException {
+    private static void createFileDscr(XMLStreamWriter xmlw, JsonArray fileDetails) throws XMLStreamException {
         String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
-        for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();
+        for (int i =0;i<fileDetails.size();i++) {
+            JsonObject fileJson = fileDetails.getJsonObject(i);
 
-            if (dataFile != null && dataFile.isTabularData()) {
-                DataTable dt = dataFile.getDataTable();
+            if (fileJson.containsKey("dataTables")) {
+                JsonObject dt = fileJson.getJsonArray("dataTables").getJsonObject(0);
                 xmlw.writeStartElement("fileDscr");
-                writeAttribute(xmlw, "ID", "f" + dataFile.getId());
-                writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + dataFile.getId());
+                String fileId = fileJson.getString("id");
+                writeAttribute(xmlw, "ID", "f" + fileId);
+                writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileId);
 
                 xmlw.writeStartElement("fileTxt");
                 xmlw.writeStartElement("fileName");
-                xmlw.writeCharacters(fileMetadata.getLabel());
+                xmlw.writeCharacters(fileJson.getString("filename"));
                 xmlw.writeEndElement(); // fileName
 
-                if (dt.getCaseQuantity() != null || dt.getVarQuantity() != null || dt.getRecordsPerCase() != null) {
+                if (dt.containsKey("caseQuantity") || dt.containsKey("varQuantity") || dt.containsKey("recordsPerCase")) {
                     xmlw.writeStartElement("dimensns");
 
-                    if (dt.getCaseQuantity() != null) {
+                    if (dt.containsKey("caseQuantity")) {
                         xmlw.writeStartElement("caseQnty");
-                        xmlw.writeCharacters(dt.getCaseQuantity().toString());
+                        xmlw.writeCharacters(dt.getString("caseQuantity"));
                         xmlw.writeEndElement(); // caseQnty
                     }
 
-                    if (dt.getVarQuantity() != null) {
+                    if (dt.containsKey("varQuantity")) {
                         xmlw.writeStartElement("varQnty");
-                        xmlw.writeCharacters(dt.getVarQuantity().toString());
+                        xmlw.writeCharacters(dt.getString("varQuantity"));
                         xmlw.writeEndElement(); // varQnty
                     }
 
-                    if (dt.getRecordsPerCase() != null) {
+                    if (dt.containsKey("recordsPerCase")) {
                         xmlw.writeStartElement("recPrCas");
-                        xmlw.writeCharacters(dt.getRecordsPerCase().toString());
+                        xmlw.writeCharacters(dt.getString("recordsPerCase"));
                         xmlw.writeEndElement(); // recPrCas
                     }
 
@@ -1904,7 +1927,7 @@ public class DdiExportUtil {
                 }
 
                 xmlw.writeStartElement("fileType");
-                xmlw.writeCharacters(dataFile.getContentType());
+                xmlw.writeCharacters(fileJson.getString("contentType"));
                 xmlw.writeEndElement(); // fileType
 
                 xmlw.writeEndElement(); // fileTxt
@@ -1912,22 +1935,23 @@ public class DdiExportUtil {
                 // various notes:
                 // this specially formatted note section is used to store the UNF
                 // (Universal Numeric Fingerprint) signature:
-                if (dt.getUnf() != null && !dt.getUnf().equals("")) {
+                if (dt.containsKey("UNF") && !dt.getString("UNF").isBlank()) {
                     xmlw.writeStartElement("notes");
                     writeAttribute(xmlw, "level", LEVEL_FILE);
                     writeAttribute(xmlw, "type", NOTE_TYPE_UNF);
                     writeAttribute(xmlw, "subject", NOTE_SUBJECT_UNF);
-                    xmlw.writeCharacters(dt.getUnf());
+                    xmlw.writeCharacters(dt.getString("UNF"));
                     xmlw.writeEndElement(); // notes
                 }
 
-                if (dataFile.getTags() != null) {
-                    for (int i = 0; i < dataFile.getTags().size(); i++) {
+                if (fileJson.containsKey("tabularTags")) {
+                    JsonArray tags = fileJson.getJsonArray("tabularTags");
+                    for (int j = 0; j < tags.size(); i++) {
                         xmlw.writeStartElement("notes");
                         writeAttribute(xmlw, "level", LEVEL_FILE);
                         writeAttribute(xmlw, "type", NOTE_TYPE_TAG);
                         writeAttribute(xmlw, "subject", NOTE_SUBJECT_TAG);
-                        xmlw.writeCharacters(dataFile.getTags().get(i).getTypeLabel());
+                        xmlw.writeCharacters(tags.getString(j));
                         xmlw.writeEndElement(); // notes
                     }
                 }
