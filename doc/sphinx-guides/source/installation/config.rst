@@ -290,7 +290,7 @@ Here are the configuration options for PermaLinks:
 
 **JVM Options:**
 
-- :ref:`perma.baseurlstring`
+- :ref:`dataverse.pid.permalink.base-url`
 
 **Database Settings:**
 
@@ -2321,10 +2321,10 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 **WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
 production context! Rely on password alias, secrets directory or cloud based sources instead!
 
-.. _perma.baseurlstring:
+.. _dataverse.pid.permalink.base-url:
 
-perma.baseurlstring
-+++++++++++++++++++
+dataverse.pid.permalink.base-url
+++++++++++++++++++++++++++++++++
 
 When using :ref:`PermaLinks <permalinks>`, perma.baseurlstring can be used to configure an external resolver. Dataverse will associate a PermaLink PID with the URL:
 ``<perma.baseurlstring>/citation?persistentId=perma:<permalink>``. The default value is your Dataverse site URL, which will result in PermaLinks correctly resolving to the appropriate dataset page.
@@ -2338,6 +2338,10 @@ See also these related database settings:
 - :ref:`:Protocol`
 - :ref:`:Authority`
 - :ref:`:Shoulder`
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_PERMALINK_BASE_URL``. This setting was formerly known as
+``perma.baseurlstring`` and has been renamed. You should delete and re-add it.
 
 
 .. _dataverse.signposting.level1-author-limit:
