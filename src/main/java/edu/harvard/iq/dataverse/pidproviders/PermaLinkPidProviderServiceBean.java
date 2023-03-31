@@ -77,10 +77,7 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
 
     @Override
     public List<String> getProviderInformation() {
-        ArrayList<String> providerInfo = new ArrayList<>();
-        providerInfo.add(PERMA_PROVIDER_NAME);
-        providerInfo.add(PERMA_RESOLVER_URL);
-        return providerInfo;
+        return List.of(PERMA_PROVIDER_NAME, PERMA_RESOLVER_URL);
     }
 
     @Override

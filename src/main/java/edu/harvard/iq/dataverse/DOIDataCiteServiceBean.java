@@ -238,12 +238,7 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
     
     @Override
     public List<String> getProviderInformation(){
-        ArrayList <String> providerInfo = new ArrayList<>();
-        String providerName = "DataCite";
-        String providerLink = "http://status.datacite.org";
-        providerInfo.add(providerName);
-        providerInfo.add(providerLink);
-        return providerInfo;
+        return List.of("DataCite", "https://status.datacite.org");
     }
 
 

@@ -382,12 +382,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     
     @Override
     public List<String> getProviderInformation(){
-        ArrayList <String> providerInfo = new ArrayList<>();
-        String providerName = "Handle";
-        String providerLink = "https://hdl.handle.net";
-        providerInfo.add(providerName);
-        providerInfo.add(providerLink);
-        return providerInfo;
+        return List.of("Handle", "https://hdl.handle.net");
     }
 
 
