@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestError;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
+import io.vavr.Tuple2;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedInputStream;
@@ -49,17 +50,17 @@ import java.util.logging.Logger;
 public class NewDTAFileReader extends TabularDataFileReader {
     //@Inject
     //VariableServiceBean varService;
-    // static fields, STATA-specific constants, etc. 
+    // static fields, STATA-specific constants, etc.
 
     // SECTION TAGS:
-    // 
-    // The new STATA format features XML-like section tags - 
+    //
+    // The new STATA format features XML-like section tags -
     // <stata_dta><header>...</header>...</stata_dta>
 
     // MAIN, TOP-LEVEL FILE SECTION:
     private static final String TAG_DTA = "stata_dta";
 
-    // HEADER SECTION: 
+    // HEADER SECTION:
     private static final String TAG_HEADER = "header";
     private static final String TAG_HEADER_FILEFORMATID = "release";
     private static final String TAG_HEADER_BYTEORDER = "byteorder";
@@ -68,25 +69,25 @@ public class NewDTAFileReader extends TabularDataFileReader {
     private static final String TAG_HEADER_FILELABEL = "label";
     private static final String TAG_HEADER_TIMESTAMP = "timestamp";
 
-    // MAP SECTION: 
+    // MAP SECTION:
     private static final String TAG_MAP = "map";
 
-    // VARIABLE TYPES SECTION: 
+    // VARIABLE TYPES SECTION:
     private static final String TAG_VARIABLE_TYPES = "variable_types";
 
-    // VARIABLE NAMES SECTION: 
+    // VARIABLE NAMES SECTION:
     private static final String TAG_VARIABLE_NAMES = "varnames";
 
-    // VARIABLE SORT ORDER SECTION: 
+    // VARIABLE SORT ORDER SECTION:
     private static final String TAG_SORT_ORDER = "sortlist";
 
-    // VARIABLE DISPLAY FORMATS: 
+    // VARIABLE DISPLAY FORMATS:
     private static final String TAG_DISPLAY_FORMATS = "formats";
 
-    // VALUE LABEL FORMAT NAMES: 
+    // VALUE LABEL FORMAT NAMES:
     private static final String TAG_VALUE_LABEL_FORMAT_NAMES = "value_label_names";
 
-    // VARIABLE LABELS: 
+    // VARIABLE LABELS:
     private static final String TAG_VARIABLE_LABELS = "variable_labels";
 
     // "CHARACTERISTICS":
@@ -96,7 +97,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
     // DATA SECTION!
     private static final String TAG_DATA = "data";
 
-    // STRLs SECTION: 
+    // STRLs SECTION:
     private static final String TAG_STRLS = "strls";
     private static final String STRL_GSO_HEAD = "GSO";
 
@@ -148,15 +149,15 @@ public class NewDTAFileReader extends TabularDataFileReader {
         releaseconstant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
         releaseconstant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
 
-        // 1, 2 and 4-byte integers: 
+        // 1, 2 and 4-byte integers:
         byteLengthTable.put("Byte", 1);
         byteLengthTable.put("Integer", 2);
         byteLengthTable.put("Long", 4);
-        // 4 and 8-byte floats: 
+        // 4 and 8-byte floats:
         byteLengthTable.put("Float", 4);
         byteLengthTable.put("Double", 8);
-        // STRLs are defined in their own section, outside of the 
-        // main data. In the <data> section they are referenced 
+        // STRLs are defined in their own section, outside of the
+        // main data. In the <data> section they are referenced
         // by 2 x 4 byte values, "(v,o)", 8 bytes total.
         byteLengthTable.put("STRL", 8);
 
@@ -207,7 +208,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
             "%tc", "%td", "%tw", "%tq", "%tm", "%th", "%ty",
             "%d", "%w", "%q", "%m", "h", "%tb"
     };
-    // New "business calendar format" has been added in Stata 12. -- L.A. 
+    // New "business calendar format" has been added in Stata 12. -- L.A.
     private static String[] DATE_TIME_CATEGORY = {
             "time", "date", "date", "date", "date", "date", "date",
             "date", "date", "date", "date", "date", "date"
@@ -251,11 +252,11 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
     // Stata has a mechanism for sharing defined category labels between
     // multiple variables. A variable may have an explicitly defined (and named)
-    // table of category labels; and another variable, instead of defining its 
-    // own, may be referencing it by name. 
-    // The following lookup table is for maintaining this reference map, 
-    // between variables and named value tables. It is populated from a 
-    // fixed-width section early on in the file. 
+    // table of category labels; and another variable, instead of defining its
+    // own, may be referencing it by name.
+    // The following lookup table is for maintaining this reference map,
+    // between variables and named value tables. It is populated from a
+    // fixed-width section early on in the file.
     private String[] valueLabelsLookupTable = null;
 
     private Map<String, Integer> constantTable;
@@ -339,7 +340,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
     }
 
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
+    public TabularDataIngest read(Tuple2<BufferedInputStream, File> streamAndFile, File dataFile) throws IOException {
         logger.fine("NewDTAFileReader: read() start");
 
         // shit ton of diagnostics (still) needed here!!  -- L.A.
@@ -348,7 +349,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         }
 
         DataReader dataReader;
-
+        BufferedInputStream stream = streamAndFile._1();
         init();
         dataReader = new DataReader(stream);
         dataReader.readOpeningTag(TAG_DTA);
@@ -366,7 +367,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         readData(dataReader);
 
         // (potentially) large, (potentially) non-ASCII character strings
-        // saved outside the <data> section, and referenced 
+        // saved outside the <data> section, and referenced
         // in the data with (v,o) notation - docs have more info
         readSTRLs(dataReader);
         readValueLabels(dataReader);
@@ -420,7 +421,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         dataTable.setOriginalFormatVersion("STATA " + (DTAVersion - 104));
         dataTable.setUnf("UNF:pending");
 
-        // The word "dataset" below is used in its STATA parlance meaning, 
+        // The word "dataset" below is used in its STATA parlance meaning,
         // i.e., this is a label that describes the datafile.
         String datasetLabel;
         if (DTAVersion == 117) {
@@ -430,13 +431,13 @@ public class NewDTAFileReader extends TabularDataFileReader {
         }
         logger.fine("Stata \"dataset\" label: " + datasetLabel);
 
-        // TODO: 
+        // TODO:
         // We are not doing anything with this label. But maybe we should?
-        // We could add a "description" field to the Dataverse DataTable object, 
-        // and maybe put it there. Alternatively we could add some other mechanism for 
-        // the ingest plugin to pass this label back to Dataverse, and maybe 
-        // appending it to the DataFile description in the FileMetadata object. 
-        // Probably not the highest priority. 
+        // We could add a "description" field to the Dataverse DataTable object,
+        // and maybe put it there. Alternatively we could add some other mechanism for
+        // the ingest plugin to pass this label back to Dataverse, and maybe
+        // appending it to the DataFile description in the FileMetadata object.
+        // Probably not the highest priority.
         String datasetTimeStamp = dataReader.readDefinedStringSection(TAG_HEADER_TIMESTAMP, 17);
         logger.fine("dataset time stamp: " + datasetTimeStamp);
 
@@ -444,8 +445,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 || (datasetTimeStamp.length() > 0 && datasetTimeStamp.length() < 17)) {
             throw new IOException("unexpected/invalid length of the time stamp in the NewDTA header.");
         } else {
-            // If we decide that we actually want/need to use this time stamp for any 
-            // practical purposes (again, we could add it to the descriptive 
+            // If we decide that we actually want/need to use this time stamp for any
+            // practical purposes (again, we could add it to the descriptive
             // metadata somehow), we should probably validate it against dd Mon yyyy hh:mm.
         }
 
@@ -596,7 +597,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
             if ((variableName != null) && (!variableName.equals(""))) {
                 dataTable.getDataVariables().get(i).setName(variableName);
             } else {
-                // TODO: Is this condition even possible? 
+                // TODO: Is this condition even possible?
                 // Should we be throwing an exception if it's encountered?
             }
         }
@@ -611,17 +612,17 @@ public class NewDTAFileReader extends TabularDataFileReader {
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             long order = reader.readULong(DTAVersion == 119 ? 4 : 2);
             logger.fine("variable " + i + ": sort order=" + order);
-            // We don't use this variable sort order at all. 
+            // We don't use this variable sort order at all.
         }
 
-        // Important! 
+        // Important!
         // The SORT ORDER section (5.5 in the doc) always contains
         // number_of_variables + 1 2 or 4 byte integers depending on version!
         long terminatingShort = reader.readULong(DTAVersion == 119 ? 4 : 2);
         reader.readClosingTag(TAG_SORT_ORDER);
     }
 
-    // Variable Formats are used exclusively for time and date variables. 
+    // Variable Formats are used exclusively for time and date variables.
     private void readDisplayFormats(DataReader reader) throws IOException {
         logger.fine("Formats section; at offset " + reader.getByteOffset() + "; dta map offset: " + dtaMap.getOffset_fmts());
         reader.readOpeningTag(TAG_DISPLAY_FORMATS);
@@ -725,7 +726,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         // create a File object to save the tab-delimited data file
         File tabDelimitedDataFile = File.createTempFile("tempTabfile.", ".tab");
 
-        // save the temp tab-delimited file in the return ingest object:        
+        // save the temp tab-delimited file in the return ingest object:
         ingesteddata.setTabDelimitedFile(tabDelimitedDataFile);
 
         FileOutputStream fileOutTab = new FileOutputStream(tabDelimitedDataFile);
@@ -736,15 +737,15 @@ public class NewDTAFileReader extends TabularDataFileReader {
         for (int i = 0; i < nobs; i++) {
             Object[] dataRow = new Object[nvar];
 
-            // TODO: 
-            // maybe intercept any potential exceptions here, and add more 
+            // TODO:
+            // maybe intercept any potential exceptions here, and add more
             // diagnostic info, before re-throwing...
             int byte_offset = 0;
             for (int columnCounter = 0; columnCounter < nvar; columnCounter++) {
 
                 String varType = variableTypes[columnCounter];
 
-                // 4.0 Check if this is a time/date variable: 
+                // 4.0 Check if this is a time/date variable:
                 boolean isDateTimeDatum = false;
                 String formatCategory = dataTable.getDataVariables().get(columnCounter).getFormatCategory();
                 if (formatCategory != null && (formatCategory.equals("time") || formatCategory.equals("date"))) {
@@ -841,9 +842,9 @@ public class NewDTAFileReader extends TabularDataFileReader {
                             dataRow[columnCounter] = float_datum;
                             logger.fine(i + "-th row " + columnCounter
                                                 + "=th column float value:" + float_datum);
-                            // This may be temporary - but for now (as in, while I'm testing 
-                            // 4.0 ingest against 3.* ingest, I need to be able to tell if a 
-                            // floating point value was a single, or double float in the 
+                            // This may be temporary - but for now (as in, while I'm testing
+                            // 4.0 ingest against 3.* ingest, I need to be able to tell if a
+                            // floating point value was a single, or double float in the
                             // original STATA file: -- L.A. Jul. 2014
                             dataTable.getDataVariables().get(columnCounter).setFormat("float");
                             // ?
@@ -880,8 +881,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
                     logger.fine(i + "-th row " + columnCounter
                                         + "=th column is a string (" + strVarLength + " bytes)");
                     // In STATA13+, STRF strings *MUST*
-                    // be limited to ASCII. UTF8 strings can be stored as 
-                    // STRLs. 
+                    // be limited to ASCII. UTF8 strings can be stored as
+                    // STRLs.
                     String string_datum = reader.readString(strVarLength);
                     if (string_datum.equals("")) {
 
@@ -914,7 +915,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                         cachedGSOs = new LinkedHashMap<>();
                     }
 
-                    // Reading the (v,o) pair: 
+                    // Reading the (v,o) pair:
                     long v;
                     long o;
 
@@ -933,16 +934,16 @@ public class NewDTAFileReader extends TabularDataFileReader {
                     String voPair = v + "," + o;
                     dataRow[columnCounter] = voPair;
 
-                    // TODO: 
-                    // would it make sense to validate v and o here? 
-                    // Making sure v <= varNum and o < numbObs; 
-                    // or, if o == numObs, v <= columnCounter; 
+                    // TODO:
+                    // would it make sense to validate v and o here?
+                    // Making sure v <= varNum and o < numbObs;
+                    // or, if o == numObs, v <= columnCounter;
                     // -- per the Stata 13+ spec...
                     if (!(v == columnCounter + 1 && o == i + 1)) {
                         if (!cachedGSOs.containsKey(voPair)) {
                             cachedGSOs.put(voPair, "");
-                            // this means we need to cache this GSO, when 
-                            // we read the STRLS section later on. 
+                            // this means we need to cache this GSO, when
+                            // we read the STRLS section later on.
                         }
                     }
 
@@ -1061,8 +1062,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
             reader.readClosingTag(TAG_STRLS);
         } else {
-            // If this data file doesn't use STRLs, we can just skip 
-            // this section, and assume that we are done with the 
+            // If this data file doesn't use STRLs, we can just skip
+            // this section, and assume that we are done with the
             // tabular data file.
             reader.readPrimitiveSection(TAG_STRLS);
         }
@@ -1078,7 +1079,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         // Skipping the GSO header - fixed string "GSO":
         reader.readBytes(STRL_GSO_HEAD.length());
 
-        // Reading the stored (v,o) pair: 
+        // Reading the stored (v,o) pair:
         long vStored = reader.readUInt();
         long oStored = reader.readULong(DTAVersion == 117 ? 4 : 8);
 
@@ -1109,9 +1110,9 @@ public class NewDTAFileReader extends TabularDataFileReader {
         // length can technically be 0 < length < 2^^32;
         // but Java arrays are only [int], i.e., can only have < 2^^31
         // elements; readBytes() allocates and returns a byte[] array.
-        // so I should probably check the value of length - if it 
-        // can fit into a signed int; not that it's likely to happen 
-        // in real life. Still, should we throw an exception here, if 
+        // so I should probably check the value of length - if it
+        // can fit into a signed int; not that it's likely to happen
+        // in real life. Still, should we throw an exception here, if
         // this length is > 2^^31?
         byte[] contents = reader.readBytes((int) length);
 
@@ -1127,7 +1128,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         String escapedGsoString = escapeCharacterString(gsoString);
 
         if (cachedGSOs.containsKey(voPair)) {
-            // We need to cache this GSO: 
+            // We need to cache this GSO:
             if (!"".equals(cachedGSOs.get(voPair))) {
                 throw new IOException("Multiple GSO definitions for v,o " + voPair);
             }
@@ -1151,8 +1152,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
             reader.readBytes(3);
 
-            // read the value_label_table that follows. 
-            // should be label_table_length. 
+            // read the value_label_table that follows.
+            // should be label_table_length.
             int number_of_categories = (int) reader.readUInt();
             long text_length = reader.readUInt();
 
@@ -1191,12 +1192,12 @@ public class NewDTAFileReader extends TabularDataFileReader {
             long label_end;
             int label_length;
 
-            // Read the remaining bytes in this <lbl> section. 
+            // Read the remaining bytes in this <lbl> section.
             // This byte[] array will contain all the value labels for the
-            // variable. Each is terminated by the binary zero byte; so we 
-            // can read the bytes for each label at the defined offset until 
+            // variable. Each is terminated by the binary zero byte; so we
+            // can read the bytes for each label at the defined offset until
             // we encounter \000. Or we can rely on the (sorted) list of offsets
-            // to determine where each label ends (implemented below). 
+            // to determine where each label ends (implemented below).
             byte[] labelBytes = null;
             if ((int) text_length != 0) { //If length is 0 we don't need to read any bytes
                 labelBytes = reader.readBytes((int) text_length);
@@ -1231,9 +1232,9 @@ public class NewDTAFileReader extends TabularDataFileReader {
             reader.readClosingTag(TAG_VALUE_LABELS_LBL_DEF);
 
             List<DataVariable> dataVariables = dataTable.getDataVariables();
-            // Find the variables that may be linking to this Category Values Table 
-            // and create VariableCategory objects for the corresponding 
-            // DataVariables: 
+            // Find the variables that may be linking to this Category Values Table
+            // and create VariableCategory objects for the corresponding
+            // DataVariables:
             for (int i = 0; i < dataVariables.size(); i++) {
                 DataVariable dataVariable = dataVariables.get(i);
                 if (label_table_name.equals(valueLabelsLookupTable[i])) {
@@ -1391,7 +1392,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
             format = sdf_ymd.toPattern();
 
         } else if (FormatType.matches("^%t?m.*")) {
-            // month 
+            // month
             long monthYears = Math.round(new Double(rawDatum));
             long left = Math.abs(monthYears) % 12L;
             long years;
@@ -1577,7 +1578,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
             return dta_offset_eof;
         }
 
-        // setters: 
+        // setters:
         public void setOffset_head(long dta_offset_stata_data) {
             this.dta_offset_stata_data = dta_offset_stata_data;
         }

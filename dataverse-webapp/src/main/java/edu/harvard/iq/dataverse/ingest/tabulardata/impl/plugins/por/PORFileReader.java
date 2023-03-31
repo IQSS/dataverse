@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestError;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
+import io.vavr.Tuple2;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -183,7 +184,7 @@ public class PORFileReader extends TabularDataFileReader {
     }
 
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File additionalData) throws IOException {
+    public TabularDataIngest read(Tuple2<BufferedInputStream, File> streamAndFile, File additionalData) throws IOException {
         logger.fine("PORFileReader: read() start");
         Charset charset = selectCharset();
         if (additionalData != null) {
@@ -193,6 +194,7 @@ public class PORFileReader extends TabularDataFileReader {
             extendedLabels = createLabelMap(additionalData, charset);
         }
 
+        BufferedInputStream stream = streamAndFile._1();
         File tempPORfile = decodeHeader(stream, charset);
 
         try (BufferedReader bfReader = new BufferedReader(new InputStreamReader(new FileInputStream(tempPORfile.getAbsolutePath()), charset))) {
@@ -516,11 +518,11 @@ public class PORFileReader extends TabularDataFileReader {
         boolean windowsNewLine = true;
         if (three == nolines) {
             windowsNewLine = false; // lineTerminator = "0D0D0A"
-        } else if ((ucase == nolines) && (wcase < nolines)) {
+        } else if (ucase == nolines && wcase < nolines) {
             windowsNewLine = false; // lineTerminator = "0A"
-        } else if ((ucase < nolines) && (wcase == nolines)) {
+        } else if (ucase < nolines && wcase == nolines) {
             windowsNewLine = true; // lineTerminator = "0D0A"
-        } else if ((mcase == nolines) && (wcase < nolines)) {
+        } else if (mcase == nolines && wcase < nolines) {
             windowsNewLine = false; // lineTerminator = "0D"
         }
 
@@ -594,7 +596,7 @@ public class PORFileReader extends TabularDataFileReader {
         }
 
         char[] sixthLineCharArray = new char[80];
-        int nbytes_sixthLine = reader.read(sixthLineCharArray);
+        reader.read(sixthLineCharArray);
 
         String sixthLine = new String(sixthLineCharArray);
         logger.fine("sixthLineCharArray=" +
@@ -612,10 +614,10 @@ public class PORFileReader extends TabularDataFileReader {
         reader.reset();
 
         // skip bytes up to the signature string
-        long skippedBytes = reader.skip(signatureLocation);
+        reader.skip(signatureLocation);
 
         char[] sec2_leader = new char[POR_MARK.length()];
-        int nbytes_sec2_leader = reader.read(sec2_leader);
+        reader.read(sec2_leader);
 
         String leader_string = new String(sec2_leader);
 

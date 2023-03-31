@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestError;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
 import edu.harvard.iq.dataverse.rserve.RRequest;
 import edu.harvard.iq.dataverse.rserve.RRequestBuilder;
+import io.vavr.Tuple2;
 import org.apache.commons.lang.RandomStringUtils;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
@@ -203,7 +204,7 @@ public class RDATAFileReader extends TabularDataFileReader {
 
                 RRequest scriptRequest = scriptBuilder.build();
                 LOG.fine("script request built.");
-        
+
         /*
         REXP result = mRequestBuilder
                 .script(RSCRIPT_CREATE_WORKSPACE)
@@ -334,8 +335,6 @@ public class RDATAFileReader extends TabularDataFileReader {
 
         /**
          * Set the stream
-         *
-         * @param inStream
          */
         public void stream(BufferedInputStream inStream) {
             mInStream = inStream;
@@ -450,16 +449,9 @@ public class RDATAFileReader extends TabularDataFileReader {
 
     }
 
-    /**
-     * Read the Given RData File
-     *
-     * @param stream  a <code>BufferedInputStream</code>.
-     * @param ignored
-     * @return an <code>TabularDataIngest</code> object
-     * @throws java.io.IOException if a reading error occurs.
-     */
+    /** Read the Given RData File */
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
+    public TabularDataIngest read(Tuple2<BufferedInputStream, File> streamAndFile, File dataFile) throws IOException {
 
         init();
 
@@ -468,6 +460,7 @@ public class RDATAFileReader extends TabularDataFileReader {
 
         try {
             // Create R Workspace
+            BufferedInputStream stream = streamAndFile._1();
             mRWorkspace.stream(stream);
             mRWorkspace.create();
             mRWorkspace.saveRdataFile();
@@ -477,18 +470,18 @@ public class RDATAFileReader extends TabularDataFileReader {
             // Additionally, this sets the "tabDelimitedDataFile" property of the FileInformation
             File localCsvFile = transferCsvFile(mRWorkspace.mCsvDataFile);
 
-            // Generate and save all the information about data set; this creates all 
+            // Generate and save all the information about data set; this creates all
             // the DataVariable objects, among other things:
             getDataFrameInformation();
 
-            // Read and parse the TAB-delimited file saved by R, above; do the 
-            // necessary post-processinga and filtering, and save the resulting 
-            // TAB file as tabFileDestination, below. This is the file we'll be 
+            // Read and parse the TAB-delimited file saved by R, above; do the
+            // necessary post-processinga and filtering, and save the resulting
+            // TAB file as tabFileDestination, below. This is the file we'll be
             // using to calculate the UNF, and for the storage/preservation of the
-            // dataset. 
-            // IMPORTANT: this must be done *after* the variable metadata has been 
+            // dataset.
+            // IMPORTANT: this must be done *after* the variable metadata has been
             // created!
-            // - L.A. 
+            // - L.A.
             RTabFileParser csvFileReader = new RTabFileParser('\t');
             BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(localCsvFile), StandardCharsets.UTF_8));
 
@@ -519,7 +512,6 @@ public class RDATAFileReader extends TabularDataFileReader {
      * Copy Remote File on R-server to a Local Target
      *
      * @param target a target on the remote r-server
-     * @return
      */
     private File transferCsvFile(File target) {
         File destination;
@@ -602,7 +594,7 @@ public class RDATAFileReader extends TabularDataFileReader {
 
             //mDataTypes = fileInformation.at("dataTypes").asStrings();
 
-            // Initialize variables: 
+            // Initialize variables:
             List<DataVariable> variableList = new ArrayList<>();
 
             for (String varName : variableNames) {
@@ -610,8 +602,8 @@ public class RDATAFileReader extends TabularDataFileReader {
                 dv.setName(varName);
                 dv.setLabel(varName);
                 // TODO:
-                // Check if variables have real descriptive labels defined, 
-                // via the mechanismm provided by that special optional package... 
+                // Check if variables have real descriptive labels defined,
+                // via the mechanismm provided by that special optional package...
                 // (?) -- L.A.
                 variableList.add(dv);
 
@@ -620,10 +612,10 @@ public class RDATAFileReader extends TabularDataFileReader {
                 varQnty++;
             }
 
-            dataTable.setVarQuantity(new Long(varQnty));
+            dataTable.setVarQuantity((long) varQnty);
             dataTable.setDataVariables(variableList);
 
-            // Get the Variable Meta Data Table while Populating 
+            // Get the Variable Meta Data Table while Populating
             processVariableInfo(metaInfo, dataTable);
 
 
@@ -632,10 +624,10 @@ public class RDATAFileReader extends TabularDataFileReader {
                 try {
                     caseQuantity = fileInformation.at("caseQnty").asInteger();
                 } catch (REXPMismatchException rexp) {
-                    // bummer! - but not fatal. 
+                    // bummer! - but not fatal.
                 }
                 if (caseQuantity > 0) {
-                    dataTable.setCaseQuantity(new Long(caseQuantity));
+                    dataTable.setCaseQuantity((long) caseQuantity);
                 }
             }
         } catch (REXPMismatchException ex) {
@@ -670,7 +662,7 @@ public class RDATAFileReader extends TabularDataFileReader {
         try {
             BufferedReader rd = new BufferedReader(new InputStreamReader(resourceStream, StandardCharsets.UTF_8));
 
-            String line = null;
+            String line;
             while ((line = rd.readLine()) != null) {
                 resourceAsString = resourceAsString.concat(line + "\n");
             }
@@ -723,7 +715,7 @@ public class RDATAFileReader extends TabularDataFileReader {
                 //dataTable.getDataVariables().get(k).setFormatSchema("RDATA");
 
                 if (variableTypeName == null || variableTypeName.equals("character") || variableTypeName.equals("other")) {
-                    // This is a String: 
+                    // This is a String:
                     dataTable.getDataVariables().get(k).setTypeCharacter();
                     dataTable.getDataVariables().get(k).setIntervalDiscrete();
 
@@ -782,10 +774,10 @@ public class RDATAFileReader extends TabularDataFileReader {
 
                     }
 
-                } // And finally, a special case for logical variables: 
+                } // And finally, a special case for logical variables:
                 // For all practical purposes, they are handled as numeric factors
                 // with 0 and 1 for the values and "FALSE" and "TRUE" for the labels.
-                // (so this can also be used as an example of ingesting a *numeric* 
+                // (so this can also be used as an example of ingesting a *numeric*
                 // categorical variable - as opposed to *string* categoricals, that
                 // we turn R factors into - above.
                 else if ("logical".equals(variableTypeName)) {

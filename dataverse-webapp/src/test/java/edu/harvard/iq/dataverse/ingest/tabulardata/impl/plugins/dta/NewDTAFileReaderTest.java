@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
+import io.vavr.Tuple;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -30,7 +31,8 @@ public class NewDTAFileReaderTest {
         // From https://www.stata-press.com/data/r13/auto.dta
         // `strings` shows "<stata_dta><header><release>117</release>"
         byte[] dtaFileBytes = IOUtils.resourceToByteArray("/dta/stata13-auto.dta");
-        TabularDataIngest result = instance.read(new BufferedInputStream(new ByteArrayInputStream(dtaFileBytes)), nullDataFile);
+        TabularDataIngest result
+                = instance.read(Tuple.of(new BufferedInputStream(new ByteArrayInputStream(dtaFileBytes)), null), nullDataFile);
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
         assertEquals(12, result.getDataTable().getDataVariables().size());
@@ -45,7 +47,8 @@ public class NewDTAFileReaderTest {
     public void testStrl() throws IOException {
         instance = new NewDTAFileReader(null, 118);
         byte[] dtaFileBytes = IOUtils.resourceToByteArray("/dta/strl.dta");
-        TabularDataIngest result = instance.read(new BufferedInputStream(new ByteArrayInputStream(dtaFileBytes)), nullDataFile);
+        TabularDataIngest result
+                = instance.read(Tuple.of(new BufferedInputStream(new ByteArrayInputStream(dtaFileBytes)), null), nullDataFile);
         DataTable table = result.getDataTable();
         assertEquals("application/x-stata", table.getOriginalFileFormat());
         assertEquals("STATA 14", table.getOriginalFormatVersion());
@@ -65,7 +68,8 @@ public class NewDTAFileReaderTest {
     public void testDates() throws IOException {
         instance = new NewDTAFileReader(null, 118);
         byte[] dtaFileBytes = IOUtils.resourceToByteArray("/dta/dates.dta");
-        TabularDataIngest result = instance.read(new BufferedInputStream(new ByteArrayInputStream(dtaFileBytes)), nullDataFile);
+        TabularDataIngest result
+                = instance.read(Tuple.of(new BufferedInputStream(new ByteArrayInputStream(dtaFileBytes)), null), nullDataFile);
         DataTable table = result.getDataTable();
         assertEquals("application/x-stata", table.getOriginalFileFormat());
         assertEquals("STATA 14", table.getOriginalFormatVersion());
@@ -94,7 +98,9 @@ public class NewDTAFileReaderTest {
         instance = new NewDTAFileReader(null, 117);
 
         // https://dataverse.harvard.edu/file.xhtml?fileId=2865667 Stata 13 HouseImputingCivilRightsInfo.dta md5=7dd144f27cdb9f8d1c3f4eb9c4744c42
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/HouseImputingCivilRightsInfo.dta"))), nullDataFile);
+        TabularDataIngest result
+                = instance.read(Tuple.of(new BufferedInputStream(
+                        new FileInputStream(new File("/tmp/HouseImputingCivilRightsInfo.dta"))), null), nullDataFile);
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
         assertEquals(5, result.getDataTable().getDataVariables().size());
@@ -114,7 +120,8 @@ public class NewDTAFileReaderTest {
     public void testFirstCategoryNonZeroOffset1() throws IOException {
         instance = new NewDTAFileReader(null, 118);
         // https://dataverse.harvard.edu/file.xhtml?fileId=3140457 Stata 14: 2018_04_06_Aggregated_dataset_v2.dta
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/2018_04_06_Aggregated_dataset_v2.dta"))), nullDataFile);
+        TabularDataIngest result = instance.read(
+                Tuple.of(new BufferedInputStream(new FileInputStream(new File("/tmp/2018_04_06_Aggregated_dataset_v2.dta"))), null), nullDataFile);
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("STATA 14", result.getDataTable().getOriginalFormatVersion());
         assertEquals(227, result.getDataTable().getDataVariables().size());
@@ -143,7 +150,8 @@ public class NewDTAFileReaderTest {
     @Test
     public void testCharacteristics() throws IOException {
         instance = new NewDTAFileReader(null, 117);
-        TabularDataIngest result = instance.read(new BufferedInputStream(new FileInputStream(new File("/tmp/15aa6802ee5-5d2ed1bf55a5.dta"))), nullDataFile);
+        TabularDataIngest result = instance.read(
+                Tuple.of(new BufferedInputStream(new FileInputStream(new File("/tmp/15aa6802ee5-5d2ed1bf55a5.dta"))), null), nullDataFile);
         assertEquals("application/x-stata", result.getDataTable().getOriginalFileFormat());
         assertEquals("STATA 13", result.getDataTable().getOriginalFormatVersion());
         assertEquals(441, result.getDataTable().getDataVariables().size());

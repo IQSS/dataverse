@@ -21,6 +21,7 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata;
 
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
+import io.vavr.Tuple2;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedInputStream;
@@ -86,15 +87,16 @@ public abstract class TabularDataFileReader {
      * (for ex., SPSS control card) and the raw data in a separate
      * file (character-delimited, fixed-field, etc.)
      *
-     * @param stream   a <code>BufferedInputStream</code>
-     *                 where a statistical data file is connected.
+     * @param streamAndFile  a <code>BufferedInputStream</code>
+     *                 where a statistical data file is connected
+     *                 and the statistical data file itself.
      * @param dataFile <code>File</code> optional parameter
      *                 representing the raw data file. For the plugins that only support
      *                 single file ingest, this should be set to null.
      * @return reading results as a <code>SDIOData</code>
      * @throws java.io.IOException if a reading error occurs.
      */
-    public abstract TabularDataIngest read(BufferedInputStream stream, File dataFile)
+    public abstract TabularDataIngest read(Tuple2<BufferedInputStream, File> streamAndFile, File dataFile)
             throws IOException;
 
 

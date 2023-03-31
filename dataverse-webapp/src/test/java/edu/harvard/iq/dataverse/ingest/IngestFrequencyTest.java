@@ -81,7 +81,7 @@ public class IngestFrequencyTest {
             TabularDataFileReader ingestPlugin = ingestService.getTabDataReaderByMimeType(type);
             assertNotNull(ingestPlugin);
 
-            TabularDataIngest tabDataIngest = ingestPlugin.read(fileInputStream, null);
+            TabularDataIngest tabDataIngest = ingestPlugin.read(Tuple.of(fileInputStream, null), null);
             File tabFile = tabDataIngest.getTabDelimitedFile();
 
             assertNotNull(tabDataIngest.getDataTable());

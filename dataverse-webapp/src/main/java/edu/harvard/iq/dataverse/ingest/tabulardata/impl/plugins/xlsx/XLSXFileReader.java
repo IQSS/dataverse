@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestError;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
+import io.vavr.Tuple2;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
@@ -80,19 +81,13 @@ public class XLSXFileReader extends TabularDataFileReader {
 
     // -------------------- LOGIC --------------------
 
-    /**
-     * Reads an XLSX file, converts it into a dataverse DataTable.
-     *
-     * @param stream  a <code>BufferedInputStream</code>.
-     * @return an <code>TabularDataIngest</code> object
-     * @throws java.io.IOException if a reading error occurs.
-     */
+    /** Reads an XLSX file, converts it into a dataverse DataTable. */
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
+    public TabularDataIngest read(Tuple2<BufferedInputStream, File> streamAndFile, File dataFile) throws IOException {
         File firstPassTempFile = null;
         try {
             firstPassTempFile = File.createTempFile("firstpass-", ".tab");
-            return getTabularDataIngest(stream, firstPassTempFile);
+            return getTabularDataIngest(streamAndFile._1(), firstPassTempFile);
         } finally {
             firstPassTempFile.delete();
         }

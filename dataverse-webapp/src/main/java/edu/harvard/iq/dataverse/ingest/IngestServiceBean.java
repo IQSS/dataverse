@@ -72,6 +72,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import io.vavr.Tuple;
 import io.vavr.control.Option;
 import org.apache.commons.lang3.StringUtils;
 import org.dataverse.unf.UNFUtil;
@@ -514,7 +515,7 @@ public class IngestServiceBean {
 
         TabularDataIngest tabDataIngest;
         try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(localFile.get()))) {
-            tabDataIngest = ingestPlugin.read(inputStream, additionalData);
+            tabDataIngest = ingestPlugin.read(Tuple.of(inputStream, localFile.get()), additionalData);
         } catch (IngestException ex) {
             dataFile.setIngestProblem();
 
