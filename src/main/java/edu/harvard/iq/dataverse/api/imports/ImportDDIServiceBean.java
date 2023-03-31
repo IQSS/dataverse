@@ -1266,37 +1266,26 @@ public class ImportDDIServiceBean {
 
     }
    
-   private void processSerStmt(XMLStreamReader xmlr, MetadataBlockDTO citation) throws XMLStreamException {
-          FieldDTO seriesName=null;
-          
-          
-          FieldDTO seriesInformation=null;
-          List<HashSet<FieldDTO>> series = new ArrayList<>();
-          /*
-          SEK - start here 3/27 update series for multiple values
-          see ddi_dataset.xml for sample xml
-          if (xmlr.getLocalName().equals("contact")) {
-                    HashSet<FieldDTO> set = new HashSet<>();
-                    addToSet(set, "datasetContactEmail", xmlr.getAttributeValue(null, "email"));
-                    addToSet(set, "datasetContactAffiliation", xmlr.getAttributeValue(null, "affiliation"));
-                    addToSet(set, "datasetContactName", parseText(xmlr));
-                    datasetContacts.add(set);
-          */
-          for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+    private void processSerStmt(XMLStreamReader xmlr, MetadataBlockDTO citation) throws XMLStreamException {
+
+        List<HashSet<FieldDTO>> series = new ArrayList<>();
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
-                if (xmlr.getLocalName().equals("serName")) {
-                   seriesName = FieldDTO.createPrimitiveFieldDTO("seriesName", parseText(xmlr));
-                  
-                } else if (xmlr.getLocalName().equals("serInfo")) {
-                    seriesInformation=FieldDTO.createPrimitiveFieldDTO("seriesInformation", parseText(xmlr) );
+                if (xmlr.getLocalName().equals("series")) {
+                    HashSet<FieldDTO> set = new HashSet<>();
+                    addToSet(set, "seriesInformation", xmlr.getAttributeValue(null, "information"));
+                    addToSet(set, "seriesName", parseText(xmlr));
+                    series.add(set);
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("serStmt")) {
-                    citation.getFields().add(FieldDTO.createCompoundFieldDTO("series",seriesName,seriesInformation ));
+                    if (!series.isEmpty()) {
+                        citation.addField(FieldDTO.createMultipleCompoundFieldDTO("series", series));
+                    }
                     return;
                 }
             }
-        }
+        }     
     }
 
     private void processDistStmt(XMLStreamReader xmlr, MetadataBlockDTO citation) throws XMLStreamException {
