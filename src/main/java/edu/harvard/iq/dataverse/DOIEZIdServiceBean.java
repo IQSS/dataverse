@@ -28,8 +28,6 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
     public DOIEZIdServiceBean() {
         logger.log(Level.FINE,"Constructor");
         try {
-            // Guessing these are System.getProperty rather than using settingsService
-            // because this is a constructor rather than a @PostConstruct method
             baseURLString = JvmSettings.EZID_API_URL.lookup();
             logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
             ezidService = new EZIDService(baseURLString);
@@ -283,6 +281,11 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
      */
     private <T> HashMap<T,T> asHashMap(Map<T,T> map) {
         return (map instanceof HashMap) ? (HashMap)map : new HashMap<>(map);
+    }
+
+    @Override
+    protected String getProviderKeyName() {
+        return "EZID";
     }
 
 }

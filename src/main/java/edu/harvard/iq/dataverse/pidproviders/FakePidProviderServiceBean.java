@@ -3,15 +3,12 @@ package edu.harvard.iq.dataverse.pidproviders;
 import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 
 @Stateless
@@ -19,13 +16,6 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
 
     private static final Logger logger = Logger.getLogger(FakePidProviderServiceBean.class.getCanonicalName());
 
-    @PostConstruct
-    private void init() {
-        String doiProvider = settingsService.getValueForKey(Key.DoiProvider, "");
-        if("FAKE".equals(doiProvider)) {
-            configured=true;
-        }
-    }
     
     //Only need to check locally
     public boolean isGlobalIdUnique(GlobalId globalId) {
@@ -81,6 +71,11 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
     @Override
     public boolean publicizeIdentifier(DvObject studyIn) {
         return true;
+    }
+    
+    @Override
+    protected String getProviderKeyName() {
+        return "FAKE";
     }
 
 }

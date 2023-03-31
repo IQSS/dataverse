@@ -11,15 +11,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
-
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
 
 /**
@@ -38,14 +35,6 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
 
     @EJB
     DOIDataCiteRegisterService doiDataCiteRegisterService;
-
-    @PostConstruct
-    private void init() {
-        String doiProvider = settingsService.getValueForKey(Key.DoiProvider, "");
-        if("DataCite".equals(doiProvider)) {
-            configured=true;
-        }
-    }
 
     @Override
     public boolean registerWhenPublished() {
@@ -257,7 +246,10 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
         return providerInfo;
     }
 
-    //PID recognition
 
 
+    @Override
+    protected String getProviderKeyName() {
+        return "DataCite";
+    }
 }
