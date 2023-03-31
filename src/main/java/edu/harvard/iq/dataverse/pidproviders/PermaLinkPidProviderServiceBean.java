@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
@@ -38,7 +39,9 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
     public static final String PERMA_PROVIDER_NAME = "PERMA";
 
     //ToDo - handle dataset/file defaults for local system
-    public static final String PERMA_RESOLVER_URL = System.getProperty("perma.baseurlstring", SystemConfig.getDataverseSiteUrlStatic());
+    public static final String PERMA_RESOLVER_URL = JvmSettings.PERMALINK_BASEURL
+        .lookupOptional()
+        .orElse(SystemConfig.getDataverseSiteUrlStatic());
     
     String authority = null; 
     private String separator = "";

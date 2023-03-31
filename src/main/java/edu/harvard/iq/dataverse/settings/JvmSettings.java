@@ -95,6 +95,10 @@ public enum JvmSettings {
     DATACITE_USERNAME(SCOPE_PID_DATACITE, "username", "doi.username"),
     DATACITE_PASSWORD(SCOPE_PID_DATACITE, "password", "doi.password"),
     
+    // PROVIDER PERMALINK
+    SCOPE_PID_PERMALINK(SCOPE_PID, "permalink"),
+    PERMALINK_BASEURL(SCOPE_PID_PERMALINK, "base-url", "perma.baseurlstring"),
+    
     // PROVIDER HANDLE
     SCOPE_PID_HANDLENET(SCOPE_PID, "handlenet"),
     HANDLENET_INDEX(SCOPE_PID_HANDLENET, "index", "dataverse.handlenet.index"),
