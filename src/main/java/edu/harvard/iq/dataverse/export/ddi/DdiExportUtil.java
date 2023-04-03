@@ -1962,9 +1962,12 @@ public class DdiExportUtil {
 
     public static void datasetPdfDDI(InputStream datafile, OutputStream outputStream) throws XMLStreamException {
         try {
-            File xsltfile = new File("ddi-to-fo.xsl");
+            File xsltfile = new File("/home/victoria/ddi-to-fo.xsl");
+            logger.info("start datasetPdfDDI");
+            //InputStream xsltfile = DdiExportUtil.class.getClassLoader().getResourceAsStream(
+            //        "edu/harvard/iq/dataverse/from-ddi-2.5/ddi-to-fo.xsl");
 
-            final FopFactory fopFactory = FopFactory.newInstance(new File(".").toURI));
+            final FopFactory fopFactory = FopFactory.newInstance(new File(".").toURI());
             FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
 
             try {
