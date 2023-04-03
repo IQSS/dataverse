@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse;
 
 import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
 import java.util.*;
@@ -18,21 +20,14 @@ public interface GlobalIdServiceBean {
     boolean alreadyExists(GlobalId globalId) throws Exception;
 
     boolean registerWhenPublished();
+    boolean canManagePID();
+    boolean isConfigured();
     
     List<String> getProviderInformation();
 
     String createIdentifier(DvObject dvo) throws Throwable;
 
     Map<String,String> getIdentifierMetadata(DvObject dvo);
-
-    /**
-     * Concatenate the parts that make up a Global Identifier.
-     * @param protocol the identifier system, e.g. "doi"
-     * @param authority the namespace that the authority manages in the identifier system
-     * @param identifier the local identifier part
-     * @return the Global Identifier, e.g. "doi:10.12345/67890"
-     */
-    String getIdentifierForLookup(String protocol, String authority, String identifier);
 
     String modifyIdentifierTargetURL(DvObject dvo) throws Exception;
 
@@ -42,18 +37,27 @@ public interface GlobalIdServiceBean {
     
     Map<String,String> getMetadataForTargetURL(DvObject dvObject);
     
-    Map<String,String> lookupMetadataFromIdentifier(String protocol, String authority, String identifier);
-    
     DvObject generateIdentifier(DvObject dvObject);
     
     String getIdentifier(DvObject dvObject);
     
     boolean publicizeIdentifier(DvObject studyIn);
     
+    String generateDatasetIdentifier(Dataset dataset);
+    String generateDataFileIdentifier(DataFile datafile);
+    boolean isGlobalIdUnique(GlobalId globalId);
+    
+    String getUrlPrefix();
+    String getSeparator();
+    
     static GlobalIdServiceBean getBean(String protocol, CommandContext ctxt) {
         final Function<CommandContext, GlobalIdServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
         if ( protocolHandler != null ) {
-            return protocolHandler.apply(ctxt);
+            GlobalIdServiceBean theBean = protocolHandler.apply(ctxt);
+            if(theBean != null && theBean.isConfigured()) {
+                logger.fine("getBean returns " + theBean.getProviderInformation().get(0) + " for protocol " + protocol);
+            }
+            return theBean;
         } else {
             logger.log(Level.SEVERE, "Unknown protocol: {0}", protocol);
             return null;
@@ -64,7 +68,112 @@ public interface GlobalIdServiceBean {
         return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
     }
     
+    public static Optional<GlobalId> parse(String identifierString) {
+        try {
+            return Optional.of(PidUtil.parseAsGlobalID(identifierString));
+        } catch ( IllegalArgumentException _iae) {
+            return Optional.empty();
+        }
+    }
+    
+    /** 
+     *   Parse a Persistent Id and set the protocol, authority, and identifier
+     * 
+     *   Example 1: doi:10.5072/FK2/BYM3IW
+     *       protocol: doi
+     *       authority: 10.5072
+     *       identifier: FK2/BYM3IW
+     * 
+     *   Example 2: hdl:1902.1/111012
+     *       protocol: hdl
+     *       authority: 1902.1
+     *       identifier: 111012
+     *
+     * @param identifierString
+     * @param separator the string that separates the authority from the identifier.
+     * @param destination the global id that will contain the parsed data.
+     * @return {@code destination}, after its fields have been updated, or
+     *         {@code null} if parsing failed.
+     */
+    public GlobalId parsePersistentId(String identifierString);
+    public GlobalId parsePersistentId(String protocol, String authority, String identifier);
+
+    
+    
+    public static boolean isValidGlobalId(String protocol, String authority, String identifier) {
+        if (protocol == null || authority == null || identifier == null) {
+            return false;
+        }
+        if(!authority.equals(GlobalIdServiceBean.formatIdentifierString(authority))) {
+            return false;
+        }
+        if (GlobalIdServiceBean.testforNullTerminator(authority)) {
+            return false;
+        }
+        if(!identifier.equals(GlobalIdServiceBean.formatIdentifierString(identifier))) {
+            return false;
+        }
+        if (GlobalIdServiceBean.testforNullTerminator(identifier)) {
+            return false;
+        }
+        return true;
+    }
+    
+    static String formatIdentifierString(String str){
+        
+        if (str == null){
+            return null;
+        }
+        // remove whitespace, single quotes, and semicolons
+        return str.replaceAll("\\s+|'|;","");  
+        
+        /*
+        <   (%3C)
+>   (%3E)
+{   (%7B)
+}   (%7D)
+^   (%5E)
+[   (%5B)
+]   (%5D)
+`   (%60)
+|   (%7C)
+\   (%5C)
++
+        */
+        // http://www.doi.org/doi_handbook/2_Numbering.html
+    }
+    
+    static boolean testforNullTerminator(String str){
+        if(str == null) {
+            return false;
+        }
+        return str.indexOf('\u0000') > 0;
+    }
+    
+    static boolean checkDOIAuthority(String doiAuthority){
+        
+        if (doiAuthority==null){
+            return false;
+        }
+        
+        if (!(doiAuthority.startsWith("10."))){
+            return false;
+        }
+        
+        return true;
+    }
 }
+
+
+/*
+ * ToDo - replace this with a mechanism like BrandingUtilHelper that would read
+ * the config and create PidProviders, one per set of config values and serve
+ * those as needed. The help has to be a bean to autostart and to hand the
+ * required service beans to the PidProviders. That may boil down to just the
+ * dvObjectService (to check for local identifier conflicts) since it will be
+ * the helper that has to read settings/get systewmConfig values.
+ * 
+ */
 
 /**
  * Static utility class for dispatching implementing beans, based on protocol and providers.
@@ -86,5 +195,7 @@ class BeanDispatcher {
                     return null;
             }
         });
+        
+        DISPATCHER.put(PermaLinkPidProviderServiceBean.PERMA_PROTOCOL, ctxt->ctxt.permaLinkProvider() );
     }
 }

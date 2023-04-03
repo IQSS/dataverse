@@ -6,6 +6,7 @@ import edu.ucsb.nceas.ezid.EZIDServiceRequest;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.ejb.Stateless;
 
 /**
@@ -13,7 +14,7 @@ import javax.ejb.Stateless;
  * @author skraffmiller
  */
 @Stateless
-public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
+public class DOIEZIdServiceBean extends DOIServiceBean {
 
     EZIDService ezidService;
     EZIDServiceRequest ezidServiceRequest;
@@ -23,22 +24,33 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
     // get username and password from system properties
     private String USERNAME = "";
     private String PASSWORD = "";
-
     public DOIEZIdServiceBean() {
         logger.log(Level.FINE,"Constructor");
-        baseURLString = System.getProperty("doi.baseurlstring");
-        ezidService = new EZIDService(baseURLString);
-        USERNAME = System.getProperty("doi.username");
-        PASSWORD = System.getProperty("doi.password");
-        logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
         try {
+            // Guessing these are System.getProperty rather than using settingsService
+            // because this is a constructor rather than a @PostConstruct method
+            String urlFromProperty = System.getProperty("doi.baseurlstring");
+            if(urlFromProperty!=null) {
+                baseURLString = urlFromProperty;
+            }
+            logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
+            ezidService = new EZIDService(baseURLString);
+            USERNAME = System.getProperty("doi.username");
+            PASSWORD = System.getProperty("doi.password");
             ezidService.login(USERNAME, PASSWORD);
+            configured = true;
         } catch (EZIDException e) {
-            logger.log(Level.WARNING, "login failed ");
-            logger.log(Level.WARNING, "Exception String: {0}", e.toString());
-            logger.log(Level.WARNING, "localized message: {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause: ", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            // As a stateless bean, this constructor runs even when we're not using ezid, so
+            // lowering the log level in that case
+            // (Future work is expected to change PidProviders from being stateless beans
+            // going forward and at that point we won't be initializing this unless it's
+            // configured.
+            Level level = (baseURLString.contains("ezid")) ? Level.WARNING : Level.FINE;
+            logger.log(level, "login failed ");
+            logger.log(level, "Exception String: {0}", e.toString());
+            logger.log(level, "localized message: {0}", e.getLocalizedMessage());
+            logger.log(level, "cause: ", e.getCause());
+            logger.log(level, "message {0}", e.getMessage());
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Other Error on ezidService.login(USERNAME, PASSWORD) - not EZIDException ", e.getMessage());
         }
@@ -97,32 +109,6 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.WARNING, "cause", e.getCause());
             logger.log(Level.WARNING, "message {0}", e.getMessage());
-            return metadata;
-        }
-        return metadata;
-    }
-
-    /**
-     * Looks up the metadata for a Global Identifier
-     *
-     * @param protocol the identifier system, e.g. "doi"
-     * @param authority the namespace that the authority manages in the
-     * identifier system
-     * identifier part
-     * @param identifier the local identifier part
-     * @return a Map of metadata. It is empty when the lookup failed, e.g. when
-     * the identifier does not exist.
-     */
-    @Override
-    public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String identifier) {
-        logger.log(Level.FINE,"lookupMetadataFromIdentifier");
-        String identifierOut = getIdentifierForLookup(protocol, authority, identifier);
-        HashMap<String, String> metadata = new HashMap<>();
-        try {
-            metadata = ezidService.getMetadata(identifierOut);
-        } catch (EZIDException e) {
-            logger.log(Level.FINE, "None existing so we can use this identifier");
-            logger.log(Level.FINE, "identifier: {0}", identifierOut);
             return metadata;
         }
         return metadata;
@@ -299,6 +285,11 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
      */
     private <T> HashMap<T,T> asHashMap(Map<T,T> map) {
         return (map instanceof HashMap) ? (HashMap)map : new HashMap<>(map);
+    }
+
+    @Override
+    protected String getProviderKeyName() {
+        return "EZID";
     }
 
 }

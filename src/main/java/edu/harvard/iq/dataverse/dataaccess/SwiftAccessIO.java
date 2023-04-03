@@ -22,7 +22,10 @@ import java.util.Collection;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.javaswift.joss.client.factory.AccountFactory;
@@ -864,13 +867,16 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
+    private String getSwiftContainerName(Dataset dataset) {
+        String authorityNoSlashes = dataset.getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
+        return dataset.getProtocolForFileStorage() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
+                swiftFolderPathSeparator + dataset.getIdentifierForFileStorage();
+    }
+
     @Override
     public String getSwiftContainerName() {
         if (dvObject instanceof DataFile) {
-            String authorityNoSlashes = this.getDataFile().getOwner().getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
-            return this.getDataFile().getOwner().getProtocolForFileStorage() + swiftFolderPathSeparator
-                   +            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifierForFileStorage();
+            return getSwiftContainerName(this.getDataFile().getOwner());
         }
         return null;
      }
@@ -893,5 +899,59 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         mac.init(signingKey);
         return toHexString(mac.doFinal(data.getBytes()));
     }
-     
+
+    private List<String> listAllFiles() throws IOException {
+        if (!this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This SwiftAccessIO object hasn't been properly initialized.");
+        }
+        String prefix = getSwiftContainerName(dataset) + swiftFolderPathSeparator;
+        
+        Collection<StoredObject> items; 
+        String lastItemName = null; 
+        List<String> ret = new ArrayList<>();
+
+        while ((items = this.swiftContainer.list(prefix, lastItemName, LIST_PAGE_LIMIT)) != null && items.size() > 0) {
+            for (StoredObject item : items) {
+                lastItemName = item.getName().substring(prefix.length());
+                ret.add(lastItemName);
+            }
+        }
+
+        return ret;
+    }
+
+    private void deleteFile(String fileName) throws IOException {
+        if (!this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This SwiftAccessIO object hasn't been properly initialized.");
+        }
+        String prefix = getSwiftContainerName(dataset) + swiftFolderPathSeparator;
+        
+        StoredObject fileObject = this.swiftContainer.getObject(prefix + fileName);
+
+        if (!fileObject.exists()) {
+            throw new FileNotFoundException("SwiftAccessIO/Direct Access: " + fileName + " does not exist");
+        }
+
+        fileObject.delete();
+    }
+
+    @Override
+    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
+        List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+        if (dryRun) {
+            return toDelete;
+        }
+        for (String f : toDelete) {
+            this.deleteFile(f);
+        }
+        return toDelete;
+    }
 }

@@ -44,6 +44,10 @@ public enum JvmSettings {
     FQDN(PREFIX, "fqdn"),
     SITE_URL(PREFIX, "siteUrl"),
     
+    // FILES SETTINGS
+    SCOPE_FILES(PREFIX, "files"),
+    FILES_DIRECTORY(SCOPE_FILES, "directory"),
+    
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),
     SOLR_HOST(SCOPE_SOLR, "host"),
@@ -63,6 +67,17 @@ public enum JvmSettings {
     // API SETTINGS
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
+
+    // SIGNPOSTING SETTINGS
+    SCOPE_SIGNPOSTING(PREFIX, "signposting"),
+    SIGNPOSTING_LEVEL1_AUTHOR_LIMIT(SCOPE_SIGNPOSTING, "level1-author-limit"),
+    SIGNPOSTING_LEVEL1_ITEM_LIMIT(SCOPE_SIGNPOSTING, "level1-item-limit"),
+
+    // FEATURE FLAGS SETTINGS
+    SCOPE_FLAGS(PREFIX, "feature"),
+    // This is a special placeholder-type setting entry, to be filled in by FeatureFlag entries during lookup.
+    // Avoids adding flag entries twice.
+    FEATURE_FLAG(SCOPE_FLAGS),
     
     ;
     

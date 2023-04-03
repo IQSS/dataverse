@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlockFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetRootCommand;
@@ -31,6 +32,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,6 +70,8 @@ public class DataversesTest {
     private DataverseServiceBean dataverseService;
     @Mock
     private SwordServiceBean swordService;
+    @Mock
+    private ContainerRequestContext containerRequestContext;
 
     @InjectMocks
     private Dataverses target;
@@ -84,13 +88,14 @@ public class DataversesTest {
         Mockito.lenient().when(dataverseService.findByAlias(VALID_DATAVERSE.getAlias())).thenReturn(VALID_DATAVERSE);
         Mockito.lenient().when(httpRequest.getHeader("X-Dataverse-key")).thenReturn(UUID.randomUUID().toString());
         Mockito.lenient().when(privateUrlSvc.getPrivateUrlUserFromToken(Mockito.anyString())).thenReturn(new PrivateUrlUser(0));
+        Mockito.lenient().when(containerRequestContext.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER)).thenReturn(new AuthenticatedUser());
     }
 
     @Test
     public void listMetadataBlockFacets_should_return_404_when_dataverse_is_not_found() {
         String dataverseAlias = UUID.randomUUID().toString();
         Mockito.when(dataverseService.findByAlias(dataverseAlias)).thenReturn(null);
-        Response result = target.listMetadataBlockFacets(dataverseAlias);
+        Response result = target.listMetadataBlockFacets(containerRequestContext, dataverseAlias);
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(404));
         Mockito.verifyNoMoreInteractions(engineSvc);
@@ -106,7 +111,7 @@ public class DataversesTest {
         dataverseMetadataBlockFacet.setMetadataBlock(metadataBlock);
         Mockito.when(engineSvc.submit(Mockito.any(ListMetadataBlockFacetsCommand.class))).thenReturn(Arrays.asList(dataverseMetadataBlockFacet));
 
-        Response response = target.listMetadataBlockFacets(VALID_DATAVERSE.getAlias());
+        Response response = target.listMetadataBlockFacets(containerRequestContext, VALID_DATAVERSE.getAlias());
 
         MatcherAssert.assertThat(response.getStatus(), Matchers.is(200));
         MatcherAssert.assertThat(response.getEntity(), Matchers.notNullValue());
@@ -125,7 +130,7 @@ public class DataversesTest {
     public void listMetadataBlockFacets_should_return_empty_list_when_metadata_block_facet_is_null() throws Exception{
         Mockito.when(engineSvc.submit(Mockito.any(ListMetadataBlockFacetsCommand.class))).thenReturn(null);
 
-        Response response = target.listMetadataBlockFacets(VALID_DATAVERSE.getAlias());
+        Response response = target.listMetadataBlockFacets(containerRequestContext, VALID_DATAVERSE.getAlias());
 
         MatcherAssert.assertThat(response.getStatus(), Matchers.is(200));
         DataverseMetadataBlockFacetDTO result = (DataverseMetadataBlockFacetDTO)response.getEntity();
@@ -141,7 +146,7 @@ public class DataversesTest {
     public void setMetadataBlockFacets_should_return_404_when_dataverse_is_not_found() {
         String dataverseAlias = UUID.randomUUID().toString();
         Mockito.when(dataverseService.findByAlias(dataverseAlias)).thenReturn(null);
-        Response result = target.setMetadataBlockFacets(dataverseAlias, Collections.emptyList());
+        Response result = target.setMetadataBlockFacets(containerRequestContext, dataverseAlias, Collections.emptyList());
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(404));
         Mockito.verifyNoMoreInteractions(engineSvc);
@@ -154,7 +159,7 @@ public class DataversesTest {
         Mockito.when(dataverse.isMetadataBlockFacetRoot()).thenReturn(false);
         Mockito.when(dataverseService.findByAlias(dataverseAlias)).thenReturn(dataverse);
 
-        Response result = target.setMetadataBlockFacets(dataverseAlias, Collections.emptyList());
+        Response result = target.setMetadataBlockFacets(containerRequestContext, dataverseAlias, Collections.emptyList());
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(400));
         Mockito.verifyNoMoreInteractions(engineSvc);
@@ -165,7 +170,7 @@ public class DataversesTest {
         Mockito.when(metadataBlockSvc.findByName("valid_block")).thenReturn(new MetadataBlock());
         Mockito.when(metadataBlockSvc.findByName("invalid_block")).thenReturn(null);
         List<String> metadataBlocks = Arrays.asList("valid_block", "invalid_block");
-        Response result = target.setMetadataBlockFacets(VALID_DATAVERSE.getAlias(), metadataBlocks);
+        Response result = target.setMetadataBlockFacets(containerRequestContext, VALID_DATAVERSE.getAlias(), metadataBlocks);
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(400));
         Mockito.verifyNoMoreInteractions(engineSvc);
@@ -176,7 +181,7 @@ public class DataversesTest {
         MetadataBlock validBlock = new MetadataBlock();
         Mockito.when(metadataBlockSvc.findByName("valid_block")).thenReturn(validBlock);
         List<String> metadataBlocks = Arrays.asList("valid_block");
-        Response result = target.setMetadataBlockFacets(VALID_DATAVERSE.getAlias(), metadataBlocks);
+        Response result = target.setMetadataBlockFacets(containerRequestContext, VALID_DATAVERSE.getAlias(), metadataBlocks);
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(200));
         ArgumentCaptor<UpdateMetadataBlockFacetsCommand> updateCommand = ArgumentCaptor.forClass(UpdateMetadataBlockFacetsCommand.class);
@@ -190,7 +195,7 @@ public class DataversesTest {
 
     @Test
     public void setMetadataBlockFacets_should_support_empty_metadatablock_list() throws Exception{
-        Response result = target.setMetadataBlockFacets(VALID_DATAVERSE.getAlias(), Collections.emptyList());
+        Response result = target.setMetadataBlockFacets(containerRequestContext, VALID_DATAVERSE.getAlias(), Collections.emptyList());
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(200));
         Mockito.verify(engineSvc).submit(Mockito.any(UpdateMetadataBlockFacetsCommand.class));
@@ -200,7 +205,7 @@ public class DataversesTest {
     public void updateMetadataBlockFacetsRoot_should_return_404_when_dataverse_is_not_found() {
         String dataverseAlias = UUID.randomUUID().toString();
         Mockito.when(dataverseService.findByAlias(dataverseAlias)).thenReturn(null);
-        Response result = target.updateMetadataBlockFacetsRoot(dataverseAlias, "true");
+        Response result = target.updateMetadataBlockFacetsRoot(containerRequestContext, dataverseAlias, "true");
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(404));
         Mockito.verifyNoMoreInteractions(engineSvc);
@@ -208,7 +213,7 @@ public class DataversesTest {
 
     @Test
     public void updateMetadataBlockFacetsRoot_should_return_400_when_invalid_boolean() throws Exception{
-        Response result = target.updateMetadataBlockFacetsRoot(VALID_DATAVERSE.getAlias(), "invalid");
+        Response result = target.updateMetadataBlockFacetsRoot(containerRequestContext, VALID_DATAVERSE.getAlias(), "invalid");
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(400));
         Mockito.verifyNoMoreInteractions(engineSvc);
@@ -217,7 +222,7 @@ public class DataversesTest {
     @Test
     public void updateMetadataBlockFacetsRoot_should_return_200_and_make_no_update_when_dataverse_is_found_and_facet_root_has_not_changed() {
         // VALID_DATAVERSE.metadataBlockFacetRoot is true
-        Response result = target.updateMetadataBlockFacetsRoot(VALID_DATAVERSE.getAlias(), "true");
+        Response result = target.updateMetadataBlockFacetsRoot(containerRequestContext, VALID_DATAVERSE.getAlias(), "true");
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(200));
         Mockito.verifyZeroInteractions(engineSvc);
@@ -226,7 +231,7 @@ public class DataversesTest {
     @Test
     public void updateMetadataBlockFacetsRoot_should_return_200_and_execute_command_when_dataverse_is_found_and_facet_root_has_changed() throws Exception {
         // VALID_DATAVERSE.metadataBlockFacetRoot is true
-        Response result = target.updateMetadataBlockFacetsRoot(VALID_DATAVERSE.getAlias(), "false");
+        Response result = target.updateMetadataBlockFacetsRoot(containerRequestContext, VALID_DATAVERSE.getAlias(), "false");
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(200));
         ArgumentCaptor<UpdateMetadataBlockFacetRootCommand> updateRootCommand = ArgumentCaptor.forClass(UpdateMetadataBlockFacetRootCommand.class);

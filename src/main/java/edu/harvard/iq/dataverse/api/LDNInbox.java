@@ -1,9 +1,12 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -131,13 +134,13 @@ public class LDNInbox extends AbstractApiBean {
                                     .getString("@id");
                             if (citedResource.getString("@type").equals(JsonLDTerm.schemaOrg("Dataset").getUrl())) {
                                 logger.fine("Raw PID: " + pid);
-                                if (pid.startsWith(GlobalId.DOI_RESOLVER_URL)) {
-                                    pid = pid.replace(GlobalId.DOI_RESOLVER_URL, GlobalId.DOI_PROTOCOL + ":");
-                                } else if (pid.startsWith(GlobalId.HDL_RESOLVER_URL)) {
-                                    pid = pid.replace(GlobalId.HDL_RESOLVER_URL, GlobalId.HDL_PROTOCOL + ":");
+                                if (pid.startsWith(DOIServiceBean.DOI_RESOLVER_URL)) {
+                                    pid = pid.replace(DOIServiceBean.DOI_RESOLVER_URL, DOIServiceBean.DOI_PROTOCOL + ":");
+                                } else if (pid.startsWith(HandlenetServiceBean.HDL_RESOLVER_URL)) {
+                                    pid = pid.replace(HandlenetServiceBean.HDL_RESOLVER_URL, HandlenetServiceBean.HDL_PROTOCOL + ":");
                                 }
                                 logger.fine("Protocol PID: " + pid);
-                                Optional<GlobalId> id = GlobalId.parse(pid);
+                                Optional<GlobalId> id = GlobalIdServiceBean.parse(pid);
                                 Dataset dataset = datasetSvc.findByGlobalId(pid);
                                 if (dataset != null) {
                                     JsonObject citingResource = Json.createObjectBuilder().add("@id", citingPID)

@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import com.jayway.restassured.path.xml.XmlPath;
+import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -743,10 +744,11 @@ public class UtilIT {
     }
 
     static Response downloadAuxFile(Long fileId, String formatTag, String formatVersion, String apiToken) {
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
-        return response;
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
     }
 
     static Response listAuxFilesByOrigin(Long fileId, String origin, String apiToken) {
@@ -793,7 +795,7 @@ public class UtilIT {
     static Response replaceFile(String fileIdOrPersistentId, String pathToFile, String jsonAsString, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -806,11 +808,17 @@ public class UtilIT {
         return requestSpecification
                 .post("/api/files/" + idInPath + "/replace" + optionalQueryParam);
     }
+
+    static Response deleteFileApi(Integer fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/files/" + fileId);
+    }
     
     static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -935,7 +943,7 @@ public class UtilIT {
     static Response downloadFiles(String datasetIdOrPersistentId, String datasetVersion, DownloadFormat format, String apiToken) {
         String idInPath = datasetIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(datasetIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
         }
@@ -968,7 +976,7 @@ public class UtilIT {
     static Response getFileMetadata(String fileIdOrPersistentId, String optionalFormat, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + fileIdOrPersistentId;
         }
@@ -985,7 +993,7 @@ public class UtilIT {
     static Response getFileMetadata(String fileIdOrPersistentId, String optionalFormat) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -996,6 +1004,12 @@ public class UtilIT {
         return given()
                 .urlEncodingEnabled(false)
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + optionalQueryParam);
+    }
+    
+    static Response getFileData(String fileId, String apiToken) {       
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId );
     }
 
     static Response testIngest(String fileName, String fileType) {
@@ -1170,7 +1184,14 @@ public class UtilIT {
                 .post("/api/files/" + fileId + "/uningest/?key=" + apiToken);
         return uningestFileResponse;
     }
-    
+
+    public static Response extractNcml(Long fileId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/files/" + fileId + "/extractNcml");
+        return response;
+    }
+
     //I don't understand why this blows up when I remove the key
     public static Response getDataFileMetadata(Long fileId, String apiToken) {
         Response fileResponse = given()
@@ -1493,7 +1514,7 @@ public class UtilIT {
     static Response restrictFile(String fileIdOrPersistentId, boolean restrict, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -1507,7 +1528,7 @@ public class UtilIT {
     static Response allowAccessRequests(String datasetIdOrPersistentId, boolean allowRequests, String apiToken) {
         String idInPath = datasetIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(datasetIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
         }
@@ -1523,7 +1544,7 @@ public class UtilIT {
         System.out.print ("Reuest file acceess + apiToken: " + apiToken);
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -1541,7 +1562,7 @@ public class UtilIT {
     static Response grantFileAccess(String fileIdOrPersistentId, String identifier, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -1557,7 +1578,7 @@ public class UtilIT {
     static Response getAccessRequestList(String fileIdOrPersistentId, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -1573,7 +1594,7 @@ public class UtilIT {
     static Response rejectFileAccessRequest(String fileIdOrPersistentId, String identifier, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -1605,7 +1626,7 @@ public class UtilIT {
         }
         String idInPath = idOrPersistentIdOfDatasetToMove; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDatasetToMove)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDatasetToMove)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDatasetToMove;
         }
@@ -1723,7 +1744,7 @@ public class UtilIT {
         logger.info("Getting Dataset Versions");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
@@ -1740,7 +1761,7 @@ public class UtilIT {
         logger.info("Getting Provenance JSON");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
@@ -1756,7 +1777,7 @@ public class UtilIT {
          logger.info("Getting Provenance Free Form");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
@@ -1772,7 +1793,7 @@ public class UtilIT {
         logger.info("Uploading Provenance JSON");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
@@ -1794,7 +1815,7 @@ public class UtilIT {
         //TODO: Repeated code, refactor
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
@@ -1810,7 +1831,7 @@ public class UtilIT {
         logger.info("Uploading Provenance Free Form");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
@@ -1831,7 +1852,7 @@ public class UtilIT {
 //        //TODO: Repeated code, refactor
 //        String idInPath = idOrPersistentId; // Assume it's a number.
 //        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-//        if (!NumberUtils.isNumber(idOrPersistentId)) {
+//        if (!NumberUtils.isCreatable(idOrPersistentId)) {
 //            idInPath = ":persistentId";
 //            optionalQueryParam = "?persistentId=" + idOrPersistentId;
 //        }
@@ -2111,7 +2132,7 @@ public class UtilIT {
     static Response dataCaptureModuleChecksumValidation(String datasetPersistentId, JsonObject jsonObject, String apiToken) {
         String persistentIdInPath = datasetPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If datasetPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(datasetPersistentId)) {
+        if (!NumberUtils.isCreatable(datasetPersistentId)) {
             persistentIdInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + datasetPersistentId;
         }
@@ -2158,7 +2179,7 @@ public class UtilIT {
     static Response getExternalToolsForDataset(String idOrPersistentIdOfDataset, String type, String apiToken) {
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -2173,7 +2194,7 @@ public class UtilIT {
     static Response getExternalToolsForFile(String idOrPersistentIdOfFile, String type, String apiToken) {
         String idInPath = idOrPersistentIdOfFile; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfFile)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfFile)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfFile;
         }
@@ -2549,7 +2570,7 @@ public class UtilIT {
     static Response checkDatasetLocks(String idOrPersistentId, String lockType, String apiToken) {
         String idInPath = idOrPersistentId; // Assume it's a number.
         String queryParams = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             queryParams = "?persistentId=" + idOrPersistentId;
         }
@@ -2718,7 +2739,7 @@ public class UtilIT {
         System.out.println("metric: " + metric);
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -2734,7 +2755,7 @@ public class UtilIT {
         System.out.println("metric: " + metric);
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -2750,7 +2771,7 @@ public class UtilIT {
         System.out.println("metric: " + metric);
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -2766,7 +2787,7 @@ public class UtilIT {
 
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -2779,7 +2800,7 @@ public class UtilIT {
 
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -3061,7 +3082,7 @@ public class UtilIT {
     static Response archiveDataset(String idOrPersistentIdOfDataset, String version, String apiToken) {
         String idInPath = idOrPersistentIdOfDataset;
         String optionalQueryParam = "";
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -3122,5 +3143,31 @@ public class UtilIT {
 
 
         return importDDI.post(postString);
+    }
+
+    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json; charset=utf-8")
+                .queryParam("role_ids", roleIds)
+                .queryParam("dvobject_types", MyDataFilterParams.defaultDvObjectTypes)
+                .queryParam("published_states", MyDataFilterParams.defaultPublishedStates)
+                .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
+        return response;
+    }
+
+    static Response createSignedUrl(String apiToken, String apiPath, String username) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(String.format("{\"url\":\"%s\",\"timeOut\":35,\"user\":\"%s\"}", getRestAssuredBaseUri() + apiPath, username))
+                .contentType("application/json")
+                .post("/api/admin/requestSignedUrl");
+        return response;
+    }
+
+    static String getSignedUrlFromResponse(Response createSignedUrlResponse) {
+        JsonPath jsonPath = JsonPath.from(createSignedUrlResponse.body().asString());
+        String signedUrl = jsonPath.getString("data.signedUrl");
+        return signedUrl;
     }
 }

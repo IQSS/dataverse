@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import java.io.IOException;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -57,10 +58,10 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //if so, leave.
             if (target.getIdentifier() == null || target.getIdentifier().isEmpty()) {
                 if (target.isInstanceofDataset()) {
-                    target.setIdentifier(ctxt.datasets().generateDatasetIdentifier((Dataset) target, idServiceBean));
+                    target.setIdentifier(idServiceBean.generateDatasetIdentifier((Dataset) target));
 
                 } else {
-                    target.setIdentifier(ctxt.files().generateDataFileIdentifier((DataFile) target, idServiceBean));
+                    target.setIdentifier(idServiceBean.generateDataFileIdentifier((DataFile) target));
                 }
                 if (target.getProtocol() == null) {
                     target.setProtocol(protocol);
@@ -94,7 +95,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     Dataset dataset = (Dataset) target;
                     for (DataFile df : dataset.getFiles()) {
                         if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
-                            df.setIdentifier(ctxt.files().generateDataFileIdentifier(df, idServiceBean));
+                            df.setIdentifier(idServiceBean.generateDataFileIdentifier(df));
                             if (df.getProtocol() == null || df.getProtocol().isEmpty()) {
                                 df.setProtocol(protocol);
                             }
@@ -151,7 +152,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
     private Boolean processMigrateHandle (CommandContext ctxt){
         boolean retval = true;
         if(!target.isInstanceofDataset()) return false;
-        if(!target.getProtocol().equals(GlobalId.HDL_PROTOCOL)) return false;
+        if(!target.getProtocol().equals(HandlenetServiceBean.HDL_PROTOCOL)) return false;
         
         AlternativePersistentIdentifier api = new AlternativePersistentIdentifier();
         api.setProtocol(target.getProtocol());
