@@ -78,8 +78,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
         updateFiles(getTimestamp(), ctxt);
 
-        // 
-        // TODO: Not sure if this .merge() is necessary here - ? 
+        //
+        // TODO: Not sure if this .merge() is necessary here - ?
         // I'm moving a bunch of code from PublishDatasetCommand here; and this .merge()
         // comes from there. There's a chance that the final merge, at the end of this
         // command, would be sufficient. -- L.A. Sep. 6 2017
@@ -147,7 +147,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      */
     private void updateParentDataversesSubjectsField(Dataset savedDataset, CommandContext ctxt) {
         for (DatasetField dsf : savedDataset.getLatestVersion().getDatasetFields()) {
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
+            if (dsf.getTypeName().equals(DatasetFieldConstant.subject)) {
                 Dataverse dv = savedDataset.getOwner();
                 while (dv != null) {
                     if (dv.getDataverseSubjects().addAll(dsf.getControlledVocabularyValues())) {
@@ -170,14 +170,14 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol);
                 String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat);
                 boolean isFilePIDsEnabled = ctxt.settings().isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled);
-                // We will skip trying to register the global identifiers for datafiles 
-                // if "dependent" file-level identifiers are requested, AND the naming 
+                // We will skip trying to register the global identifiers for datafiles
+                // if "dependent" file-level identifiers are requested, AND the naming
                 // protocol of the dataset global id is different from the
-                // one currently configured for the Dataverse. This is to specifically 
-                // address the issue with the datasets with handle ids registered, 
+                // one currently configured for the Dataverse. This is to specifically
+                // address the issue with the datasets with handle ids registered,
                 // that are currently configured to use DOI.
                 // ...
-                // Additionaly in 4.9.3 we have added a system variable to disable 
+                // Additionaly in 4.9.3 we have added a system variable to disable
                 // registering file PIDs on the installation level.
                 if ((currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT"))//TODO(pm) - check authority too
                         && isFilePIDsEnabled) {
@@ -216,17 +216,17 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
 
             if (dataFile.getFileMetadata().getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
-                // A couple things need to happen if the file has been restricted: 
-                // 1. If there's a map layer associated with this shape file, or 
-                //    tabular-with-geo-tag file, all that map layer data (that 
+                // A couple things need to happen if the file has been restricted:
+                // 1. If there's a map layer associated with this shape file, or
+                //    tabular-with-geo-tag file, all that map layer data (that
                 //    includes most of the actual data in the file!) need to be
-                //    removed from WorldMap and GeoConnect, since anyone can get 
+                //    removed from WorldMap and GeoConnect, since anyone can get
                 //    download the data from there;
-                // 2. If this (image) file has been assigned as the dedicated 
-                //    thumbnail for the dataset, we need to remove that assignment, 
-                //    now that the file is restricted. 
+                // 2. If this (image) file has been assigned as the dedicated
+                //    thumbnail for the dataset, we need to remove that assignment,
+                //    now that the file is restricted.
 
-                // Map layer: 
+                // Map layer:
 
                 if (ctxt.mapLayerMetadata().findMetadataByDatafile(dataFile) != null) {
                     // (We need an AuthenticatedUser in order to produce a WorldMap token!)
@@ -237,17 +237,17 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                         ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(dataFile, authenticatedUser);
 
                         // If that was successful, delete the layer on the Dataverse side as well:
-                        //SEK 4/20/2017                
+                        //SEK 4/20/2017
                         //Command to delete from Dataverse side
                         ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));
 
-                        // RP - Bit of hack, update the datafile here b/c the reference to the datafile 
-                        // is not being passed all the way up/down the chain.   
+                        // RP - Bit of hack, update the datafile here b/c the reference to the datafile
+                        // is not being passed all the way up/down the chain.
                         //
                         dataFile.setPreviewImageAvailable(false);
 
                     } catch (IOException ioex) {
-                        // We are not going to treat it as a fatal condition and bail out, 
+                        // We are not going to treat it as a fatal condition and bail out,
                         // but we will send a notification to the user, warning them about
                         // the layer still being out there, un-deleted:
                         ctxt.notifications().sendNotificationWithEmail(authenticatedUser, getTimestamp(), NotificationType.MAPLAYERDELETEFAILED, dataFile.getFileMetadata().getId(), NotificationObjectType.FILEMETADATA);
@@ -255,7 +255,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
                 }
 
-                // Dataset thumbnail assignment: 
+                // Dataset thumbnail assignment:
 
                 if (dataFile.equals(getDataset().getThumbnailFile())) {
                     getDataset().setThumbnailFile(null);

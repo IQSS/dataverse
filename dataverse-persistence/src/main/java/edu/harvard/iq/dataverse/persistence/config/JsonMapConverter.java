@@ -14,14 +14,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Converter
-public class JsonMapConverter implements AttributeConverter<Map<String, String>, String> {
+public class JsonMapConverter implements AttributeConverter<Map<String, Object>, String> {
     private static final Logger logger = LoggerFactory.getLogger(JsonMapConverter.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final String EMPTY_VALUE = "{}";
 
     @Override
-    public String convertToDatabaseColumn(Map<String, String> attribute) {
+    public String convertToDatabaseColumn(Map<String, Object> attribute) {
         try {
             return attribute.isEmpty() ? EMPTY_VALUE : objectMapper.writeValueAsString(attribute);
         } catch (JsonProcessingException jpe) {
@@ -31,11 +31,11 @@ public class JsonMapConverter implements AttributeConverter<Map<String, String>,
     }
 
     @Override
-    public Map<String, String> convertToEntityAttribute(String dbData) {
+    public Map<String, Object> convertToEntityAttribute(String dbData) {
         try {
             return EMPTY_VALUE.equals(dbData)
                     ? Collections.emptyMap()
-                    : objectMapper.readValue(dbData, new TypeReference<HashMap<String, String>>() {});
+                    : objectMapper.readValue(dbData, new TypeReference<HashMap<String, Object>>() {});
         } catch (IOException ioe) {
             logger.warn("Problem with converting to attribute: " + dbData, ioe);
             return Collections.emptyMap();

@@ -115,11 +115,11 @@ public class MockMetadataFactory {
         List<DatasetField> children = authorField.getDatasetFieldsChildren();
 
         children.stream()
-                .filter(f -> DatasetFieldConstant.authorName.equals(f.getDatasetFieldType().getName()))
+                .filter(f -> DatasetFieldConstant.authorName.equals(f.getTypeName()))
                 .forEach(f -> f.setFieldValue(authorName));
 
         children.stream()
-                .filter(f -> DatasetFieldConstant.authorAffiliation.equals(f.getDatasetFieldType().getName()))
+                .filter(f -> DatasetFieldConstant.authorAffiliation.equals(f.getTypeName()))
                 .forEach(f -> f.setFieldValue(authorAffiliation));
 
         return authorField.getDatasetFieldsChildren();
@@ -206,11 +206,11 @@ public class MockMetadataFactory {
         List<DatasetField> children = seriesField.getDatasetFieldsChildren();
 
         children.stream()
-            .filter(f -> DatasetFieldConstant.seriesName.equals(f.getDatasetFieldType().getName()))
+            .filter(f -> DatasetFieldConstant.seriesName.equals(f.getTypeName()))
             .forEach(f -> f.setFieldValue(seriesName));
 
         children.stream()
-            .filter(f -> DatasetFieldConstant.seriesInformation.equals(f.getDatasetFieldType().getName()))
+            .filter(f -> DatasetFieldConstant.seriesInformation.equals(f.getTypeName()))
             .forEach(f -> f.setFieldValue(seriesInformation));
 
         return seriesField;

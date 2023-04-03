@@ -168,7 +168,7 @@ public class DataCiteResourceCreator {
     private String extractParentFieldName(Map<String, DatasetField> fields) {
         return fields.values().stream()
                 .filter(f -> f.getDatasetFieldParent().isEmpty())
-                .map(f -> f.getDatasetFieldType().getName())
+                .map(DatasetField::getTypeName)
                 .findFirst().orElse(null);
     }
 

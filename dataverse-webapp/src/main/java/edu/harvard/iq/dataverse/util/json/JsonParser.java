@@ -523,7 +523,7 @@ public class JsonParser {
 
                     if (childField != null) {
                         if (!compoundType.getChildDatasetFieldTypes().contains(childField.getDatasetFieldType())) {
-                            throw new JsonParseException("field " + childField.getDatasetFieldType().getName() + " is not a child of " + compoundType.getName());
+                            throw new JsonParseException("field " + childField.getTypeName() + " is not a child of " + compoundType.getName());
                         }
 
                         parentField.getDatasetFieldsChildren().add(childField);

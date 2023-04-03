@@ -228,7 +228,7 @@ public class DatasetField implements Serializable, ValidatableField {
     }
 
     public String getParentDisplayFormat() {
-        return this.getDatasetFieldParent()
+        return getDatasetFieldParent()
                 .map(DatasetField::getDatasetFieldType)
                 .map(DatasetFieldType::getDisplayFormat)
                 .filter(displayFormat -> !StringUtils.equals(displayFormat, "#NEWLINE"))
@@ -236,7 +236,7 @@ public class DatasetField implements Serializable, ValidatableField {
     }
 
     public boolean getParentDisplayFormatIsNewLine() {
-        return this.getDatasetFieldParent()
+        return getDatasetFieldParent()
                 .map(DatasetField::getDatasetFieldType)
                 .map(DatasetFieldType::getDisplayFormat)
                 .map(displayFormat -> StringUtils.equals(displayFormat, "#NEWLINE"))
@@ -371,7 +371,7 @@ public class DatasetField implements Serializable, ValidatableField {
     }
 
     public int getDatasetFieldTypeDisplayOrder() {
-        return this.getDatasetFieldType().getDisplayOrder();
+        return getDatasetFieldType().getDisplayOrder();
     }
 
     public DatasetField getTopParentDatasetField() {
@@ -393,6 +393,10 @@ public class DatasetField implements Serializable, ValidatableField {
     @Override
     public List<String> getValidatableValues() {
         return Collections.singletonList(getValue());
+    }
+
+    public String getTypeName() {
+        return getDatasetFieldType().getName();
     }
 
     // -------------------- PRIVATE --------------------
@@ -429,12 +433,12 @@ public class DatasetField implements Serializable, ValidatableField {
 
     private String getUnsanitizedDisplayValue() {
         String retVal = "";
-        if (!StringUtils.isBlank(this.getValue()) && !DatasetField.NA_VALUE.equals(this.getValue())) {
+        if (!StringUtils.isBlank(getValue()) && !DatasetField.NA_VALUE.equals(getValue())) {
             String format = getDatasetFieldType().getDisplayFormat();
             if (StringUtils.isBlank(format)) {
                 format = "#VALUE";
             }
-            String value = this.getValue();
+            String value = getValue();
             retVal = format
                     .replace("#NAME", getDatasetFieldType().getTitle() == null ? "" : getDatasetFieldType().getTitle())
                     .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))

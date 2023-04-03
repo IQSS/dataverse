@@ -362,13 +362,13 @@ public class JsonLdBuilder {
     private List<String> getDescriptionsPlainText(DatasetVersion version) {
         List<String> descriptions = new ArrayList<>();
         for (DatasetField dsf : version.getDatasetFields()) {
-            if (!DatasetFieldConstant.description.equals(dsf.getDatasetFieldType().getName())
+            if (!DatasetFieldConstant.description.equals(dsf.getTypeName())
                     || dsf.getDatasetFieldsChildren().isEmpty()) {
                 continue;
             }
             String description = "";
             for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
-                if (DatasetFieldConstant.descriptionText.equals(subField.getDatasetFieldType().getName())
+                if (DatasetFieldConstant.descriptionText.equals(subField.getTypeName())
                         && !subField.isEmptyForDisplay()) {
                     description = subField.getValue();
                 }

@@ -31,12 +31,12 @@ public class SwordServiceBean {
         DatasetField emailDatasetField = DatasetField.createNewEmptyDatasetField(emailDatasetFieldType, newDatasetVersion);
 
         for (DatasetField childField : emailDatasetField.getDatasetFieldsChildren()) {
-            if (DatasetFieldConstant.datasetContactEmail.equals(childField.getDatasetFieldType().getName())) {
+            if (DatasetFieldConstant.datasetContactEmail.equals(childField.getTypeName())) {
                 // set the value to the  in user's email
                 childField.setFieldValue(user.getDisplayInfo().getEmailAddress());
             }
             // We don't see any error from EZID but when using DataCite, we were seeing this error: Response code: 400, [xml] xml error: cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type '#AnonType_contributorNamecontributorcontributorsresource'.
-            if (DatasetFieldConstant.datasetContactName.equals(childField.getDatasetFieldType().getName())) {
+            if (DatasetFieldConstant.datasetContactName.equals(childField.getTypeName())) {
                 childField.setFieldValue(user.getDisplayInfo().getTitle());
             }
         }
@@ -71,8 +71,8 @@ public class SwordServiceBean {
         boolean subjectFieldExists = false;
         List<DatasetField> datasetFields = datasetVersion.getDatasetFields();
         for (DatasetField datasetField : datasetFields) {
-            logger.fine("datasetField: " + datasetField.getDisplayValue() + " ... " + datasetField.getDatasetFieldType().getName());
-            if (datasetField.getDatasetFieldType().getName().equals(subjectDatasetFieldType.getName())) {
+            logger.fine("datasetField: " + datasetField.getDisplayValue() + " ... " + datasetField.getTypeName());
+            if (datasetField.getTypeName().equals(subjectDatasetFieldType.getName())) {
                 subjectFieldExists = true;
                 logger.fine("subject field exists already");
                 break;

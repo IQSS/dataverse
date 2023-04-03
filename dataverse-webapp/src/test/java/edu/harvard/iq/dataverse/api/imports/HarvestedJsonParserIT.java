@@ -124,28 +124,28 @@ public class HarvestedJsonParserIT extends WebappArquillianDeployment {
         List<DatasetField> importedDatasetFields = dataset.getVersions().get(0).getDatasetFields();
         assertEquals(2, importedDatasetFields.size());
         assertThat(importedDatasetFields)
-                .extracting(datasetField -> datasetField.getDatasetFieldType().getName())
+                .extracting(DatasetField::getTypeName)
                 .containsExactlyInAnyOrder("author", "datasetContact");
 
         List<DatasetField> authorFieldChildren = importedDatasetFields
-                .stream().filter(field -> field.getDatasetFieldType().getName().equals("author"))
+                .stream().filter(field -> field.getTypeName().equals("author"))
                 .collect(Collectors.toList());
 
         assertEquals(1, authorFieldChildren.size());
         assertThat(authorFieldChildren.get(0).getDatasetFieldsChildren())
-                .extracting(datasetField -> datasetField.getDatasetFieldType().getName())
+                .extracting(DatasetField::getTypeName)
                 .containsExactlyInAnyOrder("authorName", "authorAffiliation");
         assertThat(authorFieldChildren.get(0).getDatasetFieldsChildren())
                 .extracting(datasetField -> datasetField.getFieldValue().getOrElse(StringUtils.EMPTY))
                 .containsExactlyInAnyOrder("Author Value 1", "Affiliation as single value");
 
         List<DatasetField> datasetContactFieldChildren = importedDatasetFields
-                .stream().filter(field -> field.getDatasetFieldType().getName().equals("datasetContact"))
+                .stream().filter(field -> field.getTypeName().equals("datasetContact"))
                 .collect(Collectors.toList());
 
         assertEquals(1, datasetContactFieldChildren.size());
         assertThat(datasetContactFieldChildren.get(0).getDatasetFieldsChildren())
-                .extracting(datasetField -> datasetField.getDatasetFieldType().getName())
+                .extracting(DatasetField::getTypeName)
                 .containsExactlyInAnyOrder("datasetContactName", "datasetContactAffiliation", "datasetContactEmail");
         assertThat(datasetContactFieldChildren.get(0).getDatasetFieldsChildren())
                 .extracting(datasetField -> datasetField.getFieldValue().getOrElse(StringUtils.EMPTY))
@@ -166,17 +166,17 @@ public class HarvestedJsonParserIT extends WebappArquillianDeployment {
         List<DatasetField> importedDatasetFields = dataset.getVersions().get(0).getDatasetFields();
         assertEquals(5, importedDatasetFields.size());
         assertThat(importedDatasetFields)
-                .extracting(datasetField -> datasetField.getDatasetFieldType().getName())
+                .extracting(DatasetField::getTypeName)
                 .containsExactlyInAnyOrder("subject", "kindOfData", "journalArticleType", "author", "publication");
 
         List<DatasetField> authorFieldChildren = importedDatasetFields
-                .stream().filter(field -> field.getDatasetFieldType().getName().equals("author"))
+                .stream().filter(field -> field.getTypeName().equals("author"))
                 .collect(Collectors.toList());
 
         assertEquals(1, authorFieldChildren.size());
         assertEquals(1, authorFieldChildren.get(0).getDatasetFieldsChildren().size());
         assertThat(authorFieldChildren.get(0).getDatasetFieldsChildren())
-                .extracting(datasetField -> datasetField.getDatasetFieldType().getName())
+                .extracting(DatasetField::getTypeName)
                 .containsExactly("authorIdentifierScheme");
         assertThat(authorFieldChildren.get(0).getDatasetFieldsChildren().get(0).getControlledVocabularyValues().size())
                 .isEqualTo(1);
@@ -185,13 +185,13 @@ public class HarvestedJsonParserIT extends WebappArquillianDeployment {
                 .containsExactlyInAnyOrder("ORCID");
 
         List<DatasetField> publicationFieldChildren = importedDatasetFields
-                .stream().filter(field -> field.getDatasetFieldType().getName().equals("publication"))
+                .stream().filter(field -> field.getTypeName().equals("publication"))
                 .collect(Collectors.toList());
 
         assertEquals(1, publicationFieldChildren.size());
         assertEquals(1, publicationFieldChildren.get(0).getDatasetFieldsChildren().size());
         assertThat(publicationFieldChildren.get(0).getDatasetFieldsChildren())
-                .extracting(datasetField -> datasetField.getDatasetFieldType().getName())
+                .extracting(DatasetField::getTypeName)
                 .containsExactly("publicationIDType");
         assertThat(publicationFieldChildren.get(0).getDatasetFieldsChildren().get(0).getControlledVocabularyValues().size())
                 .isEqualTo(1);
@@ -201,7 +201,7 @@ public class HarvestedJsonParserIT extends WebappArquillianDeployment {
                 .doesNotContain("non-existing value");
 
         List<DatasetField> subjectFieldChildren = importedDatasetFields
-                .stream().filter(field -> field.getDatasetFieldType().getName().equals("subject"))
+                .stream().filter(field -> field.getTypeName().equals("subject"))
                 .collect(Collectors.toList());
 
         assertEquals(1, subjectFieldChildren.size());
@@ -212,7 +212,7 @@ public class HarvestedJsonParserIT extends WebappArquillianDeployment {
                 .doesNotContain("Non-existing value");
 
         List<DatasetField> kindOfDataFieldChildren = importedDatasetFields
-                .stream().filter(field -> field.getDatasetFieldType().getName().equals("kindOfData"))
+                .stream().filter(field -> field.getTypeName().equals("kindOfData"))
                 .collect(Collectors.toList());
 
         assertEquals(1, kindOfDataFieldChildren.size());
@@ -222,7 +222,7 @@ public class HarvestedJsonParserIT extends WebappArquillianDeployment {
                 .containsExactly("StillImage");
 
         List<DatasetField> journalArticleTypeFieldChildren = importedDatasetFields
-                .stream().filter(field -> field.getDatasetFieldType().getName().equals("journalArticleType"))
+                .stream().filter(field -> field.getTypeName().equals("journalArticleType"))
                 .collect(Collectors.toList());
 
         assertEquals(1, journalArticleTypeFieldChildren.size());
@@ -246,12 +246,12 @@ public class HarvestedJsonParserIT extends WebappArquillianDeployment {
         List<DatasetField> importedDatasetFields = dataset.getVersions().get(0).getDatasetFields();
         assertEquals(6, importedDatasetFields.size());
         assertThat(importedDatasetFields)
-                .extracting(datasetField -> datasetField.getDatasetFieldType().getName())
+                .extracting(DatasetField::getTypeName)
                 .containsExactlyInAnyOrder("title", "otherReferences", "otherReferences",
                         "otherReferences", "dataSources", "collectorTraining");
 
         List<DatasetField> titleField = importedDatasetFields
-                .stream().filter(field -> field.getDatasetFieldType().getName().equals("title"))
+                .stream().filter(field -> field.getTypeName().equals("title"))
                 .collect(Collectors.toList());
 
         assertEquals(1, titleField.size());
@@ -259,7 +259,7 @@ public class HarvestedJsonParserIT extends WebappArquillianDeployment {
                 .isEqualTo("geo");
 
         List<DatasetField> otherReferencesFields = importedDatasetFields
-                .stream().filter(field -> field.getDatasetFieldType().getName().equals("otherReferences"))
+                .stream().filter(field -> field.getTypeName().equals("otherReferences"))
                 .collect(Collectors.toList());
 
         assertEquals(3, otherReferencesFields.size());
@@ -268,7 +268,7 @@ public class HarvestedJsonParserIT extends WebappArquillianDeployment {
                 .containsExactlyInAnyOrder("value 1", "value 2", "value 3");
 
         List<DatasetField> dataSourcesField = importedDatasetFields
-                .stream().filter(field -> field.getDatasetFieldType().getName().equals("dataSources"))
+                .stream().filter(field -> field.getTypeName().equals("dataSources"))
                 .collect(Collectors.toList());
 
         assertEquals(1, dataSourcesField.size());
@@ -277,7 +277,7 @@ public class HarvestedJsonParserIT extends WebappArquillianDeployment {
                 .containsExactlyInAnyOrder("multi value field passed as single value");
 
         List<DatasetField> collectorTrainingField = importedDatasetFields
-                .stream().filter(field -> field.getDatasetFieldType().getName().equals("collectorTraining"))
+                .stream().filter(field -> field.getTypeName().equals("collectorTraining"))
                 .collect(Collectors.toList());
 
         assertEquals(1, collectorTrainingField.size());

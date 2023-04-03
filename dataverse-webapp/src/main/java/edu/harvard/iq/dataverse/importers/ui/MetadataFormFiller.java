@@ -98,7 +98,7 @@ public class MetadataFormFiller {
     private DatasetField matchChild(ResultItem childItem, DatasetField parent) {
         String name = childItem.getName();
         return parent.getDatasetFieldsChildren().stream()
-                .filter(c -> name.equals(c.getDatasetFieldType().getName()))
+                .filter(c -> name.equals(c.getTypeName()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Child field [" + name + "] not found!"));
     }

@@ -490,7 +490,7 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
     public String getTitle() {
         String result = StringUtils.EMPTY;
         for (DatasetField dsfv : datasetFields) {
-            if (DatasetFieldConstant.title.equals(dsfv.getDatasetFieldType().getName())) {
+            if (DatasetFieldConstant.title.equals(dsfv.getTypeName())) {
                 result = dsfv.getDisplayValue();
             }
         }
@@ -504,7 +504,7 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
     public String getProductionDate() {
         String retVal = null;
         for (DatasetField dsfv : datasetFields) {
-            if (DatasetFieldConstant.productionDate.equals(dsfv.getDatasetFieldType().getName())) {
+            if (DatasetFieldConstant.productionDate.equals(dsfv.getTypeName())) {
                 retVal = dsfv.getDisplayValue();
             }
         }
@@ -517,12 +517,12 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
      */
     public String getDescriptionPlainText() {
         for (DatasetField dsf : datasetFields) {
-            if (!DatasetFieldConstant.description.equals(dsf.getDatasetFieldType().getName())) {
+            if (!DatasetFieldConstant.description.equals(dsf.getTypeName())) {
                 continue;
             }
             String descriptionString = StringUtils.EMPTY;
             for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
-                if (DatasetFieldConstant.descriptionText.equals(subField.getDatasetFieldType().getName())
+                if (DatasetFieldConstant.descriptionText.equals(subField.getTypeName())
                         && !subField.isEmptyForDisplay()) {
                     descriptionString = subField.getValue();
                 }
@@ -544,10 +544,10 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
         Set<String> namesLookup = new HashSet<>(subfields);
         namesLookup.add(fieldName); // sometimes the main field will be also needed
         return datasetFields.stream()
-                .filter(f -> fieldName.equals(f.getDatasetFieldType().getName()))
+                .filter(f -> fieldName.equals(f.getTypeName()))
                 .map(f -> Stream.concat(f.getDatasetFieldsChildren().stream(), Stream.of(f))
-                        .filter(s -> namesLookup.contains(s.getDatasetFieldType().getName()))
-                        .collect(Collectors.toMap(s -> s.getDatasetFieldType().getName(), s -> s, (prev, next) -> next)))
+                        .filter(s -> namesLookup.contains(s.getTypeName()))
+                        .collect(Collectors.toMap(DatasetField::getTypeName, s -> s, (prev, next) -> next)))
                 .filter(e -> e.size() > 1) // if there's only one element then we have only parent field with no subfields
                 .collect(Collectors.toList());
     }
@@ -560,9 +560,9 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
         List<String> namesLookup = newArrayList(fieldNames);
         return  datasetFields.stream()
                 .filter(f -> !f.getDatasetFieldsChildren().isEmpty())
-                .filter(f -> namesLookup.contains(f.getDatasetFieldType().getName()))
+                .filter(f -> namesLookup.contains(f.getTypeName()))
                 .map(f -> Stream.concat(f.getDatasetFieldsChildren().stream(), Stream.of(f))
-                        .collect(Collectors.toMap(s -> s.getDatasetFieldType().getName(), s -> s, (prev, next) -> next)))
+                        .collect(Collectors.toMap(DatasetField::getTypeName, s -> s, (prev, next) -> next)))
                 .filter(e -> e.size() > 1) // omit fields with no children
                 .collect(Collectors.toList());
     }
@@ -593,7 +593,7 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
     public List<String> extractFieldValues(String fieldName) {
         List<String> values = new ArrayList<>();
         for (DatasetField field : datasetFields) {
-            if (fieldName.equals(field.getDatasetFieldType().getName())) {
+            if (fieldName.equals(field.getTypeName())) {
                 values.addAll(field.getValues());
             }
         }
@@ -641,12 +641,12 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
 
     public Stream<DatasetField> streamDatasetFieldsByTypeName(String datasetFieldTypeName) {
         return getFlatDatasetFields().stream()
-                .filter(f -> datasetFieldTypeName.equals(f.getDatasetFieldType().getName()));
+                .filter(f -> datasetFieldTypeName.equals(f.getTypeName()));
     }
 
     public String getDistributionDate() {
         for (DatasetField dsf : datasetFields) {
-            if (DatasetFieldConstant.distributionDate.equals(dsf.getDatasetFieldType().getName())) {
+            if (DatasetFieldConstant.distributionDate.equals(dsf.getTypeName())) {
                 return dsf.getValue();
             }
         }

@@ -777,12 +777,8 @@ public class DatasetVersionDifferenceTest {
     private void assertDatasetFieldChange(DatasetFieldDiff actualFieldChange,
                                           String expectedFieldName, String expectedOldValue, String expectedNewValue) {
 
-        actualFieldChange.getOldValue().forEach(datasetField ->
-                                                        assertEquals(expectedFieldName,
-                                                                     datasetField.getDatasetFieldType().getName()));
-        actualFieldChange.getNewValue().forEach(datasetField ->
-                                                        assertEquals(expectedFieldName,
-                                                                     datasetField.getDatasetFieldType().getName()));
+        actualFieldChange.getOldValue().forEach(f -> assertEquals(expectedFieldName, f.getTypeName()));
+        actualFieldChange.getNewValue().forEach(f -> assertEquals(expectedFieldName, f.getTypeName()));
 
         assertEquals(expectedOldValue, DatasetFieldUtil.joinAllValues(actualFieldChange.getOldValue()));
         assertEquals(expectedNewValue, DatasetFieldUtil.joinAllValues(actualFieldChange.getNewValue()));

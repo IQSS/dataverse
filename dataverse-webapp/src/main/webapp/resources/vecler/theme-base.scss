@@ -234,6 +234,12 @@ button.ui-button:not(.ui-button-icon-only) .ui-icon.glyphicon {
 	.glyphicon, .caret {
 		color: $icon-color;
 	}
+
+	.icon-text {
+	    color: $icon-color;
+	    font-weight: bold;
+	    font-size: larger;
+	}
 }
 
 .alert {
@@ -1988,7 +1994,7 @@ $navbar-height: 102px;
 	box-shadow: none;
 	border-top: 4px solid $icon-color;
 	border-bottom: none;
-	
+
 	.container {
 		position: relative;
 	}

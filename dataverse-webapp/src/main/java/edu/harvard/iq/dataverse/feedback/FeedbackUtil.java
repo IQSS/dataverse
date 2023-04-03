@@ -120,16 +120,16 @@ public class FeedbackUtil {
     private static List<DvObjectContact> getDatasetContacts(Dataset dataset) {
         List<DvObjectContact> datasetContacts = new ArrayList<>();
         for (DatasetField dsf : dataset.getLatestVersion().getDatasetFields()) {
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact)) {
+            if (dsf.getTypeName().equals(DatasetFieldConstant.datasetContact)) {
                 String contactName = null;
                 String contactEmail = null;
 
                 for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
+                        if (subField.getTypeName().equals(DatasetFieldConstant.datasetContactName)) {
                             contactName = subField.getValue();
                             logger.fine("contactName: " + contactName);
                         }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
+                        if (subField.getTypeName().equals(DatasetFieldConstant.datasetContactEmail)) {
                             contactEmail = subField.getValue();
                             logger.fine("contactEmail: " + contactEmail);
                         }

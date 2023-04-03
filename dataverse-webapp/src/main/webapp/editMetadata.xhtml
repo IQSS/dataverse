@@ -126,6 +126,23 @@
                                                     <span class="glyphicon glyphicon-minus no-text"/>
                                                     <o:skipValidators />
                                                 </p:commandLink>
+                                                <br/>
+                                                <p:commandLink title="#{bundle['dataset.edit.divideBySemicolons.hint']}"
+                                                               styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{fieldsByType.datasetFieldType.compound ? 'compound-field-btn' : ''}"
+                                                               rendered="#{fieldsByType.datasetFieldType.hasMetadata('divider')}"
+                                                               actionListener="#{fieldsByType.divide(valCount.index, ';')}"
+                                                               update=":#{p:resolveClientIds('@id(fieldsByTypeFragment)', view)}">
+                                                    <span class="icon-text no-text">;</span>
+                                                    <o:skipValidators/>
+                                                </p:commandLink>
+                                                <p:commandLink title="#{bundle['dataset.edit.divideByCommas.hint']}"
+                                                               styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{fieldsByType.datasetFieldType.compound ? 'compound-field-btn' : ''}"
+                                                               rendered="#{fieldsByType.datasetFieldType.hasMetadata('divider')}"
+                                                               actionListener="#{fieldsByType.divide(valCount.index, ',')}"
+                                                               update=":#{p:resolveClientIds('@id(fieldsByTypeFragment)', view)}">
+                                                    <span class="icon-text no-text">,</span>
+                                                    <o:skipValidators/>
+                                                </p:commandLink>
                                             </div>
 
                                             <!-- Map -->

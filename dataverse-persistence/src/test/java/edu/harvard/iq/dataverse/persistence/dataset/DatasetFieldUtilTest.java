@@ -82,13 +82,13 @@ public class DatasetFieldUtilTest {
         // then
         assertEquals(3, datasetFieldsCopy.size());
 
-        assertEquals("field1", datasetFieldsCopy.get(0).getDatasetFieldType().getName());
+        assertEquals("field1", datasetFieldsCopy.get(0).getTypeName());
         assertNotEquals(field1, datasetFieldsCopy.get(0));
 
-        assertEquals("field2", datasetFieldsCopy.get(1).getDatasetFieldType().getName());
+        assertEquals("field2", datasetFieldsCopy.get(1).getTypeName());
         assertNotEquals(field2, datasetFieldsCopy.get(1));
 
-        assertEquals("field3", datasetFieldsCopy.get(2).getDatasetFieldType().getName());
+        assertEquals("field3", datasetFieldsCopy.get(2).getTypeName());
         assertNotEquals(field3, datasetFieldsCopy.get(2));
     }
 

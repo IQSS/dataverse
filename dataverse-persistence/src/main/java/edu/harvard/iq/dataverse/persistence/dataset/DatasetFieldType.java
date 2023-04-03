@@ -158,7 +158,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     @Column(name="metadata", nullable = false)
     @Convert(converter = JsonMapConverter.class)
-    private Map<String, String> metadata = Collections.emptyMap();
+    private Map<String, Object> metadata = Collections.emptyMap();
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -285,7 +285,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return validation;
     }
 
-    public Map<String, String> getMetadata() {
+    public Map<String, Object> getMetadata() {
         return metadata;
     }
 
@@ -468,8 +468,12 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
                         : fieldType.equals(FieldType.TEXTBOX));
     }
 
-    public String getMetadata(String key) {
+    public Object getMetadata(String key) {
         return metadata.get(key);
+    }
+
+    public boolean hasMetadata(String key) {
+        return metadata.containsKey(key);
     }
 
     // -------------------- PRIVATE --------------------
@@ -595,7 +599,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.validation = validation;
     }
 
-    public void setMetadata(Map<String, String> metadata) {
+    public void setMetadata(Map<String, Object> metadata) {
         this.metadata = metadata;
     }
 

@@ -41,40 +41,40 @@ public class UserDataFieldFiller {
         String todayDate = LocalDate.now(clock).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         for (DatasetField dsf : datasetFields) {
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor) && dsf.isEmpty()) {
+            if (dsf.getTypeName().equals(DatasetFieldConstant.depositor) && dsf.isEmpty()) {
                 dsf.setFieldValue(userFullName);
             }
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit) && dsf.isEmpty()) {
+            if (dsf.getTypeName().equals(DatasetFieldConstant.dateOfDeposit) && dsf.isEmpty()) {
                 dsf.setFieldValue(todayDate);
             }
 
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
+            if (dsf.getTypeName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
                     for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
+                        if (subField.getTypeName().equals(DatasetFieldConstant.datasetContactName)) {
                             subField.setFieldValue(userFullName);
                         }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
+                        if (subField.getTypeName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
                             subField.setFieldValue(userAffiliation);
                         }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
+                        if (subField.getTypeName().equals(DatasetFieldConstant.datasetContactEmail)) {
                             subField.setFieldValue(userEmail);
                         }
                     }
             }
 
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
+            if (dsf.getTypeName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
                     for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+                        if (subField.getTypeName().equals(DatasetFieldConstant.authorName)) {
                             subField.setFieldValue(userFullName);
                         }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+                        if (subField.getTypeName().equals(DatasetFieldConstant.authorAffiliation)) {
                             subField.setFieldValue(userAffiliation);
                         }
                         if (userOrcidId != null) {
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)) {
+                            if (subField.getTypeName().equals(DatasetFieldConstant.authorIdValue)) {
                                 subField.setFieldValue(userOrcidId);
                             }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)) {
+                            if (subField.getTypeName().equals(DatasetFieldConstant.authorIdType)) {
                                 DatasetFieldType authorIdTypeDatasetField = fieldService.findByName(DatasetFieldConstant.authorIdType);
                                 ControlledVocabularyValue vocabValue = fieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(authorIdTypeDatasetField, "ORCID", true);
                                 subField.setSingleControlledVocabularyValue(vocabValue);

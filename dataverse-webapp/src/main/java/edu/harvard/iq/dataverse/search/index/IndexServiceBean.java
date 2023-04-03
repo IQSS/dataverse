@@ -833,7 +833,7 @@ public class IndexServiceBean {
                 if (dsf.getValues() != null && !dsf.getValues().isEmpty()
                         && dsf.getValues().get(0) != null && solrFieldSearchable != null) {
 
-                    logger.fine("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
+                    logger.fine("indexing " + dsf.getTypeName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
                     // if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER))
                     // {
                     if (SolrField.SolrType.EMAIL.equals(dsfSolrField.getSolrType())) {
@@ -869,7 +869,7 @@ public class IndexServiceBean {
                     } else {
                         // _s (dynamic string) and all other Solr fields
 
-                        if ("authorAffiliation".equals(dsf.getDatasetFieldType().getName())) {
+                        if ("authorAffiliation".equals(dsf.getTypeName())) {
                             /*
                               @todo think about how to tie the fact that this
                              * needs to be multivalued (_ss) because a
@@ -881,7 +881,7 @@ public class IndexServiceBean {
                              * of DatasetField.java
                              */
                             solrInputDocument.addField(SearchFields.AFFILIATION, dsf.getValuesWithoutNaValues());
-                        } else if (dsf.getDatasetFieldType().getName().equals("title")) {
+                        } else if (dsf.getTypeName().equals("title")) {
                             // datasets have titles not names but index title under name as well so we can
                             // sort datasets by name along dataverses and files
                             List<String> possibleTitles = dsf.getValues();
@@ -912,7 +912,7 @@ public class IndexServiceBean {
                             // do not strip HTML
                             solrInputDocument.addField(solrFieldSearchable, dsf.getValuesWithoutNaValues());
                             if (dsfSolrField.isFacetable()) {
-                                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.topicClassValue)) {
+                                if (dsf.getTypeName().equals(DatasetFieldConstant.topicClassValue)) {
                                     String topicClassificationTerm = getTopicClassificationTermOrTermAndVocabulary(dsf);
                                     if (topicClassificationTerm != null) {
                                         logger.fine(solrFieldFacetable + " gets " + topicClassificationTerm);

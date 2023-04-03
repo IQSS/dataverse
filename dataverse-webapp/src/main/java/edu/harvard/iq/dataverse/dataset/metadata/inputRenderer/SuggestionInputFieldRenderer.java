@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class SuggestionInputFieldRenderer implements InputFieldRenderer {
     private static final String VALUE_HEADER_KEY_FORMAT = "datasetfieldtype.%s.suggestionDisplay.valueHeader";
     private static final String DETAILS_HEADER_KEY_FORMAT = "datasetfieldtype.%s.suggestionDisplay.detailsHeader";
-    
+
     private SuggestionHandler suggestionHandler;
     private Map<String, String> datasetFieldTypeToSuggestionFilterMapping;
     private SuggestionDisplayType suggestionDisplayType;
@@ -135,11 +135,11 @@ public class SuggestionInputFieldRenderer implements InputFieldRenderer {
 
     private Map<String, String> findFilterValues(DatasetField datasetField, Map<String, String> datasetFieldTypeToSuggestionFilterMapping) {
         Map<String, String> filteredValues = datasetField.getDatasetFieldParent()
-                .getOrElseThrow(() -> new NullPointerException("datasetfield with type: " + datasetField.getDatasetFieldType().getName() + " didn't have any parent required to generate suggestions"))
+                .getOrElseThrow(() -> new NullPointerException("datasetfield with type: " + datasetField.getTypeName() + " didn't have any parent required to generate suggestions"))
                 .getDatasetFieldsChildren().stream()
-                .filter(dsf -> datasetFieldTypeToSuggestionFilterMapping.containsKey(dsf.getDatasetFieldType().getName()))
+                .filter(dsf -> datasetFieldTypeToSuggestionFilterMapping.containsKey(dsf.getTypeName()))
                 .map(dsf -> Tuple.of(
-                        datasetFieldTypeToSuggestionFilterMapping.get(dsf.getDatasetFieldType().getName()),
+                        datasetFieldTypeToSuggestionFilterMapping.get(dsf.getTypeName()),
                         dsf.getFieldValue().getOrElse(StringUtils.EMPTY)))
                 .collect(Collectors.toMap(Tuple2::_1, Tuple2::_2));
 

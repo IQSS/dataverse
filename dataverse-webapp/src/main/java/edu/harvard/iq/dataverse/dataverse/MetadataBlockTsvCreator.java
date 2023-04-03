@@ -179,7 +179,7 @@ public class MetadataBlockTsvCreator {
         METADATABLOCK_ID("metadatablock_id", t -> t.getMetadataBlock().getName()),
         TERM_URI("termURI", DatasetFieldType::getUri),
         VALIDATION("validation", DatasetFieldType::getValidation),
-        METADATA("metadata", DatasetFieldType::getMetadata, v -> (Object) jsonMapConverter.convertToDatabaseColumn((Map<String, String>) v));
+        METADATA("metadata", DatasetFieldType::getMetadata, v -> (Object) jsonMapConverter.convertToDatabaseColumn((Map<String, Object>) v));
 
         DatasetFieldTypeRecord(String columnName, Function<DatasetFieldType, Object> valueGetter, UnaryOperator<Object> formatter) {
             this.columnName = columnName;

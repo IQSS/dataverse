@@ -33,7 +33,7 @@ public class DatasetFieldValidationDispatcher {
 
     DatasetFieldValidationDispatcher init(List<DatasetField> parentAndChildrenFields) {
         fieldIndex = parentAndChildrenFields.stream()
-                .collect(Collectors.groupingBy(f -> f.getDatasetFieldType().getName()));
+                .collect(Collectors.groupingBy(DatasetField::getTypeName));
         return this;
     }
 

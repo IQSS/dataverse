@@ -297,7 +297,7 @@ public class ExportServiceTest {
         titleValue.setId(3L);
 
         datasetFields.stream()
-                .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.title))
+                .filter(datasetField -> datasetField.getTypeName().equals(DatasetFieldConstant.title))
                 .peek(titleValue::setDatasetFieldParent)
                 .forEach(datasetField -> {
                     datasetField.getDatasetFieldType().setTitle("Title");
@@ -310,7 +310,7 @@ public class ExportServiceTest {
         subjectValue.setId(3L);
 
         datasetFields.stream()
-                .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject))
+                .filter(datasetField -> datasetField.getTypeName().equals(DatasetFieldConstant.subject))
                 .peek(subjectValue::setDatasetFieldParent)
                 .forEach(datasetField -> {
                     datasetField.getDatasetFieldType().setTitle("Subject");
@@ -329,20 +329,20 @@ public class ExportServiceTest {
 
     private void setupAuthorData(List<DatasetField> datasetFields) {
         datasetFields.stream()
-                .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.author))
+                .filter(datasetField -> datasetField.getTypeName().equals(DatasetFieldConstant.author))
                 .forEach(authorField -> {
                     DatasetFieldType authorFieldType = authorField.getDatasetFieldType();
                     authorFieldType.setTitle("Author");
                     authorFieldType.setDisplayOrder(2);
                     authorFieldType.setUri("http://purl.org/dc/terms/creator");
-                    authorField.getDatasetFieldsChildren().stream().forEach(childField -> setupChildField(childField));
+                    authorField.getDatasetFieldsChildren().stream().forEach(this::setupChildField);
                 });
     }
 
     private void setupChildField(DatasetField datasetField) {
-        if (datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+        if (datasetField.getTypeName().equals(DatasetFieldConstant.authorAffiliation)) {
             datasetField.getDatasetFieldType().setTitle("Affiliation");
-        } else if (datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+        } else if (datasetField.getTypeName().equals(DatasetFieldConstant.authorName)) {
             datasetField.getDatasetFieldType().setTitle("Name");
         }
     }
@@ -350,7 +350,7 @@ public class ExportServiceTest {
     private void setupDescriptionData(List<DatasetField> datasetFields) {
 
         DatasetField descriptionField = datasetFields.stream()
-                .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.description))
+                .filter(datasetField -> datasetField.getTypeName().equals(DatasetFieldConstant.description))
                 .findFirst().get();
 
         DatasetFieldType descriptionFieldType = descriptionField.getDatasetFieldType();
@@ -365,7 +365,7 @@ public class ExportServiceTest {
 
     private void setupContactData(List<DatasetField> datasetFields) {
         DatasetField datasetContact = datasetFields.stream()
-                .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact))
+                .filter(datasetField -> datasetField.getTypeName().equals(DatasetFieldConstant.datasetContact))
                 .findFirst().get();
 
         datasetContact.getDatasetFieldType().setTitle("Contact");

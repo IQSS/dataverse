@@ -993,7 +993,7 @@ public class IngestServiceBean {
                             int matches = 0;
                             for (DatasetField dsfcv : dsf.getDatasetFieldsChildren()) {
 
-                                String cdsfName = dsfcv.getDatasetFieldType().getName();
+                                String cdsfName = dsfcv.getTypeName();
                                 Option<String> cdsfValue = dsfcv.getFieldValue();
                                 if (cdsfValue.isDefined() && !cdsfValue.isEmpty()) {
                                     String extractedValue = (String) fileMetadataMap.get(cdsfName).toArray()[0];
