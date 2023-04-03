@@ -1366,17 +1366,14 @@ public class DatasetVersion implements Serializable {
     }
 
     /**
-     * @return String containing the version's series title
+     * @return List of Strings containing the version's series title(s)
      */
-    public String getSeriesTitle() {
+    public List<String>  getSeriesTitles() {
 
         List<String> seriesNames = getCompoundChildFieldValues(DatasetFieldConstant.series,
                 DatasetFieldConstant.seriesName);
-        if (seriesNames.size() > 1) {
-            logger.warning("More than one series title found for datasetVersion: " + this.id);
-        }
         if (!seriesNames.isEmpty()) {
-            return seriesNames.get(0);
+            return seriesNames;
         } else {
             return null;
         }
