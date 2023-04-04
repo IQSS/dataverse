@@ -225,6 +225,9 @@ public class DatasetFieldDTO {
                             .map(this::extractChildren)
                             .collect(Collectors.toList());
                 }
+                if (values.isEmpty()) {
+                    continue;
+                }
                 field.setValue(extractValue(fieldType, values));
                 fields.add(field);
             }
@@ -255,6 +258,9 @@ public class DatasetFieldDTO {
                             .sorted(Comparator.comparing(ControlledVocabularyValue::getDisplayOrder))
                             .map(ControlledVocabularyValue::getStrValue)
                             .collect(Collectors.toList());
+                    if (values.isEmpty()) {
+                        continue;
+                    }
                     field.setValue(extractValue(fieldType, values));
                 } else if (fieldType.isPrimitive()) {
                     field.setValue(child.getFieldValue().getOrElse((String) null));
