@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
-import edu.ucsb.nceas.ezid.EZIDServiceRequest;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,42 +15,43 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class DOIEZIdServiceBean extends DOIServiceBean {
-
+    
+    private static final Logger logger = Logger.getLogger(DOIEZIdServiceBean.class.getCanonicalName());
+    
     EZIDService ezidService;
-    EZIDServiceRequest ezidServiceRequest;
-    String baseURLString = "https://ezid.cdlib.org";
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dvn.core.index.DOIEZIdServiceBean");
-
-    // get username and password from system properties
-    private String USERNAME = "";
-    private String PASSWORD = "";
+    
+    // This has a sane default in microprofile-config.properties
+    private final String baseUrl = JvmSettings.EZID_API_URL.lookup();
+    
     public DOIEZIdServiceBean() {
-        logger.log(Level.FINE,"Constructor");
+        // Creating the service doesn't do any harm, just initializing some object data here.
+        // Makes sure we don't run into NPEs from the other methods, but will obviously fail if the
+        // login below does not work.
+        this.ezidService = new EZIDService(this.baseUrl);
+        
         try {
-            // Guessing these are System.getProperty rather than using settingsService
-            // because this is a constructor rather than a @PostConstruct method
-            String urlFromProperty = System.getProperty("doi.baseurlstring");
-            if(urlFromProperty!=null) {
-                baseURLString = urlFromProperty;
+            // These have (obviously) no default, but still are optional to make the provider optional
+            String username = JvmSettings.EZID_USERNAME.lookupOptional().orElse(null);
+            String password = JvmSettings.EZID_PASSWORD.lookupOptional().orElse(null);
+            
+            if (username != null ^ password != null) {
+                logger.log(Level.WARNING, "You must give both username and password. Will not try to login.");
             }
-            logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
-            ezidService = new EZIDService(baseURLString);
-            USERNAME = System.getProperty("doi.username");
-            PASSWORD = System.getProperty("doi.password");
-            ezidService.login(USERNAME, PASSWORD);
-            configured = true;
+            
+            if (username != null && password != null) {
+                this.ezidService.login(username, password);
+                this.configured = true;
+            }
         } catch (EZIDException e) {
-            // As a stateless bean, this constructor runs even when we're not using ezid, so
-            // lowering the log level in that case
-            // (Future work is expected to change PidProviders from being stateless beans
-            // going forward and at that point we won't be initializing this unless it's
-            // configured.
-            Level level = (baseURLString.contains("ezid")) ? Level.WARNING : Level.FINE;
-            logger.log(level, "login failed ");
-            logger.log(level, "Exception String: {0}", e.toString());
-            logger.log(level, "localized message: {0}", e.getLocalizedMessage());
-            logger.log(level, "cause: ", e.getCause());
-            logger.log(level, "message {0}", e.getMessage());
+            // We only do the warnings here, but the object still needs to be created.
+            // The EJB stateless thing expects this to go through, and it is requested on any
+            // global id parsing.
+            logger.log(Level.WARNING, "Login failed to {0}", this.baseUrl);
+            logger.log(Level.WARNING, "Exception String: {0}", e.toString());
+            logger.log(Level.WARNING, "Localized message: {0}", e.getLocalizedMessage());
+            logger.log(Level.WARNING, "Cause:", e.getCause());
+            logger.log(Level.WARNING, "Message {0}", e.getMessage());
+        // TODO: is this antipattern really necessary?
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Other Error on ezidService.login(USERNAME, PASSWORD) - not EZIDException ", e.getMessage());
         }
@@ -235,12 +236,7 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
     
     @Override
     public List<String> getProviderInformation(){
-        ArrayList <String> providerInfo = new ArrayList<>();
-        String providerName = "EZID";
-        String providerLink = baseURLString;
-        providerInfo.add(providerName);
-        providerInfo.add(providerLink);
-        return providerInfo;
+        return List.of("EZID", this.baseUrl);
     }
 
     @Override
