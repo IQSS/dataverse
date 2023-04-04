@@ -5,7 +5,7 @@ A dataset in Dataverse is a container for your data, documentation, code, and th
 
 .. figure:: ./img/DatasetDiagram.png
    :alt: Schematic Diagram of a Dataset
-   
+
    Schematic diagram of a Dataset in *Dataverse 4.0*. Dataset is a container for your data, documentation and code.
 
 
@@ -16,7 +16,7 @@ A dataset in Dataverse is a container for your data, documentation, code, and th
 Supported Metadata
 ==================
 
-A dataset contains three levels of metadata: 
+A dataset contains three levels of metadata:
 
 #. **Citation Metadata**: any metadata that would be needed for generating a data citation and other general metadata that could be applied to any dataset;
 #. **Domain Specific Metadata**: with specific support currently for Social Science, Life Science, Geospatial, and Astronomy datasets; and
@@ -42,25 +42,25 @@ Once a dataset has been published its metadata is exported in a variety of forma
 Adding a New Dataset
 ====================
 
-#. Navigate to the dataverse in which you want to add a dataset. 
+#. Navigate to the dataverse in which you want to add a dataset.
 #. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
-#. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
+#. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author,
    Description, Contact Email and Subject) to get a Data Citation with a DOI.
-#. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
+#. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset.
    You can also upload your files directly from your Dropbox. **Tip:** You can drag and drop or select multiple files at a time from your desktop
    directly into the upload widget. Your files will appear below the "Select Files to Add" button where you can add a
    description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
-#. Click the "Save Dataset" button when you are done. Your unpublished dataset is now created. 
+#. Click the "Save Dataset" button when you are done. Your unpublished dataset is now created.
 
-Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
+Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata.
 
 .. _dataset_field_supported_html:
 
 Supported HTML Fields
 ---------------------
 
-We currently only support the following HTML tags for any of our textbox metadata fields (i.e., Description) : <a>, <b>, <blockquote>, 
-<br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
+We currently only support the following HTML tags for any of our textbox metadata fields (i.e., Description) : <a>, <b>, <blockquote>,
+<br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>,
 <strong>, <strike>, <ul>.
 
 File Upload
@@ -117,29 +117,11 @@ An rsync-enabled Dataverse installation has a file upload process that differs f
 
 6. Follow the instructions provided by the upload script running in your terminal. It will direct you to enter the full path of the directory where your dataset files are located, and then it will start the upload process. Once you've initiated the upload, if you need to cancel it then you can do so by canceling the script running in your terminal window. If your upload gets interrupted, you can resume it from the same point later.
 
-7. Once the upload script completes its job, Dataverse will begin processing your data upload and running a checksum validation. This may take some time depending on the file size of your upload. During processing, you will see a blue bar at the bottom of the dataset page that reads "Upload in progress..." 
+7. Once the upload script completes its job, Dataverse will begin processing your data upload and running a checksum validation. This may take some time depending on the file size of your upload. During processing, you will see a blue bar at the bottom of the dataset page that reads "Upload in progress..."
 
 8. Once processing is complete, you will be notified. At this point you can publish your dataset and your data will be available for download on the dataset page.
 
 **Note:** A dataset can only hold one data package. If you need to replace the data package in your dataset, contact Support.
-
-Command-line DVUploader
------------------------
-
-The open-source DVUploader tool is a stand-alone command-line Java application that uses the Dataverse API to upload files to a specified Dataset. Since it can be installed by users, and requires no server-side configuration, it can be used with any Dataverse installation. It is intended as an alternative to uploading files through the Dataverse web interface in situations where the web interface is inconvenient due to the number of files or file locations (spread across multiple directories, mixed with files that have already been uploaded or file types that should be excluded) or the need to automate uploads. Since it uses the Dataverse API, transfers are limited in the same ways as HTTP uploads through the Dataverse web interface in terms of size and performance. The DVUploader logs its activity and can be killed and restarted as desired. If stopped and resumed, it will continue processing from where it left off.
-
-Usage
-~~~~~
-
-The DVUploader is open source and is available as source, as a Java jar, and with documentation at https://github.com/IQSS/dataverse-uploader. The DVUploader requires Java 1.8+. Users will need to install Java if they don't already have it and then download the DVUploader-v1.0.0.jar file. Users will need to know the URL of the Dataverse server, the DOI of their existing Dataverse Dataset, and have generated a Dataverse API Key (an option in the user's profile menu). 
-
-Basic usage is to run the command: ::
-
-    java -jar DVUploader-v1.0.0.jar -server=<Dataverse server URL> -did=<Dataset DOI> -key=<User's API Key> <file or directory list>
-
-Additional command line arguments are available to make the DVUploader list what it would do without uploading, limit the number of files it uploads, recurse through sub-directories, verify fixity, exclude files with specific extensions or name patterns, and/or wait longer than 60 seconds for any Dataverse ingest lock to clear (e.g. while the previously uploaded file is processed, as discussed in the :ref:`file-handling` section below).
-
-DVUploader is a community-developed tool, and its creation was primarily supported by the Texas Digital Library. Further information and support for DVUploader can be sought at `the project's GitHub repository <https://github.com/IQSS/dataverse-uploader>`_ . 
 
 .. _file-handling:
 
@@ -154,14 +136,14 @@ Tabular Data Files
 
 Files in certain formats - Stata, SPSS, R, Excel(xlsx) and CSV - may be ingested as tabular data (see "Tabular Data Ingest" section of the User Guide for details). Tabular data files can be further explored and manipulated with `TwoRavens <../user/data-exploration/tworavens.html>`_ - a statistical data exploration application integrated with Dataverse, as well as other :doc:`/installation/external-tools` if they have been enabled in the installation of Dataverse you are using. TwoRavens allows the user to run statistical models, view summary statistics, download subsets of variable vectors and more. To start, click on the "Explore" button, found next to each relevant tabular file (the application will be opened in a new window). Create and download your subset using `TwoRavens <../user/data-exploration/tworavens.html>`_. See the `TwoRavens documentation section <../user/data-exploration/tworavens.html>`_ for more information.
 
-Additional download options available for tabular data (found in the same drop-down menu under the "Download" button): 
+Additional download options available for tabular data (found in the same drop-down menu under the "Download" button):
 
-- As tab-delimited data (with the variable names in the first row); 
-- The original file uploaded by the user; 
-- Saved as R data (if the original file was not in R format); 
+- As tab-delimited data (with the variable names in the first row);
+- The original file uploaded by the user;
+- Saved as R data (if the original file was not in R format);
 - Variable Metadata (as a `DDI Codebook <http://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file);
-- Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
-- All of the above, as a zipped bundle. 
+- Data File Citation (currently in either RIS, EndNote XML, or BibTeX format);
+- All of the above, as a zipped bundle.
 
 
 Geospatial
@@ -176,18 +158,18 @@ For ingest into Dataverse and connecting to WorldMap, these 4 files are the mini
 * .dbf - attribute format; columnar attributes for each shape, in dBase IV format
 * .prj - projection format; the coordinate system and projection information, a plain text file describing the projection using well-known text format
 
-For a zipped shapefile, we require 4 files with these extensions. Other files may be included within the zipped shapefile, but they are not required: 
+For a zipped shapefile, we require 4 files with these extensions. Other files may be included within the zipped shapefile, but they are not required:
 
 * .shp
-* .shx 
-* .prj 
-* .dbf 
+* .shx
+* .prj
+* .dbf
 
-For example, if these files were included within a .zip, the “Map Data” button would appear: 
+For example, if these files were included within a .zip, the “Map Data” button would appear:
 
-* subway_line.shp 
-* subway_line.shx 
-* subway_line.prj 
+* subway_line.shp
+* subway_line.shx
+* subway_line.prj
 * subway_line.dbf
 
 Once you publish your dataset with your shape files, you will be able to use the "Map Data" button using `GeoConnect <https://github.com/IQSS/geoconnect>`_ to visualize and manipulate these files for users to Explore this geospatial data using the `WorldMap <http://worldmap.harvard.edu/>`__ interface. Please note: In order to map your data file, a copy will be sent to Harvard's `WorldMap <http://worldmap.harvard.edu/>`__ platform. You have the ability to delete any maps, and associated data, from the Harvard WorldMap platform, at any time.
@@ -202,7 +184,7 @@ Compressed Files
 
 Compressed files in zip format are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as is. If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the zip file will uploads as is.
 
-.. note:: If the uploaded zip file contains sub-folders, the names of the folders will be preserved as the ``DirectoryLabel`` attributes in the ``FileMetadata`` objects of the corresponding individual datafiles. As of writing this - v.4.11 - these labels are only used to restore the folder structure in multi-file, zipped download bundles (see :doc:`/api/dataaccess` for more information). In the future folder structure will be supported for organizing files on the dataset page as well. 
+.. note:: If the uploaded zip file contains sub-folders, the names of the folders will be preserved as the ``DirectoryLabel`` attributes in the ``FileMetadata`` objects of the corresponding individual datafiles. As of writing this - v.4.11 - these labels are only used to restore the folder structure in multi-file, zipped download bundles (see :doc:`/api/dataaccess` for more information). In the future folder structure will be supported for organizing files on the dataset page as well.
 
 Support for unpacking tar files will be added when this ticket is closed: https://github.com/IQSS/dataverse/issues/2195.
 
@@ -257,17 +239,17 @@ CC0 Public Domain Dedication
 ----------------------------
 By default, all new datasets created through Dataverse's web UI are given a `Creative Commons CC0 Public Domain Dedication <https://creativecommons.org/publicdomain/zero/1.0/>`_.
 
-The `Creative Commons <https://creativecommons.org>`_ organization defines a number of `licenses <https://creativecommons.org/licenses/>`_ that allow copyright holders to release their intellectual property more openly, with fewer legal restrictions than standard copyright enforces. Each Creative Commons license typically specifies simple terms for how the IP must be used, reused, shared, and attributed. In addition to these licenses, Creative Commons also provides public domain tools that make it easy to dedicate IP to the public domain. 
+The `Creative Commons <https://creativecommons.org>`_ organization defines a number of `licenses <https://creativecommons.org/licenses/>`_ that allow copyright holders to release their intellectual property more openly, with fewer legal restrictions than standard copyright enforces. Each Creative Commons license typically specifies simple terms for how the IP must be used, reused, shared, and attributed. In addition to these licenses, Creative Commons also provides public domain tools that make it easy to dedicate IP to the public domain.
 
-In the context of Dataverse, their `CC0 Public Domain Dedication <https://creativecommons.org/share-your-work/public-domain/cc0>`_ allows you to unambiguously waive all copyright control over your data in all jurisdictions worldwide. Data released with CC0 can be freely copied, modified, and distributed (even for commercial purposes) without violating copyright. In most parts of the world, factual data is exempt from copyright anyway, but applying CC0 removes all ambiguity and makes the legal copyright status of the data as clear as possible. Dataverse applies CC0 to datasets by default because it facilitates reuse, extensibility, and long-term preservation of research data by assuring that the data can be safely handled by anyone without fear of potential copyright pitfalls. 
+In the context of Dataverse, their `CC0 Public Domain Dedication <https://creativecommons.org/share-your-work/public-domain/cc0>`_ allows you to unambiguously waive all copyright control over your data in all jurisdictions worldwide. Data released with CC0 can be freely copied, modified, and distributed (even for commercial purposes) without violating copyright. In most parts of the world, factual data is exempt from copyright anyway, but applying CC0 removes all ambiguity and makes the legal copyright status of the data as clear as possible. Dataverse applies CC0 to datasets by default because it facilitates reuse, extensibility, and long-term preservation of research data by assuring that the data can be safely handled by anyone without fear of potential copyright pitfalls.
 
-Though CC0 waives a dataset owner's legal copyright controls over the data, it does not exempt Dataverse users from following ethical and professional norms in scholarly communications. The `Dataverse Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_ * as well as scientific best practices assert that proper credit should be given via citation. Regardless of whether CC0 has been applied or not, Dataverse users are expected to cite the data they use, giving credit to the data's authors. This expectation applies to both the Dataverse Community and the entire wider scholarly community. 
+Though CC0 waives a dataset owner's legal copyright controls over the data, it does not exempt Dataverse users from following ethical and professional norms in scholarly communications. The `Dataverse Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_ * as well as scientific best practices assert that proper credit should be given via citation. Regardless of whether CC0 has been applied or not, Dataverse users are expected to cite the data they use, giving credit to the data's authors. This expectation applies to both the Dataverse Community and the entire wider scholarly community.
 
 Additionally, users are still expected to respect access restrictions and other terms applied to CC0 files in Dataverse. Additional restrictions, conditions, and terms can still be compatible with CC0, as CC0 only operates in the realm of copyright, which is rather limited when it comes to data.
 
 If a data owner feels that CC0 is not suitable for their data, they are able to enter custom Terms of Use, as detailed in the following section.
 
-\* **Legal Disclaimer:** these `Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_ are not a substitute for the CC0 waiver or custom terms and licenses applicable to each dataset. The Community Norms are not a binding contractual agreement, and that downloading datasets from Dataverse does not create a legal obligation to follow these policies.  
+\* **Legal Disclaimer:** these `Community Norms <https://dataverse.org/best-practices/dataverse-community-norms>`_ are not a substitute for the CC0 waiver or custom terms and licenses applicable to each dataset. The Community Norms are not a binding contractual agreement, and that downloading datasets from Dataverse does not create a legal obligation to follow these policies.
 
 Custom Terms of Use for Datasets
 --------------------------------
@@ -276,7 +258,7 @@ If you are unable to use the CC0 Public Domain Dedication for your datasets, you
 
 Here is an `example of a Data Usage Agreement <https://dataverse.org/best-practices/sample-dua>`_ for datasets that have de-identified human subject data.
 
-Restricted Files + Terms of Access 
+Restricted Files + Terms of Access
 ----------------------------------
 
 If you restrict any files in your dataset, you will be prompted by a pop-up to enter Terms of Access for the data. This can also be edited in the Terms tab or selecting Terms in the "Edit" dropdown button in the dataset. You may also allow users to request access for your restricted files by enabling "Request Access". To add more information about the Terms of Access, we have provided fields like Data Access Place, Availability Status, Contact for Access, etc.
@@ -297,7 +279,7 @@ Dataverse user accounts can be granted roles that define which actions they are 
 
 Roles and permissions may also be granted to groups. Groups can be defined as a collection of Dataverse user accounts, a collection of IP addresses (e.g. all users of a library's computers), or a collection of all users who log in using a particular institutional login (e.g. everyone who logs in with a particular university's account credentials).
 
-Dataset-Level 
+Dataset-Level
 -------------
 
 Admins or curators of a dataset can assign roles and permissions to the users of that dataset. If you are an admin or curator of a dataset, then you can get to the dataset permissions page by clicking the "Edit" button, highlighting "Permissions" from the dropdown list, and clicking "Dataset".
@@ -334,21 +316,21 @@ Dataverse accepts provenance information in two forms: a *Provenance File* or a 
 
 .. figure:: ./img/prov0.png
     :alt: Edit provenance screenshot
-    
+
     Screenshot of file edit with highlighted entry point for provenance edit
 
 This will open a window where you can add your Provenance File and/or Provenance Description (see: :numref:`file-upload-prov-window`).
 
 .. _file-upload-prov-window:
-  
+
 .. figure:: ./img/prov1.png
    :alt: Edit provenance modal window
-   
+
    Screenshot of provenance editing modal window
 
 A **Provenance File** is the preferred way of submitting provenance information to Dataverse because it provides a detailed and trustworthy record. Provenance files are typically generated during the process of data analysis, using provenance capture tools like provR, RDataTracker, NoWorkFlow, recordr, or CamFlow.
 
-Once you upload a provenance file, Dataverse will need some additional information in order to accurately connect it to your data file. Once provenance file upload finishes, an input box labeled "Connect entity" will appear under the file. Provenance files contain a list of "entities", which include your data file as well as any objects associated with it (e.g. a chart, a spellchecker, etc.). You will need to tell Dataverse which entity within the provenance file represents your data file. You may type the name of the entity into the box, or click the arrow next to the box and select the entity from a list of all entities in the provenance file. 
+Once you upload a provenance file, Dataverse will need some additional information in order to accurately connect it to your data file. Once provenance file upload finishes, an input box labeled "Connect entity" will appear under the file. Provenance files contain a list of "entities", which include your data file as well as any objects associated with it (e.g. a chart, a spellchecker, etc.). You will need to tell Dataverse which entity within the provenance file represents your data file. You may type the name of the entity into the box, or click the arrow next to the box and select the entity from a list of all entities in the provenance file.
 
 For more information on entities and the contents of provenance files, see `the W3C PROV Model Primer  <https://www.w3.org/TR/prov-primer/#intuitive-overview-of-prov>`_.
 
@@ -360,12 +342,12 @@ A **Provenance Description** allows you to add more provenance information in ad
 
 You can return to attach provenance to your data file later on by clicking the "Add + Edit Metadata" button on the file page, and then clicking the "Edit -> Provenance" button.
 
-..	COMMENTED OUT UNTIL PROV TAB IS ADDED: 
-..	You can also attach provenance to your data file later on by clicking the "Add Provenance" button on the file page, under the Provenance tab: 
+..	COMMENTED OUT UNTIL PROV TAB IS ADDED:
+..	You can also attach provenance to your data file later on by clicking the "Add Provenance" button on the file page, under the Provenance tab:
 ..
 ..	**(Insert screenshot of Provenance Tab's "Add Provenance button" here, once that functionality is developed)**
 
-.. COMMENTED OUT UNTIL PROV GRAPH IS ADDED: 
+.. COMMENTED OUT UNTIL PROV GRAPH IS ADDED:
 .. Once a data file with an attached provenance file is published, you can see a graph of that file's provenance under the Provenance tab on the file page.
 
 .. _thumbnails-widgets:
@@ -376,7 +358,7 @@ Thumbnails + Widgets
 Thumbnails
 ----------
 
-Thumbnail images can be assigned to a dataset manually or automatically. The thumbnail for a dataset appears on the search result card for that dataset and on the dataset page itself. If a dataset contains one or more data files that Dataverse recognizes as an image, then one of those images is automatically selected as the dataset thumbnail. 
+Thumbnail images can be assigned to a dataset manually or automatically. The thumbnail for a dataset appears on the search result card for that dataset and on the dataset page itself. If a dataset contains one or more data files that Dataverse recognizes as an image, then one of those images is automatically selected as the dataset thumbnail.
 
 If you would like to manually select your dataset's thumbnail, you can do so by clicking the "Edit" button on your dataset, and selecting "Thumbnails + Widgets" from the dropdown menu.
 
@@ -402,7 +384,7 @@ In the Widgets tab, you can copy and paste the code snippets for the widget you 
 Dataset Widget
 ~~~~~~~~~~~~~~
 
-The Dataset Widget allows the citation, metadata, files and terms of your dataset to be displayed on your website. When someone downloads a data file in the widget, it will download directly from the datasets on your website. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your site. 
+The Dataset Widget allows the citation, metadata, files and terms of your dataset to be displayed on your website. When someone downloads a data file in the widget, it will download directly from the datasets on your website. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your site.
 
 To edit your dataset, you will need to return to the Dataverse repository where the dataset is stored. You can easily do this by clicking on the link that says "Data Stored in (Name) Dataverse" found in the bottom of the widget.
 
@@ -422,7 +404,7 @@ Adding Widgets to an OpenScholar Website
 Publish Dataset
 ===============
 
-When you publish a dataset (available to an Admin, Curator, or any custom role which has this level of permission assigned), you make it available to the public so that other users can browse or search for it. Once your dataset is ready to go public, go to your dataset page and click on the "Publish" button on the right hand side of the page. A pop-up will appear to confirm that you are ready to actually Publish since once a dataset is made public it can no longer be unpublished. 
+When you publish a dataset (available to an Admin, Curator, or any custom role which has this level of permission assigned), you make it available to the public so that other users can browse or search for it. Once your dataset is ready to go public, go to your dataset page and click on the "Publish" button on the right hand side of the page. A pop-up will appear to confirm that you are ready to actually Publish since once a dataset is made public it can no longer be unpublished.
 
 Whenever you edit your dataset, you are able to publish a new version of the dataset. The publish dataset button will reappear whenever you edit the metadata of the dataset or add a file.
 
@@ -456,7 +438,7 @@ Versioning is important for long-term research data management where metadata an
 
 .. figure:: ./img/data_publishing_version_workflow.png
     :alt: Dataset versioning
-    
+
     Schematic diagram presenting rules of Dataset versioning
 
 Once you edit your published dataset a new draft version of this dataset will be created. To publish this new version of your dataset, select the "Publish Dataset" button on the top right side of the page. If you were at version 1 of your dataset, depending on the types of changes you had made, you would be asked to publish your draft as either version 1.1 or version 2.0.

@@ -8,14 +8,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Dataverse 4.11\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"POT-Creation-Date: 2023-03-30 10:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.3\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/developers/intro.rst:3
 msgid "Introduction"
@@ -125,77 +125,70 @@ msgstr ""
 
 #: ../../source/developers/intro.rst:45
 msgid ""
-"DVUploader - a stand-alone command-line Java application that uses the "
-"Dataverse API to support upload of files from local disk to a Dataset: "
-"https://github.com/IQSS/dataverse-uploader"
-msgstr ""
-
-#: ../../source/developers/intro.rst:46
-msgid ""
 "Miniverse - expose metrics from a Dataverse database: "
 "https://github.com/IQSS/miniverse"
 msgstr ""
 
-#: ../../source/developers/intro.rst:47
+#: ../../source/developers/intro.rst:46
 msgid ""
 "Configuration management scripts - Ansible, Puppet, etc.: See \"Advanced "
 "Installation\" in the :doc:`/installation/prep` section of the "
 "Installation Guide."
 msgstr ""
 
-#: ../../source/developers/intro.rst:48
+#: ../../source/developers/intro.rst:47
 msgid ""
 ":doc:`/developers/unf/index` (Java) -  a Universal Numerical Fingerprint:"
 " https://github.com/IQSS/UNF"
 msgstr ""
 
-#: ../../source/developers/intro.rst:49
+#: ../../source/developers/intro.rst:48
 msgid ""
 "GeoConnect (Python) - create a map by uploading files to Dataverse: "
 "https://github.com/IQSS/geoconnect"
 msgstr ""
 
-#: ../../source/developers/intro.rst:50
+#: ../../source/developers/intro.rst:49
 msgid ""
 "`DataTags <https://github.com/IQSS/DataTags>`_ (Java and Scala) - tag "
 "datasets with privacy levels: https://github.com/IQSS/DataTags"
 msgstr ""
 
-#: ../../source/developers/intro.rst:51
+#: ../../source/developers/intro.rst:50
 msgid ""
 "`TwoRavens <http://2ra.vn>`_ (Javascript) - a `d3.js <http://d3js.org>`_ "
 "interface for exploring data and running Zelig models: "
 "https://github.com/IQSS/TwoRavens"
 msgstr ""
 
-#: ../../source/developers/intro.rst:52
+#: ../../source/developers/intro.rst:51
 msgid ""
 "`Zelig <http://zeligproject.org>`_ (R) - run statistical models on files "
 "uploaded to Dataverse: https://github.com/IQSS/Zelig"
 msgstr ""
 
-#: ../../source/developers/intro.rst:53
+#: ../../source/developers/intro.rst:52
 msgid ""
 "`Matrix <https://github.com/rindataverse/matrix>`_ - a visualization "
 "showing the connectedness and collaboration between authors and their "
 "affiliations."
 msgstr ""
 
-#: ../../source/developers/intro.rst:54
+#: ../../source/developers/intro.rst:53
 msgid "Third party apps - make use of Dataverse APIs: :doc:`/api/apps`"
 msgstr ""
 
-#: ../../source/developers/intro.rst:55
+#: ../../source/developers/intro.rst:54
 msgid ""
 "chat.dataverse.org - chat interface for Dataverse users and developers: "
 "https://github.com/IQSS/chat.dataverse.org"
 msgstr ""
 
-#: ../../source/developers/intro.rst:56
+#: ../../source/developers/intro.rst:55
 msgid "[Your project here] :)"
 msgstr ""
 
-#: ../../source/developers/intro.rst:60
+#: ../../source/developers/intro.rst:59
 msgid "Next: :doc:`windows`"
 msgstr ""
 

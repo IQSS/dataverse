@@ -8,14 +8,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Dataverse 4.11\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"POT-Creation-Date: 2023-03-30 10:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.3\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/api/apps.rst:2
 msgid "Apps"
@@ -121,34 +121,14 @@ msgid "Java"
 msgstr ""
 
 #: ../../source/api/apps.rst:57
-msgid "DVUploader"
-msgstr ""
-
-#: ../../source/api/apps.rst:59
-msgid ""
-"The open-source DVUploader tool is a stand-alone command-line Java "
-"application that uses the Dataverse API to upload files to a specified "
-"Dataset. Files can be specified by name, or the DVUploader can upload all"
-" files in a directory or recursively from a directory tree. The "
-"DVUploader can also verify that uploaded files match their local sources "
-"by comparing the local and remote fixity checksums. Source code, release "
-"1.0.0- jar file, and documentation are available on GitHub. DVUploader's "
-"creation was supported by the Texas Digital Library."
-msgstr ""
-
-#: ../../source/api/apps.rst:61
-msgid "https://github.com/IQSS/dataverse-uploader"
-msgstr ""
-
-#: ../../source/api/apps.rst:65
 msgid "Dataverse for Android"
 msgstr ""
 
-#: ../../source/api/apps.rst:67
+#: ../../source/api/apps.rst:59
 msgid "For now this is only a proof of concept."
 msgstr ""
 
-#: ../../source/api/apps.rst:69
+#: ../../source/api/apps.rst:61
 msgid "https://github.com/IQSS/dataverse-android"
 msgstr ""
 
