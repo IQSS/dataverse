@@ -200,9 +200,6 @@ will significantly hurt performance.
     * - ``/tmp``
       - \-
       - Location for temporary files, see also :ref:`temporary-file-storage`
-    * - ``${SECRETS_DIR}/doi.password``
-      - ``/secrets/doi.password``
-      - Location of a file containing a secret for :ref:`doi.password`, so it is not exposed as env. var.
 
 
 

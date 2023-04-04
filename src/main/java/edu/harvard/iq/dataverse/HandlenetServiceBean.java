@@ -20,10 +20,12 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,7 +70,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
     
     public static final String HDL_PROTOCOL = "hdl";
-    int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+    int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class);
     public static final String HTTP_HDL_RESOLVER_URL = "http://hdl.handle.net/";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     
@@ -229,8 +231,8 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     private PublicKeyAuthenticationInfo getAuthInfo(String handlePrefix) {
         logger.log(Level.FINE,"getAuthInfo");
         byte[] key = null;
-        String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+        String adminCredFile = JvmSettings.HANDLENET_KEY_PATH.lookup();
+        int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class);
        
         key = readKey(adminCredFile);        
         PrivateKey privkey = null;
@@ -271,13 +273,13 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     
     private PrivateKey readPrivKey(byte[] key, final String file) {
         logger.log(Level.FINE,"readPrivKey");
-        PrivateKey privkey=null;
+        PrivateKey privkey = null;
         
-        String secret = System.getProperty("dataverse.handlenet.admprivphrase");
-        byte secKey[] = null;
         try {
+            byte[] secKey = null;
             if ( Util.requiresSecretKey(key) ) {
-                secKey = secret.getBytes();
+                String secret = JvmSettings.HANDLENET_KEY_PASSPHRASE.lookup();
+                secKey = secret.getBytes(StandardCharsets.UTF_8);
             }
             key = Util.decrypt(key, secKey);
             privkey = Util.getPrivateKeyFromBytes(key, 0);
@@ -345,9 +347,9 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     public void deleteIdentifier(DvObject dvObject) throws Exception  {
         String handle = getDvObjectHandle(dvObject);
         String authHandle = getAuthenticationHandle(dvObject);
-
-        String adminCredFile = System.getProperty("dataverse.handlenet.admcredfile");
-        int handlenetIndex = System.getProperty("dataverse.handlenet.index")!=null? Integer.parseInt(System.getProperty("dataverse.handlenet.index")) : 300;
+    
+        String adminCredFile = JvmSettings.HANDLENET_KEY_PATH.lookup();
+        int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class);
        
         byte[] key = readKey(adminCredFile);
         PrivateKey privkey = readPrivKey(key, adminCredFile);
@@ -381,12 +383,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     
     @Override
     public List<String> getProviderInformation(){
-        ArrayList <String> providerInfo = new ArrayList<>();
-        String providerName = "Handle";
-        String providerLink = "https://hdl.handle.net";
-        providerInfo.add(providerName);
-        providerInfo.add(providerLink);
-        return providerInfo;
+        return List.of("Handle", "https://hdl.handle.net");
     }
 
 

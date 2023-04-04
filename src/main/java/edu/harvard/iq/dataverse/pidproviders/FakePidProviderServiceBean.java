@@ -39,12 +39,7 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
 
     @Override
     public List<String> getProviderInformation() {
-        ArrayList<String> providerInfo = new ArrayList<>();
-        String providerName = "FAKE";
-        String providerLink = "http://dataverse.org";
-        providerInfo.add(providerName);
-        providerInfo.add(providerLink);
-        return providerInfo;
+        return List.of("FAKE", "https://dataverse.org");
     }
 
     @Override
