@@ -12,7 +12,7 @@
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     
     <!-- Access Status -->
-    <li class="dropdown-header">File Access <span class="glyphicon glyphicon-file"/></li>
+    <li class="dropdown-header">#{bundle['dataset.accessBtn.header.fileaccess']} <span class="glyphicon glyphicon-file"/></li>
     <li><span class="dropdown-item-text">
             <span class="#{!fileMetadata.restricted ?
                            'glyphicon glyphicon-globe text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'glyphicon glyphicon-lock text-danger' : 'icon-unlock text-success')}"/>
@@ -211,7 +211,7 @@
     <!-- END: CAN DOWNLOAD ACCESS Options -->
     
     <!-- Download Metadata -->
-    <li class="dropdown-header">Download Metadata <span class="glyphicon glyphicon-download-alt"/></li>
+    <li class="dropdown-header">#{bundle['dataset.accessBtn.header.downloadmetadata']} <span class="glyphicon glyphicon-download-alt"/></li>
     
     <ui:fragment rendered="#{fileMetadata.dataFile.tabularData and fileDownloadHelper.canDownloadFile(fileMetadata)}">
         <li>

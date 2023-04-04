@@ -416,7 +416,7 @@ public class DataFile extends DvObject implements Comparable {
                 return ingestReports.get(0).getReport();
             }
         }
-        return "Ingest failed. No further information is available.";
+        return BundleUtil.getStringFromBundle("file.ingestFailed");
     }
     
     public boolean isTabularData() {
