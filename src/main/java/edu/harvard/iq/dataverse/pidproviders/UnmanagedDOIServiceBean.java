@@ -74,12 +74,7 @@ public class UnmanagedDOIServiceBean extends DOIServiceBean {
 
     @Override
     public List<String> getProviderInformation() {
-        ArrayList<String> providerInfo = new ArrayList<>();
-        String providerName = "UnmanagedDOIProvider";
-        String providerLink = "";
-        providerInfo.add(providerName);
-        providerInfo.add(providerLink);
-        return providerInfo;
+        return List.of("UnmanagedDOIProvider", "");
     }
 
 
