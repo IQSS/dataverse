@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -272,13 +273,13 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     
     private PrivateKey readPrivKey(byte[] key, final String file) {
         logger.log(Level.FINE,"readPrivKey");
-        PrivateKey privkey=null;
+        PrivateKey privkey = null;
         
-        String secret = JvmSettings.HANDLENET_KEY_PASSPHRASE.lookup();
-        byte secKey[] = null;
         try {
+            byte[] secKey = null;
             if ( Util.requiresSecretKey(key) ) {
-                secKey = secret.getBytes();
+                String secret = JvmSettings.HANDLENET_KEY_PASSPHRASE.lookup();
+                secKey = secret.getBytes(StandardCharsets.UTF_8);
             }
             key = Util.decrypt(key, secKey);
             privkey = Util.getPrivateKeyFromBytes(key, 0);
