@@ -687,6 +687,7 @@ public class FileUtil implements java.io.Serializable  {
             if (type == null) {
                 return null;
             }
+            NetcdfUtil.parseGeospatial(netcdfFile);
             switch (type) {
                 case "NetCDF":
                     return "application/netcdf";

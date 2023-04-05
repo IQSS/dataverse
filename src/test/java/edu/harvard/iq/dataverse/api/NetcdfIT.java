@@ -30,14 +30,15 @@ public class NetcdfIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String username = UtilIT.getUsernameFromResponse(createUser);
 
-        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse.prettyPrint();
-        createDataverseResponse.then().assertThat()
-                .statusCode(CREATED.getStatusCode());
+//        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+//        createDataverseResponse.prettyPrint();
+//        createDataverseResponse.then().assertThat()
+//                .statusCode(CREATED.getStatusCode());
+//
+//        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-
-        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+//        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi("root", apiToken);
         createDataset.prettyPrint();
         createDataset.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
@@ -46,10 +47,17 @@ public class NetcdfIT {
         String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
 
         String pathToFile = "src/test/resources/netcdf/madis-raob";
+        // https://www.ncei.noaa.gov/data/international-comprehensive-ocean-atmosphere/v3/archive/nrt/ICOADS_R3.0.0_1662-10.nc
+        // via https://data.noaa.gov/onestop/collections/details/9bd5c743-0684-4e70-817a-ed977117f80c?f=temporalResolution:1%20Minute%20-%20%3C%201%20Hour;dataFormats:NETCDF
+        pathToFile = "src/test/resources/netcdf/ICOADS_R3.0.0_1662-10.nc";
+//        pathToFile = "/Users/pdurbin/Downloads/perseus60.fits";
 
         Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
         uploadFile.prettyPrint();
         uploadFile.then().assertThat().statusCode(OK.getStatusCode());
+        
+        UtilIT.nativeGet(datasetId, apiToken).prettyPrint();
+        if (true) return;
 
         long fileId = JsonPath.from(uploadFile.body().asString()).getLong("data.files[0].dataFile.id");
         String tag = "NcML";

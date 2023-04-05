@@ -53,6 +53,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataIngest;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITSFileMetadataExtractor;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.netcdf.NetcdfFileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReader;
@@ -243,6 +244,7 @@ public class IngestServiceBean {
 
                                             // TODO: reformat this file to remove the many tabs added in cc08330
                                             extractMetadataNcml(dataFile, tempLocationPath);
+//                                            extractMetadataNcml(dataFile, tempLocationPath);
 
 					} catch (IOException ioex) {
                     logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
@@ -341,6 +343,7 @@ public class IngestServiceBean {
 					String fileName = fileMetadata.getLabel();
 
 					boolean metadataExtracted = false;
+					boolean metadataExtracted2 = false;
 					if (tabIngest && FileUtil.canIngestAsTabular(dataFile)) {
 						/*
 						 * Note that we don't try to ingest the file right away - instead we mark it as
@@ -350,6 +353,18 @@ public class IngestServiceBean {
 						 * until the ingest job is finished with the Ingest Service.
 						 */
 						dataFile.SetIngestScheduled();
+					} else if (fileMetadataExtractable2(dataFile, tempLocationPath)) {
+                                            try {
+                                                logger.info("trying to extract metadata from netcdf");
+                                                metadataExtracted2 = extractMetadata2(tempFileLocation, dataFile, version);
+                                            } catch (IOException ex) {
+                                                logger.info("could not extract metadata from netcdf: " + ex);
+                                            }
+                                            if (metadataExtracted2) {
+                                                logger.info("netcdf - Successfully extracted indexable metadata from file " + fileName);
+                                            } else {
+                                                logger.info("netcdf - Failed to extract indexable metadata from file " + fileName);
+                                            }
 					} else if (fileMetadataExtractable(dataFile)) {
 
 						try {
@@ -1166,7 +1181,105 @@ public class IngestServiceBean {
         }
         return false;
     }
-    
+
+    public boolean fileMetadataExtractable2(DataFile dataFile, Path tempLocationPath) {
+        logger.info("fileMetadataExtractable2...");
+        boolean extractable = false;
+        logger.fine("fileMetadataExtractable2: dataFileIn: " + dataFile + ". tempLocationPath: " + tempLocationPath);
+        InputStream inputStream = null;
+        String dataFileLocation = null;
+        if (tempLocationPath != null) {
+            // This file was just uploaded and hasn't been saved to S3 or local storage.
+            dataFileLocation = tempLocationPath.toString();
+        } else {
+            // This file is already on S3 or local storage.
+            File tempFile = null;
+            File localFile;
+            StorageIO<DataFile> storageIO;
+            try {
+                storageIO = dataFile.getStorageIO();
+                storageIO.open();
+                if (storageIO.isLocalFile()) {
+                    localFile = storageIO.getFileSystemPath().toFile();
+                    dataFileLocation = localFile.getAbsolutePath();
+                    logger.info("fileMetadataExtractable2: file is local. Path: " + dataFileLocation);
+                } else {
+                    // Need to create a temporary local file:
+                    tempFile = File.createTempFile("tempFileExtractMetadataNcml", ".tmp");
+                    try ( ReadableByteChannel targetFileChannel = (ReadableByteChannel) storageIO.getReadChannel();  FileChannel tempFileChannel = new FileOutputStream(tempFile).getChannel();) {
+                        tempFileChannel.transferFrom(targetFileChannel, 0, storageIO.getSize());
+                    }
+                    dataFileLocation = tempFile.getAbsolutePath();
+                    logger.info("fileMetadataExtractable2: file is on S3. Downloaded and saved to temp path: " + dataFileLocation);
+                }
+            } catch (IOException ex) {
+                logger.info("fileMetadataExtractable2, could not use storageIO for data file id " + dataFile.getId() + ". Exception: " + ex);
+            }
+        }
+        if (dataFileLocation != null) {
+            try ( NetcdfFile netcdfFile = NetcdfFiles.open(dataFileLocation)) {
+                logger.info("fileMetadataExtractable2: trying to open " + dataFileLocation);
+                if (netcdfFile != null) {
+                    logger.info("fileMetadataExtractable2: returning true");
+                    extractable = true;
+                } else {
+                    logger.info("NetcdfFiles.open() could not open file id " + dataFile.getId() + " (null returned).");
+                }
+            } catch (IOException ex) {
+                logger.info("NetcdfFiles.open() could not open file id " + dataFile.getId() + ". Exception caught: " + ex);
+            }
+        } else {
+            logger.info("dataFileLocation is null for file id " + dataFile.getId() + ". Can't extract NcML.");
+        }
+        return extractable;
+    }
+
+    public boolean extractMetadata2(String tempFileLocation, DataFile dataFile, DatasetVersion editVersion) throws IOException {
+        boolean ingestSuccessful = false;
+
+        InputStream tempFileInputStream = null;
+        if (tempFileLocation == null) {
+            StorageIO<DataFile> sio = dataFile.getStorageIO();
+            sio.open(DataAccessOption.READ_ACCESS);
+            tempFileInputStream = sio.getInputStream();
+        } else {
+            try {
+                tempFileInputStream = new FileInputStream(new File(tempFileLocation));
+            } catch (FileNotFoundException notfoundEx) {
+                throw new IOException("Could not open temp file " + tempFileLocation);
+            }
+        }
+
+        // Locate metadata extraction plugin for the file format by looking
+        // it up with the Ingest Service Provider Registry:
+        NetcdfFileMetadataExtractor extractorPlugin = new NetcdfFileMetadataExtractor();
+        logger.info("creating file from " + tempFileLocation);
+        // FIXME: this won't work with S3!
+        File file = new File(tempFileLocation);
+        FileMetadataIngest extractedMetadata = extractorPlugin.ingestFile(file);
+        Map<String, Set<String>> extractedMetadataMap = extractedMetadata.getMetadataMap();
+
+        // Store the fields and values we've gathered for safe-keeping:
+        // from 3.6:
+        // attempt to ingest the extracted metadata into the database; 
+        // TODO: this should throw an exception if anything goes wrong.
+//        FileMetadata fileMetadata = dataFile.getFileMetadata();
+        if (extractedMetadataMap != null) {
+            logger.info("netcdf - Ingest Service: Processing extracted metadata;");
+            logger.info("extractedMetadata.getMetadataBlockName(): " + extractedMetadata.getMetadataBlockName());
+            if (extractedMetadata.getMetadataBlockName() != null) {
+                logger.info("netcdf - Ingest Service: This metadata belongs to the " + extractedMetadata.getMetadataBlockName() + " metadata block.");
+                processDatasetMetadata(extractedMetadata, editVersion);
+            }
+
+//            processFileLevelMetadata(extractedMetadata, fileMetadata);
+        }
+
+        ingestSuccessful = true;
+
+        return ingestSuccessful;
+    }
+
     /* 
      * extractMetadata: 
      * framework for extracting metadata from uploaded files. The results will 
@@ -1322,15 +1435,18 @@ public class IngestServiceBean {
         for (MetadataBlock mdb : editVersion.getDataset().getOwner().getMetadataBlocks()) {  
             if (mdb.getName().equals(fileMetadataIngest.getMetadataBlockName())) {
                 logger.fine("Ingest Service: dataset version has "+mdb.getName()+" metadata block enabled.");
+                logger.info("Ingest Service: dataset version has "+mdb.getName()+" metadata block enabled.");
                 
                 editVersion.setDatasetFields(editVersion.initDatasetFields());
                 
                 Map<String, Set<String>> fileMetadataMap = fileMetadataIngest.getMetadataMap();
                 for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
                     if (dsft.isPrimitive()) {
+                        logger.info("primitive type: " + dsft);
                         if (!dsft.isHasParent()) {
                             String dsfName = dsft.getName();
                             // See if the plugin has found anything for this field: 
+                            logger.info("iterating over dsft: " + dsft + "map: " + fileMetadataMap.get(dsfName));
                             if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
 
                                 logger.fine("Ingest Service: found extracted metadata for field " + dsfName);
@@ -1445,6 +1561,7 @@ public class IngestServiceBean {
                                             // (the implementation below may be inefficient - ?)
 
                                             for (String fValue : mValues) {
+                                                logger.info("Non controlled vocab value " + fValue + " ... " + dsfName);
                                                 if (!dsft.isControlledVocabulary()) {
                                                     Iterator<DatasetFieldValue> dsfvIt = dsf.getDatasetFieldValues().iterator();
 
@@ -1459,8 +1576,9 @@ public class IngestServiceBean {
                                                         }
                                                     }
 
+                                                    logger.info("value exists: " + valueExists);
                                                     if (!valueExists) {
-                                                        logger.fine("Creating a new value for field " + dsfName + ": " + fValue);
+                                                        logger.info("Creating a new value for field " + dsfName + ": " + fValue);
                                                         DatasetFieldValue newDsfv = new DatasetFieldValue(dsf);
                                                         newDsfv.setValue(fValue);
                                                         dsf.getDatasetFieldValues().add(newDsfv);
@@ -1512,6 +1630,7 @@ public class IngestServiceBean {
                             }
                         }
                     } else {
+                        logger.info("compound field: " + dsft);
                         // A compound field: 
                         // See if the plugin has found anything for the fields that 
                         // make up this compound field; if we find at least one 
@@ -1522,17 +1641,22 @@ public class IngestServiceBean {
                         int nonEmptyFields = 0; 
                         for (DatasetFieldType cdsft : dsft.getChildDatasetFieldTypes()) {
                             String dsfName = cdsft.getName();
+                            logger.info("testing... iterating, field " + dsfName + ", part of the compound field "+dsft.getName());
                             if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {  
-                                logger.fine("Ingest Service: found extracted metadata for field " + dsfName + ", part of the compound field "+dsft.getName());
+                                logger.info("Ingest Service: found extracted metadata for field " + dsfName + ", part of the compound field "+dsft.getName());
                                 
+                                if (!cdsft.isPrimitive()) {
+                                    logger.info("is not primitive ... found extracted metadata for field " + dsfName + ", part of the compound field "+dsft.getName());
+                                }
                                 if (cdsft.isPrimitive()) {
+                                    logger.info("is primitive ... found extracted metadata for field " + dsfName + ", part of the compound field "+dsft.getName());
                                     // probably an unnecessary check - child fields
                                     // of compound fields are always primitive... 
                                     // but maybe it'll change in the future. 
-                                    if (!cdsft.isControlledVocabulary()) {
-                                        // TODO: can we have controlled vocabulary
-                                        // sub-fields inside compound fields?
-                                        
+                                    if (cdsft.isControlledVocabulary()) {
+                                        logger.info("is controlled vocab... found extracted metadata for field " + dsfName + ", part of the compound field "+dsft.getName());
+
+                                        // FIXME actually check the controlled vocabulary!
                                         DatasetField childDsf = new DatasetField();
                                         childDsf.setDatasetFieldType(cdsft);
                                         
@@ -1545,11 +1669,36 @@ public class IngestServiceBean {
                                         
                                         nonEmptyFields++;
                                     }
+                                    if (!cdsft.isControlledVocabulary()) {
+                                        logger.info("not controlled vocab... found extracted metadata for field " + dsfName + ", part of the compound field "+dsft.getName());
+                                        // FIXME: Delete this. Yes, country is inside geographicCoverage
+                                        // TODO: can we have controlled vocabulary
+                                        // sub-fields inside compound fields?
+                                        
+                                        DatasetField childDsf = new DatasetField();
+                                        childDsf.setDatasetFieldType(cdsft);
+                                        
+                                        DatasetFieldValue newDsfv = new DatasetFieldValue(childDsf);
+                                        // Correctly shows "Boston"
+                                        logger.info("not cv... for field " + dsfName + ", part of the compound field "+dsft.getName() + " setting value to " +(String)fileMetadataMap.get(dsfName).toArray()[0]);
+                                        newDsfv.setValue((String)fileMetadataMap.get(dsfName).toArray()[0]);
+                                        childDsf.getDatasetFieldValues().add(newDsfv);
+                                        
+                                        childDsf.setParentDatasetFieldCompoundValue(compoundDsfv);
+                                        compoundDsfv.getChildDatasetFields().add(childDsf);
+                                        
+                                        nonEmptyFields++;
+                                    }
                                 } 
                             }
                         }
                         
-                        if (nonEmptyFields > 0) {
+
+                        // FIXME: put this back! Remove the false that
+                        // we're using to disable the check. We're getting an NPE at
+                        // String cdsfValue = cdsf.getDatasetFieldValues().get(0).getValue();
+                        // with country populated with "United States".
+                        if (false && nonEmptyFields > 0) {
                             // let's go through this dataset's fields and find the 
                             // actual parent for this sub-field: 
                             for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
