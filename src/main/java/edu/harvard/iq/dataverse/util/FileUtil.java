@@ -99,6 +99,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.apache.commons.io.FileUtils;
 
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FilenameUtils;
@@ -107,6 +108,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import java.util.Arrays;
+import java.util.Enumeration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import ucar.nc2.NetcdfFile;
@@ -934,6 +936,7 @@ public class FileUtil implements java.io.Serializable  {
                 // DataFile objects from its contents:
             } else if (finalType.equals("application/zip")) {
 
+                ZipFile zipFile = null;
                 ZipInputStream unZippedIn = null;
                 ZipEntry zipEntry = null;
 
@@ -963,6 +966,66 @@ public class FileUtil implements java.io.Serializable  {
                 	 }
                      */
 
+                    /** 
+                     * Perform a quick check for how many individual files are 
+                     * inside this zip archive. If it's above the limit, we can 
+                     * give up right away, without doing any unpacking. 
+                     * This should be a fairly inexpensive operation, we just need
+                     * to read the directory at the end of the file. 
+                     */
+                    
+                    if (charset != null) {
+                        zipFile = new ZipFile(tempFile.toFile(), charset);
+                    } else {
+                        zipFile = new ZipFile(tempFile.toFile());
+                    }
+                    // The ZipFile constructors above will throw ZipException - 
+                    // a type of IOException - if there's something is wrong 
+                    // with this file as a zip. There's no need to intercept it
+                    // here, it will be caught further below, with other IOExceptions,
+                    // at which point we'll give up on trying to unpack it and
+                    // try to save it as is.
+                      
+                    int numberOfUnpackableFiles = 0; 
+                    /**
+                     * Note that we can't just use zipEntry.size(),
+                     * unfortunately, since that's the total number of entries,
+                     * some of which can be directories. So we need to go
+                     * through all the individual zipEntries and count the ones
+                     * that are files.
+                     */
+
+                    for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
+                        ZipEntry entry = entries.nextElement();
+                        if (!entry.isDirectory()) {
+                            String shortName = entry.getName().replaceFirst("^.*[\\/]", "");
+                            // ... and, finally, check if it's a "fake" file - a zip archive entry
+                            // created for a MacOS X filesystem element: (these
+                            // start with "._") 
+                            if (!shortName.startsWith("._") && !shortName.startsWith(".DS_Store") && !"".equals(shortName)) {
+                                numberOfUnpackableFiles++;
+                                // In addition to counting the files, we will
+                                // also check the file size while we're here; if a single 
+                                // file is above the individual size limit, unzipped,
+                                // we give up on unpacking the archive as well: 
+                                if (entry.getSize() > fileSizeLimit) {
+                                    throw new FileExceedsMaxSizeException("");
+                                }
+                            }
+                        }
+                    }
+                    zipFile.close(); // we'll reopen it again for unzipping, if needed
+                    
+                    if (numberOfUnpackableFiles > fileNumberLimit) {
+                        logger.warning("Zip upload - too many files in the zip to process individually.");
+                        warningMessage = "The number of files in the zip archive is over the limit (" + fileNumberLimit
+                                + "); please upload a zip archive with fewer files, if you want them to be ingested "
+                                + "as individual DataFiles.";
+                        throw new IOException();
+                    }
+                    
+                    // OK we're still here - we can proceed unzipping:
+                    
                     if (charset != null) {
                         unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()), charset);
                     } else {
@@ -983,7 +1046,7 @@ public class FileUtil implements java.io.Serializable  {
                             logger.warning(warningMessage);
                             throw new IOException();
                         }
-
+                        
                         if (zipEntry == null) {
                             break;
                         }
@@ -1073,11 +1136,15 @@ public class FileUtil implements java.io.Serializable  {
                     warningMessage =  BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed.size", Arrays.asList(FileSizeChecker.bytesToHumanReadable(fileSizeLimit)));
                     datafiles.clear();
                 } finally {
+                    if (zipFile != null) {
+                        try {
+                            zipFile.close();
+                        } catch (Exception zEx) {}
+                    }
                     if (unZippedIn != null) {
                         try {
                             unZippedIn.close();
-                        } catch (Exception zEx) {
-                        }
+                        } catch (Exception zEx) {}
                     }
                 }
                 if (datafiles.size() > 0) {
