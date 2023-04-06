@@ -979,12 +979,15 @@ public class FileUtil implements java.io.Serializable  {
                     } else {
                         zipFile = new ZipFile(tempFile.toFile());
                     }
-                    // The ZipFile constructors above will throw ZipException - 
-                    // a type of IOException - if there's something is wrong 
-                    // with this file as a zip. There's no need to intercept it
-                    // here, it will be caught further below, with other IOExceptions,
-                    // at which point we'll give up on trying to unpack it and
-                    // try to save it as is.
+                    /**
+                     * The ZipFile constructors above will throw ZipException - 
+                     * a type of IOException - if there's something wrong 
+                     * with this file as a zip. There's no need to intercept it
+                     * here, it will be caught further below, with other IOExceptions,
+                     * at which point we'll give up on trying to unpack it and
+                     * then attempt to save it as is.
+                     */
+
                       
                     int numberOfUnpackableFiles = 0; 
                     /**
@@ -997,6 +1000,7 @@ public class FileUtil implements java.io.Serializable  {
 
                     for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
                         ZipEntry entry = entries.nextElement();
+                        logger.fine("inside first zip pass; this entry: "+entry.getName());
                         if (!entry.isDirectory()) {
                             String shortName = entry.getName().replaceFirst("^.*[\\/]", "");
                             // ... and, finally, check if it's a "fake" file - a zip archive entry
@@ -1004,27 +1008,29 @@ public class FileUtil implements java.io.Serializable  {
                             // start with "._") 
                             if (!shortName.startsWith("._") && !shortName.startsWith(".DS_Store") && !"".equals(shortName)) {
                                 numberOfUnpackableFiles++;
-                                // In addition to counting the files, we will
-                                // also check the file size while we're here; if a single 
+                                if (numberOfUnpackableFiles > fileNumberLimit) {
+                                    logger.warning("Zip upload - too many files in the zip to process individually.");
+                                    warningMessage = "The number of files in the zip archive is over the limit (" + fileNumberLimit
+                                            + "); please upload a zip archive with fewer files, if you want them to be ingested "
+                                            + "as individual DataFiles.";
+                                    throw new IOException();
+                                }
+                                // In addition to counting the files, we can
+                                // also check the file size while we're here, 
+                                // provided the size limit is defined; if a single 
                                 // file is above the individual size limit, unzipped,
-                                // we give up on unpacking the archive as well: 
-                                if (entry.getSize() > fileSizeLimit) {
-                                    throw new FileExceedsMaxSizeException("");
+                                // we give up on unpacking this zip archive as well: 
+                                if (fileSizeLimit != null && entry.getSize() > fileSizeLimit) {
+                                    throw new FileExceedsMaxSizeException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(entry.getSize()), bytesToHumanReadable(fileSizeLimit)));
                                 }
                             }
                         }
                     }
-                    zipFile.close(); // we'll reopen it again for unzipping, if needed
                     
-                    if (numberOfUnpackableFiles > fileNumberLimit) {
-                        logger.warning("Zip upload - too many files in the zip to process individually.");
-                        warningMessage = "The number of files in the zip archive is over the limit (" + fileNumberLimit
-                                + "); please upload a zip archive with fewer files, if you want them to be ingested "
-                                + "as individual DataFiles.";
-                        throw new IOException();
-                    }
+                    // OK we're still here - that means we can proceed unzipping. 
                     
-                    // OK we're still here - we can proceed unzipping:
+                    // Close the ZipFile, re-open as ZipInputStream: 
+                    zipFile.close(); 
                     
                     if (charset != null) {
                         unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()), charset);
@@ -1076,8 +1082,13 @@ public class FileUtil implements java.io.Serializable  {
                                     // OK, this seems like an OK file entry - we'll try
                                     // to read it and create a DataFile with it:
 
-                                    File unZippedTempFile = saveInputStreamInTempFile(unZippedIn, fileSizeLimit);
-                                    DataFile datafile = createSingleDataFile(version, unZippedTempFile, null, shortName,
+                                    String storageIdentifier = generateStorageIdentifier();
+                                    File unzippedFile = new File(getFilesTempDirectory() + "/" + storageIdentifier);
+                                    Files.copy(unZippedIn, unzippedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                                    // No need to check the size of this unpacked file against the size limit, 
+                                    // since we've already checked for that in the first pass.
+                                    
+                                    DataFile datafile = createSingleDataFile(version, null, storageIdentifier, shortName,
                                             MIME_TYPE_UNDETERMINED_DEFAULT,
                                             systemConfig.getFileFixityChecksumAlgorithm(), null, false);
 
@@ -1147,21 +1158,7 @@ public class FileUtil implements java.io.Serializable  {
                         } catch (Exception zEx) {}
                     }
                 }
-                if (datafiles.size() > 0) {
-                    // link the data files to the dataset/version:
-                    // (except we no longer want to do this! -- 4.6)
-                    /*Iterator<DataFile> itf = datafiles.iterator();
-                	while (itf.hasNext()) {
-                    	DataFile datafile = itf.next();
-                    	datafile.setOwner(version.getDataset());
-                        if (version.getFileMetadatas() == null) {
-                        	version.setFileMetadatas(new ArrayList());
-                        }
-                    	version.getFileMetadatas().add(datafile.getFileMetadata());
-                    	datafile.getFileMetadata().setDatasetVersion(version);
-                    
-                    	version.getDataset().getFiles().add(datafile);
-                	} */
+                if (!datafiles.isEmpty()) {
                     // remove the uploaded zip file:
                     try {
                         Files.delete(tempFile);
@@ -1408,13 +1405,13 @@ public class FileUtil implements java.io.Serializable  {
             fmd.setDatasetVersion(version);
             version.getDataset().getFiles().add(datafile);
         }
-        if(storageIdentifier==null) {
-        generateStorageIdentifier(datafile);
-        if (!tempFile.renameTo(new File(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()))) {
-            return null;
-        }
+        if (storageIdentifier == null) {
+            generateStorageIdentifier(datafile);
+            if (!tempFile.renameTo(new File(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()))) {
+                return null;
+            }
         } else {
-        	datafile.setStorageIdentifier(storageIdentifier);
+            datafile.setStorageIdentifier(storageIdentifier);
         }
 
         if ((checksum !=null)&&(!checksum.isEmpty())) {
