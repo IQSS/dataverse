@@ -1269,7 +1269,7 @@ public class IngestServiceBean {
                     String ncml = netcdfFile.toNcml("");
                     inputStream = new ByteArrayInputStream(ncml.getBytes(StandardCharsets.UTF_8));
                 } else {
-                    logger.info("NetcdfFiles.open() could not open file id " + dataFile.getId() + " (null returned).");
+                    logger.fine("NetcdfFiles.open() could not open file id " + dataFile.getId() + " (null returned).");
                 }
             } catch (IOException ex) {
                 logger.info("NetcdfFiles.open() could not open file id " + dataFile.getId() + ". Exception caught: " + ex);
@@ -1307,7 +1307,7 @@ public class IngestServiceBean {
                 logger.fine("Aux file extracted from NetCDF/HDF5 file saved to storage (but not to the database yet) from file id  " + dataFile.getId());
                 ncmlFileCreated = true;
             } catch (Exception ex) {
-                logger.info("exception throw calling processAuxiliaryFile: " + ex);
+                logger.fine("exception throw calling processAuxiliaryFile: " + ex);
             }
         } else {
             logger.info("extractMetadataNcml: input stream is null! dataFileLocation was " + dataFileLocation);
