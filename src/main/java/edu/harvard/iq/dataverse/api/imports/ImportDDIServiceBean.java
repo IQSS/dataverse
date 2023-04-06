@@ -1267,20 +1267,20 @@ public class ImportDDIServiceBean {
     }
    
     private void processSerStmt(XMLStreamReader xmlr, MetadataBlockDTO citation) throws XMLStreamException {
-
-        List<HashSet<FieldDTO>> series = new ArrayList<>();
-        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+        FieldDTO seriesInformation = null;
+        FieldDTO seriesName = null;
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {            
             if (event == XMLStreamConstants.START_ELEMENT) {
-                if (xmlr.getLocalName().equals("series")) {
-                    HashSet<FieldDTO> set = new HashSet<>();
-                    addToSet(set, "seriesInformation", xmlr.getAttributeValue(null, "information"));
-                    addToSet(set, "seriesName", parseText(xmlr));
-                    series.add(set);
+                if (xmlr.getLocalName().equals("serInfo")) {
+                     seriesInformation = FieldDTO.createPrimitiveFieldDTO("seriesInformation", parseText(xmlr));
+                }
+                if (xmlr.getLocalName().equals("serName")) {
+                     seriesName = FieldDTO.createPrimitiveFieldDTO("seriesName", parseText(xmlr));
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("serStmt")) {
-                    if (!series.isEmpty()) {
-                        citation.addField(FieldDTO.createMultipleCompoundFieldDTO("series", series));
+                    if (seriesInformation != null || seriesName != null) {
+                        citation.addField(FieldDTO.createMultipleCompoundFieldDTO("series", seriesName, seriesInformation ));
                     }
                     return;
                 }
