@@ -627,7 +627,8 @@ public class JsonPrinter {
         fileName = fileMetadata.getLabel();
         GlobalId filePid = df.getGlobalId();
         String pidURL = (filePid!=null)? filePid.asURL(): null;
-        String pidString = (filePid!=null)? filePid.asString(): null;
+        //For backward compatibility - prior to #8674, asString() returned "" for the value when no PID exists.
+        String pidString = (filePid!=null)? filePid.asString(): "";
 
         JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
 
