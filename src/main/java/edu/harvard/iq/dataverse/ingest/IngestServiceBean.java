@@ -1310,7 +1310,7 @@ public class IngestServiceBean {
                 logger.fine("exception throw calling processAuxiliaryFile: " + ex);
             }
         } else {
-            logger.info("extractMetadataNcml: input stream is null! dataFileLocation was " + dataFileLocation);
+            logger.fine("extractMetadataNcml: input stream is null! dataFileLocation was " + dataFileLocation);
         }
 
         return ncmlFileCreated;
