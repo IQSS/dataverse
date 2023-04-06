@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetLockDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
+import edu.harvard.iq.dataverse.api.dto.FileLabelsChangeOptionsDTO;
 import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockWithFieldsDTO;
 import edu.harvard.iq.dataverse.api.dto.PrivateUrlDTO;
@@ -28,6 +29,8 @@ import edu.harvard.iq.dataverse.datafile.file.FileDownloadAPIHandler;
 import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
+import edu.harvard.iq.dataverse.dataset.FileLabelInfo;
+import edu.harvard.iq.dataverse.dataset.FileLabelsService;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
@@ -184,6 +187,7 @@ public class Datasets extends AbstractApiBean {
     private DataverseRoleServiceBean rolesSvc;
     private RoleAssigneeServiceBean roleAssigneeSvc;
     private PermissionServiceBean permissionSvc;
+    private FileLabelsService fileLabelsService;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -200,7 +204,8 @@ public class Datasets extends AbstractApiBean {
                     DatasetsValidators datasetsValidators, OptionalFileParams optionalFileParamsSvc,
                     DataFileCreator dataFileCreator, DatasetThumbnailService datasetThumbnailService,
                     FileDownloadAPIHandler fileDownloadAPIHandler, DataverseRoleServiceBean rolesSvc,
-                    RoleAssigneeServiceBean roleAssigneeSvc, PermissionServiceBean permissionSvc) {
+                    RoleAssigneeServiceBean roleAssigneeSvc, PermissionServiceBean permissionSvc,
+                    FileLabelsService fileLabelsService) {
         this.datasetDao = datasetDao;
         this.dataverseDao = dataverseDao;
         this.userNotificationService = userNotificationService;
@@ -222,6 +227,7 @@ public class Datasets extends AbstractApiBean {
         this.rolesSvc = rolesSvc;
         this.roleAssigneeSvc = roleAssigneeSvc;
         this.permissionSvc = permissionSvc;
+        this.fileLabelsService = fileLabelsService;
     }
 
     // -------------------- LOGIC --------------------
@@ -1470,6 +1476,35 @@ public class Datasets extends AbstractApiBean {
                 return wr.getResponse();
             }
         });
+    }
+
+    @GET
+    @Path("{id}/filelabels")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listLabels(@PathParam("id") String datasetId) throws WrappedResponse {
+        Dataset dataset = findDatasetOrDie(datasetId);
+        return ok(fileLabelsService.prepareFileLabels(dataset, new FileLabelsChangeOptionsDTO()));
+    }
+
+    @POST
+    @ApiWriteOperation
+    @Path("{id}/filelabels")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response changeLabels(@PathParam("id") String datasetId, FileLabelsChangeOptionsDTO options) throws WrappedResponse {
+        Dataset dataset = findDatasetOrDie(datasetId);
+        List<FileLabelInfo> changedLabels;
+        try {
+            changedLabels = fileLabelsService.changeLabels(fileLabelsService.prepareFileLabels(dataset, options), options);
+            List<FileLabelInfo> result = fileLabelsService.updateDataset(dataset, changedLabels, options);
+            return ok(result.stream().filter(FileLabelInfo::isAffected).collect(Collectors.toList()));
+        } catch (EJBException ee) {
+            if (ee.getCause() instanceof IllegalStateException) {
+                throw new WrappedResponse(badRequest("Error occurred – probably input contained duplicated filenames"));
+            } else {
+                throw ee;
+            }
+        }
     }
 
     // -------------------- PRIVATE --------------------
