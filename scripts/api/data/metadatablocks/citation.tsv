@@ -43,7 +43,7 @@
 	producerURL	URL	The URL of the producer's website	https://	url	39	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation	
 	producerLogoURL	Logo URL	The URL of the producer's logo	https://	url	40	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation	
 	productionDate	Production Date	The date when the data were produced (not distributed, published, or archived)	YYYY-MM-DD	date	41		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation	
-	productionPlace	Production Location	The location where the data and any related materials were produced or collected		text	42		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	
+	productionPlace	Production Location	The location where the data and any related materials were produced or collected		text	42		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation	
 	contributor	Contributor	The entity, such as a person or organization, responsible for collecting, managing, or otherwise contributing to the development of the Dataset		none	43	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	http://purl.org/dc/terms/contributor
 	contributorType	Type	Indicates the type of contribution made to the dataset		text	44	#VALUE 	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	citation	
 	contributorName	Name	The name of the contributor, e.g. the person's name or the name of an organization	1) FamilyName, GivenName or 2) Organization	text	45	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	citation	
@@ -96,22 +96,23 @@
 	subject	Other	D12	13											
 	publicationIDType	ark		0											
 	publicationIDType	arXiv		1											
-	publicationIDType	bibcode		2											
-	publicationIDType	doi		3											
-	publicationIDType	ean13		4											
-	publicationIDType	eissn		5											
-	publicationIDType	handle		6											
-	publicationIDType	isbn		7											
-	publicationIDType	issn		8											
-	publicationIDType	istc		9											
-	publicationIDType	lissn		10											
-	publicationIDType	lsid		11											
-	publicationIDType	pmid		12											
-	publicationIDType	purl		13											
-	publicationIDType	upc		14											
-	publicationIDType	url		15											
-	publicationIDType	urn		16											
-	publicationIDType	DASH-NRS		17											
+	publicationIDType	bibcode		2								
+	publicationIDType	cstr		3											
+	publicationIDType	doi		4											
+	publicationIDType	ean13		5											
+	publicationIDType	eissn		6											
+	publicationIDType	handle		7											
+	publicationIDType	isbn		8											
+	publicationIDType	issn		9											
+	publicationIDType	istc		10											
+	publicationIDType	lissn		11											
+	publicationIDType	lsid		12											
+	publicationIDType	pmid		13											
+	publicationIDType	purl		14											
+	publicationIDType	upc		15											
+	publicationIDType	url		16	
+	publicationIDType	urn		17											
+	publicationIDType	DASH-NRS		18		
 	contributorType	Data Collector		0											
 	contributorType	Data Curator		1											
 	contributorType	Data Manager		2											

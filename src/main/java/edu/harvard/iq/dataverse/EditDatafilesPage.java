@@ -5,7 +5,9 @@ import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
@@ -31,11 +33,14 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+import edu.harvard.iq.dataverse.util.WebloaderUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
@@ -539,7 +544,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
 
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
 
         //TODO: review if we we need this check; 
         // as getEditVersion should either return the exisiting draft or create a new one      
@@ -586,8 +591,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                                                 datafileService,
                                                 permissionService,
                                                 commandEngine,
-                                                systemConfig,
-                                                licenseServiceBean);
+                                                systemConfig);
                         
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
                     dataset,
@@ -890,7 +894,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // ToDo - FileMetadataUtil.removeFileMetadataFromList should handle these two
                 // removes so they could be put after this if clause and the else clause could
                 // be removed.
-                dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                dataset.getOrCreateEditVersion().getFileMetadatas().remove(markedForDelete);
                 fileMetadatas.remove(markedForDelete);
 
                 filesToBeDeleted.add(markedForDelete);
@@ -907,7 +911,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // 1. delete the filemetadata from the local display list: 
                 FileMetadataUtil.removeFileMetadataFromList(fileMetadatas, markedForDelete);
                 // 2. delete the filemetadata from the version: 
-                FileMetadataUtil.removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
+                FileMetadataUtil.removeFileMetadataFromList(dataset.getOrCreateEditVersion().getFileMetadatas(), markedForDelete);
             }
 
             if (markedForDelete.getDataFile().getId() == null) {
@@ -1201,7 +1205,7 @@ public class EditDatafilesPage implements java.io.Serializable {
              */
         }
 
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
         logger.fine("working version id: " + workingVersion.getId());
 
         if (FileEditMode.EDIT == mode && Referrer.FILE == referrer) {
@@ -2425,10 +2429,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             return false;
         }
 
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
-            filesRootDirectory = "/tmp/files";
-        }
+        // Retrieve via MPCONFIG. Has sane default /tmp/dataverse from META-INF/microprofile-config.properties
+        String filesRootDirectory = JvmSettings.FILES_DIRECTORY.lookup();
 
         String fileSystemName = filesRootDirectory + "/temp/" + fileSystemId;
 
@@ -3067,6 +3069,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         return settingsWrapper.isGlobusUpload()
                 && settingsWrapper.isGlobusEnabledStorageDriver(dataset.getEffectiveStorageDriverId());
     }
+    
+    public boolean webloaderUploadSupported() {
+        return settingsWrapper.isWebloaderUpload() && StorageIO.isDirectUploadEnabled(dataset.getEffectiveStorageDriverId());
+    }
 
     private void populateFileMetadatas() {
         fileMetadatas = new ArrayList<>();
@@ -3105,5 +3111,19 @@ public class EditDatafilesPage implements java.io.Serializable {
     //Determines whether this Dataset uses a public store and therefore doesn't support embargoed or restricted files
     public boolean isHasPublicStore() {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(dataset.getEffectiveStorageDriverId()));
+    }
+    
+    public String getWebloaderUrlForDataset(Dataset d) {
+        String localeCode = session.getLocaleCode();
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            ApiToken apiToken = authService.getValidApiTokenForUser((AuthenticatedUser) user);
+            return WebloaderUtil.getWebloaderUrl(d, apiToken, localeCode,
+                    settingsService.getValueForKey(SettingsServiceBean.Key.WebloaderUrl));
+        } else {
+            // Shouldn't normally happen (seesion timeout? bug?)
+            logger.warning("getWebloaderUrlForDataset called for non-Authenticated user");
+            return null;
+        }
     }
 }

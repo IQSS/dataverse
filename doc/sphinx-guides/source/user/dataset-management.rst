@@ -93,6 +93,13 @@ Dropbox Upload
 
 Some Dataverse installations support the ability to upload files directly from Dropbox. To do so, click the "Upload from Dropbox" button, log in to Dropbox in the pop-up window, and select the files you'd like to transfer over.
 
+.. _folder-upload:
+
+Folder Upload
+-------------
+
+Some Dataverse installations support the ability to upload files from a local folder and subfolders. To do this, click the "Upload from Folder" button, select the folder you wish to upload, select/unselect specific files, and click "Start Uploads". More detailed instructions are available in the `DVWebloader wiki <https://github.com/gdcc/dvwebloader/wiki#use>`_.
+
 .. _rsync_upload:
 
 rsync + SSH Upload
@@ -143,6 +150,11 @@ Additional command line arguments are available to make the DVUploader list what
 
 DVUploader is a community-developed tool, and its creation was primarily supported by the Texas Digital Library. Further information and support for DVUploader can be sought at `the project's GitHub repository <https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader>`_ . 
 
+Integrations Dashboard Uploader
+-------------------------------
+
+There is an experimental uploader described at :ref:`integrations-dashboard` that provides a graphical user interface (GUI) for uploading files from a local file system and various remote locations such as GitHub.
+
 .. _duplicate-files:
 
 Duplicate Files
@@ -177,10 +189,31 @@ File Handling
 
 Certain file types in the Dataverse installation are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the sections below for information about special functionality for specific file types.
 
+.. _file-previews:
+
 File Previews
 -------------
 
 Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Private URL. See also :ref:`privateurl`.
+
+Previewers are available for the following file types:
+
+- Text
+- PDF
+- Tabular (CSV, Excel, etc., see :doc:`tabulardataingest/index`)
+- Code (R, etc.)
+- Images (PNG, GIF, JPG)
+- Audio (MP3, MPEG, WAV, OGG, M4A)
+- Video (MP4, OGG, Quicktime)
+- Zip (preview and extract/download)
+- HTML
+- GeoJSON
+- NetCDF/HDF5 (NcML format)
+- Hypothes.is
+
+Additional file types will be added to the `dataverse-previewers <https://github.com/gdcc/dataverse-previewers>`_ repo before they are listed above so please check there for the latest information or to request (or contribute!) an additional file previewer.
+
+Installation of previewers is explained in the :doc:`/admin/external-tools` section of in the Admin Guide.
 
 Tabular Data Files
 ------------------
@@ -198,6 +231,8 @@ Additional download options available for tabular data (found in the same drop-d
 
 Differentially Private (DP) Metadata can also be accessed for restricted tabular files if the data depositor has created a DP Metadata Release. See :ref:`dp-release-create` for more information.
 
+.. _research-code:
+
 Research Code
 -------------
 
@@ -213,7 +248,7 @@ The following are general guidelines applicable to all programming languages.
 - Consider providing notes (in the README) on the expected code outputs or adding tests in the code, which would ensure that its functionality is intact.
 
 Capturing code dependencies will help other researchers recreate the necessary runtime environment. Without it, your code will not be able to run correctly (or at all). 
-One option is to use platforms such as `Whole Tale <https://wholetale.org>`_, `Jupyter Binder <https://mybinder.org>`_ or `Renku <https://renkulab.io>`_, which facilitate research reproducibility. Have a look at `Dataverse Integrations <https://guides.dataverse.org/en/5.4/admin/integrations.html>`_ for more information. 
+One option is to use platforms such as `Whole Tale <https://wholetale.org>`_, `Jupyter Binder <https://mybinder.org>`_ or `Renku <https://renkulab.io>`_, which facilitate research reproducibility. For more information, have a look at :doc:`/admin/integrations` in the Admin Guide, especially the sections on :ref:`wholetale`, :ref:`binder`, and :ref:`renku`.
 Another option is to use an automatic code dependency capture, which is often supported through the programming language. Here are a few examples:
 
 - If you are using the conda package manager, you can export your environment with the command ``conda env export > environment.yml``. For more information, see the `official documentation <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#sharing-an-environment>`__.
@@ -268,7 +303,7 @@ After you :ref:`upload your files <dataset-file-upload>`, you can apply a "Workf
 |cw-image4|
 
 How to Describe Your Computational Workflow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Dataverse installation you are using may have enabled Computational Workflow metadata fields for your use. If so, when :ref:`editing your dataset metadata <adding-new-dataset>`, you will see the fields described below.
 
@@ -298,6 +333,22 @@ Astronomy (FITS)
 ----------------
 
 Metadata found in the header section of `Flexible Image Transport System (FITS) files <http://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by the Dataverse Software, aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable and browsable (facets) at the Dataset-level.
+
+.. _geojson:
+
+GeoJSON
+-------
+
+A map will be shown as a preview of GeoJSON files when the previewer has been enabled (see :ref:`file-previews`). See also a `video demo <https://www.youtube.com/watch?v=EACJJaV3O1c&t=588s>`_ of the GeoJSON previewer by its author, Kaitlin Newson.
+
+.. _netcdf-and-hdf5:
+
+NetCDF and HDF5
+---------------
+
+For NetCDF and HDF5 files, an attempt will be made to extract metadata in NcML_ (XML) format and save it as an auxiliary file. (See also :doc:`/developers/aux-file-support` in the Developer Guide.) A previewer for these NcML files is available (see :ref:`file-previews`).
+
+.. _NcML: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
 
 Compressed Files
 ----------------

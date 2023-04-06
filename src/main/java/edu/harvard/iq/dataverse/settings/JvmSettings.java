@@ -41,6 +41,70 @@ public enum JvmSettings {
     // GENERAL SETTINGS
     VERSION(PREFIX, "version"),
     BUILD(PREFIX, "build"),
+    FQDN(PREFIX, "fqdn"),
+    SITE_URL(PREFIX, "siteUrl"),
+    
+    // FILES SETTINGS
+    SCOPE_FILES(PREFIX, "files"),
+    FILES_DIRECTORY(SCOPE_FILES, "directory"),
+    
+    // SOLR INDEX SETTINGS
+    SCOPE_SOLR(PREFIX, "solr"),
+    SOLR_HOST(SCOPE_SOLR, "host"),
+    SOLR_PORT(SCOPE_SOLR, "port"),
+    SOLR_PROT(SCOPE_SOLR, "protocol"),
+    SOLR_CORE(SCOPE_SOLR, "core"),
+    SOLR_PATH(SCOPE_SOLR, "path"),
+
+    // RSERVE CONNECTION
+    SCOPE_RSERVE(PREFIX, "rserve"),
+    RSERVE_HOST(SCOPE_RSERVE, "host"),
+    RSERVE_PORT(SCOPE_RSERVE, "port", "dataverse.ingest.rserve.port"),
+    RSERVE_USER(SCOPE_RSERVE, "user"),
+    RSERVE_PASSWORD(SCOPE_RSERVE, "password"),
+    RSERVE_TEMPDIR(SCOPE_RSERVE, "tempdir"),
+    
+    // API SETTINGS
+    SCOPE_API(PREFIX, "api"),
+    API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
+
+    // SIGNPOSTING SETTINGS
+    SCOPE_SIGNPOSTING(PREFIX, "signposting"),
+    SIGNPOSTING_LEVEL1_AUTHOR_LIMIT(SCOPE_SIGNPOSTING, "level1-author-limit"),
+    SIGNPOSTING_LEVEL1_ITEM_LIMIT(SCOPE_SIGNPOSTING, "level1-item-limit"),
+
+    // FEATURE FLAGS SETTINGS
+    SCOPE_FLAGS(PREFIX, "feature"),
+    // This is a special placeholder-type setting entry, to be filled in by FeatureFlag entries during lookup.
+    // Avoids adding flag entries twice.
+    FEATURE_FLAG(SCOPE_FLAGS),
+    
+    // PERSISTENT IDENTIFIER SETTINGS
+    SCOPE_PID(PREFIX, "pid"),
+    
+    // PROVIDER EZID (legacy) - these settings were formerly kept together with DataCite ones
+    SCOPE_PID_EZID(SCOPE_PID, "ezid"),
+    EZID_API_URL(SCOPE_PID_EZID, "api-url", "doi.baseurlstring"),
+    EZID_USERNAME(SCOPE_PID_EZID, "username", "doi.username"),
+    EZID_PASSWORD(SCOPE_PID_EZID, "password", "doi.password"),
+    
+    // PROVIDER DATACITE
+    SCOPE_PID_DATACITE(SCOPE_PID, "datacite"),
+    DATACITE_MDS_API_URL(SCOPE_PID_DATACITE, "mds-api-url", "doi.baseurlstring"),
+    DATACITE_REST_API_URL(SCOPE_PID_DATACITE, "rest-api-url", "doi.dataciterestapiurlstring", "doi.mdcbaseurlstring"),
+    DATACITE_USERNAME(SCOPE_PID_DATACITE, "username", "doi.username"),
+    DATACITE_PASSWORD(SCOPE_PID_DATACITE, "password", "doi.password"),
+    
+    // PROVIDER PERMALINK
+    SCOPE_PID_PERMALINK(SCOPE_PID, "permalink"),
+    PERMALINK_BASEURL(SCOPE_PID_PERMALINK, "base-url", "perma.baseurlstring"),
+    
+    // PROVIDER HANDLE
+    SCOPE_PID_HANDLENET(SCOPE_PID, "handlenet"),
+    HANDLENET_INDEX(SCOPE_PID_HANDLENET, "index", "dataverse.handlenet.index"),
+    SCOPE_PID_HANDLENET_KEY(SCOPE_PID_HANDLENET, "key"),
+    HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path", "dataverse.handlenet.admcredfile"),
+    HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase", "dataverse.handlenet.admprivphrase"),
     
     ;
     
