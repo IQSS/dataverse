@@ -473,7 +473,7 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
 
-        // step 3: Check if NetCDF or HDF5
+        // step 3a: Check if NetCDF or HDF5
         if (fileType == null) {
             fileType = checkNetcdfOrHdf5(f);
         }
@@ -650,8 +650,9 @@ public class FileUtil implements java.io.Serializable  {
     private static boolean isGraphMLFile(File file) {
         boolean isGraphML = false;
         logger.fine("begin isGraphMLFile()");
+        FileReader fileReader = null;
         try{
-            FileReader fileReader = new FileReader(file);
+            fileReader = new FileReader(file);
             javax.xml.stream.XMLInputFactory xmlif = javax.xml.stream.XMLInputFactory.newInstance();
             xmlif.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE);
 
@@ -674,6 +675,14 @@ public class FileUtil implements java.io.Serializable  {
             isGraphML = false;
         } catch(IOException e) {
             throw new EJBException(e);
+        } finally {
+            if (fileReader != null) {
+                try {
+                    fileReader.close();
+                } catch (IOException ioex) {
+                    logger.warning("IOException closing file reader in GraphML type checker");
+                }
+            }
         }
         logger.fine("end isGraphML()");
         return isGraphML;
@@ -988,7 +997,6 @@ public class FileUtil implements java.io.Serializable  {
                      * then attempt to save it as is.
                      */
 
-                      
                     int numberOfUnpackableFiles = 0; 
                     /**
                      * Note that we can't just use zipEntry.size(),
@@ -1111,10 +1119,10 @@ public class FileUtil implements java.io.Serializable  {
                                         // Now that we have it saved in a temporary location,
                                         // let's try and determine its real type:
 
-                                        String tempFileName = getFilesTempDirectory() + "/" + datafile.getStorageIdentifier();
-
                                         try {
-                                            recognizedType = determineFileType(new File(tempFileName), shortName);
+                                            recognizedType = determineFileType(unzippedFile, shortName);
+                                            // null the File explicitly, to release any open FDs:
+                                            unzippedFile = null; 
                                             logger.fine("File utility recognized unzipped file as " + recognizedType);
                                             if (recognizedType != null && !recognizedType.equals("")) {
                                                 datafile.setContentType(recognizedType);
