@@ -999,7 +999,7 @@ public class FileUtil implements java.io.Serializable  {
 
                     int numberOfUnpackableFiles = 0; 
                     /**
-                     * Note that we can't just use zipEntry.size(),
+                     * Note that we can't just use zipFile.size(),
                      * unfortunately, since that's the total number of entries,
                      * some of which can be directories. So we need to go
                      * through all the individual zipEntries and count the ones
