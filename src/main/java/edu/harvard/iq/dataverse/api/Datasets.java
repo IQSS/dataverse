@@ -3,10 +3,12 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
@@ -56,14 +58,17 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
@@ -78,17 +83,22 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.Ma
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -96,6 +106,8 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,17 +118,19 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.Predicate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.json.*;
 import javax.json.stream.JsonParsingException;
@@ -134,13 +148,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -148,11 +159,13 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import com.amazonaws.services.s3.model.PartETag;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Datasets.class.getCanonicalName());
+    private static final Pattern dataFilePattern = Pattern.compile("^[0-9a-f]{11}-[0-9a-f]{12}\\.?.*");
     
     @Inject DataverseSession session;
 
@@ -162,6 +175,9 @@ public class Datasets extends AbstractApiBean {
     @EJB
     DataverseServiceBean dataverseService;
     
+    @EJB
+    GlobusServiceBean globusService;
+
     @EJB
     UserNotificationServiceBean userNotificationService;
     
@@ -232,8 +248,9 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
+    @AuthRequired
     @Path("{id}")
-    public Response getDataset(@PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+    public Response getDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
         return response( req -> {
             final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id)));
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
@@ -244,7 +261,7 @@ public class Datasets extends AbstractApiBean {
                 mdcLogService.logEntry(entry);
             }
             return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
-        });
+        }, getRequestUser(crc));
     }
     
     // TODO: 
@@ -284,8 +301,9 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("{id}")
-    public Response deleteDataset( @PathParam("id") String id) {
+    public Response deleteDataset(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         // Internally, "DeleteDatasetCommand" simply redirects to "DeleteDatasetVersionCommand"
         // (and there's a comment that says "TODO: remove this command")
         // do we need an exposed API call for it? 
@@ -295,11 +313,11 @@ public class Datasets extends AbstractApiBean {
         // "destroyDataset" API calls.  
         // (The logic below follows the current implementation of the underlying 
         // commands!)
-        
+
+        User u = getRequestUser(crc);
         return response( req -> {
             Dataset doomed = findDatasetOrDie(id);
             DatasetVersion doomedVersion = doomed.getLatestVersion();
-            User u = findUserOrDie();
             boolean destroy = false;
             
             if (doomed.getVersions().size() == 1) {
@@ -329,17 +347,18 @@ public class Datasets extends AbstractApiBean {
             }
             
             return ok("Dataset " + id + " deleted");
-        });
+        }, u);
     }
         
     @DELETE
+    @AuthRequired
     @Path("{id}/destroy")
-    public Response destroyDataset(@PathParam("id") String id) {
+    public Response destroyDataset(@Context ContainerRequestContext crc, @PathParam("id") String id) {
 
+        User u = getRequestUser(crc);
         return response(req -> {
             // first check if dataset is released, and if so, if user is a superuser
             Dataset doomed = findDatasetOrDie(id);
-            User u = findUserOrDie();
 
             if (doomed.isReleased() && (!(u instanceof AuthenticatedUser) || !u.isSuperuser())) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Destroy can only be called by superusers."));
@@ -361,12 +380,13 @@ public class Datasets extends AbstractApiBean {
             }
 
             return ok("Dataset " + id + " destroyed");
-        });
+        }, u);
     }
     
     @DELETE
+    @AuthRequired
     @Path("{id}/versions/{versionId}")
-    public Response deleteDraftVersion( @PathParam("id") String id,  @PathParam("versionId") String versionId ){
+    public Response deleteDraftVersion(@Context ContainerRequestContext crc, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
         if ( ! ":draft".equals(versionId) ) {
             return badRequest("Only the :draft version can be deleted");
         }
@@ -398,22 +418,24 @@ public class Datasets extends AbstractApiBean {
             }
             
             return ok("Draft version of dataset " + id + " deleted");
-        });
+        }, getRequestUser(crc));
     }
         
     @DELETE
+    @AuthRequired
     @Path("{datasetId}/deleteLink/{linkedDataverseId}")
-    public Response deleteDatasetLinkingDataverse( @PathParam("datasetId") String datasetId, @PathParam("linkedDataverseId") String linkedDataverseId) {
+    public Response deleteDatasetLinkingDataverse(@Context ContainerRequestContext crc, @PathParam("datasetId") String datasetId, @PathParam("linkedDataverseId") String linkedDataverseId) {
                 boolean index = true;
         return response(req -> {
             execCommand(new DeleteDatasetLinkingDataverseCommand(req, findDatasetOrDie(datasetId), findDatasetLinkingDataverseOrDie(datasetId, linkedDataverseId), index));
             return ok("Link from Dataset " + datasetId + " to linked Dataverse " + linkedDataverseId + " deleted");
-        });
+        }, getRequestUser(crc));
     }
         
     @PUT
+    @AuthRequired
     @Path("{id}/citationdate")
-    public Response setCitationDate( @PathParam("id") String id, String dsfTypeName) {
+    public Response setCitationDate(@Context ContainerRequestContext crc, @PathParam("id") String id, String dsfTypeName) {
         return response( req -> {
             if ( dsfTypeName.trim().isEmpty() ){
                 return badRequest("Please provide a dataset field type in the requst body.");
@@ -428,56 +450,61 @@ public class Datasets extends AbstractApiBean {
 
             execCommand(new SetDatasetCitationDateCommand(req, findDatasetOrDie(id), dsfType));
             return ok("Citation Date for dataset " + id + " set to: " + (dsfType != null ? dsfType.getDisplayName() : "default"));
-        });
-    }    
+        }, getRequestUser(crc));
+    }
     
     @DELETE
+    @AuthRequired
     @Path("{id}/citationdate")
-    public Response useDefaultCitationDate( @PathParam("id") String id) {
+    public Response useDefaultCitationDate(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         return response( req -> {
             execCommand(new SetDatasetCitationDateCommand(req, findDatasetOrDie(id), null));
             return ok("Citation Date for dataset " + id + " set to default");
-        });
-    }         
+        }, getRequestUser(crc));
+    }
     
     @GET
+    @AuthRequired
     @Path("{id}/versions")
-    public Response listVersions( @PathParam("id") String id ) {
+    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id ) {
         return response( req ->
              ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id)) )
                                 .stream()
                                 .map( d -> json(d) )
-                                .collect(toJsonArray())));
+                                .collect(toJsonArray())), getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("{id}/versions/{versionId}")
-    public Response getVersion( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersion(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> {
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);            
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                                                        : ok(json(dsv));
-        });
+                    : ok(json(dsv));
+        }, getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("{id}/versions/{versionId}/files")
-    public Response getVersionFiles( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersionFiles(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> ok( jsonFileMetadatas(
-                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas())));
+                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas())), getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("{id}/dirindex")
     @Produces("text/html")
-    public Response getFileAccessFolderView(@PathParam("id") String datasetId, @QueryParam("version") String versionId, @QueryParam("folder") String folderName, @QueryParam("original") Boolean originals, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+    public Response getFileAccessFolderView(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @QueryParam("version") String versionId, @QueryParam("folder") String folderName, @QueryParam("original") Boolean originals, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         folderName = folderName == null ? "" : folderName;
-        versionId = versionId == null ? ":latest-published" : versionId; 
+        versionId = versionId == null ? ":latest-published" : versionId;
         
-        DatasetVersion version; 
+        DatasetVersion version;
         try {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             version = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -504,21 +531,24 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
+    @AuthRequired
     @Path("{id}/versions/{versionId}/metadata")
-    public Response getVersionMetadata( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersionMetadata(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> ok(
                     jsonByBlocks(
                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers )
-                                .getDatasetFields())));
+                                .getDatasetFields())), getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("{id}/versions/{versionNumber}/metadata/{block}")
-    public Response getVersionMetadataBlock( @PathParam("id") String datasetId, 
-                                             @PathParam("versionNumber") String versionNumber, 
-                                             @PathParam("block") String blockName, 
-                                             @Context UriInfo uriInfo, 
-                                             @Context HttpHeaders headers ) {
+    public Response getVersionMetadataBlock(@Context ContainerRequestContext crc,
+                                            @PathParam("id") String datasetId,
+                                            @PathParam("versionNumber") String versionNumber,
+                                            @PathParam("block") String blockName,
+                                            @Context UriInfo uriInfo,
+                                            @Context HttpHeaders headers) {
         
         return response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo, headers );
@@ -530,21 +560,54 @@ public class Datasets extends AbstractApiBean {
                 }
             }
             return notFound("metadata block named " + blockName + " not found");
-        });
+        }, getRequestUser(crc));
     }
-    
+
+    /**
+     * Add Signposting
+     * @param datasetId
+     * @param versionId
+     * @param uriInfo
+     * @param headers
+     * @return
+     */
     @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/linkset")
+    public Response getLinkset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        if ( ":draft".equals(versionId) ) {
+            return badRequest("Signposting is not supported on the :draft version");
+        }
+        User user = getRequestUser(crc);
+        return response(req -> {
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            return ok(Json.createObjectBuilder().add(
+                    "linkset",
+                    new SignpostingResources(
+                            systemConfig,
+                            dsv,
+                            JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
+                            JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse("")
+                    ).getJsonLinkset()
+            )
+            );
+        }, user);
+    }
+
+    @GET
+    @AuthRequired
     @Path("{id}/modifyRegistration")
-    public Response updateDatasetTargetURL(@PathParam("id") String id ) {
+    public Response updateDatasetTargetURL(@Context ContainerRequestContext crc, @PathParam("id") String id ) {
         return response( req -> {
             execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(id), req));
             return ok("Dataset " + id + " target url updated");
-        });
+        }, getRequestUser(crc));
     }
     
     @POST
+    @AuthRequired
     @Path("/modifyRegistrationAll")
-    public Response updateDatasetTargetURLAll() {
+    public Response updateDatasetTargetURLAll(@Context ContainerRequestContext crc) {
         return response( req -> {
             datasetService.findAll().forEach( ds -> {
                 try {
@@ -554,12 +617,13 @@ public class Datasets extends AbstractApiBean {
                 }
             });
             return ok("Update All Dataset target url completed");
-        });
+        }, getRequestUser(crc));
     }
     
     @POST
+    @AuthRequired
     @Path("{id}/modifyRegistrationMetadata")
-    public Response updateDatasetPIDMetadata(@PathParam("id") String id) {
+    public Response updateDatasetPIDMetadata(@Context ContainerRequestContext crc, @PathParam("id") String id) {
 
         try {
             Dataset dataset = findDatasetOrDie(id);
@@ -574,12 +638,13 @@ public class Datasets extends AbstractApiBean {
             execCommand(new UpdateDvObjectPIDMetadataCommand(findDatasetOrDie(id), req));
             List<String> args = Arrays.asList(id);
             return ok(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.success.for.single.dataset", args));
-        });
+        }, getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("/modifyRegistrationPIDMetadataAll")
-    public Response updateDatasetPIDMetadataAll() {
+    public Response updateDatasetPIDMetadataAll(@Context ContainerRequestContext crc) {
         return response( req -> {
             datasetService.findAll().forEach( ds -> {
                 try {
@@ -587,22 +652,23 @@ public class Datasets extends AbstractApiBean {
                 } catch (WrappedResponse ex) {
                     Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            });           
+            });
             return ok(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.success.for.update.all"));
-        });
+        }, getRequestUser(crc));
     }
   
     @PUT
+    @AuthRequired
     @Path("{id}/versions/{versionId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateDraftVersion( String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
-        
+    public Response updateDraftVersion(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId){
+      
         if ( ! ":draft".equals(versionId) ) {
             return error( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
         }
         
         try ( StringReader rdr = new StringReader(jsonBody) ) {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
             DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json);
@@ -624,14 +690,22 @@ public class Datasets extends AbstractApiBean {
             boolean updateDraft = ds.getLatestVersion().isDraft();
             
             DatasetVersion managedVersion;
-            if ( updateDraft ) {
-                final DatasetVersion editVersion = ds.getEditVersion();
+            if (updateDraft) {
+                final DatasetVersion editVersion = ds.getOrCreateEditVersion();
                 editVersion.setDatasetFields(incomingVersion.getDatasetFields());
-                editVersion.setTermsOfUseAndAccess( incomingVersion.getTermsOfUseAndAccess() );
+                editVersion.setTermsOfUseAndAccess(incomingVersion.getTermsOfUseAndAccess());
                 editVersion.getTermsOfUseAndAccess().setDatasetVersion(editVersion);
+                boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(editVersion.getTermsOfUseAndAccess(), null);
+                if (!hasValidTerms) {
+                    return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+                }
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
-                managedVersion = managedDataset.getEditVersion();
+                managedVersion = managedDataset.getOrCreateEditVersion();
             } else {
+                boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(incomingVersion.getTermsOfUseAndAccess(), null);
+                if (!hasValidTerms) {
+                    return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+                }
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
             }
 //            DatasetVersion managedVersion = execCommand( updateDraft
@@ -650,11 +724,12 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/versions/{versionId}/metadata")
     @Produces("application/ld+json, application/json-ld")
-    public Response getVersionJsonLDMetadata(@PathParam("id") String id, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersionJsonLDMetadata(@Context ContainerRequestContext crc, @PathParam("id") String id, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         try {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(id), uriInfo, headers);
             OREMap ore = new OREMap(dsv,
                     settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false));
@@ -671,28 +746,34 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/metadata")
     @Produces("application/ld+json, application/json-ld")
-    public Response getVersionJsonLDMetadata(@PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return getVersionJsonLDMetadata(id, ":draft", uriInfo, headers);
+    public Response getVersionJsonLDMetadata(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return getVersionJsonLDMetadata(crc, id, ":draft", uriInfo, headers);
     }
 
     @PUT
+    @AuthRequired
     @Path("{id}/metadata")
     @Consumes("application/ld+json, application/json-ld")
-    public Response updateVersionMetadata(String jsonLDBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
+    public Response updateVersionMetadata(@Context ContainerRequestContext crc, String jsonLDBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
 
         try {
             Dataset ds = findDatasetOrDie(id);
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
-            DatasetVersion dsv = ds.getEditVersion();
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            DatasetVersion dsv = ds.getOrCreateEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
             dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false, licenseSvc);
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
+            boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(dsv.getTermsOfUseAndAccess(), null);
+            if (!hasValidTerms) {
+                return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+            }
             DatasetVersion managedVersion;
             if (updateDraft) {
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
-                managedVersion = managedDataset.getEditVersion();
+                managedVersion = managedDataset.getOrCreateEditVersion();
             } else {
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
             }
@@ -708,20 +789,21 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("{id}/metadata/delete")
     @Consumes("application/ld+json, application/json-ld")
-    public Response deleteMetadata(String jsonLDBody, @PathParam("id") String id) {
+    public Response deleteMetadata(@Context ContainerRequestContext crc, String jsonLDBody, @PathParam("id") String id) {
         try {
             Dataset ds = findDatasetOrDie(id);
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
-            DatasetVersion dsv = ds.getEditVersion();
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            DatasetVersion dsv = ds.getOrCreateEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
             dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, licenseSvc);
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             DatasetVersion managedVersion;
             if (updateDraft) {
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
-                managedVersion = managedDataset.getEditVersion();
+                managedVersion = managedDataset.getOrCreateEditVersion();
             } else {
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
             }
@@ -739,10 +821,11 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("{id}/deleteMetadata")
-    public Response deleteVersionMetadata(String jsonBody, @PathParam("id") String id) throws WrappedResponse {
+    public Response deleteVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id) throws WrappedResponse {
 
-        DataverseRequest req = createDataverseRequest(findUserOrDie());
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
 
         return processDatasetFieldDataDelete(jsonBody, id, req);
     }
@@ -752,7 +835,7 @@ public class Datasets extends AbstractApiBean {
 
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
-            DatasetVersion dsv = ds.getEditVersion();
+            DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             List<DatasetField> fields = new LinkedList<>();
             DatasetField singleField = null;
@@ -775,7 +858,7 @@ public class Datasets extends AbstractApiBean {
                 boolean found = false;
                 for (DatasetField dsf : dsv.getDatasetFields()) {
                     if (dsf.getDatasetFieldType().equals(updateField.getDatasetFieldType())) {
-                        if (dsf.getDatasetFieldType().isAllowMultiples()) { 
+                        if (dsf.getDatasetFieldType().isAllowMultiples()) {
                             if (updateField.getDatasetFieldType().isControlledVocabulary()) {
                                 if (dsf.getDatasetFieldType().isAllowMultiples()) {
                                     for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
@@ -840,7 +923,7 @@ public class Datasets extends AbstractApiBean {
                                         datasetFieldCompoundValueItemsToRemove.forEach((remove) -> {
                                             dsf.getDatasetFieldCompoundValues().remove(remove);
                                         });
-                                        if (!found) { 
+                                        if (!found) {
                                             logger.log(Level.SEVERE, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + deleteVal + " not found.");
                                             return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + deleteVal + " not found.");
                                         }
@@ -860,13 +943,12 @@ public class Datasets extends AbstractApiBean {
                     logger.log(Level.SEVERE, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found." );
                     return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found." );
                 }
-            }           
+            }
 
 
-            
             boolean updateDraft = ds.getLatestVersion().isDraft();
-            DatasetVersion managedVersion = updateDraft 
-                    ? execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion()
+            DatasetVersion managedVersion = updateDraft
+                    ? execCommand(new UpdateDatasetVersionCommand(ds, req)).getOrCreateEditVersion()
                     : execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
             return ok(json(managedVersion));
 
@@ -884,28 +966,24 @@ public class Datasets extends AbstractApiBean {
     
     private String getCompoundDisplayValue (DatasetFieldCompoundValue dscv){
         String returnString = "";
-                    for (DatasetField dsf : dscv.getChildDatasetFields()) {
-                for (String value : dsf.getValues()) {
-                    if (!(value == null)) {
-                        returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
-                    }
+        for (DatasetField dsf : dscv.getChildDatasetFields()) {
+            for (String value : dsf.getValues()) {
+                if (!(value == null)) {
+                    returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
                 }
             }
+        }
         return returnString;
     }
     
     @PUT
+    @AuthRequired
     @Path("{id}/editMetadata")
-    public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) {
+    public Response editVersionMetadata(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) {
 
         Boolean replaceData = replace != null;
         DataverseRequest req = null;
-        try {
-         req = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse ex) {
-            logger.log(Level.SEVERE, "Edit metdata error: " + ex.getMessage(), ex);
-            return ex.getResponse();
-        }
+        req = createDataverseRequest(getRequestUser(crc));
 
         return processDatasetUpdate(jsonBody, id, req, replaceData);
     }
@@ -916,16 +994,16 @@ public class Datasets extends AbstractApiBean {
            
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
-            DatasetVersion dsv = ds.getEditVersion();
+            DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             List<DatasetField> fields = new LinkedList<>();
-            DatasetField singleField = null; 
+            DatasetField singleField = null;
             
             JsonArray fieldsJson = json.getJsonArray("fields");
-            if( fieldsJson == null ){
-                singleField  = jsonParser().parseField(json, Boolean.FALSE);
+            if (fieldsJson == null) {
+                singleField = jsonParser().parseField(json, Boolean.FALSE);
                 fields.add(singleField);
-            } else{
+            } else {
                 fields = jsonParser().parseMultipleFields(json);
             }
             
@@ -970,6 +1048,7 @@ public class Datasets extends AbstractApiBean {
                                     dsf.setSingleValue("");
                                     dsf.setSingleControlledVocabularyValue(null);
                                 }
+                              cvvDisplay="";
                             }
                             if (updateField.getDatasetFieldType().isControlledVocabulary()) {
                                 if (dsf.getDatasetFieldType().isAllowMultiples()) {
@@ -1021,7 +1100,7 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion managedVersion;
 
             if (updateDraft) {
-                managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion();
+                managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getOrCreateEditVersion();
             } else {
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
             }
@@ -1061,22 +1140,24 @@ public class Datasets extends AbstractApiBean {
      * @deprecated This was shipped as a GET but should have been a POST, see https://github.com/IQSS/dataverse/issues/2431
      */
     @GET
+    @AuthRequired
     @Path("{id}/actions/:publish")
     @Deprecated
-    public Response publishDataseUsingGetDeprecated( @PathParam("id") String id, @QueryParam("type") String type ) {
+    public Response publishDataseUsingGetDeprecated(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("type") String type ) {
         logger.info("publishDataseUsingGetDeprecated called on id " + id + ". Encourage use of POST rather than GET, which is deprecated.");
-        return publishDataset(id, type, false);
+        return publishDataset(crc, id, type, false);
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/actions/:publish")
-    public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type, @QueryParam("assureIsIndexed") boolean mustBeIndexed) {
+    public Response publishDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("type") String type, @QueryParam("assureIsIndexed") boolean mustBeIndexed) {
         try {
             if (type == null) {
                 return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major','minor', or 'updatecurrent').");
             }
             boolean updateCurrent=false;
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             type = type.toLowerCase();
             boolean isMinor=false;
             switch (type) {
@@ -1086,18 +1167,24 @@ public class Datasets extends AbstractApiBean {
                 case "major":
                     isMinor = false;
                     break;
-            case "updatecurrent":
-                if(user.isSuperuser()) {
-                  updateCurrent=true;
-                } else {
-                    return error(Response.Status.FORBIDDEN, "Only superusers can update the current version"); 
-                }
-                break;
+                case "updatecurrent":
+                    if (user.isSuperuser()) {
+                        updateCurrent = true;
+                    } else {
+                        return error(Response.Status.FORBIDDEN, "Only superusers can update the current version");
+                    }
+                    break;
                 default:
-                return error(Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major', 'minor', or 'updatecurrent'.");
+                    return error(Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major', 'minor', or 'updatecurrent'.");
             }
 
             Dataset ds = findDatasetOrDie(id);
+            
+            boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(ds.getLatestVersion().getTermsOfUseAndAccess(), null);
+            if (!hasValidTerms) {
+                return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+            }
+            
             if (mustBeIndexed) {
                 logger.fine("IT: " + ds.getIndexTime());
                 logger.fine("MT: " + ds.getModificationTime());
@@ -1114,7 +1201,7 @@ public class Datasets extends AbstractApiBean {
                  * set and if so, if it after the modification time. If the modification time is
                  * set and the index time is null or is before the mod time, the 409/conflict
                  * error is returned.
-                 * 
+                 *
                  */
                 if ((ds.getModificationTime()!=null && (ds.getIndexTime() == null || (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0))) ||
                         (ds.getPermissionModificationTime()!=null && (ds.getPermissionIndexTime() == null || (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) <= 0)))) {
@@ -1153,7 +1240,7 @@ public class Datasets extends AbstractApiBean {
                          */
                         try {
                             updateVersion = commandEngine.submit(archiveCommand);
-                            if (updateVersion.getArchivalCopyLocation() != null) {
+                            if (!updateVersion.getArchivalCopyLocationStatus().equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)) {
                                 successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
                             } else {
                                 successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
@@ -1171,17 +1258,17 @@ public class Datasets extends AbstractApiBean {
                     return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
                 } else {
                     return Response.ok(Json.createObjectBuilder()
-                            .add("status", STATUS_OK)
+                            .add("status", ApiConstants.STATUS_OK)
                             .add("status_details", successMsg)
                             .add("data", json(ds)).build())
                             .type(MediaType.APPLICATION_JSON)
                             .build();
                 }
             } else {
-            PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
+                PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
                         createDataverseRequest(user),
-                    isMinor));
-            return res.isWorkflow() ? accepted(json(res.getDataset())) : ok(json(res.getDataset()));
+                        isMinor));
+                return res.isWorkflow() ? accepted(json(res.getDataset())) : ok(json(res.getDataset()));
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -1189,11 +1276,12 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/actions/:releasemigrated")
     @Consumes("application/ld+json, application/json-ld")
-    public Response publishMigratedDataset(String jsonldBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam ("updatepidatprovider") boolean contactPIDProvider) {
+    public Response publishMigratedDataset(@Context ContainerRequestContext crc, String jsonldBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam ("updatepidatprovider") boolean contactPIDProvider) {
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Only superusers can release migrated datasets");
             }
@@ -1279,10 +1367,11 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/move/{targetDataverseAlias}")
-    public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
+    public Response moveDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
         try {
-            User u = findUserOrDie();            
+            User u = getRequestUser(crc);
             Dataset ds = findDatasetOrDie(id);
             Dataverse target = dataverseService.findByAlias(targetDataverseAlias);
             if (target == null) {
@@ -1303,13 +1392,14 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/files/actions/:set-embargo")
-    public Response createFileEmbargo(@PathParam("id") String id, String jsonBody){
+    public Response createFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Status.UNAUTHORIZED, "Authentication is required.");
         }
@@ -1319,6 +1409,12 @@ public class Datasets extends AbstractApiBean {
             dataset = findDatasetOrDie(id);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        }
+        
+        boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(dataset.getLatestVersion().getTermsOfUseAndAccess(), null);
+        
+        if (!hasValidTerms){
+            return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
         }
 
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
@@ -1407,7 +1503,7 @@ public class Datasets extends AbstractApiBean {
             }
             if (badFiles) {
                 return Response.status(Status.FORBIDDEN)
-                        .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", STATUS_ERROR)
+                        .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", ApiConstants.STATUS_ERROR)
                                 .add("message", "You do not have permission to embargo the following files")
                                 .add("files", restrictedFiles).build())
                         .type(MediaType.APPLICATION_JSON_TYPE).build();
@@ -1453,13 +1549,14 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/files/actions/:unset-embargo")
-    public Response removeFileEmbargo(@PathParam("id") String id, String jsonBody){
+    public Response removeFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Status.UNAUTHORIZED, "Authentication is required.");
         }
@@ -1526,7 +1623,7 @@ public class Datasets extends AbstractApiBean {
             }
             if (badFiles) {
                 return Response.status(Status.FORBIDDEN)
-                        .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", STATUS_ERROR)
+                        .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", ApiConstants.STATUS_ERROR)
                                 .add("message", "The following files do not have embargoes or you do not have permission to remove their embargoes")
                                 .add("files", restrictedFiles).build())
                         .type(MediaType.APPLICATION_JSON_TYPE).build();
@@ -1564,21 +1661,22 @@ public class Datasets extends AbstractApiBean {
 
 
     @PUT
-    @Path("{linkedDatasetId}/link/{linkingDataverseAlias}") 
-    public Response linkDataset(@PathParam("linkedDatasetId") String linkedDatasetId, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {        
-        try{
-            User u = findUserOrDie();            
+    @AuthRequired
+    @Path("{linkedDatasetId}/link/{linkingDataverseAlias}")
+    public Response linkDataset(@Context ContainerRequestContext crc, @PathParam("linkedDatasetId") String linkedDatasetId, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
+        try {
+            User u = getRequestUser(crc);
             Dataset linked = findDatasetOrDie(linkedDatasetId);
             Dataverse linking = findDataverseOrDie(linkingDataverseAlias);
             if (linked == null){
                 return error(Response.Status.BAD_REQUEST, "Linked Dataset not found.");
-            } 
-            if (linking == null){
+            }
+            if (linking == null) {
                 return error(Response.Status.BAD_REQUEST, "Linking Dataverse not found.");
-            }   
+            }
             execCommand(new LinkDatasetCommand(
                     createDataverseRequest(u), linking, linked
-                    ));
+            ));
             return ok("Dataset " + linked.getId() + " linked successfully to " + linking.getAlias());
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -1592,8 +1690,7 @@ public class Datasets extends AbstractApiBean {
         User user = session.getUser();
         String persistentId;
         try {
-            if (getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers)
-                    .getTermsOfUseAndAccess().getLicense() != null) {
+            if (DatasetUtil.getLicense(getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers)) != null) {
                 return error(Status.NOT_FOUND, "This Dataset has no custom license");
             }
             persistentId = getRequestParameter(":persistentId".substring(1));
@@ -1609,10 +1706,11 @@ public class Datasets extends AbstractApiBean {
 
 
     @GET
+    @AuthRequired
     @Path("{id}/links")
-    public Response getLinks(@PathParam("id") String idSupplied ) {
+    public Response getLinks(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied ) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Not a superuser");
             }
@@ -1634,20 +1732,21 @@ public class Datasets extends AbstractApiBean {
 
     /**
      * Add a given assignment to a given user or group
-     * @param ra role assignment DTO
-     * @param id dataset id
+     * @param ra     role assignment DTO
+     * @param id     dataset id
      * @param apiKey
      */
     @POST
+    @AuthRequired
     @Path("{identifier}/assignments")
-    public Response createAssignment(RoleAssignmentDTO ra, @PathParam("identifier") String id, @QueryParam("key") String apiKey) {
+    public Response createAssignment(@Context ContainerRequestContext crc, RoleAssignmentDTO ra, @PathParam("identifier") String id, @QueryParam("key") String apiKey) {
         try {
             Dataset dataset = findDatasetOrDie(id);
             
             RoleAssignee assignee = findAssignee(ra.getAssignee());
             if (assignee == null) {
                 return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.not.found.error"));
-            }           
+            }
             
             DataverseRole theRole;
             Dataverse dv = dataset.getOwner();
@@ -1668,7 +1767,7 @@ public class Datasets extends AbstractApiBean {
 
             String privateUrlToken = null;
             return ok(
-                    json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(findUserOrDie()), privateUrlToken))));
+                    json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(getRequestUser(crc)), privateUrlToken))));
         } catch (WrappedResponse ex) {
             List<String> args = Arrays.asList(ex.getMessage());
             logger.log(Level.WARNING, BundleUtil.getStringFromBundle("datasets.api.grant.role.cant.create.assignment.error", args));
@@ -1678,13 +1777,14 @@ public class Datasets extends AbstractApiBean {
     }
     
     @DELETE
+    @AuthRequired
     @Path("{identifier}/assignments/{id}")
-    public Response deleteAssignment(@PathParam("id") long assignmentId, @PathParam("identifier") String dsId) {
+    public Response deleteAssignment(@Context ContainerRequestContext crc, @PathParam("id") long assignmentId, @PathParam("identifier") String dsId) {
         RoleAssignment ra = em.find(RoleAssignment.class, assignmentId);
         if (ra != null) {
             try {
                 findDatasetOrDie(dsId);
-                execCommand(new RevokeRoleCommand(ra, createDataverseRequest(findUserOrDie())));
+                execCommand(new RevokeRoleCommand(ra, createDataverseRequest(getRequestUser(crc))));
                 List<String> args = Arrays.asList(ra.getRole().getName(), ra.getAssigneeIdentifier(), ra.getDefinitionPoint().accept(DvObject.NamePrinter));
                 return ok(BundleUtil.getStringFromBundle("datasets.api.revoke.role.success", args));
             } catch (WrappedResponse ex) {
@@ -1697,38 +1797,42 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/assignments")
-    public Response getAssignments(@PathParam("identifier") String id) {
-        return response( req -> 
-            ok( execCommand(
-                       new ListRoleAssignments(req, findDatasetOrDie(id)))
-                     .stream().map(ra->json(ra)).collect(toJsonArray())) );
+    public Response getAssignments(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
+        return response(req ->
+                ok(execCommand(
+                        new ListRoleAssignments(req, findDatasetOrDie(id)))
+                        .stream().map(ra -> json(ra)).collect(toJsonArray())), getRequestUser(crc));
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/privateUrl")
-    public Response getPrivateUrlData(@PathParam("id") String idSupplied) {
+    public Response getPrivateUrlData(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         return response( req -> {
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, findDatasetOrDie(idSupplied)));
-            return (privateUrl != null) ? ok(json(privateUrl)) 
-                                        : error(Response.Status.NOT_FOUND, "Private URL not found.");
-        });
+            return (privateUrl != null) ? ok(json(privateUrl))
+                    : error(Response.Status.NOT_FOUND, "Private URL not found.");
+        }, getRequestUser(crc));
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/privateUrl")
-    public Response createPrivateUrl(@PathParam("id") String idSupplied,@DefaultValue("false") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
+    public Response createPrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied,@DefaultValue("false") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
         if(anonymizedAccess && settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames)==null) {
             throw new NotAcceptableException("Anonymized Access not enabled");
         }
-        return response( req -> 
+        return response(req ->
                 ok(json(execCommand(
-                new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied), anonymizedAccess)))));
+                new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied), anonymizedAccess)))), getRequestUser(crc));
     }
 
     @DELETE
+    @AuthRequired
     @Path("{id}/privateUrl")
-    public Response deletePrivateUrl(@PathParam("id") String idSupplied) {
+    public Response deletePrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         return response( req -> {
             Dataset dataset = findDatasetOrDie(idSupplied);
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, dataset));
@@ -1738,20 +1842,17 @@ public class Datasets extends AbstractApiBean {
             } else {
                 return notFound("No Private URL to delete.");
             }
-        });
+        }, getRequestUser(crc));
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/thumbnail/candidates")
-    public Response getDatasetThumbnailCandidates(@PathParam("id") String idSupplied) {
+    public Response getDatasetThumbnailCandidates(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             boolean canUpdateThumbnail = false;
-            try {
-                canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
-            } catch (WrappedResponse ex) {
-                logger.info("Exception thrown while trying to figure out permissions while getting thumbnail for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
-            }
+            canUpdateThumbnail = permissionSvc.requestOn(createDataverseRequest(getRequestUser(crc)), dataset).canIssue(UpdateDatasetThumbnailCommand.class);
             if (!canUpdateThumbnail) {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to list dataset thumbnail candidates.");
             }
@@ -1794,10 +1895,11 @@ public class Datasets extends AbstractApiBean {
 
     // TODO: Rather than only supporting looking up files by their database IDs (dataFileIdSupplied), consider supporting persistent identifiers.
     @POST
+    @AuthRequired
     @Path("{id}/thumbnail/{dataFileId}")
-    public Response setDataFileAsThumbnail(@PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
+    public Response setDataFileAsThumbnail(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
         try {
-            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, dataFileIdSupplied, null));
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, dataFileIdSupplied, null));
             return ok("Thumbnail set to " + datasetThumbnail.getBase64image());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -1805,12 +1907,12 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/thumbnail")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream
-    ) {
+    public Response uploadDatasetLogo(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream) {
         try {
-            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, inputStream));
+            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, inputStream));
             return ok("Thumbnail is now " + datasetThumbnail.getBase64image());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -1818,10 +1920,11 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("{id}/thumbnail")
-    public Response removeDatasetLogo(@PathParam("id") String idSupplied) {
+    public Response removeDatasetLogo(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         try {
-            DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.removeThumbnail, null, null));
+            execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.removeThumbnail, null, null));
             return ok("Dataset thumbnail removed.");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -1829,8 +1932,9 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/dataCaptureModule/rsync")
-    public Response getRsync(@PathParam("identifier") String id) {
+    public Response getRsync(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
         //TODO - does it make sense to switch this to dataset identifier for consistency with the rest of the DCM APIs?
         if (!DataCaptureModuleUtil.rsyncSupportEnabled(settingsSvc.getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
             return error(Response.Status.METHOD_NOT_ALLOWED, SettingsServiceBean.Key.UploadMethods + " does not contain " + SystemConfig.FileUploadMethods.RSYNC + ".");
@@ -1838,7 +1942,7 @@ public class Datasets extends AbstractApiBean {
         Dataset dataset = null;
         try {
             dataset = findDatasetOrDie(id);
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             ScriptRequestResponse scriptRequestResponse = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(user), dataset));
             
             DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, user.getId(), "script downloaded");
@@ -1855,13 +1959,13 @@ public class Datasets extends AbstractApiBean {
     }
     
     /**
-     * This api endpoint triggers the creation of a "package" file in a dataset 
-     *    after that package has been moved onto the same filesystem via the Data Capture Module.
+     * This api endpoint triggers the creation of a "package" file in a dataset
+     * after that package has been moved onto the same filesystem via the Data Capture Module.
      * The package is really just a way that Dataverse interprets a folder created by DCM, seeing it as just one file.
      * The "package" can be downloaded over RSAL.
-     * 
+     *
      * This endpoint currently supports both posix file storage and AWS s3 storage in Dataverse, and depending on which one is active acts accordingly.
-     * 
+     *
      * The initial design of the DCM/Dataverse interaction was not to use packages, but to allow import of all individual files natively into Dataverse.
      * But due to the possibly immense number of files (millions) the package approach was taken.
      * This is relevant because the posix ("file") code contains many remnants of that development work.
@@ -1869,12 +1973,13 @@ public class Datasets extends AbstractApiBean {
      * -MAD 4.9.1
      */
     @POST
+    @AuthRequired
     @Path("{identifier}/dataCaptureModule/checksumValidation")
-    public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) {
+    public Response receiveChecksumValidationResults(@Context ContainerRequestContext crc, @PathParam("identifier") String id, JsonObject jsonFromDcm) {
         logger.log(Level.FINE, "jsonFromDcm: {0}", jsonFromDcm);
         AuthenticatedUser authenticatedUser = null;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.BAD_REQUEST, "Authentication is required.");
         }
@@ -1885,7 +1990,7 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset dataset = findDatasetOrDie(id);
             if ("validation passed".equals(statusMessageFromDcm)) {
-               logger.log(Level.INFO, "Checksum Validation passed for DCM."); 
+                logger.log(Level.INFO, "Checksum Validation passed for DCM.");
 
                 String storageDriver = dataset.getDataverseContext().getEffectiveStorageDriverId();
                 String uploadFolder = jsonFromDcm.getString("uploadFolder");
@@ -1897,7 +2002,7 @@ public class Datasets extends AbstractApiBean {
 
                     ImportMode importMode = ImportMode.MERGE;
                     try {
-                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(findUserOrDie()), dataset, uploadFolder, new Long(totalSize), importMode));
+                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(getRequestUser(crc)), dataset, uploadFolder, new Long(totalSize), importMode));
                         long jobId = jsonFromImportJobKickoff.getInt("executionId");
                         String message = jsonFromImportJobKickoff.getString("message");
                         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -1908,7 +2013,7 @@ public class Datasets extends AbstractApiBean {
                         String message = wr.getMessage();
                         return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
                     }
-                } else if(storageDriverType.equals("s3")) {
+                } else if(storageDriverType.equals(DataAccess.S3)) {
                     
                     logger.log(Level.INFO, "S3 storage driver used for DCM (dataset id={0})", dataset.getId());
                     try {
@@ -1947,10 +2052,10 @@ public class Datasets extends AbstractApiBean {
                         JsonObjectBuilder job = Json.createObjectBuilder();
                         return ok(job);
                         
-                    }  catch (IOException e) {
+                    } catch (IOException e) {
                         String message = e.getMessage();
                         return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to move the files into Dataverse. Message was '" + message + "'.");
-                    } 
+                    }
                 } else {
                     return error(Response.Status.INTERNAL_SERVER_ERROR, "Invalid storage driver in Dataverse, not compatible with dcm");
                 }
@@ -1976,10 +2081,11 @@ public class Datasets extends AbstractApiBean {
     
 
     @POST
+    @AuthRequired
     @Path("{id}/submitForReview")
-    public Response submitForReview(@PathParam("id") String idSupplied) {
+    public Response submitForReview(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         try {
-            Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied)));
+            Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied)));
             JsonObjectBuilder result = Json.createObjectBuilder();
             
             boolean inReview = updatedDataset.isLockedFor(DatasetLock.Reason.InReview);
@@ -1993,9 +2099,10 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/returnToAuthor")
-    public Response returnToAuthor(@PathParam("id") String idSupplied, String jsonBody) {
-        
+    public Response returnToAuthor(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, String jsonBody) {
+
         if (jsonBody == null || jsonBody.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset (field: reasonForReturn).");
         }
@@ -2003,13 +2110,13 @@ public class Datasets extends AbstractApiBean {
         JsonObject json = Json.createReader(rdr).readObject();
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            String reasonForReturn = null;           
+            String reasonForReturn = null;
             reasonForReturn = json.getString("reasonForReturn");
             // TODO: Once we add a box for the curator to type into, pass the reason for return to the ReturnDatasetToAuthorCommand and delete this check and call to setReturnReason on the API side.
             if (reasonForReturn == null || reasonForReturn.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, "You must enter a reason for returning a dataset to the author(s).");
             }
-            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));
 
             JsonObjectBuilder result = Json.createObjectBuilder();
@@ -2022,13 +2129,15 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/curationStatus")
-    public Response getCurationStatus(@PathParam("id") String idSupplied) {
+    public Response getCurationStatus(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         try {
             Dataset ds = findDatasetOrDie(idSupplied);
             DatasetVersion dsv = ds.getLatestVersion();
-            if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), ds).has(Permission.PublishDataset)) {
-                return response(req -> ok(dsv.getExternalStatusLabel()==null ? "":dsv.getExternalStatusLabel()));
+            User user = getRequestUser(crc);
+            if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset)) {
+                return response(req -> ok(dsv.getExternalStatusLabel()==null ? "":dsv.getExternalStatusLabel()), user);
             } else {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to view the curation status of this dataset.");
             }
@@ -2038,13 +2147,14 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("{id}/curationStatus")
-    public Response setCurationStatus(@PathParam("id") String idSupplied, @QueryParam("label") String label) {
+    public Response setCurationStatus(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @QueryParam("label") String label) {
         Dataset ds = null;
         User u = null;
         try {
             ds = findDatasetOrDie(idSupplied);
-            u = findUserOrDie();
+            u = getRequestUser(crc);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -2056,15 +2166,16 @@ public class Datasets extends AbstractApiBean {
             return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
         }
     }
-    
+
     @DELETE
+    @AuthRequired
     @Path("{id}/curationStatus")
-    public Response deleteCurationStatus(@PathParam("id") String idSupplied) {
+    public Response deleteCurationStatus(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         Dataset ds = null;
         User u = null;
         try {
             ds = findDatasetOrDie(idSupplied);
-            u = findUserOrDie();
+            u = getRequestUser(crc);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -2076,233 +2187,227 @@ public class Datasets extends AbstractApiBean {
             return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
         }
     }
-    
-@GET
-@Path("{id}/uploadsid")
-@Deprecated
-public Response getUploadUrl(@PathParam("id") String idSupplied) {
-	try {
-		Dataset dataset = findDatasetOrDie(idSupplied);
 
-		boolean canUpdateDataset = false;
-		try {
-			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
-		} catch (WrappedResponse ex) {
-			logger.info("Exception thrown while trying to figure out permissions while getting upload URL for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
-			throw ex;
-		}
-		if (!canUpdateDataset) {
-            return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
+    @GET
+    @AuthRequired
+    @Path("{id}/uploadsid")
+    @Deprecated
+    public Response getUploadUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+
+            boolean canUpdateDataset = false;
+            canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(getRequestUser(crc)), dataset).canIssue(UpdateDatasetVersionCommand.class);
+            if (!canUpdateDataset) {
+                return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
+            }
+            S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
+            if (s3io == null) {
+                return error(Response.Status.NOT_FOUND, "Direct upload not supported for files in this dataset: " + dataset.getId());
+            }
+            String url = null;
+            String storageIdentifier = null;
+            try {
+                url = s3io.generateTemporaryS3UploadUrl();
+                storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+            } catch (IOException io) {
+                logger.warning(io.getMessage());
+                throw new WrappedResponse(io, error(Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
+            }
+
+            JsonObjectBuilder response = Json.createObjectBuilder()
+                    .add("url", url)
+                    .add("storageIdentifier", storageIdentifier);
+            return ok(response);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
-        S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
-        if(s3io == null) {
-        	return error(Response.Status.NOT_FOUND,"Direct upload not supported for files in this dataset: " + dataset.getId());
-		}
-		String url = null;
-        String storageIdentifier = null;
-		try {
-			url = s3io.generateTemporaryS3UploadUrl();
-        	storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-        } catch (IOException io) {
-        	logger.warning(io.getMessage());
-        	throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
-		}
-        
-		JsonObjectBuilder response = Json.createObjectBuilder()
-	            .add("url", url)
-	            .add("storageIdentifier", storageIdentifier );
-		return ok(response);
-	} catch (WrappedResponse wr) {
-		return wr.getResponse();
-	}
-}
+    }
 
-@GET
-@Path("{id}/uploadurls")
-public Response getMPUploadUrls(@PathParam("id") String idSupplied, @QueryParam("size") long fileSize) {
-	try {
-		Dataset dataset = findDatasetOrDie(idSupplied);
+    @GET
+    @AuthRequired
+    @Path("{id}/uploadurls")
+    public Response getMPUploadUrls(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @QueryParam("size") long fileSize) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
 
-		boolean canUpdateDataset = false;
-		try {
-			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset)
-					.canIssue(UpdateDatasetVersionCommand.class);
-		} catch (WrappedResponse ex) {
-			logger.info(
-					"Exception thrown while trying to figure out permissions while getting upload URLs for dataset id "
-							+ dataset.getId() + ": " + ex.getLocalizedMessage());
-			throw ex;
-		}
-		if (!canUpdateDataset) {
-			return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
-		}
-		S3AccessIO<DataFile> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
-		if (s3io == null) {
-			return error(Response.Status.NOT_FOUND,
-					"Direct upload not supported for files in this dataset: " + dataset.getId());
-		}
-		JsonObjectBuilder response = null;
-		String storageIdentifier = null;
-		try {
-			storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-			response = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalId().asString(), storageIdentifier, fileSize);
+            boolean canUpdateDataset = false;
+            canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(getRequestUser(crc)), dataset)
+                    .canIssue(UpdateDatasetVersionCommand.class);
+            if (!canUpdateDataset) {
+                return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
+            }
+            S3AccessIO<DataFile> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
+            if (s3io == null) {
+                return error(Response.Status.NOT_FOUND,
+                        "Direct upload not supported for files in this dataset: " + dataset.getId());
+            }
+            JsonObjectBuilder response = null;
+            String storageIdentifier = null;
+            try {
+                storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+                response = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalId().asString(), storageIdentifier, fileSize);
 
-		} catch (IOException io) {
-			logger.warning(io.getMessage());
-			throw new WrappedResponse(io,
-					error(Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
-		}
+            } catch (IOException io) {
+                logger.warning(io.getMessage());
+                throw new WrappedResponse(io,
+                        error(Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
+            }
 
-		response.add("storageIdentifier", storageIdentifier);
-		return ok(response);
-	} catch (WrappedResponse wr) {
-		return wr.getResponse();
-	}
-}
+            response.add("storageIdentifier", storageIdentifier);
+            return ok(response);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
 
-@DELETE
-@Path("mpupload")
-public Response abortMPUpload(@QueryParam("globalid") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
-	try {
-		Dataset dataset = datasetSvc.findByGlobalId(idSupplied);
-		//Allow the API to be used within a session (e.g. for direct upload in the UI)
-		User user =session.getUser();
-		if (!user.isAuthenticated()) {
-			try {
-				user = findAuthenticatedUserOrDie();
-			} catch (WrappedResponse ex) {
-				logger.info(
-						"Exception thrown while trying to figure out permissions while getting aborting upload for dataset id "
-								+ dataset.getId() + ": " + ex.getLocalizedMessage());
-				throw ex;
-			}
-		}
-		boolean allowed = false;
-		if (dataset != null) {
-				allowed = permissionSvc.requestOn(createDataverseRequest(user), dataset)
-						.canIssue(UpdateDatasetVersionCommand.class);
-		} else {
-			/*
-			 * The only legitimate case where a global id won't correspond to a dataset is
-			 * for uploads during creation. Given that this call will still fail unless all
-			 * three parameters correspond to an active multipart upload, it should be safe
-			 * to allow the attempt for an authenticated user. If there are concerns about
-			 * permissions, one could check with the current design that the user is allowed
-			 * to create datasets in some dataverse that is configured to use the storage
-			 * provider specified in the storageidentifier, but testing for the ability to
-			 * create a dataset in a specific dataverse would requiring changing the design
-			 * somehow (e.g. adding the ownerId to this call).
-			 */
-			allowed = true;
-		}
-		if (!allowed) {
-			return error(Response.Status.FORBIDDEN,
-					"You are not permitted to abort file uploads with the supplied parameters.");
-		}
-		try {
-			S3AccessIO.abortMultipartUpload(idSupplied, storageidentifier, uploadId);
-		} catch (IOException io) {
-			logger.warning("Multipart upload abort failed for uploadId: " + uploadId + " storageidentifier="
-					+ storageidentifier + " dataset Id: " + dataset.getId());
-			logger.warning(io.getMessage());
-			throw new WrappedResponse(io,
-					error(Response.Status.INTERNAL_SERVER_ERROR, "Could not abort multipart upload"));
-		}
-		return Response.noContent().build();
-	} catch (WrappedResponse wr) {
-		return wr.getResponse();
-	}
-}
+    @DELETE
+    @AuthRequired
+    @Path("mpupload")
+    public Response abortMPUpload(@Context ContainerRequestContext crc, @QueryParam("globalid") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
+        try {
+            Dataset dataset = datasetSvc.findByGlobalId(idSupplied);
+            //Allow the API to be used within a session (e.g. for direct upload in the UI)
+            User user = session.getUser();
+            if (!user.isAuthenticated()) {
+                try {
+                    user = getRequestAuthenticatedUserOrDie(crc);
+                } catch (WrappedResponse ex) {
+                    logger.info(
+                            "Exception thrown while trying to figure out permissions while getting aborting upload for dataset id "
+                                    + dataset.getId() + ": " + ex.getLocalizedMessage());
+                    throw ex;
+                }
+            }
+            boolean allowed = false;
+            if (dataset != null) {
+                allowed = permissionSvc.requestOn(createDataverseRequest(user), dataset)
+                        .canIssue(UpdateDatasetVersionCommand.class);
+            } else {
+                /*
+                 * The only legitimate case where a global id won't correspond to a dataset is
+                 * for uploads during creation. Given that this call will still fail unless all
+                 * three parameters correspond to an active multipart upload, it should be safe
+                 * to allow the attempt for an authenticated user. If there are concerns about
+                 * permissions, one could check with the current design that the user is allowed
+                 * to create datasets in some dataverse that is configured to use the storage
+                 * provider specified in the storageidentifier, but testing for the ability to
+                 * create a dataset in a specific dataverse would requiring changing the design
+                 * somehow (e.g. adding the ownerId to this call).
+                 */
+                allowed = true;
+            }
+            if (!allowed) {
+                return error(Response.Status.FORBIDDEN,
+                        "You are not permitted to abort file uploads with the supplied parameters.");
+            }
+            try {
+                S3AccessIO.abortMultipartUpload(idSupplied, storageidentifier, uploadId);
+            } catch (IOException io) {
+                logger.warning("Multipart upload abort failed for uploadId: " + uploadId + " storageidentifier="
+                        + storageidentifier + " dataset Id: " + dataset.getId());
+                logger.warning(io.getMessage());
+                throw new WrappedResponse(io,
+                        error(Response.Status.INTERNAL_SERVER_ERROR, "Could not abort multipart upload"));
+            }
+            return Response.noContent().build();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
 
-@PUT
-@Path("mpupload")
-public Response completeMPUpload(String partETagBody, @QueryParam("globalid") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId)  {
-	try {
-		Dataset dataset = datasetSvc.findByGlobalId(idSupplied);
-		//Allow the API to be used within a session (e.g. for direct upload in the UI)
-		User user =session.getUser();
-		if (!user.isAuthenticated()) {
-			try {
-				user=findAuthenticatedUserOrDie();
-			} catch (WrappedResponse ex) {
-				logger.info(
-						"Exception thrown while trying to figure out permissions to complete mpupload for dataset id "
-								+ dataset.getId() + ": " + ex.getLocalizedMessage());
-				throw ex;
-			}
-		}
-		boolean allowed = false;
-		if (dataset != null) {
-				allowed = permissionSvc.requestOn(createDataverseRequest(user), dataset)
-						.canIssue(UpdateDatasetVersionCommand.class);
-		} else {
-			/*
-			 * The only legitimate case where a global id won't correspond to a dataset is
-			 * for uploads during creation. Given that this call will still fail unless all
-			 * three parameters correspond to an active multipart upload, it should be safe
-			 * to allow the attempt for an authenticated user. If there are concerns about
-			 * permissions, one could check with the current design that the user is allowed
-			 * to create datasets in some dataverse that is configured to use the storage
-			 * provider specified in the storageidentifier, but testing for the ability to
-			 * create a dataset in a specific dataverse would requiring changing the design
-			 * somehow (e.g. adding the ownerId to this call).
-			 */
-			allowed = true;
-		}
-		if (!allowed) {
-			return error(Response.Status.FORBIDDEN,
-					"You are not permitted to complete file uploads with the supplied parameters.");
-		}
-		List<PartETag> eTagList = new ArrayList<PartETag>();
-        logger.info("Etags: " + partETagBody);
-		try {
-			JsonReader jsonReader = Json.createReader(new StringReader(partETagBody));
-			JsonObject object = jsonReader.readObject();
-			jsonReader.close();
-			for(String partNo : object.keySet()) {
-				eTagList.add(new PartETag(Integer.parseInt(partNo), object.getString(partNo)));
-			}
-			for(PartETag et: eTagList) {
-				logger.fine("Part: " + et.getPartNumber() + " : " + et.getETag());
-			}
-		} catch (JsonException je) {
-			logger.info("Unable to parse eTags from: " + partETagBody);
-			throw new WrappedResponse(je, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload"));
-		}
-		try {
-			S3AccessIO.completeMultipartUpload(idSupplied, storageidentifier, uploadId, eTagList);
-		} catch (IOException io) {
-			logger.warning("Multipart upload completion failed for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " globalId: " + idSupplied);
-			logger.warning(io.getMessage());
-			try {
-				S3AccessIO.abortMultipartUpload(idSupplied, storageidentifier, uploadId);
-			} catch (IOException e) {
-				logger.severe("Also unable to abort the upload (and release the space on S3 for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " globalId: " + idSupplied);
-				logger.severe(io.getMessage());
-			}
+    @PUT
+    @AuthRequired
+    @Path("mpupload")
+    public Response completeMPUpload(@Context ContainerRequestContext crc, String partETagBody, @QueryParam("globalid") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
+        try {
+            Dataset dataset = datasetSvc.findByGlobalId(idSupplied);
+            //Allow the API to be used within a session (e.g. for direct upload in the UI)
+            User user = session.getUser();
+            if (!user.isAuthenticated()) {
+                try {
+                    user = getRequestAuthenticatedUserOrDie(crc);
+                } catch (WrappedResponse ex) {
+                    logger.info(
+                            "Exception thrown while trying to figure out permissions to complete mpupload for dataset id "
+                                    + dataset.getId() + ": " + ex.getLocalizedMessage());
+                    throw ex;
+                }
+            }
+            boolean allowed = false;
+            if (dataset != null) {
+                allowed = permissionSvc.requestOn(createDataverseRequest(user), dataset)
+                        .canIssue(UpdateDatasetVersionCommand.class);
+            } else {
+                /*
+                 * The only legitimate case where a global id won't correspond to a dataset is
+                 * for uploads during creation. Given that this call will still fail unless all
+                 * three parameters correspond to an active multipart upload, it should be safe
+                 * to allow the attempt for an authenticated user. If there are concerns about
+                 * permissions, one could check with the current design that the user is allowed
+                 * to create datasets in some dataverse that is configured to use the storage
+                 * provider specified in the storageidentifier, but testing for the ability to
+                 * create a dataset in a specific dataverse would requiring changing the design
+                 * somehow (e.g. adding the ownerId to this call).
+                 */
+                allowed = true;
+            }
+            if (!allowed) {
+                return error(Response.Status.FORBIDDEN,
+                        "You are not permitted to complete file uploads with the supplied parameters.");
+            }
+            List<PartETag> eTagList = new ArrayList<PartETag>();
+            logger.info("Etags: " + partETagBody);
+            try {
+                JsonReader jsonReader = Json.createReader(new StringReader(partETagBody));
+                JsonObject object = jsonReader.readObject();
+                jsonReader.close();
+                for (String partNo : object.keySet()) {
+                    eTagList.add(new PartETag(Integer.parseInt(partNo), object.getString(partNo)));
+                }
+                for (PartETag et : eTagList) {
+                    logger.info("Part: " + et.getPartNumber() + " : " + et.getETag());
+                }
+            } catch (JsonException je) {
+                logger.info("Unable to parse eTags from: " + partETagBody);
+                throw new WrappedResponse(je, error(Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload"));
+            }
+            try {
+                S3AccessIO.completeMultipartUpload(idSupplied, storageidentifier, uploadId, eTagList);
+            } catch (IOException io) {
+                logger.warning("Multipart upload completion failed for uploadId: " + uploadId + " storageidentifier=" + storageidentifier + " globalId: " + idSupplied);
+                logger.warning(io.getMessage());
+                try {
+                    S3AccessIO.abortMultipartUpload(idSupplied, storageidentifier, uploadId);
+                } catch (IOException e) {
+                    logger.severe("Also unable to abort the upload (and release the space on S3 for uploadId: " + uploadId + " storageidentifier=" + storageidentifier + " globalId: " + idSupplied);
+                    logger.severe(io.getMessage());
+                }
 
-			throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload")); 
-		}
-		return ok("Multipart Upload completed");
-	} catch (WrappedResponse wr) {
-		return wr.getResponse();
-	}
-}
+                throw new WrappedResponse(io, error(Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload"));
+            }
+            return ok("Multipart Upload completed");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
 
     /**
      * Add a File to an existing Dataset
-     * 
+     *
      * @param idSupplied
      * @param jsonData
      * @param fileInputStream
      * @param contentDispositionHeader
      * @param formDataBodyPart
-     * @return 
+     * @return
      */
     @POST
+    @AuthRequired
     @Path("{id}/add")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response addFileToDataset(@PathParam("id") String idSupplied,
+    public Response addFileToDataset(@Context ContainerRequestContext crc,
+                    @PathParam("id") String idSupplied,
                     @FormDataParam("jsonData") String jsonData,
                     @FormDataParam("file") InputStream fileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
@@ -2314,18 +2419,11 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
 
         // -------------------------------------
-        // (1) Get the user from the API key
+        // (1) Get the user from the ContainerRequestContext
         // -------------------------------------
         User authUser;
-        try {
-            authUser = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN,
-                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
-                    );
-        }
-        
-        
+        authUser = getRequestUser(crc);
+
         // -------------------------------------
         // (2) Get the Dataset Id
         //  
@@ -2335,7 +2433,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         try {
             dataset = findDatasetOrDie(idSupplied);
         } catch (WrappedResponse wr) {
-            return wr.getResponse();           
+            return wr.getResponse();
         }
         
         //------------------------------------
@@ -2354,12 +2452,12 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         // (2a) Load up optional params via JSON
         //---------------------------------------
         OptionalFileParams optionalFileParams = null;
-        msgt("(api) jsonData: " +  jsonData);
+        msgt("(api) jsonData: " + jsonData);
 
         try {
             optionalFileParams = new OptionalFileParams(jsonData);
         } catch (DataFileTagException ex) {
-            return error( Response.Status.BAD_REQUEST, ex.getMessage());            
+            return error(Response.Status.BAD_REQUEST, ex.getMessage());
         }
         catch (ClassCastException | com.google.gson.JsonParseException ex) {
             return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
@@ -2371,42 +2469,47 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         String newFilename = null;
         String newFileContentType = null;
         String newStorageIdentifier = null;
-		if (null == contentDispositionHeader) {
-			if (optionalFileParams.hasStorageIdentifier()) {
-				newStorageIdentifier = optionalFileParams.getStorageIdentifier();
-				// ToDo - check that storageIdentifier is valid
-				if (optionalFileParams.hasFileName()) {
-					newFilename = optionalFileParams.getFileName();
-					if (optionalFileParams.hasMimetype()) {
-						newFileContentType = optionalFileParams.getMimeType();
-					}
-				}
-			} else {
-				return error(BAD_REQUEST,
-						"You must upload a file or provide a storageidentifier, filename, and mimetype.");
-			}
-		} else {
-			newFilename = contentDispositionHeader.getFileName();
-                        // Let's see if the form data part has the mime (content) type specified. 
-                        // Note that we don't want to rely on formDataBodyPart.getMediaType() - 
-                        // because that defaults to "text/plain" when no "Content-Type:" header is 
-                        // present. Instead we'll go through the headers, and see if "Content-Type:" 
-                        // is there. If not, we'll default to "application/octet-stream" - the generic
-                        // unknown type. This will prompt the application to run type detection and 
-                        // potentially find something more accurate.
-                        //newFileContentType = formDataBodyPart.getMediaType().toString();
+        if (null == contentDispositionHeader) {
+            if (optionalFileParams.hasStorageIdentifier()) {
+                newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
+                
+                if(!DataAccess.uploadToDatasetAllowed(dataset,  newStorageIdentifier)) {
+                    return error(BAD_REQUEST,
+                            "Dataset store configuration does not allow provided storageIdentifier.");
+                }
+                if (optionalFileParams.hasFileName()) {
+                    newFilename = optionalFileParams.getFileName();
+                    if (optionalFileParams.hasMimetype()) {
+                        newFileContentType = optionalFileParams.getMimeType();
+                    }
+                }
+            } else {
+                return error(BAD_REQUEST,
+                        "You must upload a file or provide a valid storageidentifier, filename, and mimetype.");
+            }
+        } else {
+            newFilename = contentDispositionHeader.getFileName();
+            // Let's see if the form data part has the mime (content) type specified.
+            // Note that we don't want to rely on formDataBodyPart.getMediaType() -
+            // because that defaults to "text/plain" when no "Content-Type:" header is
+            // present. Instead we'll go through the headers, and see if "Content-Type:"
+            // is there. If not, we'll default to "application/octet-stream" - the generic
+            // unknown type. This will prompt the application to run type detection and
+            // potentially find something more accurate.
+            // newFileContentType = formDataBodyPart.getMediaType().toString();
 
-                        for (String header : formDataBodyPart.getHeaders().keySet()) {
-                            if (header.equalsIgnoreCase("Content-Type")) {
-                                newFileContentType = formDataBodyPart.getHeaders().get(header).get(0);
-                            }
-                        }
-                        if (newFileContentType == null) {
-                            newFileContentType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
-                        }
-		}
+            for (String header : formDataBodyPart.getHeaders().keySet()) {
+                if (header.equalsIgnoreCase("Content-Type")) {
+                    newFileContentType = formDataBodyPart.getHeaders().get(header).get(0);
+                }
+            }
+            if (newFileContentType == null) {
+                newFileContentType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
+            }
+        }
 
-        
+
         //-------------------
         // (3) Create the AddReplaceFileHelper object
         //-------------------
@@ -2414,29 +2517,32 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
         DataverseRequest dvRequest2 = createDataverseRequest(authUser);
         AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
-                                                ingestService,
-                                                datasetService,
-                                                fileService,
-                                                permissionSvc,
-                                                commandEngine,
-                                                systemConfig,
-                                                licenseSvc);
+                ingestService,
+                datasetService,
+                fileService,
+                permissionSvc,
+                commandEngine,
+                systemConfig);
 
 
         //-------------------
         // (4) Run "runAddFileByDatasetId"
         //-------------------
         addFileHelper.runAddFileByDataset(dataset,
-                                newFilename,
-                                newFileContentType,
-                                newStorageIdentifier,
-                                fileInputStream,
-                                optionalFileParams);
+                newFilename,
+                newFileContentType,
+                newStorageIdentifier,
+                fileInputStream,
+                optionalFileParams);
 
 
         if (addFileHelper.hasError()){
+            //conflict response status added for 8859
+            if (Response.Status.CONFLICT.equals(addFileHelper.getHttpErrorCode())){
+                return conflict(addFileHelper.getErrorMessagesAsString("\n"));
+            }
             return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
-        }else{
+        } else {
             String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
             try {
                 //msgt("as String: " + addFileHelper.getSuccessResult());
@@ -2454,7 +2560,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 } else {
                     return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
                 }
-                
+
                 //"Look at that!  You added a file! (hey hey, it may have worked)");
             } catch (NoFilesException ex) {
                 Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
@@ -2462,71 +2568,141 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
             }
         }
-            
+        
     } // end: addFileToDataset
 
 
-    
-    private void msg(String m){
+    /**
+     * Clean storage of a Dataset
+     *
+     * @param idSupplied
+     * @return
+     */
+    @GET
+    @AuthRequired
+    @Path("{id}/cleanStorage")
+    public Response cleanStorage(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @QueryParam("dryrun") Boolean dryrun) {
+        // get user and dataset
+        User authUser = getRequestUser(crc);
+
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(idSupplied);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        // check permissions
+        if (!permissionSvc.permissionsFor(createDataverseRequest(authUser), dataset).contains(Permission.EditDataset)) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Access denied!");
+        }
+
+        boolean doDryRun = dryrun != null && dryrun.booleanValue();
+
+        // check if no legacy files are present
+        Set<String> datasetFilenames = getDatasetFilenames(dataset);
+        if (datasetFilenames.stream().anyMatch(x -> !dataFilePattern.matcher(x).matches())) {
+            logger.log(Level.WARNING, "Dataset contains legacy files not matching the naming pattern!");
+        }
+
+        Predicate<String> filter = getToDeleteFilesFilter(datasetFilenames);
+        List<String> deleted;
+        try {
+            StorageIO<DvObject> datasetIO = DataAccess.getStorageIO(dataset);
+            deleted = datasetIO.cleanUp(filter, doDryRun);
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "IOException! Serious Error! See administrator!");
+        }
+
+        return ok("Found: " + datasetFilenames.stream().collect(Collectors.joining(", ")) + "\n" + "Deleted: " + deleted.stream().collect(Collectors.joining(", ")));
+        
+    }
+
+    private static Set<String> getDatasetFilenames(Dataset dataset) {
+        Set<String> files = new HashSet<>();
+        for (DataFile dataFile: dataset.getFiles()) {
+            String storageIdentifier = dataFile.getStorageIdentifier();
+            String location = storageIdentifier.substring(storageIdentifier.indexOf("://") + 3);
+            String[] locationParts = location.split(":");//separate bucket, swift container, etc. from fileName
+            files.add(locationParts[locationParts.length-1]);
+        }
+        return files;
+    }
+
+    public static Predicate<String> getToDeleteFilesFilter(Set<String> datasetFilenames) {
+        return f -> {
+            return dataFilePattern.matcher(f).matches() && datasetFilenames.stream().noneMatch(x -> f.startsWith(x));
+        };
+    }
+
+    private void msg(String m) {
         //System.out.println(m);
         logger.fine(m);
     }
-    private void dashes(){
+
+    private void dashes() {
         msg("----------------");
     }
-    private void msgt(String m){
-        dashes(); msg(m); dashes();
+
+    private void msgt(String m) {
+        dashes();
+        msg(m);
+        dashes();
     }
-    
-    
-    public static <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )
-        throws WrappedResponse {
+
+
+    public static <T> T handleVersion(String versionId, DsVersionHandler<T> hdl)
+            throws WrappedResponse {
         switch (versionId) {
-            case ":latest": return hdl.handleLatest();
-            case ":draft": return hdl.handleDraft();
-            case ":latest-published": return hdl.handleLatestPublished();
+            case ":latest":
+                return hdl.handleLatest();
+            case ":draft":
+                return hdl.handleDraft();
+            case ":latest-published":
+                return hdl.handleLatestPublished();
             default:
                 try {
                     String[] versions = versionId.split("\\.");
                     switch (versions.length) {
                         case 1:
-                            return hdl.handleSpecific(Long.parseLong(versions[0]), (long)0.0);
+                            return hdl.handleSpecific(Long.parseLong(versions[0]), (long) 0.0);
                         case 2:
-                            return hdl.handleSpecific( Long.parseLong(versions[0]), Long.parseLong(versions[1]) );
+                            return hdl.handleSpecific(Long.parseLong(versions[0]), Long.parseLong(versions[1]));
                         default:
-                            throw new WrappedResponse(error( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'"));
+                            throw new WrappedResponse(error(Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'"));
                     }
-                } catch ( NumberFormatException nfe ) {
-                    throw new WrappedResponse( error( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'") );
+                } catch (NumberFormatException nfe) {
+                    throw new WrappedResponse(error(Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'"));
                 }
         }
     }
-    
-    private DatasetVersion getDatasetVersionOrDie( final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers) throws WrappedResponse {
-        DatasetVersion dsv = execCommand( handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>(){
 
-                @Override
-                public Command<DatasetVersion> handleLatest() {
-                    return new GetLatestAccessibleDatasetVersionCommand(req, ds);
-                }
+    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers) throws WrappedResponse {
+        DatasetVersion dsv = execCommand(handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>() {
 
-                @Override
-                public Command<DatasetVersion> handleDraft() {
-                    return new GetDraftDatasetVersionCommand(req, ds);
-                }
-  
-                @Override
-                public Command<DatasetVersion> handleSpecific(long major, long minor) {
-                    return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor);
-                }
+            @Override
+            public Command<DatasetVersion> handleLatest() {
+                return new GetLatestAccessibleDatasetVersionCommand(req, ds);
+            }
 
-                @Override
-                public Command<DatasetVersion> handleLatestPublished() {
-                    return new GetLatestPublishedDatasetVersionCommand(req, ds);
-                }
-            }));
-        if ( dsv == null || dsv.getId() == null ) {
-            throw new WrappedResponse( notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found") );
+            @Override
+            public Command<DatasetVersion> handleDraft() {
+                return new GetDraftDatasetVersionCommand(req, ds);
+            }
+
+            @Override
+            public Command<DatasetVersion> handleSpecific(long major, long minor) {
+                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor);
+            }
+
+            @Override
+            public Command<DatasetVersion> handleLatestPublished() {
+                return new GetLatestPublishedDatasetVersionCommand(req, ds);
+            }
+        }));
+        if (dsv == null || dsv.getId() == null) {
+            throw new WrappedResponse(notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found"));
         }
         if (dsv.isReleased()&& uriInfo!=null) {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, ds);
@@ -2542,14 +2718,14 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         Dataset dataset = null;
         try {
             dataset = findDatasetOrDie(id);
-            Set<DatasetLock> locks;      
+            Set<DatasetLock> locks;
             if (lockType == null) {
                 locks = dataset.getLocks();
             } else {
                 // request for a specific type lock:
                 DatasetLock lock = dataset.getLockFor(lockType);
 
-                locks = new HashSet<>(); 
+                locks = new HashSet<>();
                 if (lock != null) {
                     locks.add(lock);
                 }
@@ -2559,16 +2735,17 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
         } catch (WrappedResponse wr) {
             return wr.getResponse();
-        } 
-    }   
-    
+        }
+    }
+
     @DELETE
+    @AuthRequired
     @Path("{identifier}/locks")
-    public Response deleteLocks(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
+    public Response deleteLocks(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
 
         return response(req -> {
             try {
-                AuthenticatedUser user = findAuthenticatedUserOrDie();
+                AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
                 if (!user.isSuperuser()) {
                     return error(Response.Status.FORBIDDEN, "This API end point can be used by superusers only.");
                 }
@@ -2622,19 +2799,20 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 return wr.getResponse();
             }
 
-        });
+        }, getRequestUser(crc));
 
     }
     
     @POST
+    @AuthRequired
     @Path("{identifier}/lock/{type}")
-    public Response lockDataset(@PathParam("identifier") String id, @PathParam("type") DatasetLock.Reason lockType) {
+    public Response lockDataset(@Context ContainerRequestContext crc, @PathParam("identifier") String id, @PathParam("type") DatasetLock.Reason lockType) {
         return response(req -> {
             try {
-                AuthenticatedUser user = findAuthenticatedUserOrDie();
+                AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
                 if (!user.isSuperuser()) {
                     return error(Response.Status.FORBIDDEN, "This API end point can be used by superusers only.");
-                }   
+                }
                 Dataset dataset = findDatasetOrDie(id);
                 DatasetLock lock = dataset.getLockFor(lockType);
                 if (lock != null) {
@@ -2659,12 +2837,13 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 return wr.getResponse();
             }
 
-        });
+        }, getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("locks")
-    public Response listLocks(@QueryParam("type") String lockType, @QueryParam("userIdentifier") String userIdentifier) { //DatasetLock.Reason lockType) {        
+    public Response listLocks(@Context ContainerRequestContext crc, @QueryParam("type") String lockType, @QueryParam("userIdentifier") String userIdentifier) { //DatasetLock.Reason lockType) {
         // This API is here, under /datasets, and not under /admin, because we
         // likely want it to be accessible to admin users who may not necessarily 
         // have localhost access, that would be required to get to /api/admin in 
@@ -2672,7 +2851,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         // this api to admin users only.
         AuthenticatedUser apiUser;
         try {
-            apiUser = findAuthenticatedUserOrDie();
+            apiUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
         }
@@ -2727,7 +2906,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             Dataset dataset = findDatasetOrDie(idSupplied);
             JsonArrayBuilder datasetsCitations = Json.createArrayBuilder();
             List<DatasetExternalCitations> externalCitations = datasetExternalCitationsService.getDatasetExternalCitationsByDataset(dataset);
-            for (DatasetExternalCitations citation : externalCitations ){
+            for (DatasetExternalCitations citation : externalCitations) {
                 JsonObjectBuilder candidateObj = Json.createObjectBuilder();
                 /**
                  * In the future we can imagine storing and presenting more
@@ -2738,9 +2917,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                  */
                 candidateObj.add("citationUrl", citation.getCitedByUrl());
                 datasetsCitations.add(candidateObj);
-            }                       
-            return ok(datasetsCitations); 
-            
+            }
+            return ok(datasetsCitations);
+
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -2755,21 +2934,23 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     }
     
     @GET
+    @AuthRequired
     @Path("{identifier}/storagesize")
-    public Response getStorageSize(@PathParam("identifier") String dvIdtf,  @QueryParam("includeCached") boolean includeCached,  
-        @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {       
-      
+    public Response getStorageSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached,
+                                   @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.storage"),
-                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), includeCached,GetDatasetStorageSizeCommand.Mode.STORAGE, null)))));
+                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), includeCached, GetDatasetStorageSizeCommand.Mode.STORAGE, null)))), getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("{identifier}/versions/{versionId}/downloadsize")
-    public Response getDownloadSize(@PathParam("identifier") String dvIdtf, @PathParam("versionId") String version,   
-        @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {       
-      
+    public Response getDownloadSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("versionId") String version,
+                                    @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"),
-                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), false, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, getDatasetVersionOrDie(req, version , findDatasetOrDie(dvIdtf), uriInfo, headers))))));
+                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), false, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers))))), getRequestUser(crc));
     }
 
     @GET
@@ -2882,8 +3063,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     }
     
     @GET
+    @AuthRequired
     @Path("{identifier}/storageDriver")
-    public Response getFileStore(@PathParam("identifier") String dvIdtf,
+    public Response getFileStore(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
         
         Dataset dataset; 
@@ -2893,29 +3075,30 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
-            
-        return response(req -> ok(dataset.getEffectiveStorageDriverId()));
+        
+        return response(req -> ok(dataset.getEffectiveStorageDriverId()), getRequestUser(crc));
     }
     
     @PUT
+    @AuthRequired
     @Path("{identifier}/storageDriver")
-    public Response setFileStore(@PathParam("identifier") String dvIdtf,
+    public Response setFileStore(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             String storageDriverLabel,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
         
         // Superuser-only:
         AuthenticatedUser user;
         try {
-            user = findAuthenticatedUserOrDie();
+            user = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.BAD_REQUEST, "Authentication is required.");
         }
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
-    	}
-        
-        Dataset dataset; 
-        
+        }
+
+        Dataset dataset;
+
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
@@ -2930,28 +3113,29 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 return ok("Storage driver set to: " + store.getKey() + "/" + store.getValue());
             }
         }
-    	return error(Response.Status.BAD_REQUEST,
-            "No Storage Driver found for : " + storageDriverLabel);
+        return error(Response.Status.BAD_REQUEST,
+                "No Storage Driver found for : " + storageDriverLabel);
     }
     
     @DELETE
+    @AuthRequired
     @Path("{identifier}/storageDriver")
-    public Response resetFileStore(@PathParam("identifier") String dvIdtf,
+    public Response resetFileStore(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
-    
+        
         // Superuser-only:
         AuthenticatedUser user;
         try {
-            user = findAuthenticatedUserOrDie();
+            user = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.BAD_REQUEST, "Authentication is required.");
         }
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
-    	}
-        
-        Dataset dataset; 
-        
+        }
+
+        Dataset dataset;
+
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
@@ -2960,53 +3144,57 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         
         dataset.setStorageDriverId(null);
         datasetService.merge(dataset);
-    	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+        return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/curationLabelSet")
-    public Response getCurationLabelSet(@PathParam("identifier") String dvIdtf,
-            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
-        
+    public Response getCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        
-        Dataset dataset; 
-        
+
+        Dataset dataset;
+
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-            
-        return response(req -> ok(dataset.getEffectiveCurationLabelSetName()));
+
+        return response(req -> ok(dataset.getEffectiveCurationLabelSetName()), getRequestUser(crc));
     }
-    
+
     @PUT
+    @AuthRequired
     @Path("{identifier}/curationLabelSet")
-    public Response setCurationLabelSet(@PathParam("identifier") String dvIdtf,
-            @QueryParam("name") String curationLabelSet,
-            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
-        
+    public Response setCurationLabelSet(@Context ContainerRequestContext crc,
+                                        @PathParam("identifier") String dvIdtf,
+                                        @QueryParam("name") String curationLabelSet,
+                                        @Context UriInfo uriInfo,
+                                        @Context HttpHeaders headers) throws WrappedResponse {
+
         // Superuser-only:
         AuthenticatedUser user;
         try {
-            user = findAuthenticatedUserOrDie();
+            user = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
         }
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
         }
-        
-        Dataset dataset; 
-        
+
+        Dataset dataset;
+
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
@@ -3028,49 +3216,53 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         return error(Response.Status.BAD_REQUEST,
             "No Such Curation Label Set");
     }
-    
+
     @DELETE
+    @AuthRequired
     @Path("{identifier}/curationLabelSet")
-    public Response resetCurationLabelSet(@PathParam("identifier") String dvIdtf,
+    public Response resetCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
-    
+
         // Superuser-only:
         AuthenticatedUser user;
         try {
-            user = findAuthenticatedUserOrDie();
+            user = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.BAD_REQUEST, "Authentication is required.");
         }
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
         }
-        
-        Dataset dataset; 
-        
+
+        Dataset dataset;
+
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-        
+
         dataset.setCurationLabelSetName(SystemConfig.DEFAULTCURATIONLABELSET);
         datasetService.merge(dataset);
         return ok("Curation Label Set reset to default: " + SystemConfig.DEFAULTCURATIONLABELSET);
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/allowedCurationLabels")
-    public Response getAllowedCurationLabels(@PathParam("identifier") String dvIdtf,
-            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
+    public Response getAllowedCurationLabels(@Context ContainerRequestContext crc,
+                                             @PathParam("identifier") String dvIdtf,
+                                             @Context UriInfo uriInfo,
+                                             @Context HttpHeaders headers) throws WrappedResponse {
         AuthenticatedUser user = null;
         try {
-            user = findAuthenticatedUserOrDie();
+            user = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        
-        Dataset dataset; 
-        
+
+        Dataset dataset;
+
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
@@ -3078,22 +3270,23 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
         if (permissionSvc.requestOn(createDataverseRequest(user), dataset).has(Permission.PublishDataset)) {
             String[] labelArray = systemConfig.getCurationLabels().get(dataset.getEffectiveCurationLabelSetName());
-            return response(req -> ok(String.join(",", labelArray)));
+            return response(req -> ok(String.join(",", labelArray)), getRequestUser(crc));
         } else {
             return error(Response.Status.FORBIDDEN, "You are not permitted to view the allowed curation labels for this dataset.");
         }
     }
-    
+
     @GET
+    @AuthRequired
     @Path("{identifier}/timestamps")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTimestamps(@PathParam("identifier") String id) {
+    public Response getTimestamps(@Context ContainerRequestContext crc, @PathParam("identifier") String id) {
 
         Dataset dataset = null;
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         try {
             dataset = findDatasetOrDie(id);
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             Set<Permission> perms = new HashSet<Permission>();
             perms.add(Permission.ViewUnpublishedDataset);
             boolean canSeeDraft = permissionSvc.hasPermissionsFor(u, dataset, perms);
@@ -3113,6 +3306,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 if (dataset.getLastExportTime() != null) {
                     timestamps.add("lastMetadataExportTime",
                             formatter.format(dataset.getLastExportTime().toInstant().atZone(ZoneId.systemDefault())));
+
                 }
 
                 if (dataset.getMostRecentMajorVersionReleaseDate() != null) {
@@ -3124,11 +3318,11 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 timestamps.add("hasStaleIndex",
                         (dataset.getModificationTime() != null && (dataset.getIndexTime() == null
                                 || (dataset.getIndexTime().compareTo(dataset.getModificationTime()) <= 0))) ? true
-                                        : false);
+                                : false);
                 timestamps.add("hasStalePermissionIndex",
                         (dataset.getPermissionModificationTime() != null && (dataset.getIndexTime() == null
                                 || (dataset.getIndexTime().compareTo(dataset.getModificationTime()) <= 0))) ? true
-                                        : false);
+                                : false);
             }
             // More detail if you can see a draft
             if (canSeeDraft) {
@@ -3157,18 +3351,18 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     }
 
 
-    /**
-     * Add multiple Files to an existing Dataset
-     *
-     * @param idSupplied
-     * @param jsonData
-     * @return
-     */
     @POST
-    @Path("{id}/addFiles")
+    @AuthRequired
+    @Path("{id}/addglobusFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response addFilesToDataset(@PathParam("id") String idSupplied,
-                                      @FormDataParam("jsonData") String jsonData) {
+    public Response addGlobusFilesToDataset(@Context ContainerRequestContext crc,
+                                            @PathParam("id") String datasetId,
+                                            @FormDataParam("jsonData") String jsonData,
+                                            @Context UriInfo uriInfo,
+                                            @Context HttpHeaders headers
+    ) throws IOException, ExecutionException, InterruptedException {
+
+        logger.info(" ====  (api addGlobusFilesToDataset) jsonData   ====== " + jsonData);
 
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
@@ -3177,13 +3371,131 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         // -------------------------------------
         // (1) Get the user from the API key
         // -------------------------------------
-        User authUser;
+        AuthenticatedUser authUser;
         try {
-            authUser = findUserOrDie();
+            authUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth")
             );
         }
+
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        //------------------------------------
+        // (2b) Make sure dataset does not have package file
+        // --------------------------------------
+
+        for (DatasetVersion dv : dataset.getVersions()) {
+            if (dv.isHasPackageFile()) {
+                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
+                );
+            }
+        }
+
+
+        String lockInfoMessage = "Globus Upload API started ";
+        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.GlobusUpload,
+                (authUser).getId(), lockInfoMessage);
+        if (lock != null) {
+            dataset.addLock(lock);
+        } else {
+            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+        }
+
+
+        ApiToken token = authSvc.findApiTokenByUser(authUser);
+
+        if(uriInfo != null) {
+            logger.info(" ====  (api uriInfo.getRequestUri()) jsonData   ====== " + uriInfo.getRequestUri().toString());
+        }
+
+
+        String requestUrl = headers.getRequestHeader("origin").get(0);
+
+        if(requestUrl.contains("localhost")){
+            requestUrl = "http://localhost:8080";
+        }
+
+        // Async Call
+        globusService.globusUpload(jsonData, token, dataset, requestUrl, authUser);
+
+        return ok("Async call to Globus Upload started ");
+
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{id}/deleteglobusRule")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response deleteglobusRule(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,@FormDataParam("jsonData") String jsonData
+    ) throws IOException, ExecutionException, InterruptedException {
+
+
+        logger.info(" ====  (api deleteglobusRule) jsonData   ====== " + jsonData);
+
+
+        if (!systemConfig.isHTTPUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        }
+
+        // -------------------------------------
+        // (1) Get the user from the ContainerRequestContext
+        // -------------------------------------
+        User authUser;
+        authUser = getRequestUser(crc);
+
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        // Async Call
+        globusService.globusDownload(jsonData, dataset, authUser);
+
+        return ok("Async call to Globus Download started");
+
+    }
+
+
+    /**
+     * Add multiple Files to an existing Dataset
+     *
+     * @param idSupplied
+     * @param jsonData
+     * @return
+     */
+    @POST
+    @AuthRequired
+    @Path("{id}/addFiles")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response addFilesToDataset(@Context ContainerRequestContext crc,
+                                      @PathParam("id") String idSupplied,
+                                      @FormDataParam("jsonData") String jsonData) {
+
+        if (!systemConfig.isHTTPUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        }
+
+        // -------------------------------------
+        // (1) Get the user from the ContainerRequestContext
+        // -------------------------------------
+        User authUser;
+        authUser = getRequestUser(crc);
 
         // -------------------------------------
         // (2) Get the Dataset Id
@@ -3196,6 +3508,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             return wr.getResponse();
         }
 
+        dataset.getLocks().forEach(dl -> {
+            logger.info(dl.toString());
+        });
 
         //------------------------------------
         // (2a) Make sure dataset does not have package file
@@ -3218,27 +3533,95 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 this.fileService,
                 this.permissionSvc,
                 this.commandEngine,
-                this.systemConfig,
-                this.licenseSvc
+                this.systemConfig
         );
 
         return addFileHelper.addFiles(jsonData, dataset, authUser);
 
     }
-    
-    /** 
+
+    /**
+     * Replace multiple Files to an existing Dataset
+     *
+     * @param idSupplied
+     * @param jsonData
+     * @return
+     */
+    @POST
+    @AuthRequired
+    @Path("{id}/replaceFiles")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response replaceFilesInDataset(@Context ContainerRequestContext crc,
+                                          @PathParam("id") String idSupplied,
+                                          @FormDataParam("jsonData") String jsonData) {
+
+        if (!systemConfig.isHTTPUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        }
+
+        // -------------------------------------
+        // (1) Get the user from the ContainerRequestContext
+        // -------------------------------------
+        User authUser;
+        authUser = getRequestUser(crc);
+
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(idSupplied);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        dataset.getLocks().forEach(dl -> {
+            logger.info(dl.toString());
+        });
+
+        //------------------------------------
+        // (2a) Make sure dataset does not have package file
+        // --------------------------------------
+
+        for (DatasetVersion dv : dataset.getVersions()) {
+            if (dv.isHasPackageFile()) {
+                return error(Response.Status.FORBIDDEN,
+                        BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
+                );
+            }
+        }
+
+        DataverseRequest dvRequest = createDataverseRequest(authUser);
+
+        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(
+                dvRequest,
+                this.ingestService,
+                this.datasetService,
+                this.fileService,
+                this.permissionSvc,
+                this.commandEngine,
+                this.systemConfig
+        );
+
+        return addFileHelper.replaceFiles(jsonData, dataset, authUser);
+
+    }
+
+    /**
      * API to find curation assignments and statuses
-     * 
+     *
      * @return
      * @throws WrappedResponse
      */
     @GET
+    @AuthRequired
     @Path("/listCurationStates")
     @Produces("text/csv")
-    public Response getCurationStates() throws WrappedResponse {
+    public Response getCurationStates(@Context ContainerRequestContext crc) throws WrappedResponse {
 
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -3290,13 +3673,17 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     // APIs to manage archival status
 
     @GET
+    @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
-    public Response getDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
-            @PathParam("version") String versionNumber, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
+                                                    @PathParam("id") String datasetId,
+                                                    @PathParam("version") String versionNumber,
+                                                    @Context UriInfo uriInfo,
+                                                    @Context HttpHeaders headers) {
 
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             if (!au.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -3316,20 +3703,27 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     }
 
     @PUT
+    @AuthRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
-    public Response setDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
-            @PathParam("version") String versionNumber, JsonObject update, @Context UriInfo uriInfo,
-            @Context HttpHeaders headers) {
+    public Response setDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
+                                                    @PathParam("id") String datasetId,
+                                                    @PathParam("version") String versionNumber,
+                                                    String newStatus,
+                                                    @Context UriInfo uriInfo,
+                                                    @Context HttpHeaders headers) {
 
-        logger.fine(JsonUtil.prettyPrint(update));
+        logger.fine(newStatus);
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
 
             if (!au.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
-
+            
+            //Verify we have valid json after removing any HTML tags (the status gets displayed in the UI, so we want plain text).
+            JsonObject update= JsonUtil.getJsonObject(MarkupChecker.stripAllTags(newStatus));
+            
             if (update.containsKey(DatasetVersion.ARCHIVAL_STATUS) && update.containsKey(DatasetVersion.ARCHIVAL_STATUS_MESSAGE)) {
                 String status = update.getString(DatasetVersion.ARCHIVAL_STATUS);
                 if (status.equals(DatasetVersion.ARCHIVAL_STATUS_PENDING) || status.equals(DatasetVersion.ARCHIVAL_STATUS_FAILURE)
@@ -3352,7 +3746,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
                     dsv.setArchivalCopyLocation(JsonUtil.prettyPrint(update));
                     dsv = datasetversionService.merge(dsv);
-                    logger.fine("location now: " + dsv.getArchivalCopyLocation());
                     logger.fine("status now: " + dsv.getArchivalCopyLocationStatus());
                     logger.fine("message now: " + dsv.getArchivalCopyLocationMessage());
 
@@ -3361,19 +3754,24 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        } catch (JsonException| IllegalStateException ex) {
+            return error(Status.BAD_REQUEST, "Unable to parse provided JSON");
         }
-
         return error(Status.BAD_REQUEST, "Unacceptable status format");
     }
     
     @DELETE
+    @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/{version}/archivalStatus")
-    public Response deleteDatasetVersionArchivalStatus(@PathParam("id") String datasetId,
-            @PathParam("version") String versionNumber, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response deleteDatasetVersionArchivalStatus(@Context ContainerRequestContext crc,
+                                                       @PathParam("id") String datasetId,
+                                                       @PathParam("version") String versionNumber,
+                                                       @Context UriInfo uriInfo,
+                                                       @Context HttpHeaders headers) {
 
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
             if (!au.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -3408,5 +3806,47 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             }
         }
         return false;
+    }
+    
+    // This method provides a callback for an external tool to retrieve it's
+    // parameters/api URLs. If the request is authenticated, e.g. by it being
+    // signed, the api URLs will be signed. If a guest request is made, the URLs
+    // will be plain/unsigned.
+    // This supports the cases where a tool is accessing a restricted resource (e.g.
+    // for a draft dataset), or public case.
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{version}/toolparams/{tid}")
+    public Response getExternalToolDVParams(@Context ContainerRequestContext crc,
+                                            @PathParam("tid") long externalToolId,
+                                            @PathParam("id") String datasetId,
+                                            @PathParam("version") String version,
+                                            @QueryParam(value = "locale") String locale) {
+        try {
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            DatasetVersion target = getDatasetVersionOrDie(req, version, findDatasetOrDie(datasetId), null, null);
+            if (target == null) {
+                return error(BAD_REQUEST, "DatasetVersion not found.");
+            }
+            
+            ExternalTool externalTool = externalToolService.findById(externalToolId);
+            if(externalTool==null) {
+                return error(BAD_REQUEST, "External tool not found.");
+            }
+            if (!ExternalTool.Scope.DATASET.equals(externalTool.getScope())) {
+                return error(BAD_REQUEST, "External tool does not have dataset scope.");
+            }
+            ApiToken apiToken = null;
+            User u = getRequestUser(crc);
+            if (u instanceof AuthenticatedUser) {
+                apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) u);
+            }
+            
+
+            ExternalToolHandler eth = new ExternalToolHandler(externalTool, target.getDataset(), apiToken, locale);
+            return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters()))));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 }

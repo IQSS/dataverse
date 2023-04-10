@@ -114,6 +114,12 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                 validationMessage  += constraintViolations.stream()
                     .filter(cv -> cv.getRootBean() instanceof TermsOfUseAndAccess)
                     .map(cv -> cv.toString());
+                
+                for (ConstraintViolation cv : constraintViolations){
+                    if (cv.getRootBean() instanceof TermsOfUseAndAccess){
+                        throw new IllegalCommandException(validationMessage,  this);
+                    }
+                }
 
                 throw new IllegalCommandException(validationMessage, this);
             }
@@ -152,7 +158,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                         int attempts = 0;
                         if(retry) {
                             do  {
-                                theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, globalIdServiceBean));
+                                theDataset.setIdentifier(globalIdServiceBean.generateDatasetIdentifier(theDataset));
                                 logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
                                     new Object[]{theDataset.getId(), theDataset.getIdentifier()});
                                 attempts++;

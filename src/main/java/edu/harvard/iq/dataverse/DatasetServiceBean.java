@@ -16,23 +16,17 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -95,6 +89,12 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
+
+    @EJB
+    GlobusServiceBean globusServiceBean;
+
+    @EJB
+    UserNotificationServiceBean userNotificationService;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
@@ -280,12 +280,12 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     public Dataset findByGlobalId(String globalId) {
-        Dataset retVal = (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset");
+        Dataset retVal = (Dataset) dvObjectService.findByGlobalId(globalId, DvObject.DType.Dataset);
         if (retVal != null){
             return retVal;
         } else {
             //try to find with alternative PID
-            return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset", true);
+            return (Dataset) dvObjectService.findByAltGlobalId(globalId, DvObject.DType.Dataset);
         }
     }
 
@@ -316,85 +316,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
-    public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {
-        String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
 
-        switch (identifierType) {
-            case "randomString":
-                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
-            case "storedProcGenerated":
-                return generateIdentifierFromStoredProcedure(dataset, idServiceBean, shoulder);
-            default:
-                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
-        }
-    }
-
-    private String generateIdentifierAsRandomString(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
-        String identifier = null;
-        do {
-            identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();
-        } while (!isIdentifierLocallyUnique(identifier, dataset));
-
-        return identifier;
-    }
-
-    private String generateIdentifierFromStoredProcedure(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
-
-        String identifier;
-        do {
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
-            query.execute();
-            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
-            // some diagnostics here maybe - is it possible to determine that it's failing
-            // because the stored procedure hasn't been created in the database?
-            if (identifierFromStoredProcedure == null) {
-                return null;
-            }
-            identifier = shoulder + identifierFromStoredProcedure;
-        } while (!isIdentifierLocallyUnique(identifier, dataset));
-
-        return identifier;
-    }
-
-    /**
-     * Check that a identifier entered by the user is unique (not currently used
-     * for any other study in this Dataverse Network) also check for duplicate
-     * in EZID if needed
-     * @param userIdentifier
-     * @param dataset
-     * @param persistentIdSvc
-     * @return {@code true} if the identifier is unique, {@code false} otherwise.
-     */
-    public boolean isIdentifierUnique(String userIdentifier, Dataset dataset, GlobalIdServiceBean persistentIdSvc) {
-        if ( ! isIdentifierLocallyUnique(userIdentifier, dataset) ) return false; // duplication found in local database
-
-        // not in local DB, look in the persistent identifier service
-        try {
-            return ! persistentIdSvc.alreadyExists(dataset);
-        } catch (Exception e){
-            //we can live with failure - means identifier not found remotely
-        }
-
-        return true;
-    }
-
-    public boolean isIdentifierLocallyUnique(Dataset dataset) {
-        return isIdentifierLocallyUnique(dataset.getIdentifier(), dataset);
-    }
-
-    public boolean isIdentifierLocallyUnique(String identifier, Dataset dataset) {
-        return em.createNamedQuery("Dataset.findByIdentifierAuthorityProtocol")
-            .setParameter("identifier", identifier)
-            .setParameter("authority", dataset.getAuthority())
-            .setParameter("protocol", dataset.getProtocol())
-            .getResultList().isEmpty();
-    }
 
     public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {
         //Cannot rely on the largest table id having the greatest identifier counter
-        long zeroFiles = new Long(0);
+        long zeroFiles = 0L;
         Long retVal = zeroFiles;
         Long testVal;
         List<Object> idResults;
@@ -411,7 +337,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                 for (Object raw: idResults){
                     String identifier = (String) raw;
                     identifier =  identifier.substring(identifier.lastIndexOf("/") + 1);
-                    testVal = new Long(identifier) ;
+                    testVal = Long.valueOf(identifier) ;
                     if (testVal > retVal){
                         retVal = testVal;
                     }
@@ -781,10 +707,10 @@ public class DatasetServiceBean implements java.io.Serializable {
                         countAll++;
                         try {
                             recordService.exportAllFormatsInNewTransaction(dataset);
-                            exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString());
+                            exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                             countSuccess++;
                         } catch (Exception ex) {
-                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalIdString() + "; " + ex.getMessage());
+                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage());
                             countError++;
                         }
                     }
@@ -802,6 +728,35 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     }
     
+
+    @Asynchronous
+    public void reExportDatasetAsync(Dataset dataset) {
+        exportDataset(dataset, true);
+    }
+
+    public void exportDataset(Dataset dataset, boolean forceReExport) {
+        if (dataset != null) {
+            // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets, 
+            // but when only one dataset is exported we do not log in a separate export logging file
+            if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
+
+                // can't trust dataset.getPublicationDate(), no. 
+                Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19 (We do now! :)
+                if (forceReExport || (publicationDate != null
+                        && (dataset.getLastExportTime() == null
+                        || dataset.getLastExportTime().before(publicationDate)))) {
+                    try {
+                        recordService.exportAllFormatsInNewTransaction(dataset);
+                        logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
+                    } catch (Exception ex) {
+                        logger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage());
+                    }
+                }
+            }
+        }
+        
+    }
+
     public String getReminderString(Dataset dataset, boolean canPublishDataset) {
         return getReminderString( dataset, canPublishDataset, false);
     }
@@ -840,6 +795,13 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.warning("Unable to get reminder string from bundle. Returning empty string.");
             return "";
         }
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public int clearAllExportTimes() {
+        Query clearExportTimes = em.createQuery("UPDATE Dataset SET lastExportTime = NULL");
+        int numRowsUpdated = clearExportTimes.executeUpdate();
+        return numRowsUpdated;
     }
 
     public Dataset setNonDatasetFileAsThumbnail(Dataset dataset, InputStream inputStream) {
@@ -983,7 +945,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                     maxIdentifier++;
                     datafile.setIdentifier(datasetIdentifier + "/" + maxIdentifier.toString());
                 } else {
-                    datafile.setIdentifier(fileService.generateDataFileIdentifier(datafile, idServiceBean));
+                    datafile.setIdentifier(idServiceBean.generateDataFileIdentifier(datafile));
                 }
 
                 if (datafile.getProtocol() == null) {
@@ -1130,4 +1092,5 @@ public class DatasetServiceBean implements java.io.Serializable {
             hdLogger.warning("Failed to destroy the dataset");
         }
     }
+
 }

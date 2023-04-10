@@ -17,13 +17,16 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
 
+import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,7 +73,7 @@ public class OpenAireExportUtil {
         String persistentAgency = datasetDto.getProtocol();
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
+        GlobalId globalId = PidUtil.parseAsGlobalID(persistentAgency, persistentAuthority, persistentId);
 
         // The sequence is revied using sample:
         // https://schema.datacite.org/meta/kernel-4.0/example/datacite-example-full-v4.0.xml
@@ -82,7 +85,7 @@ public class OpenAireExportUtil {
         String language = null;
 
         // 1, Identifier (with mandatory type sub-property) (M)
-        writeIdentifierElement(xmlw, globalId.toURL().toString(), language);
+        writeIdentifierElement(xmlw, globalId.asURL(), language);
 
         // 2, Creator (with optional given name, family name, 
         //      name identifier and affiliation sub-properties) (M)
@@ -190,10 +193,10 @@ public class OpenAireExportUtil {
         if (StringUtils.isNotBlank(identifier)) {
             Map<String, String> identifier_map = new HashMap<String, String>();
 
-            if (StringUtils.containsIgnoreCase(identifier, GlobalId.DOI_RESOLVER_URL)) {
+            if (StringUtils.containsIgnoreCase(identifier, DOIServiceBean.DOI_RESOLVER_URL)) {
                 identifier_map.put("identifierType", "DOI");
                 identifier = StringUtils.substring(identifier, identifier.indexOf("10."));
-            } else if (StringUtils.containsIgnoreCase(identifier, GlobalId.HDL_RESOLVER_URL)) {
+            } else if (StringUtils.containsIgnoreCase(identifier, HandlenetServiceBean.HDL_RESOLVER_URL)) {
                 identifier_map.put("identifierType", "Handle");
                 if (StringUtils.contains(identifier, "http")) {
                     identifier = identifier.replace(identifier.substring(0, identifier.indexOf("/") + 2), "");
@@ -256,7 +259,10 @@ public class OpenAireExportUtil {
                                     creator_map.put("nameType", "Personal");
                                     nameType_check = true;
                                 }
-
+                                // ToDo - the algorithm to determine if this is a Person or Organization here
+                                // has been abstracted into a separate
+                                // edu.harvard.iq.dataverse.util.PersonOrOrgUtil class that could be used here
+                                // to avoid duplication/variants of the algorithm
                                 creatorName = Cleanup.normalize(creatorName);
                                 // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
                                 if (creatorName.contains(",")) {
@@ -706,6 +712,11 @@ public class OpenAireExportUtil {
         boolean nameType_check = false;
         Map<String, String> contributor_map = new HashMap<String, String>();
 
+        // ToDo - the algorithm to determine if this is a Person or Organization here
+        // has been abstracted into a separate
+        // edu.harvard.iq.dataverse.util.PersonOrOrgUtil class that could be used here
+        // to avoid duplication/variants of the algorithm
+
         contributorName = Cleanup.normalize(contributorName);
         // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
         if (contributorName.contains(",")) {
@@ -717,6 +728,9 @@ public class OpenAireExportUtil {
                 // givenName ok
                 contributor_map.put("nameType", "Personal");
                 nameType_check = true;
+                // re: the above toDo - the ("ContactPerson".equals(contributorType) &&
+                // !isValidEmailAddress(contributorName)) clause in the next line could/should
+                // be sent as the OrgIfTied boolean parameter
             } else if (isOrganization || ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName))) {
                 contributor_map.put("nameType", "Organizational");
             }

@@ -299,7 +299,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         ApiToken apiToken = null;
         User user = session.getUser();
         DatasetVersion version = fmd.getDatasetVersion();
-        if (version.isDraft() || (fmd.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fmd))) {
+        if (version.isDraft() || fmd.getDatasetVersion().isDeaccessioned() || (fmd.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fmd))) {
             apiToken = getApiToken(user);
         }
         DataFile dataFile = null;
@@ -560,12 +560,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     public String getDirectStorageLocatrion(String storageLocation) {
         String storageDriverId;
-        int separatorIndex = storageLocation.indexOf("://");
+        int separatorIndex = storageLocation.indexOf(DataAccess.SEPARATOR);
         if ( separatorIndex > 0 ) {
             storageDriverId = storageLocation.substring(0,separatorIndex);
         
             String storageType = DataAccess.getDriverType(storageDriverId);
-            if ("file".equals(storageType) || "s3".equals(storageType)) {
+            if (DataAccess.FILE.equals(storageType) || DataAccess.S3.equals(storageType)) {
                 return storageType.concat(storageLocation.substring(separatorIndex));
             }
         }

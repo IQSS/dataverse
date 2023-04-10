@@ -22,7 +22,10 @@ import java.util.Collection;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.javaswift.joss.client.factory.AccountFactory;
@@ -508,7 +511,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         if (dvObject instanceof DataFile) {
             Dataset owner = this.getDataFile().getOwner();
 
-            if (storageIdentifier.startsWith(this.driverId + "://")) {
+            if (storageIdentifier.startsWith(this.driverId + DataAccess.SEPARATOR)) {
                 // This is a call on an already existing swift object. 
 
                 String[] swiftStorageTokens = storageIdentifier.substring(8).split(":", 3);    
@@ -552,14 +555,14 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 //setSwiftContainerName(swiftFolderPath);
                 //swiftFileName = dataFile.getDisplayName();
                 //Storage Identifier is now updated after the object is uploaded on Swift.
-                dvObject.setStorageIdentifier(this.driverId + "://" + swiftDefaultEndpoint + ":" + swiftFolderPath + ":" + swiftFileName);
+                dvObject.setStorageIdentifier(this.driverId + DataAccess.SEPARATOR + swiftDefaultEndpoint + ":" + swiftFolderPath + ":" + swiftFileName);
             } else {
                 throw new IOException("SwiftAccessIO: unknown access mode.");
             }
         } else if (dvObject instanceof Dataset) {
             Dataset dataset = this.getDataset();
 
-            if (storageIdentifier.startsWith(this.driverId + "://")) {
+            if (storageIdentifier.startsWith(this.driverId + DataAccess.SEPARATOR)) {
                 // This is a call on an already existing swift object. 
 
                 //TODO: determine how storage identifier will give us info
@@ -601,7 +604,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                     swiftPseudoFolderPathSeparator + dataset.getIdentifierForFileStorage();
 
                 swiftFileName = auxItemTag;
-                dvObject.setStorageIdentifier(this.driverId + "://" + swiftEndPoint + ":" + swiftFolderPath);
+                dvObject.setStorageIdentifier(this.driverId + DataAccess.SEPARATOR + swiftEndPoint + ":" + swiftFolderPath);
             } else {
                 throw new IOException("SwiftAccessIO: unknown access mode.");
             }
@@ -628,7 +631,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         other swiftContainerName Object Store pseudo-folder can be created, which is
         not provide by the joss Java swift library as of yet.
          */
-        if (storageIdentifier.startsWith(this.driverId + "://")) {
+        if (storageIdentifier.startsWith(this.driverId + DataAccess.SEPARATOR)) {
             // An existing swift object; the container must already exist as well.
             this.swiftContainer = account.getContainer(swiftContainerName);
         } else {
@@ -864,17 +867,20 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
+    private String getSwiftContainerName(Dataset dataset) {
+        String authorityNoSlashes = dataset.getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
+        return dataset.getProtocolForFileStorage() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
+                swiftFolderPathSeparator + dataset.getIdentifierForFileStorage();
+    }
+
     @Override
     public String getSwiftContainerName() {
         if (dvObject instanceof DataFile) {
-            String authorityNoSlashes = this.getDataFile().getOwner().getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
-            return this.getDataFile().getOwner().getProtocolForFileStorage() + swiftFolderPathSeparator
-                   +            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifierForFileStorage();
+            return getSwiftContainerName(this.getDataFile().getOwner());
         }
         return null;
      }
-     
+
     //https://gist.github.com/ishikawa/88599
     public static String toHexString(byte[] bytes) {
         Formatter formatter = new Formatter();
@@ -893,5 +899,59 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         mac.init(signingKey);
         return toHexString(mac.doFinal(data.getBytes()));
     }
-     
+
+    private List<String> listAllFiles() throws IOException {
+        if (!this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This SwiftAccessIO object hasn't been properly initialized.");
+        }
+        String prefix = getSwiftContainerName(dataset) + swiftFolderPathSeparator;
+        
+        Collection<StoredObject> items; 
+        String lastItemName = null; 
+        List<String> ret = new ArrayList<>();
+
+        while ((items = this.swiftContainer.list(prefix, lastItemName, LIST_PAGE_LIMIT)) != null && items.size() > 0) {
+            for (StoredObject item : items) {
+                lastItemName = item.getName().substring(prefix.length());
+                ret.add(lastItemName);
+            }
+        }
+
+        return ret;
+    }
+
+    private void deleteFile(String fileName) throws IOException {
+        if (!this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This SwiftAccessIO object hasn't been properly initialized.");
+        }
+        String prefix = getSwiftContainerName(dataset) + swiftFolderPathSeparator;
+        
+        StoredObject fileObject = this.swiftContainer.getObject(prefix + fileName);
+
+        if (!fileObject.exists()) {
+            throw new FileNotFoundException("SwiftAccessIO/Direct Access: " + fileName + " does not exist");
+        }
+
+        fileObject.delete();
+    }
+
+    @Override
+    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
+        List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+        if (dryRun) {
+            return toDelete;
+        }
+        for (String f : toDelete) {
+            this.deleteFile(f);
+        }
+        return toDelete;
+    }
 }

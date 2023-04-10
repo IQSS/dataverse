@@ -32,6 +32,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
@@ -39,6 +40,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandler;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandlerFactory;
@@ -107,6 +109,8 @@ import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.NetcdfFiles;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -466,6 +470,11 @@ public class FileUtil implements java.io.Serializable  {
                 fileType = "application/fits";
             }
         }
+
+        // step 3: Check if NetCDF or HDF5
+        if (fileType == null) {
+            fileType = checkNetcdfOrHdf5(f);
+        }
        
         // step 3: check the mime type of this file with Jhove
         if (fileType == null){
@@ -545,6 +554,9 @@ public class FileUtil implements java.io.Serializable  {
              }
         } 
         
+        if(fileType==null) {
+            fileType = MIME_TYPE_UNDETERMINED_DEFAULT;
+        }
         logger.fine("returning fileType "+fileType);
         return fileType;
     }
@@ -663,6 +675,43 @@ public class FileUtil implements java.io.Serializable  {
         }
         logger.fine("end isGraphML()");
         return isGraphML;
+    }
+
+    public static String checkNetcdfOrHdf5(File file) {
+        try ( NetcdfFile netcdfFile = NetcdfFiles.open(file.getAbsolutePath())) {
+            if (netcdfFile == null) {
+                // Can't open as a NetCDF or HDF5 file.
+                return null;
+            }
+            String type = netcdfFile.getFileTypeId();
+            if (type == null) {
+                return null;
+            }
+            switch (type) {
+                case "NetCDF":
+                    return "application/netcdf";
+                case "NetCDF-4":
+                    return "application/netcdf";
+                case "HDF5":
+                    return "application/x-hdf5";
+                default:
+                    break;
+            }
+        } catch (IOException ex) {
+            /**
+             * When an HDF4 file is passed, it won't be detected. Instead, we've
+             * seen exceptions like this:
+             *
+             * ucar.nc2.internal.iosp.hdf4.H4header makeDimension WARNING:
+             * **dimension length=0 for TagVGroup= *refno=124 tag= VG (1965)
+             * Vgroup length=28 class= Dim0.0 name= ixx using data 123
+             *
+             * java.lang.IllegalArgumentException: Dimension length =0 must be >
+             * 0
+             */
+            return null;
+        }
+        return null;
     }
 
     // from MD5Checksum.java
@@ -1185,7 +1234,7 @@ public class FileUtil implements java.io.Serializable  {
     }   // end createDataFiles
     
 
-	private static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
+	public static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
 		// is it any better than the type that was supplied to us,
 		// if any?
 		// This is not as trivial a task as one might expect...
@@ -1388,11 +1437,8 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static String getFilesTempDirectory() {
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-            filesRootDirectory = "/tmp/files";
-        }
-
+        
+        String filesRootDirectory = JvmSettings.FILES_DIRECTORY.lookup();
         String filesTempDirectory = filesRootDirectory + "/temp";
 
         if (!Files.exists(Paths.get(filesTempDirectory))) {
@@ -1415,7 +1461,7 @@ public class FileUtil implements java.io.Serializable  {
     	String driverId = dataFile.getOwner().getEffectiveStorageDriverId();
 		
         String bucketName = System.getProperty("dataverse.files." + driverId + ".bucket-name");
-        String storageId = driverId + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
+        String storageId = driverId + DataAccess.SEPARATOR + bucketName + ":" + dataFile.getFileMetadata().getLabel();
         dataFile.setStorageIdentifier(storageId);
     }
     
@@ -1534,7 +1580,7 @@ public class FileUtil implements java.io.Serializable  {
         }
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            License license = datasetVersion.getTermsOfUseAndAccess().getLicense();
+            License license = DatasetUtil.getLicense(datasetVersion);
             if ((license == null && StringUtils.isNotBlank(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse()))
                     || (license != null && !license.isDefault())) {
                 logger.fine("Popup required because of license or terms of use.");
@@ -1617,32 +1663,33 @@ public class FileUtil implements java.io.Serializable  {
      */
     public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten, Long fileMetadataId) {
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
-        if (downloadType != null && downloadType.equals("bundle")) {
-            if (fileMetadataId == null) {
-                fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
-            } else {
-                fileDownloadUrl = "/api/access/datafile/bundle/" + fileId + "?fileMetadataId=" + fileMetadataId;
+        if (downloadType != null) {
+            switch(downloadType) {
+            case "original":
+            case"RData":
+            case "tab":
+            case "GlobusTransfer":
+                    fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=" + downloadType;
+                    break;
+            case "bundle":
+                    if (fileMetadataId == null) {
+                        fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
+                    } else {
+                        fileDownloadUrl = "/api/access/datafile/bundle/" + fileId + "?fileMetadataId=" + fileMetadataId;
+                    }
+                    break;
+            case "var":
+                    if (fileMetadataId == null) {
+                        fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata";
+                    } else {
+                        fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata?fileMetadataId=" + fileMetadataId;
+                    }
+                    break;
+                }
+                
             }
-        }
-        if (downloadType != null && downloadType.equals("original")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=original";
-        }
-        if (downloadType != null && downloadType.equals("RData")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=RData";
-        }
-        if (downloadType != null && downloadType.equals("var")) {
-            if (fileMetadataId == null) {
-                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata";
-            } else {
-                fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata?fileMetadataId=" + fileMetadataId;
-            }
-        }
-        if (downloadType != null && downloadType.equals("tab")) {
-            fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=tab";
-        }
         if (gbRecordsWritten) {
-            if (downloadType != null && ((downloadType.equals("original") || downloadType.equals("RData") || downloadType.equals("tab")) ||
-                    ((downloadType.equals("var") || downloadType.equals("bundle") ) && fileMetadataId != null))) {
+            if (fileDownloadUrl.contains("?")) {
                 fileDownloadUrl += "&gbrecs=true";
             } else {
                 fileDownloadUrl += "?gbrecs=true";
@@ -1780,10 +1827,10 @@ public class FileUtil implements java.io.Serializable  {
 
         StorageIO<DataFile> storage = dataFile.getStorageIO();
         InputStream in = null;
-        
+
         try {
             storage.open(DataAccessOption.READ_ACCESS);
-            
+
             if (!dataFile.isTabularData()) {
                 in = storage.getInputStream();
             } else {
@@ -1838,7 +1885,7 @@ public class FileUtil implements java.io.Serializable  {
                     } finally {
                         IOUtils.closeQuietly(in);
                     }
-                    // try again: 
+                    // try again:
                     if (recalculatedChecksum.equals(dataFile.getChecksumValue())) {
                         fixed = true;
                         try {
@@ -1849,10 +1896,11 @@ public class FileUtil implements java.io.Serializable  {
                     }
                 }
             }
-            
+
             if (!fixed) {
                 String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
                 logger.log(Level.INFO, info);
+                logger.fine("Expected: " + dataFile.getChecksumValue() +", calculated: " + recalculatedChecksum);
                 throw new IOException(info);
             }
         }
@@ -1861,7 +1909,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static String getStorageIdentifierFromLocation(String location) {
-    	int driverEnd = location.indexOf("://") + 3;
+    	int driverEnd = location.indexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length();
     	int bucketEnd = driverEnd + location.substring(driverEnd).indexOf("/");
     	return location.substring(0,bucketEnd) + ":" + location.substring(location.lastIndexOf("/") + 1);
     }
@@ -1897,7 +1945,7 @@ public class FileUtil implements java.io.Serializable  {
     			}
     		}
     		String si = dataFile.getStorageIdentifier();
-    		if (si.contains("://")) {
+    		if (si.contains(DataAccess.SEPARATOR)) {
     			//Direct upload files will already have a store id in their storageidentifier
     			//but they need to be associated with a dataset for the overall storagelocation to be calculated
     			//so we temporarily set the owner
@@ -1916,7 +1964,7 @@ public class FileUtil implements java.io.Serializable  {
     	} catch (IOException ioEx) {
     		// safe to ignore - it's just a temp file. 
     		logger.warning(ioEx.getMessage());
-    		if(dataFile.getStorageIdentifier().contains("://")) {
+    		if(dataFile.getStorageIdentifier().contains(DataAccess.SEPARATOR)) {
     			logger.warning("Failed to delete temporary file " + dataFile.getStorageIdentifier());
     		} else {
     			logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
@@ -2092,7 +2140,9 @@ public class FileUtil implements java.io.Serializable  {
             JsonObject jo = (JsonObject) jv;
             String[] values = new String[headers.length];
             for (int i = 0; i < headers.length; i++) {
-                values[i] = jo.get(headers[i]).toString();
+                if(jo.containsKey(headers[i])) {
+                    values[i] = jo.get(headers[i]).toString();
+                }
             }
             csvSB.append("\n").append(String.join(",", values));
         });

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -559,7 +560,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         */
         GlobalId parsedId;
         try{
-            parsedId = new GlobalId(persistentId);   // [ protocol, authority, identifier]
+            parsedId = PidUtil.parseAsGlobalID(persistentId);   // [ protocol, authority, identifier]
         } catch (IllegalArgumentException e){
             logger.log(Level.WARNING, "Failed to parse persistentID: {0}", persistentId);
             return null;
@@ -892,7 +893,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         if (searchResult.length == 5) {
             Dataset datasetEntity = new Dataset();
             String globalIdentifier = solrSearchResult.getIdentifier();
-            GlobalId globalId = new GlobalId(globalIdentifier);
+            GlobalId globalId = PidUtil.parseAsGlobalID(globalIdentifier);
 
             datasetEntity.setProtocol(globalId.getProtocol());
             datasetEntity.setAuthority(globalId.getAuthority());
@@ -1195,4 +1196,24 @@ w
     public DatasetVersion merge( DatasetVersion ver ) {
         return em.merge(ver);
     }
+    
+    /**
+     * Execute a query to return DatasetVersion
+     * 
+     * @param queryString
+     * @return 
+     */
+    public List<DatasetVersion> getUnarchivedDatasetVersions(){
+        
+        try {
+            List<DatasetVersion> dsl = em.createNamedQuery("DatasetVersion.findUnarchivedReleasedVersion", DatasetVersion.class).getResultList();
+            return dsl;
+        } catch (javax.persistence.NoResultException e) {
+            logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}");
+            return null;
+        } catch (EJBException e) {
+            logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
+            return null;
+        }
+    } // end getUnarchivedDatasetVersions
 } // end class

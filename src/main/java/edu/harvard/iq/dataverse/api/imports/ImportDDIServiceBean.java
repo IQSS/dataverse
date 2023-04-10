@@ -1181,7 +1181,7 @@ public class ImportDDIServiceBean {
                     String noteType = xmlr.getAttributeValue(null, "type");
                     if (NOTE_TYPE_TERMS_OF_USE.equalsIgnoreCase(noteType) ) {
                         if ( LEVEL_DV.equalsIgnoreCase(xmlr.getAttributeValue(null, "level"))) {
-                            parseText(xmlr, "notes");
+                            dvDTO.setTermsOfUse(parseText(xmlr, "notes"));
                         }
                     } else  if (NOTE_TYPE_TERMS_OF_ACCESS.equalsIgnoreCase(noteType) ) {
                         if (LEVEL_DV.equalsIgnoreCase(xmlr.getAttributeValue(null, "level"))) {
@@ -1352,7 +1352,9 @@ public class ImportDDIServiceBean {
                 } else if (xmlr.getLocalName().equals("prodDate")) {
                     citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("productionDate", parseDate(xmlr, "prodDate")));
                 } else if (xmlr.getLocalName().equals("prodPlac")) {
-                    citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("productionPlace", parseDate(xmlr, "prodPlac")));
+                    List<String> prodPlac = new ArrayList<>();
+                    prodPlac.add(parseText(xmlr, "prodPlac"));
+                    citation.getFields().add(FieldDTO.createMultiplePrimitiveFieldDTO(DatasetFieldConstant.productionPlace, prodPlac));
                 } else if (xmlr.getLocalName().equals("software")) {
                     HashSet<FieldDTO> set = new HashSet<>();
                     addToSet(set,"softwareVersion", xmlr.getAttributeValue(null, "version"));

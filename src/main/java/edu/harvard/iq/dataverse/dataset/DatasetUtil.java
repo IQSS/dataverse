@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
@@ -24,23 +25,21 @@ import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.EnumUtils;
 
 public class DatasetUtil {
 
@@ -456,13 +455,13 @@ public class DatasetUtil {
         return datasetFields;
     }
     
-    public static boolean isAppropriateStorageDriver(Dataset dataset){
-        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
+    public static boolean isRsyncAppropriateStorageDriver(Dataset dataset){
+        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the DataAccess.S3 store.
         // When those restrictions are lifted/rsync can be configured per store, this test should check that setting
         // instead of testing for the 's3" store,
         //This method is used by both the dataset and edit files page so one change here
         //will fix both
-       return dataset.getEffectiveStorageDriverId().equals("s3");
+       return dataset.getEffectiveStorageDriverId().equals(DataAccess.S3);
     }
     
     /**
@@ -476,16 +475,16 @@ public class DatasetUtil {
     public static String getDownloadSize(DatasetVersion dsv, boolean original) {
         return FileSizeChecker.bytesToHumanReadable(getDownloadSizeNumeric(dsv, original));
     }
-    
+
     public static Long getDownloadSizeNumeric(DatasetVersion dsv, boolean original) {
         return getDownloadSizeNumericBySelectedFiles(dsv.getFileMetadatas(), original);
     }
-    
+
     public static Long getDownloadSizeNumericBySelectedFiles(List<FileMetadata> fileMetadatas, boolean original) {
         long bytes = 0l;
         for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
-            if (original && dataFile.isTabularData()) {                
+            if (original && dataFile.isTabularData()) {
                 bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
             } else {
                 bytes += dataFile.getFilesize();
@@ -538,14 +537,23 @@ public class DatasetUtil {
         
     }
 
+    public static License getLicense(DatasetVersion dsv) {
+        License license = null;
+        TermsOfUseAndAccess tua = dsv.getTermsOfUseAndAccess();
+        if(tua!=null) {
+            license = tua.getLicense();
+        }
+        return license;
+    }
+
     public static String getLicenseName(DatasetVersion dsv) {
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
-        return license != null ? license.getName()
+        License license = DatasetUtil.getLicense(dsv);
+        return license != null ? getLocalizedLicenseDetails(license,"NAME")
                 : BundleUtil.getStringFromBundle("license.custom");
     }
 
     public static String getLicenseURI(DatasetVersion dsv) {
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);
         // Return the URI
         // For standard licenses, just return the stored URI
         return (license != null) ? license.getUri().toString()
@@ -560,13 +568,36 @@ public class DatasetUtil {
     }
 
     public static String getLicenseIcon(DatasetVersion dsv) {
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
+        License license = DatasetUtil.getLicense(dsv);
         return license != null && license.getIconUrl() != null ? license.getIconUrl().toString() : null;
     }
 
     public static String getLicenseDescription(DatasetVersion dsv) {
-        License license = dsv.getTermsOfUseAndAccess().getLicense();
-        return license != null ? license.getShortDescription() : BundleUtil.getStringFromBundle("license.custom.description");
+        License license = DatasetUtil.getLicense(dsv);
+        return license != null ? getLocalizedLicenseDetails(license,"DESCRIPTION") : BundleUtil.getStringFromBundle("license.custom.description");
+    }
+
+    public enum LicenseOption {
+        NAME, DESCRIPTION
+    };
+
+    public static String getLocalizedLicenseDetails(License license,String keyPart) {
+        String licenseName = license.getName();
+        String localizedLicenseValue =  "" ;
+        try {
+            if (EnumUtils.isValidEnum(LicenseOption.class, keyPart ) ){
+                String key = "license." + licenseName.toLowerCase().replace(" ", "_") + "." + keyPart.toLowerCase();
+                localizedLicenseValue = BundleUtil.getStringFromPropertyFile(key, "License");
+            }
+        }
+        catch (Exception e) {
+            localizedLicenseValue = licenseName;
+        }
+
+        if (localizedLicenseValue == null) {
+            localizedLicenseValue = licenseName ;
+        }
+        return localizedLicenseValue;
     }
 
     public static String getLocaleExternalStatus(String status) {

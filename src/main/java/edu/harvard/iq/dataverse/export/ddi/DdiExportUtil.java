@@ -30,20 +30,18 @@ import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_TAG;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_UNF;
 import edu.harvard.iq.dataverse.export.DDIExporter;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
-import static edu.harvard.iq.dataverse.util.SystemConfig.FQDN;
-import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -129,7 +127,7 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
         writeAttribute(xmlw, "version", DDIExporter.DEFAULT_XML_VERSION);
-        if(isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
+        if(DvObjectContainer.isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
             writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
         }
         createStdyDscr(xmlw, datasetDto);
@@ -151,7 +149,7 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
         writeAttribute(xmlw, "version", DDIExporter.DEFAULT_XML_VERSION);
-        if(isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
+        if(DvObjectContainer.isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
             writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
         }
         createStdyDscr(xmlw, datasetDto);
@@ -160,14 +158,6 @@ public class DdiExportUtil {
         createOtherMatsFromFileMetadatas(xmlw, version.getFileMetadatas());
         xmlw.writeEndElement(); // codeBook
         xmlw.flush();
-    }
-    
-    
-    private static boolean isMetadataLanguageSet(String mdLang) {
-       if(mdLang!=null && !mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-           return true;
-       }
-        return false;
     }
 
     /**
@@ -192,7 +182,7 @@ public class DdiExportUtil {
         String pidUri = pid;
         //Some tests don't send real PIDs - don't try to get their URL form
         if(!pidUri.equals("null:null/null")) {
-            pidUri= new GlobalId(persistentProtocol + ":" + persistentAuthority + "/" + persistentId).toURL().toString();
+            pidUri= PidUtil.parseAsGlobalID(persistentProtocol, persistentAuthority, persistentId).asURL();
         }
         // The "persistentAgency" tag is used for the "agency" attribute of the 
         // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI" 
@@ -944,7 +934,7 @@ public class DdiExportUtil {
                             }
                             if (!distributorName.isEmpty()) {
                                 xmlw.writeStartElement("distrbtr");
-                                if(isMetadataLanguageSet(lang)) {
+                                if(DvObjectContainer.isMetadataLanguageSet(lang)) {
                                     writeAttribute(xmlw, "xml:lang", lang);
                                 }
                                 if (!distributorAffiliation.isEmpty()) {
@@ -1064,7 +1054,7 @@ public class DdiExportUtil {
                                 if(!descriptionDate.isEmpty()){
                                    writeAttribute(xmlw,"date",descriptionDate); 
                                 } 
-                                if(isMetadataLanguageSet(lang)) {
+                                if(DvObjectContainer.isMetadataLanguageSet(lang)) {
                                     writeAttribute(xmlw, "xml:lang", lang);
                                 }
                                 xmlw.writeCharacters(descriptionText);
@@ -1300,7 +1290,7 @@ public class DdiExportUtil {
     // harvesting *all* files are encoded as otherMats; even tabular ones.
     private static void createOtherMats(XMLStreamWriter xmlw, List<FileDTO> fileDtos) throws XMLStreamException {
         // The preferred URL for this dataverse, for cooking up the file access API links:
-        String dataverseUrl = getDataverseSiteUrl();
+        String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         
         for (FileDTO fileDTo : fileDtos) {
             // We'll continue using the scheme we've used before, in DVN2-3: non-tabular files are put into otherMat,
@@ -1347,7 +1337,7 @@ public class DdiExportUtil {
     
     private static void createOtherMatsFromFileMetadatas(XMLStreamWriter xmlw, List<FileMetadata> fileMetadatas) throws XMLStreamException {
         // The preferred URL for this dataverse, for cooking up the file access API links:
-        String dataverseUrl = getDataverseSiteUrl();
+        String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         
         for (FileMetadata fileMetadata : fileMetadatas) {
             // We'll continue using the scheme we've used before, in DVN2-3: non-tabular files are put into otherMat,
@@ -1358,8 +1348,8 @@ public class DdiExportUtil {
                 writeAttribute(xmlw, "ID", "f" + fileMetadata.getDataFile().getId());
                 String dfIdentifier = fileMetadata.getDataFile().getIdentifier();
                 if (dfIdentifier != null && !dfIdentifier.isEmpty()){
-                    GlobalId globalId = new GlobalId(fileMetadata.getDataFile());
-                    writeAttribute(xmlw, "URI",  globalId.toURL().toString()); 
+                    GlobalId globalId = fileMetadata.getDataFile().getGlobalId();
+                    writeAttribute(xmlw, "URI",  globalId.asURL()); 
                 }  else {
                     writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileMetadata.getDataFile().getId()); 
                 }
@@ -1538,7 +1528,7 @@ public class DdiExportUtil {
         //For the simplest Elements we can 
         if (!StringUtilisEmpty(value)) {
             xmlw.writeStartElement(name);
-            if(isMetadataLanguageSet(lang)) {
+            if(DvObjectContainer.isMetadataLanguageSet(lang)) {
                 writeAttribute(xmlw, "xml:lang", lang);
             }
             xmlw.writeCharacters(value);
@@ -1561,33 +1551,6 @@ public class DdiExportUtil {
 
     private static void saveJsonToDisk(String datasetVersionAsJson) throws IOException {
         Files.write(Paths.get("/tmp/out.json"), datasetVersionAsJson.getBytes());
-    }
-    
-    /**
-     * The "official", designated URL of the site;
-     * can be defined as a complete URL; or derived from the 
-     * "official" hostname. If none of these options is set,
-     * defaults to the InetAddress.getLocalHOst() and https;
-     */
-    private static String getDataverseSiteUrl() {
-        String hostUrl = System.getProperty(SITE_URL);
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
-        }
-        String hostName = System.getProperty(FQDN);
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                hostName = null;
-            }
-        }
-        
-        if (hostName != null) {
-            return "https://" + hostName;
-        }
-        
-        return "http://localhost:8080";
     }
     
     
@@ -1901,7 +1864,7 @@ public class DdiExportUtil {
     }
     
     private static void createFileDscr(XMLStreamWriter xmlw, DatasetVersion datasetVersion) throws XMLStreamException {
-        String dataverseUrl = getDataverseSiteUrl();
+        String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
 

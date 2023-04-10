@@ -22,7 +22,8 @@
                         <p:panelGrid columns="2" styleClass="noBorders">
                             <p:inputText id="explicitGroupName" styleClass="form-control" value="#{manageGroupsPage.explicitGroupName}"
                                          required="#{param['DO_GROUP_VALIDATION']}"
-                                         requiredMessage="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupName.required']}"/>
+                                         requiredMessage="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupName.required']}"
+                                         onkeypress="return event.keyCode !== 13;"/>
                             <p:message for="explicitGroupName"/>
                         </p:panelGrid>
                     </div>
@@ -41,7 +42,8 @@
                                          required="#{param['DO_GROUP_VALIDATION']}"
                                          requiredMessage="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.required']}"
                                          validator="#{manageGroupsPage.validateGroupIdentifier}"
-										binding="#{manageGroupsPage.explicitGroupIdentifierField}"/>
+										binding="#{manageGroupsPage.explicitGroupIdentifierField}"
+                                                                                onkeypress="return event.keyCode !== 13;"/>
                             <p:message for="explicitGroupIdentifier"/>
                         </p:panelGrid>
                         <p class="help-block">#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.helpText']}</p>
@@ -67,6 +69,7 @@
                                         emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
                                         value="#{manageGroupsPage.newExplicitGroupRoleAssignees}"
                                         completeMethod="#{manageGroupsPage.completeRoleAssignee}"
+                                        onkeypress="return event.keyCode !== 13;"
                                         var="roleAssignee" 
                                         itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
                             <p:column>

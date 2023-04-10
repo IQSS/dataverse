@@ -28,9 +28,9 @@ https://github.com/scholarsportal/Dataverse-Data-Curation-Tool
 File Previewers
 ~~~~~~~~~~~~~~~
 
-File Previewers are tools that display the content of files - including audio, html, Hypothes.is annotations, images, PDF, text, video - allowing them to be viewed without downloading.
+File Previewers are tools that display the content of files - including audio, html, Hypothes.is annotations, images, PDF, text, video, GeoJSON - allowing them to be viewed without downloading.
 
-https://github.com/GlobalDataverseCommunityConsortium/dataverse-previewers
+https://github.com/gdcc/dataverse-previewers
 
 Python
 ------
@@ -112,6 +112,16 @@ Dataverse for Android
 Dataverse Software on Android makes use of a Dataverse installation's Search API.
 
 https://github.com/IQSS/dataverse-android
+
+Go
+--
+
+Integrations Dashboard
+~~~~~~~~~~~~~~~~~~~~~~
+
+The integrations dashboard is software by the Dataverse community to enable easy data transfer from an existing data management platform to a dataset in a Dataverse collection. See :ref:`integrations-dashboard` for details.
+
+https://github.com/libis/rdm-integration
 
 PHP
 ---

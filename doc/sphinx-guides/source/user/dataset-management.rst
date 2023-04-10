@@ -38,6 +38,8 @@ Once a dataset has been published, its metadata can be exported in a variety of 
 
 Each of these metadata exports contains the metadata of the most recently published version of the dataset.
 
+.. _adding-new-dataset:
+
 Adding a New Dataset
 ====================
 
@@ -61,6 +63,8 @@ Supported HTML Fields
 We currently only support the following HTML tags for any of our textbox metadata fields (i.e., Description) : <a>, <b>, <blockquote>, 
 <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
 <strong>, <strike>, <u>, <ul>.
+
+.. _dataset-file-upload:
 
 File Upload
 ===========
@@ -88,6 +92,13 @@ Dropbox Upload
 --------------
 
 Some Dataverse installations support the ability to upload files directly from Dropbox. To do so, click the "Upload from Dropbox" button, log in to Dropbox in the pop-up window, and select the files you'd like to transfer over.
+
+.. _folder-upload:
+
+Folder Upload
+-------------
+
+Some Dataverse installations support the ability to upload files from a local folder and subfolders. To do this, click the "Upload from Folder" button, select the folder you wish to upload, select/unselect specific files, and click "Start Uploads". More detailed instructions are available in the `DVWebloader wiki <https://github.com/gdcc/dvwebloader/wiki#use>`_.
 
 .. _rsync_upload:
 
@@ -139,6 +150,11 @@ Additional command line arguments are available to make the DVUploader list what
 
 DVUploader is a community-developed tool, and its creation was primarily supported by the Texas Digital Library. Further information and support for DVUploader can be sought at `the project's GitHub repository <https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader>`_ . 
 
+Integrations Dashboard Uploader
+-------------------------------
+
+There is an experimental uploader described at :ref:`integrations-dashboard` that provides a graphical user interface (GUI) for uploading files from a local file system and various remote locations such as GitHub.
+
 .. _duplicate-files:
 
 Duplicate Files
@@ -153,6 +169,19 @@ Beginning with Dataverse Software 5.0, the way a Dataverse installation handles 
 - If a user attempts to replace a file with another file that has the same checksum, an error message will be displayed and the file will not be able to be replaced.
 - If a user attempts to replace a file with a file that has the same checksum as a different file in the dataset, a warning will be displayed.
 
+BagIt Support
+-------------
+
+BagIt is a set of hierarchical file system conventions designed to support disk-based storage and network transfer of arbitrary digital content. It offers several benefits such as integration with digital libraries, easy implementation, and transfer validation. See `the Wikipedia article <https://en.wikipedia.org/wiki/BagIt>`__ for more information.
+
+If the Dataverse installation you are using has enabled BagIt file handling, when uploading BagIt files the repository will validate the checksum values listed in each BagIt’s manifest file against the uploaded files and generate errors about any mismatches. The repository will identify a certain number of errors, such as the first five errors in each BagIt file, before reporting the errors.
+
+|bagit-image1|
+
+You can fix the errors and reupload the BagIt files.
+
+More information on how your admin can enable and configure the BagIt file handler can be found in the :ref:`Installation Guide <BagIt File Handler>`.
+
 .. _file-handling:
 
 File Handling
@@ -160,10 +189,31 @@ File Handling
 
 Certain file types in the Dataverse installation are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the sections below for information about special functionality for specific file types.
 
+.. _file-previews:
+
 File Previews
 -------------
 
 Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Private URL. See also :ref:`privateurl`.
+
+Previewers are available for the following file types:
+
+- Text
+- PDF
+- Tabular (CSV, Excel, etc., see :doc:`tabulardataingest/index`)
+- Code (R, etc.)
+- Images (PNG, GIF, JPG)
+- Audio (MP3, MPEG, WAV, OGG, M4A)
+- Video (MP4, OGG, Quicktime)
+- Zip (preview and extract/download)
+- HTML
+- GeoJSON
+- NetCDF/HDF5 (NcML format)
+- Hypothes.is
+
+Additional file types will be added to the `dataverse-previewers <https://github.com/gdcc/dataverse-previewers>`_ repo before they are listed above so please check there for the latest information or to request (or contribute!) an additional file previewer.
+
+Installation of previewers is explained in the :doc:`/admin/external-tools` section of in the Admin Guide.
 
 Tabular Data Files
 ------------------
@@ -176,10 +226,12 @@ Additional download options available for tabular data (found in the same drop-d
 - The original file uploaded by the user; 
 - Saved as R data (if the original file was not in R format); 
 - Variable Metadata (as a `DDI Codebook <http://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file);
-- Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
-- All of the above, as a zipped bundle. 
+- Data File Citation (currently in either RIS, EndNote XML, or BibTeX format). 
+
 
 Differentially Private (DP) Metadata can also be accessed for restricted tabular files if the data depositor has created a DP Metadata Release. See :ref:`dp-release-create` for more information.
+
+.. _research-code:
 
 Research Code
 -------------
@@ -196,7 +248,7 @@ The following are general guidelines applicable to all programming languages.
 - Consider providing notes (in the README) on the expected code outputs or adding tests in the code, which would ensure that its functionality is intact.
 
 Capturing code dependencies will help other researchers recreate the necessary runtime environment. Without it, your code will not be able to run correctly (or at all). 
-One option is to use platforms such as `Whole Tale <https://wholetale.org>`_, `Jupyter Binder <https://mybinder.org>`_ or `Renku <https://renkulab.io>`_, which facilitate research reproducibility. Have a look at `Dataverse Integrations <https://guides.dataverse.org/en/5.4/admin/integrations.html>`_ for more information. 
+One option is to use platforms such as `Whole Tale <https://wholetale.org>`_, `Jupyter Binder <https://mybinder.org>`_ or `Renku <https://renkulab.io>`_, which facilitate research reproducibility. For more information, have a look at :doc:`/admin/integrations` in the Admin Guide, especially the sections on :ref:`wholetale`, :ref:`binder`, and :ref:`renku`.
 Another option is to use an automatic code dependency capture, which is often supported through the programming language. Here are a few examples:
 
 - If you are using the conda package manager, you can export your environment with the command ``conda env export > environment.yml``. For more information, see the `official documentation <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#sharing-an-environment>`__.
@@ -211,10 +263,92 @@ Finally, automating your code can be immensely helpful to the code and research 
 
 **Note:** Capturing code dependencies and automating your code will create new files in your directory. Make sure to include them when depositing your dataset.
 
+Computational Workflow
+----------------------
+
+Computational Workflow Definition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Computational workflows precisely describe a multi-step process to coordinate multiple computational tasks and their data dependencies that lead to data products in a scientific application. The computational tasks take different forms, such as running code (e.g. Python, C++, MATLAB, R, Julia), invoking a service, calling a command-line tool, accessing a database (e.g. SQL, NoSQL), submitting a job to a compute cloud (e.g. on-premises cloud, AWS, GCP, Azure), and execution of data processing scripts or workflow. The following diagram shows an example of a computational workflow with multiple computational tasks.
+
+|cw-image1|
+
+
+FAIR Computational Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The FAIR Principles (Findable, Accessible, Interoperable, Reusable) apply to computational workflows (https://doi.org/10.1162/dint_a_00033) in two areas: as FAIR data and as FAIR criteria for workflows as digital objects. In the FAIR data area, "*properly designed workflows contribute to FAIR data principles since they provide the metadata and provenance necessary to describe their data products, and they describe the involved data in a formalized, completely traceable way*" (https://doi.org/10.1162/dint_a_00033). Regarding the FAIR criteria for workflows as digital objects, "*workflows are research products in their own right, encapsulating methodological know-how that is to be found and published, accessed and cited, exchanged and combined with others, and reused as well as adapted*" (https://doi.org/10.1162/dint_a_00033).
+
+How to Create a Computational Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are multiple approaches to creating computational workflows. You may consider standard frameworks and tools such as Common Workflow Language (CWL), Snakemake, Galaxy, Nextflow, Ruffus or *ad hoc* methods using different programming languages (e.g. Python, C++, MATLAB, Julia, R), notebooks (e.g. Jupyter Notebook, R Notebook, and MATLAB Live Script) and command-line interpreters (e.g. Bash). Each computational task is defined differently, but all meet the definition of a computational workflow and all result in data products. You can find a few examples of computational workflows in the following GitHub repositories, where each follows several aspects of FAIR principles:
+
+- Common Workflow Language (`GitHub Repository URL <https://github.com/fasrc/epa_cwl_airflow>`__)
+- R Notebook (`GitHub Repository URL <https://github.com/fasrc/R_computational_workflow>`__)
+- Jupyter Notebook (`GitHub Repository URL <https://github.com/fasrc/python-computational-workflow>`__)
+- MATLAB Script (`GitHub Repository URL <https://github.com/fasrc/Matlab_computational_workflow>`__)
+
+You are encouraged to review these examples when creating a computational workflow and publishing in a Dataverse repository.
+
+At https://workflows.community, the Workflows Community Initiative offers resources for computational workflows, such as a list of workflow systems (https://workflows.community/systems) and other workflow registries (https://workflows.community/registries). The initiative also helps organize working groups related to workflows research, development and application.
+
+How to Upload Your Computational Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+After you :ref:`upload your files <dataset-file-upload>`, you can apply a "Workflow" tag to your workflow files, such as your Snakemake or R Notebooks files, so that you and others can find them more easily among your deposit’s other files.
+
+|cw-image3|
+
+|cw-image4|
+
+How to Describe Your Computational Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Dataverse installation you are using may have enabled Computational Workflow metadata fields for your use. If so, when :ref:`editing your dataset metadata <adding-new-dataset>`, you will see the fields described below.
+
+|cw-image2|
+
+As described in the :ref:`metadata-references` section of the :doc:`/user/appendix`, the three fields are adapted from `Bioschemas Computational Workflow Profile, version 1.0 <https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE>`__ and `Codemeta <https://codemeta.github.io/terms/>`__:
+
+- **Workflow Type**: The kind of Computational Workflow, which is designed to compose and execute a series of computational or data manipulation steps in a scientific application
+- **External Code Repository URL**: A link to another public repository where the un-compiled, human-readable code and related code is also located (e.g., GitHub, GitLab, SVN)
+- **Documentation**: A link (URL) to the documentation or text describing the Computational Workflow and its use
+
+
+How to Search for Computational Workflows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the search page of the Dataverse repository you are using includes a "Dataset Feature" facet with a Computational Workflows link, you can follow that link to find only datasets that contain computational workflows.
+
+You can also search on the "Workflow Type" facet, if the Dataverse installation has the field enabled, to find datasets that contain certain types of computational workflows, such as workflows written in Common Workflow Language files or Jupyter Notebooks.
+
+|cw-image5|
+
+You can also search for files within datasets that have been tagged as "Workflow" files by clicking the Files checkbox to show only files and using the File Tag facet to show only files tagged as "Workflow".
+
+|cw-image6|
+
 Astronomy (FITS)
 ----------------
 
 Metadata found in the header section of `Flexible Image Transport System (FITS) files <http://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by the Dataverse Software, aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable and browsable (facets) at the Dataset-level.
+
+.. _geojson:
+
+GeoJSON
+-------
+
+A map will be shown as a preview of GeoJSON files when the previewer has been enabled (see :ref:`file-previews`). See also a `video demo <https://www.youtube.com/watch?v=EACJJaV3O1c&t=588s>`_ of the GeoJSON previewer by its author, Kaitlin Newson.
+
+.. _netcdf-and-hdf5:
+
+NetCDF and HDF5
+---------------
+
+For NetCDF and HDF5 files, an attempt will be made to extract metadata in NcML_ (XML) format and save it as an auxiliary file. (See also :doc:`/developers/aux-file-support` in the Developer Guide.) A previewer for these NcML files is available (see :ref:`file-previews`).
+
+.. _NcML: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
 
 Compressed Files
 ----------------
@@ -621,6 +755,20 @@ If you deaccession the most recently published version of the dataset but not al
 .. |file-upload-prov-window| image:: ./img/prov1.png
    :class: img-responsive
 .. |image-file-tree-view| image:: ./img/file-tree-view.png
+   :class: img-responsive
+.. |cw-image1| image:: ./img/computational-workflow-diagram.png
+   :class: img-responsive
+.. |cw-image2| image:: ./img/computational-workflow-metadata.png
+   :class: img-responsive
+.. |cw-image3| image:: ./img/file-tags-link.png
+   :class: img-responsive
+.. |cw-image4| image:: ./img/file-tags-options.png
+   :class: img-responsive
+.. |cw-image5| image:: ./img/computational-workflow-facets.png
+   :class: img-responsive
+.. |cw-image6| image:: ./img/file-tags-facets.png
+   :class: img-responsive
+.. |bagit-image1| image:: ./img/bagit-handler-errors.png
    :class: img-responsive
    
 .. _Make Data Count: https://makedatacount.org

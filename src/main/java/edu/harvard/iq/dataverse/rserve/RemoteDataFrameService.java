@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.io.IOUtils;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -72,57 +73,33 @@ public class RemoteDataFrameService {
 
     private static String TMP_TABDATA_FILE_EXT = ".tab";
     private static String TMP_RDATA_FILE_EXT = ".RData";
-
-    private static String RSERVE_HOST = null;
-    private static String RSERVE_USER = null;
-    private static String RSERVE_PWD = null;    
-    private static int    RSERVE_PORT = -1;
+    
+    // These settings have sane defaults in resources/META-INF/microprofile-config.properties,
+    // ready to be overridden by a sysadmin
+    private final String RSERVE_HOST;
+    private final String RSERVE_USER;
+    private final String RSERVE_PWD;
+    private final int    RSERVE_PORT;
+    private final String RSERVE_TMP_DIR;
         
     private static String DATAVERSE_R_FUNCTIONS = "scripts/dataverse_r_functions.R";
     private static String DATAVERSE_R_PREPROCESSING = "scripts/preprocess.R";
-                    
-    public static String LOCAL_TEMP_DIR = System.getProperty("java.io.tmpdir");
-    public static String RSERVE_TMP_DIR=null;
     
     public String PID = null;
     public String tempFileNameIn = null;
     public String tempFileNameOut = null;
- 
-    static {
-    
-        RSERVE_TMP_DIR = System.getProperty("dataverse.rserve.tempdir");
-        
-        if (RSERVE_TMP_DIR == null){
-            RSERVE_TMP_DIR = "/tmp/";            
-        }
-        
-        RSERVE_HOST = System.getProperty("dataverse.rserve.host");
-        if (RSERVE_HOST == null){
-            RSERVE_HOST= "localhost";
-        }
-        
-        RSERVE_USER = System.getProperty("dataverse.rserve.user");
-        if (RSERVE_USER == null){
-            RSERVE_USER= "rserve";
-        }
-        
-        RSERVE_PWD = System.getProperty("dataverse.rserve.password");
-        if (RSERVE_PWD == null){
-            RSERVE_PWD= "rserve";
-        }
-        
-
-        if (System.getProperty("dataverse.rserve.port") == null ){
-            RSERVE_PORT= 6311;
-        } else {
-            RSERVE_PORT = Integer.parseInt(System.getProperty("dataverse.rserve.port"));
-        }
-
-    }
-
-   
 
     public RemoteDataFrameService() {
+        // These settings have sane defaults in resources/META-INF/microprofile-config.properties,
+        // ready to be overridden by a sysadmin. Config sources have their own caches, so adding
+        // these here means the setting can be changed dynamically without too much overhead.
+        this.RSERVE_HOST = JvmSettings.RSERVE_HOST.lookup();
+        this.RSERVE_USER = JvmSettings.RSERVE_USER.lookup();
+        this.RSERVE_PWD = JvmSettings.RSERVE_PASSWORD.lookup();
+        this.RSERVE_PORT = JvmSettings.RSERVE_PORT.lookup(Integer.class);
+        this.RSERVE_TMP_DIR = JvmSettings.RSERVE_TEMPDIR.lookup();
+        
+        
         // initialization
         PID = RandomStringUtils.randomNumeric(6);
 
@@ -703,15 +680,12 @@ public class RemoteDataFrameService {
     public File transferRemoteFile(RConnection connection, String targetFilename,
             String tmpFilePrefix, String tmpFileExt, int fileSize) {
 
-        // set up a local temp file: 
-        
+        // set up a local temp file:
         File tmpResultFile = null;
-        String resultFile = tmpFilePrefix + PID + "." + tmpFileExt;
-
         RFileInputStream rInStream = null;
         OutputStream outbr = null;
         try {
-            tmpResultFile = new File(LOCAL_TEMP_DIR, resultFile);
+            tmpResultFile = File.createTempFile(tmpFilePrefix + PID, "."+tmpFileExt);
             outbr = new BufferedOutputStream(new FileOutputStream(tmpResultFile));
             // open the input stream
             rInStream = connection.openFile(targetFilename);

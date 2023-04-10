@@ -569,7 +569,7 @@ public class DataFile extends DvObject implements Comparable {
         if(fmd == null) {
             throw new UnsupportedOperationException("No published metadata version for DataFile " + this.getId());
         }
-        
+
         return fmd;
     }
 
@@ -605,7 +605,11 @@ public class DataFile extends DvObject implements Comparable {
      * @return 
      */
     public String getFriendlySize() {
-        return FileSizeChecker.bytesToHumanReadable(filesize);
+        if (filesize != null) {
+            return FileSizeChecker.bytesToHumanReadable(filesize);
+        } else {
+            return BundleUtil.getStringFromBundle("file.sizeNotAvailable");
+        }
     }
 
     public boolean isRestricted() {
@@ -952,7 +956,7 @@ public class DataFile extends DvObject implements Comparable {
         // https://github.com/IQSS/dataverse/issues/761, https://github.com/IQSS/dataverse/issues/2110, https://github.com/IQSS/dataverse/issues/3191
         //
         datasetMap.put("title", thisFileMetadata.getDatasetVersion().getTitle());
-        datasetMap.put("persistentId", getOwner().getGlobalIdString());
+        datasetMap.put("persistentId", getOwner().getGlobalId().asString());
         datasetMap.put("url", getOwner().getPersistentURL());
         datasetMap.put("version", thisFileMetadata.getDatasetVersion().getSemanticVersion());
         datasetMap.put("id", getOwner().getId());
@@ -1030,6 +1034,10 @@ public class DataFile extends DvObject implements Comparable {
         return null;
     }
     
+    @Override
+    public String getTargetUrl() {
+        return DataFile.TARGET_URL;
+    }
 
 } // end of class
     

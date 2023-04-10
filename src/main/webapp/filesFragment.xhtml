@@ -484,7 +484,11 @@
                 <span class="glyphicon glyphicon-info-sign"/>
                 <span> #{bundle['file.accessRequested']}&#160;</span>
             </div>
-
+            <div class="label label-info remote-info" jsf:rendered="#{not empty fileMetadata.dataFile.storageIO.remoteStoreName}" 
+              title="#{bundle['file.remotelyStored']}">
+              <a jsf:rendered="#{not empty fileMetadata.dataFile.storageIO.remoteStoreUrl}" href="#{fileMetadata.dataFile.storageIO.remoteStoreUrl.toString()}" target="_blank" rel="noopener">#{fileMetadata.dataFile.storageIO.remoteStoreName}</a>
+              <span jsf:rendered="#{empty fileMetadata.dataFile.storageIO.remoteStoreUrl}">#{fileMetadata.dataFile.storageIO.remoteStoreName}</span>
+            </div>
             <!-- END: FILE LEVEL MSGs -->
                        
             <div class="btn-group" role="group" aria-label="#{bundle['file.actionsBlock']}" jsf:rendered="#{showAccessFileButtonGroup}">
@@ -495,7 +499,7 @@
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
                     <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
                         <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getPreviewToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
-                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
                             <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview} "#{empty(fileMetadata.directoryLabel) ? "":fileMetadata.directoryLabel.concat("/")}#{fileMetadata.label}"</span>
                         </a>
                     </ui:fragment>
@@ -537,6 +541,7 @@
                 <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView 
                                                         and DatasetPage.sessionUserAuthenticated 
                                                         and DatasetPage.canUpdateDataset()
+                                                        and DatasetPage.hasValidTermsOfAccess
                                                         and DatasetPage.isFileDeleted(fileMetadata.dataFile)}">
                     <a type="button" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" 
                        disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
@@ -548,6 +553,7 @@
                 <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView 
                                                         and DatasetPage.sessionUserAuthenticated 
                                                         and DatasetPage.canUpdateDataset()
+                                                        and DatasetPage.hasValidTermsOfAccess
                                                         and !DatasetPage.isFileDeleted(fileMetadata.dataFile)}">
                     <!-- Kebab / Edit / File Options Dropdown -->
                     <a type="button" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" 
@@ -591,7 +597,7 @@
             <!-- For a file, the payload data ("node") is the corresponding FileMetadata object: -->
             <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(node.dataFile)} text-muted"/>
             <!-- conditional render in file page links, if file has global id, use that; if not, we use database id -->
-            <a href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty node.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty node.dataFile.globalIdString ? node.dataFile.globalIdString : node.dataFile.id).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+            <a href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty node.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty node.dataFile.globalId ? node.dataFile.globalId.asString() : node.dataFile.id).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
                 #{node.label}
             </a>
             <span class="text-muted">(#{node.dataFile.friendlySize})</span>

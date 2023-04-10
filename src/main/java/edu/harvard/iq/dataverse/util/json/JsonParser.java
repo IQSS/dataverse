@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import org.apache.commons.validator.routines.DomainValidator;
@@ -37,6 +38,7 @@ import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -69,6 +71,7 @@ public class JsonParser {
     MetadataBlockServiceBean blockService;
     SettingsServiceBean settingsService;
     LicenseServiceBean licenseService;
+    HarvestingClient harvestingClient = null; 
     
     /**
      * if lenient, we will accept alternate spellings for controlled vocabulary values
@@ -83,10 +86,15 @@ public class JsonParser {
     }
 
     public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService) {
+        this(datasetFieldSvc, blockService, settingsService, licenseService, null);
+    }
+    
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, HarvestingClient harvestingClient) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
         this.settingsService = settingsService;
         this.licenseService = licenseService;
+        this.harvestingClient = harvestingClient;
     }
 
     public JsonParser() {
@@ -385,7 +393,11 @@ public class JsonParser {
             terms.setFileAccessRequest(obj.getBoolean("fileAccessRequest", false));
             dsv.setTermsOfUseAndAccess(terms);
             terms.setDatasetVersion(dsv);
-            dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
+            JsonObject metadataBlocks = obj.getJsonObject("metadataBlocks");
+            if (metadataBlocks == null){
+                throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.metadatablocks.not.found"));
+            }
+            dsv.setDatasetFields(parseMetadataBlocks(metadataBlocks));
 
             JsonArray filesJson = obj.getJsonArray("files");
             if (filesJson == null) {
@@ -395,11 +407,10 @@ public class JsonParser {
                 dsv.setFileMetadatas(parseFiles(filesJson, dsv));
             }
             return dsv;
-
-        } catch (ParseException ex) {
-            throw new JsonParseException("Error parsing date:" + ex.getMessage(), ex);
+        } catch (ParseException ex) {      
+            throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.date", Arrays.asList(ex.getMessage())) , ex);
         } catch (NumberFormatException ex) {
-            throw new JsonParseException("Error parsing number:" + ex.getMessage(), ex);
+            throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.number", Arrays.asList(ex.getMessage())), ex);
         }
     }
     
@@ -517,7 +528,29 @@ public class JsonParser {
         if (contentType == null) {
             contentType = "application/octet-stream";
         }
-        String storageIdentifier = datafileJson.getString("storageIdentifier", " ");
+        String storageIdentifier = null;
+        /**
+         * When harvesting from other Dataverses using this json format, we 
+         * don't want to import their storageidentifiers verbatim. Instead, we 
+         * will modify them to point to the access API location on the remote
+         * archive side.
+         */
+        if (harvestingClient != null && datafileJson.containsKey("id")) {
+            String remoteId = datafileJson.getJsonNumber("id").toString();
+            storageIdentifier = harvestingClient.getArchiveUrl()
+                    + "/api/access/datafile/"
+                    + remoteId;
+            /**
+             * Note that we don't have any practical use for these urls as 
+             * of now. We used to, in the past, perform some tasks on harvested
+             * content that involved trying to access the files. In any event, it
+             * makes more sense to collect these urls, than the storage 
+             * identifiers imported as is, which become completely meaningless 
+             * on the local system.
+             */
+        } else {
+            storageIdentifier = datafileJson.getString("storageIdentifier", null);
+        }
         JsonObject checksum = datafileJson.getJsonObject("checksum");
         if (checksum != null) {
             // newer style that allows for SHA-1 rather than MD5
@@ -897,12 +930,13 @@ public class JsonParser {
         String dataverseAlias = obj.getString("dataverseAlias",null);
         
         harvestingClient.setName(obj.getString("nickName",null));
-        harvestingClient.setHarvestType(obj.getString("type",null));
+        harvestingClient.setHarvestStyle(obj.getString("style", "default"));
         harvestingClient.setHarvestingUrl(obj.getString("harvestUrl",null));
         harvestingClient.setArchiveUrl(obj.getString("archiveUrl",null));
-        harvestingClient.setArchiveDescription(obj.getString("archiveDescription"));
+        harvestingClient.setArchiveDescription(obj.getString("archiveDescription", null));
         harvestingClient.setMetadataPrefix(obj.getString("metadataFormat",null));
         harvestingClient.setHarvestingSet(obj.getString("set",null));
+        harvestingClient.setCustomHttpHeaders(obj.getString("customHeaders", null));
 
         return dataverseAlias;
     }

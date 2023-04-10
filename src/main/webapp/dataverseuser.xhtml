@@ -341,6 +341,34 @@
                                                         <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSUPLOADCOMPLETED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.upload.completed']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSDOWNLOADCOMPLETED'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.download.completed']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSUPLOADCOMPLETEDWITHERRORS'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.upload.completedWithErrors']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'GLOBUSDOWNLOADCOMPLETEDWITHERRORS'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.globus.download.completedWithErrors']}" escape="false">
+                                                        <f:param value="#{item.theObject.getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'CHECKSUMIMPORT'}">
                                                     <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.import.checksum']}" escape="false">
@@ -400,6 +428,19 @@
                                                             <a href="/dataset.xhtml?persistentId=#{item.theObject.getDataset().getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDataset().getDisplayName()}">#{item.theObject.getDataset().getDisplayName()}</a>
                                                         </o:param>
                                                         <f:param value="#{item.theObject.externalStatusLabel}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'DATASETMENTIONED'}">
+                                                <o:importFunctions type="edu.harvard.iq.dataverse.util.json.JsonUtil" />
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.datasetMentioned']}" escape="false">
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('@type')}"/>
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('@id')}"/>
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('name')}"/>
+                                                    <f:param value="#{JsonUtil:getJsonObject(item.additionalInfo).getString('relationship', 'isRelatedTo')}"/>
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}&amp;version=DRAFT&amp;faces-redirect=true" title="#{item.theObject.getDisplayName()}">#{item.theObject.getDisplayName()}</a>
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 

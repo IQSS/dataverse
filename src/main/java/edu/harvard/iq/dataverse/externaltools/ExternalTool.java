@@ -20,7 +20,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.Transient;
 
 /**
  * A specification or definition for how an external tool is intended to
@@ -29,8 +28,6 @@ import javax.persistence.Transient;
  */
 @Entity
 public class ExternalTool implements Serializable {
-
-    private static final Logger logger = Logger.getLogger(ExternalToolServiceBean.class.getCanonicalName());
 
     public static final String DISPLAY_NAME = "displayName";
     public static final String DESCRIPTION = "description";
@@ -41,6 +38,8 @@ public class ExternalTool implements Serializable {
     public static final String TOOL_PARAMETERS = "toolParameters";
     public static final String CONTENT_TYPE = "contentType";
     public static final String TOOL_NAME = "toolName";
+    public static final String ALLOWED_API_CALLS = "allowedApiCalls";
+    public static final String REQUIREMENTS = "requirements";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -98,6 +97,23 @@ public class ExternalTool implements Serializable {
     private String contentType;
 
     /**
+     * Set of API calls the tool would like to be able to use (e,.g. for retrieving
+     * data through the Dataverse REST API). Used to build signedUrls for POST
+     * headers, as in DP Creator
+     */
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String allowedApiCalls;
+
+    /**
+     * When non-null, the tool has indicated that it has certain requirements
+     * that must be met before it should be shown to the user. This
+     * functionality was added for tools that operate on aux files rather than
+     * data files so "auxFilesExist" is one of the possible values.
+     */
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String requirements;
+
+    /**
      * This default constructor is only here to prevent this error at
      * deployment:
      *
@@ -112,6 +128,10 @@ public class ExternalTool implements Serializable {
     }
 
     public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType) {
+       this(displayName, toolName, description, externalToolTypes, scope, toolUrl, toolParameters, contentType, null, null);
+    }
+
+    public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType, String allowedApiCalls, String requirements) {
         this.displayName = displayName;
         this.toolName = toolName;
         this.description = description;
@@ -120,6 +140,8 @@ public class ExternalTool implements Serializable {
         this.toolUrl = toolUrl;
         this.toolParameters = toolParameters;
         this.contentType = contentType;
+        this.allowedApiCalls = allowedApiCalls;
+        this.requirements = requirements;
     }
 
     public enum Type {
@@ -273,64 +295,10 @@ public class ExternalTool implements Serializable {
         if (getContentType() != null) {
             jab.add(CONTENT_TYPE, getContentType());
         }
+        if (getAllowedApiCalls()!= null) {
+            jab.add(ALLOWED_API_CALLS,getAllowedApiCalls());
+        }
         return jab;
-    }
-
-    public enum ReservedWord {
-
-        // TODO: Research if a format like "{reservedWord}" is easily parse-able or if another format would be
-        // better. The choice of curly braces is somewhat arbitrary, but has been observed in documenation for
-        // various REST APIs. For example, "Variable substitutions will be made when a variable is named in {brackets}."
-        // from https://swagger.io/specification/#fixed-fields-29 but that's for URLs.
-        FILE_ID("fileId"),
-        FILE_PID("filePid"),
-        SITE_URL("siteUrl"),
-        API_TOKEN("apiToken"),
-        // datasetId is the database id
-        DATASET_ID("datasetId"),
-        // datasetPid is the DOI or Handle
-        DATASET_PID("datasetPid"),
-        DATASET_VERSION("datasetVersion"),
-        FILE_METADATA_ID("fileMetadataId"),
-        LOCALE_CODE("localeCode");
-
-        private final String text;
-        private final String START = "{";
-        private final String END = "}";
-
-        private ReservedWord(final String text) {
-            this.text = START + text + END;
-        }
-
-        /**
-         * This is a centralized method that enforces that only reserved words
-         * are allowed to be used by external tools. External tool authors
-         * cannot pass their own query parameters through Dataverse such as
-         * "mode=mode1".
-         *
-         * @throws IllegalArgumentException
-         */
-        public static ReservedWord fromString(String text) throws IllegalArgumentException {
-            if (text != null) {
-                for (ReservedWord reservedWord : ReservedWord.values()) {
-                    if (text.equals(reservedWord.text)) {
-                        return reservedWord;
-                    }
-                }
-            }
-            // TODO: Consider switching to a more informative message that enumerates the valid reserved words.
-            boolean moreInformativeMessage = false;
-            if (moreInformativeMessage) {
-                throw new IllegalArgumentException("Unknown reserved word: " + text + ". A reserved word must be one of these values: " + Arrays.asList(ReservedWord.values()) + ".");
-            } else {
-                throw new IllegalArgumentException("Unknown reserved word: " + text);
-            }
-        }
-
-        @Override
-        public String toString() {
-            return text;
-        }
     }
 
     public String getDescriptionLang() {
@@ -355,5 +323,26 @@ public class ExternalTool implements Serializable {
         return displayName;
     }
 
+    /**
+     * @return the allowedApiCalls
+     */
+    public String getAllowedApiCalls() {
+        return allowedApiCalls;
+    }
+
+    /**
+     * @param allowedApiCalls the allowedApiCalls to set
+     */
+    public void setAllowedApiCalls(String allowedApiCalls) {
+        this.allowedApiCalls = allowedApiCalls;
+    }
+
+    public String getRequirements() {
+        return requirements;
+    }
+
+    public void setRequirements(String requirements) {
+        this.requirements = requirements;
+    }
 
 }
