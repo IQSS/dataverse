@@ -89,10 +89,10 @@
         <geogUnit>GeographicUnit1</geogUnit>
         <geogUnit>GeographicUnit2</geogUnit>
         <geoBndBox>
-          <westBL>10</westBL>
-          <eastBL>20</eastBL>
-          <southBL>40</southBL>
-          <northBL>30</northBL>
+          <westBL>-72</westBL>
+          <eastBL>-70</eastBL>
+          <southBL>42</southBL>
+          <northBL>43</northBL>
         </geoBndBox>
         <anlyUnit>UnitOfAnalysis1</anlyUnit>
         <anlyUnit>UnitOfAnalysis2</anlyUnit>
