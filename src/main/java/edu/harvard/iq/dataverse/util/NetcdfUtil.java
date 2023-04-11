@@ -38,6 +38,12 @@ public class NetcdfUtil {
         return NetcdfFiles.open(file.getAbsolutePath());
     }
 
+    public static double convertLongitude(double lon) {
+        // Converts a longitude from the range of 0-360 to -180-180
+        lon = (lon + 180) % 360 - 180;
+        return lon;
+    }
+
     public static Map<String, String> parseGeospatial(NetcdfFile netcdfFile) {
         Map<String, String> geoFields = new HashMap<>();
 
@@ -49,8 +55,17 @@ public class NetcdfUtil {
         Attribute northLatitude = netcdfFile.findGlobalAttribute(NORTH_LATITUDE_KEY);
         Attribute southLatitude = netcdfFile.findGlobalAttribute(SOUTH_LATITUDE_KEY);
 
-        geoFields.put(DatasetFieldConstant.westLongitude, getValue(westLongitude));
-        geoFields.put(DatasetFieldConstant.eastLongitude, getValue(eastLongitude));
+        if (getValue(westLongitude) > 180 || getValue(eastLongitude) > 180) {
+            double revisedWestLongitude = convertLongitude(getValue(westLongitude));
+            double revisedEastLongitude = convertLongitude(getValue(eastLongitude));
+        }
+        else {
+            double revisedWestLongitude = getValue(westLongitude);
+            double revisedEastLongitude = getValue(eastLongitude);
+        }
+
+        geoFields.put(DatasetFieldConstant.westLongitude, revisedWestLongitude);
+        geoFields.put(DatasetFieldConstant.eastLongitude, revisedEastLongitude);
         geoFields.put(DatasetFieldConstant.northLatitude, getValue(northLatitude));
         geoFields.put(DatasetFieldConstant.southLatitude, getValue(southLatitude));
 
