@@ -106,13 +106,13 @@ function preliminary_setup()
   # (we can no longer offer EZID with their shared test account)
   # jvm-options use colons as separators, escape as literal
   DOI_BASEURL_ESC=`echo $DOI_BASEURL | sed -e 's/:/\\\:/'`
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=${DOI_USERNAME}"
-  ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddoi.password=${ALIAS=doi_password_alias}'
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=$DOI_BASEURL_ESC"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.datacite.username=${DOI_USERNAME}"
+  ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddataverse.pid.datacite.password=${ALIAS=doi_password_alias}'
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.datacite.mds-api-url=$DOI_BASEURL_ESC"
 
   # jvm-options use colons as separators, escape as literal
   DOI_DATACITERESTAPIURL_ESC=`echo $DOI_DATACITERESTAPIURL | sed -e 's/:/\\\:/'`
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.dataciterestapiurlstring=$DOI_DATACITERESTAPIURL_ESC"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.datacite.rest-api-url=$DOI_DATACITERESTAPIURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
 
