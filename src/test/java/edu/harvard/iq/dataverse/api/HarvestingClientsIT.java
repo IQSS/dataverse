@@ -79,7 +79,7 @@ public class HarvestingClientsIT {
         // This method focuses on testing the native Dataverse harvesting client
         // API. 
         
-        String nickName = UtilIT.getRandomString(6);
+        String nickName = "h" + UtilIT.getRandomString(6);
         
 
         String clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
@@ -100,7 +100,6 @@ public class HarvestingClientsIT {
         assertEquals(UNAUTHORIZED.getStatusCode(), rCreate.getStatusCode());
 
         
-        Thread.sleep(1000L);
         // Try to create the same as admin user, should succeed:
         
         rCreate = given()
@@ -167,7 +166,7 @@ public class HarvestingClientsIT {
         // method, we don't need to pay too much attention to this method, aside 
         // from confirming the expected HTTP status code.
         
-        String nickName = UtilIT.getRandomString(6);
+        String nickName = "h" + UtilIT.getRandomString(6);
 
         String clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
         String clientJson = String.format("{\"dataverseAlias\":\"%s\","
@@ -178,7 +177,6 @@ public class HarvestingClientsIT {
                 + "\"metadataFormat\":\"%s\"}", 
                 harvestCollectionAlias, HARVEST_URL, ARCHIVE_URL, CONTROL_OAI_SET, HARVEST_METADATA_FORMAT);
         
-        Thread.sleep(1000L);
         Response createResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(clientJson)
