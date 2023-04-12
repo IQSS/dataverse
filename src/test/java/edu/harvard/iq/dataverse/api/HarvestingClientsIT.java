@@ -75,7 +75,7 @@ public class HarvestingClientsIT {
     }
 
     @Test
-    public void testCreateEditDeleteClient() {
+    public void testCreateEditDeleteClient() throws InterruptedException {
         // This method focuses on testing the native Dataverse harvesting client
         // API. 
         
@@ -100,6 +100,7 @@ public class HarvestingClientsIT {
         assertEquals(UNAUTHORIZED.getStatusCode(), rCreate.getStatusCode());
 
         
+        Thread.sleep(1000L);
         // Try to create the same as admin user, should succeed:
         
         rCreate = given()
@@ -176,7 +177,8 @@ public class HarvestingClientsIT {
                 + "\"set\":\"%s\","
                 + "\"metadataFormat\":\"%s\"}", 
                 harvestCollectionAlias, HARVEST_URL, ARCHIVE_URL, CONTROL_OAI_SET, HARVEST_METADATA_FORMAT);
-                
+        
+        Thread.sleep(1000L);
         Response createResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(clientJson)
