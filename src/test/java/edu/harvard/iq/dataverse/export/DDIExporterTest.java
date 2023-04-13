@@ -8,14 +8,13 @@ import com.google.gson.JsonElement;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
@@ -36,10 +35,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
@@ -104,12 +100,9 @@ public class DDIExporterTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
 
         JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
-        JsonObjectBuilder job = Json.createObjectBuilder();
-        job.add("datasetVersion", json);
-        JsonObject datasetJson=job.build();
         
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
-        Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(datasetJson);
+        Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
         Mockito.when(exportDataProviderStub.getDatasetFileDetails()).thenReturn(Json.createArrayBuilder().build());
         
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -127,12 +120,9 @@ public class DDIExporterTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
 
         JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
-        JsonObjectBuilder job = Json.createObjectBuilder();
-        job.add("datasetVersion", json);
-        JsonObject datasetJson=job.build();
         
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
-        Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(datasetJson);
+        Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
         Mockito.when(exportDataProviderStub.getDatasetFileDetails()).thenReturn(Json.createArrayBuilder().build());
         
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
