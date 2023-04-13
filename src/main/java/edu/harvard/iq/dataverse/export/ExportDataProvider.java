@@ -7,12 +7,17 @@ package edu.harvard.iq.dataverse.export;
 
 import java.io.InputStream;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.DataCitation;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -71,6 +76,17 @@ public class ExportDataProvider implements ExportDataProviderInterface {
         return DOIDataCiteRegisterService.getMetadataFromDvObject(
                 dv.getDataset().getGlobalId().asString(), new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
     }
+    
+    @Override
+    public JsonArray getDatasetFileDetails() {
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        for (FileMetadata fileMetadata : dv.getFileMetadatas()) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            jab.add(JsonPrinter.json(dataFile, fileMetadata));
+        }
+        return jab.build();
+    }
+    
     @Override
     public InputStream getPrerequisiteInputStream() {
         return is;

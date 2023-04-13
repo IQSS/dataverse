@@ -145,7 +145,7 @@ public class DdiExportUtil {
 
     
     // "full" ddi, with the the "<fileDscr>"  and "<dataDscr>/<var>" sections: 
-    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, DatasetVersion version, OutputStream outputStream) throws XMLStreamException {
+    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, JsonArray fileDetails, OutputStream outputStream) throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
@@ -160,13 +160,6 @@ public class DdiExportUtil {
             writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
         }
         createStdyDscr(xmlw, datasetDto);
-        JsonArrayBuilder jab = Json.createArrayBuilder();
-        for (FileMetadata fileMetadata : version.getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            jab.add(JsonPrinter.json(dataFile, fileMetadata));
-        }
-        JsonArray fileDetails = jab.build();
-        
         createFileDscr(xmlw, fileDetails);
         createDataDscr(xmlw, fileDetails);
         createOtherMatsFromFileMetadatas(xmlw, fileDetails);

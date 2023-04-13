@@ -45,7 +45,7 @@ public class DDIExporter implements Exporter {
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartDocument();
         xmlw.flush();
-            DdiExportUtil.datasetJson2ddi(dataProvider.getDatasetJson(), version, outputStream);
+            DdiExportUtil.datasetJson2ddi(dataProvider.getDatasetJson(), dataProvider.getDatasetFileDetails(), outputStream);
         } catch (XMLStreamException xse) {
             throw new ExportException ("Caught XMLStreamException performing DDI export");
         }

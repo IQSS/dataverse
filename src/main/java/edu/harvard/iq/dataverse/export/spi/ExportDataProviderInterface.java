@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.export.spi;
 
 import java.io.InputStream;
 
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import edu.harvard.iq.dataverse.DataCitation;
@@ -16,16 +17,19 @@ import edu.harvard.iq.dataverse.DataCitation;
  * 
  */
 public interface ExportDataProviderInterface {
-    
+
     public JsonObject getDatasetJson();
-    
+
     public JsonObject getDatasetSchemaDotOrg();
-    
+
     public JsonObject getDatasetORE();
+
+    public JsonArray getDatasetFileDetails();
 
     public String getDataCiteXml();
 
     public default InputStream getPrerequisiteInputStream() {
         return null;
     }
+
 }
