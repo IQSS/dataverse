@@ -1228,6 +1228,11 @@ public class IngestServiceBean {
      * NcML file already exists.
      */
     public boolean extractMetadataNcml(DataFile dataFile, Path tempLocationPath) {
+        String contentType = dataFile.getContentType();
+        if (!("application/netcdf".equals(contentType) || "application/x-hdf5".equals(contentType))) {
+            logger.fine("Returning early from extractMetadataNcml because content type is " + contentType + " rather than application/netcdf or application/x-hdf5");
+            return false;
+        }
         boolean ncmlFileCreated = false;
         logger.fine("extractMetadataNcml: dataFileIn: " + dataFile + ". tempLocationPath: " + tempLocationPath);
         InputStream inputStream = null;
