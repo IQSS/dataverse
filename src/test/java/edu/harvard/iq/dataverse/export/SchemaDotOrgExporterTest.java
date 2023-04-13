@@ -77,7 +77,10 @@ public class SchemaDotOrgExporterTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
 
         JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
-        JsonObject json2 = createExportFromJson(json);
+        ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
+        Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
+        
+        JsonObject json2 = createExportFromJson(exportDataProviderStub);
         
         assertEquals("http://schema.org", json2.getString("@context"));
         assertEquals("Dataset", json2.getString("@type"));
@@ -156,16 +159,19 @@ public class SchemaDotOrgExporterTest {
     String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
 
     JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
-    JsonObject json2 = createExportFromJson(json);
+    ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
+    Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
+    
+    JsonObject json2 = createExportFromJson(exportDataProviderStub);
 
     assertTrue(json2.getString("description").endsWith("at..."));
     }
     
-    private JsonObject createExportFromJson(JsonObject json) throws JsonParseException, ParseException {
+    private JsonObject createExportFromJson(ExportDataProvider provider) throws JsonParseException, ParseException {
         License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
         license.setDefault(true);
         JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
-        DatasetVersion version = jsonParser.parseDatasetVersion(json.getJsonObject("datasetVersion"));
+        DatasetVersion version = jsonParser.parseDatasetVersion(provider.getDatasetJson().getJsonObject("datasetVersion"));
         version.setVersionState(DatasetVersion.VersionState.RELEASED);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
         Date publicationDate = dateFmt.parse("19551105");
@@ -211,7 +217,8 @@ public class SchemaDotOrgExporterTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         if(schemaDotOrgExporter == null) logger.fine("sdoe" + " null");
         try {
-        schemaDotOrgExporter.exportDataset(version, json, byteArrayOutputStream);
+            ExportDataProvider provider2 = new ExportDataProvider(version);
+            schemaDotOrgExporter.exportDataset(provider2, byteArrayOutputStream);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -302,16 +309,6 @@ public class SchemaDotOrgExporterTest {
         assertEquals(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.", expectedException.getMessage());
     }
 
-    /**
-     * Test of setParam method, of class SchemaDotOrgExporter.
-     */
-    @Test
-    public void testSetParam() {
-        String name = "";
-        Object value = null;
-        schemaDotOrgExporter.setParam(name, value);
-    }
-    
     private static void mockDatasetFieldSvc() {
         datasetFieldTypeSvc.setMetadataBlock("citation");
     

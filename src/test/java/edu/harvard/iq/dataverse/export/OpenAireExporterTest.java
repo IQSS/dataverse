@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.export;
 
 import com.jayway.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,6 +19,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import static junit.framework.Assert.assertEquals;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -29,6 +32,7 @@ public class OpenAireExporterTest {
     public OpenAireExporterTest() {
         openAireExporter = new OpenAireExporter();
     }
+    
 
     /**
      * Test of getProviderName method, of class OpenAireExporter.
@@ -64,9 +68,12 @@ public class OpenAireExporterTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject jsonObject = jsonReader.readObject();
-        DatasetVersion nullVersion = null;
+        
+        ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
+        Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(jsonObject);
+        
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        openAireExporter.exportDataset(nullVersion, jsonObject, byteArrayOutputStream);
+        openAireExporter.exportDataset(exportDataProviderStub, byteArrayOutputStream);
         String xmlOnOneLine = new String(byteArrayOutputStream.toByteArray());
         String xmlAsString = XmlPrinter.prettyPrintXml(xmlOnOneLine);
         System.out.println("XML: " + xmlAsString);
@@ -86,9 +93,12 @@ public class OpenAireExporterTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject jsonObject = jsonReader.readObject();
-        DatasetVersion nullVersion = null;
+        
+        ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
+        Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(jsonObject);
+        
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        openAireExporter.exportDataset(nullVersion, jsonObject, byteArrayOutputStream);
+        openAireExporter.exportDataset(exportDataProviderStub, byteArrayOutputStream);
 
         {
             String xmlOnOneLine = new String(byteArrayOutputStream.toByteArray());
