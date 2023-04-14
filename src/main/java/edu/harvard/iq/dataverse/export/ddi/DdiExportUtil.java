@@ -390,11 +390,7 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); // verStmt
     }
     
-    /* (WORK IN PROGRESS) this ENTIRE method needs to be rewritten, because it is written under
-        an assumption that the individual fields inside can come in random order. 
-        No, the element is defined as an `<xs:sequence>`, meaning order is 
-        important! -L.A.
-        From the DDI 2.5 schema: 
+    /* From the DDI 2.5 schema: 
             <xs:sequence>
                <xs:element ref="timePrd" minOccurs="0" maxOccurs="unbounded"/>
                <xs:element ref="collDate" minOccurs="0" maxOccurs="unbounded"/>
