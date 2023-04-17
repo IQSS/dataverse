@@ -73,3 +73,6 @@ src/main/webapp/resources/images/dataverseproject.png.thumb140
 
 # apache-maven is downloaded by docker-aio
 apache-maven*
+
+# Docker development volumes
+/docker-dev-volumes

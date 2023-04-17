@@ -14,10 +14,12 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
@@ -56,6 +58,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
@@ -516,10 +520,11 @@ public class Admin extends AbstractApiBean {
 
 	@Deprecated
 	@GET
+	@AuthRequired
 	@Path("authenticatedUsers")
-	public Response listAuthenticatedUsers() {
+	public Response listAuthenticatedUsers(@Context ContainerRequestContext crc) {
 		try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
+			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -534,22 +539,18 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@GET
+	@AuthRequired
 	@Path(listUsersPartialAPIPath)
 	@Produces({ "application/json" })
 	public Response filterAuthenticatedUsers(
+			@Context ContainerRequestContext crc,
 			@QueryParam("searchTerm") String searchTerm,
 			@QueryParam("selectedPage") Integer selectedPage,
 			@QueryParam("itemsPerPage") Integer itemsPerPage,
 			@QueryParam("sortKey") String sortKey
 	) {
 
-		User authUser;
-		try {
-			authUser = this.findUserOrDie();
-		} catch (AbstractApiBean.WrappedResponse ex) {
-			return error(Response.Status.FORBIDDEN,
-					BundleUtil.getStringFromBundle("dashboard.list_users.api.auth.invalid_apikey"));
-		}
+		User authUser = getRequestUser(crc);
 
 		if (!authUser.isSuperuser()) {
 			return error(Response.Status.FORBIDDEN,
@@ -602,11 +603,12 @@ public class Admin extends AbstractApiBean {
 	 *             Shib-specfic one.
 	 */
 	@PUT
+	@AuthRequired
 	@Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
 	@Deprecated
-	public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-                try {
-                        AuthenticatedUser user = findAuthenticatedUserOrDie();
+	public Response convertShibUserToBuiltin(@Context ContainerRequestContext crc, @PathParam("id") Long id, String newEmailAddress) {
+		try {
+			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -639,10 +641,11 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@PUT
+	@AuthRequired
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
-	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-                try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
+	public Response convertOAuthUserToBuiltin(@Context ContainerRequestContext crc, @PathParam("id") Long id, String newEmailAddress) {
+		try {
+			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -679,12 +682,13 @@ public class Admin extends AbstractApiBean {
 	 * This is used in testing via AdminIT.java but we don't expect sysadmins to use
 	 * this.
 	 */
-	@Path("authenticatedUsers/convert/builtin2shib")
 	@PUT
-	public Response builtin2shib(String content) {
+	@AuthRequired
+	@Path("authenticatedUsers/convert/builtin2shib")
+	public Response builtin2shib(@Context ContainerRequestContext crc, String content) {
 		logger.info("entering builtin2shib...");
 		try {
-			AuthenticatedUser userToRunThisMethod = findAuthenticatedUserOrDie();
+			AuthenticatedUser userToRunThisMethod = getRequestAuthenticatedUserOrDie(crc);
 			if (!userToRunThisMethod.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -829,12 +833,13 @@ public class Admin extends AbstractApiBean {
 	 * This is used in testing via AdminIT.java but we don't expect sysadmins to use
 	 * this.
 	 */
-	@Path("authenticatedUsers/convert/builtin2oauth")
 	@PUT
-	public Response builtin2oauth(String content) {
+	@AuthRequired
+	@Path("authenticatedUsers/convert/builtin2oauth")
+	public Response builtin2oauth(@Context ContainerRequestContext crc, String content) {
 		logger.info("entering builtin2oauth...");
 		try {
-			AuthenticatedUser userToRunThisMethod = findAuthenticatedUserOrDie();
+			AuthenticatedUser userToRunThisMethod = getRequestAuthenticatedUserOrDie(crc);
 			if (!userToRunThisMethod.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -1009,14 +1014,15 @@ public class Admin extends AbstractApiBean {
 	}
 
     @DELETE
+	@AuthRequired
     @Path("roles/{id}")
-    public Response deleteRole(@PathParam("id") String id) {
+    public Response deleteRole(@Context ContainerRequestContext crc, @PathParam("id") String id) {
 
         return response(req -> {
             DataverseRole doomed = findRoleOrDie(id);
             execCommand(new DeleteRoleCommand(req, doomed));
             return ok("role " + doomed.getName() + " deleted.");
-        });
+        }, getRequestUser(crc));
     }
 
 	@Path("superuser/{identifier}")
@@ -1323,23 +1329,20 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@Path("permissions/{dvo}")
+	@AuthRequired
 	@GET
-	public Response findPermissonsOn(@PathParam("dvo") String dvo) {
+	public Response findPermissonsOn(@Context ContainerRequestContext crc, @PathParam("dvo") String dvo) {
 		try {
 			DvObject dvObj = findDvo(dvo);
 			if (dvObj == null) {
 				return notFound("DvObject " + dvo + " not found");
 			}
-			try {
-				User aUser = findUserOrDie();
-				JsonObjectBuilder bld = Json.createObjectBuilder();
-				bld.add("user", aUser.getIdentifier());
-				bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
-				return ok(bld);
+			User aUser = getRequestUser(crc);
+			JsonObjectBuilder bld = Json.createObjectBuilder();
+			bld.add("user", aUser.getIdentifier());
+			bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
+			return ok(bld);
 
-			} catch (WrappedResponse wr) {
-				return wr.getResponse();
-			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Error while testing permissions", e);
 			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -1465,16 +1468,17 @@ public class Admin extends AbstractApiBean {
 	}
 
     @POST
+	@AuthRequired
     @Path("{id}/reregisterHDLToPID")
-    public Response reregisterHdlToPID(@PathParam("id") String id) {
+    public Response reregisterHdlToPID(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
         try {
-            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
+            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(HandlenetServiceBean.HDL_PROTOCOL)) {
                 logger.info("Bad Request protocol set to handle  " );
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
             }
             
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
                 logger.info("Bad Request Unauthor " );
                 return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
@@ -1482,7 +1486,7 @@ public class Admin extends AbstractApiBean {
 
             DataverseRequest r = createDataverseRequest(u);
             Dataset ds = findDatasetOrDie(id);
-            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(GlobalId.HDL_PROTOCOL)) {
+            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(HandlenetServiceBean.HDL_PROTOCOL)) {
                 execCommand(new RegisterDvObjectCommand(r, ds, true));
             } else {
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.hdl.dataset"));
@@ -1501,12 +1505,13 @@ public class Admin extends AbstractApiBean {
     }
 
 	@GET
+	@AuthRequired
 	@Path("{id}/registerDataFile")
-	public Response registerDataFile(@PathParam("id") String id) {
+	public Response registerDataFile(@Context ContainerRequestContext crc, @PathParam("id") String id) {
 		logger.info("Starting to register  " + id + " file id. " + new Date());
 
 		try {
-			User u = findUserOrDie();
+			User u = getRequestUser(crc);
 			DataverseRequest r = createDataverseRequest(u);
 			DataFile df = findDataFileOrDie(id);
 			if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
@@ -1524,8 +1529,9 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@GET
+	@AuthRequired
 	@Path("/registerDataFileAll")
-	public Response registerDataFileAll() {
+	public Response registerDataFileAll(@Context ContainerRequestContext crc) {
 		Integer count = fileService.findAll().size();
 		Integer successes = 0;
 		Integer alreadyRegistered = 0;
@@ -1538,7 +1544,7 @@ public class Admin extends AbstractApiBean {
 				if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
 					if (df.isReleased()) {
 						released++;
-						User u = findAuthenticatedUserOrDie();
+						User u = getRequestAuthenticatedUserOrDie(crc);
 						DataverseRequest r = createDataverseRequest(u);
 						execCommand(new RegisterDvObjectCommand(r, df));
 						successes++;
@@ -1573,8 +1579,9 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@GET
+	@AuthRequired
 	@Path("/updateHashValues/{alg}")
-	public Response updateHashValues(@PathParam("alg") String alg, @QueryParam("num") int num) {
+	public Response updateHashValues(@Context ContainerRequestContext crc, @PathParam("alg") String alg, @QueryParam("num") int num) {
 		Integer count = fileService.findAll().size();
 		Integer successes = 0;
 		Integer alreadyUpdated = 0;
@@ -1593,7 +1600,7 @@ public class Admin extends AbstractApiBean {
 		logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
 				+ alg);
 		try {
-			User u = findAuthenticatedUserOrDie();
+			User u = getRequestAuthenticatedUserOrDie(crc);
 			if (!u.isSuperuser())
 				return error(Status.UNAUTHORIZED, "must be superuser");
 		} catch (WrappedResponse e1) {
@@ -1681,11 +1688,12 @@ public class Admin extends AbstractApiBean {
 	}
         
     @POST
+	@AuthRequired
     @Path("/computeDataFileHashValue/{fileId}/algorithm/{alg}")
-    public Response computeDataFileHashValue(@PathParam("fileId") String fileId, @PathParam("alg") String alg) {
+    public Response computeDataFileHashValue(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @PathParam("alg") String alg) {
 
         try {
-            User u = findAuthenticatedUserOrDie();
+            User u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser()) {
                 return error(Status.UNAUTHORIZED, "must be superuser");
             }
@@ -1742,11 +1750,12 @@ public class Admin extends AbstractApiBean {
     }
     
     @POST
+	@AuthRequired
     @Path("/validateDataFileHashValue/{fileId}")
-    public Response validateDataFileHashValue(@PathParam("fileId") String fileId) {
+    public Response validateDataFileHashValue(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId) {
 
         try {
-            User u = findAuthenticatedUserOrDie();
+            User u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser()) {
                 return error(Status.UNAUTHORIZED, "must be superuser");
             }
@@ -1808,12 +1817,13 @@ public class Admin extends AbstractApiBean {
     }
 
     @POST
+	@AuthRequired
     @Path("/submitDatasetVersionToArchive/{id}/{version}")
-    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid,
+    public Response submitDatasetVersionToArchive(@Context ContainerRequestContext crc, @PathParam("id") String dsid,
             @PathParam("version") String versionNumber) {
 
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
 
             Dataset ds = findDatasetOrDie(dsid);
 
@@ -1880,11 +1890,12 @@ public class Admin extends AbstractApiBean {
      * @return
      */
     @POST
+	@AuthRequired
     @Path("/archiveAllUnarchivedDatasetVersions")
-    public Response archiveAllUnarchivedDatasetVersions(@QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
+    public Response archiveAllUnarchivedDatasetVersions(@Context ContainerRequestContext crc, @QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
 
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
 
             List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
             if (dsl != null) {
@@ -1978,14 +1989,15 @@ public class Admin extends AbstractApiBean {
 	}
 
     @GET
+	@AuthRequired
     @Path("/dataverse/{alias}/addRoleAssignmentsToChildren")
-    public Response addRoleAssignementsToChildren(@PathParam("alias") String alias) throws WrappedResponse {
+    public Response addRoleAssignementsToChildren(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse owner = dataverseSvc.findByAlias(alias);
         if (owner == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -2008,14 +2020,15 @@ public class Admin extends AbstractApiBean {
     }
     
     @GET
+	@AuthRequired
     @Path("/dataverse/{alias}/storageDriver")
-    public Response getStorageDriver(@PathParam("alias") String alias) throws WrappedResponse {
+    public Response getStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
     	Dataverse dataverse = dataverseSvc.findByAlias(alias);
     	if (dataverse == null) {
     		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
     	}
     	try {
-    		AuthenticatedUser user = findAuthenticatedUserOrDie();
+    		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
     		if (!user.isSuperuser()) {
     			return error(Response.Status.FORBIDDEN, "Superusers only.");
     		}
@@ -2027,14 +2040,15 @@ public class Admin extends AbstractApiBean {
     }
     
     @PUT
+	@AuthRequired
     @Path("/dataverse/{alias}/storageDriver")
-    public Response setStorageDriver(@PathParam("alias") String alias, String label) throws WrappedResponse {
+    public Response setStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias, String label) throws WrappedResponse {
     	Dataverse dataverse = dataverseSvc.findByAlias(alias);
     	if (dataverse == null) {
     		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
     	}
     	try {
-    		AuthenticatedUser user = findAuthenticatedUserOrDie();
+    		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
     		if (!user.isSuperuser()) {
     			return error(Response.Status.FORBIDDEN, "Superusers only.");
     		}
@@ -2052,14 +2066,15 @@ public class Admin extends AbstractApiBean {
     }
 
     @DELETE
+	@AuthRequired
     @Path("/dataverse/{alias}/storageDriver")
-    public Response resetStorageDriver(@PathParam("alias") String alias) throws WrappedResponse {
+    public Response resetStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
     	Dataverse dataverse = dataverseSvc.findByAlias(alias);
     	if (dataverse == null) {
     		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
     	}
     	try {
-    		AuthenticatedUser user = findAuthenticatedUserOrDie();
+    		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
     		if (!user.isSuperuser()) {
     			return error(Response.Status.FORBIDDEN, "Superusers only.");
     		}
@@ -2071,10 +2086,11 @@ public class Admin extends AbstractApiBean {
     }
     
     @GET
+	@AuthRequired
     @Path("/dataverse/storageDrivers")
-    public Response listStorageDrivers() throws WrappedResponse {
+    public Response listStorageDrivers(@Context ContainerRequestContext crc) throws WrappedResponse {
     	try {
-    		AuthenticatedUser user = findAuthenticatedUserOrDie();
+    		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
     		if (!user.isSuperuser()) {
     			return error(Response.Status.FORBIDDEN, "Superusers only.");
     		}
@@ -2087,14 +2103,15 @@ public class Admin extends AbstractApiBean {
     }
     
     @GET
+	@AuthRequired
     @Path("/dataverse/{alias}/curationLabelSet")
-    public Response getCurationLabelSet(@PathParam("alias") String alias) throws WrappedResponse {
+    public Response getCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -2108,14 +2125,15 @@ public class Admin extends AbstractApiBean {
     }
 
     @PUT
+	@AuthRequired
     @Path("/dataverse/{alias}/curationLabelSet")
-    public Response setCurationLabelSet(@PathParam("alias") String alias, @QueryParam("name") String name) throws WrappedResponse {
+    public Response setCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias, @QueryParam("name") String name) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -2138,14 +2156,15 @@ public class Admin extends AbstractApiBean {
     }
 
     @DELETE
+	@AuthRequired
     @Path("/dataverse/{alias}/curationLabelSet")
-    public Response resetCurationLabelSet(@PathParam("alias") String alias) throws WrappedResponse {
+    public Response resetCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -2157,10 +2176,11 @@ public class Admin extends AbstractApiBean {
     }
 
     @GET
+	@AuthRequired
     @Path("/dataverse/curationLabelSets")
-    public Response listCurationLabelSets() throws WrappedResponse {
+    public Response listCurationLabelSets(@Context ContainerRequestContext crc) throws WrappedResponse {
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -2251,12 +2271,13 @@ public class Admin extends AbstractApiBean {
     }
     
     @POST
+	@AuthRequired
     @Consumes("application/json")
     @Path("/requestSignedUrl")
-    public Response getSignedUrl(JsonObject urlInfo) {
+    public Response getSignedUrl(@Context ContainerRequestContext crc, JsonObject urlInfo) {
         AuthenticatedUser superuser = null;
         try {
-            superuser = findAuthenticatedUserOrDie();
+            superuser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

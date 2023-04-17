@@ -8,13 +8,9 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.util.List;
-import java.util.Map;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -29,6 +25,7 @@ public class PersistentIdentifierServiceBeanTest {
     DOIDataCiteServiceBean dataCiteServiceBean = new DOIDataCiteServiceBean();
     FakePidProviderServiceBean fakePidProviderServiceBean = new FakePidProviderServiceBean();
     HandlenetServiceBean hdlServiceBean = new HandlenetServiceBean();
+    PermaLinkPidProviderServiceBean permaLinkServiceBean = new PermaLinkPidProviderServiceBean(); 
     
     CommandContext ctxt;
     
@@ -55,6 +52,11 @@ public class PersistentIdentifierServiceBeanTest {
                 return fakePidProviderServiceBean;
             }
             
+            @Override
+            public PermaLinkPidProviderServiceBean permaLinkProvider() {
+                return permaLinkServiceBean;
+            }
+            
         };
     }
     
@@ -77,6 +79,9 @@ public class PersistentIdentifierServiceBeanTest {
 
         assertEquals(hdlServiceBean, 
                      GlobalIdServiceBean.getBean("hdl", ctxt));
+        
+        assertEquals(permaLinkServiceBean, 
+                GlobalIdServiceBean.getBean("perma", ctxt));
     }
     
      @Test
@@ -102,6 +107,10 @@ public class PersistentIdentifierServiceBeanTest {
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.Protocol, "hdl");
         assertEquals(hdlServiceBean, 
                      GlobalIdServiceBean.getBean("hdl", ctxt));
+        
+        ctxt.settings().setValueForKey( SettingsServiceBean.Key.Protocol, "perma");
+        assertEquals(permaLinkServiceBean, 
+                     GlobalIdServiceBean.getBean("perma", ctxt));
     }
 
    

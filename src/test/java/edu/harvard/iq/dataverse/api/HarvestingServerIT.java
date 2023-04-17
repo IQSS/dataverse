@@ -240,7 +240,7 @@ public class HarvestingServerIT {
         assertEquals(200, getSetResponse.getStatusCode());
         
         getSetResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("status", equalTo(ApiConstants.STATUS_OK))
                 .body("data.definition", equalTo("*"))
                 .body("data.description", equalTo(""))
                 .body("data.name", equalTo(setName));
@@ -353,7 +353,7 @@ public class HarvestingServerIT {
         assertEquals(200, getSetResponse.getStatusCode());
         
         getSetResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("status", equalTo(ApiConstants.STATUS_OK))
                 .body("data.definition", equalTo(newDefinition))
                 .body("data.description", equalTo(newDescription))
                 .body("data.name", equalTo(setName));

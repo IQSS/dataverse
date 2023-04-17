@@ -36,7 +36,9 @@ If you would like to read more about the Dataverse Project's use of GitHub, plea
 Building the Guides with Sphinx
 -------------------------------
 
-The Dataverse guides are written using Sphinx (http://sphinx-doc.org). We recommend installing Sphinx and building the guides locally so you can get an accurate preview of your changes.
+The Dataverse guides are written using Sphinx (http://sphinx-doc.org). We recommend installing Sphinx on your localhost or using a Sphinx Docker container to build the guides locally so you can get an accurate preview of your changes.
+
+In case you decide to use a Sphinx Docker container to build the guides, you can skip the next two installation sections, but you will need to have Docker installed.
 
 Installing Sphinx
 ~~~~~~~~~~~~~~~~~
@@ -72,7 +74,12 @@ To edit the existing documentation:
 - In ``doc/sphinx-guides/source`` you will find the .rst files that correspond to http://guides.dataverse.org.
 - Using your preferred text editor, open and edit the necessary files, or create new ones.
 
-Once you are done, open a terminal, change directories to ``doc/sphinx-guides``, activate (or reactivate) your Python virtual environment, and build the guides.
+Once you are done, you can preview the changes by building the guides locally. As explained, you can build the guides with Sphinx locally installed, or with a Docker container.
+
+Building the Guides with Sphinx Locally Installed
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Open a terminal, change directories to ``doc/sphinx-guides``, activate (or reactivate) your Python virtual environment, and build the guides.
 
 ``cd doc/sphinx-guides``
 
@@ -81,6 +88,16 @@ Once you are done, open a terminal, change directories to ``doc/sphinx-guides``,
 ``make clean``
 
 ``make html``
+
+Building the Guides with a Sphinx Docker Container
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want to build the guides using a Docker container, execute the following command in the repository root:
+
+``docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:3.5.4 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"``
+
+Previewing the Guides
+^^^^^^^^^^^^^^^^^^^^^
 
 After Sphinx is done processing the files you should notice that the ``html`` folder in ``doc/sphinx-guides/build`` directory has been updated.
 You can click on the files in the ``html`` folder to preview the changes.
