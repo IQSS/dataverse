@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.api.auth;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import edu.harvard.iq.dataverse.UserServiceBean;
-import edu.harvard.iq.dataverse.api.auth.doubles.BearerTokenKeyContainerRequestTestFake;
+import edu.harvard.iq.dataverse.api.auth.doubles.BearereTokenKeyContainerRequestTestFake;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
@@ -42,7 +42,7 @@ public class BearerTokenAuthMechanismTest {
         sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
         sut.userSvc = Mockito.mock(UserServiceBean.class);
 
-        ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake(null);
+        ContainerRequestContext testContainerRequest = new BearereTokenKeyContainerRequestTestFake(null);
         User actual = sut.findUserFromRequest(testContainerRequest);
 
         assertNull(actual);
@@ -54,7 +54,7 @@ public class BearerTokenAuthMechanismTest {
         sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
         sut.userSvc = Mockito.mock(UserServiceBean.class);
         Mockito.when(sut.authSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)).thenReturn(Collections.emptySet());
-        ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer ");
+        ContainerRequestContext testContainerRequest = new BearereTokenKeyContainerRequestTestFake("Bearer ");
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
@@ -66,7 +66,7 @@ public class BearerTokenAuthMechanismTest {
         sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
         sut.userSvc = Mockito.mock(UserServiceBean.class);
         Mockito.when(sut.authSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)).thenReturn(Collections.emptySet());
-        ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " +TEST_API_KEY);
+        ContainerRequestContext testContainerRequest = new BearereTokenKeyContainerRequestTestFake("Bearer " +TEST_API_KEY);
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
@@ -92,7 +92,7 @@ public class BearerTokenAuthMechanismTest {
         Mockito.when(oidcAuthProvider.getUserIdentifierForValidToken(token)).thenReturn(Optional.empty());
 
         // when
-        ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
+        ContainerRequestContext testContainerRequest = new BearereTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
@@ -118,7 +118,7 @@ public class BearerTokenAuthMechanismTest {
         Mockito.when(oidcAuthProvider.getUserIdentifierForValidToken(token)).thenThrow(OAuth2Exception.class);
 
         // when
-        ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
+        ContainerRequestContext testContainerRequest = new BearereTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
@@ -149,7 +149,7 @@ public class BearerTokenAuthMechanismTest {
         Mockito.when(sut.userSvc.updateLastApiUseTime(testAuthenticatedUser)).thenReturn(testAuthenticatedUser);
 
         // when
-        ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
+        ContainerRequestContext testContainerRequest = new BearereTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
         User actual = sut.findUserFromRequest(testContainerRequest);
 
         //then
@@ -181,7 +181,7 @@ public class BearerTokenAuthMechanismTest {
 
 
         // when
-        ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
+        ContainerRequestContext testContainerRequest = new BearereTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
         User actual = sut.findUserFromRequest(testContainerRequest);
 
         //then
