@@ -2370,7 +2370,9 @@ please find all known feature flags below. Any of these flags can be activated u
     * - api-session-auth
       - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and removed once support for bearer tokens has been implemented (see `#9229 <https://github.com/IQSS/dataverse/issues/9229>`_).
       - ``Off``
-
+    * - api-bearer-auth
+      - Enables API authentication via Bearer Token for OIDC User Accounts. **Information: This feature works only for ODIC UserAccounts!**
+      - ``Off``
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
 
