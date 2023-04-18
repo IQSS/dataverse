@@ -52,11 +52,9 @@ public class BrandingUtilTest {
                                                                 "<a href=\"https://demo.dataverse.org\">Demo Site</a>"
                                                         );
         System.out.println("message: " + message);
-        assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
-                             + "Have questions? Check out the <a href=\"http://guides.dataverse.org/en/4.3" +
-                        "/user/index.html\">User Guide</a>."
-                             + " Want to test out Dataverse features? Use our <a href=\"https://demo.dataverse.org\">Demo Site</a>."
-                             + " Also, check for your welcome email to verify your address.",
+        assertEquals("Welcome to LibraScholar! Get started by adding or finding data. " +
+                        "Have questions? Check out the <a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>. " +
+                        "Also, check for your welcome email to verify your address.",
                      message);
     }
 
