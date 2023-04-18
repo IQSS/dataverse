@@ -26,6 +26,7 @@ public enum FeatureFlags {
 
     /**
      * Enables API authentication via session cookie (JSESSIONID). Caution: Enabling this feature flag exposes the installation to CSRF risks
+     * For this feature flag to work, a frontend URL must be specified, which is required for the CORS configuration of the API. This can be done via the MicroProfile Config variable "dataverse.frontend.url".
      * @apiNote Raise flag by setting "dataverse.feature.api-session-auth"
      * @since Dataverse 5.14
      */
