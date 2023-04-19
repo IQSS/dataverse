@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.pidproviders.VersionPidMode.GenStyle;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
@@ -153,6 +155,35 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             dvObject.setAuthority(authority);
         }
         return dvObject;
+    }
+    
+    /**
+     * Generate an identifier for a given dataset version, depending on the chosen (configured) generation style.
+     * (See also {@link GenStyle} for available styles.)
+     *
+     * @param datasetVersion The version of a dataset to create a PID for
+     * @return The identifier (will never be null)
+     * @throws NoSuchElementException When no style has been configured for the instance
+     * @throws IllegalArgumentException If the style configured is not supported by this generator, the version is
+     *                                  already released or a minor version.
+     */
+    @Override
+    public String generateDatasetVersionIdentifier(DatasetVersion datasetVersion) {
+        // HINT: this default business logic might be made configurable later
+        //       or can be overridden by a provider implementing custom logic.
+        if (datasetVersion.isReleased() || datasetVersion.getMinorVersionNumber() > 0) {
+            throw new IllegalArgumentException("Released or draft minor versions are not allowed");
+        }
+        
+        GenStyle style = JvmSettings.PID_VERSIONS_STYLE.lookup(GenStyle.class);
+        
+        if (style == GenStyle.DATASET) {
+            return generateDatasetIdentifier(datasetVersion.getDataset());
+        } else if (style == GenStyle.SUFFIX) {
+            return datasetVersion.getDataset().getIdentifier() + getVersionSuffixDelimiter() + datasetVersion.getVersionNumber();
+        }
+        
+        throw new IllegalArgumentException("No supported version PID generation style configured");
     }
     
     //ToDo just send the DvObject.DType
