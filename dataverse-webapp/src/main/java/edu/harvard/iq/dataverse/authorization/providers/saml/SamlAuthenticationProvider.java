@@ -5,6 +5,7 @@ import com.onelogin.saml2.authn.AuthnRequestParams;
 import com.onelogin.saml2.exception.SettingsException;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.authorization.EditableAccountField;
 import edu.harvard.iq.dataverse.authorization.EditableAccountFieldSets;
 import edu.harvard.iq.dataverse.persistence.user.SamlIdentityProvider;
@@ -66,7 +67,7 @@ public class SamlAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public AuthenticationProviderDisplayInfo getInfo() {
-        return new AuthenticationProviderDisplayInfo(getId(), "SAML", "SAML Authorization");
+        return new AuthenticationProviderDisplayInfo(getId(), BundleUtil.getStringFromBundle("saml.login.btn"), "SAML Authorization");
     }
 
     public List<SamlIdentityProvider> getRegisteredProviders() {
