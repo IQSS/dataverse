@@ -44,7 +44,7 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
 
 
     @Override
-    public boolean alreadyExists(GlobalId pid) {
+    public boolean alreadyRegistered(GlobalId pid) {
         logger.log(Level.FINE,"alreadyExists");
         if(pid==null || pid.asString().isEmpty()) {
             logger.fine("No identifier sent.");
@@ -60,7 +60,6 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
         }
         return  alreadyExists;
     }
-    
 
     @Override
     public String createIdentifier(DvObject dvObject) throws Exception {

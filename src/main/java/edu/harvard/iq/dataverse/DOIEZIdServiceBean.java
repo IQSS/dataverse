@@ -63,16 +63,16 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
     }
 
     @Override
-    public boolean alreadyExists(DvObject dvObject) throws Exception {
+    public boolean alreadyRegistered(DvObject dvObject) throws Exception {
         if(dvObject==null) {
             logger.severe("Null DvObject sent to alreadyExists().");
             return false;
         }
-        return alreadyExists(dvObject.getGlobalId());
+        return alreadyRegistered(dvObject.getGlobalId());
     }
     
     @Override
-    public boolean alreadyExists(GlobalId pid) throws Exception {
+    public boolean alreadyRegistered(GlobalId pid) throws Exception {
         logger.log(Level.FINE,"alreadyExists");
         try {
             HashMap<String, String> result = ezidService.getMetadata(pid.asString());            

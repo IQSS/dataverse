@@ -20,7 +20,7 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
     //Only need to check locally
     public boolean isGlobalIdUnique(GlobalId globalId) {
         try {
-            return ! alreadyExists(globalId);
+            return dvObjectService.isGlobalIdLocallyUnique(globalId);
         } catch (Exception e){
             //we can live with failure - means identifier not found remotely
         }
@@ -28,8 +28,8 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
     }
     
     @Override
-    public boolean alreadyExists(GlobalId globalId) throws Exception {
-        return ! dvObjectService.isGlobalIdLocallyUnique(globalId);
+    public boolean alreadyRegistered(GlobalId globalId) {
+        return false;
     }
 
     @Override

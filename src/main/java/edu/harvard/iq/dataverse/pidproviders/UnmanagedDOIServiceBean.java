@@ -43,7 +43,7 @@ public class UnmanagedDOIServiceBean extends DOIServiceBean {
     }
 
     @Override
-    public boolean alreadyExists(GlobalId pid) {
+    public boolean alreadyRegistered(GlobalId pid) {
         return false;
     }
 

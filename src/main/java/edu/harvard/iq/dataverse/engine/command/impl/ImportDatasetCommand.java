@@ -87,7 +87,7 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
                  */
                 GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(ds.getProtocol(), ctxt);
                 if (globalIdServiceBean != null) {
-                    if (globalIdServiceBean.alreadyExists(ds)) {
+                    if (globalIdServiceBean.alreadyRegistered(ds)) {
                         return;
                     }
                 }

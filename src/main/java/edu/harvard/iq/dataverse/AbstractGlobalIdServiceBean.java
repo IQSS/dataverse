@@ -113,7 +113,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     }
     
     @Override
-    public boolean alreadyExists(DvObject dvo) throws Exception {
+    public boolean alreadyRegistered(DvObject dvo) throws Exception {
         if(dvo==null) {
             logger.severe("Null DvObject sent to alreadyExists().");
             return false;
@@ -122,8 +122,10 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         if(globalId == null) {
             return false;
         }
-        return alreadyExists(globalId);
+        return alreadyRegistered(globalId);
     }
+
+    public abstract boolean alreadyRegistered(GlobalId globalId) throws Exception;
 
     /*
      * ToDo: the DvObject being sent in provides partial support for the case where
@@ -188,7 +190,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
         // not in local DB, look in the persistent identifier service
         try {
-            return ! alreadyExists(globalId);
+            return ! alreadyRegistered(globalId);
         } catch (Exception e){
             //we can live with failure - means identifier not found remotely
         }

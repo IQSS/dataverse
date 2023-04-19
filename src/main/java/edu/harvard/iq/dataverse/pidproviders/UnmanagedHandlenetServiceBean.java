@@ -35,7 +35,12 @@ public class UnmanagedHandlenetServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     @Override
-    public boolean alreadyExists(GlobalId pid) throws Exception {
+    public boolean alreadyRegistered(GlobalId pid) throws Exception {
+        throw new NotImplementedException();
+    }
+    
+    @Override
+    public boolean ableToRegister(GlobalId pid) throws Exception {
         throw new NotImplementedException();
     }
 
