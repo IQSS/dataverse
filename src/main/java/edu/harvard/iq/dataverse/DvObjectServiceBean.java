@@ -138,10 +138,14 @@ public class DvObjectServiceBean implements java.io.Serializable {
     }
     
     public DvObject findByGlobalId(GlobalId globalId) {
-        return (DvObject) em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
-            .setParameter("identifier", globalId.getIdentifier())
-            .setParameter("authority", globalId.getAuthority())
-            .setParameter("protocol", globalId.getProtocol()).getSingleResult();
+        try {
+            return (DvObject) em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
+                    .setParameter("identifier", globalId.getIdentifier())
+                    .setParameter("authority", globalId.getAuthority()).setParameter("protocol", globalId.getProtocol())
+                    .getSingleResult();
+        } catch (NoResultException nre) {
+            return null;
+        }
     }
     
     public boolean isGlobalIdLocallyUnique(GlobalId globalId) {
