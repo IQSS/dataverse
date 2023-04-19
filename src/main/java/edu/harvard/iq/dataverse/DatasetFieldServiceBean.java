@@ -702,8 +702,20 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     public List<String> getVocabScripts( Map<Long, JsonObject> cvocConf) {
         //ToDo - only return scripts that are needed (those fields are set on display pages, those blocks/fields are allowed in the Dataverse collection for create/edit)?
         Set<String> scripts = new HashSet<String>();
-        for(JsonObject jo: cvocConf.values()) {
-            scripts.add(jo.getString("js-url"));
+        for (JsonObject jo : cvocConf.values()) {
+            // Allow either a single script (a string) or an array of scripts (used, for
+            // example, to allow use of the common cvocutils.js script along with a main
+            // script for the field.)
+            JsonValue scriptValue = jo.get("js-url");
+            ValueType scriptType = scriptValue.getValueType();
+            if (scriptType.equals(ValueType.STRING)) {
+                scripts.add(((JsonString) scriptValue).getString());
+            } else if (scriptType.equals(ValueType.ARRAY)) {
+                JsonArray scriptArray = ((JsonArray) scriptValue);
+                for (int i = 0; i < scriptArray.size(); i++) {
+                    scripts.add(scriptArray.getString(i));
+                }
+            }
         }
         String customScript = settingsService.getValueForKey(SettingsServiceBean.Key.ControlledVocabularyCustomJavaScript);
         if (customScript != null && !customScript.isEmpty()) {
