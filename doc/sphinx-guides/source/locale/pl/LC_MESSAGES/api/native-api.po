@@ -8,14 +8,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Dataverse 4.11\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-20 18:16+0200\n"
+"POT-Creation-Date: 2023-04-19 13:05+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.3\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: ../../source/api/native-api.rst:2
 msgid "Native API"
@@ -177,7 +177,7 @@ msgid ""
 " ``[\"authorName\",\"authorAffiliation\"]``)."
 msgstr ""
 
-#: ../../source/api/native-api.rst:87 ../../source/api/native-api.rst:901
+#: ../../source/api/native-api.rst:87 ../../source/api/native-api.rst:931
 msgid "Create a New Role in a Dataverse"
 msgstr ""
 
@@ -188,7 +188,7 @@ msgid ""
 msgstr ""
 
 #: ../../source/api/native-api.rst:93 ../../source/api/native-api.rst:128
-#: ../../source/api/native-api.rst:1303
+#: ../../source/api/native-api.rst:1333
 msgid "POSTed JSON example::"
 msgstr ""
 
@@ -868,14 +868,17 @@ msgid ""
 msgstr ""
 
 #: ../../source/api/native-api.rst:511 ../../source/api/native-api.rst:523
+#: ../../source/api/native-api.rst:734
 msgid "Name"
 msgstr ""
 
 #: ../../source/api/native-api.rst:511 ../../source/api/native-api.rst:523
+#: ../../source/api/native-api.rst:734
 msgid "Type"
 msgstr ""
 
 #: ../../source/api/native-api.rst:511 ../../source/api/native-api.rst:523
+#: ../../source/api/native-api.rst:734
 msgid "Description"
 msgstr ""
 
@@ -885,7 +888,8 @@ msgstr ""
 
 #: ../../source/api/native-api.rst:513 ../../source/api/native-api.rst:525
 #: ../../source/api/native-api.rst:526 ../../source/api/native-api.rst:527
-#: ../../source/api/native-api.rst:528
+#: ../../source/api/native-api.rst:528 ../../source/api/native-api.rst:736
+#: ../../source/api/native-api.rst:739 ../../source/api/native-api.rst:740
 msgid "string"
 msgstr ""
 
@@ -979,11 +983,11 @@ msgid ""
 "parameters in the sample code:"
 msgstr ""
 
-#: ../../source/api/native-api.rst:542 ../../source/api/native-api.rst:763
+#: ../../source/api/native-api.rst:542 ../../source/api/native-api.rst:793
 msgid "``dataverse_server`` - e.g. https://demo.dataverse.org"
 msgstr ""
 
-#: ../../source/api/native-api.rst:543 ../../source/api/native-api.rst:764
+#: ../../source/api/native-api.rst:543 ../../source/api/native-api.rst:794
 msgid "``api_key`` - See the top of this document for a description"
 msgstr ""
 
@@ -1133,30 +1137,121 @@ msgid ""
 "persistent identifier notation for referencing the dataset)"
 msgstr ""
 
+#: ../../source/api/native-api.rst:717
+msgid "Change file labels"
+msgstr ""
+
 #: ../../source/api/native-api.rst:718
+msgid "To list all the file labels for the latest version use::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:722
+msgid ""
+"The same endpoint, but with POST and the following JSON, can be used to "
+"replace any text in file labels::"
+msgstr ""
+
+#: ../../source/api/native-api.rst:736
+msgid "pattern"
+msgstr ""
+
+#: ../../source/api/native-api.rst:736
+msgid ""
+"Pattern describing which labels should be affected by the replace "
+"operation. Label matching works in two modes. When wildcard (*) is used, "
+"the pattern is matched against the whole label and the wildcard stands "
+"for any number (including zero) of any characters. When the wildcard is "
+"not present, there is a check whether the label contains the given "
+"pattern."
+msgstr ""
+
+#: ../../source/api/native-api.rst:737
+msgid "filesToExcludeIds"
+msgstr ""
+
+#: ../../source/api/native-api.rst:737 ../../source/api/native-api.rst:738
+msgid "array<number>"
+msgstr ""
+
+#: ../../source/api/native-api.rst:737
+msgid "List of datafile ids, which should be excluded from the replace operation."
+msgstr ""
+
+#: ../../source/api/native-api.rst:738
+msgid "filesToIncludeIds"
+msgstr ""
+
+#: ../../source/api/native-api.rst:738
+msgid ""
+"List of datafile ids, which should be included into the replace operation"
+" (even if the datafile label does not match the pattern)."
+msgstr ""
+
+#: ../../source/api/native-api.rst:739
+msgid "from"
+msgstr ""
+
+#: ../../source/api/native-api.rst:739
+msgid ""
+"Java-type regex pattern describing the fragment of label that should be "
+"replaced (see `documentation "
+"<https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#sum>`_)"
+msgstr ""
+
+#: ../../source/api/native-api.rst:740
+msgid "to"
+msgstr ""
+
+#: ../../source/api/native-api.rst:740
+msgid "String used as a replacement for the matching fragments of label"
+msgstr ""
+
+#: ../../source/api/native-api.rst:741
+msgid "preview"
+msgstr ""
+
+#: ../../source/api/native-api.rst:741
+msgid "boolean"
+msgstr ""
+
+#: ../../source/api/native-api.rst:741
+msgid ""
+"If set to true, the results of replacement are showed, but not persisted "
+"in any way"
+msgstr ""
+
+#: ../../source/api/native-api.rst:744
+msgid ""
+"Please note that replacement will be executed inside the draft version of"
+" dataset. If that does not exist it will be created. The operation "
+"handles properly duplicated names that could appear in the replacement "
+"process, by adding the proper suffixes to created labels."
+msgstr ""
+
+#: ../../source/api/native-api.rst:748
 msgid "Files"
 msgstr ""
 
-#: ../../source/api/native-api.rst:721
+#: ../../source/api/native-api.rst:751
 msgid "Adding Files"
 msgstr ""
 
-#: ../../source/api/native-api.rst:723
+#: ../../source/api/native-api.rst:753
 msgid ""
 "Files can be added via the native API but the operation is performed on "
 "the parent object, which is a dataset. Please see the Datasets_ endpoint "
 "for more information."
 msgstr ""
 
-#: ../../source/api/native-api.rst:726
+#: ../../source/api/native-api.rst:756
 msgid "Accessing (downloading) files"
 msgstr ""
 
-#: ../../source/api/native-api.rst:728
+#: ../../source/api/native-api.rst:758
 msgid "Access API has its own section in the Guide: :doc:`/api/dataaccess`"
 msgstr ""
 
-#: ../../source/api/native-api.rst:730
+#: ../../source/api/native-api.rst:760
 msgid ""
 "**Note** Data Access API calls can now be made using persistent "
 "identifiers (in addition to database ids). This is done by passing the "
@@ -1165,15 +1260,15 @@ msgid ""
 "name ``persistentId``."
 msgstr ""
 
-#: ../../source/api/native-api.rst:732
+#: ../../source/api/native-api.rst:762
 msgid "Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:738
+#: ../../source/api/native-api.rst:768
 msgid "Restrict Files"
 msgstr ""
 
-#: ../../source/api/native-api.rst:740
+#: ../../source/api/native-api.rst:770
 msgid ""
 "Restrict or unrestrict an existing file where ``id`` is the database id "
 "of the file or ``pid`` is the persistent id (DOI or Handle) of the file "
@@ -1181,19 +1276,19 @@ msgid ""
 "ability to restrict files."
 msgstr ""
 
-#: ../../source/api/native-api.rst:742
+#: ../../source/api/native-api.rst:772
 msgid "A curl example using an ``id``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:746
+#: ../../source/api/native-api.rst:776
 msgid "A curl example using a ``pid``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:751
+#: ../../source/api/native-api.rst:781
 msgid "Replacing Files"
 msgstr ""
 
-#: ../../source/api/native-api.rst:753
+#: ../../source/api/native-api.rst:783
 msgid ""
 "Replace an existing file where ``id`` is the database id of the file to "
 "replace or ``pid`` is the persistent id (DOI or Handle) of the file. Note"
@@ -1201,34 +1296,34 @@ msgid ""
 " file being replaced"
 msgstr ""
 
-#: ../../source/api/native-api.rst:761
+#: ../../source/api/native-api.rst:791
 msgid ""
 "Example python code to replace a file.  This may be run by changing these"
 " parameters in the sample code:"
 msgstr ""
 
-#: ../../source/api/native-api.rst:765
+#: ../../source/api/native-api.rst:795
 msgid ""
 "``file_id`` - Database id of the file to replace (returned in the GET API"
 " for a Dataset)"
 msgstr ""
 
-#: ../../source/api/native-api.rst:828
+#: ../../source/api/native-api.rst:858
 msgid "Uningest a File"
 msgstr ""
 
-#: ../../source/api/native-api.rst:830
+#: ../../source/api/native-api.rst:860
 msgid ""
 "Reverse the tabular data ingest process performed on a file where "
 "``{id}`` is the database id of the file to process. Note that this "
 "requires \"super user\" credentials::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:836
+#: ../../source/api/native-api.rst:866
 msgid "Reingest a File"
 msgstr ""
 
-#: ../../source/api/native-api.rst:838
+#: ../../source/api/native-api.rst:868
 msgid ""
 "Attempt to ingest an existing datafile as tabular data. This API can be "
 "used on a file that was not ingested as tabular back when it was "
@@ -1238,53 +1333,53 @@ msgid ""
 "has since been fixed (hence the name \"re-ingest\")."
 msgstr ""
 
-#: ../../source/api/native-api.rst:840
+#: ../../source/api/native-api.rst:870
 msgid "Note that this requires \"super user\" credentials::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:844
+#: ../../source/api/native-api.rst:874
 msgid "(``{id}`` is the database id of the file to process)"
 msgstr ""
 
-#: ../../source/api/native-api.rst:846
+#: ../../source/api/native-api.rst:876
 msgid ""
 "Also, note that, at present the API cannot be used on a file that's "
 "already ingested as tabular."
 msgstr ""
 
-#: ../../source/api/native-api.rst:849
+#: ../../source/api/native-api.rst:879
 msgid "Provenance"
 msgstr ""
 
-#: ../../source/api/native-api.rst:850
+#: ../../source/api/native-api.rst:880
 msgid "Get Provenance JSON for an uploaded file::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:854
+#: ../../source/api/native-api.rst:884
 msgid "Get Provenance Description for an uploaded file::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:858
+#: ../../source/api/native-api.rst:888
 msgid ""
 "Create/Update Provenance JSON and provide related entity name for an "
 "uploaded file::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:862
+#: ../../source/api/native-api.rst:892
 msgid ""
 "Create/Update Provenance Description for an uploaded file. Requires a "
 "JSON file with the description connected to a key named \"text\"::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:866
+#: ../../source/api/native-api.rst:896
 msgid "Delete Provenance JSON for an uploaded file::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:871
+#: ../../source/api/native-api.rst:901
 msgid "Datafile Integrity"
 msgstr ""
 
-#: ../../source/api/native-api.rst:873
+#: ../../source/api/native-api.rst:903
 msgid ""
 "Starting the release 4.10 the size of the saved original file (for an "
 "ingested tabular datafile) is stored in the database. The following API "
@@ -1292,7 +1387,7 @@ msgid ""
 "saved originals::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:877
+#: ../../source/api/native-api.rst:907
 msgid ""
 "Note the optional \"limit\" parameter. Without it, the API will attempt "
 "to populate the sizes for all the saved originals that don't have them in"
@@ -1300,11 +1395,11 @@ msgid ""
 "datafiles."
 msgstr ""
 
-#: ../../source/api/native-api.rst:880
+#: ../../source/api/native-api.rst:910
 msgid "Builtin Users"
 msgstr ""
 
-#: ../../source/api/native-api.rst:882
+#: ../../source/api/native-api.rst:912
 msgid ""
 "Builtin users are known as \"Username/Email and Password\" users in the "
 ":doc:`/user/account` of the User Guide. Dataverse stores a password "
@@ -1315,11 +1410,11 @@ msgid ""
 "valid configuration of Dataverse to not use builtin users at all."
 msgstr ""
 
-#: ../../source/api/native-api.rst:885
+#: ../../source/api/native-api.rst:915
 msgid "Create a Builtin User"
 msgstr ""
 
-#: ../../source/api/native-api.rst:887
+#: ../../source/api/native-api.rst:917
 msgid ""
 "For security reasons, builtin users cannot be created via API unless the "
 "team who runs the Dataverse installation has populated a database setting"
@@ -1329,7 +1424,7 @@ msgid ""
 "need to know the value of ``BuiltinUsers.KEY`` before you can proceed."
 msgstr ""
 
-#: ../../source/api/native-api.rst:889
+#: ../../source/api/native-api.rst:919
 msgid ""
 "To create a builtin user via API, you must first construct a JSON "
 "document.  You can download :download:`user-add.json <../_static/api"
@@ -1337,7 +1432,7 @@ msgid ""
 "edit as necessary."
 msgstr ""
 
-#: ../../source/api/native-api.rst:893
+#: ../../source/api/native-api.rst:923
 msgid ""
 "Place this ``user-add.json`` file in your current directory and run the "
 "following curl command, substituting variables as necessary. Note that "
@@ -1345,226 +1440,226 @@ msgid ""
 "are passed as query parameters::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:898
+#: ../../source/api/native-api.rst:928
 msgid "Roles"
 msgstr ""
 
-#: ../../source/api/native-api.rst:903
+#: ../../source/api/native-api.rst:933
 msgid ""
 "Creates a new role in dataverse object whose Id is ``dataverseIdtf`` "
 "(that's an id/alias)::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:908
+#: ../../source/api/native-api.rst:938
 msgid "Show Role"
 msgstr ""
 
-#: ../../source/api/native-api.rst:910
+#: ../../source/api/native-api.rst:940
 msgid "Shows the role with ``id``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:915
+#: ../../source/api/native-api.rst:945
 msgid "Delete Role"
 msgstr ""
 
-#: ../../source/api/native-api.rst:917
+#: ../../source/api/native-api.rst:947
 msgid "Deletes the role with ``id``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:922
+#: ../../source/api/native-api.rst:952
 msgid "Explicit Groups"
 msgstr ""
 
-#: ../../source/api/native-api.rst:925
+#: ../../source/api/native-api.rst:955
 msgid "Create New Explicit Group"
 msgstr ""
 
-#: ../../source/api/native-api.rst:927
+#: ../../source/api/native-api.rst:957
 msgid ""
 "Explicit groups list their members explicitly. These groups are defined "
 "in dataverses, which is why their API endpoint is under "
 "``api/dataverses/$id/``, where ``$id`` is the id of the dataverse."
 msgstr ""
 
-#: ../../source/api/native-api.rst:929
+#: ../../source/api/native-api.rst:959
 msgid "Create a new explicit group under dataverse ``$id``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:933
+#: ../../source/api/native-api.rst:963
 msgid "Data being POSTed is json-formatted description of the group::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:942
+#: ../../source/api/native-api.rst:972
 msgid "List Explicit Groups in a Dataverse"
 msgstr ""
 
-#: ../../source/api/native-api.rst:944
+#: ../../source/api/native-api.rst:974
 msgid "List explicit groups under dataverse ``$id``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:949
+#: ../../source/api/native-api.rst:979
 msgid "Show Single Group in a Dataverse"
 msgstr ""
 
-#: ../../source/api/native-api.rst:951
+#: ../../source/api/native-api.rst:981
 msgid "Show group ``$groupAlias`` under dataverse ``$dv``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:956
+#: ../../source/api/native-api.rst:986
 msgid "Update Group in a Dataverse"
 msgstr ""
 
-#: ../../source/api/native-api.rst:958
+#: ../../source/api/native-api.rst:988
 msgid ""
 "Update group ``$groupAlias`` under dataverse ``$dv``. The request body is"
 " the same as the create group one, except that the group alias cannot be "
 "changed. Thus, the field ``aliasInOwner`` is ignored. ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:963
+#: ../../source/api/native-api.rst:993
 msgid "Delete Group from a Dataverse"
 msgstr ""
 
-#: ../../source/api/native-api.rst:965
+#: ../../source/api/native-api.rst:995
 msgid "Delete group ``$groupAlias`` under dataverse ``$dv``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:970
+#: ../../source/api/native-api.rst:1000
 msgid "Add Multiple Role Assignees to an Explicit Group"
 msgstr ""
 
-#: ../../source/api/native-api.rst:972
+#: ../../source/api/native-api.rst:1002
 msgid ""
 "Bulk add role assignees to an explicit group. The request body is a JSON "
 "array of role assignee identifiers, such as ``@admin``, "
 "``&ip/localhosts`` or ``:authenticated-users``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:977
+#: ../../source/api/native-api.rst:1007
 msgid "Add a Role Assignee to an Explicit Group"
 msgstr ""
 
-#: ../../source/api/native-api.rst:979
+#: ../../source/api/native-api.rst:1009
 msgid "Add a single role assignee to a group. Request body is ignored::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:984
+#: ../../source/api/native-api.rst:1014
 msgid "Remove a Role Assignee from an Explicit Group"
 msgstr ""
 
-#: ../../source/api/native-api.rst:986
+#: ../../source/api/native-api.rst:1016
 msgid "Remove a single role assignee from an explicit group::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:991
+#: ../../source/api/native-api.rst:1021
 msgid "Shibboleth Groups"
 msgstr ""
 
-#: ../../source/api/native-api.rst:993
+#: ../../source/api/native-api.rst:1023
 msgid ""
 "Management of Shibboleth groups via API is documented in the "
 ":doc:`/installation/shibboleth` section of the Installation Guide."
 msgstr ""
 
-#: ../../source/api/native-api.rst:996
+#: ../../source/api/native-api.rst:1026
 msgid "Info"
 msgstr ""
 
-#: ../../source/api/native-api.rst:999
+#: ../../source/api/native-api.rst:1029
 msgid "Show Dataverse Version and Build Number"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1001
+#: ../../source/api/native-api.rst:1031
 msgid ""
 "|CORS| Get the Dataverse version. The response contains the version and "
 "build numbers::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1006
+#: ../../source/api/native-api.rst:1036
 msgid "Show Dataverse Server Name"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1008
+#: ../../source/api/native-api.rst:1038
 msgid ""
 "Get the server name. This is useful when a Dataverse system is composed "
 "of multiple Java EE servers behind a load balancer::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1013
+#: ../../source/api/native-api.rst:1043
 msgid "Show Custom Popup Text for Publishing Datasets"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1015
+#: ../../source/api/native-api.rst:1045
 msgid ""
 "For now, only the value for the ``:DatasetPublishPopupCustomText`` "
 "setting from the :doc:`/installation/config` section of the Installation "
 "Guide is exposed::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1020
+#: ../../source/api/native-api.rst:1050
 msgid "Get API Terms of Use URL"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1022
+#: ../../source/api/native-api.rst:1052
 msgid ""
 "Get API Terms of Use. The response contains the text value inserted as "
 "API Terms of use which uses the database setting  ``:ApiTermsOfUse``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1029
+#: ../../source/api/native-api.rst:1059
 msgid "Get Active Licenses"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1031
+#: ../../source/api/native-api.rst:1061
 msgid ""
 "Get list of standardized license names that are active on current "
 "installation. This is useful when a user wants to set a license on a file"
 " when adding it through api (see `Add a File to a Dataset`_)::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1036
+#: ../../source/api/native-api.rst:1066
 msgid "Metadata Blocks"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1039
+#: ../../source/api/native-api.rst:1069
 msgid "Show Info About All Metadata Blocks"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1041
+#: ../../source/api/native-api.rst:1071
 msgid ""
 "|CORS| Lists brief info about all metadata blocks registered in the "
 "system::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1046
+#: ../../source/api/native-api.rst:1076
 msgid "Show Info About Single Metadata Block"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1048
+#: ../../source/api/native-api.rst:1078
 msgid ""
 "|CORS| Return data about the block whose ``identifier`` is passed. "
 "``identifier`` can either be the block's id, or its name::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1055
+#: ../../source/api/native-api.rst:1085
 msgid "Notifications"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1058
+#: ../../source/api/native-api.rst:1088
 msgid "Get All Notifications by User"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1060
+#: ../../source/api/native-api.rst:1090
 msgid ""
 "Each user can get a dump of their notifications by passing in their API "
 "token::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1065
+#: ../../source/api/native-api.rst:1095
 msgid "Admin"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1067
+#: ../../source/api/native-api.rst:1097
 msgid ""
 "This is the administrative part of the API. For security reasons, it is "
 "absolutely essential that you block it before allowing public access to a"
@@ -1575,204 +1670,204 @@ msgid ""
 "Installation Guide."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1070
+#: ../../source/api/native-api.rst:1100
 msgid "List All Database Settings"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1072
+#: ../../source/api/native-api.rst:1102
 msgid "List all settings::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1077
+#: ../../source/api/native-api.rst:1107
 msgid "Configure Database Setting"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1079
+#: ../../source/api/native-api.rst:1109
 msgid "Sets setting ``name`` to the body of the request::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1084
+#: ../../source/api/native-api.rst:1114
 msgid "Get Single Database Setting"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1086
+#: ../../source/api/native-api.rst:1116
 msgid "Get the setting under ``name``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1091
+#: ../../source/api/native-api.rst:1121
 msgid "Delete Database Setting"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1093
+#: ../../source/api/native-api.rst:1123
 msgid "Delete the setting under ``name``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1098
+#: ../../source/api/native-api.rst:1128
 msgid "List Authentication Provider Factories"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1100
+#: ../../source/api/native-api.rst:1130
 msgid ""
 "List the authentication provider factories. The alias field of these is "
 "used while configuring the providers themselves. ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1105
+#: ../../source/api/native-api.rst:1135
 msgid "List Authentication Providers"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1107
+#: ../../source/api/native-api.rst:1137
 msgid ""
 "List all the authentication providers in the system (both enabled and "
 "disabled)::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1112
+#: ../../source/api/native-api.rst:1142
 msgid "Add Authentication Provider"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1114
+#: ../../source/api/native-api.rst:1144
 msgid ""
 "Add new authentication provider. The POST data is in JSON format, similar"
 " to the JSON retrieved from this command's ``GET`` counterpart. ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1119
+#: ../../source/api/native-api.rst:1149
 msgid "Show Authentication Provider"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1121
+#: ../../source/api/native-api.rst:1151
 msgid "Show data about an authentication provider::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1126
+#: ../../source/api/native-api.rst:1156
 msgid "Enable or Disable an Authentication Provider"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1128
+#: ../../source/api/native-api.rst:1158
 msgid "Enable or disable an authentication provider (denoted by ``id``)::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1132
+#: ../../source/api/native-api.rst:1162
 msgid ""
 "The former endpoint, ending with ``:enabled`` (that is, with a colon), is"
 " still supported, but deprecated."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1135
+#: ../../source/api/native-api.rst:1165
 msgid "Check If an Authentication Provider is Enabled"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1137
+#: ../../source/api/native-api.rst:1167
 msgid "Check whether an authentication proider is enabled::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1141
+#: ../../source/api/native-api.rst:1171
 msgid ""
 "The body of the request should be either ``true`` or ``false``. Content "
 "type has to be ``application/json``, like so::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1146
+#: ../../source/api/native-api.rst:1176
 msgid "Delete an Authentication Provider"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1148
+#: ../../source/api/native-api.rst:1178
 msgid ""
 "Deletes an authentication provider from the system. The command succeeds "
 "even if there is no such provider, as the postcondition holds: there is "
 "no provider by that id after the command returns. ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1153
+#: ../../source/api/native-api.rst:1183
 msgid "List Global Roles"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1155
+#: ../../source/api/native-api.rst:1185
 msgid "List all global roles in the system. ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1160
+#: ../../source/api/native-api.rst:1190
 msgid "Create Global Role"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1162
+#: ../../source/api/native-api.rst:1192
 msgid ""
 "Creates a global role in the Dataverse installation. The data POSTed are "
 "assumed to be a role JSON. ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1167
+#: ../../source/api/native-api.rst:1197
 msgid "List Users"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1169
+#: ../../source/api/native-api.rst:1199
 msgid ""
 "List users with the options to search and \"page\" through results. Only "
 "accessible to superusers. Optional parameters:"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1171
+#: ../../source/api/native-api.rst:1201
 msgid ""
 "``searchTerm`` A string that matches the beginning of a user identifier, "
 "first name, last name or email address."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1172
+#: ../../source/api/native-api.rst:1202
 msgid ""
 "``itemsPerPage`` The number of detailed results to return.  The default "
 "is 25.  This number has no limit. e.g. You could set it to 1000 to return"
 " 1,000 results"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1173
+#: ../../source/api/native-api.rst:1203
 msgid "``selectedPage`` The page of results to return.  The default is 1."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1180
+#: ../../source/api/native-api.rst:1210
 msgid "Sample output:"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1182
+#: ../../source/api/native-api.rst:1212
 msgid ""
 "When multiple pages of results exist, the ``selectedPage`` parameters may"
 " be specified."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1183
+#: ../../source/api/native-api.rst:1213
 msgid ""
 "Note, the resulting ``pagination`` section includes ``pageCount``, "
 "``previousPageNumber``, ``nextPageNumber``, and other variables that may "
 "be used to re-create the UI."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1274
+#: ../../source/api/native-api.rst:1304
 msgid ""
 "\"List all users\" ``GET http://$SERVER/api/admin/authenticatedUsers`` is"
 " deprecated, but supported."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1277
+#: ../../source/api/native-api.rst:1307
 msgid "List Single User"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1279
+#: ../../source/api/native-api.rst:1309
 msgid "List user whose ``identifier`` (without the ``@`` sign) is passed::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1283
+#: ../../source/api/native-api.rst:1313
 msgid "Sample output using \"dataverseAdmin\" as the ``identifier``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1299
+#: ../../source/api/native-api.rst:1329
 msgid "Create an authenticateUser::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1317
+#: ../../source/api/native-api.rst:1347
 msgid "Merge User Accounts"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1319
+#: ../../source/api/native-api.rst:1349
 msgid ""
 "If a user has created multiple accounts and has been performed actions "
 "under both accounts that need to be preserved, these accounts can be "
@@ -1781,99 +1876,99 @@ msgid ""
 "Only accessible to superusers.::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1323
+#: ../../source/api/native-api.rst:1353
 msgid ""
 "Example: ``curl -H \"X-Dataverse-key: $API_TOKEN\" -X POST "
 "http://demo.dataverse.org/api/users/jsmith2/mergeIntoUser/jsmith``"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1325
+#: ../../source/api/native-api.rst:1355
 msgid ""
 "This action moves account data from jsmith2 into the account jsmith and "
 "deletes jsmith2 account."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1330
+#: ../../source/api/native-api.rst:1360
 msgid "Change User Identifier"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1332
+#: ../../source/api/native-api.rst:1362
 msgid ""
 "Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, "
 "``AuthenticatedUserLookup`` & ``RoleAssignment``. Allows them to log in "
 "with the new identifier. Only accessible to superusers.::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1336
+#: ../../source/api/native-api.rst:1366
 msgid ""
 "Example: ``curl -H \"X-Dataverse-key: $API_TOKEN\" -X POST  "
 "https://demo.dataverse.org/api/users/johnsmith/changeIdentifier/jsmith``"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1338
+#: ../../source/api/native-api.rst:1368
 msgid "This action changes the identifier of user johnsmith to jsmith."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1341
+#: ../../source/api/native-api.rst:1371
 msgid "Make User a SuperUser"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1343
+#: ../../source/api/native-api.rst:1373
 msgid ""
 "Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` "
 "(without the ``@`` sign) is passed. ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1348
+#: ../../source/api/native-api.rst:1378
 msgid "List Role Assignments of a Role Assignee"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1350
+#: ../../source/api/native-api.rst:1380
 msgid "List all role assignments of a role assignee (i.e. a user or a group)::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1354
+#: ../../source/api/native-api.rst:1384
 msgid ""
 "Note that ``identifier`` can contain slashes (e.g. ``&ip/localhost-"
 "users``)."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1357
+#: ../../source/api/native-api.rst:1387
 msgid "List Permissions a User Has on a Dataverse or Dataset"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1359
+#: ../../source/api/native-api.rst:1389
 msgid ""
 "List permissions a user (based on API Token used) has on a dataverse or "
 "dataset::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1363
+#: ../../source/api/native-api.rst:1393
 msgid ""
 "The ``$identifier`` can be a dataverse alias or database id or a dataset "
 "persistent ID or database id."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1366
+#: ../../source/api/native-api.rst:1396
 msgid "Show Role Assignee"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1368
+#: ../../source/api/native-api.rst:1398
 msgid "List a role assignee (i.e. a user or a group)::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1372
+#: ../../source/api/native-api.rst:1402
 msgid ""
 "The ``$identifier`` should start with an ``@`` if it's a user. Groups "
 "start with ``&``. \"Built in\" users and groups start with ``:``. Private"
 " URL users start with ``#``."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1375
+#: ../../source/api/native-api.rst:1405
 msgid "Saved Search"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1377
+#: ../../source/api/native-api.rst:1407
 msgid ""
 "The Saved Search, Linked Dataverses, and Linked Datasets features shipped"
 " with Dataverse 4.0, but as a \"`superuser-only "
@@ -1905,15 +2000,15 @@ msgid ""
 "that the \"makelinks\" endpoint be executed on a periodic basis as well."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1379
+#: ../../source/api/native-api.rst:1409
 msgid "List all saved searches. ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1383
+#: ../../source/api/native-api.rst:1413
 msgid "List a saved search by database id. ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1387
+#: ../../source/api/native-api.rst:1417
 msgid ""
 "Execute a saved search by database id and make links to dataverses and "
 "datasets that are found. The JSON response indicates which dataverses and"
@@ -1923,101 +2018,101 @@ msgid ""
 "saved search). ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1391
+#: ../../source/api/native-api.rst:1421
 msgid ""
 "Execute all saved searches and make links to dataverses and datasets that"
 " are found. ``debug`` parameter works in the same manner as in making "
 "links for single saved search::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1396
+#: ../../source/api/native-api.rst:1426
 msgid "Dataset Integrity"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1398
+#: ../../source/api/native-api.rst:1428
 msgid ""
 "Recalculate the UNF value of a dataset version, if it's missing, by "
 "supplying the dataset version database id::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1403
+#: ../../source/api/native-api.rst:1433
 msgid "Workflows"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1405
+#: ../../source/api/native-api.rst:1435
 msgid "List all available workflows in the system::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1409
+#: ../../source/api/native-api.rst:1439
 msgid "Get details of a workflow with a given id::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1413
+#: ../../source/api/native-api.rst:1443
 msgid ""
 "Add a new workflow. Request body specifies the workflow properties and "
 "steps in JSON format. Sample ``json`` files are available at "
 "``scripts/api/data/workflows/``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1418
+#: ../../source/api/native-api.rst:1448
 msgid "Delete a workflow with a specific id::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1422
+#: ../../source/api/native-api.rst:1452
 msgid ""
 "If the workflow designated by ``$id`` is a default workflow, a 403 "
 "FORBIDDEN response will be returned, and the deletion will be canceled."
 msgstr ""
 
-#: ../../source/api/native-api.rst:1424
+#: ../../source/api/native-api.rst:1454
 msgid "List the default workflow for each trigger type::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1428
+#: ../../source/api/native-api.rst:1458
 msgid ""
 "Set the default workflow for a given trigger. This workflow is run when a"
 " dataset is published. The body of the PUT request is the id of the "
 "workflow. Trigger types are ``PrePublishDataset, PostPublishDataset``::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1432
+#: ../../source/api/native-api.rst:1462
 msgid ""
 "Get the default workflow for ``triggerType``. Returns a JSON "
 "representation of the workflow, if present, or 404 NOT FOUND. ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1436
+#: ../../source/api/native-api.rst:1466
 msgid ""
 "Unset the default workflow for ``triggerType``. After this call, dataset "
 "releases are done with no workflow. ::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1440
+#: ../../source/api/native-api.rst:1470
 msgid ""
 "Set the whitelist of IP addresses separated by a semicolon (``;``) "
 "allowed to resume workflows. Request body is a list of IP addresses "
 "allowed to send \"resume workflow\" messages to this Dataverse instance::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1444
+#: ../../source/api/native-api.rst:1474
 msgid "Get the whitelist of IP addresses allowed to resume workflows::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1448
+#: ../../source/api/native-api.rst:1478
 msgid ""
 "Restore the whitelist of IP addresses allowed to resume workflows to "
 "default (localhost only)::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1453
+#: ../../source/api/native-api.rst:1483
 msgid "Metrics"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1455
+#: ../../source/api/native-api.rst:1485
 msgid "Clear all cached metric results::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1459
+#: ../../source/api/native-api.rst:1489
 msgid ""
 "Clear a specific metric cache. Currently this must match the name of the "
 "row in the table, which is named *metricName*_*metricYYYYMM* (or just "
@@ -2025,18 +2120,18 @@ msgid ""
 "dataversesToMonth_2018-05::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1464
+#: ../../source/api/native-api.rst:1494
 msgid "Inherit Dataverse Role Assignments"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1466
+#: ../../source/api/native-api.rst:1496
 msgid ""
 "Recursively applies the role assignments of the specified dataverse, for "
 "the roles specified by the ``:InheritParentRoleAssignments`` setting, to "
 "all dataverses contained within it::"
 msgstr ""
 
-#: ../../source/api/native-api.rst:1470
+#: ../../source/api/native-api.rst:1500
 msgid ""
 "Note: setting ``:InheritParentRoleAssignments`` will automatically "
 "trigger inheritance of the parent dataverse's role assignments for a "

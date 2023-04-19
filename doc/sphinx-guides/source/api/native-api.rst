@@ -89,7 +89,7 @@ Create a New Role in a Dataverse
 Creates a new role under dataverse ``id``. Needs a json file with the role description::
 
   POST http://$SERVER/api/dataverses/$id/roles?key=$apiKey
-  
+
 POSTed JSON example::
 
   {
@@ -99,7 +99,7 @@ POSTed JSON example::
     "permissions": [
       "AddDataset"
     ]
-  } 
+  }
 
 List Role Assignments in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,14 +107,14 @@ List Role Assignments in a Dataverse
 List all the role assignments at the given dataverse::
 
   GET http://$SERVER/api/dataverses/$id/assignments?key=$apiKey
-  
+
 Assign Default Role to User Creating a Dataset in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Assign a default role to a user creating a dataset in a dataverse ``id`` where ``roleAlias`` is the database alias of the role to be assigned::
 
   PUT http://$SERVER/api/dataverses/$id/defaultContributorRole/$roleAlias?key=$apiKey
-  
+
 Note: You may use "none" as the ``roleAlias``. This will prevent a user who creates a dataset from having any role on that dataset. It is not recommended for dataverses with human contributors.
 
 
@@ -173,7 +173,7 @@ values are ``true`` and ``false`` (both are valid JSON expressions). ::
 .. note:: Previous endpoints ``GET http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` and ``POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
 
 
-.. _create-dataset-command: 
+.. _create-dataset-command:
 
 Create a Dataset in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -203,8 +203,8 @@ Before calling the API, make sure the data files referenced by the ``POST``\ ed 
 
 .. tip:: If possible, it's best to avoid spaces and special characters in the storage identifier in order to avoid potential portability problems. The storage identifier corresponds with the filesystem name (or bucket identifier) of the data file, so these characters may cause unpredictability with filesystem tools.
 
-.. warning:: 
-  
+.. warning::
+
   * This API does not cover staging files (with correct contents, checksums, sizes, etc.) in the corresponding places in the Dataverse filestore.
   * This API endpoint does not support importing *files'* persistent identifiers.
   * A Dataverse server can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
@@ -379,22 +379,22 @@ Edit Dataset Metadata
 
 Alternatively to replacing an entire dataset version with its JSON representation you may add data to dataset fields that are blank or accept multiple values with the following ::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata/?persistentId=$PID --upload-file dataset-add-metadata.json    
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata/?persistentId=$PID --upload-file dataset-add-metadata.json
 
 You may also replace existing metadata in dataset fields with the following (adding the parameter replace=true)   ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/editMetadata?persistentId=$PID&replace=true --upload-file dataset-update-metadata.json
-    
-For these edits your JSON file need only include those dataset fields which you would like to edit. A sample JSON file may be downloaded here: :download:`dataset-edit-metadata-sample.json <../_static/api/dataset-edit-metadata-sample.json>` 
+
+For these edits your JSON file need only include those dataset fields which you would like to edit. A sample JSON file may be downloaded here: :download:`dataset-edit-metadata-sample.json <../_static/api/dataset-edit-metadata-sample.json>`
 
 Delete Dataset Metadata
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 You may delete some of the metadata of a dataset version by supplying a file with a JSON representation of dataset fields that you would like to delete with the following ::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/deleteMetadata/?persistentId=$PID --upload-file dataset-delete-author-metadata.json    
-    
-For these deletes your JSON file must include an exact match of those dataset fields which you would like to delete. A sample JSON file may be downloaded here: :download:`dataset-delete-author-metadata.json <../_static/api/dataset-delete-author-metadata.json>` 
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/deleteMetadata/?persistentId=$PID --upload-file dataset-delete-author-metadata.json
+
+For these deletes your JSON file must include an exact match of those dataset fields which you would like to delete. A sample JSON file may be downloaded here: :download:`dataset-delete-author-metadata.json <../_static/api/dataset-delete-author-metadata.json>`
 
 
 .. _publish_dataset:
@@ -658,17 +658,17 @@ Creates a link between a dataset and a dataverse (see the Linked Dataverses + Li
 Dataset Locks
 ~~~~~~~~~~~~~
 
-To check if a dataset is locked:: 
+To check if a dataset is locked::
 
     curl "$SERVER_URL/api/datasets/{database_id}/locks
 
-Optionally, you can check if there's a lock of a specific type on the dataset:: 
+Optionally, you can check if there's a lock of a specific type on the dataset::
 
     curl "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
 
-Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload and pidRegister``. 
+Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload and pidRegister``.
 
-The API will output the list of locks, for example:: 
+The API will output the list of locks, for example::
 
     {"status":"OK","data":
 	[
@@ -685,7 +685,7 @@ The API will output the list of locks, for example::
 	]
     }
 
-If the dataset is not locked (or if there is no lock of the requested type), the API will return an empty list. 
+If the dataset is not locked (or if there is no lock of the requested type), the API will return an empty list.
 
 The following API end point will lock a Dataset with a lock of specified type::
 
@@ -694,7 +694,7 @@ The following API end point will lock a Dataset with a lock of specified type::
 For example::
 
     curl -X POST "$SERVER_URL/api/datasets/1234/lock/Ingest?key=$ADMIN_API_TOKEN"
-    or 
+    or
     curl -X POST -H "X-Dataverse-key: $ADMIN_API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/lock/Ingest?persistentId=$DOI_OR_HANDLE_OF_DATASET"
 
 Use the following API to unlock the dataset, by deleting all the locks currently on the dataset::
@@ -709,10 +709,40 @@ For example::
 
     curl -X DELETE -H "X-Dataverse-key: $ADMIN_API_TOKEN" "$SERVER_URL/api/datasets/1234/locks?type=pidRegister"
 
-If the dataset is not locked (or if there is no lock of the specified type), the API will exit with a warning message. 
+If the dataset is not locked (or if there is no lock of the specified type), the API will exit with a warning message.
 
 (Note that all of these API calls support both the database id and persistent identifier notation for referencing the dataset)
 
+Change file labels
+~~~~~~~~~~~~~~~~~~
+To list all the file labels for the latest version use::
+
+  GET http://$SERVER/api/datasets/$id/filelabels?key=$apiKey
+
+The same endpoint, but with POST and the following JSON, can be used to replace any text in file labels::
+
+    {
+      "pattern": "*",
+      "filesToExcludeIds": [],
+      "filesToIncludeIds": [],
+      "from": "abc",
+      "to": "bcd",
+      "preview": false
+    }
+
+===================  =============  ===========
+Name                 Type           Description
+===================  =============  ===========
+pattern              string         Pattern describing which labels should be affected by the replace operation. Label matching works in two modes. When wildcard (*) is used, the pattern is matched against the whole label and the wildcard stands for any number (including zero) of any characters. When the wildcard is not present, there is a check whether the label contains the given pattern.
+filesToExcludeIds    array<number>  List of datafile ids, which should be excluded from the replace operation.
+filesToIncludeIds    array<number>  List of datafile ids, which should be included into the replace operation (even if the datafile label does not match the pattern).
+from                 string         Java-type regex pattern describing the fragment of label that should be replaced (see `documentation <https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#sum>`_)
+to                   string         String used as a replacement for the matching fragments of label
+preview              boolean        If set to true, the results of replacement are showed, but not persisted in any way
+===================  =============  ===========
+
+Please note that replacement will be executed inside the draft version of dataset. If that does not exist it will be created.
+The operation handles properly duplicated names that could appear in the replacement process, by adding the proper suffixes to created labels.
 
 Files
 -----
@@ -823,7 +853,7 @@ Example python code to replace a file.  This may be run by changing these parame
     print '-' * 40
     print r.json()
     print r.status_code
-    
+
 Uningest a File
 ~~~~~~~~~~~~~~~
 
@@ -837,7 +867,7 @@ Reingest a File
 
 Attempt to ingest an existing datafile as tabular data. This API can be used on a file that was not ingested as tabular back when it was uploaded. For example, a Stata v.14 file that was uploaded before ingest support for Stata 14 was added (in Dataverse v.4.9). It can also be used on a file that failed to ingest due to a bug in the ingest plugin that has since been fixed (hence the name "re-ingest").
 
-Note that this requires "super user" credentials:: 
+Note that this requires "super user" credentials::
 
     POST http://$SERVER/api/files/{id}/reingest?key={apiKey}
 
@@ -874,7 +904,7 @@ Starting the release 4.10 the size of the saved original file (for an ingested t
 
 	    GET http://$SERVER/api/admin/datafiles/integrity/fixmissingoriginalsizes{?limit=N}
 
-Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
+Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles.
 
 Builtin Users
 -------------
@@ -1463,10 +1493,10 @@ Clear a specific metric cache. Currently this must match the name of the row in 
 Inherit Dataverse Role Assignments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Recursively applies the role assignments of the specified dataverse, for the roles specified by the ``:InheritParentRoleAssignments`` setting, to all dataverses contained within it:: 
+Recursively applies the role assignments of the specified dataverse, for the roles specified by the ``:InheritParentRoleAssignments`` setting, to all dataverses contained within it::
 
   GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
-  
+
 Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent dataverse's role assignments for a newly created dataverse. Hence this API call is intended as a way to update existing child dataverses or to update children after a change in role assignments has been made on a parent dataverse.
 
 
