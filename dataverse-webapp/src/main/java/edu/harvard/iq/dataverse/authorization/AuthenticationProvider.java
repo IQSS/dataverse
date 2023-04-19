@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 
+import java.util.Set;
+
 /**
  * Objects that can authenticate users. The authentication process yields a unique
  * identifier for the user in the user directory this provider represents.
@@ -141,5 +143,11 @@ public interface AuthenticationProvider {
         return BundleUtil.getStringFromBundle("authentication.human_readable." + this.getId());
     }
 
+    /**
+     * Returns the set of fields that user can edit after account creation is done.
+     */
+    default Set<EditableAccountField> getEditableFields() {
+        return isUserInfoUpdateAllowed() ? EditableAccountFieldSets.allFields() : EditableAccountFieldSets.noFields();
+    }
 }
 

@@ -5,6 +5,8 @@ import com.onelogin.saml2.authn.AuthnRequestParams;
 import com.onelogin.saml2.exception.SettingsException;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.EditableAccountField;
+import edu.harvard.iq.dataverse.authorization.EditableAccountFieldSets;
 import edu.harvard.iq.dataverse.persistence.user.SamlIdentityProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public class SamlAuthenticationProvider implements AuthenticationProvider {
     private static final Logger logger = LoggerFactory.getLogger(SamlAuthenticationProvider.class);
@@ -47,6 +50,16 @@ public class SamlAuthenticationProvider implements AuthenticationProvider {
     @Override
     public boolean isOAuthProvider() {
         return false;
+    }
+
+    @Override
+    public boolean isUserInfoUpdateAllowed() {
+        return true;
+    }
+
+    @Override
+    public Set<EditableAccountField> getEditableFields() {
+        return EditableAccountFieldSets.secondaryFields();
     }
 
     // -------------------- LOGIC --------------------

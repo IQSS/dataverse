@@ -32,6 +32,8 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderConfigurationRequest;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.EditableAccountField;
+import edu.harvard.iq.dataverse.authorization.EditableAccountFieldSets;
 import edu.harvard.iq.dataverse.authorization.common.ExternalIdpUserRecord;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
@@ -39,6 +41,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 
 /*
@@ -102,7 +105,12 @@ public class OIDCAuthenticationProvider implements OAuth2AuthenticationProvider 
         return providerMetadata;
     }
 
-    // -------------------- LOGIC --------------------
+    @Override
+    public boolean isUserInfoUpdateAllowed() {
+        return true;
+    }
+
+// -------------------- LOGIC --------------------
 
     @Override
     public void initialize() throws AuthorizationSetupException {
@@ -159,6 +167,11 @@ public class OIDCAuthenticationProvider implements OAuth2AuthenticationProvider 
     @Override
     public boolean isOAuthProvider() {
         return true;
+    }
+
+    @Override
+    public Set<EditableAccountField> getEditableFields() {
+        return EditableAccountFieldSets.secondaryFields();
     }
 
     // -------------------- PRIVATE --------------------

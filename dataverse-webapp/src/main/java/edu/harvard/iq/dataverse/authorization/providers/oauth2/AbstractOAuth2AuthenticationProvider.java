@@ -8,6 +8,8 @@ import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.EditableAccountField;
+import edu.harvard.iq.dataverse.authorization.EditableAccountFieldSets;
 import edu.harvard.iq.dataverse.authorization.common.ExternalIdpUserRecord;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.persistence.user.OAuth2TokenData;
@@ -18,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -146,6 +149,11 @@ public abstract class AbstractOAuth2AuthenticationProvider implements OAuth2Auth
     @Override
     public boolean isUserInfoUpdateAllowed() {
         return true;
+    }
+
+    @Override
+    public Set<EditableAccountField> getEditableFields() {
+        return EditableAccountFieldSets.secondaryFields();
     }
 
     @Override

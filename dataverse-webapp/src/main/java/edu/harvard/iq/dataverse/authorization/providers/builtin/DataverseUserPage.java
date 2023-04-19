@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.EditableAccountField;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.common.BundleUtil;
@@ -576,6 +577,10 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public void setPreferredNotificationsLanguage(String preferredNotificationsLanguage) {
         this.preferredNotificationsLanguage = Locale.forLanguageTag(preferredNotificationsLanguage);
+    }
+
+    public boolean isDisabledForEdit(EditableAccountField field) {
+        return !getUserAuthProvider().getEditableFields().contains(field);
     }
 
     // -------------------- PRIVATE ---------------------
