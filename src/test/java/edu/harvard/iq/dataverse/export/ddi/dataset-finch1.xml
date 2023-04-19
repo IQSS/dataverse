@@ -23,7 +23,7 @@
         <AuthEnty affiliation="Birds Inc.">Finch, Fiona</AuthEnty>
       </rspStmt>
       <prodStmt>
-        <producer affiliation="Hawk Institute" abbr="ProdAbb" role="http://www.hawk.edu/logo">Johnny Hawk</producer>
+        <producer affiliation="Hawk Institute" abbr="ProdAbb">Johnny Hawk</producer>
       </prodStmt>
       <distStmt>
         <distrbtr xml:lang="en" affiliation="Valhalla Polytechnic" abbr="Dist-Abb" URI="http://www.valhalla.edu/url">Odin Raven</distrbtr>

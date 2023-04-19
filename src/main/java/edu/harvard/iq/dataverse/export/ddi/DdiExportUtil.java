@@ -94,7 +94,6 @@ public class DdiExportUtil {
     public static final String CITATION_BLOCK_NAME = "citation";
 
     public static String datasetDtoAsJson2ddi(String datasetDtoAsJson) {
-        logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson, DatasetDTO.class);
         try {
@@ -963,7 +962,6 @@ public class DdiExportUtil {
                             String producerAffiliation = "";
                             String producerAbbreviation = "";
                             String producerLogo = "";
-                            String producerURL = "";
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.producerName.equals(next.getTypeName())) {
@@ -978,10 +976,6 @@ public class DdiExportUtil {
                                 if (DatasetFieldConstant.producerLogo.equals(next.getTypeName())) {
                                     producerLogo = next.getSinglePrimitive();
                                 }
-                                if (DatasetFieldConstant.producerURL.equals(next.getTypeName())) {
-                                    producerURL = next.getSinglePrimitive();
-
-                                }
                             }
                             if (!producerName.isEmpty()) {
                                 xmlw.writeStartElement("producer");
@@ -991,11 +985,8 @@ public class DdiExportUtil {
                                 if (!producerAbbreviation.isEmpty()) {
                                     writeAttribute(xmlw, "abbr", producerAbbreviation);
                                 }
-                                if (!producerLogo.isEmpty()) {
+                                /*if (!producerLogo.isEmpty()) {
                                     writeAttribute(xmlw, "role", producerLogo);
-                                }
-                                /* NOT IN THE SCHEMA! -L.A. if (!producerURL.isEmpty()) {
-                                    writeAttribute(xmlw, "URI", producerURL);
                                 }*/
                                 xmlw.writeCharacters(producerName);
                                 xmlw.writeEndElement(); //AuthEnty
@@ -1010,9 +1001,7 @@ public class DdiExportUtil {
         // productionPlace was made multiple as of 5.14:
         // (a quick backward compatibility check was added to dto2PrimitiveList(),
         // see the method for details)
-        for (String productionPlace : dto2PrimitiveList(version, DatasetFieldConstant.productionPlace)) {
-            writeFullElement(xmlw, "prodPlac", productionPlace);
-        }
+        writeFullElementList(xmlw, "prodPlac", dto2PrimitiveList(version, DatasetFieldConstant.productionPlace));        
         writeSoftwareElement(xmlw, version);
   
         writeGrantElement(xmlw, version);
@@ -1032,7 +1021,6 @@ public class DdiExportUtil {
                             String distributorAffiliation = "";
                             String distributorAbbreviation = "";
                             String distributorURL = "";
-                            String distributorLogoURL = "";
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.distributorName.equals(next.getTypeName())) {
@@ -1046,9 +1034,6 @@ public class DdiExportUtil {
                                 }
                                 if (DatasetFieldConstant.distributorURL.equals(next.getTypeName())) {
                                     distributorURL = next.getSinglePrimitive();
-                                }
-                                if (DatasetFieldConstant.distributorLogo.equals(next.getTypeName())) {
-                                    distributorLogoURL = next.getSinglePrimitive();
                                 }
                             }
                             if (!distributorName.isEmpty()) {
@@ -1065,10 +1050,6 @@ public class DdiExportUtil {
                                 if (!distributorURL.isEmpty()) {
                                     writeAttribute(xmlw, "URI", distributorURL);
                                 }
-                                /* NOT IN THE SCHEMA! -L.A.if (!distributorLogoURL.isEmpty()) {
-                                   (and why were we putting this logo into the "role" field anyway?? - same with producerLogo above!)
-                                    writeAttribute(xmlw, "role", distributorLogoURL);
-                                }*/
                                 xmlw.writeCharacters(distributorName);
                                 xmlw.writeEndElement(); //AuthEnty
                             }
@@ -1566,7 +1547,7 @@ public class DdiExportUtil {
                     // up on an instance that upgraded to a Dataverse version
                     // where a certain primitive has been made multiple, but has
                     // not yet update the block. 
-                    if (fieldDTO.getMultiple()) {
+                    if (fieldDTO.getMultiple() != null && fieldDTO.getMultiple()) {
                         return fieldDTO.getMultiplePrimitive();
                     } else {
                         return Arrays.asList(fieldDTO.getSinglePrimitive());
