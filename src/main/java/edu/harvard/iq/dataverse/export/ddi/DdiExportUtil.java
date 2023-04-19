@@ -1006,8 +1006,13 @@ public class DdiExportUtil {
                 }
             }
         }
-        writeFullElement(xmlw, "prodDate", dto2Primitive(version, DatasetFieldConstant.productionDate));    
-        writeFullElement(xmlw, "prodPlac", dto2Primitive(version, DatasetFieldConstant.productionPlace));
+        writeFullElement(xmlw, "prodDate", dto2Primitive(version, DatasetFieldConstant.productionDate));
+        // productionPlace was made multiple as of 5.14:
+        // (a quick backward compatibility check was added to dto2PrimitiveList(),
+        // see the method for details)
+        for (String productionPlace : dto2PrimitiveList(version, DatasetFieldConstant.productionPlace)) {
+            writeFullElement(xmlw, "prodPlac", productionPlace);
+        }
         writeSoftwareElement(xmlw, version);
   
         writeGrantElement(xmlw, version);
@@ -1557,7 +1562,15 @@ public class DdiExportUtil {
             MetadataBlockDTO value = entry.getValue();
             for (FieldDTO fieldDTO : value.getFields()) {
                 if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
-                    return fieldDTO.getMultiplePrimitive();
+                    // This hack is here to make sure the export does not blow 
+                    // up on an instance that upgraded to a Dataverse version
+                    // where a certain primitive has been made multiple, but has
+                    // not yet update the block. 
+                    if (fieldDTO.getMultiple()) {
+                        return fieldDTO.getMultiplePrimitive();
+                    } else {
+                        return Arrays.asList(fieldDTO.getSinglePrimitive());
+                    }
                 }
             }
         }
