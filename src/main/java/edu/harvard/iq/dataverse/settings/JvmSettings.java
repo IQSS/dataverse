@@ -109,6 +109,7 @@ public enum JvmSettings {
     // VERSION PID SETTINGS
     SCOPE_PID_VERSIONS(SCOPE_PID, "version"),
     PID_VERSIONS_MODE(SCOPE_PID_VERSIONS, "mode"),
+    PID_VERSIONS_STYLE(SCOPE_PID_VERSIONS, "style"),
     
     ;
     

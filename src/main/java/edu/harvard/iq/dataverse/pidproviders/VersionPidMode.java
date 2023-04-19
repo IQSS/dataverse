@@ -67,6 +67,42 @@ public final class VersionPidMode {
         }
     }
     
+    /**
+     * Defining a list of styles how to generate the version PIDs.
+     * This is not extensible from the outside on purpose.
+     * This is a class to enable auto-conversion via MicroProfile Config
+     * also with lowercase setting values.
+     */
+    public static final class GenStyle {
+        
+        public static final GenStyle DATASET = new GenStyle("DATASET");
+        public static final GenStyle SUFFIX = new GenStyle("SUFFIX");
+    
+        // Init as unmodifiable set
+        public static final Set<GenStyle> values;
+        static {
+            values = Set.of(DATASET, SUFFIX);
+        }
+        
+        private final String style;
+    
+        GenStyle(String style) {
+            this.style = style;
+        }
+    
+        @Override
+        public String toString() {
+            return this.style;
+        }
+    
+        public static GenStyle of(String style) {
+            return values.stream()
+                .filter(m -> m.style.equalsIgnoreCase(style))
+                .findAny()
+                .orElse(null);
+        }
+    }
+    
     
     // Init as unmodifiable set
     public static final Set<VersionPidMode> values;
