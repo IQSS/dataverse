@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 
@@ -187,9 +188,9 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
     private void deleteDraftIdentifier(DvObject dvObject) throws IOException {
     	
     	//ToDo - incorporate into DataCiteRESTfulClient
-        String baseUrl = systemConfig.getDataCiteRestApiUrlString();
-        String username = System.getProperty("doi.username");
-        String password = System.getProperty("doi.password");
+        String baseUrl = JvmSettings.DATACITE_REST_API_URL.lookup();
+        String username = JvmSettings.DATACITE_USERNAME.lookup();
+        String password = JvmSettings.DATACITE_PASSWORD.lookup();
         GlobalId doi = dvObject.getGlobalId();
         /**
          * Deletes the DOI from DataCite if it can. Returns 204 if PID was deleted
@@ -237,12 +238,7 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
     
     @Override
     public List<String> getProviderInformation(){
-        ArrayList <String> providerInfo = new ArrayList<>();
-        String providerName = "DataCite";
-        String providerLink = "http://status.datacite.org";
-        providerInfo.add(providerName);
-        providerInfo.add(providerLink);
-        return providerInfo;
+        return List.of("DataCite", "https://status.datacite.org");
     }
 
 

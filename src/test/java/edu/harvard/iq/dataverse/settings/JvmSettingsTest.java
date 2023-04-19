@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.SystemProperty;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,8 +14,23 @@ class JvmSettingsTest {
         assertEquals("foobar", JvmSettings.VERSION.lookupOptional().orElse(""));
     }
     
-    /*
-     * TODO: add more tests here for features like old names, patterned settings etc when adding
-     *       these in other pull requests adding new settings making use of these features.
-     */
+    @Test
+    @SystemProperty(key = "doi.username", value = "test")
+    void lookupSettingViaAlias() {
+        assertEquals("test", JvmSettings.DATACITE_USERNAME.lookup());
+    }
+    
+    @Test
+    @SystemProperty(key = "doi.baseurlstring", value = "test")
+    void lookupSettingViaAliasWithDefaultInMPCFile() {
+        assertEquals("test", JvmSettings.DATACITE_MDS_API_URL.lookup());
+    }
+    
+    @Test
+    @SystemProperty(key = "doi.dataciterestapiurlstring", value = "foo")
+    @SystemProperty(key = "doi.mdcbaseurlstring", value = "bar")
+    void lookupSettingViaAliasWithDefaultInMPCFileAndTwoAliases() {
+        assertEquals("foo", JvmSettings.DATACITE_REST_API_URL.lookup());
+    }
+
 }
