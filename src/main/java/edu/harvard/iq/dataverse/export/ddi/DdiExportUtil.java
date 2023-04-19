@@ -626,28 +626,29 @@ public class DdiExportUtil {
 
     }
     
-    /** Again, <dataColl> is an xs:sequence - order is important and must follow
-      * the schema. -L.A. 
-      *     <xs:sequence>
-               <xs:element ref="timeMeth" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="dataCollector" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="collectorTraining" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="frequenc" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="sampProc" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="sampleFrame" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="targetSampleSize" minOccurs="0" maxOccurs="unbounded"/>
-	       <xs:element ref="deviat" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="collMode" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="resInstru" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="instrumentDevelopment" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="sources" minOccurs="0"/>
-	       <xs:element ref="collSitu" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="actMin" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="ConOps" minOccurs="0" maxOccurs="unbounded"/>
-	       <xs:element ref="weight" minOccurs="0" maxOccurs="unbounded"/>
-               <xs:element ref="cleanOps" minOccurs="0" maxOccurs="unbounded"/>
-            </xs:sequence>
-      */
+    /**
+     * Again, <dataColl> is an xs:sequence - order is important and must follow
+     * the schema. -L.A.
+     * <xs:sequence>
+     * <xs:element ref="timeMeth" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="dataCollector" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="collectorTraining" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="frequenc" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="sampProc" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="sampleFrame" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="targetSampleSize" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="deviat" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="collMode" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="resInstru" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="instrumentDevelopment" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="sources" minOccurs="0"/>
+     * <xs:element ref="collSitu" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="actMin" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="ConOps" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="weight" minOccurs="0" maxOccurs="unbounded"/>
+     * <xs:element ref="cleanOps" minOccurs="0" maxOccurs="unbounded"/>
+     * </xs:sequence>
+     */
     private static void writeMethodElement(XMLStreamWriter xmlw , DatasetVersionDTO version, String lang) throws XMLStreamException{
         xmlw.writeStartElement("method");
         xmlw.writeStartElement("dataColl");
