@@ -350,6 +350,8 @@ For NetCDF and HDF5 files, an attempt will be made to extract metadata in NcML_ 
 
 .. _NcML: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
 
+In addition, an attempt will be made to extract a geospatial bounding box (west, south, east, north) from NetCDF and HDF5 files and then insert these values into the geospatial metadata block, if enabled.
+
 Compressed Files
 ----------------
 
