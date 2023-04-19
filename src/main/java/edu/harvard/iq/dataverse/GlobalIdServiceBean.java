@@ -44,14 +44,53 @@ public interface GlobalIdServiceBean {
     boolean publicizeIdentifier(DvObject studyIn);
     
     /**
-     * Create and publish a PID for a given DatasetVersion.
+     * Publish a PID for a given {@link DatasetVersion}.
+     *
+     * @apiNote This method is meant to be called when a new version of a dataset is being published.
+     *
      * @param datasetVersion The version to publish
-     * @return true if successful, false otherwise
+     * @return true if successful, false otherwise (or when datasetVersion is null)
+     * @throws IllegalArgumentException When a provider does not support generating these PIDs, does not allow their
+     *                                  generation due to configuration or doesn't like the current look of the version
+     *                                  (i.e. not being a new major version or not having an identifier set).
      */
-    //boolean publicizeIdentifier(DatasetVersion datasetVersion);
+    default boolean publicizeIdentifier(final DatasetVersion datasetVersion) {
+        throw new IllegalArgumentException("This provider does not (yet) support publishing versions.");
+    }
     
     String generateDatasetIdentifier(Dataset dataset);
     String generateDataFileIdentifier(DataFile datafile);
+    
+    /**
+     * Generate a new PID for a {@link DatasetVersion}.
+     *
+     * Note that the generation of this identifier depends on configuration by a sysadmin and concrete
+     * implementation for a given PID provider (it might be limited by its capabilities).
+     *
+     * @implNote This method is meant to be implemented free of side effects.
+     *
+     * @param datasetVersion The version of a dataset to create a PID for
+     * @return An "identifier", meant to be used for {@link GlobalId}, retrievable via {@link GlobalId#getIdentifier()}.
+     *         Must not be null.
+     * @throws IllegalArgumentException When a provider does not support generating these PIDs, does not allow their
+     *                                  generation due to configuration or doesn't like the current look of the version
+     *                                  (i.e. not being a new major version).
+     */
+    default String generateDatasetVersionIdentifier(final DatasetVersion datasetVersion) {
+        throw new IllegalArgumentException("This provider does not (yet) support publishing versions.");
+    }
+    
+    /**
+     * Retrieve the character that is inserted as a delimiter between the dataset identifier
+     * and the version number. Defaults to a dot ".", but in case a PID system does not support
+     * this character, the provider can override it.
+     *
+     * @return The delimiter character, defaulting to '.'
+     */
+    default char getVersionSuffixDelimiter() {
+        return '.';
+    }
+    
     boolean isGlobalIdUnique(GlobalId globalId);
     
     String getUrlPrefix();
