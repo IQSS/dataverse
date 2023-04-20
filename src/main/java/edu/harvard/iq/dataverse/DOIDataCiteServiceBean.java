@@ -44,7 +44,7 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
 
 
     @Override
-    public boolean alreadyRegistered(GlobalId pid) {
+    public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) {
         logger.log(Level.FINE,"alreadyExists");
         if(pid==null || pid.asString().isEmpty()) {
             logger.fine("No identifier sent.");

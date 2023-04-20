@@ -63,19 +63,10 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
     }
 
     @Override
-    public boolean alreadyRegistered(DvObject dvObject) throws Exception {
-        if(dvObject==null) {
-            logger.severe("Null DvObject sent to alreadyExists().");
-            return false;
-        }
-        return alreadyRegistered(dvObject.getGlobalId());
-    }
-    
-    @Override
-    public boolean alreadyRegistered(GlobalId pid) throws Exception {
+    public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) throws Exception {
         logger.log(Level.FINE,"alreadyExists");
         try {
-            HashMap<String, String> result = ezidService.getMetadata(pid.asString());            
+            HashMap<String, String> result = ezidService.getMetadata(pid.asString());
             return result != null && !result.isEmpty();
             // TODO just check for HTTP status code 200/404, sadly the status code is swept under the carpet
         } catch (EZIDException e ){

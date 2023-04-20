@@ -43,8 +43,8 @@ public class UnmanagedDOIServiceBean extends DOIServiceBean {
     }
 
     @Override
-    public boolean alreadyRegistered(GlobalId pid) {
-        return false;
+    public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) {
+        throw new NotImplementedException();
     }
 
     @Override

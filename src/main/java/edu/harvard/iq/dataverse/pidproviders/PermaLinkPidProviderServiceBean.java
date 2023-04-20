@@ -69,17 +69,13 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
     }
     
     @Override
-    public boolean alreadyRegistered(GlobalId globalId) {
-        //Perma doesn't manage registration, so we assume all PIDs can be treated as registered
-        return true;
+    public boolean alreadyRegistered(GlobalId globalId, boolean noProviderDefault) {
+        // Perma doesn't manage registration, so we assume all local PIDs can be treated
+        // as registered
+        boolean existsLocally = !dvObjectService.isGlobalIdLocallyUnique(globalId);
+        return existsLocally ? existsLocally : noProviderDefault;
     }
     
-    @Override
-    public boolean ableToRegister(GlobalId pid) {
-        //Perma doesn't manage registration, so we also assume all PIDs can be registered / aren't already registered
-        return  true;
-    }
-
     @Override
     public boolean registerWhenPublished() {
         return false;

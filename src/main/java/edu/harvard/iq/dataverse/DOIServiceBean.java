@@ -75,10 +75,4 @@ public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
     protected String getProviderKeyName() {
         return null;
     }
-    
-    @Override
-    public boolean ableToRegister(GlobalId pid) throws Exception {
-        return  !alreadyRegistered(pid);
-    }
-    
 }
