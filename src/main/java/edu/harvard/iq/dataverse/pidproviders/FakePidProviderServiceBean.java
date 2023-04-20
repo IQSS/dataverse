@@ -29,7 +29,12 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
     
     @Override
     public boolean alreadyRegistered(GlobalId globalId) {
-        return false;
+        return true;
+    }
+    
+    @Override
+    public boolean ableToRegister(GlobalId globalId) {
+        return true;
     }
 
     @Override
