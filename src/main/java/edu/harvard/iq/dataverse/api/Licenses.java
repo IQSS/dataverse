@@ -10,11 +10,14 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ws.rs.core.Response.Status;
 
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -51,11 +54,12 @@ public class Licenses extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("/")
-    public Response addLicense(License license) {
+    public Response addLicense(@Context ContainerRequestContext crc, License license) {
         User authenticatedUser;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (!authenticatedUser.isSuperuser()) {
                 return error(Status.FORBIDDEN, "must be superuser");
             }
@@ -86,11 +90,12 @@ public class Licenses extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("/default/{id}")
-    public Response setDefault(@PathParam("id") long id) {
+    public Response setDefault(@Context ContainerRequestContext crc, @PathParam("id") long id) {
         User authenticatedUser;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (!authenticatedUser.isSuperuser()) {
                 return error(Status.FORBIDDEN, "must be superuser");
             }
@@ -117,11 +122,12 @@ public class Licenses extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("/{id}/:active/{activeState}")
-    public Response setActiveState(@PathParam("id") long id, @PathParam("activeState") boolean active) {
+    public Response setActiveState(@Context ContainerRequestContext crc, @PathParam("id") long id, @PathParam("activeState") boolean active) {
         User authenticatedUser;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (!authenticatedUser.isSuperuser()) {
                 return error(Status.FORBIDDEN, "must be superuser");
             }
@@ -147,11 +153,12 @@ public class Licenses extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("/{id}/:sortOrder/{sortOrder}")
-    public Response setSortOrder(@PathParam("id") long id, @PathParam("sortOrder") long sortOrder) {
+    public Response setSortOrder(@Context ContainerRequestContext crc, @PathParam("id") long id, @PathParam("sortOrder") long sortOrder) {
         User authenticatedUser;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (!authenticatedUser.isSuperuser()) {
                 return error(Status.FORBIDDEN, "must be superuser");
             }
@@ -178,11 +185,12 @@ public class Licenses extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("/{id}")
-    public Response deleteLicenseById(@PathParam("id") long id) {
+    public Response deleteLicenseById(@Context ContainerRequestContext crc, @PathParam("id") long id) {
         User authenticatedUser;
         try {
-            authenticatedUser = findAuthenticatedUserOrDie();
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (!authenticatedUser.isSuperuser()) {
                 return error(Status.FORBIDDEN, "must be superuser");
             }

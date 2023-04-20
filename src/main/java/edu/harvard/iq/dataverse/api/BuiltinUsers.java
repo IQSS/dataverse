@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -212,17 +213,14 @@ public class BuiltinUsers extends AbstractApiBean {
         }
     }
 
+    /***
+     * This method was moved here from AbstractApiBean during the filter-based auth
+     * refactoring, in order to preserve the existing BuiltinUsers endpoints behavior.
+     *
+     * @param apiKey from request
+     * @return error Response
+     */
+    private Response badApiKey(String apiKey) {
+        return error(Status.UNAUTHORIZED, (apiKey != null) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + ApiKeyAuthMechanism.DATAVERSE_API_KEY_REQUEST_HEADER_NAME);
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

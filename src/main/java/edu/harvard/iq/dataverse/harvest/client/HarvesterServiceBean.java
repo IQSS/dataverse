@@ -48,6 +48,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -85,6 +88,7 @@ public class HarvesterServiceBean {
     public static final String HARVEST_RESULT_FAILED="failed";
     public static final String DATAVERSE_PROPRIETARY_METADATA_FORMAT="dataverse_json";
     public static final String DATAVERSE_PROPRIETARY_METADATA_API="/api/datasets/export?exporter="+DATAVERSE_PROPRIETARY_METADATA_FORMAT+"&persistentId=";
+    public static final String DATAVERSE_HARVEST_STOP_FILE="../logs/stopharvest_";
 
     public HarvesterServiceBean() {
 
@@ -130,7 +134,7 @@ public class HarvesterServiceBean {
     }
 
     /**
-     * Run a harvest for an individual harvesting Dataverse
+     * Run a harvest for an individual harvesting client
      * @param dataverseRequest
      * @param harvestingClientId
      * @throws IOException
@@ -141,12 +145,9 @@ public class HarvesterServiceBean {
         if (harvestingClientConfig == null) {
             throw new IOException("No such harvesting client: id="+harvestingClientId);
         }
-        
-        Dataverse harvestingDataverse = harvestingClientConfig.getDataverse();
-        
-        MutableBoolean harvestErrorOccurred = new MutableBoolean(false);
+                
         String logTimestamp = logFormatter.format(new Date());
-        Logger hdLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean." + harvestingDataverse.getAlias() + logTimestamp);
+        Logger hdLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean." + harvestingClientConfig.getName() + logTimestamp);
         String logFileName = "../logs" + File.separator + "harvest_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".log";
         FileHandler fileHandler = new FileHandler(logFileName);
         hdLogger.setUseParentHandlers(false);
@@ -155,21 +156,15 @@ public class HarvesterServiceBean {
         PrintWriter importCleanupLog = new PrintWriter(new FileWriter( "../logs/harvest_cleanup_" + harvestingClientConfig.getName() + "_" + logTimestamp+".txt"));
         
         
-        List<Long> harvestedDatasetIds = null;
-
-        List<Long> harvestedDatasetIdsThisBatch = new ArrayList<Long>();
-
-        List<String> failedIdentifiers = new ArrayList<String>();
-        List<String> deletedIdentifiers = new ArrayList<String>();
+        List<Long> harvestedDatasetIds = new ArrayList<>();
+        List<String> failedIdentifiers = new ArrayList<>();
+        List<String> deletedIdentifiers = new ArrayList<>();
         
         Date harvestStartTime = new Date();
         
         try {
-            boolean harvestingNow = harvestingClientConfig.isHarvestingNow();
-
-            if (harvestingNow) {
-                harvestErrorOccurred.setValue(true);
-                hdLogger.log(Level.SEVERE, "Cannot begin harvesting, Dataverse " + harvestingDataverse.getName() + " is currently being harvested.");
+            if (harvestingClientConfig.isHarvestingNow()) {
+                hdLogger.log(Level.SEVERE, "Cannot start harvest, client " + harvestingClientConfig.getName() + " is already harvesting.");
 
             } else {
                 harvestingClientService.resetHarvestInProgress(harvestingClientId);
@@ -177,7 +172,7 @@ public class HarvesterServiceBean {
 
                
                 if (harvestingClientConfig.isOai()) {
-                    harvestedDatasetIds = harvestOAI(dataverseRequest, harvestingClientConfig, hdLogger, importCleanupLog, harvestErrorOccurred, failedIdentifiers, deletedIdentifiers, harvestedDatasetIdsThisBatch);
+                    harvestOAI(dataverseRequest, harvestingClientConfig, hdLogger, importCleanupLog, failedIdentifiers, deletedIdentifiers, harvestedDatasetIds);
 
                 } else {
                     throw new IOException("Unsupported harvest type");
@@ -187,18 +182,17 @@ public class HarvesterServiceBean {
                hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: " + deletedIdentifiers.size() + ", datasets failed: " + failedIdentifiers.size());
 
             }
+        } catch (StopHarvestException she) {
+            hdLogger.log(Level.INFO, "HARVEST INTERRUPTED BY EXTERNAL REQUEST");
+            harvestingClientService.setPartiallyCompleted(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
         } catch (Throwable e) {
-            harvestErrorOccurred.setValue(true);
+            // Any other exception should be treated as a complete failure
             String message = "Exception processing harvest, server= " + harvestingClientConfig.getHarvestingUrl() + ",format=" + harvestingClientConfig.getMetadataPrefix() + " " + e.getClass().getName() + " " + e.getMessage();
             hdLogger.log(Level.SEVERE, message);
             logException(e, hdLogger);
             hdLogger.log(Level.INFO, "HARVEST NOT COMPLETED DUE TO UNEXPECTED ERROR.");
-            // TODO: 
-            // even though this harvesting run failed, we may have had successfully 
-            // processed some number of datasets, by the time the exception was thrown. 
-            // We should record that number too. And the number of the datasets that
-            // had failed, that we may have counted.  -- L.A. 4.4
-            harvestingClientService.setHarvestFailure(harvestingClientId, new Date());
+
+            harvestingClientService.setHarvestFailure(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
 
         } finally {
             harvestingClientService.resetHarvestInProgress(harvestingClientId);
@@ -215,12 +209,11 @@ public class HarvesterServiceBean {
      * @param harvestErrorOccurred  have we encountered any errors during harvest?
      * @param failedIdentifiers     Study Identifiers for failed "GetRecord" requests
      */
-    private List<Long> harvestOAI(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, Logger hdLogger, PrintWriter importCleanupLog, MutableBoolean harvestErrorOccurred, List<String> failedIdentifiers, List<String> deletedIdentifiers, List<Long> harvestedDatasetIdsThisBatch)
-            throws IOException, ParserConfigurationException, SAXException, TransformerException {
+    private void harvestOAI(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, Logger hdLogger, PrintWriter importCleanupLog, List<String> failedIdentifiers, List<String> deletedIdentifiers, List<Long> harvestedDatasetIds)
+            throws IOException, ParserConfigurationException, SAXException, TransformerException, StopHarvestException {
 
         logBeginOaiHarvest(hdLogger, harvestingClient);
         
-        List<Long> harvestedDatasetIds = new ArrayList<Long>();
         OaiHandler oaiHandler;
         HttpClient httpClient = null; 
 
@@ -235,14 +228,16 @@ public class HarvesterServiceBean {
             throw new IOException(errorMessage);
         }
 
-        if (DATAVERSE_PROPRIETARY_METADATA_FORMAT.equals(oaiHandler.getMetadataPrefix())) {
-            // If we are harvesting native Dataverse json, we'll also need this 
-            // jdk http client to make direct calls to the remote Dataverse API:
-            httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
-        }
+        // We will use this jdk http client to make direct calls to the remote 
+        // OAI (or remote Dataverse API) to obtain the metadata records 
+        httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
         
         try {
             for (Iterator<Header> idIter = oaiHandler.runListIdentifiers(); idIter.hasNext();) {
+                // Before each iteration, check if this harvesting job needs to be aborted:
+                if (checkIfStoppingJob(harvestingClient)) {
+                    throw new StopHarvestException("Harvesting stopped by external request");
+                }
 
                 Header h = idIter.next();
                 String identifier = h.getIdentifier();
@@ -265,18 +260,11 @@ public class HarvesterServiceBean {
                 
                 if (datasetId != null) {
                     harvestedDatasetIds.add(datasetId);
-                    
-                    if ( harvestedDatasetIdsThisBatch == null ) {
-                        harvestedDatasetIdsThisBatch = new ArrayList<Long>();
-                    }
-                    harvestedDatasetIdsThisBatch.add(datasetId);
-                    
                 }
                 
                 if (getRecordErrorOccurred.booleanValue() == true) {
                     failedIdentifiers.add(identifier);
-                    harvestErrorOccurred.setValue(true);
-                    //temporary:
+                    //can be uncommented out for testing failure handling:
                     //throw new IOException("Exception occured, stopping harvest");
                 }
             }
@@ -285,8 +273,6 @@ public class HarvesterServiceBean {
         }
 
         logCompletedOaiHarvest(hdLogger, harvestingClient);
-
-        return harvestedDatasetIds;
 
     }    
     
@@ -303,11 +289,11 @@ public class HarvesterServiceBean {
                 // Make direct call to obtain the proprietary Dataverse metadata
                 // in JSON from the remote Dataverse server:
                 String metadataApiUrl = oaiHandler.getProprietaryDataverseMetadataURL(identifier);
-                logger.info("calling "+metadataApiUrl);
+                logger.fine("calling "+metadataApiUrl);
                 tempFile = retrieveProprietaryDataverseMetadata(httpClient, metadataApiUrl);
                 
             } else {
-                FastGetRecord record = oaiHandler.runGetRecord(identifier);
+                FastGetRecord record = oaiHandler.runGetRecord(identifier, httpClient);
                 errMessage = record.getErrorMessage();
                 deleted = record.isDeleted();
                 tempFile = record.getMetadataFile();
@@ -372,7 +358,7 @@ public class HarvesterServiceBean {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(remoteApiUrl))
                 .GET()
-                .header("User-Agent", "DataverseHarvester/6.0")
+                .header("User-Agent", "XOAI Service Provider v5 (Dataverse)")
                 .build();
         
         HttpResponse<InputStream> response;
@@ -409,6 +395,26 @@ public class HarvesterServiceBean {
             return;
         }
         hdLogger.info("No dataset found for " + persistentIdentifier + ", skipping delete. ");
+    }
+    
+    private boolean checkIfStoppingJob(HarvestingClient harvestingClient) {
+        Long pid = ProcessHandle.current().pid();
+        String stopFileName = DATAVERSE_HARVEST_STOP_FILE + harvestingClient.getName() + "." + pid; 
+        Path stopFilePath = Paths.get(stopFileName);
+        
+        if (Files.exists(stopFilePath)) {
+            // Now that we know that the file is there, let's (try to) delete it,
+            // so that the harvest can be re-run. 
+            try {
+                Files.delete(stopFilePath);
+            } catch (IOException ioex) {
+                // No need to treat this is a big deal (could be a permission, etc.)
+                logger.warning("Failed to delete the flag file "+stopFileName + "; check permissions and delete manually.");
+            }
+            return true;
+        }
+        
+        return false;                 
     }
            
     private void logBeginOaiHarvest(Logger hdLogger, HarvestingClient harvestingClient) {

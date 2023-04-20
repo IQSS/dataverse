@@ -104,7 +104,7 @@ public class DeactivateUsersIT {
 
         Response getUserDeactivated = UtilIT.getAuthenticatedUserByToken(apiToken);
         getUserDeactivated.prettyPrint();
-        getUserDeactivated.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        getUserDeactivated.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
         Response userTracesAfterDeactivate = UtilIT.getUserTraces(username, superuserApiToken);
         userTracesAfterDeactivate.prettyPrint();

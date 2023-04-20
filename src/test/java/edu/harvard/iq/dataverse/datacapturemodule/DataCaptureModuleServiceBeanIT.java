@@ -80,7 +80,7 @@ public class DataCaptureModuleServiceBeanIT {
         dataset.setAuthority("10.5072/FK2");
         dataset.setIdentifier("OSQSB9");
         dataset.setId(728l);
-        String url = "http://localhost:8080/api/batch/jobs/import/datasets/files/:persistentId?persistentId=" + dataset.getGlobalIdString();
+        String url = "http://localhost:8080/api/batch/jobs/import/datasets/files/:persistentId?persistentId=" + dataset.getGlobalId().asString();
         System.out.print("url: " + url);
         String uploadFolder = "OSQSB9";
         String apiToken = "b440cc45-0ce9-4ae6-aabf-72f50fb8b8f2";
