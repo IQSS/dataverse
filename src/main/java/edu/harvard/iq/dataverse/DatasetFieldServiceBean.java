@@ -369,9 +369,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * Retrieves indexable strings from a cached externalvocabularyvalue entry.
      * 
      * This method assumes externalvocabularyvalue entries have been filtered and
-     * the externalvocabularyvalue entry contain a single JsonObject whose values
-     * are either Strings or an array of objects with "lang" and "value" keys. The
-     * string, or the "value"s for each language are added to the set.
+     * the externalvocabularyvalue entry contain a single JsonObject whose "personName" or "termName" values
+     * are either Strings or an array of objects with "lang" and ("value" or "content") keys. The
+     * string, or the "value/content"s for each language are added to the set.
      * 
      * Any parsing error results in no entries (there can be unfiltered entries with
      * unknown structure - getting some strings from such an entry could give fairly
@@ -387,16 +387,25 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         if (jo != null) {
             try {
                 for (String key : jo.keySet()) {
-                    JsonValue jv = jo.get(key);
-                    if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
-                        logger.fine("adding " + jo.getString(key) + " for " + termUri);
-                        strings.add(jo.getString(key));
-                    } else {
-                        if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
-                            JsonArray jarr = jv.asJsonArray();
-                            for (int i = 0; i < jarr.size(); i++) {
-                                logger.fine("adding " + jarr.getJsonObject(i).getString("value") + " for " + termUri);
-                                strings.add(jarr.getJsonObject(i).getString("value"));
+                    if (key.equals("termName") || key.equals("personName")) {
+                        JsonValue jv = jo.get(key);
+                        if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
+                            logger.fine("adding " + jo.getString(key) + " for " + termUri);
+                            strings.add(jo.getString(key));
+                        } else {
+                            if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
+                                JsonArray jarr = jv.asJsonArray();
+                                for (int i = 0; i < jarr.size(); i++) {
+                                    JsonObject entry = jarr.getJsonObject(i);
+                                    if (entry.containsKey("value")) {
+                                        logger.fine("adding " + entry.getString("value") + " for " + termUri);
+                                        strings.add(entry.getString("value"));
+                                    } else if (entry.containsKey("content")) {
+                                        logger.fine("adding " + entry.getString("content") + " for " + termUri);
+                                        strings.add(entry.getString("content"));
+
+                                    }
+                                }
                             }
                         }
                     }
@@ -412,7 +421,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }    
 
     /**
-     * Perform a query to retrieve a cached valie from the externalvocabularvalue table
+     * Perform a query to retrieve a cached value from the externalvocabularvalue table
      * @param termUri
      * @return - the entry's value as a JsonObject
      */
