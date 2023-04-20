@@ -165,7 +165,8 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
      * @return The identifier (will never be null)
      * @throws NoSuchElementException When no style has been configured for the instance
      * @throws IllegalArgumentException If the style configured is not supported by this generator, the version is
-     *                                  already released or a minor version.
+     *                                  already released or a minor version, or if the owning dataset has no identifier
+     *                                  while creating a suffix style identifier.
      */
     @Override
     public String generateDatasetVersionIdentifier(DatasetVersion datasetVersion) {
@@ -180,7 +181,12 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         if (style == GenStyle.DATASET) {
             return generateDatasetIdentifier(datasetVersion.getDataset());
         } else if (style == GenStyle.SUFFIX) {
-            return datasetVersion.getDataset().getIdentifier() + getVersionSuffixDelimiter() + datasetVersion.getVersionNumber();
+            String datasetIdentifier = datasetVersion.getDataset().getIdentifier();
+            if (datasetIdentifier == null || datasetIdentifier.isEmpty()) {
+                throw new IllegalArgumentException("Dataset must not have empty identifier when creating dataset version identifier by suffix");
+            }
+            
+            return datasetIdentifier + getVersionSuffixDelimiter() + datasetVersion.getVersionNumber();
         }
         
         throw new IllegalArgumentException("No supported version PID generation style configured");

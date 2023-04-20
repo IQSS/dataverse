@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 import java.util.List;
 import java.util.Map;
@@ -96,6 +98,24 @@ class AbstractGlobalIdServiceBeanTest {
         
         // Set to non-allowed combination
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
+        
+        // when & then (split retrieval to avoid ambiguous lambda exceptions)
+        DatasetVersion version = dataset.getLatestVersion();
+        assertThrows(IllegalArgumentException.class, () -> sut.generateDatasetVersionIdentifier(version));
+    }
+    
+    @ParameterizedTest
+    @JvmSetting(key = JvmSettings.PID_VERSIONS_STYLE, value = "suffix")
+    @NullAndEmptySource
+    void generateDatasetVersionIdentifierFailsWithSuffixStyleAndEmptyDatasetIdentifier(String pid) {
+        // given
+        TestIdService sut = new TestIdService();
+        Dataset dataset = MocksFactory.makeDataset();
+        
+        assumeTrue(dataset.getLatestVersion().getMinorVersionNumber() == 0);
+        
+        // Set to non-allowed combination
+        dataset.setIdentifier(pid);
         
         // when & then (split retrieval to avoid ambiguous lambda exceptions)
         DatasetVersion version = dataset.getLatestVersion();
