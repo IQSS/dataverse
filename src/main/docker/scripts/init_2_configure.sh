@@ -26,21 +26,6 @@ fi
 DV_POSTBOOT=${PAYARA_DIR}/dataverse_postboot
 echo "# Dataverse postboot configuration for Payara" > "${DV_POSTBOOT}"
 
-# 1. Password aliases from secrets
-# TODO: This is ugly and dirty. It leaves leftovers on the filesystem.
-#       It should be replaced by using proper config mechanisms sooner than later,
-#       like MicroProfile Config API.
-if [ -f "${SECRETS_DIR}"/doi.password ]; then
-  echo "INFO: Defining password alias for DOI"
-  PASSTMP=$(mktemp)
-  sed -e "s#^#AS_ADMIN_ALIASPASSWORD=#" < "${SECRETS_DIR}"/doi.password > "${PASSTMP}"
-  echo "create-password-alias doi_password_alias --passwordfile ${PASSTMP}" >> "${DV_POSTBOOT}"
-  # Magic var to be picked up further down
-  export doi_password="\${ALIAS=doi_password_alias}"
-else
-  echo "WARNING: Could not find password secret for DOI in '${SECRETS_DIR}/doi.password'. Ignore when using FAKE provider."
-fi
-
 # 2. Domain-spaced resources (JDBC, JMS, ...)
 # TODO: This is ugly and dirty. It should be replaced with resources from
 #       EE 8 code annotations or at least glassfish-resources.xml
