@@ -455,9 +455,25 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             logger.fine("Ingoring blank term");
             return;
         }
+        boolean isExternal = false;
+        JsonObject vocabs = cvocEntry.getJsonObject("vocabs");
+        for (String key: vocabs.keySet()) {
+            JsonObject vocab = vocabs.getJsonObject(key);
+            if (vocab.containsKey("uriSpace")) {
+                if (term.startsWith(vocab.getString("uriSpace"))) {
+                    isExternal = true;
+                    break;
+                }
+            }
+        }
+        if (!isExternal) {
+            logger.fine("Ignoring free text entry: " + term);
+            return;
+        }
         logger.fine("Registering term: " + term);
         try {
-            URI uri = new URI(term);
+            //Assure the term is in URI form - should be if the uriSpace entry was correct
+            new URI(term);
             ExternalVocabularyValue evv = null;
             try {
                 evv = em.createQuery("select object(o) from ExternalVocabularyValue as o where o.uri=:uri",
