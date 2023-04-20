@@ -627,7 +627,8 @@ public class JsonPrinter {
         fileName = fileMetadata.getLabel();
         GlobalId filePid = df.getGlobalId();
         String pidURL = (filePid!=null)? filePid.asURL(): null;
-        String pidString = (filePid!=null)? filePid.asString(): null;
+        //For backward compatibility - prior to #8674, asString() returned "" for the value when no PID exists.
+        String pidString = (filePid!=null)? filePid.asString(): "";
 
         JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
 
@@ -975,5 +976,24 @@ public class JsonPrinter {
         JsonObjectBuilder b = jsonObjectBuilder();
         in.keySet().forEach( k->b.add(k, in.get(k)) );
         return b;
+    }
+
+
+    /**
+     * Get signposting from Dataset
+     * @param ds the designated Dataset
+     * @return json linkset
+     */
+    public static JsonObjectBuilder jsonLinkset(Dataset ds) {
+        return jsonObjectBuilder()
+                .add("anchor", ds.getPersistentURL())
+                .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
+                .add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage")))
+                .add("author", ds.getPersistentURL())
+                .add("protocol", ds.getProtocol())
+                .add("authority", ds.getAuthority())
+                .add("publisher", BrandingUtil.getInstallationBrandName())
+                .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
+                .add("storageIdentifier", ds.getStorageIdentifier());
     }
 }
