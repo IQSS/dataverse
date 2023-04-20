@@ -408,9 +408,9 @@ public class OREMap {
                         JsonArrayBuilder childVals = Json.createArrayBuilder();
 
                         for (String val : dsf.getValues_nondisplay()) {
-                            logger.info("Child name: " + dsft.getName());
+                            logger.fine("Child name: " + dsft.getName());
                             if (cvocMap.containsKey(dsft.getId())) {
-                                logger.info("Calling addcvocval for: " + dsft.getName());
+                                logger.fine("Calling addcvocval for: " + dsft.getName());
                                 addCvocValue(val, childVals, cvocMap.get(dsft.getId()), localContext);
                             } else {
                                 childVals.add(val);
@@ -440,8 +440,11 @@ public class OREMap {
                 for (String prefix : context.keySet()) {
                     localContext.putIfAbsent(prefix, context.getString(prefix));
                 }
-                logger.info("Adding: " + datasetFieldService.getExternalVocabularyValue(val));
-                vals.add(datasetFieldService.getExternalVocabularyValue(val));
+                JsonObjectBuilder job = Json.createObjectBuilder(datasetFieldService.getExternalVocabularyValue(val));
+                job.add("@id", val);
+                JsonObject extVal = job.build();
+                logger.fine("Adding: " + extVal);
+                vals.add(extVal);
             } else {
                 vals.add(val);
             }
