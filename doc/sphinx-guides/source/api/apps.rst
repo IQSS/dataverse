@@ -113,6 +113,16 @@ Dataverse Software on Android makes use of a Dataverse installation's Search API
 
 https://github.com/IQSS/dataverse-android
 
+Go
+--
+
+Integrations Dashboard
+~~~~~~~~~~~~~~~~~~~~~~
+
+The integrations dashboard is software by the Dataverse community to enable easy data transfer from an existing data management platform to a dataset in a Dataverse collection. See :ref:`integrations-dashboard` for details.
+
+https://github.com/libis/rdm-integration
+
 PHP
 ---
 

@@ -56,6 +56,8 @@ import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+import edu.harvard.iq.dataverse.util.WebloaderUtil;
 import edu.harvard.iq.dataverse.validation.URLValidator;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
@@ -1845,7 +1847,9 @@ public class DatasetPage implements java.io.Serializable {
         return settingsWrapper.isGlobusUpload() && settingsWrapper.isGlobusEnabledStorageDriver(dataset.getEffectiveStorageDriverId());
     }
     
-    
+    public boolean webloaderUploadSupported() {
+        return settingsWrapper.isWebloaderUpload() && StorageIO.isDirectUploadEnabled(dataset.getEffectiveStorageDriverId());
+    }
 
     private String init(boolean initFull) {
 
@@ -2045,7 +2049,7 @@ public class DatasetPage implements java.io.Serializable {
             if ( isEmpty(dataset.getIdentifier()) && systemConfig.directUploadEnabled(dataset) ) {
             	CommandContext ctxt = commandEngine.getContext();
             	GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
-                dataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(dataset, idServiceBean));
+                dataset.setIdentifier(idServiceBean.generateDatasetIdentifier(dataset));
             }
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
@@ -2858,9 +2862,9 @@ public class DatasetPage implements java.io.Serializable {
             //SEK 12/20/2019 - since we are ingesting a file we know that there is a current draft version
             lockedDueToIngestVar = null;
             if (canViewUnpublishedDataset()) {
-                return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&version=DRAFT&faces-redirect=true";
+                return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&showIngestSuccess=true&version=DRAFT&faces-redirect=true";
             } else {
-                return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&faces-redirect=true";
+                return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&showIngestSuccess=true&faces-redirect=true";
             }
         }
 
@@ -3787,7 +3791,7 @@ public class DatasetPage implements java.io.Serializable {
          setReleasedVersionTabList(resetReleasedVersionTabList());
          newFiles.clear();
          editMode = null;
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version="+ workingVersion.getFriendlyVersionNumber() +  "&faces-redirect=true";
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&version="+ workingVersion.getFriendlyVersionNumber() +  "&faces-redirect=true";
     }
 
     private String returnToDatasetOnly(){
@@ -3797,7 +3801,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private String returnToDraftVersion(){
-         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT" + "&faces-redirect=true";
+         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&version=DRAFT" + "&faces-redirect=true";
     }
 
     public String cancel() {
@@ -4418,7 +4422,7 @@ public class DatasetPage implements java.io.Serializable {
 
                 String[] temp = new String[2];
                 temp[0] = formatDisplayName;
-                temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + dataset.getGlobalIdString();
+                temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + dataset.getGlobalId().asString();
                 retList.add(temp);
             }
         }
@@ -5490,7 +5494,7 @@ public class DatasetPage implements java.io.Serializable {
             return cachedTools;
         }
         DataFile dataFile = datafileService.find(fileId);
-        cachedTools = ExternalToolServiceBean.findExternalToolsByFile(externalTools, dataFile);
+        cachedTools = externalToolService.findExternalToolsByFile(externalTools, dataFile);
         cachedToolsByFileId.put(fileId, cachedTools); //add to map so we don't have to do the lifting again
         return cachedTools;
     }
@@ -6062,4 +6066,19 @@ public class DatasetPage implements java.io.Serializable {
         }
         PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken));
     }
+
+    public String getWebloaderUrlForDataset(Dataset d) {
+        String localeCode = session.getLocaleCode();
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            ApiToken apiToken = authService.getValidApiTokenForUser((AuthenticatedUser) user);
+            return WebloaderUtil.getWebloaderUrl(d, apiToken, localeCode,
+                    settingsService.getValueForKey(SettingsServiceBean.Key.WebloaderUrl));
+        } else {
+            // Shouldn't normally happen (seesion timeout? bug?)
+            logger.warning("getWebloaderUrlForDataset called for non-Authenticated user");
+            return null;
+        }
+    }
+
 }

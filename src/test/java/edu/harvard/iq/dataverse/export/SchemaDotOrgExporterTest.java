@@ -6,20 +6,22 @@ import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 
-import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,15 +30,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
+
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * For docs see {@link SchemaDotOrgExporter}.
@@ -62,18 +65,107 @@ public class SchemaDotOrgExporterTest {
 
     /**
      * Test of exportDataset method, of class SchemaDotOrgExporter.
+     * @throws IOException
+     * @throws JsonParseException
+     * @throws ParseException
+     * 
      */
     @Test
-    public void testExportDataset() throws Exception {
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    public void testExportDataset() throws JsonParseException, ParseException, IOException {
         File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
-        license.setDefault(true);
 
-        JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
-        JsonObject json1 = jsonReader1.readObject();
+        JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
+        JsonObject json2 = createExportFromJson(json);
+        
+        assertEquals("http://schema.org", json2.getString("@context"));
+        assertEquals("Dataset", json2.getString("@type"));
+        assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("@id"));
+        assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("identifier"));
+        assertEquals("Darwin's Finches", json2.getString("name"));
+        assertEquals("Finch, Fiona", json2.getJsonArray("creator").getJsonObject(0).getString("name"));
+        assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getJsonObject("affiliation").getString("name"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("@id"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("identifier"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("sameAs"));
+        assertEquals("Finch, Fiona", json2.getJsonArray("author").getJsonObject(0).getString("name"));
+        assertEquals("Birds Inc.", json2.getJsonArray("author").getJsonObject(0).getJsonObject("affiliation").getString("name"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("@id"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("identifier"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("sameAs"));
+        assertEquals("1955-11-05", json2.getString("datePublished"));
+        assertEquals("1955-11-05", json2.getString("dateModified"));
+        assertEquals("1", json2.getString("version"));
+        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.\nBird is the word.", json2.getString("description"));
+        assertEquals("Medicine, Health and Life Sciences", json2.getJsonArray("keywords").getString(0));
+        assertEquals("tcTerm1", json2.getJsonArray("keywords").getString(1));
+        assertEquals("KeywordTerm1", json2.getJsonArray("keywords").getString(2));
+        assertEquals("KeywordTerm2", json2.getJsonArray("keywords").getString(3));
+        // This dataset, for example, has multiple keywords separated by commas: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24034&version=2.0
+        assertEquals("keywords, with, commas", json2.getJsonArray("keywords").getString(4));
+        assertEquals("CreativeWork", json2.getJsonArray("citation").getJsonObject(0).getString("@type"));
+        assertEquals("Finch, Fiona 2018. \"The Finches.\" American Ornithological Journal 60 (4): 990-1005.", json2.getJsonArray("citation").getJsonObject(0).getString("name"));
+        assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("@id"));
+        assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("identifier"));
+        assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("url"));
+        assertEquals("2002/2005", json2.getJsonArray("temporalCoverage").getString(0));
+        assertEquals("2001-10-01/2015-11-15", json2.getJsonArray("temporalCoverage").getString(1));
+        assertEquals(null, json2.getString("schemaVersion", null));
+        assertEquals("http://creativecommons.org/publicdomain/zero/1.0/", json2.getString("license"));
+        assertEquals("DataCatalog", json2.getJsonObject("includedInDataCatalog").getString("@type"));
+        assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
+        assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
+        assertEquals("Organization", json2.getJsonObject("publisher").getString("@type"));
+        assertEquals("LibraScholar", json2.getJsonObject("publisher").getString("name"));
+        assertEquals("Organization", json2.getJsonObject("provider").getString("@type"));
+        assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
+        assertEquals("Organization", json2.getJsonArray("funder").getJsonObject(0).getString("@type"));
+        assertEquals("National Science Foundation", json2.getJsonArray("funder").getJsonObject(0).getString("name"));
+        // The NIH grant number is not shown because don't have anywhere in schema.org to put it. :(
+        assertEquals("National Institutes of Health", json2.getJsonArray("funder").getJsonObject(1).getString("name"));
+        assertEquals(2, json2.getJsonArray("funder").size());
+        assertEquals("Columbus, Ohio, United States, North America", json2.getJsonArray("spatialCoverage").getString(0));
+        assertEquals("Wisconsin, United States", json2.getJsonArray("spatialCoverage").getString(1));
+        assertEquals(2, json2.getJsonArray("spatialCoverage").size());
+        assertEquals("DataDownload", json2.getJsonArray("distribution").getJsonObject(0).getString("@type"));
+        assertEquals("README.md", json2.getJsonArray("distribution").getJsonObject(0).getString("name"));
+        assertEquals("text/plain", json2.getJsonArray("distribution").getJsonObject(0).getString("encodingFormat"));
+        assertEquals(1234, json2.getJsonArray("distribution").getJsonObject(0).getInt("contentSize"));
+        assertEquals("README file.", json2.getJsonArray("distribution").getJsonObject(0).getString("description"));
+        assertEquals("https://doi.org/10.5072/FK2/7V5MPI", json2.getJsonArray("distribution").getJsonObject(0).getString("@id"));
+        assertEquals("https://doi.org/10.5072/FK2/7V5MPI", json2.getJsonArray("distribution").getJsonObject(0).getString("identifier"));
+        assertEquals("https://librascholar.org/api/access/datafile/42", json2.getJsonArray("distribution").getJsonObject(0).getString("contentUrl"));
+        assertEquals(1, json2.getJsonArray("distribution").size());
+        try (PrintWriter printWriter = new PrintWriter("/tmp/dvjsonld.json")) {
+            printWriter.println(JsonUtil.prettyPrint(json2));
+        }
+        
+    }
+
+    /**
+     * Test description truncation in exportDataset method, of class SchemaDotOrgExporter.
+     * @throws IOException
+     * @throws JsonParseException
+     * @throws ParseException
+     * 
+     */
+    @Test
+    public void testExportDescriptionTruncation() throws JsonParseException, ParseException, IOException {
+    File datasetVersionJson = new File("src/test/resources/json/dataset-long-description.json");
+    String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+
+    JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
+    JsonObject json2 = createExportFromJson(json);
+
+    assertTrue(json2.getString("description").endsWith("at..."));
+    }
+    
+    private JsonObject createExportFromJson(JsonObject json) throws JsonParseException, ParseException {
+        License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
+        license.setDefault(true);
         JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
-        DatasetVersion version = jsonParser.parseDatasetVersion(json1.getJsonObject("datasetVersion"));
+        DatasetVersion version = jsonParser.parseDatasetVersion(json.getJsonObject("datasetVersion"));
         version.setVersionState(DatasetVersion.VersionState.RELEASED);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
         Date publicationDate = dateFmt.parse("19551105");
@@ -92,7 +184,6 @@ public class SchemaDotOrgExporterTest {
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
-        System.setProperty(SITE_URL, "https://librascholar.org");
         boolean hideFileUrls = false;
         if (hideFileUrls) {
             System.setProperty(FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS, "true");
@@ -112,85 +203,20 @@ public class SchemaDotOrgExporterTest {
         fmd.setDescription("README file.");
         List<FileMetadata> fileMetadatas = new ArrayList<>();
         fileMetadatas.add(fmd);
-        dataFile.setFileMetadatas(fileMetadatas);;
+        dataFile.setFileMetadatas(fileMetadatas);
+        ;
         dataFile.setOwner(dataset);
         version.setFileMetadatas(fileMetadatas);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        if(json1 == null) logger.fine("Json null");
-        if(version == null) logger.fine("ver null");
-        if(byteArrayOutputStream == null) logger.fine("bytarr null");
         if(schemaDotOrgExporter == null) logger.fine("sdoe" + " null");
         try {
-        schemaDotOrgExporter.exportDataset(version, json1, byteArrayOutputStream);
+        schemaDotOrgExporter.exportDataset(version, json, byteArrayOutputStream);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String jsonLd = byteArrayOutputStream.toString();
-        String prettyJson = JsonUtil.prettyPrint(jsonLd);
-        logger.fine("schema.org JSON-LD: " + prettyJson);
-        JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
-        JsonObject json2 = jsonReader2.readObject();
-        assertEquals("http://schema.org", json2.getString("@context"));
-        assertEquals("Dataset", json2.getString("@type"));
-        assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("@id"));
-        assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("identifier"));
-        assertEquals("Darwin's Finches", json2.getString("name"));
-        assertEquals("Finch, Fiona", json2.getJsonArray("creator").getJsonObject(0).getString("name"));
-        assertEquals("Birds Inc.", json2.getJsonArray("creator").getJsonObject(0).getString("affiliation"));
-        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("@id"));
-        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(0).getString("identifier"));
-        assertEquals("Finch, Fiona", json2.getJsonArray("author").getJsonObject(0).getString("name"));
-        assertEquals("Birds Inc.", json2.getJsonArray("author").getJsonObject(0).getString("affiliation"));
-        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("@id"));
-        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(0).getString("identifier"));
-        assertEquals("1955-11-05", json2.getString("datePublished"));
-        assertEquals("1955-11-05", json2.getString("dateModified"));
-        assertEquals("1", json2.getString("version"));
-        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", json2.getJsonArray("description").getString(0));
-        assertEquals("Bird is the word.", json2.getJsonArray("description").getString(1));
-        assertEquals(2, json2.getJsonArray("description").size());
-        assertEquals("Medicine, Health and Life Sciences", json2.getJsonArray("keywords").getString(0));
-        assertEquals("tcTerm1", json2.getJsonArray("keywords").getString(1));
-        assertEquals("KeywordTerm1", json2.getJsonArray("keywords").getString(2));
-        assertEquals("KeywordTerm2", json2.getJsonArray("keywords").getString(3));
-        // This dataset, for example, has multiple keywords separated by commas: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24034&version=2.0
-        assertEquals("keywords, with, commas", json2.getJsonArray("keywords").getString(4));
-        assertEquals("CreativeWork", json2.getJsonArray("citation").getJsonObject(0).getString("@type"));
-        assertEquals("Finch, Fiona 2018. \"The Finches.\" American Ornithological Journal 60 (4): 990-1005.", json2.getJsonArray("citation").getJsonObject(0).getString("text"));
-        assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("@id"));
-        assertEquals("https://doi.org/10.5072/FK2/RV16HK", json2.getJsonArray("citation").getJsonObject(0).getString("identifier"));
-        assertEquals("2002/2005", json2.getJsonArray("temporalCoverage").getString(0));
-        assertEquals("2001-10-01/2015-11-15", json2.getJsonArray("temporalCoverage").getString(1));
-        assertEquals(null, json2.getString("schemaVersion", null));
-        assertEquals("http://creativecommons.org/publicdomain/zero/1.0/", json2.getString("license"));
-        assertEquals("DataCatalog", json2.getJsonObject("includedInDataCatalog").getString("@type"));
-        assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
-        assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
-        assertEquals("Organization", json2.getJsonObject("publisher").getString("@type"));
-        assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
-        assertEquals("Organization", json2.getJsonObject("provider").getString("@type"));
-        assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
-        assertEquals("Organization", json2.getJsonArray("funder").getJsonObject(0).getString("@type"));
-        assertEquals("National Science Foundation", json2.getJsonArray("funder").getJsonObject(0).getString("name"));
-        // The NIH grant number is not shown because don't have anywhere in schema.org to put it. :(
-        assertEquals("National Institutes of Health", json2.getJsonArray("funder").getJsonObject(1).getString("name"));
-        assertEquals(2, json2.getJsonArray("funder").size());
-        assertEquals("Columbus, Ohio, United States, North America", json2.getJsonArray("spatialCoverage").getString(0));
-        assertEquals("Wisconsin, United States", json2.getJsonArray("spatialCoverage").getString(1));
-        assertEquals(2, json2.getJsonArray("spatialCoverage").size());
-        assertEquals("DataDownload", json2.getJsonArray("distribution").getJsonObject(0).getString("@type"));
-        assertEquals("README.md", json2.getJsonArray("distribution").getJsonObject(0).getString("name"));
-        assertEquals("text/plain", json2.getJsonArray("distribution").getJsonObject(0).getString("fileFormat"));
-        assertEquals(1234, json2.getJsonArray("distribution").getJsonObject(0).getInt("contentSize"));
-        assertEquals("README file.", json2.getJsonArray("distribution").getJsonObject(0).getString("description"));
-        assertEquals("https://doi.org/10.5072/FK2/7V5MPI", json2.getJsonArray("distribution").getJsonObject(0).getString("@id"));
-        assertEquals("https://doi.org/10.5072/FK2/7V5MPI", json2.getJsonArray("distribution").getJsonObject(0).getString("identifier"));
-        assertEquals("https://librascholar.org/api/access/datafile/42", json2.getJsonArray("distribution").getJsonObject(0).getString("contentUrl"));
-        assertEquals(1, json2.getJsonArray("distribution").size());
-        try (PrintWriter printWriter = new PrintWriter("/tmp/dvjsonld.json")) {
-            printWriter.println(prettyJson);
-        }
+        String jsonLdStr = byteArrayOutputStream.toString();
+        return JsonUtil.getJsonObject(jsonLdStr);
     }
 
     /**
@@ -406,9 +432,10 @@ public class SchemaDotOrgExporterTest {
             new ControlledVocabularyValue(1l, "ark", publicationIdTypes),
             new ControlledVocabularyValue(2l, "arXiv", publicationIdTypes),
             new ControlledVocabularyValue(3l, "bibcode", publicationIdTypes),
-            new ControlledVocabularyValue(4l, "doi", publicationIdTypes),
-            new ControlledVocabularyValue(5l, "ean13", publicationIdTypes),
-            new ControlledVocabularyValue(6l, "handle", publicationIdTypes)
+            new ControlledVocabularyValue(4l, "cstr", publicationIdTypes),
+            new ControlledVocabularyValue(5l, "doi", publicationIdTypes),
+            new ControlledVocabularyValue(6l, "ean13", publicationIdTypes),
+            new ControlledVocabularyValue(7l, "handle", publicationIdTypes)
             // Etc. There are more.
         ));
         publicationChildTypes.add(datasetFieldTypeSvc.add(publicationIdTypes));

@@ -379,6 +379,7 @@ public class DataCitationTest {
     }
 
     private DatasetVersion createATestDatasetVersion(String withTitle, boolean withAuthor) throws ParseException {
+        
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
 

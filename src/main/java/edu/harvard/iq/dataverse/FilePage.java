@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -57,6 +58,9 @@ import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
 import javax.validation.ConstraintViolation;
 
 import org.primefaces.PrimeFaces;
@@ -125,6 +129,8 @@ public class FilePage implements java.io.Serializable {
     ExternalToolServiceBean externalToolService;
     @EJB
     PrivateUrlServiceBean privateUrlService;
+    @EJB
+    AuxiliaryFileServiceBean auxiliaryFileService;
 
     @Inject
     DataverseRequestServiceBean dvRequestService;
@@ -285,8 +291,15 @@ public class FilePage implements java.io.Serializable {
         this.datasetVersionId = datasetVersionId;
     }
 
+    // findPreviewTools would be a better name
     private List<ExternalTool> sortExternalTools(){
-        List<ExternalTool> retList = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
+        List<ExternalTool> retList = new ArrayList<>();
+        List<ExternalTool> previewTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
+        for (ExternalTool previewTool : previewTools) {
+            if (externalToolService.meetsRequirements(previewTool, file)) {
+                retList.add(previewTool);
+            }
+        }
         Collections.sort(retList, CompareExternalToolName);
         return retList;
     }
@@ -351,9 +364,9 @@ public class FilePage implements java.io.Serializable {
                 // Not all metadata exports should be presented to the web users!
                 // Some are only for harvesting clients.
                 
-                String[] temp = new String[2];            
+                String[] temp = new String[2];
                 temp[0] = formatDisplayName;
-                temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + fileMetadata.getDatasetVersion().getDataset().getGlobalIdString();
+                temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + fileMetadata.getDatasetVersion().getDataset().getGlobalId().asString();
                 retList.add(temp);
             }
         }
@@ -713,7 +726,7 @@ public class FilePage implements java.io.Serializable {
     
     private String returnToDatasetOnly(){
         
-         return "/dataset.xhtml?persistentId=" + editDataset.getGlobalIdString()  + "&version=DRAFT" + "&faces-redirect=true";   
+         return "/dataset.xhtml?persistentId=" + editDataset.getGlobalId().asString()  + "&version=DRAFT" + "&faces-redirect=true";   
     }
     
     private String returnToDraftVersion(){ 
@@ -845,9 +858,9 @@ public class FilePage implements java.io.Serializable {
             swiftObject.open();
             //generate a temp url for a file
             if (isHasPublicStore()) {
-                return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalIdString() + "=" + swiftObject.getSwiftFileName();
+                return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalId().asString() + "=" + swiftObject.getSwiftFileName();
             }
-            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalIdString() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalId().asString() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
         }
         return "";
     }

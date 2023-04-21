@@ -67,6 +67,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import static org.junit.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -76,7 +77,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
+
 
 public class DatasetsIT {
 
@@ -267,14 +268,15 @@ public class DatasetsIT {
         addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
         addSubjectViaNative.prettyPrint();
         addSubjectViaNative.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode()).body(containsString("Mathematical Sciences"));
         
 
         String pathToJsonFileSingle = "doc/sphinx-guides/source/_static/api/dataset-simple-update-metadata.json";
         Response addSubjectSingleViaNative = UtilIT.updateFieldLevelDatasetMetadataViaNative(datasetPersistentId, pathToJsonFileSingle, apiToken);
-        addSubjectSingleViaNative.prettyPrint();
+        String responseString = addSubjectSingleViaNative.prettyPrint();
         addSubjectSingleViaNative.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode()).body(containsString("Mathematical Sciences")).body(containsString("Social Sciences"));
+        
 
 
         //Trying to blank out required field should fail...
@@ -1050,7 +1052,7 @@ public class DatasetsIT {
         Response downloadFile = UtilIT.downloadFile(fileId, tokenForPrivateUrlUser);
         assertEquals(OK.getStatusCode(), downloadFile.getStatusCode());
         Response downloadFileBadToken = UtilIT.downloadFile(fileId, "junk");
-        assertEquals(FORBIDDEN.getStatusCode(), downloadFileBadToken.getStatusCode());
+        assertEquals(UNAUTHORIZED.getStatusCode(), downloadFileBadToken.getStatusCode());
         Response notPermittedToListRoleAssignment = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, userWithNoRolesApiToken);
         assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignment.getStatusCode());
         Response roleAssignments = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, apiToken);
@@ -1473,7 +1475,7 @@ public class DatasetsIT {
         getRsyncScriptPermErrorGuest.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode())
                 .contentType(ContentType.JSON)
-                .body("message", equalTo("Please provide a key query parameter (?key=XXX) or via the HTTP header X-Dataverse-key"));
+                .body("message", equalTo(AbstractApiBean.RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED));
 
         Response createNoPermsUser = UtilIT.createRandomUser();
         String noPermsUsername = UtilIT.getUsernameFromResponse(createNoPermsUser);
@@ -3020,7 +3022,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         }
         assertEquals(OK.getStatusCode(), status);
 
-        if (!UtilIT.sleepForReindex(datasetPersistentId, apiToken, 3000)) {
+        if (!UtilIT.sleepForReindex(datasetPersistentId, apiToken, 3)) {
             logger.info("Still indexing after 3 seconds");
         }
 

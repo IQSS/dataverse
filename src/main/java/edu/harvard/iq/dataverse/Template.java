@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
@@ -139,9 +140,9 @@ public class Template implements Serializable {
     private Map<String, String> instructionsMap = null;
     
     @Transient
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap<>();
+    private TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForView = new TreeMap<>();
     @Transient
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap<>();
+    private TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new TreeMap<>();
     
     @Transient
     private boolean isDefaultForDataverse;
@@ -166,19 +167,19 @@ public class Template implements Serializable {
     }
     
 
-    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
+    public TreeMap<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
         return metadataBlocksForView;
     }
 
-    public void setMetadataBlocksForView(Map<MetadataBlock, List<DatasetField>> metadataBlocksForView) {
+    public void setMetadataBlocksForView(TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForView) {
         this.metadataBlocksForView = metadataBlocksForView;
     }
 
-    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForEdit() {
+    public TreeMap<MetadataBlock, List<DatasetField>> getMetadataBlocksForEdit() {
         return metadataBlocksForEdit;
     }
 
-    public void setMetadataBlocksForEdit(Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
+    public void setMetadataBlocksForEdit(TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
         this.metadataBlocksForEdit = metadataBlocksForEdit;
     }
 
