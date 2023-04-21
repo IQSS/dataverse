@@ -1,0 +1,103 @@
+version: "2.4"
+
+services:
+
+  dev_dataverse:
+    container_name: "dev_dataverse"
+    hostname: dataverse
+    image: ${APP_IMAGE}
+    restart: on-failure
+    user: payara
+    environment:
+      - DATAVERSE_DB_HOST=postgres
+      - DATAVERSE_DB_PASSWORD=secret
+      - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
+    ports:
+      - "8080:8080" # HTTP (Dataverse Application)
+      - "4848:4848" # HTTP (Payara Admin Console)
+      - "9009:9009" # JDWP
+      - "8686:8686" # JMX
+    networks:
+      - dataverse
+    depends_on:
+      - dev_postgres
+      - dev_solr
+    volumes:
+      - ./docker-dev-volumes/app/data:/dv
+      - ./docker-dev-volumes/app/secrets:/secrets
+    tmpfs:
+      - /dumps:mode=770,size=2052M,uid=1000,gid=1000
+      - /tmp:mode=770,size=2052M,uid=1000,gid=1000
+    mem_limit: 2147483648 # 2 GiB
+    mem_reservation: 1024m
+    privileged: false
+
+  dev_postgres:
+    container_name: "dev_postgres"
+    hostname: postgres
+    image: postgres:${POSTGRES_VERSION}
+    restart: on-failure
+    environment:
+      - POSTGRES_USER=${DATAVERSE_DB_USER}
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"
+    networks:
+      - dataverse
+    volumes:
+      - ./docker-dev-volumes/postgresql/data:/var/lib/postgresql/data
+
+  dev_solr_initializer:
+    container_name: "dev_solr_initializer"
+    image: alpine
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - "chown 8983:8983 /conf /var/solr && cp *.xml /conf"
+    volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
+      - ./docker-dev-volumes/solr/conf:/conf
+      - ./conf/solr/8.11.1/schema.xml:/schema.xml
+      - ./conf/solr/8.11.1/solrconfig.xml:/solrconfig.xml
+
+  dev_solr:
+    container_name: "dev_solr"
+    hostname: "solr"
+    image: solr:${SOLR_VERSION}
+    depends_on:
+      - dev_solr_initializer
+    restart: on-failure
+    ports:
+      - "8983:8983"
+    networks:
+      - dataverse
+    command:
+      - bash
+      - -c
+      - "cd /opt/solr-${SOLR_VERSION}/server/solr/configsets/_default/conf && cp -R -n . /template && solr-precreate collection1 /template"
+    volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
+      - ./docker-dev-volumes/solr/conf:/template
+
+  dev_smtp:
+    container_name: "dev_smtp"
+    hostname: "smtp"
+    image: maildev/maildev:2.0.5
+    restart: on-failure
+    ports:
+      - "25:25" # smtp server
+      - "1080:1080" # web ui
+    environment:
+      - MAILDEV_SMTP_PORT=25
+      - MAILDEV_MAIL_DIRECTORY=/mail
+    networks:
+      - dataverse
+    #volumes:
+    #  - ./docker-dev-volumes/smtp/data:/mail
+    tmpfs:
+      - /mail:mode=770,size=128M,uid=1000,gid=1000
+
+networks:
+  dataverse:
+    driver: bridge

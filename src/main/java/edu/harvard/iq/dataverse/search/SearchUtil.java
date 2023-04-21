@@ -117,6 +117,10 @@ public class SearchUtil {
     }
 
     public static String constructQuery(String solrField, String userSuppliedQuery) {
+       return constructQuery(solrField, userSuppliedQuery, false);
+    }
+    
+    public static String constructQuery(String solrField, String userSuppliedQuery, boolean addQuotes) {
 
         StringBuilder queryBuilder = new StringBuilder();
         String delimiter = "[\"]+";
@@ -134,7 +138,12 @@ public class SearchUtil {
             } else {
                 StringTokenizer st = new StringTokenizer(userSuppliedQuery);
                 while (st.hasMoreElements()) {
-                    queryStrings.add(solrField + ":" + st.nextElement());
+                    String nextElement = (String) st.nextElement();
+                    //Entries such as URIs will get tokenized into individual words by solr unless they are in quotes
+                    if(addQuotes) {
+                        nextElement = "\"" + nextElement + "\"";
+                    }
+                    queryStrings.add(solrField + ":" + nextElement);
                 }
             }
         }
@@ -181,5 +190,49 @@ public class SearchUtil {
 
         return queryBuilder.toString().trim();
     }
-    
+
+    /**
+     * @return Null if supplied point is null or whitespace.
+     * @throws IllegalArgumentException If the lat/long is not separated by a
+     * comma.
+     * @throws NumberFormatException If the lat/long values are not numbers.
+     */
+    public static String getGeoPoint(String userSuppliedGeoPoint) throws IllegalArgumentException, NumberFormatException {
+        if (userSuppliedGeoPoint == null || userSuppliedGeoPoint.isBlank()) {
+            return null;
+        }
+        String[] parts = userSuppliedGeoPoint.split(",");
+        // We'll supply our own errors but Solr gives a decent one:
+        // "Point must be in 'lat, lon' or 'x y' format: 42.3;-71.1"
+        if (parts.length != 2) {
+            String msg = "Must contain a single comma to separate latitude and longitude.";
+            throw new IllegalArgumentException(msg);
+        }
+        float latitude = Float.parseFloat(parts[0]);
+        float longitude = Float.parseFloat(parts[1]);
+        return latitude + "," + longitude;
+    }
+
+    /**
+     * @return Null if supplied radius is null or whitespace.
+     * @throws NumberFormatException If the radius is not a positive number.
+     */
+    public static String getGeoRadius(String userSuppliedGeoRadius) throws NumberFormatException {
+        if (userSuppliedGeoRadius == null || userSuppliedGeoRadius.isBlank()) {
+            return null;
+        }
+        float radius = 0;
+        try {
+            radius = Float.parseFloat(userSuppliedGeoRadius);
+        } catch (NumberFormatException ex) {
+            String msg = "Non-number radius supplied.";
+            throw new NumberFormatException(msg);
+        }
+        if (radius <= 0) {
+            String msg = "The supplied radius must be greater than zero.";
+            throw new NumberFormatException(msg);
+        }
+        return userSuppliedGeoRadius;
+    }
+
 }

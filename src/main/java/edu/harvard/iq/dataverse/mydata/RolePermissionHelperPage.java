@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.mydata;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
@@ -46,13 +47,6 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         List<DataverseRole> roleList = dataverseRoleService.findAll();
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
 
-        
-        List<String> dtypes = MyDataFilterParams.defaultDvObjectTypes;
-        //List<String> dtypes = Arrays.asList(DvObject.DATAFILE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING);
-        //DvObject.DATAFILE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING, DvObject.DATAVERSE_DTYPE_STRING
-        
-        //List<String> dtypes = new ArrayList<>();
-        
         return null;
     }
     
