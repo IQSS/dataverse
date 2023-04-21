@@ -140,6 +140,14 @@ public class DatasetVersion implements Serializable {
     @Column(unique = true)
     private String persistentIdentifier;
     
+    /**
+     * Caching the {@link GlobalId} in a transient field saves retrievals and reformatting. Its value will
+     * be based on {@link #persistentIdentifier}, and details from {@link #dataset} like protocol, authority and
+     * shoulder.
+     */
+    @Transient
+    private GlobalId globalId;
+    
     /*
      * @todo versionState should never be null so when we are ready, uncomment
      * the `nullable = false` below.
@@ -251,6 +259,24 @@ public class DatasetVersion implements Serializable {
     
     public void setPersistentIdentifier(String identifier) {
         this.persistentIdentifier = identifier;
+    }
+    
+    /**
+     * Create a {@link GlobalId} from {@link #persistentIdentifier} and the owning {@link #dataset}
+     * details of protocol and authority. This method is not free of side effects: it will cache
+     * the generated value in a transient instance variable if not yet initialized.
+     *
+     * @return The global id for this version or null if no PID, protocol or authority present.
+     */
+    public GlobalId getGlobalId() {
+        if (this.globalId == null && this.getPersistentIdentifier() != null &&
+            this.dataset.getProtocol() != null && this.dataset.getAuthority() != null) {
+            this.globalId = PidUtil.parseAsGlobalID(
+                this.dataset.getProtocol(),
+                this.dataset.getAuthority(),
+                this.getPersistentIdentifier());
+        }
+        return this.globalId;
     }
 
     public String getDataverseSiteUrl() {
