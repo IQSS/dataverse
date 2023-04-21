@@ -81,7 +81,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         DatasetVersion dsv = getVersionToPersist(theDataset);
         // This re-uses the state setup logic of CreateDatasetVersionCommand, but
         // without persisting the new version, or altering its files. 
-        new CreateDatasetVersionCommand(getRequest(), theDataset, dsv).prepareDatasetAndVersion(ctxt);
+        new CreateDatasetVersionCommand(getRequest(), theDataset, dsv).prepareDatasetAndVersion();
         
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
@@ -104,9 +104,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         	String driverId = theDataset.getEffectiveStorageDriverId();
         	theDataset.setStorageIdentifier(driverId  + DataAccess.SEPARATOR + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
         }
-        
-        // TODO: why is this here? At the very start of this command execution we generate an identifier - why should
-        //       it be gone now and if so - why would we simply create a new one? Wouldn't this be a major flaw?
         if (theDataset.getIdentifier()==null) {
             theDataset.setIdentifier(idServiceBean.generateDatasetIdentifier(theDataset));
         }

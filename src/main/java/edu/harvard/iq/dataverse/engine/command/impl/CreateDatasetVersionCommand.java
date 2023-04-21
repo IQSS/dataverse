@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -58,7 +57,7 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         //because it includes validation and we need the validation
         //to happen after file metdata is added to return a 
         //good wrapped response if the TOA/Request Access not in compliance
-        prepareDatasetAndVersion(ctxt);
+        prepareDatasetAndVersion();
         
         // TODO make async
         // ctxt.index().indexDataset(dataset);
@@ -73,7 +72,7 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
      * 
      * @throws CommandException 
      */
-    public void prepareDatasetAndVersion(CommandContext ctxt) throws CommandException {
+    public void prepareDatasetAndVersion() throws CommandException {
         newVersion.setDataset(dataset);
         newVersion.setDatasetFields(newVersion.initDatasetFields());
         newVersion.setCreateTime(getTimestamp());
@@ -84,17 +83,6 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         //had been stripped from the dataset fields prior to validation 
         validateOrDie(newVersion, false);
         DatasetFieldUtil.tidyUpFields(newVersion.getDatasetFields(), true);
-    
-        /* If the owning Dataverse collection or global configuration requires it, we will try to generate
-         * a persistent identifier for this new dataset version.
-         * This implies when the generation style is "suffix", the dataset itself must already have an identifier.
-         * This is currently the case, as this method is called by the code that prepares new datasets
-         * and the identifier is generated before this. This (might) result in throwing an illegal argument exception.
-         */
-        GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(dataset.getProtocol(), ctxt);
-        if (globalIdServiceBean != null && ctxt.dataverses().wantsDatasetVersionPids(dataset.getOwner())) {
-            newVersion.setPersistentIdentifier(globalIdServiceBean.generateDatasetVersionIdentifier(newVersion));
-        }
         
         final List<DatasetVersion> currentVersions = dataset.getVersions();
         ArrayList<DatasetVersion> dsvs = new ArrayList<>(currentVersions.size());
