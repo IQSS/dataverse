@@ -246,26 +246,6 @@ public class FileUtil implements java.io.Serializable  {
     public FileUtil() {
     }
     
-    public static void copyFile(File inputFile, File outputFile) throws IOException {
-        FileChannel in = null;
-        WritableByteChannel out = null;
-        
-        try {
-            in = new FileInputStream(inputFile).getChannel();
-            out = new FileOutputStream(outputFile).getChannel();
-            long bytesPerIteration = 50000;
-            long start = 0;
-            while ( start < in.size() ) {
-                in.transferTo(start, bytesPerIteration, out);
-                start += bytesPerIteration;
-            }
-            
-        } finally {
-            if (in != null) { in.close(); }
-            if (out != null) { out.close(); }
-        }
-    }
-
    
     public static String getFileExtension(String fileName){
         String ext = null;
@@ -602,12 +582,11 @@ public class FileUtil implements java.io.Serializable  {
      * -- L.A. 4.0 alpha
     */
     private static boolean isFITSFile(File file) {
-        BufferedInputStream ins = null;
 
-        try {
-            ins = new BufferedInputStream(new FileInputStream(file));
+        try (BufferedInputStream ins = new BufferedInputStream(new FileInputStream(file))) {
             return isFITSFile(ins);
         } catch (IOException ex) {
+            logger.fine("IOException: "+ ex.getMessage());
         } 
         
         return false;
@@ -648,8 +627,7 @@ public class FileUtil implements java.io.Serializable  {
     private static boolean isGraphMLFile(File file) {
         boolean isGraphML = false;
         logger.fine("begin isGraphMLFile()");
-        try{
-            FileReader fileReader = new FileReader(file);
+        try(FileReader fileReader = new FileReader(file)){
             javax.xml.stream.XMLInputFactory xmlif = javax.xml.stream.XMLInputFactory.newInstance();
             xmlif.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE);
 
@@ -889,7 +867,6 @@ public class FileUtil implements java.io.Serializable  {
             // a regular FITS file:
             if (finalType.equals("application/fits-gzipped")) {
 
-                InputStream uncompressedIn = null;
                 String finalFileName = fileName;
                 // if the file name had the ".gz" extension, remove it,
                 // since we are going to uncompress it:
@@ -898,20 +875,12 @@ public class FileUtil implements java.io.Serializable  {
                 }
 
                 DataFile datafile = null;
-                try {
-                    uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
+                try (InputStream uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()))){
                     File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit);
                     datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm());
                 } catch (IOException | FileExceedsMaxSizeException ioex) {
                     datafile = null;
-                } finally {
-                    if (uncompressedIn != null) {
-                        try {
-                            uncompressedIn.close();
-                        } catch (IOException e) {
-                        }
-                    }
-                }
+                } 
 
                 // If we were able to produce an uncompressed file, we'll use it
                 // to create and return a final DataFile; if not, we're not going

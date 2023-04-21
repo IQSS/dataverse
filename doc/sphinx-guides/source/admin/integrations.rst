@@ -147,6 +147,8 @@ Compute Button
 
 The "Compute" button is still highly experimental and has special requirements such as use of a Swift object store, but it is documented under "Setting up Compute" in the :doc:`/installation/config` section of the Installation Guide.
 
+.. _wholetale:
+
 Whole Tale
 ++++++++++
 
@@ -154,14 +156,18 @@ Whole Tale
 `import data from a Dataverse installation
 <https://wholetale.readthedocs.io/en/stable/users_guide/manage.html>`_ via identifier (e.g., DOI, URI, etc) or through the External Tools integration.  For installation instructions, see the :doc:`external-tools` section or the `Integration <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html#dataverse-external-tools>`_ section of the Whole Tale User Guide.
 
+.. _binder:
+
 Binder
 ++++++
 
-Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by entering the DOI of a dataset in a Dataverse installation on https://mybinder.org
+Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by entering the DOI of a dataset in a Dataverse installation at https://mybinder.org
 
-A Binder button can also be added to every dataset page to launch Binder from there. See :doc:`external-tools`.
+A Binder button can also be added to every dataset page to launch Binder from there. Instructions on enabling this feature can be found under :doc:`external-tools`.
 
-Institutions can self host BinderHub. The Dataverse Project is one of the supported `repository providers <https://binderhub.readthedocs.io/en/latest/developer/repoproviders.html#supported-repoproviders>`_.
+Additionally, institutions can self host `BinderHub <https://binderhub.readthedocs.io/en/latest/>`_ (the software that powers mybinder.org), which lists the Dataverse software as one of the supported `repository providers <https://binderhub.readthedocs.io/en/latest/developer/repoproviders.html#supported-repoproviders>`_.
+
+.. _renku:
 
 Renku
 +++++
@@ -179,15 +185,12 @@ Avgidea Data Search
 
 Researchers can use a Google Sheets add-on to search for Dataverse installation's CSV data and then import that data into a sheet. See `Avgidea Data Search <https://www.avgidea.io/avgidea-data-platform.html>`_ for details.
 
+.. _integrations-discovery:
+
 Discoverability
 ---------------
 
-Integration with `DataCite <https://datacite.org>`_ is built in to the Dataverse Software. When datasets are published, metadata is sent to DataCite. You can further increase the discoverability of your datasets by setting up additional integrations.
-
-OAI-PMH (Harvesting)
-++++++++++++++++++++
-
-The Dataverse Software supports a protocol called OAI-PMH that facilitates harvesting datasets from one system into another. For details on harvesting, see the :doc:`harvestserver` section.
+A number of builtin features related to data discovery are listed under :doc:`discoverability` but you can further increase the discoverability of your data by setting up integrations.
 
 SHARE
 +++++
