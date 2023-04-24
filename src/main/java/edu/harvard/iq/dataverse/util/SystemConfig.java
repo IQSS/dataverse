@@ -1097,9 +1097,8 @@ public class SystemConfig {
         Map<String, String[]> labelMap = new HashMap<String, String[]>();
         String setting = settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
         if (!setting.isEmpty()) {
-            try {
-                JsonReader jsonReader = Json.createReader(new StringReader(setting));
-
+            try (JsonReader jsonReader = Json.createReader(new StringReader(setting))){
+                
                 Pattern pattern = Pattern.compile("(^[\\w ]+$)"); // alphanumeric, underscore and whitespace allowed
 
                 JsonObject labelSets = jsonReader.readObject();
