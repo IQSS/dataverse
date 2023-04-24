@@ -10,7 +10,7 @@ The Dataverse community is exploring the use of Docker, Kubernetes, and other co
 Container Guide
 ---------------
 
-We recommend starting with the :doc:`/container/index`. The core Dataverse development team, with help from the community, is iterating on containerizing the Dataverse software and its dependencies there.
+We recommend starting with the :doc:`/container/index`. The core Dataverse development team, with lots of help from the community, is iterating on containerizing the Dataverse software and its dependencies there.
 
 Help Containerize Dataverse
 ---------------------------

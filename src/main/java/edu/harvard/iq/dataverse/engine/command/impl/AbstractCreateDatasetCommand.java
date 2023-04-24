@@ -75,7 +75,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         Dataset theDataset = getDataset();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
         if ( isEmpty(theDataset.getIdentifier()) ) {
-            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
+            theDataset.setIdentifier(idServiceBean.generateDatasetIdentifier(theDataset));
         }
         
         DatasetVersion dsv = getVersionToPersist(theDataset);
@@ -105,7 +105,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         	theDataset.setStorageIdentifier(driverId  + DataAccess.SEPARATOR + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
         }
         if (theDataset.getIdentifier()==null) {
-            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
+            theDataset.setIdentifier(idServiceBean.generateDatasetIdentifier(theDataset));
         }
         
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)
