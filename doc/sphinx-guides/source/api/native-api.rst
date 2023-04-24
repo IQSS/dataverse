@@ -2468,6 +2468,49 @@ The fully expanded example above (without environment variables) looks like this
     -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' \
     "https://demo.dataverse.org/api/files/:persistentId/replace?persistentId=doi:10.5072/FK2/AAA000"
 
+Deleting Files
+~~~~~~~~~~~~~~
+
+Delete an existing file where ``ID`` is the database id of the file to delete or ``PERSISTENT_ID`` is the persistent id (DOI or Handle, if it exists) of the file.
+
+Note that the behavior of deleting files depends on if the dataset has ever been published or not.
+
+- If the dataset has never been published, the file will be deleted forever.
+- If the dataset has published, the file is deleted from the draft (and future published versions).
+- If the dataset has published, the deleted file can still be downloaded because it was part of a published version.
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/files/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/files/24
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/files/:persistentId?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/files/:persistentId?persistentId=doi:10.5072/FK2/AAA000"
+
 Getting File Metadata
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -3284,7 +3327,7 @@ Each user can get a dump of their basic information in JSON format by passing in
 
     curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/users/:me    
 
-.. _pids-api:
+
 
 Managing Harvesting Server and Sets
 -----------------------------------
@@ -3394,6 +3437,7 @@ The fully expanded example above (without the environment variables) looks like 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/harvest/server/oaisets/ffAuthor"
 
 Only users with superuser permissions may delete harvesting sets.
+
 
 .. _managing-harvesting-clients-api:
 
@@ -3542,6 +3586,9 @@ Self-explanatory:
 
 Only users with superuser permissions may delete harvesting clients.
 
+
+
+.. _pids-api:
 
 PIDs
 ----
