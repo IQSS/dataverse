@@ -200,7 +200,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     //Used in datasets listcurationstatus API
     public List<Dataset> findAllWithDraftVersion() {
-        return em.createQuery("SELECT object(o) FROM Dataset d, DatasetVersion v WHERE d.id=v.dataset_id and v.versionstate='" + DatasetVersion.VersionState.DRAFT +"' ORDER BY d.id ASC", Dataset.class).getResultList();
+        return em.createQuery("SELECT object(d) FROM Dataset d, DatasetVersion v WHERE d.id=v.dataset.id and v.versionState='" + DatasetVersion.VersionState.DRAFT +"' ORDER BY d.id ASC", Dataset.class).getResultList();
     }
 
     /**
