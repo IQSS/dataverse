@@ -7,6 +7,7 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
@@ -1195,8 +1196,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     config.getOptionalValue("dataverse.files." + driverId + ".secret-key", String.class).orElse("")
                 ));
             
-            // Add both providers to chain - the first working provider will be used (so static credentials are the fallback)
-            AWSCredentialsProviderChain providerChain = new AWSCredentialsProviderChain(profileCredentials, staticCredentials);
+            //Add role-based provider as in the default provider chain
+            InstanceProfileCredentialsProvider instanceCredentials = InstanceProfileCredentialsProvider.getInstance();
+            // Add all providers to chain - the first working provider will be used
+            // (role-based is first in the default cred provider chain, so we're just
+            // reproducing that, then profile, then static credentials as the fallback)
+            AWSCredentialsProviderChain providerChain = new AWSCredentialsProviderChain(instanceCredentials, profileCredentials, staticCredentials);
             s3CB.setCredentials(providerChain);
             
             // let's build the client :-)
