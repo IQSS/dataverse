@@ -1,5 +1,5 @@
 ---
-name: Container Base Module
+name: Base Container Image
 
 on:
     push:
@@ -23,6 +23,7 @@ on:
 
 env:
     IMAGE_TAG: unstable
+    PLATFORMS: linux/amd64,linux/arm64
 
 jobs:
     build:
@@ -84,4 +85,4 @@ jobs:
               run: echo "IMAGE_TAG=alpha" >> $GITHUB_ENV
             - if: ${{ github.event_name != 'pull_request' }}
               name: Deploy multi-arch base container image to Docker Hub
-              run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }}
+              run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }} -Ddocker.platforms=${{ env.PLATFORMS }}
