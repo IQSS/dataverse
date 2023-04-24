@@ -86,3 +86,14 @@ jobs:
             - if: ${{ github.event_name != 'pull_request' }}
               name: Deploy multi-arch base container image to Docker Hub
               run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }} -Ddocker.platforms=${{ env.PLATFORMS }}
+    push-app-img:
+        name: "Rebase & Publish App Image"
+        permissions:
+            contents: read
+            packages: write
+            pull-requests: write
+        needs: build
+        # We do not release a new base image for pull requests, so do not trigger.
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: ./.github/workflows/container_app_push.yml
+        secrets: inherit
