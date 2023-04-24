@@ -93,6 +93,7 @@ sub-scopes first.
 - All sub-scopes are below that.
 - Scopes are separated by dots (periods).
 - A scope may be a placeholder, filled with a variable during lookup. (Named object mapping.)
+- The setting should be in kebab case (``signing-secret``) rather than camel case (``signingSecret``).
 
 Any consumer of the setting can choose to use one of the fluent ``lookup()`` methods, which hides away alias handling,
 conversion etc from consuming code. See also the detailed Javadoc for these methods.

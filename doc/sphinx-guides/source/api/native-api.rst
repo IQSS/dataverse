@@ -2084,9 +2084,33 @@ The response is a JSON object described in the :doc:`/api/external-tools` sectio
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
   export VERSION=1.0
   export TOOL_ID=1
-  
 
   curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/toolparams/$TOOL_ID?persistentId=$PERSISTENT_IDENTIFIER"
+
+.. _signposting-api:
+
+Retrieve Signposting Information
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dataverse supports :ref:`discovery-sign-posting` as a discovery mechanism.
+Signposting involves the addition of a `Link <https://tools.ietf.org/html/rfc5988>`__ HTTP header providing summary information on GET and HEAD requests to retrieve the dataset page and a separate /linkset API call to retrieve additional information.
+
+Here is an example of a "Link" header:
+
+``Link: <https://doi.org/10.5072/FK2/YD5QDG>;rel="cite-as", <https://doi.org/10.5072/FK2/YD5QDG>;rel="describedby";type="application/vnd.citationstyles.csl+json",<https://demo.dataverse.org/api/datasets/export?exporter=schema.org&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/json+ld", <https://schema.org/AboutPage>;rel="type",<https://schema.org/Dataset>;rel="type", https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/customlicense?persistentId=doi:10.5072/FK2/YD5QDG;rel="license", <https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/linkset?persistentId=doi:10.5072/FK2/YD5QDG> ; rel="linkset";type="application/linkset+json"``
+
+The URL for linkset information is discoverable under the ``rel="linkset";type="application/linkset+json`` entry in the "Link" header, such as in the example above.
+
+The reponse includes a JSON object conforming to the `Signposting <https://signposting.org>`__ specification.
+Signposting is not supported for draft dataset versions.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+  export VERSION=1.0
+
+  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
 
 Files
 -----
@@ -2443,6 +2467,49 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -F 'file=@data.tsv' \
     -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' \
     "https://demo.dataverse.org/api/files/:persistentId/replace?persistentId=doi:10.5072/FK2/AAA000"
+
+Deleting Files
+~~~~~~~~~~~~~~
+
+Delete an existing file where ``ID`` is the database id of the file to delete or ``PERSISTENT_ID`` is the persistent id (DOI or Handle, if it exists) of the file.
+
+Note that the behavior of deleting files depends on if the dataset has ever been published or not.
+
+- If the dataset has never been published, the file will be deleted forever.
+- If the dataset has published, the file is deleted from the draft (and future published versions).
+- If the dataset has published, the deleted file can still be downloaded because it was part of a published version.
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/files/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/files/24
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/files/:persistentId?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/files/:persistentId?persistentId=doi:10.5072/FK2/AAA000"
 
 Getting File Metadata
 ~~~~~~~~~~~~~~~~~~~~~
@@ -3260,7 +3327,7 @@ Each user can get a dump of their basic information in JSON format by passing in
 
     curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/users/:me    
 
-.. _pids-api:
+
 
 Managing Harvesting Server and Sets
 -----------------------------------
@@ -3370,6 +3437,7 @@ The fully expanded example above (without the environment variables) looks like 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/harvest/server/oaisets/ffAuthor"
 
 Only users with superuser permissions may delete harvesting sets.
+
 
 .. _managing-harvesting-clients-api:
 
@@ -3518,6 +3586,9 @@ Self-explanatory:
 
 Only users with superuser permissions may delete harvesting clients.
 
+
+
+.. _pids-api:
 
 PIDs
 ----

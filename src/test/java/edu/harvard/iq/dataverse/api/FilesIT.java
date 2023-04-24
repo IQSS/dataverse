@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import com.jayway.restassured.path.json.JsonPath;
+import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
 import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -23,6 +24,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -64,7 +66,7 @@ public class FilesIT {
         
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
+        System.out.println(apiToken);
         return apiToken;
     }
     
@@ -1896,4 +1898,124 @@ public class FilesIT {
 
     }
 
+    @Test
+    public void testDeleteFile() {
+        msgt("testDeleteFile");
+        // Create user
+        String apiToken = createUserGetToken();
+
+        // Create user with no permission
+        String apiTokenNoPerms = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        // Upload file 1
+        String pathToFile1 = "src/main/webapp/resources/images/dataverseproject.png";
+        JsonObjectBuilder json1 = Json.createObjectBuilder()
+                .add("description", "my description1")
+                .add("directoryLabel", "data/subdir1")
+                .add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadResponse1 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, json1.build(), apiToken);
+        uploadResponse1.then().assertThat().statusCode(OK.getStatusCode());
+
+        Integer fileId1 = JsonPath.from(uploadResponse1.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Check file uploaded
+        Response downloadResponse1 = UtilIT.downloadFile(fileId1, null, null, null, apiToken);
+        downloadResponse1.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Delete file 1
+        Response deleteResponseFail = UtilIT.deleteFileApi(fileId1, apiTokenNoPerms);
+        deleteResponseFail.prettyPrint();
+        deleteResponseFail.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        Response deleteResponse1 = UtilIT.deleteFileApi(fileId1, apiToken);
+        deleteResponse1.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Check file 1 deleted for good because it was in a draft
+        Response downloadResponse1notFound = UtilIT.downloadFile(fileId1, null, null, null, apiToken);
+        downloadResponse1notFound.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // Upload file 2
+        String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
+        JsonObjectBuilder json2 = Json.createObjectBuilder()
+                .add("description", "my description2")
+                .add("directoryLabel", "data/subdir1")
+                .add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadResponse2 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, json2.build(), apiToken);
+        uploadResponse2.then().assertThat().statusCode(OK.getStatusCode());
+
+        Integer fileId2 = JsonPath.from(uploadResponse2.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Upload file 3
+        String pathToFile3 = "src/main/webapp/resources/images/orcid_16x16.png";
+        JsonObjectBuilder json3 = Json.createObjectBuilder()
+                .add("description", "my description3")
+                .add("directoryLabel", "data/subdir1")
+                .add("categories", Json.createArrayBuilder().add("Data"));
+        Response uploadResponse3 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile3, json3.build(), apiToken);
+        uploadResponse3.then().assertThat().statusCode(OK.getStatusCode());
+
+        Integer fileId3 = JsonPath.from(uploadResponse3.body().asString()).getInt("data.files[0].dataFile.id");
+
+        // Publish collection and dataset
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response deleteResponse2 = UtilIT.deleteFileApi(fileId2, apiToken);
+        deleteResponse2.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Check file 2 deleted from post v1.0 draft
+        Response postv1draft = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
+        postv1draft.prettyPrint();
+        postv1draft.then().assertThat()
+                .body("data.files.size()", equalTo(1))
+                .statusCode(OK.getStatusCode());
+
+        // Check file 2 still in v1.0
+        Response v1 = UtilIT.getDatasetVersion(datasetPid, "1.0", apiToken);
+        v1.prettyPrint();
+        v1.then().assertThat()
+                .body("data.files[0].dataFile.filename", equalTo("cc0.png"))
+                .statusCode(OK.getStatusCode());
+        
+        Map<String, Object> v1files1 = with(v1.body().asString()).param("fileToFind", "cc0.png")
+                .getJsonObject("data.files.find { files -> files.label == fileToFind }");
+        assertEquals("cc0.png", v1files1.get("label"));
+
+        // Check file 2 still downloadable (published in in v1.0)
+        Response downloadResponse2 = UtilIT.downloadFile(fileId2, null, null, null, apiToken);
+        downloadResponse2.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Check file 3 still in post v1.0 draft
+        Response postv1draft2 = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
+        postv1draft2.prettyPrint();
+        postv1draft2.then().assertThat()
+                .body("data.files[0].dataFile.filename", equalTo("orcid_16x16.png"))
+                .statusCode(OK.getStatusCode());
+        
+        Map<String, Object> v1files2 = with(postv1draft2.body().asString()).param("fileToFind", "orcid_16x16.png")
+                .getJsonObject("data.files.find { files -> files.label == fileToFind }");
+        assertEquals("orcid_16x16.png", v1files2.get("label"));
+
+        // Delete file 3, the current version is still draft
+        Response deleteResponse3 = UtilIT.deleteFileApi(fileId3, apiToken);
+        deleteResponse3.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Check file 3 deleted from post v1.0 draft
+        Response postv1draft3 = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
+        postv1draft3.prettyPrint();
+        postv1draft3.then().assertThat()
+                .body("data.files[0]", equalTo(null))
+                .statusCode(OK.getStatusCode());
+    }
 }
