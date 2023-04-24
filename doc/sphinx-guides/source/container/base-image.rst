@@ -31,7 +31,7 @@ upstream branches:
 
 - The ``unstable`` tag corresponds to the ``develop`` branch, where pull requests are merged.
   (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
-- The ``stable`` tag corresponds to the ``master`` branch, where releases are cut from.
+- The ``alpha`` tag corresponds to the ``master`` branch, where releases are cut from.
   (`Dockerfile <https://github.com/IQSS/dataverse/tree/master/modules/container-base/src/main/docker/Dockerfile>`__)
 
 

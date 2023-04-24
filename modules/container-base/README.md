@@ -34,7 +34,7 @@ happens there (again, by the community). Community-supported image tags are base
 
 - The `unstable` tag corresponds to the `develop` branch, where pull requests are merged.
   ([`Dockerfile`](https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile))
-- The `stable` tag corresponds to the `master` branch, where releases are cut from.
+- The `alpha` tag corresponds to the `master` branch, where releases are cut from.
   ([`Dockerfile`](https://github.com/IQSS/dataverse/tree/master/modules/container-base/src/main/docker/Dockerfile))
 
 Within the main repository, you may find the base image files at `<git root>/modules/container-base`.

@@ -81,7 +81,7 @@ jobs:
               uses: docker/setup-qemu-action@v2
             - name: Re-set image tag based on branch
               if: ${{ github.ref_name == 'master' }}
-              run: echo "IMAGE_TAG=stable" >> $GITHUB_ENV
+              run: echo "IMAGE_TAG=alpha" >> $GITHUB_ENV
             - if: ${{ github.event_name != 'pull_request' }}
               name: Deploy multi-arch base container image to Docker Hub
               run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }}
