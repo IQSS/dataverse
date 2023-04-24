@@ -111,8 +111,8 @@ the Docker machine's CPU.
 Only ``mvn -Pct deploy`` will trigger building on all enabled architectures (and will try to push the images to a
 registry, which is Docker Hub by default).
 
-You must specify which architectures you would like to build for and include by them as a comma separated list:
-``mvn -Pct deploy -Ddocker.platforms="linux/amd64,linux/arm64"``
+You can specify which architectures you would like to build for and include by them as a comma separated list:
+``mvn -Pct deploy -Ddocker.platforms="linux/amd64,linux/arm64"``. The shown configuration is the default and may be omitted.
 
 Yet, to enable building with non-native code on your build machine, you will need to setup a cross-platform builder!
 
