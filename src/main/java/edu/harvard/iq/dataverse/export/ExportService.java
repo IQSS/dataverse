@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,8 +42,6 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.io.IOUtils;
@@ -293,7 +290,7 @@ public class ExportService {
             if (e != null) {
                 DatasetVersion releasedVersion = dataset.getReleasedVersion();
                 if (releasedVersion == null) {
-                    throw new IllegalStateException("No Released Version");
+                    throw new ExportException("No published version found during export. " + dataset.getGlobalId().toString());
                 }
                 ExportDataProvider dataProvider = new ExportDataProvider(releasedVersion);
                 cacheExport(dataset, dataProvider, formatName, e);
@@ -303,7 +300,18 @@ public class ExportService {
                 throw new ExportException("Exporter not found");
             }
         } catch (IllegalStateException e) {
-            throw new ExportException("No published version found during export. " + dataset.getGlobalId().toString());
+            // IllegalStateException can potentially mean very different, and 
+            // unexpected things. An exporter attempting to get a single primitive
+            // value from a fieldDTO that is in fact a Multiple and contains a 
+            // json vector (this has happened, for example, when the code in the
+            // DDI exporter was not updated following a metadata fieldtype change), 
+            // will result in IllegalStateException.
+            throw new ExportException("IllegalStateException caught when exporting " 
+                    + formatName 
+                    + " for dataset "
+                    + dataset.getGlobalId().toString()
+                    + "; may or may not be due to a mismatch between an exporter code and a metadata block update. "
+                    + e.getMessage());
         }
 
     }

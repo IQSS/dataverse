@@ -93,7 +93,7 @@ public class OREMap {
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
         List<DatasetField> fields = version.getDatasetFields();
         // That has it's own metadata
-        Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
+        Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(true);
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
@@ -375,23 +375,7 @@ public class OREMap {
         if (!dfType.isCompound()) {
             for (String val : field.getValues_nondisplay()) {
                 if (cvocMap.containsKey(dfType.getId())) {
-                    try {
-                        JsonObject cvocEntry = cvocMap.get(dfType.getId());
-                        if (cvocEntry.containsKey("retrieval-filtering")) {
-                            JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
-                            JsonObject context = filtering.getJsonObject("@context");
-                            for (String prefix : context.keySet()) {
-                                localContext.putIfAbsent(prefix, context.getString(prefix));
-                            }
-                            vals.add(datasetFieldService.getExternalVocabularyValue(val));
-                        } else {
-                            vals.add(val);
-                        }
-                    } catch (Exception e) {
-                        logger.warning("Couldn't interpret value for : " + val + " : " + e.getMessage());
-                        logger.log(Level.FINE, ExceptionUtils.getStackTrace(e));
-                        vals.add(val);
-                    }
+                    addCvocValue(val, vals, cvocMap.get(dfType.getId()), localContext);
                 } else {
                     vals.add(val);
                 }
@@ -420,15 +404,22 @@ public class OREMap {
                         }
 
                         List<String> values = dsf.getValues_nondisplay();
-                        if (values.size() > 1) {
-                            JsonArrayBuilder childVals = Json.createArrayBuilder();
 
-                            for (String val : dsf.getValues_nondisplay()) {
+                        JsonArrayBuilder childVals = Json.createArrayBuilder();
+
+                        for (String val : dsf.getValues_nondisplay()) {
+                            logger.fine("Child name: " + dsft.getName());
+                            if (cvocMap.containsKey(dsft.getId())) {
+                                logger.fine("Calling addcvocval for: " + dsft.getName());
+                                addCvocValue(val, childVals, cvocMap.get(dsft.getId()), localContext);
+                            } else {
                                 childVals.add(val);
                             }
+                        }
+                        if (values.size() > 1) {
                             child.add(subFieldName.getLabel(), childVals);
                         } else {
-                            child.add(subFieldName.getLabel(), values.get(0));
+                            child.add(subFieldName.getLabel(), childVals.build().get(0));
                         }
                     }
                 }
@@ -438,6 +429,30 @@ public class OREMap {
         // Add metadata value to aggregation, suppress array when only one value
         JsonArray valArray = vals.build();
         return (valArray.size() != 1) ? valArray : valArray.get(0);
+    }
+
+    private static void addCvocValue(String val, JsonArrayBuilder vals, JsonObject cvocEntry,
+            Map<String, String> localContext) {
+        try {
+            if (cvocEntry.containsKey("retrieval-filtering")) {
+                JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
+                JsonObject context = filtering.getJsonObject("@context");
+                for (String prefix : context.keySet()) {
+                    localContext.putIfAbsent(prefix, context.getString(prefix));
+                }
+                JsonObjectBuilder job = Json.createObjectBuilder(datasetFieldService.getExternalVocabularyValue(val));
+                job.add("@id", val);
+                JsonObject extVal = job.build();
+                logger.fine("Adding: " + extVal);
+                vals.add(extVal);
+            } else {
+                vals.add(val);
+            }
+        } catch (Exception e) {
+            logger.warning("Couldn't interpret value for : " + val + " : " + e.getMessage());
+            logger.log(Level.FINE, ExceptionUtils.getStackTrace(e));
+            vals.add(val);
+        }
     }
 
     public static void injectSettingsService(SettingsServiceBean settingsSvc, DatasetFieldServiceBean datasetFieldSvc) {

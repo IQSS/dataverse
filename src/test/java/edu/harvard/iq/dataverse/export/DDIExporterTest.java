@@ -90,8 +90,9 @@ public class DDIExporterTest {
 
         // then
         String xml = XmlPrinter.prettyPrintXml(byteArrayOutputStream.toString(StandardCharsets.UTF_8));
-        XmlAssert.assertThat(xml).isInvalid();
-        logger.severe("DDIExporterTest.testExportDataset() creates XML but it's invalid. Fixing in DDIExportUtil required.");
+        logger.fine(xml);
+        XmlAssert.assertThat(xml).isValid();
+        logger.severe("DDIExporterTest.testExportDataset() creates XML that should now be valid, since DDIExportUtil has been fixed.");
     }
 
     @Test
