@@ -143,6 +143,8 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 import java.util.Comparator;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -3622,9 +3624,9 @@ public class DatasetPage implements java.io.Serializable {
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             }
             dataset = commandEngine.submit(cmd);
-            for (DatasetField df : dataset.getLatestVersion().getDatasetFields()) {
+            for (DatasetField df : dataset.getLatestVersion().getFlatDatasetFields()) {
                 logger.fine("Found id: " + df.getDatasetFieldType().getId());
-                if (fieldService.getCVocConf(false).containsKey(df.getDatasetFieldType().getId())) {
+                if (fieldService.getCVocConf(true).containsKey(df.getDatasetFieldType().getId())) {
                     fieldService.registerExternalVocabValues(df);
                 }
             }
@@ -5797,7 +5799,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public List<String> getVocabScripts() {
-        return fieldService.getVocabScripts(settingsWrapper.getCVocConf());
+        return fieldService.getVocabScripts(settingsWrapper.getCVocConf(false));
     }
 
     public String getFieldLanguage(String languages) {
@@ -6046,8 +6048,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-    
-    
+
     //Determines whether this Dataset uses a public store and therefore doesn't support embargoed or restricted files
     public boolean isHasPublicStore() {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(dataset.getEffectiveStorageDriverId()));
@@ -6079,6 +6080,20 @@ public class DatasetPage implements java.io.Serializable {
             logger.warning("getWebloaderUrlForDataset called for non-Authenticated user");
             return null;
         }
+    }
+    
+    /**
+     * Add Signposting
+     * @return String
+     */
+    public String getSignpostingLinkHeader() {
+        if (!workingVersion.isReleased()) {
+            return null;
+        }
+        SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion,
+                JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
+                JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""));
+        return sr.getLinks();
     }
 
 }
