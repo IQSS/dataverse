@@ -7,7 +7,9 @@ Adding basic functionality like executing scripts at container boot, monitoring,
 at this layer. Application images building from this very base focus on adding deployable Dataverse code and 
 actual scripts.
 
-*Note:* Currently, there is no application image. Please watch https://github.com/IQSS/dataverse/issues/8934
+There is a community based [application image](https://hub.docker.com/r/gdcc/dataverse) 
+([docs](https://guides.dataverse.org/en/latest/container/app-image.html)), but you may create your own or even reuse
+this image for other purposes than the Dataverse application.
 
 ## Quick Reference
 
