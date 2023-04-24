@@ -47,4 +47,16 @@ public class NetcdfFileMetadataExtractorTest {
         assertNull(map.get(DatasetFieldConstant.northLatitude).toArray()[0]);
     }
 
+    @Test
+    public void testStandardLongitude() {
+        NetcdfFileMetadataExtractor extractor = new NetcdfFileMetadataExtractor();
+        // Both are over 180. Change.
+        assertEquals(new WestAndEastLongitude("-16.320007", "-6.220001"), extractor.getStandardLongitude(new WestAndEastLongitude("343.68", "353.78")));
+        // One is over 180. Change
+        assertEquals(new WestAndEastLongitude("-260.0", "-179.0"), extractor.getStandardLongitude(new WestAndEastLongitude("100", "181")));
+        // Both are under 180. No change.
+        assertEquals(new WestAndEastLongitude("25", "35"), extractor.getStandardLongitude(new WestAndEastLongitude("25", "35")));
+        assertEquals(null, extractor.getStandardLongitude(new WestAndEastLongitude("foo", "bar")));
+    }
+
 }

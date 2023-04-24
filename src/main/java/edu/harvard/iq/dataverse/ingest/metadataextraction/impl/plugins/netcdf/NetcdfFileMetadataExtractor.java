@@ -50,10 +50,9 @@ public class NetcdfFileMetadataExtractor extends FileMetadataExtractor {
         fileMetadataIngest.setMetadataBlockName(GEOSPATIAL_BLOCK_NAME);
 
         Map<String, String> geoFields = parseGeospatial(getNetcdfFile(file));
-        String westLongitude = geoFields.get(WEST_LONGITUDE);
-        String westLongitudeFinal = getStandardLongitude(westLongitude);
-        String eastLongitude = geoFields.get(EAST_LONGITUDE);
-        String eastLongitudeFinal = getStandardLongitude(eastLongitude);
+        WestAndEastLongitude welong = getStandardLongitude(new WestAndEastLongitude(geoFields.get(WEST_LONGITUDE), geoFields.get(EAST_LONGITUDE)));
+        String westLongitudeFinal = welong != null ? welong.getWestLongitude() : null;
+        String eastLongitudeFinal = welong != null ? welong.getEastLongitude() : null;
         String northLatitudeFinal = geoFields.get(NORTH_LATITUDE);
         String southLatitudeFinal = geoFields.get(SOUTH_LATITUDE);
 
@@ -128,20 +127,36 @@ public class NetcdfFileMetadataExtractor extends FileMetadataExtractor {
     }
 
     // Convert to standard -180 to 180 range by subtracting 360
+    // if either longitude is greater than 180.
     //       west     south      east      north
     //     343.68,     41.8,   353.78,     49.62 becomes
     //     -16.320007, 41.8,    -6.220001, 49.62 instead
-    private String getStandardLongitude(String longitude) {
-        if (longitude == null) {
+    // "If one of them is > 180, the domain is 0:360.
+    // If one of them is <0, the domain is -180:180.
+    // If both are between 0 and 180, the answer is indeterminate."
+    // https://github.com/cf-convention/cf-conventions/issues/435#issuecomment-1505614364
+    public WestAndEastLongitude getStandardLongitude(WestAndEastLongitude westAndEastLongitude) {
+        if (westAndEastLongitude == null) {
             return null;
         }
-        Float lonAsFloat = Float.valueOf(longitude);
-        if (lonAsFloat > 180) {
-            Float toReturnFloat = lonAsFloat - 360;
-            String toReturnString = toReturnFloat.toString();
-            return toReturnString;
+        if (westAndEastLongitude.getWestLongitude() == null || westAndEastLongitude.getEastLongitude() == null) {
+            return null;
         }
-        return longitude;
+        float eastAsFloat;
+        float westAsFloat;
+        try {
+            westAsFloat = Float.valueOf(westAndEastLongitude.getWestLongitude());
+            eastAsFloat = Float.valueOf(westAndEastLongitude.getEastLongitude());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+        if (westAsFloat > 180 || eastAsFloat > 180) {
+            Float westStandard = westAsFloat - 360;
+            Float eastStandard = eastAsFloat - 360;
+            WestAndEastLongitude updatedWeLong = new WestAndEastLongitude(westStandard.toString(), eastStandard.toString());
+            return updatedWeLong;
+        }
+        return westAndEastLongitude;
     }
 
     // Generates a handy link to see what the bounding box looks like on a map
