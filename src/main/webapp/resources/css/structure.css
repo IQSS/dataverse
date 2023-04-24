@@ -1049,6 +1049,10 @@ progress::-webkit-progress-value {
 
 /*External vocabulary support*/
 
+.select2-container {
+    display:block!important;
+}
+
 .select2-container .select2-selection--single {
         border:1px solid #cccccc;
         border-radius: 3px;
@@ -1059,7 +1063,8 @@ progress::-webkit-progress-value {
 
 .select2-container .select2-selection--single .select2-selection__rendered {
         display:inline-block!important;
-        max-width:90%
+        max-width:80%;
+        padding-right:5px!important;
 }
 .select2-selection__clear, .select2-selection__rendered {
         vertical-align: -webkit-baseline-middle;
