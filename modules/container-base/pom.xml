@@ -44,7 +44,7 @@
                 <java.image>eclipse-temurin:${target.java.version}-jre</java.image>
                 <base.image.uid>1000</base.image.uid>
                 <base.image.gid>1000</base.image.gid>
-                <docker.platforms></docker.platforms>
+                <docker.platforms>linux/amd64,linux/arm64</docker.platforms>
             </properties>
             
             <build>
