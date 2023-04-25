@@ -99,6 +99,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.apache.commons.io.FileUtils;
 
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FilenameUtils;
@@ -108,6 +109,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import java.util.Arrays;
+import java.util.Enumeration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import ucar.nc2.NetcdfFile;
@@ -452,7 +454,7 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
 
-        // step 3: Check if NetCDF or HDF5
+        // step 3a: Check if NetCDF or HDF5
         if (fileType == null) {
             fileType = checkNetcdfOrHdf5(f);
         }
@@ -628,7 +630,9 @@ public class FileUtil implements java.io.Serializable  {
     private static boolean isGraphMLFile(File file) {
         boolean isGraphML = false;
         logger.fine("begin isGraphMLFile()");
-        try(FileReader fileReader = new FileReader(file)){
+        FileReader fileReader = null;
+        try{
+            fileReader = new FileReader(file);
             javax.xml.stream.XMLInputFactory xmlif = javax.xml.stream.XMLInputFactory.newInstance();
             xmlif.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE);
 
@@ -651,6 +655,14 @@ public class FileUtil implements java.io.Serializable  {
             isGraphML = false;
         } catch(IOException e) {
             throw new EJBException(e);
+        } finally {
+            if (fileReader != null) {
+                try {
+                    fileReader.close();
+                } catch (IOException ioex) {
+                    logger.warning("IOException closing file reader in GraphML type checker");
+                }
+            }
         }
         logger.fine("end isGraphML()");
         return isGraphML;
