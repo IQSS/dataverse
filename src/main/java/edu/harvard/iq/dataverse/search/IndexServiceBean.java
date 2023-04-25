@@ -366,21 +366,31 @@ public class IndexServiceBean {
         return ret;
     }
 
+    // The following two variables are only used in the synchronized getNextToIndex method and do not need to be synchronized themselves
+    
+    // nextToIndex contains datasets mapped by dataset id that were added for future indexing while the indexing was already ongoing for a given dataset
+    // (if there already was a dataset scheduled for indexing, it is overwritten and only the most recently requested version is kept in the map)
     private Map<Long, Dataset> nextToIndex = new HashMap<>();
+    // indexingNow is a set of dataset ids of datasets being indexed asynchronously right now
     private Set<Long> indexingNow = new HashSet<>();
 
+    // When you pass null as Dataset parameter to this method, it indicates that the indexing of the dataset with "id" has finished
+    // Pass non-null Dataset to schedule it for indexing
     synchronized private Dataset getNextToIndex(Long id, Dataset d) {
-        if (d == null) {
+        if (d == null) { // -> indexing of the dataset with id has finished
             Dataset next = nextToIndex.remove(id);
-            if (next == null) {
+            if (next == null) { // -> no new indexing jobs were requested while indexing was ongoing
+                // the job can be stopped now
                 indexingNow.remove(id);
             }
             return next;
         }
-        if (indexingNow.contains(id)) {
+        // index job is requested for a non-null dataset
+        if (indexingNow.contains(id)) { // -> indexing job is already ongoing, and a new job should not be started by the current thread -> return null
             nextToIndex.put(id, d);
             return null;
         }
+        // otherwise, start a new job
         indexingNow.add(id);
         return d;
     }
@@ -388,14 +398,14 @@ public class IndexServiceBean {
     @Asynchronous
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUpe) {
         Long id = dataset.getId();
-        Dataset next = getNextToIndex(id, dataset);
+        Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
         while (next != null) {
             try {
                 indexDataset(next, doNormalSolrDocCleanUpe);
             } catch (SolrServerException | IOException e) {
                 logger.warning("unable to index datasat " + id + ": " + e);
             }
-            next = getNextToIndex(id, null);
+            next = getNextToIndex(id, null); // if dataset was not changed during the indexing (and no new job was requested), next is null and loop can be stopped
         }
     }
     
