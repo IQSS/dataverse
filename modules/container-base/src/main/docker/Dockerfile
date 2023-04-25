@@ -190,6 +190,9 @@ RUN <<EOF
     ### DATAVERSE APPLICATION SPECIFICS
     # Configure the MicroProfile directory config source to point to /secrets
     ${ASADMIN} set-config-dir --directory="${SECRETS_DIR}"
+    # Password alias store = 105, default = 100 - lets sort between those to enable overriding from all of the others
+    # except alias config source and microprofile-config.properties
+    ${ASADMIN} set-config-ordinal --ordinal=104 --source=secrets
     # Make request timeouts configurable via MPCONFIG (default to 900 secs = 15 min)
     ${ASADMIN} set 'server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=${MPCONFIG=dataverse.http.timeout:900}'
     # TODO: what of the below 3 items can be deleted for container usage?

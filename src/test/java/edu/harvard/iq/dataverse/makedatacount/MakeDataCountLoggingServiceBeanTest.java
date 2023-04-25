@@ -40,7 +40,7 @@ public class MakeDataCountLoggingServiceBeanTest {
         dataset.setAuthority("Authority");
         dataset.setProtocol("Protocol");
         dataset.setIdentifier("Identifier"); 
-        GlobalId id = new GlobalId(dataset);
+        GlobalId id = dataset.getGlobalId();
         dataset.setGlobalId(id);
         dvVersion.setDataset(dataset);
         dvVersion.setAuthorsStr("OneAuthor;TwoAuthor");
