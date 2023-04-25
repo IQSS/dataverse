@@ -8,7 +8,7 @@ on:
     pull_request:
         branches:
             - develop
-            - main
+            - master
         paths:
             - 'src/main/docker/**'
             - '.github/workflows/container_app_push.yml'
@@ -79,10 +79,10 @@ jobs:
             - name: Set up QEMU for multi-arch builds
               uses: docker/setup-qemu-action@v2
 
-            - name: Re-set image tag based on branch (if main)
-              if: ${{ github.ref_name == 'main' }}
+            - name: Re-set image tag based on branch (if master)
+              if: ${{ github.ref_name == 'master' }}
               run: |
-                  echo "IMAGE_TAG=stable" >> $GITHUB_ENV
+                  echo "IMAGE_TAG=alpha" >> $GITHUB_ENV
                   echo "BASE_IMAGE_TAG=alpha" >> $GITHUB_ENV
             - name: Re-set image tag and container registry when on PR
               if: ${{ github.event_name == 'pull_request' }}
