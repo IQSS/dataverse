@@ -366,9 +366,37 @@ public class IndexServiceBean {
         return ret;
     }
 
+    private Map<Long, Dataset> nextToIndex = new HashMap<>();
+    private Set<Long> indexingNow = new HashSet<>();
+
+    synchronized private Dataset getNextToIndex(Long id, Dataset d) {
+        if (d == null) {
+            Dataset next = nextToIndex.remove(id);
+            if (next == null) {
+                indexingNow.remove(id);
+            }
+            return next;
+        }
+        if (indexingNow.contains(id)) {
+            nextToIndex.put(id, d);
+            return null;
+        }
+        indexingNow.add(id);
+        return d;
+    }
+
     @Asynchronous
-    public Future<String> asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
-        return indexDataset(dataset, doNormalSolrDocCleanUp);
+    public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUpe) {
+        Long id = dataset.getId();
+        Dataset next = getNextToIndex(id, dataset);
+        while (next != null) {
+            try {
+                indexDataset(next, doNormalSolrDocCleanUpe);
+            } catch (SolrServerException | IOException e) {
+                logger.warning("unable to index datasat " + id + ": " + e);
+            }
+            next = getNextToIndex(id, null);
+        }
     }
     
     @Asynchronous
