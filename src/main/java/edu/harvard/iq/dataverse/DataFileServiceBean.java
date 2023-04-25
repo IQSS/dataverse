@@ -168,6 +168,9 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         public Long getRemainingQuotaInBytes() {
+            if (totalUsageInBytes > totalAllocatedInBytes) {
+                return 0L; 
+            }
             return totalAllocatedInBytes - totalUsageInBytes;
         }
     }
