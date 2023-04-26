@@ -3,11 +3,13 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.feedback.Feedback;
 import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -140,7 +142,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
     
     public String getMessageCC() {
-        if (ccSupport()) {
+        if (ccSupport(feedbackTarget)) {
             return BrandingUtil.getSupportTeamName(systemAddress);
         }
         return null;
@@ -210,7 +212,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
         String installationBrandName = BrandingUtil.getInstallationBrandName();
         String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress);
 
-        Feedback feedback = FeedbackUtil.gatherFeedback(feedbackTarget, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName, ccSupport());
+        Feedback feedback = FeedbackUtil.gatherFeedback(feedbackTarget, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName, ccSupport(feedbackTarget));
         if (feedback==null) {
             logger.warning("No feedback has been sent!");
             return null;
@@ -220,9 +222,11 @@ public class SendFeedbackDialog implements java.io.Serializable {
         return null;
     }
     
-    private boolean ccSupport() {
-        //Setting is enabled and this isn't already a direct message to support (no feedbackObject
-        return feedbackTarget!=null && JvmSettings.CC_SUPPORT_ON_CONTACT_EMAILS.lookupOptional(Boolean.class, false);
+    public static boolean ccSupport(DvObject feedbackTarget) {
+        //Setting is enabled and this isn't already a direct message to support (no feedbackTarget)
+        Optional<Boolean> ccSupport = JvmSettings.CC_SUPPORT_ON_CONTACT_EMAILS.lookupOptional(Boolean.class);
+        
+        return feedbackTarget!=null && ccSupport.isPresent() &&ccSupport.get();
     }
 
 }

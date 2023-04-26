@@ -3,9 +3,11 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.SendFeedbackDialog;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.feedback.Feedback;
 import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 
@@ -49,10 +51,7 @@ public class FeedbackApi extends AbstractApiBean {
         }
         DataverseSession dataverseSession = null;
         String userMessage = jsonObject.getString("body");
-        String systemEmail = settingsSvc.getValueForKey(SettingsServiceBean.Key.SupportEmail);
-        if(systemEmail==null) {
-            systemEmail = settingsSvc.getValueForKey(SettingsServiceBean.Key.SystemEmail);
-        }
+        String systemEmail = JvmSettings.SUPPORT_EMAIL.lookupOptional().orElse(settingsSvc.getValueForKey(SettingsServiceBean.Key.SystemEmail));
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
         String userEmail = jsonObject.getString("fromEmail");
         String messageSubject = jsonObject.getString("subject");
@@ -60,8 +59,7 @@ public class FeedbackApi extends AbstractApiBean {
         String installationBrandName = BrandingUtil.getInstallationBrandName();
         String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress);
         JsonArrayBuilder jab = Json.createArrayBuilder();
-        boolean ccSupport=feedbackTarget!=null &&settingsSvc.isTrueForKey(SettingsServiceBean.Key.CCSupportOnContactEmails, false);
-        Feedback feedback = FeedbackUtil.gatherFeedback(feedbackTarget, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName, ccSupport);
+        Feedback feedback = FeedbackUtil.gatherFeedback(feedbackTarget, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName, SendFeedbackDialog.ccSupport(feedbackTarget));
         jab.add(feedback.toJsonObjectBuilder());
         mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getCcEmail(), feedback.getSubject(), feedback.getBody(), null);
         return ok(jab);
