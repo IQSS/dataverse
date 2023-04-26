@@ -170,7 +170,9 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
     
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {  
-        ctxt.em().flush(); // in the case when the root dataverse is created, IndexServiceBean need to see the root dataverse at initialization
+        if (ctxt.em() != null) {
+            ctxt.em().flush(); // in the case when the root dataverse is created, IndexServiceBean need to see the root dataverse at initialization
+        }
         return ctxt.dataverses().index((Dataverse) r);
     }
 
