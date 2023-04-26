@@ -101,11 +101,8 @@ public class SendFeedbackDialog implements java.io.Serializable {
         op1 = Long.valueOf(random.nextInt(10));
         op2 = Long.valueOf(random.nextInt(10));
         userSum = null;
-        String systemEmail = settingsService.getValueForKey(SettingsServiceBean.Key.SupportEmail);
-        if(systemEmail==null) {
-            systemEmail = settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail);
-        }
-        systemAddress = MailUtil.parseSystemAddress(systemEmail);
+        String supportEmail = JvmSettings.SUPPORT_EMAIL.lookupOptional().orElse(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
+        systemAddress = MailUtil.parseSystemAddress(supportEmail);
     }
 
     public Long getOp1() {
@@ -225,7 +222,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
     
     private boolean ccSupport() {
         //Setting is enabled and this isn't already a direct message to support (no feedbackObject
-        return feedbackTarget!=null &&settingsService.isTrueForKey(SettingsServiceBean.Key.CCSupportOnContactEmails, false);
+        return feedbackTarget!=null && JvmSettings.CC_SUPPORT_ON_CONTACT_EMAILS.lookupOptional(Boolean.class, false);
     }
 
 }

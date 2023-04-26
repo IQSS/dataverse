@@ -2349,6 +2349,29 @@ See :ref:`discovery-sign-posting` for details.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_ITEM_LIMIT``.
 
+dataverse.mail.support-email
+++++++++++++++++++++++++++++
+
+This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address that emails from the Contact Forms and Feedback API are sent from.
+This allows configuration of a no-reply email address for :ref:`systemEmail` why allow replies to the SupportEmail address. If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
+
+``curl -X PUT -d 'LibraScholar Support Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SupportEmail``
+
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
+
+.. _dataverse.mail.cc-support-on-contact-emails:
+
+dataverse.mail.cc-support-on-contact-emails
++++++++++++++++++++++++++++++++++++++++++++
+
+If this setting is true, the contact forms and feedback API will cc the system (:SupportEmail if set, :SystemEmail if not) when sending email to the collection, dataset, or datafile contacts.
+A CC line is added to the contact form when this setting is true so that users are aware that the cc will occur.
+The default is false.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAILS``.
+
 
 .. _feature-flags:
 
@@ -3812,21 +3835,4 @@ To use the current GDCC version directly:
 ``curl -X PUT -d 'https://gdcc.github.io/dvwebloader/src/dvwebloader.html' http://localhost:8080/api/admin/settings/:WebloaderUrl``
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
-
-:SupportEmail
-+++++++++++++
-
-This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address that emails from the Contact Forms and Feedback API are sent from.
-This allows configuration of a no-reply email address for :ref:`systemEmail` why allow replies to the SupportEmail address. If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
-
-``curl -X PUT -d 'LibraScholar Support Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SupportEmail``
-
-Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
-
-
-:CCSupportOnContactEmails
-+++++++++++++++++++++++++
-
-If this setting is true, the contact forms and feedback API will cc the system (:SupportEmail if set, :SystemEmail if not) when sending email to the collection, dataset, or datafile contacts.
-A CC line is added to the contact form when this setting is true so that users are aware that the cc will occur.
 
