@@ -309,7 +309,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 
             try {
                 //CreateDataFileResult createDataFilesResponse =  FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, null, systemConfig);
-                Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, null);
+                Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvReq, editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, null);
                 CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
                 dataFiles = createDataFilesResult.getDataFiles();
             } catch (CommandException ex) {
