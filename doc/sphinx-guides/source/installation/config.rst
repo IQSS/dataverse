@@ -3826,6 +3826,6 @@ A true(default)/false option determining whether datafiles listed on the dataset
 :AllowUserManagementOfOrder
 +++++++++++++++++++++++++++
 
-A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategorySortOrder) on and off dymanically. 
+A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically. 
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
