@@ -106,10 +106,6 @@ public enum JvmSettings {
     HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path", "dataverse.handlenet.admcredfile"),
     HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase", "dataverse.handlenet.admprivphrase"),
 
-    // FRONTEND
-    SCOPE_FRONTEND(PREFIX, "frontend"),
-    FRONTEND_URL(SCOPE_FRONTEND, "url"),
-
     ;
     
     private static final String SCOPE_SEPARATOR = ".";

@@ -2,11 +2,12 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.settings.FeatureFlags;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -160,15 +161,7 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
         }
         try {
             if (settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowCors, true )) {
-                String accessControlAllowOriginHeader = "Access-Control-Allow-Origin";
-                if (FeatureFlags.API_SESSION_AUTH.enabled()) {
-                    String frontendOrigin = JvmSettings.FRONTEND_URL.lookup();
-                    ((HttpServletResponse) sr1).addHeader(accessControlAllowOriginHeader, frontendOrigin);
-                    ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Credentials", "true");
-                }
-                else {
-                    ((HttpServletResponse) sr1).addHeader(accessControlAllowOriginHeader, "*");
-                }
+                ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Origin", "*");
                 ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
                 ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Headers", "Accept, Content-Type, X-Dataverse-Key, Range");
                 ((HttpServletResponse) sr1).addHeader("Access-Control-Expose-Headers", "Accept-Ranges, Content-Range, Content-Encoding");
