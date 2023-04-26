@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+
 public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
 
     public static final String DOI_PROTOCOL = "doi";
@@ -51,6 +53,27 @@ public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
 
     public String getUrlPrefix() {
         return DOI_RESOLVER_URL;
+    }
+
+    @Override
+    public boolean isConfigured() {
+        if (configured == null) {
+            if (getProviderKeyName() == null) {
+                configured = false;
+            } else {
+                String doiProvider = settingsService.getValueForKey(Key.DoiProvider, "");
+                if (getProviderKeyName().equals(doiProvider)) {
+                    configured = true;
+                } else if (!doiProvider.isEmpty()) {
+                    configured = false;
+                }
+            }
+        }
+        return super.isConfigured();
+    }
+
+    protected String getProviderKeyName() {
+        return null;
     }
     
 }

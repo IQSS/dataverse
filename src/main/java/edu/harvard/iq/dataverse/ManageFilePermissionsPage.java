@@ -444,8 +444,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
         for (DataFile file : files) {
             if (assignRole(au, file, fileDownloaderRole)) {
-                file.removeFileAccessRequester(au);
-                datafileService.save(file);
+                if (file.removeFileAccessRequester(au)) {
+                    datafileService.save(file);
+                }
                 actionPerformed = true;
             }
         }

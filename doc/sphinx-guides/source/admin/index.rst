@@ -14,6 +14,7 @@ This guide documents the functionality only available to superusers (such as "da
 
    dashboard
    external-tools
+   discoverability
    harvestclients
    harvestserver
    metadatacustomization

@@ -82,6 +82,7 @@ public class UnmanagedDOIServiceBean extends DOIServiceBean {
         return providerInfo;
     }
 
+
     // PID recognition
     // Done by DOIServiceBean
 

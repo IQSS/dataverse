@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
 import edu.ucsb.nceas.ezid.EZIDServiceRequest;
@@ -30,7 +29,10 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
         try {
             // Guessing these are System.getProperty rather than using settingsService
             // because this is a constructor rather than a @PostConstruct method
-            baseURLString = System.getProperty("doi.baseurlstring");
+            String urlFromProperty = System.getProperty("doi.baseurlstring");
+            if(urlFromProperty!=null) {
+                baseURLString = urlFromProperty;
+            }
             logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
             ezidService = new EZIDService(baseURLString);
             USERNAME = System.getProperty("doi.username");
@@ -283,6 +285,11 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
      */
     private <T> HashMap<T,T> asHashMap(Map<T,T> map) {
         return (map instanceof HashMap) ? (HashMap)map : new HashMap<>(map);
+    }
+
+    @Override
+    protected String getProviderKeyName() {
+        return "EZID";
     }
 
 }
