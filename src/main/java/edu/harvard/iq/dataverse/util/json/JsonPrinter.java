@@ -501,7 +501,7 @@ public class JsonPrinter {
         blockBld.add("name", block.getName());
         
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
-        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false);
+        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
         DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray));
 
         blockBld.add("fields", fieldsArray);
@@ -523,7 +523,7 @@ public class JsonPrinter {
             return null;
         } else {
             JsonArrayBuilder fieldArray = Json.createArrayBuilder();
-            Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false);
+            Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
             DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray), cvocMap);
             JsonArray out = fieldArray.build();
             return out.getJsonObject(0);
@@ -746,7 +746,7 @@ public class JsonPrinter {
         @Override
         public void startField(DatasetField f) {
             objectStack.push(jsonObjectBuilder());
-            // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
+            // Invariant: all values are multiple. Differentiation between multiple and single is done at endField.
             valueArrStack.push(Json.createArrayBuilder());
 
             DatasetFieldType typ = f.getDatasetFieldType();
@@ -757,7 +757,7 @@ public class JsonPrinter {
 
         @Override
         public void addExpandedValuesArray(DatasetField f) {
-            // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
+            // Invariant: all values are multiple. Differentiation between multiple and single is done at endField.
             valueArrStack.push(Json.createArrayBuilder());
         }
 
