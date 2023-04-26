@@ -265,8 +265,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
     
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
-        // Async indexing requires the eclipselink.persistence-context.flush-mode persistence parameter to be set to "commit",
-        // otherwise, it will cause table locking when trying to update the dataset when it is being indexed
         // Async indexing significantly improves performance when updating datasets with thousands of files
         // Indexing will be started immediately, unless an index is already busy for the given data
         // (it will be scheduled then for later indexing of the newest version).

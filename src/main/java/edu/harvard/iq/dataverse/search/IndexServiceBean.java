@@ -426,8 +426,14 @@ public class IndexServiceBean {
         }
         return null;
     }
-    
+
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
+        Future<String> result = doIndexDataset(dataset, doNormalSolrDocCleanUp);
+        updateLastIndexedTime(dataset.getId());
+        return result;
+    }
+    
+    private Future<String> doIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         logger.fine("indexing dataset " + dataset.getId());
         /**
          * @todo should we use solrDocIdentifierDataset or
@@ -1443,17 +1449,29 @@ public class IndexServiceBean {
                 throw new IOException(ex);
             }
         }
+        return docs.getMessage();
+    }
+
+    @Asynchronous
+    private void updateLastIndexedTime(Long id) {
+        // indexing is often in a transaction with update statements
+        // if we flush on query (flush-mode auto), we want to prevent locking
+        // -> update the dataset asynchronously in a new transaction
+        updateLastIndexedTimeInNewTransaction(id);
+    }
+
+    @TransactionAttribute(REQUIRES_NEW)
+    private void updateLastIndexedTimeInNewTransaction(Long id) {
         /// Dataset updatedDataset =
         /// (Dataset)dvObjectService.updateContentIndexTime(dataset);
         /// updatedDataset = null;
         // instead of making a call to dvObjectService, let's try and
         // modify the index time stamp using the local EntityManager:
-        DvObject dvObjectToModify = em.find(DvObject.class, docs.getDatasetId());
+        DvObject dvObjectToModify = em.find(DvObject.class, id);
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
         dvObjectToModify = em.merge(dvObjectToModify);
+        em.flush();
         dvObjectToModify = null;
-
-        return docs.getMessage();
     }
 
     /**
