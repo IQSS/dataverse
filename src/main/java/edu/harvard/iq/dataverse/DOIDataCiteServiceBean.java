@@ -63,7 +63,7 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
     
 
     @Override
-    public String createIdentifier(DvObject dvObject) throws Exception {
+    public String createIdentifier(DvObject dvObject) throws IOException {
         logger.log(Level.FINE,"createIdentifier");
         if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
             dvObject = generateIdentifier(dvObject);

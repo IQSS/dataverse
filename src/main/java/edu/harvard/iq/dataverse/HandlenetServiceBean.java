@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
@@ -140,11 +141,17 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         } else {
             // Create a new handle from scratch:
             logger.log(Level.INFO, "Handle {0} not registered. Registering (creating) from scratch.", handle);
-            registerNewHandle(dvObject);
+            try {
+                registerNewHandle(dvObject);
+            // HINT: This is a hack. Before switch to throwing exceptions, the method above would have returned an
+            //       exception, which would have been ignored. We're doing the same now by catching and handling it.
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "RegisterNewHandle failed.", e);
+            }
         }
     }
     
-    public Throwable registerNewHandle(DvObject dvObject) {
+    public void registerNewHandle(DvObject dvObject) throws IOException {
         logger.log(Level.FINE,"registerNewHandle");
         String handlePrefix = dvObject.getAuthority();
         String handle = getDvObjectHandle(dvObject);
@@ -180,14 +187,12 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
             AbstractResponse response = resolver.processRequest(req);
             if (response.responseCode == AbstractMessage.RC_SUCCESS) {
                 logger.log(Level.INFO, "Success! Response: \n{0}", response);
-                return null;
             } else {
                 logger.log(Level.WARNING, "RegisterNewHandle failed. Error response: {0}", response);
-                return new Exception("registerNewHandle failed: " + response);
+                throw new IOException("registerNewHandle failed: " + response);
             }
-        } catch (Throwable t) {
-            logger.log(Level.WARNING, "registerNewHandle failed", t);
-            return t;
+        } catch (HandleException t) {
+            throw new IOException("registerNewHandle failed", t);
         }
     }
     
@@ -388,10 +393,8 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
 
     @Override
-    public String createIdentifier(DvObject dvObject) throws Throwable {
-        Throwable result = registerNewHandle(dvObject);
-        if (result != null)
-            throw result;
+    public String createIdentifier(DvObject dvObject) throws IOException {
+        registerNewHandle(dvObject);
         // TODO get exceptions from under the carpet
         return getDvObjectHandle(dvObject);
 

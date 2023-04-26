@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -24,8 +25,17 @@ public interface GlobalIdServiceBean {
     boolean isConfigured();
     
     List<String> getProviderInformation();
-
-    String createIdentifier(DvObject dvo) throws Throwable;
+    
+    /**
+     * Let the PID provider create the identifier for a dataset or datafile (collections are not yet supported) by
+     * linking it to the target URL. This might involve registering metadata of the object alongside.
+     * The identifier is not yet to be published - this step is done by {@link #publicizeIdentifier(DatasetVersion)}.
+     *
+     * @param dvo The object to create the identifier for
+     * @return Some response or nothing at all (null). Up to the provider.
+     * @throws IOException If creation fails. May contain wrapped root causes.
+     */
+    String createIdentifier(DvObject dvo) throws IOException;
 
     Map<String,String> getIdentifierMetadata(DvObject dvo);
 

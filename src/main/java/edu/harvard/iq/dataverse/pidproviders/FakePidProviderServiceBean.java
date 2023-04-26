@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.pidproviders;
 import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +45,7 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
     }
 
     @Override
-    public String createIdentifier(DvObject dvo) throws Throwable {
+    public String createIdentifier(DvObject dvo) throws IOException {
         return "fakeIdentifier";
     }
 

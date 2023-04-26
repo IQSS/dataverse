@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.HandlenetServiceBean;
+
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,7 +62,7 @@ public class UnmanagedHandlenetServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     @Override
-    public String createIdentifier(DvObject dvObject) throws Throwable {
+    public String createIdentifier(DvObject dvObject) throws IOException {
         throw new NotImplementedException();
     }
 

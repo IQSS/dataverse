@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -141,7 +142,7 @@ class AbstractGlobalIdServiceBeanTest {
         }
     
         @Override
-        public String createIdentifier(DvObject dvo) throws Throwable {
+        public String createIdentifier(DvObject dvo) throws IOException {
             return RandomStringUtils.randomAlphanumeric(idLen).toUpperCase();
         }
     
