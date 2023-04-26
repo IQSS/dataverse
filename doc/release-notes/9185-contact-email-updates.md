@@ -6,7 +6,7 @@ Email sent from the contact forms to the contact(s) for a collection, dataset, o
 
 When there are multiple contacts, the system will now send one email with all of the contacts in the To: header instead of sending one email to each contact (with no indication that others have been notified).
 
-## New Settings
+## New JVM/MicroProfile Settings
 
-:SupportEmail - allows a separate email, distinct from the :SystemEmail to be used as the from address in emails from the contact form/ feedback api.
-:CCSupportOnContactEmails - include the support email address as a CC: entry when contact/feedback emails are sent to the contacts for a collection, dataset, or datafile.
+dataverse.mail.support-email - allows a separate email, distinct from the :SystemEmail to be used as the from address in emails from the contact form/ feedback api.
+dataverse.mail.cc-support-on-contact-emails - include the support email address as a CC: entry when contact/feedback emails are sent to the contacts for a collection, dataset, or datafile.
