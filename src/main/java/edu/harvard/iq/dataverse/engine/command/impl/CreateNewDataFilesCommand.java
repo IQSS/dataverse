@@ -522,7 +522,9 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                         if (new_datafile != null) {
                             datafiles.add(new_datafile);
                             // todo: can this new_datafile be null?
-                            storageQuotaLimitForRezippedFiles = storageQuotaLimitForRezippedFiles - new_datafile.getFilesize();
+                            if (storageQuotaLimitForRezippedFiles != null) {
+                                storageQuotaLimitForRezippedFiles = storageQuotaLimitForRezippedFiles - new_datafile.getFilesize();
+                            }
                         } else {
                             logger.severe("Could not add part of rezipped shapefile. new_datafile was null: " + finalFile.getName());
                         }
