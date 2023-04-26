@@ -280,6 +280,7 @@ public class EjbDataverseEngine {
                     }
                 }
                 //This runs the onSuccess Methods for all commands in the stack when the outermost command completes
+                ctxt.em().flush(); // flush before accessing the object in completeCommand (e.g., indexing)
                 this.completeCommand(aCommand, r, getContext().getCommandsCalled());
                 return r;
                 
