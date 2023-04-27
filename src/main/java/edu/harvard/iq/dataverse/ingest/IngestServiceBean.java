@@ -467,6 +467,8 @@ public class IngestServiceBean {
                 // todo: investigate why when calling save with the file object
                 // gotten from the loop, the roles assignment added at create is removed
                 // (switching to refinding via id resolves that)                
+                // possible explanation: when flush-mode is auto, flush is on query,
+                // we make sure that the roles assignment added at create is flushed
                 dataFile = fileService.find(dataFile.getId());
                 scheduledFiles.add(dataFile);
             }

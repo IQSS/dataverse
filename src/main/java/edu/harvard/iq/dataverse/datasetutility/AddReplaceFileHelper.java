@@ -47,6 +47,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.ejb.Asynchronous;
 import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -1922,26 +1924,38 @@ public class AddReplaceFileHelper{
         }
                 
         // Should only be one file in the list
+        Long id = null;
+        if (finalFileList.size() == 1) {
+            id = finalFileList.get(0).getId();
+        }
         setNewlyAddedFiles(finalFileList);
         
         // clear old file list
         //
         finalFileList.clear();
 
-        // TODO: Need to run ingwest async......
-        //if (true){
-            //return true;
-        //}
-
-        if (!multifile) {
+        if (!multifile && id != null) {
             msg("pre ingest start");
             // start the ingest!
-            ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
+            asyncIngestOneFile(id, dvRequest.getAuthenticatedUser());
             msg("post ingest start");
         }
         return true;
     }
 
+    @Asynchronous
+    private void asyncIngestOneFile(Long id, AuthenticatedUser user) {
+        // prevent unresponsive servers with high cpu load by ingesting one at a time
+        ingestOneFileAtATime(id, user);
+    }
+
+    synchronized private void ingestOneFileAtATime(Long id, AuthenticatedUser user) {
+        // query by id -> when flush-mode is auto, flush is on query, we make sure that the roles assignment added at create is flushed
+        DataFile dataFile =  fileService.find(id);
+        if (dataFile.isIngestScheduled()) {
+            ingestService.startIngestJobs(Arrays.<DataFile>asList(dataFile), user);
+        }
+    }
     
     private void msg(String m){
         logger.fine(m);
