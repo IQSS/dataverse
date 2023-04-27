@@ -324,13 +324,12 @@ public class FileDownloadHelper implements java.io.Serializable {
      private boolean processRequestAccess(DataFile file, Boolean sendNotification) {
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
-             if(file.getFileAccessRequesters() == null){
-                 file.setFileAccessRequesters(new ArrayList());
-             }
-             file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
+             AuthenticatedUser user = (AuthenticatedUser) session.getUser();
+             file.addFileAccessRequester(user);
+
              // create notification if necessary
              if (sendNotification) {
-                 fileDownloadService.sendRequestFileAccessNotification(file, (AuthenticatedUser) session.getUser());
+                 fileDownloadService.sendRequestFileAccessNotification(file, user);
              }           
              JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
              return true;

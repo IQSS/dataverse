@@ -799,14 +799,13 @@ public class DataFileServiceBean implements java.io.Serializable {
             } 
             
             if (dataFile.isRestricted() && accessRequestFileIds.contains(dataFile.getId())) {
-                dataFile.setFileAccessRequesters(Collections.singletonList(au));
-            } 
+                dataFile.addFileAccessRequester(au);
+            }
 
             dataFiles.add(dataFile);
             filesMap.put(dataFile.getId(), i++);
         }
-        fileResults = null;
-        
+
         logger.fine("Retrieved and cached "+i+" datafiles.");
 
         i = 0; 
