@@ -72,6 +72,7 @@ public class SearchIT {
 
         Integer datasetId1 = UtilIT.getDatasetIdFromResponse(createDataset1Response);
 
+        UtilIT.sleepForSearch("id:dataset_" + datasetId1 + "_draft", apiToken1, "", UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
         Response shouldBeVisibleToUser1 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken1);
         shouldBeVisibleToUser1.prettyPrint();
         shouldBeVisibleToUser1.then().assertThat()
@@ -1220,6 +1221,7 @@ public class SearchIT {
         String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
 
         // Plymouth rock (41.9580775,-70.6621063) is within 50 km of Cambridge. Hit.
+        UtilIT.sleepForSearch("id:dataset_" + datasetId + "_draft", apiToken, "&show_entity_ids=true&geo_point=41.9580775,-70.6621063&geo_radius=50", UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
         Response search1 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&show_entity_ids=true&geo_point=41.9580775,-70.6621063&geo_radius=50");
         search1.prettyPrint();
         search1.then().assertThat()
