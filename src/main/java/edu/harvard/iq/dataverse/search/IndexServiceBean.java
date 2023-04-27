@@ -390,9 +390,7 @@ public class IndexServiceBean {
         Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
         while (next != null) {
             try {
-                logger.warning("indexing dataset " + id);
                 indexDataset(next, doNormalSolrDocCleanUpe);
-                logger.warning("done indexing dataset " + id);
             } catch (SolrServerException | IOException e) {
                 logger.warning("unable to index dataset " + id + ": " + e);
             }
@@ -439,7 +437,6 @@ public class IndexServiceBean {
         List<DatasetVersion> versions = dataset.getVersions();
         List<String> solrIdsOfFilesToDelete = new ArrayList<>();
         for (DatasetVersion datasetVersion : versions) {
-            logger.warning("indexing version " + datasetVersion.getId());
             Long versionDatabaseId = datasetVersion.getId();
             String versionTitle = datasetVersion.getTitle();
             String semanticVersion = datasetVersion.getSemanticVersion();
@@ -452,7 +449,6 @@ public class IndexServiceBean {
             debug.append("- semanticVersion-VersionState: " + semanticVersion + "-" + versionState + "\n");
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
             List<String> fileInfo = new ArrayList<>();
-            logger.warning("iterating...");
             for (FileMetadata fileMetadata : fileMetadatas) {
                 String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId();
                 /**
@@ -469,7 +465,6 @@ public class IndexServiceBean {
                 solrIdsOfFilesToDelete.add(solrIdOfPublishedFile);
                 fileInfo.add(fileMetadata.getDataFile().getId() + ":" + fileMetadata.getLabel());
             }
-            logger.warning("adding more ids...");
             try {
                 /**
                  * Preemptively delete *all* Solr documents for files associated
@@ -503,12 +498,10 @@ public class IndexServiceBean {
             debug.append("- files: " + numFiles + " " + fileInfo.toString() + "\n");
         }
         debug.append("numPublishedVersions: " + numPublishedVersions + "\n");
-        logger.warning("cleanup...");
         if (doNormalSolrDocCleanUp) {
             IndexResponse resultOfAttemptToPremptivelyDeletePublishedFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfFilesToDelete);
             debug.append("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToPremptivelyDeletePublishedFiles + "\n");
         }
-        logger.warning("init...");
         DatasetVersion latestVersion = dataset.getLatestVersion();
         String latestVersionStateString = latestVersion.getVersionState().name();
         DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
@@ -763,8 +756,6 @@ public class IndexServiceBean {
     }
 
     private IndexResponse indexDatasetPermissions(Dataset dataset) {
-
-        logger.warning("indexing permissions");
         boolean disabledForDebugging = false;
         if (disabledForDebugging) {
             /**
@@ -775,19 +766,15 @@ public class IndexServiceBean {
             return new IndexResponse("permissions indexing disabled for debugging");
         }
         IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dataset);
-        logger.warning("done indexing permissions");
         return indexResponse;
     }
 
     private String addOrUpdateDataset(IndexableDataset indexableDataset) throws  SolrServerException, IOException {
-        logger.warning("addOrUpdateDataset");
         String result = addOrUpdateDataset(indexableDataset, null);
-        logger.warning("addOrUpdateDataset done");
         return result;
     }
 
-    public SolrInputDocuments toSolrDocs(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {        
-        logger.warning("toSolrDocs");
+    public SolrInputDocuments toSolrDocs(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {
         IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
@@ -1432,7 +1419,6 @@ public class IndexServiceBean {
         }
         Long datasetId = dataset.getId();
         final String msg = "indexed dataset " + datasetId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
-        logger.warning("toSolrDocs done");
         return new SolrInputDocuments(docs, msg, datasetId);
     }
     
