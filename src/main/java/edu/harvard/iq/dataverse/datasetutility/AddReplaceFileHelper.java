@@ -1945,12 +1945,6 @@ public class AddReplaceFileHelper{
 
     @Asynchronous
     private void asyncIngestOneFile(Long id, AuthenticatedUser user) {
-        // prevent unresponsive servers with high cpu load by ingesting one at a time
-        ingestOneFileAtATime(id, user);
-    }
-
-    synchronized private void ingestOneFileAtATime(Long id, AuthenticatedUser user) {
-        // query by id -> when flush-mode is auto, flush is on query, we make sure that the roles assignment added at create is flushed
         DataFile dataFile =  fileService.find(id);
         if (dataFile.isIngestScheduled()) {
             ingestService.startIngestJobs(Arrays.<DataFile>asList(dataFile), user);
