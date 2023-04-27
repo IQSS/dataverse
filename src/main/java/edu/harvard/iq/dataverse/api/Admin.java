@@ -1637,8 +1637,6 @@ public class Admin extends AbstractApiBean {
 						if (currentChecksum.equals(df.getChecksumValue())) {
 							logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
 									+ df.getIdentifier() + " is valid");
-							//Need to reset so we don't get the same stream (StorageIO class inputstreams are normally only used once)
-							storage.setInputStream(null);
 							storage.open(DataAccessOption.READ_ACCESS);
 							if (!df.isTabularData()) {
 								in2 = storage.getInputStream();
