@@ -60,7 +60,7 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         prepareDatasetAndVersion();
         
         // TODO make async
-        // ctxt.index().indexDataset(dataset);
+        // ctxt.index().asyncIndexDataset(dataset);
         return ctxt.datasets().storeVersion(newVersion);
         
     }

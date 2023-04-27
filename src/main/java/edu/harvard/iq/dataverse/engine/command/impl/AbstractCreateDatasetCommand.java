@@ -134,13 +134,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // TODO: this needs to be moved in to an onSuccess method; not adding to this PR as its out of scope
         // TODO: switch to asynchronous version when JPA sync works
         // ctxt.index().asyncIndexDataset(theDataset.getId(), true); 
-        try{
-              ctxt.index().indexDataset(theDataset, true);
-        } catch (IOException | SolrServerException e) {
-            String failureLogText = "Post create dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + theDataset.getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, theDataset);
-        }
+        ctxt.index().asyncIndexDataset(theDataset, true);
                  
         return theDataset;
     }

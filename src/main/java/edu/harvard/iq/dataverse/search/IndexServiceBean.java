@@ -348,35 +348,24 @@ public class IndexServiceBean {
     }
     
     @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDatasetInNewTransaction(Long datasetId) throws  SolrServerException, IOException{ //Dataset dataset) {
+    public void indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
         Dataset dataset = em.find(Dataset.class, datasetId);
-        // return indexDataset(dataset, doNormalSolrDocCleanUp);
-        Future<String> ret = indexDataset(dataset, doNormalSolrDocCleanUp);
+        asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
         dataset = null;
-        return ret;
-    }
-    
-    @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDatasetObjectInNewTransaction(Dataset dataset) throws  SolrServerException, IOException{ //Dataset dataset) {
-        boolean doNormalSolrDocCleanUp = false;
-        // return indexDataset(dataset, doNormalSolrDocCleanUp);
-        Future<String> ret = indexDataset(dataset, doNormalSolrDocCleanUp);
-        dataset = null;
-        return ret;
     }
 
     // The following two variables are only used in the synchronized getNextToIndex method and do not need to be synchronized themselves
     
     // nextToIndex contains datasets mapped by dataset id that were added for future indexing while the indexing was already ongoing for a given dataset
     // (if there already was a dataset scheduled for indexing, it is overwritten and only the most recently requested version is kept in the map)
-    private Map<Long, Dataset> nextToIndex = new HashMap<>();
+    private static Map<Long, Dataset> nextToIndex = new HashMap<>();
     // indexingNow is a set of dataset ids of datasets being indexed asynchronously right now
-    private Set<Long> indexingNow = new HashSet<>();
+    private static Set<Long> indexingNow = new HashSet<>();
 
     // When you pass null as Dataset parameter to this method, it indicates that the indexing of the dataset with "id" has finished
     // Pass non-null Dataset to schedule it for indexing
-    synchronized private Dataset getNextToIndex(Long id, Dataset d) {
+    synchronized private static Dataset getNextToIndex(Long id, Dataset d) {
         if (d == null) { // -> indexing of the dataset with id has finished
             Dataset next = nextToIndex.remove(id);
             if (next == null) { // -> no new indexing jobs were requested while indexing was ongoing
@@ -401,33 +390,31 @@ public class IndexServiceBean {
         Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
         while (next != null) {
             try {
+                logger.warning("indexing dataset " + id);
                 indexDataset(next, doNormalSolrDocCleanUpe);
+                logger.warning("done indexing dataset " + id);
             } catch (SolrServerException | IOException e) {
-                logger.warning("unable to index datasat " + id + ": " + e);
+                logger.warning("unable to index dataset " + id + ": " + e);
             }
             next = getNextToIndex(id, null); // if dataset was not changed during the indexing (and no new job was requested), next is null and loop can be stopped
         }
     }
     
-    @Asynchronous
-    public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
+    public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
         for(Dataset dataset : datasets) {
-            indexDataset(dataset, true);
+            asyncIndexDataset(dataset, true);
         }
     }
     
-    public Future<String> indexDvObject(DvObject objectIn) throws  SolrServerException, IOException {
-        
+    public void indexDvObject(DvObject objectIn) throws  SolrServerException, IOException {
         if (objectIn.isInstanceofDataset() ){
-            return (indexDataset((Dataset)objectIn, true));
+            asyncIndexDataset((Dataset)objectIn, true);
+        } else if (objectIn.isInstanceofDataverse() ){
+            indexDataverse((Dataverse)objectIn);
         }
-        if (objectIn.isInstanceofDataverse() ){
-            return (indexDataverse((Dataverse)objectIn));
-        }
-        return null;
     }
 
-    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
+    private Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         Future<String> result = doIndexDataset(dataset, doNormalSolrDocCleanUp);
         updateLastIndexedTime(dataset.getId());
         return result;
@@ -452,6 +439,7 @@ public class IndexServiceBean {
         List<DatasetVersion> versions = dataset.getVersions();
         List<String> solrIdsOfFilesToDelete = new ArrayList<>();
         for (DatasetVersion datasetVersion : versions) {
+            logger.warning("indexing version " + datasetVersion.getId());
             Long versionDatabaseId = datasetVersion.getId();
             String versionTitle = datasetVersion.getTitle();
             String semanticVersion = datasetVersion.getSemanticVersion();
@@ -464,6 +452,7 @@ public class IndexServiceBean {
             debug.append("- semanticVersion-VersionState: " + semanticVersion + "-" + versionState + "\n");
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
             List<String> fileInfo = new ArrayList<>();
+            logger.warning("iterating...");
             for (FileMetadata fileMetadata : fileMetadatas) {
                 String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId();
                 /**
@@ -480,6 +469,7 @@ public class IndexServiceBean {
                 solrIdsOfFilesToDelete.add(solrIdOfPublishedFile);
                 fileInfo.add(fileMetadata.getDataFile().getId() + ":" + fileMetadata.getLabel());
             }
+            logger.warning("adding more ids...");
             try {
                 /**
                  * Preemptively delete *all* Solr documents for files associated
@@ -513,10 +503,12 @@ public class IndexServiceBean {
             debug.append("- files: " + numFiles + " " + fileInfo.toString() + "\n");
         }
         debug.append("numPublishedVersions: " + numPublishedVersions + "\n");
+        logger.warning("cleanup...");
         if (doNormalSolrDocCleanUp) {
             IndexResponse resultOfAttemptToPremptivelyDeletePublishedFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfFilesToDelete);
             debug.append("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToPremptivelyDeletePublishedFiles + "\n");
         }
+        logger.warning("init...");
         DatasetVersion latestVersion = dataset.getLatestVersion();
         String latestVersionStateString = latestVersion.getVersionState().name();
         DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
@@ -771,6 +763,8 @@ public class IndexServiceBean {
     }
 
     private IndexResponse indexDatasetPermissions(Dataset dataset) {
+
+        logger.warning("indexing permissions");
         boolean disabledForDebugging = false;
         if (disabledForDebugging) {
             /**
@@ -781,14 +775,19 @@ public class IndexServiceBean {
             return new IndexResponse("permissions indexing disabled for debugging");
         }
         IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dataset);
+        logger.warning("done indexing permissions");
         return indexResponse;
     }
 
     private String addOrUpdateDataset(IndexableDataset indexableDataset) throws  SolrServerException, IOException {
-        return addOrUpdateDataset(indexableDataset, null);
+        logger.warning("addOrUpdateDataset");
+        String result = addOrUpdateDataset(indexableDataset, null);
+        logger.warning("addOrUpdateDataset done");
+        return result;
     }
 
     public SolrInputDocuments toSolrDocs(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {        
+        logger.warning("toSolrDocs");
         IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
@@ -1433,6 +1432,7 @@ public class IndexServiceBean {
         }
         Long datasetId = dataset.getId();
         final String msg = "indexed dataset " + datasetId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
+        logger.warning("toSolrDocs done");
         return new SolrInputDocuments(docs, msg, datasetId);
     }
     
