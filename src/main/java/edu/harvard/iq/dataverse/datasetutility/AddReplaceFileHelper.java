@@ -1924,31 +1924,19 @@ public class AddReplaceFileHelper{
         }
                 
         // Should only be one file in the list
-        Long id = null;
-        if (finalFileList.size() == 1) {
-            id = finalFileList.get(0).getId();
-        }
         setNewlyAddedFiles(finalFileList);
         
         // clear old file list
         //
         finalFileList.clear();
 
-        if (!multifile && id != null) {
+        if (!multifile) {
             msg("pre ingest start");
             // start the ingest!
-            asyncIngestOneFile(id, dvRequest.getAuthenticatedUser());
+            ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
             msg("post ingest start");
         }
         return true;
-    }
-
-    @Asynchronous
-    private void asyncIngestOneFile(Long id, AuthenticatedUser user) {
-        DataFile dataFile =  fileService.find(id);
-        if (dataFile.isIngestScheduled()) {
-            ingestService.startIngestJobs(Arrays.<DataFile>asList(dataFile), user);
-        }
     }
     
     private void msg(String m){
