@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.license;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
-import static edu.harvard.iq.dataverse.dataset.DatasetUtil.getLicenseName;
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.getLocalizedLicenseName;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -66,16 +66,16 @@ public class LicenseServiceBean {
         }
     }
     
-    public License getByPotentiallyLocalizedName(String licenseName) {
+    public License getByPotentiallyLocalizedName(String name) {
         // First, try the name against the name column in the License table, 
         // verbatim: 
-        License license = getByNameOrUri(licenseName); 
+        License license = getByNameOrUri(name); 
         if (license != null) {
             return license; 
         }
         
         // Then, if still here, go through the list, see if any of the names
-        // match this is as a translated name:
+        // match this string as a translated name:
         List<License> allActiveLicenses = listAllActive();
         if (allActiveLicenses == null) {
             return null; 
@@ -83,7 +83,7 @@ public class LicenseServiceBean {
         for (License activeLicense : allActiveLicenses) {
             // This is DatasetUtil.getLicenseName(), it will return the 
             // localized/translated name, if available.
-            if (licenseName.equals(getLicenseName(activeLicense))) {
+            if (name.equals(getLocalizedLicenseName(activeLicense))) {
                 return activeLicense;
             }
         }

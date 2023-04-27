@@ -373,14 +373,14 @@ public class JsonParser {
             License license = null; 
             
             try {
-                parseLicense(obj.getJsonObject("license"));
+                license = parseLicense(obj.getJsonObject("license"));
             } catch (ClassCastException cce) {
                 // TODO: decide if we want to leave some backward compatibility code
                 // in place, in case someone is still using the "license" : "CC0 NN" 
                 // json form. 
                 logger.info("class cast exception parsing the license section");
+                // attempt to parse as string: (?)
                 // license = parseLicense(obj.getString("license", null));
-
             }
             
             if (license == null) {
@@ -471,11 +471,13 @@ public class JsonParser {
         }
         
         if (licenseName == null) {
-            throw new JsonParseException("Invalid license submitted"); 
+            throw new JsonParseException("Invalid license section submitted"); 
         }
         
         license = licenseService.getByPotentiallyLocalizedName(licenseName);
-        if (license == null) throw new JsonParseException("Invalid license: " + licenseName);
+        if (license == null) {
+            throw new JsonParseException("Invalid license: " + licenseName);
+        }
         return license;
     }
 
