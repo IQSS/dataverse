@@ -369,7 +369,20 @@ public class JsonParser {
             dsv.setUNF(obj.getString("UNF", null));
             // Terms of Use related fields
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            License license = parseLicense(obj.getString("license", null));
+
+            License license = null; 
+            
+            try {
+                parseLicense(obj.getJsonObject("license"));
+            } catch (ClassCastException cce) {
+                // TODO: decide if we want to leave some backward compatibility code
+                // in place, in case someone is still using the "license" : "CC0 NN" 
+                // json form. 
+                logger.info("class cast exception parsing the license section");
+                // license = parseLicense(obj.getString("license", null));
+
+            }
+            
             if (license == null) {
                 terms.setLicense(license);
                 terms.setTermsOfUse(obj.getString("termsOfUse", null));
@@ -425,6 +438,44 @@ public class JsonParser {
         }
         License license = licenseService.getByNameOrUri(licenseNameOrUri);
         if (license == null) throw new JsonParseException("Invalid license: " + licenseNameOrUri);
+        return license;
+    }
+    
+    private edu.harvard.iq.dataverse.license.License parseLicense(JsonObject licenseObj) throws JsonParseException {
+        if (licenseObj == null){
+            boolean safeDefaultIfKeyNotFound = true;
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound)){
+                return null;
+            } else {
+                return licenseService.getDefault();
+            }
+        }
+        
+        String licenseName = licenseObj.getString("name", null);
+        String licenseUri = licenseObj.getString("uri", null);
+        
+        License license = null; 
+        
+        // If uri is provided, we'll try that first. This is an easier lookup
+        // method; the uri is always the same. The name may have been customized
+        // (translated) on this instance, so we may be dealing with such translated
+        // name, if this is exported json that we are processing. Meaning, unlike 
+        // the uri, we cannot simply check it against the name in the License
+        // database table. 
+        if (licenseUri != null) {
+            license = licenseService.getByNameOrUri(licenseUri);
+        }
+        
+        if (license != null) {
+            return license;
+        }
+        
+        if (licenseName == null) {
+            throw new JsonParseException("Invalid license submitted"); 
+        }
+        
+        license = licenseService.getByPotentiallyLocalizedName(licenseName);
+        if (license == null) throw new JsonParseException("Invalid license: " + licenseName);
         return license;
     }
 
