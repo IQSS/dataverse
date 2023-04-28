@@ -26,21 +26,21 @@ A Dataverse collection is a container for datasets and other Dataverse collectio
 
 The steps for creating a Dataverse collection are:
 
-- Prepare a JSON file containing the name, description, etc, of the Dataverse collection you'd like to create.
-- Figure out the alias or database id of the "parent" Dataverse collection into which you will be creating your new Dataverse collection.
-- Execute a curl command or equivalent.
+1. Prepare a JSON file containing the name, description, etc, of the Dataverse collection you'd like to create.
+2. Figure out the alias or database id of the "parent" Dataverse collection into which you will be creating your new Dataverse collection.
+3. Execute a curl command or equivalent.
 
 Download :download:`dataverse-complete.json <../_static/api/dataverse-complete.json>` file and modify it to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is the following:
 
-- ``DEPARTMENT``
-- ``JOURNALS``
-- ``LABORATORY``
-- ``ORGANIZATIONS_INSTITUTIONS``
-- ``RESEARCHERS``
-- ``RESEARCH_GROUP``
-- ``RESEARCH_PROJECTS``
-- ``TEACHING_COURSES``
-- ``UNCATEGORIZED``
+4. ``DEPARTMENT``
+5. ``JOURNALS``
+6. ``LABORATORY``
+7. ``ORGANIZATIONS_INSTITUTIONS``
+8. ``RESEARCHERS``
+9. ``RESEARCH_GROUP``
+10. ``RESEARCH_PROJECTS``
+11. ``TEACHING_COURSES``
+12. ``UNCATEGORIZED``
 
 .. literalinclude:: ../_static/api/dataverse-complete.json
 
@@ -520,11 +520,11 @@ A dataset is a container for files as explained in the :doc:`/user/dataset-manag
 
 To create a dataset, you must supply a JSON file that contains at least the following required metadata fields:
 
-- Title
-- Author Name
-- Point of Contact Email
-- Description Text
-- Subject
+13. Title
+14. Author Name
+15. Point of Contact Email
+16. Description Text
+22. Subject
 
 As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-finch1_fr.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
 
@@ -689,11 +689,11 @@ Datasets
 
 **Note** In all commands below, dataset versions can be referred to as:
 
-* ``:draft``  the draft version, if any
-* ``:latest`` either a draft (if exists) or the latest published version.
-* ``:latest-published`` the latest published version
-* ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
-* ``x`` same as ``x.0``
+23. ``:draft``  the draft version, if any
+24. ``:latest`` either a draft (if exists) or the latest published version.
+25. ``:latest-published`` the latest published version
+26. ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
+27. ``x`` same as ``x.0``
 
 Get JSON Representation of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -867,8 +867,8 @@ Schema.org JSON-LD
 
 Please note that the ``schema.org`` format has changed in backwards-incompatible ways after Dataverse Software version 4.9.4:
 
-- "description" was a single string and now it is an array of strings.
-- "citation" was an array of strings and now it is an array of objects.
+28. "description" was a single string and now it is an array of strings.
+29. "citation" was an array of strings and now it is an array of objects.
 
 Both forms are valid according to Google's Structured Data Testing Tool at https://search.google.com/structured-data/testing-tool . (This tool will report "The property affiliation is not recognized by Google for an object of type Thing" and this known issue is being tracked at https://github.com/IQSS/dataverse/issues/5029 .) Schema.org JSON-LD is an evolving standard that permits a great deal of flexibility. For example, https://schema.org/docs/gs.html#schemaorg_expected indicates that even when objects are expected, it's ok to just use text. As with all metadata export formats, we will try to keep the Schema.org JSON-LD format your Dataverse installation emits backward-compatible to made integrations more stable, despite the flexibility that's afforded by the standard.
 
@@ -905,9 +905,9 @@ View Dataset Files and Folders as a Directory Index
 
 Optional parameters:
 
-* ``folder`` - A subfolder within the dataset (default: top-level view of the dataset)
-* ``version`` - Specifies the version (default: latest published version)
-* ``original=true`` - Download original versions of ingested tabular files. 
+30. ``folder`` - A subfolder within the dataset (default: top-level view of the dataset)
+31. ``version`` - Specifies the version (default: latest published version)
+32. ``original=true`` - Download original versions of ingested tabular files. 
   
 This API outputs a simple html listing, based on the standard Apache
 directory index, with Access API download links for individual files,
@@ -1049,7 +1049,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/BCCP9Z --upload-file dataset-update-metadata.json
 
-Note that in the example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``datasetVersion``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this:
+Note that in the example JSON file above, there are only two JSON objects with the ``license`` and ``metadataBlocks`` keys respectively. When you download a representation of your latest dataset version in JSON format, these objects will be nested inside another object called ``data`` in the API response. Note that there may be more objects in there, in addition to the ``license`` and ``metadataBlocks`` that you may need to preserve and re-import as well. Basically, you need everything in there except for the ``files``. This can be achived by downloading the metadata and selecting the sections you need with a JSON tool such as ``jq``, like this:
 
 .. code-block:: bash
 
@@ -1057,15 +1057,19 @@ Note that in the example JSON file above, there is a single JSON object with ``m
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
 
-  curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PERSISTENT_IDENTIFIER | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
-
+  curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PERSISTENT_IDENTIFIER | jq '.data | del(.files)' > dataset-update-metadata.json
+  
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/datasets/:persistentId/versions/:latest?persistentId=doi:10.5072/FK2/BCCP9Z | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
 
-Now that the resulting JSON file only contains the ``metadataBlocks`` key, you can edit the JSON such as with ``vi`` in the example below::
+
+Now you can edit the JSON produced by the command above with a text editor of your choice. For example, with ``vi`` in the example below::
+
+Note that you don't need to edit the top-level fields such as ``versionNumber``, ``minorVersonNumber``, ``versionState`` or any of the time stamps - these will be automatically updated as needed by the API. 
+
 
     vi dataset-update-metadata.json
 
