@@ -218,7 +218,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
             return null;
         }
             logger.fine("sending feedback: " + feedback);
-            mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getCcEmail(), feedback.getSubject(), feedback.getBody(), null);
+            mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getCcEmail(), feedback.getSubject(), feedback.getBody());
         return null;
     }
     
