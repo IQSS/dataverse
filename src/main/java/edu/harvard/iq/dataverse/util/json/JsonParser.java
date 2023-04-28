@@ -373,14 +373,22 @@ public class JsonParser {
             License license = null; 
             
             try {
+                // This method will attempt to parse the license in the format 
+                // in which it appears in our json exports, as a compound
+                // field, for ex.:
+                // "license": {
+                //    "name": "CC0 1.0",
+                //    "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+                // }
                 license = parseLicense(obj.getJsonObject("license"));
             } catch (ClassCastException cce) {
-                // TODO: decide if we want to leave some backward compatibility code
-                // in place, in case someone is still using the "license" : "CC0 NN" 
-                // json form. 
-                logger.info("class cast exception parsing the license section");
-                // attempt to parse as string: (?)
-                // license = parseLicense(obj.getString("license", null));
+                logger.fine("class cast exception parsing the license section (will try parsing as a string)");
+                // attempt to parse as string: 
+                // i.e. this is for backward compatibility, after the bug in #9155
+                // was fixed, with the old style of encoding the license info 
+                // in input json, for ex.: 
+                // "license" : "CC0 1.0"
+                license = parseLicense(obj.getString("license", null));
             }
             
             if (license == null) {
