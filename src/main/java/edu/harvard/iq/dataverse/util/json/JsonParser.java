@@ -479,12 +479,14 @@ public class JsonParser {
         }
         
         if (licenseName == null) {
-            throw new JsonParseException("Invalid license section submitted"); 
+            String exMsg = "Invalid or unsupported license section submitted" 
+                    + (licenseUri != null ? ": " + licenseUri : ".");
+            throw new JsonParseException("Invalid or unsupported license section submitted."); 
         }
         
         license = licenseService.getByPotentiallyLocalizedName(licenseName);
         if (license == null) {
-            throw new JsonParseException("Invalid license: " + licenseName);
+            throw new JsonParseException("Invalid or unsupported license: " + licenseName);
         }
         return license;
     }
