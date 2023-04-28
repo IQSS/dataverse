@@ -26,21 +26,21 @@ A Dataverse collection is a container for datasets and other Dataverse collectio
 
 The steps for creating a Dataverse collection are:
 
-1. Prepare a JSON file containing the name, description, etc, of the Dataverse collection you'd like to create.
-2. Figure out the alias or database id of the "parent" Dataverse collection into which you will be creating your new Dataverse collection.
-3. Execute a curl command or equivalent.
+- Prepare a JSON file containing the name, description, etc, of the Dataverse collection you'd like to create.
+- Figure out the alias or database id of the "parent" Dataverse collection into which you will be creating your new Dataverse collection.
+- Execute a curl command or equivalent.
 
 Download :download:`dataverse-complete.json <../_static/api/dataverse-complete.json>` file and modify it to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is the following:
 
-4. ``DEPARTMENT``
-5. ``JOURNALS``
-6. ``LABORATORY``
-7. ``ORGANIZATIONS_INSTITUTIONS``
-8. ``RESEARCHERS``
-9. ``RESEARCH_GROUP``
-10. ``RESEARCH_PROJECTS``
-11. ``TEACHING_COURSES``
-12. ``UNCATEGORIZED``
+- ``DEPARTMENT``
+- ``JOURNALS``
+- ``LABORATORY``
+- ``ORGANIZATIONS_INSTITUTIONS``
+- ``RESEARCHERS``
+- ``RESEARCH_GROUP``
+- ``RESEARCH_PROJECTS``
+- ``TEACHING_COURSES``
+- ``UNCATEGORIZED``
 
 .. literalinclude:: ../_static/api/dataverse-complete.json
 
@@ -520,11 +520,11 @@ A dataset is a container for files as explained in the :doc:`/user/dataset-manag
 
 To create a dataset, you must supply a JSON file that contains at least the following required metadata fields:
 
-13. Title
-14. Author Name
-15. Point of Contact Email
-16. Description Text
-22. Subject
+- Title
+- Author Name
+- Point of Contact Email
+- Description Text
+- Subject
 
 As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-finch1_fr.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
 
@@ -689,11 +689,11 @@ Datasets
 
 **Note** In all commands below, dataset versions can be referred to as:
 
-23. ``:draft``  the draft version, if any
-24. ``:latest`` either a draft (if exists) or the latest published version.
-25. ``:latest-published`` the latest published version
-26. ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
-27. ``x`` same as ``x.0``
+* ``:draft``  the draft version, if any
+* ``:latest`` either a draft (if exists) or the latest published version.
+* ``:latest-published`` the latest published version
+* ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
+* ``x`` same as ``x.0``
 
 Get JSON Representation of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -867,8 +867,8 @@ Schema.org JSON-LD
 
 Please note that the ``schema.org`` format has changed in backwards-incompatible ways after Dataverse Software version 4.9.4:
 
-28. "description" was a single string and now it is an array of strings.
-29. "citation" was an array of strings and now it is an array of objects.
+- "description" was a single string and now it is an array of strings.
+- "citation" was an array of strings and now it is an array of objects.
 
 Both forms are valid according to Google's Structured Data Testing Tool at https://search.google.com/structured-data/testing-tool . (This tool will report "The property affiliation is not recognized by Google for an object of type Thing" and this known issue is being tracked at https://github.com/IQSS/dataverse/issues/5029 .) Schema.org JSON-LD is an evolving standard that permits a great deal of flexibility. For example, https://schema.org/docs/gs.html#schemaorg_expected indicates that even when objects are expected, it's ok to just use text. As with all metadata export formats, we will try to keep the Schema.org JSON-LD format your Dataverse installation emits backward-compatible to made integrations more stable, despite the flexibility that's afforded by the standard.
 
@@ -905,9 +905,9 @@ View Dataset Files and Folders as a Directory Index
 
 Optional parameters:
 
-30. ``folder`` - A subfolder within the dataset (default: top-level view of the dataset)
-31. ``version`` - Specifies the version (default: latest published version)
-32. ``original=true`` - Download original versions of ingested tabular files. 
+* ``folder`` - A subfolder within the dataset (default: top-level view of the dataset)
+* ``version`` - Specifies the version (default: latest published version)
+* ``original=true`` - Download original versions of ingested tabular files. 
   
 This API outputs a simple html listing, based on the standard Apache
 directory index, with Access API download links for individual files,
