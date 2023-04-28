@@ -1106,7 +1106,6 @@ public class FilesIT {
 
         long fileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
-        UtilIT.sleepForSearch("id:datafile_" + fileId + "_draft", apiToken, "", UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
         Response searchShouldFindNothingBecauseUnpublished = UtilIT.search("id:datafile_" + fileId + "_draft", apiToken);
         searchShouldFindNothingBecauseUnpublished.prettyPrint();
         searchShouldFindNothingBecauseUnpublished.then().assertThat()
