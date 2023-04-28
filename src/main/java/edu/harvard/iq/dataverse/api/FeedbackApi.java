@@ -61,7 +61,7 @@ public class FeedbackApi extends AbstractApiBean {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         Feedback feedback = FeedbackUtil.gatherFeedback(feedbackTarget, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName, SendFeedbackDialog.ccSupport(feedbackTarget));
         jab.add(feedback.toJsonObjectBuilder());
-        mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getCcEmail(), feedback.getSubject(), feedback.getBody(), null);
+        mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getCcEmail(), feedback.getSubject(), feedback.getBody());
         return ok(jab);
     }
 }
