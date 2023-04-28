@@ -122,6 +122,7 @@ public class SolrTreeService {
                 .setQuery(String.format("%s:%s AND %s:%d",
                         SearchFields.TYPE, SearchObjectType.DATAVERSES.getSolrValue(),
                         SearchFields.PARENT_ID, nodeId))
+                .setSort(SearchFields.NAME_SORT, SolrQuery.ORDER.asc)
                 .setFields(SearchFields.ENTITY_ID, SearchFields.NAME);
         return solrClient.query(query);
     }
