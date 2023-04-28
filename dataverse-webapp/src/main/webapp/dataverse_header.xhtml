@@ -53,10 +53,10 @@
                         <div class="superior-logo-container">
                             <a href="#{systemConfig.getSuperiorLogoLink(dataverseSession.locale)}" target="_blank" title="#{bundle['opensInNewTab']}" class="superior-logo-link">
                                 <img src="#{resource[systemConfig.getSuperiorLogoPath(dataverseSession.locale)]}"
-                                     jsf:rendered="#{not empty systemConfig.getSuperiorLogoPath(dataverseSession.locale)}" 
+                                     jsf:rendered="#{not empty systemConfig.getSuperiorLogoPath(dataverseSession.locale)}"
                                      alt="#{systemConfig.getSuperiorLogoAlt(dataverseSession.locale)}" class="superior-logo regular big"></img>
                                 <img src="#{resource[systemConfig.getSuperiorLogoResponsivePath(dataverseSession.locale)]}"
-                                     jsf:rendered="#{not empty systemConfig.getSuperiorLogoResponsivePath(dataverseSession.locale)}" 
+                                     jsf:rendered="#{not empty systemConfig.getSuperiorLogoResponsivePath(dataverseSession.locale)}"
                                      alt="#{systemConfig.getSuperiorLogoAlt(dataverseSession.locale)}" class="superior-logo regular responsive"></img>
                                 <img src="#{resource[systemConfig.getSuperiorLogoContrastPath(dataverseSession.locale)]}"
                                      jsf:rendered="#{not empty systemConfig.getSuperiorLogoContrastPath(dataverseSession.locale)}"
@@ -109,7 +109,7 @@
                                 </li>
                             </ul>
                         </div>
-    
+
                         <div>
                             <h:outputText value="#{bundle['header.accessibility.font']}" />:
                             <ul id="font-size-mode-selector">
@@ -133,7 +133,7 @@
                                 </li>
                             </ul>
                         </div>
-    
+
                         <div>
                             <h:outputText value="#{bundle['header.accessibility.contrast']}" />:
                             <ul id="high-contrast-mode-selector">
@@ -151,10 +151,10 @@
                                 </li>
                             </ul>
                         </div>
-    
+
                     </div>
                 </div>
-                
+
                 <div class="main-menu-container">
                     <nav class="main-menu">
                         <ul class="nav navbar-nav">
@@ -188,7 +188,7 @@
                                     </li>
                                 </ul>
                             </li>
-    
+
                             <li jsf:rendered="#{settingsWrapper.getConfiguredAboutUrls().size() == 1}">
                                 <ui:repeat value="#{settingsWrapper.getConfiguredAboutUrls().entrySet().toArray()}" var="about">
                                     <h:outputLink value="#{about.key}" target="_blank" title="#{bundle['opensInNewTab']}">
@@ -196,7 +196,7 @@
                                     </h:outputLink>
                                 </ui:repeat>
                             </li>
-    
+
                             <li class="dropdown" jsf:rendered="#{settingsWrapper.getConfiguredAboutUrls().size() > 1}">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                                    aria-haspopup="true" aria-controls="navbarsearch-modal" aria-expanded="false">
@@ -212,7 +212,7 @@
                                     </ui:repeat>
                                 </ul>
                             </li>
-    
+
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                                    aria-haspopup="true" aria-expanded="false">
@@ -225,14 +225,14 @@
                                             <h:outputText value="#{bundle['header.guides.user']}"/>
                                         </h:outputLink>
                                     </li>
-    
+
                                     <li jsf:rendered="#{!empty settingsWrapper.getSettingValue(':NavbarSupportUrl')}">
                                         <h:outputLink value="#{settingsWrapper.getSettingValue(':NavbarSupportUrl')}"
                                                       target="_blank">
                                             <h:outputText value="#{bundle['header.support']}"/>
                                         </h:outputLink>
                                     </li>
-    
+
                                     <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':NavbarSupportUrl')}">
                                         <li>
                                             <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
@@ -248,7 +248,7 @@
                                     </ui:fragment>
                                 </ul>
                             </li>
-    
+
                             <li class="dropdown" jsf:rendered="#{settingsWrapper.localesConfigured}">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}" aria-expanded="false">
                                     <img alt="" class="header-flag" src="#{resource['images/flags/'
@@ -271,7 +271,7 @@
                                     </ul>
                                 </h:form>
                             </li>
-    
+
                             <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                                 <li>
                                     <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
@@ -285,7 +285,7 @@
                                     </h:outputLink>
                                 </li>
                             </ui:fragment>
-    
+
                             <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                                 <li class="dropdown accountName">
                                     <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown"
@@ -350,7 +350,7 @@
                                 </li>
                             </ui:fragment>
                         </ul>
-    
+
                     </nav>
 
                 </div>
@@ -488,6 +488,10 @@
                 <div class="form-group">
                     <p:radioButton id="lookup-radio" for="modeSelection" itemIndex="0"/>
                     <p:outputLabel for="lookup-radio" styleClass="adjust-left" value="#{bundle['add.dataset.dialog.select.lookup']}" />
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                          tabindex="0" role="button"
+                          data-toggle="tooltip" data-placement="auto right"
+                          data-original-title="#{bundle['add.dataset.dialog.select.lookup.tooltip']}"></span>
                 </div>
                 <div class="form-group">
                     <div class="col-md-8">
@@ -522,7 +526,11 @@
                 </div>
                 <div class="form-group">
                     <p:radioButton id="tree-radio" for="modeSelection" itemIndex="1"/>
-                    <p:outputLabel for="tree-radio" styleClass="adjust-left" value=" #{bundle['add.dataset.dialog.select.tree']}" />
+                    <p:outputLabel for="tree-radio" styleClass="adjust-left" value=" #{bundle['add.dataset.dialog.select.tree']}"/>
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                          tabindex="0" role="button"
+                          data-toggle="tooltip" data-placement="auto right"
+                          data-original-title="#{bundle['add.dataset.dialog.select.tree.tooltip']}"></span>
                 </div>
                 <div class="form-group">
                     <p:tree id="selectDvTree" value="#{CreateDatasetDialog.rootNode}" var="node"
