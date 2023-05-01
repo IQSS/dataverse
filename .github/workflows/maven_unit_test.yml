@@ -52,3 +52,12 @@ jobs:
                 CI_NAME: github
                 COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
             run: mvn -V -B jacoco:report coveralls:report -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
+    push-app-img:
+        name: Publish App Image
+        permissions:
+            contents: read
+            packages: write
+            pull-requests: write
+        needs: unittest
+        uses: ./.github/workflows/container_app_push.yml
+        secrets: inherit

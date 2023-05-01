@@ -59,7 +59,7 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         if(FileUtil.isActivelyEmbargoed(file)) {
             throw new CommandException(BundleUtil.getStringFromBundle("file.requestAccess.notAllowed.embargoed"), this);
         }
-        file.getFileAccessRequesters().add(requester);
+        file.addFileAccessRequester(requester);
         if (sendNotification) {
             ctxt.fileDownload().sendRequestFileAccessNotification(this.file, requester);
         }

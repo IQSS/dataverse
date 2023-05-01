@@ -3624,9 +3624,9 @@ public class DatasetPage implements java.io.Serializable {
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             }
             dataset = commandEngine.submit(cmd);
-            for (DatasetField df : dataset.getLatestVersion().getDatasetFields()) {
+            for (DatasetField df : dataset.getLatestVersion().getFlatDatasetFields()) {
                 logger.fine("Found id: " + df.getDatasetFieldType().getId());
-                if (fieldService.getCVocConf(false).containsKey(df.getDatasetFieldType().getId())) {
+                if (fieldService.getCVocConf(true).containsKey(df.getDatasetFieldType().getId())) {
                     fieldService.registerExternalVocabValues(df);
                 }
             }
@@ -5044,10 +5044,9 @@ public class DatasetPage implements java.io.Serializable {
            // return false;
         }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()){
+            AuthenticatedUser authenticatedUser = (AuthenticatedUser) session.getUser();
             //Change here so that if all restricted files have pending requests there's no Request Button
-            if ((!this.fileDownloadHelper.canDownloadFile(fmd) && (fmd.getDataFile().getFileAccessRequesters() == null
-                    || ( fmd.getDataFile().getFileAccessRequesters() != null
-                 &&   !fmd.getDataFile().getFileAccessRequesters().contains((AuthenticatedUser)session.getUser()))))){
+            if ((!this.fileDownloadHelper.canDownloadFile(fmd) && !fmd.getDataFile().containsFileAccessRequestFromUser(authenticatedUser))) {
                 return true;
             }
         }
@@ -5799,7 +5798,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public List<String> getVocabScripts() {
-        return fieldService.getVocabScripts(settingsWrapper.getCVocConf());
+        return fieldService.getVocabScripts(settingsWrapper.getCVocConf(false));
     }
 
     public String getFieldLanguage(String languages) {

@@ -479,7 +479,7 @@
                        data-content="#{DatasetPage.ingestMessage} #{fileMetadata.dataFile.ingestReportMessage}"/>
                 </span>
             </div>
-            <div class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+            <div class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.containsFileAccessRequestFromUser(dataverseSession.user)}">
                 <!-- Access Requested -->
                 <span class="glyphicon glyphicon-info-sign"/>
                 <span> #{bundle['file.accessRequested']}&#160;</span>
