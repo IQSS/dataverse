@@ -1307,6 +1307,16 @@ public class IngestServiceBean {
      * Also consider merging with extractMetadataNcml() but while NcML should be
      * extractable from all files that the NetCDF Java library can open only
      * some NetCDF files will have a bounding box.
+     *
+     * Note that if we ever create an API endpoint for this method for files
+     * that are already persisted to disk or S3, we will need to use something
+     * like getExistingFile() from extractMetadataNcml() to pull the file down
+     * from S3 to a temporary file location on local disk so that it can
+     * (ultimately) be opened by the NetcdfFiles.open() method, which only
+     * operates on local files (not an input stream). What we have now is not a
+     * problem for S3 because the files are saved locally before the are
+     * uploaded to S3. It's during this time that the files are local that this
+     * method is run.
      */
     public boolean extractMetadataFromNetcdf(String tempFileLocation, DataFile dataFile, DatasetVersion editVersion) throws IOException {
         boolean ingestSuccessful = false;
@@ -1328,7 +1338,6 @@ public class IngestServiceBean {
         // it up with the Ingest Service Provider Registry:
         NetcdfFileMetadataExtractor extractorPlugin = new NetcdfFileMetadataExtractor();
         logger.fine("creating file from " + tempFileLocation);
-        // FIXME: this won't work with S3!
         File file = new File(tempFileLocation);
         FileMetadataIngest extractedMetadata = extractorPlugin.ingestFile(file);
         Map<String, Set<String>> extractedMetadataMap = extractedMetadata.getMetadataMap();
