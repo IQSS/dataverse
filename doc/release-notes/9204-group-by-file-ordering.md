@@ -4,6 +4,6 @@ Dataverse now supports grouping dataset files by folder and/or optionally by Tag
 
 ### New Setting
 
-:CategoryOrder - a comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. The setting can include custom tag names along with the pre-defined Documentation, Data, and Code tags.
+:CategoryOrder - a comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. The setting can include custom tag names along with the pre-defined defaults ( Documentation, Data, and Code, which can be overridden by the ::FileCategories setting.)
 :OrderByFolder - defaults to true - whether to group files in the same folder together
 :AllowUserManagementOfOrder - default false - allow users to toggle ordering on/off in the dataset display

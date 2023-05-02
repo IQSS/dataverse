@@ -3710,6 +3710,8 @@ For example:
 
 When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 
 
+.. _:FileCategories:
+
 :FileCategories
 +++++++++++++++
 
@@ -3815,7 +3817,7 @@ To use the current GDCC version directly:
 ++++++++++++++
 
 A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. 
-The setting can include custom tag names along with the pre-defined Documentation, Data, and Code tags.
+The setting can include custom tag names along with the pre-defined tags(Documentation, Data, and Code are the defaults but the :ref:`:FileCategories` setting can be used to use a different set of tags).
 The default is category ordering disabled.
 
 :OrderByFolder
