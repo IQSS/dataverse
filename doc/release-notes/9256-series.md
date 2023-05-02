@@ -33,8 +33,10 @@ For installations with Custom Metadata Blocks:
 
 -stop solr instance (usually service solr stop, depending on solr installation/OS, see the Installation Guide
 
-edit the following line to your schema.xml (to indicate that series is now multiValued='true"):
+edit the following lines to your schema.xml (to indicate that series and its components are now multiValued='true"):
 
 <field name="series" type="string" stored="true" indexed="true" multiValued="true"/>
+<field name="seriesInformation" type="text_en" multiValued="true" stored="true" indexed="true"/>
+<field name="seriesName" type="text_en" multiValued="true" stored="true" indexed="true"/>
 
-restart solr instance (usually service solr start, depending on solr/OS)
+-restart solr instance (usually service solr start, depending on solr/OS)
