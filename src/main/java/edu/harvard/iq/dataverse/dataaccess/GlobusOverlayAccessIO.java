@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
 import java.io.FileNotFoundException;
@@ -23,17 +24,18 @@ import java.nio.file.Path;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.http.Header;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -44,7 +46,6 @@ import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.protocol.HTTP;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 
@@ -55,18 +56,18 @@ import javax.net.ssl.SSLContext;
  * @param <T> what it stores
  */
 /*
- * Remote Overlay Driver
+ * Globus Overlay Driver
  * 
  * StorageIdentifier format:
- * <httpDriverId>://<baseStorageIdentifier>//<baseUrlPath>
+ * <globusDriverId>://<local id>//<globusEndpointIdentifier>/<absolutePath>
  */
-public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
+public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.RemoteOverlayAccessIO");
+    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO");
 
     private StorageIO<DvObject> baseStore = null;
     private String path = null;
-    private String baseUrl = null;
+    private String endpointWithBasePath = null;
 
     private static HttpClientContext localContext = HttpClientContext.create();
     private PoolingHttpClientConnectionManager cm = null;
@@ -78,7 +79,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     private static boolean trustCerts = false;
     private int httpConcurrency = 4;
 
-    public RemoteOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
+    public GlobusOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
         this.setIsLocalFile(false);
         configureStores(req, driverId, null);
@@ -86,24 +87,24 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         path = dvObject.getStorageIdentifier().substring(dvObject.getStorageIdentifier().lastIndexOf("//") + 2);
         validatePath(path);
         
-        logger.fine("Base URL: " + path);
+        logger.fine("Relative path: " + path);
     }
 
-    public RemoteOverlayAccessIO(String storageLocation, String driverId) throws IOException {
+    public GlobusOverlayAccessIO(String storageLocation, String driverId) throws IOException {
         super(null, null, driverId);
         this.setIsLocalFile(false);
         configureStores(null, driverId, storageLocation);
 
         path = storageLocation.substring(storageLocation.lastIndexOf("//") + 2);
         validatePath(path);
-        logger.fine("Base URL: " + path);
+        logger.fine("Relative path: " + path);
     }
     
     private void validatePath(String relPath) throws IOException {
         try {
-            URI absoluteURI = new URI(baseUrl + "/" + relPath);
-            if(!absoluteURI.normalize().toString().startsWith(baseUrl)) {
-                throw new IOException("storageidentifier doesn't start with " + this.driverId + "'s base-url");
+            URI absoluteURI = new URI(endpointWithBasePath + "/" + relPath);
+            if(!absoluteURI.normalize().toString().startsWith(endpointWithBasePath)) {
+                throw new IOException("storageidentifier doesn't start with " + this.driverId + "'s endpoint/basePath");
             }
         } catch(URISyntaxException use) {
             throw new IOException("Could not interpret storageidentifier in remote store " + this.driverId);
@@ -150,7 +151,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                     this.setSize(dataFile.getFilesize());
                 } else {
                     logger.fine("Setting size");
-                    this.setSize(getSizeFromHttpHeader());
+                    this.setSize(getSizeFromGlobus());
                 }
                 if (dataFile.getContentType() != null && dataFile.getContentType().equals("text/tab-separated-values")
                         && dataFile.isTabularData() && dataFile.getDataTable() != null && (!this.noVarHeader())) {
@@ -176,13 +177,15 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException(
                     "Data Access: RemoteOverlay Storage driver does not support dvObject type Dataverse yet");
         } else {
-            this.setSize(getSizeFromHttpHeader());
+            this.setSize(getSizeFromGlobus());
         }
     }
 
-    private long getSizeFromHttpHeader() {
+    private long getSizeFromGlobus() {
+        throw new NotImplementedException();
+        /*
         long size = -1;
-        HttpHead head = new HttpHead(baseUrl + "/" + path);
+        HttpHead head = new HttpHead(endpointWithBasePath + "/" + path);
         try {
             CloseableHttpResponse response = getSharedHttpClient().execute(head, localContext);
 
@@ -208,6 +211,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             logger.warning(e.getMessage());
         }
         return size;
+        */
     }
 
     @Override
@@ -224,12 +228,12 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                     break;
                 default:
                     logger.warning("Response from " + get.getURI().toString() + " was " + code);
-                    throw new IOException("Cannot retrieve: " + baseUrl + "/" + path + " code: " + code);
+                    throw new IOException("Cannot retrieve: " + endpointWithBasePath + "/" + path + " code: " + code);
                 }
             } catch (Exception e) {
                 logger.warning(e.getMessage());
                 e.printStackTrace();
-                throw new IOException("Error retrieving: " + baseUrl + "/" + path + " " + e.getMessage());
+                throw new IOException("Error retrieving: " + endpointWithBasePath + "/" + path + " " + e.getMessage());
 
             }
             setChannel(Channels.newChannel(super.getInputStream()));
@@ -260,13 +264,13 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("Direct Access IO must be used to permanently delete stored file objects");
         }
         try {
-            HttpDelete del = new HttpDelete(baseUrl + "/" + path);
+            HttpDelete del = new HttpDelete(endpointWithBasePath + "/" + path);
             CloseableHttpResponse response = getSharedHttpClient().execute(del, localContext);
             try {
                 int code = response.getStatusLine().getStatusCode();
                 switch (code) {
                 case 200:
-                    logger.fine("Sent DELETE for " + baseUrl + "/" + path);
+                    logger.fine("Sent DELETE for " + endpointWithBasePath + "/" + path);
                 default:
                     logger.fine("Response from DELETE on " + del.getURI().toString() + " was " + code);
                 }
@@ -275,7 +279,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             }
         } catch (Exception e) {
             logger.warning(e.getMessage());
-            throw new IOException("Error deleting: " + baseUrl + "/" + path);
+            throw new IOException("Error deleting: " + endpointWithBasePath + "/" + path);
 
         }
 
@@ -379,7 +383,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public boolean exists() {
         logger.fine("Exists called");
-        return (getSizeFromHttpHeader() != -1);
+        return (getSizeFromGlobus() != -1);
     }
 
     @Override
@@ -420,9 +424,9 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         if (auxiliaryTag == null) {
             String secretKey = System.getProperty("dataverse.files." + this.driverId + ".secret-key");
             if (secretKey == null) {
-                return baseUrl + "/" + path;
+                return endpointWithBasePath + "/" + path;
             } else {
-                return UrlSignerUtil.signUrl(baseUrl + "/" + path, getUrlExpirationMinutes(), null, "GET",
+                return UrlSignerUtil.signUrl(endpointWithBasePath + "/" + path, getUrlExpirationMinutes(), null, "GET",
                         secretKey);
             }
         } else {
@@ -447,12 +451,13 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     private void configureStores(DataAccessRequest req, String driverId, String storageLocation) throws IOException {
-        baseUrl = System.getProperty("dataverse.files." + this.driverId + ".base-url");
-        if (baseUrl == null) {
-            throw new IOException("dataverse.files." + this.driverId + ".base-url is required");
+        endpointWithBasePath = JvmSettings.BASE_URI.lookup(this.driverId);
+        logger.info("base-uri is " + endpointWithBasePath);
+        if (endpointWithBasePath == null) {
+            throw new IOException("dataverse.files." + this.driverId + ".base-uri is required");
         } else {
             try {
-                new URI(baseUrl);
+                new URI(endpointWithBasePath);
             } catch (Exception e) {
                 logger.warning(
                         "Trouble interpreting base-url for store: " + this.driverId + " : " + e.getLocalizedMessage());
@@ -614,15 +619,16 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     protected static boolean isValidIdentifier(String driverId, String storageId) {
         String urlPath = storageId.substring(storageId.lastIndexOf("//") + 2);
-        String baseUrl = System.getProperty("dataverse.files." + driverId + ".base-url");
+        String baseUri = System.getProperty("dataverse.files." + driverId + ".base-uri");
         try {
-            URI absoluteURI = new URI(baseUrl + "/" + urlPath);
-            if(!absoluteURI.normalize().toString().startsWith(baseUrl)) {
+            URI absoluteURI = new URI(baseUri + "/" + urlPath);
+            if(!absoluteURI.normalize().toString().startsWith(baseUri)) {
                 logger.warning("storageidentifier doesn't start with " + driverId + "'s base-url: " + storageId);
                 return false;
             }
         } catch(URISyntaxException use) {
             logger.warning("Could not interpret storageidentifier in remote store " + driverId + " : " + storageId);
+            logger.warning(use.getLocalizedMessage());
             return false;
         }
         return true;
@@ -635,5 +641,15 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
         return baseStore.cleanUp(filter, dryRun);
+    }
+    
+    public static void main(String[] args) {
+        System.out.println("Running the main method");
+        if (args.length > 0) {
+            System.out.printf("List of arguments: {}", Arrays.toString(args));
+        }
+        System.setProperty("dataverse.files.globus.base-uri", "12345/top");
+        System.out.println("Valid: " + isValidIdentifier("globus", "globus://localid//../of/the/hill"));
+        logger.info(JvmSettings.BASE_URI.lookup("globus"));
     }
 }

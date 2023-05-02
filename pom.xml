@@ -167,8 +167,13 @@
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
-            <scope>provided</scope>
+            <!--scope>provided</scope-->
         </dependency>
+        <dependency>
+    <groupId>org.apache.geronimo.config</groupId>
+    <artifactId>geronimo-config-impl</artifactId>
+    <version>1.0</version>
+</dependency>
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
