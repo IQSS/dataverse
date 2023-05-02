@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.DOIServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 
@@ -74,5 +75,15 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
     protected String getProviderKeyName() {
         return "FAKE";
     }
-
+    
+    
+    @Override
+    public String createIdentifier(DatasetVersion datasetVersion) throws IOException {
+        return "fakeVersionIdentifier";
+    }
+    
+    @Override
+    public boolean publicizeIdentifier(DatasetVersion datasetVersion) throws IOException {
+        return true;
+    }
 }
