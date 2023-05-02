@@ -52,8 +52,12 @@
         <depDate>1002-01-01</depDate>
       </distStmt>
       <serStmt>
-        <serName>SeriesName</serName>
-        <serInfo>SeriesInformation</serInfo>
+        <serName>SeriesName One</serName>
+        <serInfo>SeriesInformation One</serInfo>
+      </serStmt>
+      <serStmt>
+        <serName>SeriesName Two</serName>
+        <serInfo>SeriesInformation Two</serInfo>
       </serStmt>
     </citation>
     <stdyInfo>

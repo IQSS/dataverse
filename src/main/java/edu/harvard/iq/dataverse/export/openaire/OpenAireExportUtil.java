@@ -1266,26 +1266,17 @@ public class OpenAireExportUtil {
                     if (DatasetFieldConstant.series.equals(fieldDTO.getTypeName())) {
                         // String seriesName = null;
                         String seriesInformation = null;
-
-                        Set<FieldDTO> fieldDTOs = fieldDTO.getSingleCompound();
-                        for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
-                            FieldDTO next = iterator.next();
-                            /*if (DatasetFieldConstant.seriesName.equals(next.getTypeName())) {
-                                seriesName =  next.getSinglePrimitive();
-                            }*/
-                            if (DatasetFieldConstant.seriesInformation.equals(next.getTypeName())) {
-                                seriesInformation = next.getSinglePrimitive();
+                        for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.seriesInformation.equals(next.getTypeName())) {
+                                    seriesInformation = next.getSinglePrimitive();
+                                }
                             }
-                        }
-
-                        /*if (StringUtils.isNotBlank(seriesName)){
-                        	contributor_check = writeOpenTag(xmlw, "descriptions", description_check);
-                        	
-                        	writeDescriptionElement(xmlw, "SeriesInformation", seriesName);
-                        }*/
-                        if (StringUtils.isNotBlank(seriesInformation)) {
-                            description_check = writeOpenTag(xmlw, "descriptions", description_check);
-                            writeDescriptionElement(xmlw, "SeriesInformation", seriesInformation, language);
+                            if (StringUtils.isNotBlank(seriesInformation)) {
+                                description_check = writeOpenTag(xmlw, "descriptions", description_check);
+                                writeDescriptionElement(xmlw, "SeriesInformation", seriesInformation, language);
+                            }
                         }
                     }
                 }
