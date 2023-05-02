@@ -29,7 +29,7 @@ public interface GlobalIdServiceBean {
     /**
      * Let the PID provider create the identifier for a dataset or datafile (collections are not yet supported) by
      * linking it to the target URL. This might involve registering metadata of the object alongside.
-     * The identifier is not yet to be published - this step is done by {@link #publicizeIdentifier(DatasetVersion)}.
+     * The identifier is not yet to be published - this step is done by {@link #publicizeIdentifier(DvObject)}.
      *
      * @param dvo The object to create the identifier for
      * @return Some response or nothing at all (null). Up to the provider.
