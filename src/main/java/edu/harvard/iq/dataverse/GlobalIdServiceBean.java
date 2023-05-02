@@ -37,7 +37,25 @@ public interface GlobalIdServiceBean {
      * @throws IOException If creation fails. May contain wrapped root causes.
      */
     String createIdentifier(DvObject dvo) throws IOException;
-
+    
+    /**
+     * Let the PID provider create the identifier for a dataset version like it does in {@link #createIdentifier(DvObject)}.
+     * The identifier is not yet to be published - this step is done by {@link #publicizeIdentifier(DatasetVersion)}.
+     * Note that the provider needs to decide if minor versions get their own identifiers as well. If minor versions
+     * are to be updates of majors, this may be done in {@link #publicizeIdentifier(DatasetVersion)} as well.
+     *
+     * @implNote This method is expected to create a new identifier, not overwrite an existing one, and not make
+     *           an identifier findable yet (this is the job of {@link #publicizeIdentifier(DatasetVersion)}).
+     *
+     * @param datasetVersion The version to be registered at the provider
+     * @return Some response or nothing at all (null). Up to the provider.
+     * @throws IOException If creation fails. May contain wrapped root causes.
+     * @throws NotImplementedException If version registration is not supported by the provider
+     */
+    default String createIdentifier(DatasetVersion datasetVersion) throws IOException {
+        throw new NotImplementedException("This provider does not (yet) support creating identifiers for versions");
+    }
+    
     Map<String,String> getIdentifierMetadata(DvObject dvo);
 
     String modifyIdentifierTargetURL(DvObject dvo) throws Exception;
