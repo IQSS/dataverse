@@ -567,7 +567,7 @@ public class DataversesIT {
         // destroyDataset() line lately)
         
         Thread.sleep(1000L); 
-        
+
         Integer datasetIdIntRelease = JsonPath.from(importDDIRelease.body().asString()).getInt("data.id");
         Response destroyDatasetResponseRelease = UtilIT.destroyDataset(datasetIdIntRelease, apiToken);
         assertEquals(200, destroyDatasetResponseRelease.getStatusCode());
