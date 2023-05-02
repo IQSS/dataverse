@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetLock;
 import static edu.harvard.iq.dataverse.DatasetVersion.VersionState.*;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
@@ -18,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.NotImplementedException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -27,6 +29,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
@@ -36,9 +39,6 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import java.util.ArrayList;
 import java.util.concurrent.Future;
 import org.apache.solr.client.solrj.SolrServerException;
-
-import javax.ejb.EJB;
-import javax.inject.Inject;
 
 
 /**
@@ -101,10 +101,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             try {
                 // This can potentially throw a CommandException, so let's make 
                 // sure we exit cleanly:
-
-            	registerExternalIdentifier(theDataset, ctxt, false);
-                
-                // TODO: try to register an identifier for the version as well if necessary
+                registerExternalIdentifier(theDataset, ctxt, false);
             } catch (CommandException comEx) {
                 logger.warning("Failed to reserve the identifier "+theDataset.getGlobalId().asString()+"; notifying the user(s), unlocking the dataset");
                 // Send failure notification to the user: 
@@ -182,10 +179,42 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
         
-	if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
+        if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
             // some imported datasets may already be released.
-
             if (!datasetExternallyReleased) {
+                /* If activated, now is the right moment to create an identifier for this version, as the
+                 * metadata has been all updated. In PublishDatasetCommand (which comes before this command),
+                 * the numbers have already been adapted, so we know if this will be a major or minor version.
+                 * The identifier for the dataset has definitely been created (or this would have failed above),
+                 * so we can include it in any metadata records for this version.
+                 *
+                 * Note: although it may seem wrong to trigger registering any version, it is a (configurable?)
+                 * decision in the provider's realm if minor versions are just updates of a major or their own.
+                 */
+                if (ctxt.dataverses().wantsDatasetVersionPids(theDataset.getOwner())) {
+                    DatasetVersion version = theDataset.getLatestVersion();
+                    GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
+                    Objects.requireNonNull(idServiceBean, "Could not retrieve PID provider");
+                    
+                    try {
+                        // Generate an identifier for the version
+                        String identifier = idServiceBean.generateDatasetVersionIdentifier(version);
+                        version.setPersistentIdentifier(identifier);
+                        
+                        // Try to register the identifier with the provider
+                        idServiceBean.createIdentifier(version);
+                        version.setIdentifierRegistered();
+                    } catch (IOException | NotImplementedException e) {
+                        logger.warning("Failed to register the version identifier "+version.getGlobalId().asString()+"; notifying the user(s), unlocking the dataset");
+                        
+                        // Send failure notification to the user:
+                        notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
+                        
+                        ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
+                        throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()), this);
+                    }
+                }
+                
                 publicizeExternalIdentifier(theDataset, ctxt);
                 // Will throw a CommandException, unless successful.
                 // This will end the execution of the command, but the method 
@@ -404,18 +433,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     }
                 }
     
-                // Publish a PID for this dataset version if activated
-                // -> At this point, we have a latest version that is not in "released" state yet.
-                // ->
-                // TODO: might throw a NoSuchElementException. Adapt error message?
+                // Publish a PID for this dataset version (if activated). Leave details to the provider.
                 if (ctxt.dataverses().wantsDatasetVersionPids(dataset.getOwner())) {
-                    // TODO: check result like above
-                    // TODO: which version to pass? is at time of calling the latest version already released?
-                    // TODO: maybe we should check for this being a *new* major version before handing it over... (this is not meant to be at discretion of the id service!)
-                    //idServiceBean.publicizeIdentifier(dataset.getLatestVersion());
+                    DatasetVersion version = dataset.getLatestVersion();
+                    idServiceBean.publicizeIdentifier(version);
                 }
                 
-                // Publish the Dataset PID (after the version because we want to include the version in metadata updates)
+                // Publish the Dataset PID (after the version, because we want to include the version in metadata updates)
                 if (!idServiceBean.publicizeIdentifier(dataset)) {
                     throw new Exception();
                 }
