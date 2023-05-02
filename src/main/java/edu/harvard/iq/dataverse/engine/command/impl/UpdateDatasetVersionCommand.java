@@ -96,7 +96,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         }
         
         Dataset theDataset = getDataset();        
-        ctxt.permissions().checkEditDatasetLock(theDataset, getRequest(), this);
+        ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
         Dataset savedDataset = null;
         
         try {

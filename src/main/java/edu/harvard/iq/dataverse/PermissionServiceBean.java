@@ -750,6 +750,21 @@ public class PermissionServiceBean {
             }
         }
     }
+
+    public void checkUpdateDatasetVersionLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
+        boolean locked = false;
+        if (dataset.isLocked()) {
+            for (final DatasetLock lock: dataset.getLocks()) {
+                if (lock.getReason() != DatasetLock.Reason.Ingest) {
+                    locked = true;
+                    break;
+                }
+            }
+        }
+        if (locked) {
+            checkEditDatasetLock(dataset, dataverseRequest, command);
+        }
+    }
     
     public void checkPublishDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
