@@ -4,7 +4,7 @@ See https://github.com/IQSS/dataverse/issues/9148.
 
 When publishing a dataset via API, it now requires the dataset to either have a standard license configured, or have valid Custom Terms of Use (if allowed by the instance). Attempting to publish a dataset without such **will fail with an error message**. This introduces a backward incompatibility, and if you have scripts that automatically create, update and publish datasets, this last step may start failing. Because, unfortunately, there were some problems with the datasets APIs that made it difficult to manage licenses, so an API user was likely to end up with a dataset missing either of the above. In this release we have addressed it by making the following fixes:
 
-We fixed the incompatibility between the format in which license information wad *exported* in json, and the format the create and update APIs were expecting it for *import* (https://github.com/IQSS/dataverse/issues/9155). This means that the following json format can now be imported:
+We fixed the incompatibility between the format in which license information was *exported* in json, and the format the create and update APIs were expecting it for *import* (https://github.com/IQSS/dataverse/issues/9155). This means that the following json format can now be imported:
 ```
 "license": {
    "name": "CC0 1.0",
