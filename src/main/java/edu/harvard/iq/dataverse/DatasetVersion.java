@@ -129,15 +129,16 @@ public class DatasetVersion implements Serializable {
     private String versionNote;
     
     /**
-     * A (globally) unique persisten identifier for this version.
+     * A (globally) unique persistent identifier for this version.
      * The version PID will always be dependent on the protocol and authority of the containing dataset.
      * This identifier may contain {@link edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key#Shoulder} if
      * configured and some more unique characters, also depending on the admin's choice to make version PIDs dependent
      * on the dataset PID.
      *
-     * The PID may be null (feature disabled, old entry, etc), but if present, it must be unique.
+     * The PID may be null (feature disabled, old entry, etc.). It might not be unique, as minor versions by default
+     * carry the identifier of their adjacent major version.
      */
-    @Column(unique = true)
+    @Column
     private String persistentIdentifier;
     
     /**
