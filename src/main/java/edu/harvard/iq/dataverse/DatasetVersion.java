@@ -148,6 +148,12 @@ public class DatasetVersion implements Serializable {
     @Transient
     private GlobalId globalId;
     
+    /**
+     * Saving in the database if this identifier has been registered before to avoid
+     * re-registration (which would probably fail) and switch to modification
+     */
+    private boolean identifierRegistered = false;
+    
     /*
      * @todo versionState should never be null so when we are ready, uncomment
      * the `nullable = false` below.
@@ -278,6 +284,30 @@ public class DatasetVersion implements Serializable {
         }
         return this.globalId;
     }
+    
+    /**
+     * Check the status of the version identifier - has it been registered?
+     * @return True if registered, false otherwise.
+     */
+    public boolean isIdentifierRegistered() {
+        return this.identifierRegistered;
+    }
+    
+    /**
+     * Set registration as done.
+     */
+    public void setIdentifierRegistered() {
+        this.identifierRegistered = true;
+    }
+    
+    /**
+     * Overwrite the registration status with a specific value
+     * @param status The new status of the registration
+     */
+    public void setIdentifierRegistered(boolean status) {
+        this.identifierRegistered = status;
+    }
+    
 
     public String getDataverseSiteUrl() {
         return dataverseSiteUrl;
