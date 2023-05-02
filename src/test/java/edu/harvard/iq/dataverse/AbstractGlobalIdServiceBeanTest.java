@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -73,19 +74,26 @@ class AbstractGlobalIdServiceBeanTest {
     }
     
     @Test
-    void generateDatasetVersionIdentifierFailsWithMinorVersion() {
+    void generateDatasetVersionIdentifierReturnsReleasedIdWithMinorVersion() {
         // given
         TestIdService sut = new TestIdService();
         Dataset dataset = MocksFactory.makeDataset();
-    
-        assumeFalse(dataset.getLatestVersion().isReleased());
-    
-        // Set to non-allowed combination
-        dataset.getLatestVersion().setMinorVersionNumber(1L);
         
-        // when & then (split retrieval to avoid ambiguous lambda exceptions)
-        DatasetVersion version = dataset.getLatestVersion();
-        assertThrows(IllegalArgumentException.class, () -> sut.generateDatasetVersionIdentifier(version));
+        // Release the first version
+        dataset.getLatestVersion().setReleaseTime(new Date());
+        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
+        dataset.getLatestVersion().setPersistentIdentifier("test");
+        assumeTrue(dataset.getLatestVersion().isReleased());
+        
+        // Add a new minor version
+        DatasetVersion newVersion = dataset.getOrCreateEditVersion();
+        assumeFalse(dataset.getLatestVersion().isReleased());
+        dataset.getLatestVersion().setMinorVersionNumber(1L);
+        assumeTrue(newVersion.getMinorVersionNumber() == 1);
+        
+        // when
+        String identifier = sut.generateDatasetVersionIdentifier(dataset.getLatestVersion());
+        assertEquals("test", identifier);
     }
     
     @Test

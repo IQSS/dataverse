@@ -163,33 +163,42 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
      *
      * @param datasetVersion The version of a dataset to create a PID for
      * @return The identifier (will never be null)
-     * @throws NoSuchElementException When no style has been configured for the instance
      * @throws IllegalArgumentException If the style configured is not supported by this generator, the version is
      *                                  already released or a minor version, or if the owning dataset has no identifier
      *                                  while creating a suffix style identifier.
      */
     @Override
-    public String generateDatasetVersionIdentifier(DatasetVersion datasetVersion) {
-        // HINT: this default business logic might be made configurable later
-        //       or can be overridden by a provider implementing custom logic.
-        if (datasetVersion.isReleased() || datasetVersion.getMinorVersionNumber() > 0) {
-            throw new IllegalArgumentException("Released or draft minor versions are not allowed");
+    public String generateDatasetVersionIdentifier(final DatasetVersion datasetVersion) throws IllegalArgumentException {
+        if (datasetVersion == null || datasetVersion.isReleased()) {
+            throw new IllegalArgumentException("Version may not be null or released");
         }
         
-        GenStyle style = JvmSettings.PID_VERSIONS_STYLE.lookup(GenStyle.class);
+        // If this is a minor version update, reuse the identifier of the last released version
+        if (datasetVersion.getMinorVersionNumber() > 0) {
+            return datasetVersion.getDataset().getReleasedVersion().getPersistentIdentifier();
+        }
         
-        if (style == GenStyle.DATASET) {
-            return generateDatasetIdentifier(datasetVersion.getDataset());
-        } else if (style == GenStyle.SUFFIX) {
-            String datasetIdentifier = datasetVersion.getDataset().getIdentifier();
-            if (datasetIdentifier == null || datasetIdentifier.isEmpty()) {
-                throw new IllegalArgumentException("Dataset must not have empty identifier when creating dataset version identifier by suffix");
-            }
+        try {
+            GenStyle style = JvmSettings.PID_VERSIONS_STYLE.lookup(GenStyle.class);
             
-            return datasetIdentifier + getVersionSuffixDelimiter() + datasetVersion.getVersionNumber();
+            if (style == GenStyle.DATASET) {
+                return generateDatasetIdentifier(datasetVersion.getDataset());
+                
+            } else if (style == GenStyle.SUFFIX) {
+                String datasetIdentifier = datasetVersion.getDataset().getIdentifier();
+                if (datasetIdentifier == null || datasetIdentifier.isEmpty()) {
+                    throw new IllegalArgumentException("Dataset must not have empty identifier when creating dataset version identifier by suffix");
+                }
+                
+                return datasetIdentifier + getVersionSuffixDelimiter() + datasetVersion.getVersionNumber();
+            
+            // Nothing appropriate found - bail out
+            } else {
+                throw new IllegalArgumentException("No supported version PID generation style configured");
+            }
+        } catch (NoSuchElementException e) {
+            throw new IllegalArgumentException("No supported version PID generation style configured", e);
         }
-        
-        throw new IllegalArgumentException("No supported version PID generation style configured");
     }
     
     //ToDo just send the DvObject.DType
