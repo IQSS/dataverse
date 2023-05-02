@@ -23,7 +23,6 @@ package edu.harvard.iq.dataverse.ingest;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -69,7 +68,6 @@ public class IngestMessageBean implements MessageListener {
     public void onMessage(Message message) {
         IngestMessage ingestMessage = null;
 
-        Long datafile_id = null;
         AuthenticatedUser authenticatedUser = null;
         
         try {
@@ -78,8 +76,8 @@ public class IngestMessageBean implements MessageListener {
 
             authenticatedUser = authenticationServiceBean.findByID(ingestMessage.getAuthenticatedUserId());
 
-            Iterator iter = ingestMessage.getFileIds().iterator();
-            datafile_id = null;
+            Iterator<Long> iter = ingestMessage.getFileIds().iterator();
+            Long datafile_id = null;
 
             boolean ingestWithErrors = false;
 
@@ -87,7 +85,7 @@ public class IngestMessageBean implements MessageListener {
             sbIngestedFiles.append("<ul>");
             
             while (iter.hasNext()) {
-                datafile_id = (Long) iter.next();
+                datafile_id = iter.next();
 
                 logger.fine("Start ingest job;");
                 try {
@@ -139,11 +137,10 @@ public class IngestMessageBean implements MessageListener {
                             logger.info("trying to save datafile and the failed ingest report, id=" + datafile_id);
                             datafile = datafileService.save(datafile);
 
-                            Dataset dataset = datafile.getOwner();
-                            if (dataset != null && dataset.getId() != null) {
+                            if (ingestMessage.getDatasetId() != null) {
                                 //logger.info("attempting to remove dataset lock for dataset " + dataset.getId());
                                 //datasetService.removeDatasetLock(dataset.getId());
-                                ingestService.sendFailNotification(dataset.getId());
+                                ingestService.sendFailNotification(ingestMessage.getDatasetId());
                             }
                         }
                     }
@@ -153,21 +150,6 @@ public class IngestMessageBean implements MessageListener {
             sbIngestedFiles.append("</ul>");
 
             Long objectId = null;
-            
-            // Remove the dataset lock: 
-            // (note that the assumption here is that all of the datafiles
-            // packed into this IngestMessage belong to the same dataset) 
-            if (datafile_id != null) {
-                DataFile datafile = datafileService.find(datafile_id);
-                if (datafile != null) {
-                    Dataset dataset = datafile.getOwner();
-                    objectId = dataset.getId();
-                    if (dataset != null && dataset.getId() != null) {
-                        datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.Ingest);
-                    }
-                } 
-            }
-
             userNotificationService.sendNotification(
                     authenticatedUser,
                     Timestamp.from(Instant.now()),
@@ -182,9 +164,15 @@ public class IngestMessageBean implements MessageListener {
             ex.printStackTrace(); // error in getting object from message; can't send e-mail
 
         } finally {
-            // when we're done, go ahead and remove the lock (not yet)
+            // when we're done, go ahead and remove the lock
             try {
-                //datasetService.removeDatasetLock( ingestMessage.getDatasetId() );
+                // Remove the dataset lock: 
+                // (note that the assumption here is that all of the datafiles
+                // packed into this IngestMessage belong to the same dataset) 
+                Dataset dataset = datasetService.find(ingestMessage.getDatasetId());
+                if (dataset != null && dataset.getId() != null) {
+                    datasetService.removeDatasetLock(dataset, ingestMessage.getLockId());
+                }
             } catch (Exception ex) {
                 ex.printStackTrace(); // application was unable to remove the datasetLock
             }

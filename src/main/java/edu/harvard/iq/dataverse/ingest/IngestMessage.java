@@ -59,6 +59,7 @@ public class IngestMessage implements Serializable {
     private String datasetVersionNumber;
     private List<Long> datafile_ids;
     private Long authenticatedUserId;
+    private Long lockId;
 
     public String getVersionNote() {
         return versionNote;
@@ -122,5 +123,13 @@ public class IngestMessage implements Serializable {
 
     public Long getAuthenticatedUserId() {
         return authenticatedUserId;
+    }
+
+    public void setLockId(Long lockId) {
+        this.lockId = lockId;
+    }
+
+    public Long getLockId() {
+        return lockId;
     }
 }
