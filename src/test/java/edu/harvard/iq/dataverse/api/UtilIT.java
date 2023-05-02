@@ -2499,15 +2499,11 @@ public class UtilIT {
         int repeats = durationInSeconds * (1000 / sleepStep);
         boolean stale=true;
         do {
-            try {
-                timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
-                System.out.println(timestampResponse.body().asString());
-                String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
-                System.out.println(hasStaleIndex);
-                stale = Boolean.parseBoolean(hasStaleIndex);
-            } catch (Exception e) {
-                stale = false;
-            }
+            timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
+            System.out.println(timestampResponse.body().asString());
+            String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
+            System.out.println(hasStaleIndex);
+            stale = Boolean.parseBoolean(hasStaleIndex);
             
             try {
                 Thread.sleep(sleepStep);
