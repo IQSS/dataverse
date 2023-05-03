@@ -3710,6 +3710,8 @@ For example:
 
 When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 
 
+.. _:FileCategories:
+
 :FileCategories
 +++++++++++++++
 
@@ -3810,5 +3812,22 @@ The URL of `dvuploader <https://github.com/gdcc/dvwebloader>`'s HTML file when d
 To use the current GDCC version directly:
 
 ``curl -X PUT -d 'https://gdcc.github.io/dvwebloader/src/dvwebloader.html' http://localhost:8080/api/admin/settings/:WebloaderUrl``
+
+:CategoryOrder
+++++++++++++++
+
+A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. 
+The setting can include custom tag names along with the pre-defined tags(Documentation, Data, and Code are the defaults but the :ref:`:FileCategories` setting can be used to use a different set of tags).
+The default is category ordering disabled.
+
+:OrderByFolder
+++++++++++++++
+
+A true(default)/false option determining whether datafiles listed on the dataset page should be grouped by folder.
+
+:AllowUserManagementOfOrder
++++++++++++++++++++++++++++
+
+A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically. 
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
