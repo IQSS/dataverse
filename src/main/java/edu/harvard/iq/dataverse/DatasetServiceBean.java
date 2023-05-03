@@ -448,29 +448,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
-    /**
-     * Removes {@link DatasetLock} for the dataset whose id is passed and lock ID
-     * is {@code lockId}.
-     * @param dataset the dataset whose locks (for {@code aReason}) will be removed.
-     * @param aReason The reason of the locks that will be removed.
-     */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void removeDatasetLock(Dataset dataset, Long lockId) {
-        if ( dataset != null ) {
-            new HashSet<>(dataset.getLocks()).stream()
-                    .filter( l -> l.getId() == lockId )
-                    .forEach( lock -> {
-                        lock = em.merge(lock);
-                        dataset.removeLock(lock);
-
-                        AuthenticatedUser user = lock.getUser();
-                        user.getDatasetLocks().remove(lock);
-
-                        em.remove(lock);
-                    });
-        }
-    }
-
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void updateDatasetLock(DatasetLock datasetLock) {
         em.merge(datasetLock);

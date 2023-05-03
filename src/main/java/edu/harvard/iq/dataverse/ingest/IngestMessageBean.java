@@ -30,7 +30,10 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.MessageDriven;
+import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.jms.JMSException;
@@ -38,6 +41,7 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 
+import fish.payara.cluster.Clustered;
 /**
  *
  * This is an experimental, JMS-based implementation of asynchronous 
@@ -52,6 +56,8 @@ import javax.jms.ObjectMessage;
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")
     }
 )
+@Singleton
+@Clustered @Lock(LockType.READ)
 public class IngestMessageBean implements MessageListener {
     private static final Logger logger = Logger.getLogger(IngestMessageBean.class.getCanonicalName());
     @EJB DatasetServiceBean datasetService;
@@ -65,6 +71,7 @@ public class IngestMessageBean implements MessageListener {
     }
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Lock(LockType.WRITE)
     public void onMessage(Message message) {
         IngestMessage ingestMessage = null;
 
@@ -73,6 +80,12 @@ public class IngestMessageBean implements MessageListener {
         try {
             ObjectMessage om = (ObjectMessage) message;
             ingestMessage = (IngestMessage) om.getObject();
+
+            // if the lock was removed while an ingest was queued, ratake the lock
+            datasetService.addDatasetLock(ingestMessage.getDatasetId(),
+                    DatasetLock.Reason.Ingest,
+                    ingestMessage.getAuthenticatedUserId(),
+                    ingestMessage.getInfo());
 
             authenticatedUser = authenticationServiceBean.findByID(ingestMessage.getAuthenticatedUserId());
 
@@ -171,7 +184,7 @@ public class IngestMessageBean implements MessageListener {
                 // packed into this IngestMessage belong to the same dataset) 
                 Dataset dataset = datasetService.find(ingestMessage.getDatasetId());
                 if (dataset != null && dataset.getId() != null) {
-                    datasetService.removeDatasetLock(dataset, ingestMessage.getLockId());
+                    datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.Ingest);
                 }
             } catch (Exception ex) {
                 ex.printStackTrace(); // application was unable to remove the datasetLock

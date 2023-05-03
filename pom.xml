@@ -183,6 +183,11 @@
             <!-- no version here as managed by Payara BOM above! -->
         </dependency>
         <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
             <scope>provided</scope>
