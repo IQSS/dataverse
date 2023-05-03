@@ -56,6 +56,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -360,28 +361,28 @@ public class IndexServiceBean {
     
     // nextToIndex contains datasets mapped by dataset id that were added for future indexing while the indexing was already ongoing for a given dataset
     // (if there already was a dataset scheduled for indexing, it is overwritten and only the most recently requested version is kept in the map)
-    private static Map<Long, Dataset> nextToIndex = new HashMap<>();
+    private static final Map<Long, Dataset> NEXT_TO_INDEX = new ConcurrentHashMap<>();
     // indexingNow is a set of dataset ids of datasets being indexed asynchronously right now
-    private static Set<Long> indexingNow = new HashSet<>();
+    private static final Map<Long, Boolean> INDEXING_NOW = new ConcurrentHashMap<>();
 
     // When you pass null as Dataset parameter to this method, it indicates that the indexing of the dataset with "id" has finished
     // Pass non-null Dataset to schedule it for indexing
     synchronized private static Dataset getNextToIndex(Long id, Dataset d) {
         if (d == null) { // -> indexing of the dataset with id has finished
-            Dataset next = nextToIndex.remove(id);
+            Dataset next = NEXT_TO_INDEX.remove(id);
             if (next == null) { // -> no new indexing jobs were requested while indexing was ongoing
                 // the job can be stopped now
-                indexingNow.remove(id);
+                INDEXING_NOW.remove(id);
             }
             return next;
         }
         // index job is requested for a non-null dataset
-        if (indexingNow.contains(id)) { // -> indexing job is already ongoing, and a new job should not be started by the current thread -> return null
-            nextToIndex.put(id, d);
+        if (INDEXING_NOW.containsKey(id)) { // -> indexing job is already ongoing, and a new job should not be started by the current thread -> return null
+            NEXT_TO_INDEX.put(id, d);
             return null;
         }
         // otherwise, start a new job
-        indexingNow.add(id);
+        INDEXING_NOW.put(id, true);
         return d;
     }
 
