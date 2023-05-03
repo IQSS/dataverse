@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import javax.ejb.Stateless;
@@ -46,11 +48,16 @@ public class Pids extends AbstractApiBean {
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
         }
-        String baseUrl = systemConfig.getDataCiteRestApiUrlString();
-        String username = System.getProperty("doi.username");
-        String password = System.getProperty("doi.password");
+
+        // FIXME: Even before changing to MPCONFIG retrieval, this was pinned to be DataCite specific!
+        //        Should this be extended to EZID and other PID systems like Handle?
+        String baseUrl = JvmSettings.DATACITE_REST_API_URL.lookup();
+        String username = JvmSettings.DATACITE_USERNAME.lookup();
+        String password = JvmSettings.DATACITE_PASSWORD.lookup();
+        
         try {
-            JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
+            GlobalId globalId = PidUtil.parseAsGlobalID(persistentId);
+            JsonObjectBuilder result = PidUtil.queryDoi(globalId, baseUrl, username, password);
             return ok(result);
         } catch (NotFoundException ex) {
             return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());

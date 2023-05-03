@@ -498,7 +498,7 @@ public class JsonPrinter {
         blockBld.add("name", block.getName());
         
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
-        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false);
+        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
         DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray));
 
         blockBld.add("fields", fieldsArray);
@@ -520,7 +520,7 @@ public class JsonPrinter {
             return null;
         } else {
             JsonArrayBuilder fieldArray = Json.createArrayBuilder();
-            Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false);
+            Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
             DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray), cvocMap);
             JsonArray out = fieldArray.build();
             return out.getJsonObject(0);
@@ -625,18 +625,16 @@ public class JsonPrinter {
         }
          
         fileName = fileMetadata.getLabel();
-        
-        String pidURL = "";
-        
-        if (new GlobalId(df).toURL() != null){
-            pidURL = new GlobalId(df).toURL().toString();
-        }
+        GlobalId filePid = df.getGlobalId();
+        String pidURL = (filePid!=null)? filePid.asURL(): null;
+        //For backward compatibility - prior to #8674, asString() returned "" for the value when no PID exists.
+        String pidString = (filePid!=null)? filePid.asString(): "";
 
         JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
 
         return jsonObjectBuilder()
                 .add("id", df.getId())
-                .add("persistentId", df.getGlobalIdString())
+                .add("persistentId", pidString)
                 .add("pidURL", pidURL)
                 .add("filename", fileName)
                 .add("contentType", df.getContentType())
@@ -745,7 +743,7 @@ public class JsonPrinter {
         @Override
         public void startField(DatasetField f) {
             objectStack.push(jsonObjectBuilder());
-            // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
+            // Invariant: all values are multiple. Differentiation between multiple and single is done at endField.
             valueArrStack.push(Json.createArrayBuilder());
 
             DatasetFieldType typ = f.getDatasetFieldType();
@@ -756,7 +754,7 @@ public class JsonPrinter {
 
         @Override
         public void addExpandedValuesArray(DatasetField f) {
-            // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
+            // Invariant: all values are multiple. Differentiation between multiple and single is done at endField.
             valueArrStack.push(Json.createArrayBuilder());
         }
 
@@ -978,5 +976,24 @@ public class JsonPrinter {
         JsonObjectBuilder b = jsonObjectBuilder();
         in.keySet().forEach( k->b.add(k, in.get(k)) );
         return b;
+    }
+
+
+    /**
+     * Get signposting from Dataset
+     * @param ds the designated Dataset
+     * @return json linkset
+     */
+    public static JsonObjectBuilder jsonLinkset(Dataset ds) {
+        return jsonObjectBuilder()
+                .add("anchor", ds.getPersistentURL())
+                .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
+                .add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage")))
+                .add("author", ds.getPersistentURL())
+                .add("protocol", ds.getProtocol())
+                .add("authority", ds.getAuthority())
+                .add("publisher", BrandingUtil.getInstallationBrandName())
+                .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
+                .add("storageIdentifier", ds.getStorageIdentifier());
     }
 }

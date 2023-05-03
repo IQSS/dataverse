@@ -14,9 +14,13 @@ A variety of integrations are oriented toward making it easier for your research
 GitHub
 ++++++
 
-Dataverse integration with GitHub is implemented via a Dataverse Uploader GitHub Action. It is a reusable, composite workflow for uploading a git repository or subdirectory into a dataset on a target Dataverse installation. The action is customizable, allowing users to choose to replace a dataset, add to the dataset, publish it or leave it as a draft version on Dataverse. The action provides some metadata to the dataset, such as the origin GitHub repository, and it preserves the directory tree structure. 
+GitHub can be integrated with a Dataverse installation in multiple ways.
+
+One Dataverse integration is implemented via a Dataverse Uploader GitHub Action. It is a reusable, composite workflow for uploading a git repository or subdirectory into a dataset on a target Dataverse installation. The action is customizable, allowing users to choose to replace a dataset, add to the dataset, publish it or leave it as a draft version in the Dataverse installation. The action provides some metadata to the dataset, such as the origin GitHub repository, and it preserves the directory tree structure. 
 
 For instructions on using Dataverse Uploader GitHub Action, visit https://github.com/marketplace/actions/dataverse-uploader-action
+
+In addition to the Dataverse Uploader GitHub Action, the :ref:`integrations-dashboard` also enables a pull of data from GitHub to a dataset.
 
 Dropbox
 +++++++
@@ -28,7 +32,11 @@ Open Science Framework (OSF)
 
 The Center for Open Science's Open Science Framework (OSF) is an open source software project that facilitates open collaboration in science research across the lifespan of a scientific project.
 
-For instructions on depositing data from OSF to your Dataverse installation, your researchers can visit https://help.osf.io/hc/en-us/articles/360019737314-Connect-Dataverse-to-a-Project
+OSF can be integrated with a Dataverse installation in multiple ways.
+
+Researcher can configure OSF itself to deposit to your Dataverse installation by following `instructions from OSF <https://help.osf.io/article/208-connect-dataverse-to-a-project>`_.
+
+In addition to the method mentioned above, the :ref:`integrations-dashboard` also enables a pull of data from OSF to a dataset.
 
 RSpace
 ++++++
@@ -77,6 +85,41 @@ SampleDB is a web-based electronic lab notebook (ELN) with a focus on flexible m
 
 For instructions on using the Dataverse export, you can visit https://scientific-it-systems.iffgit.fz-juelich.de/SampleDB/administrator_guide/dataverse_export.html
 
+RedCap
+++++++
+
+RedCap is a web-based application to capture data for clinical research and create databases and projects.
+
+The :ref:`integrations-dashboard` enables a pull of data from RedCap to a dataset in Dataverse.
+
+GitLab
+++++++
+
+GitLab is an open source Git repository and platform that provides free open and private repositories, issue-following capabilities, and wikis for collaborative software development.
+
+The :ref:`integrations-dashboard` enables a pull of data from GitLab to a dataset in Dataverse.
+
+iRODS
++++++
+
+An open source, metadata driven data management system that is accessible through a host of different clients.
+
+The :ref:`integrations-dashboard` enables a pull of data from iRODS to a dataset in Dataverse.
+
+.. _integrations-dashboard:
+
+Integrations Dashboard
+++++++++++++++++++++++
+
+The integrations dashboard is software by the Dataverse community to enable easy data transfer from an existing data management platform to a dataset in a Dataverse collection.
+
+Instead of trying to set up Dataverse plug-ins in existing tools and systems to push data to a Dataverse installation, the dashboard works in reverse by being a portal to pull data from tools such as iRODS and GitHub into a dataset.
+
+Its aim is to make integrations more flexible and less dependent on the cooperation of system to integrate with. You can use it to either create a dataset from scratch and add metadata after files have been transferred, or you can use it to compare what is already in an existing dataset to make updating files in datasets easier.
+
+Its goal is to make the dashboard adjustable for a Dataverse installation's needs and easy to connect other systems to as well.
+
+The integrations dashboard is currently in development. A preview and more information can be found at: `rdm-integration GitHub repository <https://github.com/libis/rdm-integration>`_
 
 Embedding Data on Websites
 --------------------------
@@ -104,6 +147,8 @@ Compute Button
 
 The "Compute" button is still highly experimental and has special requirements such as use of a Swift object store, but it is documented under "Setting up Compute" in the :doc:`/installation/config` section of the Installation Guide.
 
+.. _wholetale:
+
 Whole Tale
 ++++++++++
 
@@ -111,14 +156,18 @@ Whole Tale
 `import data from a Dataverse installation
 <https://wholetale.readthedocs.io/en/stable/users_guide/manage.html>`_ via identifier (e.g., DOI, URI, etc) or through the External Tools integration.  For installation instructions, see the :doc:`external-tools` section or the `Integration <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html#dataverse-external-tools>`_ section of the Whole Tale User Guide.
 
+.. _binder:
+
 Binder
 ++++++
 
-Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by entering the DOI of a dataset in a Dataverse installation on https://mybinder.org
+Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by entering the DOI of a dataset in a Dataverse installation at https://mybinder.org
 
-A Binder button can also be added to every dataset page to launch Binder from there. See :doc:`external-tools`.
+A Binder button can also be added to every dataset page to launch Binder from there. Instructions on enabling this feature can be found under :doc:`external-tools`.
 
-Institutions can self host BinderHub. The Dataverse Project is one of the supported `repository providers <https://binderhub.readthedocs.io/en/latest/developer/repoproviders.html#supported-repoproviders>`_.
+Additionally, institutions can self host `BinderHub <https://binderhub.readthedocs.io/en/latest/>`_ (the software that powers mybinder.org), which lists the Dataverse software as one of the supported `repository providers <https://binderhub.readthedocs.io/en/latest/developer/repoproviders.html#supported-repoproviders>`_.
+
+.. _renku:
 
 Renku
 +++++
@@ -136,15 +185,12 @@ Avgidea Data Search
 
 Researchers can use a Google Sheets add-on to search for Dataverse installation's CSV data and then import that data into a sheet. See `Avgidea Data Search <https://www.avgidea.io/avgidea-data-platform.html>`_ for details.
 
+.. _integrations-discovery:
+
 Discoverability
 ---------------
 
-Integration with `DataCite <https://datacite.org>`_ is built in to the Dataverse Software. When datasets are published, metadata is sent to DataCite. You can further increase the discoverability of your datasets by setting up additional integrations.
-
-OAI-PMH (Harvesting)
-++++++++++++++++++++
-
-The Dataverse Software supports a protocol called OAI-PMH that facilitates harvesting datasets from one system into another. For details on harvesting, see the :doc:`harvestserver` section.
+A number of builtin features related to data discovery are listed under :doc:`discoverability` but you can further increase the discoverability of your data by setting up integrations.
 
 SHARE
 +++++

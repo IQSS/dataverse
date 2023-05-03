@@ -189,7 +189,7 @@
         <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.40.2</fabric8-dmp.version>
+        <fabric8-dmp.version>0.42.1</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>
@@ -345,8 +345,9 @@
                 <!--
                     Payara 5.2022.3 has problems with postboot deployment scripts.
                     Fixed in this release, see https://github.com/payara/Payara/pull/5991
+                    Payara 5.2022.4 has security issues.
                 -->
-                <payara.version>5.2022.4</payara.version>
+                <payara.version>5.2022.5</payara.version>
             </properties>
     
             <build>

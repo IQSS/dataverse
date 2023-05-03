@@ -33,8 +33,8 @@
         <othId role="Data Curator">LastContributor2, FirstContributor2</othId>
       </rspStmt>
       <prodStmt>
-        <producer affiliation="ProducerAffiliation1" abbr="ProducerAbbreviation1" role="http://ProducerLogoURL1.org" URI="http://ProducerURL1.org">LastProducer1, FirstProducer1</producer>
-        <producer affiliation="ProducerAffiliation2" abbr="ProducerAbbreviation2" role="http://ProducerLogoURL2.org" URI="http://ProducerURL2.org">LastProducer2, FirstProducer2</producer>
+        <producer affiliation="ProducerAffiliation1" abbr="ProducerAbbreviation1">LastProducer1, FirstProducer1</producer>
+        <producer affiliation="ProducerAffiliation2" abbr="ProducerAbbreviation2">LastProducer2, FirstProducer2</producer>
         <prodDate>1003-01-01</prodDate>
         <prodPlac>ProductionPlace</prodPlac>
         <software version="SoftwareVersion1">SoftwareName1</software>
@@ -44,19 +44,23 @@
       </prodStmt>
       <distStmt>
         <distrbtr source="archive">Root</distrbtr>
-        <distrbtr affiliation="DistributorAffiliation1" abbr="DistributorAbbreviation1" URI="http://DistributorURL1.org" role="http://DistributorLogoURL1.org">LastDistributor1, FirstDistributor1</distrbtr>
-        <distrbtr affiliation="DistributorAffiliation2" abbr="DistributorAbbreviation2" URI="http://DistributorURL2.org" role="http://DistributorLogoURL2.org">LastDistributor2, FirstDistributor2</distrbtr>
+        <distrbtr affiliation="DistributorAffiliation1" abbr="DistributorAbbreviation1" URI="http://DistributorURL1.org">LastDistributor1, FirstDistributor1</distrbtr>
+        <distrbtr affiliation="DistributorAffiliation2" abbr="DistributorAbbreviation2" URI="http://DistributorURL2.org">LastDistributor2, FirstDistributor2</distrbtr>
         <contact affiliation="ContactAffiliation1" email="ContactEmail1@mailinator.com">LastContact1, FirstContact1</contact>
         <contact affiliation="ContactAffiliation2" email="ContactEmail2@mailinator.com">LastContact2, FirstContact2</contact>
-        <distDate>1004-01-01</distDate>
         <depositr>LastDepositor, FirstDepositor</depositr>
         <depDate>1002-01-01</depDate>
+        <distDate>1004-01-01</distDate>
       </distStmt>
       <serStmt>
-        <serName>SeriesName</serName>
-        <serInfo>SeriesInformation</serInfo>
+        <serName>SeriesName1</serName>
+        <serInfo>SeriesInformation1</serInfo>
       </serStmt>
-      <holdings URI="https://doi.org/10.5072/FK2/WKUKGV"></holdings>
+      <serStmt>
+        <serName>SeriesName2</serName>
+        <serInfo>SeriesInformation2</serInfo>
+      </serStmt>
+      <holdings URI="https://doi.org/10.5072/FK2/WKUKGV"/>
     </citation>
     <stdyInfo>
       <subject>
@@ -78,34 +82,28 @@
         <collDate cycle="P1" event="end" date="1006-01-01">1006-01-01</collDate>
         <collDate cycle="P2" event="start" date="1006-02-01">1006-02-01</collDate>
         <collDate cycle="P2" event="end" date="1006-02-02">1006-02-02</collDate>
-        <dataKind>KindOfData1</dataKind>
-        <dataKind>KindOfData2</dataKind>
         <nation>Afghanistan</nation>
+        <nation>Albania</nation>
         <geogCover>GeographicCoverageCity1</geogCover>
         <geogCover>GeographicCoverageStateProvince1</geogCover>
         <geogCover>GeographicCoverageOther1</geogCover>
-        <nation>Albania</nation>
         <geogCover>GeographicCoverageCity2</geogCover>
         <geogCover>GeographicCoverageStateProvince2</geogCover>
         <geogCover>GeographicCoverageOther2</geogCover>
-        <geoBndBox>
-          <westBL>10</westBL>
-          <eastBL>20</eastBL>
-          <northBL>30</northBL>
-          <southBL>40</southBL>
-        </geoBndBox>
-        <geoBndBox>
-          <southBL>80</southBL>
-          <northBL>70</northBL>
-          <eastBL>60</eastBL>
-          <westBL>50</westBL>
-        </geoBndBox>
         <geogUnit>GeographicUnit1</geogUnit>
         <geogUnit>GeographicUnit2</geogUnit>
+        <geoBndBox>
+          <westBL>-72</westBL>
+          <eastBL>-70</eastBL>
+          <southBL>42</southBL>
+          <northBL>43</northBL>
+        </geoBndBox>
         <anlyUnit>UnitOfAnalysis1</anlyUnit>
         <anlyUnit>UnitOfAnalysis2</anlyUnit>
         <universe>Universe1</universe>
         <universe>Universe2</universe>
+        <dataKind>KindOfData1</dataKind>
+        <dataKind>KindOfData2</dataKind>
       </sumDscr>
       <notes>Notes1</notes>
     </stdyInfo>
@@ -117,10 +115,12 @@
         <frequenc>Frequency</frequenc>
         <sampProc>SamplingProcedure</sampProc>
         <targetSampleSize>
-          <sampleSizeFormula>TargetSampleSizeFormula</sampleSizeFormula>
           <sampleSize>100</sampleSize>
+          <sampleSizeFormula>TargetSampleSizeFormula</sampleSizeFormula>
         </targetSampleSize>
         <deviat>MajorDeviationsForSampleDesign</deviat>
+        <collMode>CollectionMode</collMode>
+        <resInstru>TypeOfResearchInstrument</resInstru>
         <sources>
           <dataSrc>DataSources1</dataSrc>
           <dataSrc>DataSources2</dataSrc>
@@ -128,23 +128,20 @@
           <srcChar>CharacteristicOfSourcesNoted</srcChar>
           <srcDocu>DocumentationAndAccessToSources</srcDocu>
         </sources>
-        <collMode>CollectionMode</collMode>
-        <resInstru>TypeOfResearchInstrument</resInstru>
         <collSitu>CharacteristicsOfDataCollectionSituation</collSitu>
         <actMin>ActionsToMinimizeLosses</actMin>
-        <conOps>ControlOperations</conOps>
+        <ConOps>ControlOperations</ConOps>
         <weight>Weighting</weight>
         <cleanOps>CleaningOperations</cleanOps>
       </dataColl>
+      <notes type="NotesType" subject="NotesSubject">NotesText</notes>
       <anlyInfo>
         <respRate>ResponseRate</respRate>
         <EstSmpErr>EstimatesOfSamplingError</EstSmpErr>
         <dataAppr>OtherFormsOfDataAppraisal</dataAppr>
       </anlyInfo>
-      <notes type="NotesType" subject="NotesSubject">NotesText</notes>
     </method>
     <dataAccs>
-      <notes type="DVN:TOA" level="dv">Terms of Access</notes>
       <setAvail>
         <accsPlac>Data Access Place</accsPlac>
         <origArch>Original Archive</origArch>
@@ -162,6 +159,7 @@
         <conditions>Conditions </conditions>
         <disclaimer>Disclaimer</disclaimer>
       </useStmt>
+      <notes type="DVN:TOA" level="dv">Terms of Access</notes>
     </dataAccs>
     <othrStdyMat>
       <relMat>RelatedMaterial1</relMat>
@@ -171,6 +169,7 @@
       <relPubl>
         <citation>
           <titlStmt>
+            <titl>RelatedPublicationCitation1</titl>
             <IDNo agency="ark">RelatedPublicationIDNumber1</IDNo>
           </titlStmt>
           <biblCit>RelatedPublicationCitation1</biblCit>
@@ -180,6 +179,7 @@
       <relPubl>
         <citation>
           <titlStmt>
+            <titl>RelatedPublicationCitation2</titl>
             <IDNo agency="arXiv">RelatedPublicationIDNumber2</IDNo>
           </titlStmt>
           <biblCit>RelatedPublicationCitation2</biblCit>
