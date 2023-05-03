@@ -474,10 +474,10 @@ public class IngestServiceBean {
             }
         }
 
-        startIngestJobs(scheduledFiles, user);
+        startIngestJobs(dataset.getId(), scheduledFiles, user);
     }
     
-    public String startIngestJobs(List<DataFile> dataFiles, AuthenticatedUser user) {
+    public String startIngestJobs(Long datasetId, List<DataFile> dataFiles, AuthenticatedUser user) {
 
         IngestMessage ingestMessage = null;
         StringBuilder sb = new StringBuilder();
@@ -518,7 +518,7 @@ public class IngestServiceBean {
         if (count > 0) {
             String info = "Ingest of " + count + " tabular data file(s) is in progress.";
             logger.info(info);
-            datasetService.addDatasetLock(scheduledFiles.get(0).getOwner().getId(),
+            datasetService.addDatasetLock(datasetId,
                     DatasetLock.Reason.Ingest,
                     (user != null) ? user.getId() : null,
                     info);
@@ -536,10 +536,11 @@ public class IngestServiceBean {
                 }
             });
 
-            ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO, user.getId());
+            ingestMessage = new IngestMessage(user.getId());
             for (int i = 0; i < count; i++) {
                 ingestMessage.addFileId(scheduledFilesArray[i].getId());
             }
+            ingestMessage.setDatasetId(datasetId);
             ingestMessage.setInfo(info);
 
             QueueConnection conn = null;
