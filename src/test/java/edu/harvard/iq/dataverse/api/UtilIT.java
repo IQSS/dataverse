@@ -1916,8 +1916,8 @@ public class UtilIT {
                     if (!ok) {
                         logger.info("Still indexing after 5 seconds");
                     }
-                } catch (IllegalArgumentException e) {
-                    // search was not for dataset or datafile, illegal argument exception for "hasStaleIndex" property
+                } catch (Exception e) {
+                    // search was not for dataset or datafile, illegal argument cannot get property "hasStaleIndex"
                 }
             }
         }
