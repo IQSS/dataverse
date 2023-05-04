@@ -4,23 +4,15 @@ package edu.harvard.iq.dataverse.search;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.solr.client.solrj.SolrServerException;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
@@ -34,17 +26,6 @@ public class AsyncIndexServiceBean {
 
     @EJB
     IndexServiceBean indexService;
-
-    @Inject
-    @ConfigProperty(name = "dataverse.search.index.maxpoolsize", defaultValue = "4")
-    private Integer maximumPoolSize;
-
-    private ThreadPoolExecutor blockingExecutor;
-
-    @PostConstruct
-    protected void setup() {
-        blockingExecutor = getBlockingThreadPoolExecutor();
-    }
 
     private static final Logger logger = Logger.getLogger(AsyncIndexServiceBean.class.getCanonicalName());
 
@@ -85,12 +66,7 @@ public class AsyncIndexServiceBean {
     }
 
     /**
-     * Indexes a dataset asynchronously on a blocking thread pool executor. The
-     * executor has the maximum pool size as configured in microprofile setting
-     * "dataverse.search.index.maxpoolsize" with a default value of 4. When all
-     * threads are in use, this method will block until a thread becomes available.
-     * Otherwise, the indexing is executed immediately in the background on an
-     * available (or new) thread.
+     * Indexes a dataset asynchronously.
      * 
      * Note that the commands implement a synchronized skipping mechanism. When an
      * indexing job is already running for a given dataset in the background, the
@@ -109,54 +85,25 @@ public class AsyncIndexServiceBean {
      * @param dataset                The dataset to be indexed.
      * @param doNormalSolrDocCleanUp Flag for normal Solr doc clean up.
      */
+    @Asynchronous
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
-        Runnable command = getIndexingRunnable(dataset, doNormalSolrDocCleanUp);
-        blockingExecutor.execute(command);
-    }
-
-    private ThreadPoolExecutor getBlockingThreadPoolExecutor() {
-        BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(maximumPoolSize);
-        ThreadPoolExecutor blockingExecutor = new ThreadPoolExecutor(1, maximumPoolSize, 2, TimeUnit.MINUTES, queue);
-        blockingExecutor.setRejectedExecutionHandler(new RejectedExecutionHandler() {
-            @Override
-            public void rejectedExecution(Runnable runnable, ThreadPoolExecutor executor) {
-                try {
-                    executor.getQueue().put(runnable);
-                    if (executor.isShutdown()) {
-                        throw new RejectedExecutionException("Indexing blocking executor is shutdown");
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RejectedExecutionException("Indexing blocking executor is interrupted", e);
-                }
+        Long id = dataset.getId();
+        Dataset next = getNextToIndex(id, dataset);
+        // if there is an ongoing index job for this dataset, next is null (ongoing
+        // index job will reindex the newest version after current indexing finishes)
+        while (next != null) {
+            logger.fine("indexing dataset " + id);
+            try {
+                indexService.indexDataset(next, doNormalSolrDocCleanUp);
+            } catch (SolrServerException | IOException e) {
+                String failureLogText = "Indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/"
+                        + next.getId().toString();
+                failureLogText += "\r\n" + e.getLocalizedMessage();
+                LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, next);
             }
-        });
-        return blockingExecutor;
-    }
-
-    private Runnable getIndexingRunnable(final Dataset dataset, final boolean doNormalSolrDocCleanUp) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                Long id = dataset.getId();
-                Dataset next = getNextToIndex(id, dataset);
-                // if there is an ongoing index job for this dataset, next is null (ongoing
-                // index job will reindex the newest version after current indexing finishes)
-                while (next != null) {
-                    logger.fine("indexing dataset " + id);
-                    try {
-                        indexService.indexDataset(next, doNormalSolrDocCleanUp);
-                    } catch (SolrServerException | IOException e) {
-                        String failureLogText = "Indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/"
-                                + next.getId().toString();
-                        failureLogText += "\r\n" + e.getLocalizedMessage();
-                        LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, next);
-                    }
-                    next = getNextToIndex(id, null);
-                    // if during the indexing no new job was requested, next is null and loop can be
-                    // stopped
-                }
-            }
-        };
+            next = getNextToIndex(id, null);
+            // if during the indexing no new job was requested, next is null and loop can be
+            // stopped
+        }
     }
 }
