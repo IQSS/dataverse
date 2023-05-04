@@ -1911,13 +1911,9 @@ public class UtilIT {
         if (query.contains("id:dataset") || query.contains("id:datafile")) {
             String[] splitted = query.split("_");
             if (splitted.length >= 2) {
-                try {
-                    boolean ok = UtilIT.sleepForReindex(String.valueOf(splitted[1]), apiToken, 5);
-                    if (!ok) {
-                        logger.info("Still indexing after 5 seconds");
-                    }
-                } catch (Exception e) {
-                    // search was not for dataset or datafile, illegal argument cannot get property "hasStaleIndex"
+                boolean ok = UtilIT.sleepForReindex(String.valueOf(splitted[1]), apiToken, 5);
+                if (!ok) {
+                    logger.info("Still indexing after 5 seconds");
                 }
             }
         }
@@ -2505,10 +2501,15 @@ public class UtilIT {
         do {
             timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
             System.out.println(timestampResponse.body().asString());
-            String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
-            System.out.println(hasStaleIndex);
-            stale = Boolean.parseBoolean(hasStaleIndex);
-            
+            try {
+                String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
+                System.out.println(hasStaleIndex);
+                stale = Boolean.parseBoolean(hasStaleIndex);
+            } catch (Exception ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+                // no stale index property found...
+                stale = false;
+            }
             try {
                 Thread.sleep(sleepStep);
                 i++;
