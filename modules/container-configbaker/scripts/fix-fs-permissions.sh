@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# [INFO]: Fix folder permissions using 'chown' to be writeable by containers not running as root.
+
 set -euo pipefail
 
 if [[ "$(id -un)" != "root" ]]; then
