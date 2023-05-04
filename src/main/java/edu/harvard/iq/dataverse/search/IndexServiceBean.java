@@ -144,9 +144,6 @@ public class IndexServiceBean {
     @EJB
     DatasetFieldServiceBean datasetFieldService;
 
-    @EJB
-    AsyncIndexServiceBean asyncIndexServiceBean;
-
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
     public static final String solrDocIdentifierDataset = "dataset_";
@@ -360,8 +357,69 @@ public class IndexServiceBean {
         dataset = null;
     }
     
+    // The following two variables are only used in the synchronized getNextToIndex method and do not need to be synchronized themselves
+
+    // nextToIndex contains datasets mapped by dataset id that were added for future indexing while the indexing was already ongoing for a given dataset
+    // (if there already was a dataset scheduled for indexing, it is overwritten and only the most recently requested version is kept in the map)
+    private static final Map<Long, Dataset> NEXT_TO_INDEX = new ConcurrentHashMap<>();
+    // indexingNow is a set of dataset ids of datasets being indexed asynchronously right now
+    private static final Map<Long, Boolean> INDEXING_NOW = new ConcurrentHashMap<>();
+
+    // When you pass null as Dataset parameter to this method, it indicates that the indexing of the dataset with "id" has finished
+    // Pass non-null Dataset to schedule it for indexing
+    synchronized private static Dataset getNextToIndex(Long id, Dataset d) {
+        if (d == null) { // -> indexing of the dataset with id has finished
+            Dataset next = NEXT_TO_INDEX.remove(id);
+            if (next == null) { // -> no new indexing jobs were requested while indexing was ongoing
+                // the job can be stopped now
+                INDEXING_NOW.remove(id);
+            }
+            return next;
+        }
+        // index job is requested for a non-null dataset
+        if (INDEXING_NOW.containsKey(id)) { // -> indexing job is already ongoing, and a new job should not be started by the current thread -> return null
+            NEXT_TO_INDEX.put(id, d);
+            return null;
+        }
+        // otherwise, start a new job
+        INDEXING_NOW.put(id, true);
+        return d;
+    }
+
+    /**
+     * Indexes a dataset asynchronously.
+     * 
+     * Note that this method implement a synchronized skipping mechanism. When an
+     * indexing job is already running for a given dataset in the background, the
+     * new call will not index that dataset, but will delegate the execution to
+     * the already running job. The running job will pick up the requested indexing
+     * once that it is finished with the ongoing indexing. If another indexing is
+     * requested before the ongoing indexing is finished, only the indexing that is
+     * requested most recently will be picked up for the next indexing.
+     * 
+     * In other words: we can have at most one indexing ongoing for the given
+     * dataset, and at most one (most recent) request for reindexing of the same
+     * dataset. All requests that come between the most recent one and the ongoing
+     * one are skipped for the optimization reasons. For a more in depth discussion,
+     * see the pull request: https://github.com/IQSS/dataverse/pull/9558
+     * 
+     * @param dataset                The dataset to be indexed.
+     * @param doNormalSolrDocCleanUp Flag for normal Solr doc clean up.
+     */
+    @Asynchronous
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
-        asyncIndexServiceBean.asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
+        Long id = dataset.getId();
+        Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
+        while (next != null) {
+            try {
+                indexDataset(next, doNormalSolrDocCleanUp);
+            } catch (SolrServerException | IOException e) {
+                String failureLogText = "Indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+                failureLogText += "\r\n" + e.getLocalizedMessage();
+                LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+            }
+            next = getNextToIndex(id, null); // if dataset was not changed during the indexing (and no new job was requested), next is null and loop can be stopped
+        }
     }
 
     public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
@@ -378,7 +436,7 @@ public class IndexServiceBean {
         }
     }
 
-    public void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
+    private void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         doIndexDataset(dataset, doNormalSolrDocCleanUp);
         updateLastIndexedTime(dataset.getId());
     }
