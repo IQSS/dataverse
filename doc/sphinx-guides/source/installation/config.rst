@@ -2361,7 +2361,7 @@ Also note that your mail server must be configured to send email from the suppor
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
 
-.. _dataverse.mail.cc-support-on-contact-emails:
+.. _dataverse.mail.cc-support-on-contact-email:
 
 dataverse.mail.cc-support-on-contact-emails
 +++++++++++++++++++++++++++++++++++++++++++
