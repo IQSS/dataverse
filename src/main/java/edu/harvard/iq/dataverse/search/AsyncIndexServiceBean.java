@@ -3,6 +3,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -30,7 +31,7 @@ import fish.payara.cluster.DistributedLockType;
 @Named
 @Singleton
 @Clustered(lock = DistributedLockType.LOCK_NONE)
-public class AsyncIndexServiceBean {
+public class AsyncIndexServiceBean implements Serializable {
 
     @EJB
     IndexServiceBean indexService;
@@ -44,6 +45,8 @@ public class AsyncIndexServiceBean {
     @PostConstruct
     protected void setup() {
         blockingExecutor = getBlockingThreadPoolExecutor();
+        nextToIndex = new ConcurrentHashMap<>();
+        indexingNow = new ConcurrentHashMap<>();
     }
 
     private static final Logger logger = Logger.getLogger(AsyncIndexServiceBean.class.getCanonicalName());
@@ -56,31 +59,31 @@ public class AsyncIndexServiceBean {
     // indexing while the indexing was already ongoing for a given dataset
     // (if there already was a dataset scheduled for indexing, it is overwritten and
     // only the most recently requested version is kept in the map)
-    private static final Map<Long, Dataset> NEXT_TO_INDEX = new ConcurrentHashMap<>();
+    private Map<Long, Dataset> nextToIndex;
     // indexingNow is a set of dataset ids of datasets being indexed asynchronously
     // right now
-    private static final Map<Long, Boolean> INDEXING_NOW = new ConcurrentHashMap<>(); // it is used as set
+    private Map<Long, Boolean> indexingNow; // it is used as set
 
     // When you pass null as Dataset parameter to this method, it indicates that the
     // indexing of the dataset with "id" has finished
     // Pass non-null Dataset to schedule it for indexing
-    synchronized private static Dataset getNextToIndex(Long id, Dataset d) {
+    synchronized private Dataset getNextToIndex(Long id, Dataset d) {
         if (d == null) { // -> indexing of the dataset with id has finished
-            Dataset next = NEXT_TO_INDEX.remove(id);
+            Dataset next = nextToIndex.remove(id);
             if (next == null) { // -> no new indexing jobs were requested while indexing was ongoing
                 // the job can be stopped now
-                INDEXING_NOW.remove(id);
+                indexingNow.remove(id);
             }
             return next;
         }
         // index job is requested for a non-null dataset
-        if (INDEXING_NOW.containsKey(id)) { // -> indexing job is already ongoing, and a new job should not be started
-            NEXT_TO_INDEX.put(id, d);
+        if (indexingNow.containsKey(id)) { // -> indexing job is already ongoing, and a new job should not be started
+            nextToIndex.put(id, d);
             // by the current thread -> return null
             return null;
         }
         // otherwise, start a new job
-        INDEXING_NOW.put(id, true);
+        indexingNow.put(id, true);
         return d;
     }
 
