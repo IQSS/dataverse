@@ -19,7 +19,7 @@
                 <div class="form-group">
                     <label for="messageCC" class="col-sm-3 control-label">#{bundle['contact.cc']}</label>
                     <div class="col-sm-9">
-                        <p id="messageCC" class="form-control-static">#{sendFeedbackDialog.getMessageCC()}</p>
+                        <p id="messageCC" class="form-control-static">#{sendFeedbackDialog.getMessageCC(sendFeedbackDialog.getRecipient())}</p>
                     </div>
                 </div>
                 <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">

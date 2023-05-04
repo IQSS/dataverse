@@ -205,7 +205,7 @@ public class FeedbackUtil {
         String name = null;
         if (contactName != null) {
             JsonObject entity = PersonOrOrgUtil.getPersonOrOrganization(contactName, false, false);
-            if (entity.getBoolean("isPerson")) {
+            if (entity.getBoolean("isPerson") && entity.containsKey("givenName") && entity.containsKey("familyName")) {
                 name = entity.getString("givenName") + " " + entity.getString("familyName");
             } else {
                 name = entity.getString("fullName");

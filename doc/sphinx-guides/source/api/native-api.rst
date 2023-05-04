@@ -1647,7 +1647,7 @@ The fully expanded example above (without environment variables) looks like this
 
 The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
 
-The :ref:`send-feedback` API call may be useful as a way to move the conversation to email. However, note that these emails go to contacts (versus authors) and there is no database record of the email contents. (:ref:`dataverse.mail.cc-support-on-contact-emails` will send a copy of these emails to the support email address which would provide a record.)
+The :ref:`send-feedback` API call may be useful as a way to move the conversation to email. However, note that these emails go to contacts (versus authors) and there is no database record of the email contents. (:ref:`dataverse.mail.cc-support-on-contact-email` will send a copy of these emails to the support email address which would provide a record.)
 
 Link a Dataset
 ~~~~~~~~~~~~~~
@@ -4521,9 +4521,9 @@ A curl example using an ``ID``
 
 .. code-block:: bash
 
-  export SERVER_URL=https://demo.dataverse.org
+  export SERVER_URL=http://localhost
   export JSON='{"targetId":24, "subject":"Data Question", "body":"Please help me understand your data. Thank you!", "fromEmail":"dataverseSupport@mailinator.com"}'
 
-  curl -X POST -H 'Content-Type:application/json' -d "$JSON" targetId$SERVER_URL/api/admin/feedback
+  curl -X POST -H 'Content-Type:application/json' -d "$JSON" $SERVER_URL/api/admin/feedback
 
 Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.

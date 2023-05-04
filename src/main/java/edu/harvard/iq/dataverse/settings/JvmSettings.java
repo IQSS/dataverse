@@ -109,7 +109,7 @@ public enum JvmSettings {
     // MAIL SETTINGS
     SCOPE_MAIL(PREFIX, "mail"),
     SUPPORT_EMAIL(SCOPE_MAIL, "support-email"),
-    CC_SUPPORT_ON_CONTACT_EMAILS(SCOPE_MAIL, "cc-support-on-contact-email"),
+    CC_SUPPORT_ON_CONTACT_EMAIL(SCOPE_MAIL, "cc-support-on-contact-email"),
     
     ;
     

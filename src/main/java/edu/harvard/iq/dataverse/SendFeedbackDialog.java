@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -94,7 +93,6 @@ public class SendFeedbackDialog implements java.io.Serializable {
         return userEmail;
     }
 
-    @SuppressWarnings("deprecation")
     public void initUserInput(ActionEvent ae) {
         userEmail = "";
         userMessage = "";
@@ -224,7 +222,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
     
     public static boolean ccSupport(DvObject feedbackTarget) {
         //Setting is enabled and this isn't already a direct message to support (no feedbackTarget)
-        Optional<Boolean> ccSupport = JvmSettings.CC_SUPPORT_ON_CONTACT_EMAILS.lookupOptional(Boolean.class);
+        Optional<Boolean> ccSupport = JvmSettings.CC_SUPPORT_ON_CONTACT_EMAIL.lookupOptional(Boolean.class);
         
         return feedbackTarget!=null && ccSupport.isPresent() &&ccSupport.get();
     }
