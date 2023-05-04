@@ -68,6 +68,11 @@ public class FitsIT {
         Map firstAstroTypeFromNativeGet = astroTypeFromNativeGet.get(0);
         assertTrue(firstAstroTypeFromNativeGet.toString().contains("Image"));
 
+        List<JsonObject> coverageTemportalFromNativeGet = with(getJson.body().asString()).param("coverageTemporal", "coverage.Temporal")
+                .getJsonObject("data.latestVersion.metadataBlocks.astrophysics.fields.findAll { fields -> fields.typeName == coverageTemporal }");
+        Map firstcoverageTemporalFromNativeGet = coverageTemportalFromNativeGet.get(0);
+        assertTrue(firstcoverageTemporalFromNativeGet.toString().contains("1993"));
+
     }
 
 }

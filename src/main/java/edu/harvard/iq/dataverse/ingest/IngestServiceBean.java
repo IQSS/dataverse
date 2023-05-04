@@ -36,13 +36,11 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
@@ -71,11 +69,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi;
-import edu.harvard.iq.dataverse.license.LicenseServiceBean;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.*;
-import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
 
 import org.apache.commons.io.IOUtils;
 //import edu.harvard.iq.dvn.unf.*;
@@ -124,8 +118,6 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Message;
 import javax.faces.application.FacesMessage;
-import javax.json.Json;
-import javax.json.JsonObject;
 import javax.ws.rs.core.MediaType;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFiles;
@@ -153,12 +145,6 @@ public class IngestServiceBean {
     AuxiliaryFileServiceBean auxiliaryFileService;
     @EJB
     SystemConfig systemConfig;
-    @EJB
-    MetadataBlockServiceBean metadataBlockService;
-    @EJB
-    SettingsServiceBean settingsService;
-    @EJB
-    LicenseServiceBean licenseService;
 
     @Resource(lookup = "java:app/jms/queue/ingest")
     Queue queue;
@@ -1667,53 +1653,76 @@ public class IngestServiceBean {
                         // of the child values in the map of extracted values, we'll 
                         // create a new compound field value and its child 
                         // 
-                        if (dsft.getName().equals(DatasetFieldConstant.geographicBoundingBox)) {
-                            for (DatasetFieldType cdsft : dsft.getChildDatasetFieldTypes()) {
-                                if (cdsft.getName().equals(DatasetFieldConstant.westLongitude)) {
+                        DatasetFieldCompoundValue compoundDsfv = new DatasetFieldCompoundValue();
+                        int nonEmptyFields = 0;
+                        for (DatasetFieldType cdsft : dsft.getChildDatasetFieldTypes()) {
+                            String dsfName = cdsft.getName();
+                            if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
+                                logger.fine("Ingest Service: found extracted metadata for field " + dsfName + ", part of the compound field " + dsft.getName());
 
-                                    String westLongitude = (String) fileMetadataMap.get(DatasetFieldConstant.westLongitude).toArray()[0];
-                                    String eastLongitude = (String) fileMetadataMap.get(DatasetFieldConstant.eastLongitude).toArray()[0];
-                                    String northLatitude = (String) fileMetadataMap.get(DatasetFieldConstant.northLatitude).toArray()[0];
-                                    String southLatitude = (String) fileMetadataMap.get(DatasetFieldConstant.southLatitude).toArray()[0];
+                                if (cdsft.isPrimitive()) {
+                                    // probably an unnecessary check - child fields
+                                    // of compound fields are always primitive...
+                                    // but maybe it'll change in the future.
+                                    if (!cdsft.isControlledVocabulary()) {
+                                        // TODO: can we have controlled vocabulary
+                                        // sub-fields inside compound fields?
 
-                                    if (westLongitude == null || eastLongitude == null || northLatitude == null || southLatitude == null) {
-                                        // only populate the bounding box if we have all four values (north, south, east, west)
-                                        break;
+                                        DatasetField childDsf = new DatasetField();
+                                        childDsf.setDatasetFieldType(cdsft);
+
+                                        DatasetFieldValue newDsfv = new DatasetFieldValue(childDsf);
+                                        newDsfv.setValue((String) fileMetadataMap.get(dsfName).toArray()[0]);
+                                        childDsf.getDatasetFieldValues().add(newDsfv);
+
+                                        childDsf.setParentDatasetFieldCompoundValue(compoundDsfv);
+                                        compoundDsfv.getChildDatasetFields().add(childDsf);
+
+                                        nonEmptyFields++;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (nonEmptyFields > 0) {
+                            // let's go through this dataset's fields and find the
+                            // actual parent for this sub-field:
+                            for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
+                                if (dsf.getDatasetFieldType().equals(dsft)) {
+
+                                    // Now let's check that the dataset version doesn't already have
+                                    // this compound value - we are only interested in aggregating
+                                    // unique values. Note that we need to compare compound values
+                                    // as sets! -- i.e. all the sub fields in 2 compound fields
+                                    // must match in order for these 2 compounds to be recognized
+                                    // as "the same":
+                                    boolean alreadyExists = false;
+                                    for (DatasetFieldCompoundValue dsfcv : dsf.getDatasetFieldCompoundValues()) {
+                                        int matches = 0;
+
+                                        for (DatasetField cdsf : dsfcv.getChildDatasetFields()) {
+                                            String cdsfName = cdsf.getDatasetFieldType().getName();
+                                            String cdsfValue = cdsf.getDatasetFieldValues().get(0).getValue();
+                                            if (cdsfValue != null && !cdsfValue.equals("")) {
+                                                String extractedValue = (String) fileMetadataMap.get(cdsfName).toArray()[0];
+                                                logger.fine("values: existing: " + cdsfValue + ", extracted: " + extractedValue);
+                                                if (cdsfValue.equals(extractedValue)) {
+                                                    matches++;
+                                                }
+                                            }
+                                        }
+                                        if (matches == nonEmptyFields) {
+                                            alreadyExists = true;
+                                            break;
+                                        }
                                     }
 
-                                    JsonObject json
-                                            = Json.createObjectBuilder()
-                                                    .add("typeName", DatasetFieldConstant.geographicBoundingBox)
-                                                    .add("value", Json.createArrayBuilder()
-                                                            .add(Json.createObjectBuilder()
-                                                                    .add(DatasetFieldConstant.westLongitude, Json.createObjectBuilder()
-                                                                            .add("typeName", DatasetFieldConstant.westLongitude)
-                                                                            .add("value", westLongitude)
-                                                                    )
-                                                                    .add(DatasetFieldConstant.eastLongitude, Json.createObjectBuilder()
-                                                                            .add("typeName", DatasetFieldConstant.eastLongitude)
-                                                                            .add("value", eastLongitude)
-                                                                    )
-                                                                    .add(DatasetFieldConstant.northLatitude, Json.createObjectBuilder()
-                                                                            .add("typeName", DatasetFieldConstant.northLatitude)
-                                                                            .add("value", northLatitude)
-                                                                    )
-                                                                    .add(DatasetFieldConstant.southLatitude, Json.createObjectBuilder()
-                                                                            .add("typeName", DatasetFieldConstant.southLatitude)
-                                                                            .add("value", southLatitude)
-                                                                    )
-                                                            )
-                                                    )
-                                                    .build();
-
-                                    JsonParser jsonParser = new JsonParser(fieldService, metadataBlockService, settingsService, licenseService);
-                                    DatasetField fieldToAdd = null;
-                                    try {
-                                        fieldToAdd = jsonParser.parseField(json, Boolean.FALSE);
-                                    } catch (JsonParseException ex) {
-                                        logger.info("unable to add " + json + ". Exception: " + ex);
+                                    if (!alreadyExists) {
+                                        // save this compound value, by attaching it to the
+                                        // version for proper cascading:
+                                        compoundDsfv.setParentDatasetField(dsf);
+                                        dsf.getDatasetFieldCompoundValues().add(compoundDsfv);
                                     }
-                                    editVersion.getDatasetFields().add(fieldToAdd);
                                 }
                             }
                         }
