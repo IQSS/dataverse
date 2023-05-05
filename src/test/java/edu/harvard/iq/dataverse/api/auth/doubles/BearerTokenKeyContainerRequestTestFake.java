@@ -1,15 +1,12 @@
 package edu.harvard.iq.dataverse.api.auth.doubles;
 
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.UriInfo;
 
-import static edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism.DATAVERSE_API_KEY_REQUEST_HEADER_NAME;
-
-public class BearereTokenKeyContainerRequestTestFake extends ContainerRequestTestFake {
+public class BearerTokenKeyContainerRequestTestFake extends ContainerRequestTestFake {
 
     private final String apiKey;
 
-    public BearereTokenKeyContainerRequestTestFake(String apiKey) {
+    public BearerTokenKeyContainerRequestTestFake(String apiKey) {
         this.apiKey = apiKey;
     }
 
