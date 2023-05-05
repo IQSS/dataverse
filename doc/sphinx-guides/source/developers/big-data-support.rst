@@ -62,7 +62,7 @@ with the contents of the file cors.json as follows:
                 "AllowedOrigins": ["*"],
                 "AllowedHeaders": ["*"],
                 "AllowedMethods": ["PUT", "GET"],
-                "ExposeHeaders": ["ETag"]
+                "ExposeHeaders": ["ETag", "Accept-Ranges", "Content-Encoding", "Content-Range"]
              }
           ]
         }
