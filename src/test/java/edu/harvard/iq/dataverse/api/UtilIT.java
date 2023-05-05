@@ -2505,9 +2505,8 @@ public class UtilIT {
                 String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
                 System.out.println(hasStaleIndex);
                 stale = Boolean.parseBoolean(hasStaleIndex);
-            } catch (Exception ex) {
-                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
-                // no stale index property found...
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.INFO, "no stale index property found", ex);
                 stale = false;
             }
             try {
