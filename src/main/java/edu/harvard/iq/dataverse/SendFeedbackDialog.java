@@ -221,6 +221,10 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
     
     public boolean ccSupport() {
+        return ccSupport(feedbackTarget);
+    }
+    
+    public static boolean ccSupport(DvObject feedbackTarget) {
         //Setting is enabled and this isn't already a direct message to support (no feedbackTarget)
         Optional<Boolean> ccSupport = JvmSettings.CC_SUPPORT_ON_CONTACT_EMAIL.lookupOptional(Boolean.class);
         
