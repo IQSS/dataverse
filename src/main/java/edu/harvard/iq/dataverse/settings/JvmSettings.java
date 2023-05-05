@@ -49,6 +49,7 @@ public enum JvmSettings {
     FILES_DIRECTORY(SCOPE_FILES, "directory"),
     FILES(SCOPE_FILES),
     BASE_URI(FILES, "base-uri"),
+    GLOBUS_TOKEN(FILES, "globus-token"),
     
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),

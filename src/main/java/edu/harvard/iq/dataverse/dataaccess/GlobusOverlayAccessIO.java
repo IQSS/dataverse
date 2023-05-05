@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -49,6 +51,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 
+import javax.json.JsonObject;
 import javax.net.ssl.SSLContext;
 
 /**
@@ -58,8 +61,8 @@ import javax.net.ssl.SSLContext;
 /*
  * Globus Overlay Driver
  * 
- * StorageIdentifier format:
- * <globusDriverId>://<local id>//<globusEndpointIdentifier>/<absolutePath>
+ * StorageIdentifier format: <globusDriverId>://<local
+ * id>//<globusEndpointIdentifier>/<absolutePath>
  */
 public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
@@ -68,6 +71,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     private StorageIO<DvObject> baseStore = null;
     private String path = null;
     private String endpointWithBasePath = null;
+    private String globusToken = null;
 
     private static HttpClientContext localContext = HttpClientContext.create();
     private PoolingHttpClientConnectionManager cm = null;
@@ -86,7 +90,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         logger.fine("Parsing storageidentifier: " + dvObject.getStorageIdentifier());
         path = dvObject.getStorageIdentifier().substring(dvObject.getStorageIdentifier().lastIndexOf("//") + 2);
         validatePath(path);
-        
+
         logger.fine("Relative path: " + path);
     }
 
@@ -99,18 +103,17 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         validatePath(path);
         logger.fine("Relative path: " + path);
     }
-    
+
     private void validatePath(String relPath) throws IOException {
         try {
             URI absoluteURI = new URI(endpointWithBasePath + "/" + relPath);
-            if(!absoluteURI.normalize().toString().startsWith(endpointWithBasePath)) {
+            if (!absoluteURI.normalize().toString().startsWith(endpointWithBasePath)) {
                 throw new IOException("storageidentifier doesn't start with " + this.driverId + "'s endpoint/basePath");
             }
-        } catch(URISyntaxException use) {
+        } catch (URISyntaxException use) {
             throw new IOException("Could not interpret storageidentifier in remote store " + this.driverId);
         }
-     }
-
+    }
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
@@ -181,37 +184,64 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
+    // Call the Globus API to get the file size
     private long getSizeFromGlobus() {
-        throw new NotImplementedException();
-        /*
-        long size = -1;
-        HttpHead head = new HttpHead(endpointWithBasePath + "/" + path);
+        // Construct Globus URL
+        URI absoluteURI = null;
         try {
-            CloseableHttpResponse response = getSharedHttpClient().execute(head, localContext);
+            int filenameStart = path.lastIndexOf("/") + 1;
+            int pathStart = endpointWithBasePath.indexOf("/") + 1;
 
-            try {
-                int code = response.getStatusLine().getStatusCode();
-                logger.fine("Response for HEAD: " + code);
-                switch (code) {
-                case 200:
-                    Header[] headers = response.getHeaders(HTTP.CONTENT_LEN);
-                    logger.fine("Num headers: " + headers.length);
-                    String sizeString = response.getHeaders(HTTP.CONTENT_LEN)[0].getValue();
-                    logger.fine("Content-Length: " + sizeString);
-                    size = Long.parseLong(response.getHeaders(HTTP.CONTENT_LEN)[0].getValue());
-                    logger.fine("Found file size: " + size);
-                    break;
-                default:
-                    logger.warning("Response from " + head.getURI().toString() + " was " + code);
-                }
-            } finally {
-                EntityUtils.consume(response.getEntity());
+            String directoryPath = (pathStart > 0 ? endpointWithBasePath.substring(pathStart) : "")
+                    + path.substring(0, filenameStart);
+            String filename = path.substring(filenameStart);
+            String endpoint = pathStart > 0 ? endpointWithBasePath.substring(0, pathStart - 1) : endpointWithBasePath;
+
+            absoluteURI = new URI("https://transfer.api.globusonline.org/v0.10/operation/endpoint/" + endpoint + "/ls?path=" + path + "&filter=name:" + filename);
+            HttpGet get = new HttpGet(absoluteURI);
+            String token = JvmSettings.GLOBUS_TOKEN.lookup(driverId);
+            logger.info("Token is " + token);
+            get.addHeader("Authorization", "Bearer " + token);
+            CloseableHttpResponse response = getSharedHttpClient().execute(get, localContext);
+            if (response.getStatusLine().getStatusCode() == 200) {
+                //Get reponse as string
+                String responseString = EntityUtils.toString(response.getEntity());
+                logger.fine("Response from " + get.getURI().toString() + " is: " + responseString);
+                JsonObject responseJson = JsonUtil.getJsonObject(responseString);
+                return (long) responseJson.getInt("size");
+            } else {
+                logger.warning("Response from " + get.getURI().toString() + " was " + response.getStatusLine().getStatusCode());
+                logger.info(EntityUtils.toString(response.getEntity()));
             }
+        } catch (URISyntaxException e) {
+            // Should have been caught in validatePath
+            e.printStackTrace();
+        } catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         } catch (IOException e) {
-            logger.warning(e.getMessage());
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
-        return size;
-        */
+        return -1;
+
+        /*
+         * long size = -1; HttpHead head = new HttpHead(endpointWithBasePath + "/" +
+         * path); try { CloseableHttpResponse response =
+         * getSharedHttpClient().execute(head, localContext);
+         * 
+         * try { int code = response.getStatusLine().getStatusCode();
+         * logger.fine("Response for HEAD: " + code); switch (code) { case 200: Header[]
+         * headers = response.getHeaders(HTTP.CONTENT_LEN); logger.fine("Num headers: "
+         * + headers.length); String sizeString =
+         * response.getHeaders(HTTP.CONTENT_LEN)[0].getValue();
+         * logger.fine("Content-Length: " + sizeString); size =
+         * Long.parseLong(response.getHeaders(HTTP.CONTENT_LEN)[0].getValue());
+         * logger.fine("Found file size: " + size); break; default:
+         * logger.warning("Response from " + head.getURI().toString() + " was " + code);
+         * } } finally { EntityUtils.consume(response.getEntity()); } } catch
+         * (IOException e) { logger.warning(e.getMessage()); } return size;
+         */
     }
 
     @Override
@@ -360,8 +390,9 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         String fullStorageLocation = dvObject.getStorageIdentifier();
         logger.fine("storageidentifier: " + fullStorageLocation);
         int driverIndex = fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR);
-        if(driverIndex >=0) {
-          fullStorageLocation = fullStorageLocation.substring(fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
+        if (driverIndex >= 0) {
+            fullStorageLocation = fullStorageLocation
+                    .substring(fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
         }
         if (this.getDvObject() instanceof Dataset) {
             throw new IOException("RemoteOverlayAccessIO: Datasets are not a supported dvObject");
@@ -411,7 +442,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         }
         return false;
     }
-    
+
     public boolean downloadRedirectEnabled(String auxObjectTag) {
         return baseStore.downloadRedirectEnabled(auxObjectTag);
     }
@@ -469,9 +500,10 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         if (baseStore == null) {
             String baseDriverId = getBaseStoreIdFor(driverId);
             String fullStorageLocation = null;
-            String baseDriverType = System.getProperty("dataverse.files." + baseDriverId + ".type", DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
-            
-            if(dvObject  instanceof Dataset) {
+            String baseDriverType = System.getProperty("dataverse.files." + baseDriverId + ".type",
+                    DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+
+            if (dvObject instanceof Dataset) {
                 baseStore = DataAccess.getStorageIO(dvObject, req, baseDriverId);
             } else {
                 if (this.getDvObject() != null) {
@@ -486,8 +518,8 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                         break;
                     case DataAccess.FILE:
                         fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files") + "/"
-                                + fullStorageLocation;
+                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files")
+                                + "/" + fullStorageLocation;
                         break;
                     default:
                         logger.warning("Not Implemented: RemoteOverlay store with base store type: "
@@ -497,12 +529,12 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 } else if (storageLocation != null) {
                     // <remoteDriverId>://<baseStorageIdentifier>//<baseUrlPath>
-                    //remoteDriverId:// is removed if coming through directStorageIO
+                    // remoteDriverId:// is removed if coming through directStorageIO
                     int index = storageLocation.indexOf(DataAccess.SEPARATOR);
-                    if(index > 0) {
+                    if (index > 0) {
                         storageLocation = storageLocation.substring(index + DataAccess.SEPARATOR.length());
                     }
-                    //THe base store needs the baseStoreIdentifier and not the relative URL
+                    // THe base store needs the baseStoreIdentifier and not the relative URL
                     fullStorageLocation = storageLocation.substring(0, storageLocation.indexOf("//"));
 
                     switch (baseDriverType) {
@@ -513,8 +545,8 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                         break;
                     case DataAccess.FILE:
                         fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files") + "/"
-                                + fullStorageLocation;
+                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files")
+                                + "/" + fullStorageLocation;
                         break;
                     default:
                         logger.warning("Not Implemented: RemoteOverlay store with base store type: "
@@ -530,37 +562,41 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         }
         remoteStoreName = System.getProperty("dataverse.files." + this.driverId + ".remote-store-name");
         try {
-          remoteStoreUrl = new URL(System.getProperty("dataverse.files." + this.driverId + ".remote-store-url"));
-        } catch(MalformedURLException mfue) {
+            remoteStoreUrl = new URL(System.getProperty("dataverse.files." + this.driverId + ".remote-store-url"));
+        } catch (MalformedURLException mfue) {
             logger.fine("Unable to read remoteStoreUrl for driver: " + this.driverId);
         }
     }
 
-    //Convenience method to assemble the path, starting with the DOI authority/identifier/, that is needed to create a base store via DataAccess.getDirectStorageIO - the caller has to add the store type specific prefix required.
+    // Convenience method to assemble the path, starting with the DOI
+    // authority/identifier/, that is needed to create a base store via
+    // DataAccess.getDirectStorageIO - the caller has to add the store type specific
+    // prefix required.
     private String getStoragePath() throws IOException {
         String fullStoragePath = dvObject.getStorageIdentifier();
         logger.fine("storageidentifier: " + fullStoragePath);
         int driverIndex = fullStoragePath.lastIndexOf(DataAccess.SEPARATOR);
-        if(driverIndex >=0) {
-          fullStoragePath = fullStoragePath.substring(fullStoragePath.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
+        if (driverIndex >= 0) {
+            fullStoragePath = fullStoragePath
+                    .substring(fullStoragePath.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
         }
         int suffixIndex = fullStoragePath.indexOf("//");
-        if(suffixIndex >=0) {
-          fullStoragePath = fullStoragePath.substring(0, suffixIndex);
+        if (suffixIndex >= 0) {
+            fullStoragePath = fullStoragePath.substring(0, suffixIndex);
         }
         if (this.getDvObject() instanceof Dataset) {
             fullStoragePath = this.getDataset().getAuthorityForFileStorage() + "/"
                     + this.getDataset().getIdentifierForFileStorage() + "/" + fullStoragePath;
         } else if (this.getDvObject() instanceof DataFile) {
             fullStoragePath = this.getDataFile().getOwner().getAuthorityForFileStorage() + "/"
-                    + this.getDataFile().getOwner().getIdentifierForFileStorage() + "/" + fullStoragePath; 
-        }else if (dvObject instanceof Dataverse) {
+                    + this.getDataFile().getOwner().getIdentifierForFileStorage() + "/" + fullStoragePath;
+        } else if (dvObject instanceof Dataverse) {
             throw new IOException("RemoteOverlayAccessIO: Dataverses are not a supported dvObject");
         }
         logger.fine("fullStoragePath: " + fullStoragePath);
         return fullStoragePath;
     }
-    
+
     public CloseableHttpClient getSharedHttpClient() {
         if (httpclient == null) {
             try {
@@ -622,11 +658,11 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         String baseUri = System.getProperty("dataverse.files." + driverId + ".base-uri");
         try {
             URI absoluteURI = new URI(baseUri + "/" + urlPath);
-            if(!absoluteURI.normalize().toString().startsWith(baseUri)) {
+            if (!absoluteURI.normalize().toString().startsWith(baseUri)) {
                 logger.warning("storageidentifier doesn't start with " + driverId + "'s base-url: " + storageId);
                 return false;
             }
-        } catch(URISyntaxException use) {
+        } catch (URISyntaxException use) {
             logger.warning("Could not interpret storageidentifier in remote store " + driverId + " : " + storageId);
             logger.warning(use.getLocalizedMessage());
             return false;
@@ -642,14 +678,27 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
         return baseStore.cleanUp(filter, dryRun);
     }
-    
+
     public static void main(String[] args) {
         System.out.println("Running the main method");
         if (args.length > 0) {
             System.out.printf("List of arguments: {}", Arrays.toString(args));
         }
-        System.setProperty("dataverse.files.globus.base-uri", "12345/top");
+        System.setProperty("dataverse.files.globus.base-uri", "2791b83e-b989-47c5-a7fa-ce65fd949522");
         System.out.println("Valid: " + isValidIdentifier("globus", "globus://localid//../of/the/hill"));
+        System.setProperty("dataverse.files.globus.globus-token","Mjc5MWI4M2UtYjk4OS00N2M1LWE3ZmEtY2U2NWZkOTQ5NTIyOlprRmxGejNTWDlkTVpUNk92ZmVJaFQyTWY0SDd4cXBoTDNSS29vUmRGVlE9");
+        System.setProperty("dataverse.files.globus.base-store","file");
+        System.setProperty("dataverse.files.file.type",
+                DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+        System.setProperty("dataverse.files.file.directory", "/tmp/files");
         logger.info(JvmSettings.BASE_URI.lookup("globus"));
+        try {
+            GlobusOverlayAccessIO<DvObject> gsio = new GlobusOverlayAccessIO<DvObject>("globus://1234//2791b83e-b989-47c5-a7fa-ce65fd949522/hdc1/image001.mrc", "globus");
+        logger.info("Size is " + gsio.getSizeFromGlobus());
+        
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }
