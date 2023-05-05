@@ -4515,7 +4515,7 @@ The call is a POST with a JSON object as input with four keys:
 - "targetId" - the id of the collection, dataset, or datafile. Persistent ids and collection aliases are not supported. (Optional)
 - "subject" - the email subject line
 - "body" - the email body to send
-- "fromEmail" - the email to list in the from field. 
+- "fromEmail" - the email to list in the reply-to field. (Dataverse always sends mail from the system email, but does it "on behalf of" and with a reply-to for the specified user.)
 
 A curl example using an ``ID``
 
