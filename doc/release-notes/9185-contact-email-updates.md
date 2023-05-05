@@ -8,5 +8,5 @@ When there are multiple contacts, the system will now send one email with all of
 
 ## New JVM/MicroProfile Settings
 
-dataverse.mail.support-email - allows a separate email, distinct from the :SystemEmail to be used as the reply-to address in emails from the contact form/ feedback api.
+dataverse.mail.support-email - allows a separate email, distinct from the :SystemEmail to be used as the to address in emails from the contact form/ feedback api.
 dataverse.mail.cc-support-on-contact-emails - include the support email address as a CC: entry when contact/feedback emails are sent to the contacts for a collection, dataset, or datafile.
