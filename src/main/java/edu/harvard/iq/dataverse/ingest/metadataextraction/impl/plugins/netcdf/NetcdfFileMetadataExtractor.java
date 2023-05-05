@@ -127,7 +127,7 @@ public class NetcdfFileMetadataExtractor extends FileMetadataExtractor {
     }
 
     // Convert to standard -180 to 180 range by subtracting 360
-    // if either longitude is greater than 180.
+    // if both longitudea are greater than 180. For example:
     //       west     south      east      north
     //     343.68,     41.8,   353.78,     49.62 becomes
     //     -16.320007, 41.8,    -6.220001, 49.62 instead
@@ -135,6 +135,7 @@ public class NetcdfFileMetadataExtractor extends FileMetadataExtractor {
     // If one of them is <0, the domain is -180:180.
     // If both are between 0 and 180, the answer is indeterminate."
     // https://github.com/cf-convention/cf-conventions/issues/435#issuecomment-1505614364
+    // Solr only wants -180 to 180. It will throw an error for values outside this range.
     public WestAndEastLongitude getStandardLongitude(WestAndEastLongitude westAndEastLongitude) {
         if (westAndEastLongitude == null) {
             return null;
@@ -150,11 +151,34 @@ public class NetcdfFileMetadataExtractor extends FileMetadataExtractor {
         } catch (NumberFormatException ex) {
             return null;
         }
-        if (westAsFloat > 180 || eastAsFloat > 180) {
+        // "If one of them is > 180, the domain is 0:360"
+        if (westAsFloat > 180 && eastAsFloat > 180) {
             Float westStandard = westAsFloat - 360;
             Float eastStandard = eastAsFloat - 360;
             WestAndEastLongitude updatedWeLong = new WestAndEastLongitude(westStandard.toString(), eastStandard.toString());
             return updatedWeLong;
+        }
+        // "If one of them is <0, the domain is -180:180."
+        // 180:180 is what Solr wants. Return it.
+        if (westAsFloat < 0 || eastAsFloat < 0) {
+            // BUT! Don't return it if the values
+            // are so low to be out of range!
+            // Something must be wrong with the data.
+            if (westAsFloat < -180 || eastAsFloat < -180) {
+                return null;
+            }
+            if (westAsFloat > 180 || eastAsFloat > 180) {
+                // Not in the proper range of -80:180
+                return null;
+            }
+            return westAndEastLongitude;
+        }
+        if ((westAsFloat > 180 || eastAsFloat > 180) && (westAsFloat < 180 || eastAsFloat < 180)) {
+            // One value is over 180 and the other is under 180.
+            // We don't know if we should subtract 360 or not.
+            // Return null to prevent inserting a potentially
+            // incorrect bounding box.
+            return null;
         }
         return westAndEastLongitude;
     }
