@@ -140,7 +140,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
     
     public String getMessageCC() {
-        if (ccSupport(feedbackTarget)) {
+        if (ccSupport()) {
             return BrandingUtil.getSupportTeamName(systemAddress);
         }
         return null;
@@ -210,7 +210,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
         String installationBrandName = BrandingUtil.getInstallationBrandName();
         String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress);
 
-        Feedback feedback = FeedbackUtil.gatherFeedback(feedbackTarget, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName, ccSupport(feedbackTarget));
+        Feedback feedback = FeedbackUtil.gatherFeedback(feedbackTarget, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName, ccSupport());
         if (feedback==null) {
             logger.warning("No feedback has been sent!");
             return null;
@@ -220,7 +220,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
         return null;
     }
     
-    public static boolean ccSupport(DvObject feedbackTarget) {
+    public boolean ccSupport() {
         //Setting is enabled and this isn't already a direct message to support (no feedbackTarget)
         Optional<Boolean> ccSupport = JvmSettings.CC_SUPPORT_ON_CONTACT_EMAIL.lookupOptional(Boolean.class);
         
