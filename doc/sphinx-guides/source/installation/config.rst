@@ -2352,12 +2352,10 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 dataverse.mail.support-email
 ++++++++++++++++++++++++++++
 
-This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address that emails from the Contact Forms and Feedback API are sent from.
-This allows configuration of a no-reply email address for :ref:`systemEmail` while allowing replies to the SupportEmail address. If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
+This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address for Contact Forms and Feedback API. This address is used as the To address when the Contact form is launched from the Support entry in the top navigation bar and, if configured via :ref:`dataverse.mail.cc-support-on-contact-email`, as a CC address when the form is launched from a Dataverse/Dataset Contact button.
+This allows configuration of a no-reply email address for :ref:`systemEmail` while allowing feedback to go to/be cc'd to the support email address, which would normally accept replies. If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
 
 Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
-
-Also note that your mail server must be configured to send email from the support address (as well as the system address).
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
 
