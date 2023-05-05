@@ -2373,6 +2373,7 @@ please find all known feature flags below. Any of these flags can be activated u
     * - api-bearer-auth
       - Enables API authentication via Bearer Token for OIDC User Accounts. **Information: This feature works only for ODIC UserAccounts!**
       - ``Off``
+
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
 
