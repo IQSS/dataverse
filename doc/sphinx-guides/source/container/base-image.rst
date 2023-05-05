@@ -31,7 +31,7 @@ upstream branches:
 
 - The ``unstable`` tag corresponds to the ``develop`` branch, where pull requests are merged.
   (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
-- The ``stable`` tag corresponds to the ``master`` branch, where releases are cut from.
+- The ``alpha`` tag corresponds to the ``master`` branch, where releases are cut from.
   (`Dockerfile <https://github.com/IQSS/dataverse/tree/master/modules/container-base/src/main/docker/Dockerfile>`__)
 
 
@@ -108,13 +108,19 @@ AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2), by using `Maven Docker Plugin
 Building the image via ``mvn -Pct package`` or ``mvn -Pct install`` as above will only build for the architecture of
 the Docker machine's CPU.
 
-Only ``mvn -Pct deploy`` will trigger building on all enabled architectures.
-Yet, to enable building with non-native code on your build machine, you will need to setup a cross-platform builder.
+Only ``mvn -Pct deploy`` will trigger building on all enabled architectures (and will try to push the images to a
+registry, which is Docker Hub by default).
+
+You can specify which architectures you would like to build for and include by them as a comma separated list:
+``mvn -Pct deploy -Ddocker.platforms="linux/amd64,linux/arm64"``. The shown configuration is the default and may be omitted.
+
+Yet, to enable building with non-native code on your build machine, you will need to setup a cross-platform builder!
 
 On Linux, you should install `qemu-user-static <https://github.com/multiarch/qemu-user-static>`__ (preferably via
 your package management) on the host and run ``docker run --rm --privileged multiarch/qemu-user-static --reset -p yes``
 to enable that builder. The Docker plugin will setup everything else for you.
 
+The upstream CI workflows publish images supporting AMD64 and ARM64 (see e.g. tag details on Docker Hub)
 
 .. _base-tunables:
 
