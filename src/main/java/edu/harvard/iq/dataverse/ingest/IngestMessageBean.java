@@ -155,12 +155,11 @@ public class IngestMessageBean implements MessageListener {
 
             sbIngestedFiles.append("</ul>");
 
-            Long objectId = null;
             userNotificationService.sendNotification(
                     authenticatedUser,
                     Timestamp.from(Instant.now()),
                     !ingestWithErrors ? UserNotification.Type.INGESTCOMPLETED : UserNotification.Type.INGESTCOMPLETEDWITHERRORS,
-                    objectId,
+                    ingestMessage.getDatasetId(),
                     sbIngestedFiles.toString(),
                     true
             );
