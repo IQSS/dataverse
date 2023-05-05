@@ -2363,14 +2363,14 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 
 .. _dataverse.mail.cc-support-on-contact-email:
 
-dataverse.mail.cc-support-on-contact-emails
-+++++++++++++++++++++++++++++++++++++++++++
+dataverse.mail.cc-support-on-contact-email
+++++++++++++++++++++++++++++++++++++++++++
 
 If this setting is true, the contact forms and feedback API will cc the system (:SupportEmail if set, :SystemEmail if not) when sending email to the collection, dataset, or datafile contacts.
 A CC line is added to the contact form when this setting is true so that users are aware that the cc will occur.
 The default is false.
 
-Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAILS``.
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAIL``.
 
 
 .. _feature-flags:
