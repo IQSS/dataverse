@@ -2380,7 +2380,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
         // Create a dataset using native api
-        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        // (this test requires that we create a dataset without the license set; note the extra boolean arg.:)
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken, true);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
