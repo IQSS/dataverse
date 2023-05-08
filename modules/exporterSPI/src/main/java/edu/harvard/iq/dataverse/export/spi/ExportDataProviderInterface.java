@@ -10,8 +10,6 @@ import java.io.InputStream;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import edu.harvard.iq.dataverse.DataCitation;
-
 /**
  * Provides all data necessary to create an export
  * 

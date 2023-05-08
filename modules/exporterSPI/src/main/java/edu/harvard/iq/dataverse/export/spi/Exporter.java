@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.export.spi;
 
-import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.export.spi.ExportException;
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
 
