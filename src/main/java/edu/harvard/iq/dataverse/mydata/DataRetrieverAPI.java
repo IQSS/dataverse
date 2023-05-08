@@ -483,7 +483,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             // -------------------------------------------
             myDataCardInfo = doc.getJsonForMyData();
             
-            if (!doc.getEntity().isInstanceofDataFile()){
+            if (doc.getEntity() != null && !doc.getEntity().isInstanceofDataFile()){
                 String parentAlias = dataverseService.getParentAliasString(doc);
                 myDataCardInfo.add("parent_alias",parentAlias);
             }
