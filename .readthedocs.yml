@@ -11,7 +11,7 @@ build:
 
 python:
     install:
-        requirements: doc/sphinx-guides/requirements.txt
+        - requirements: doc/sphinx-guides/requirements.txt
 
 
 sphinx:
