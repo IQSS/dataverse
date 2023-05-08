@@ -1299,33 +1299,34 @@ public class DdiExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if ("citation".equals(key)) {               
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.series.equals(fieldDTO.getTypeName())) {
-                        xmlw.writeStartElement("serStmt");                        
                         String seriesName = "";
                         String seriesInformation = "";
-                        Set<FieldDTO> foo = fieldDTO.getSingleCompound();
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            xmlw.writeStartElement("serStmt");
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.seriesName.equals(next.getTypeName())) {
-                                    seriesName =  next.getSinglePrimitive();
+                                    seriesName = next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.seriesInformation.equals(next.getTypeName())) {
-                                    seriesInformation =  next.getSinglePrimitive();
+                                    seriesInformation = next.getSinglePrimitive();
                                 }
                             }
-                            if (!seriesName.isEmpty()){
-                                xmlw.writeStartElement("serName"); 
+                            if (!seriesName.isEmpty()) {
+                                xmlw.writeStartElement("serName");
                                 xmlw.writeCharacters(seriesName);
-                                xmlw.writeEndElement(); //grantno
+                                xmlw.writeEndElement(); //serName
                             }
-                            if (!seriesInformation.isEmpty()){
-                                xmlw.writeStartElement("serInfo"); 
+                            if (!seriesInformation.isEmpty()) {
+                                xmlw.writeStartElement("serInfo");
                                 xmlw.writeCharacters(seriesInformation);
-                                xmlw.writeEndElement(); //grantno
+                                xmlw.writeEndElement(); //serInfo
                             }
-                        xmlw.writeEndElement(); //serStmt
+                            xmlw.writeEndElement(); //serStmt
+                        }
                     }
                 }
             }
