@@ -44,6 +44,7 @@
                 <java.image>eclipse-temurin:${target.java.version}-jre</java.image>
                 <base.image.uid>1000</base.image.uid>
                 <base.image.gid>1000</base.image.gid>
+                <docker.platforms>linux/amd64,linux/arm64</docker.platforms>
             </properties>
             
             <build>
@@ -94,8 +95,8 @@
                                     <build>
                                         <buildx>
                                             <platforms>
-                                                <platform>linux/arm64</platform>
-                                                <platform>linux/amd64</platform>
+                                                <!-- Will be empty by default, deactivating buildx -->
+                                                <platform>${docker.platforms}</platform>
                                             </platforms>
                                             <dockerStateDir>${project.build.directory}/buildx-state</dockerStateDir>
                                         </buildx>

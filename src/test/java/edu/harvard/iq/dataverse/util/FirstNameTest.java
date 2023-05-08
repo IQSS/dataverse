@@ -1,7 +1,9 @@
-package edu.harvard.iq.dataverse.export;
+package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.export.openaire.FirstNames;
 import org.junit.Test;
+
+import edu.harvard.iq.dataverse.util.FirstNames;
+
 import static org.junit.Assert.*;
 
 /**
