@@ -67,7 +67,7 @@
             <scope>runtime</scope>
         </dependency>
         
-	    <dependency>
+        <dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>
             <version>1.6.0</version>
@@ -503,12 +503,11 @@
             <artifactId>cdm-core</artifactId>
             <version>${netcdf.version}</version>
         </dependency>
-    <dependency>
-               <groupId>edu.harvard.iq</groupId>
-    
-    <artifactId>dataverse-exporter-spi</artifactId>
-    <version>0.0.1</version>
-    </dependency>
+        <dependency>
+            <groupId>edu.harvard.iq</groupId>
+            <artifactId>dataverse-exporter-spi</artifactId>
+            <version>0.0.1</version>
+        </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -745,26 +744,27 @@
                 </configuration>
             </plugin>
             <plugin>
-   <groupId>org.apache.maven.plugins</groupId>
-   <artifactId>maven-install-plugin</artifactId>
-   <version>2.5.1</version>
-   <configuration>
-	    <artifactId>dataverse-exporter-spi</artifactId>
-    <version>0.0.1</version>
-    <packaging>jar</packaging>
-      <file>${basedir}/modules/exporterSPI/target/dataverse-exporter-spi-0.0.1.jar</file>
-      <generatePom>true</generatePom>
-   </configuration>
-   <executions>
-      <execution>
-         <id>install-jar-lib</id>
-         <goals>
-            <goal>install-file</goal>
-         </goals>
-         <phase>validate</phase>
-      </execution>
-   </executions>
-</plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <artifactId>dataverse-exporter-spi</artifactId>
+                    <version>0.0.1</version>
+                    <packaging>jar</packaging>
+                    <file>
+                        ${basedir}/modules/exporterSPI/target/dataverse-exporter-spi-0.0.1.jar</file>
+                    <generatePom>true</generatePom>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>install-jar-lib</id>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <profiles>
