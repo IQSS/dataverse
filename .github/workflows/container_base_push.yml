@@ -1,5 +1,5 @@
 ---
-name: Container Base Module
+name: Base Container Image
 
 on:
     push:
@@ -18,9 +18,12 @@ on:
             - 'modules/container-base/**'
             - 'modules/dataverse-parent/pom.xml'
             - '.github/workflows/container_base_push.yml'
+    schedule:
+        - cron: '23 3 * * 0' # Run for 'develop' every Sunday at 03:23 UTC
 
 env:
     IMAGE_TAG: unstable
+    PLATFORMS: linux/amd64,linux/arm64
 
 jobs:
     build:
@@ -79,7 +82,18 @@ jobs:
               uses: docker/setup-qemu-action@v2
             - name: Re-set image tag based on branch
               if: ${{ github.ref_name == 'master' }}
-              run: echo "IMAGE_TAG=stable"
+              run: echo "IMAGE_TAG=alpha" >> $GITHUB_ENV
             - if: ${{ github.event_name != 'pull_request' }}
               name: Deploy multi-arch base container image to Docker Hub
-              run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }}
+              run: mvn -f modules/container-base -Pct deploy -Dbase.image.tag=${{ env.IMAGE_TAG }} -Ddocker.platforms=${{ env.PLATFORMS }}
+    push-app-img:
+        name: "Rebase & Publish App Image"
+        permissions:
+            contents: read
+            packages: write
+            pull-requests: write
+        needs: build
+        # We do not release a new base image for pull requests, so do not trigger.
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: ./.github/workflows/container_app_push.yml
+        secrets: inherit
