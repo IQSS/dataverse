@@ -16,6 +16,12 @@
                         <p id="messageTo" class="form-control-static">#{sendFeedbackDialog.getMessageTo()}</p>
                     </div>
                 </div>
+                <div class="form-group" jsf:rendered="#{sendFeedbackDialog.ccSupport()}">
+                    <label for="messageCC" class="col-sm-3 control-label">#{bundle['contact.cc']}</label>
+                    <div class="col-sm-9">
+                        <p id="messageCC" class="form-control-static">#{sendFeedbackDialog.getMessageCC()}</p>
+                    </div>
+                </div>
                 <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">
                 <!-- from email (logged in + auto-filled) -->
                     <div class="form-group">

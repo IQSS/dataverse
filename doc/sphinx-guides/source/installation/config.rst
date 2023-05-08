@@ -2349,6 +2349,27 @@ See :ref:`discovery-sign-posting` for details.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_ITEM_LIMIT``.
 
+dataverse.mail.support-email
+++++++++++++++++++++++++++++
+
+This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address for Contact Forms and Feedback API. This address is used as the To address when the Contact form is launched from the Support entry in the top navigation bar and, if configured via :ref:`dataverse.mail.cc-support-on-contact-email`, as a CC address when the form is launched from a Dataverse/Dataset Contact button.
+This allows configuration of a no-reply email address for :ref:`systemEmail` while allowing feedback to go to/be cc'd to the support email address, which would normally accept replies. If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
+
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
+
+.. _dataverse.mail.cc-support-on-contact-email:
+
+dataverse.mail.cc-support-on-contact-email
+++++++++++++++++++++++++++++++++++++++++++
+
+If this setting is true, the contact forms and feedback API will cc the system (:SupportEmail if set, :SystemEmail if not) when sending email to the collection, dataset, or datafile contacts.
+A CC line is added to the contact form when this setting is true so that users are aware that the cc will occur.
+The default is false.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAIL``.
+
 
 .. _feature-flags:
 
@@ -3846,3 +3867,4 @@ A true(default)/false option determining whether datafiles listed on the dataset
 A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically. 
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
+
