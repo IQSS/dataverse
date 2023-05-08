@@ -146,5 +146,8 @@ jobs:
                   hide_and_recreate: true
                   hide_classify: "OUTDATED"
                   message: |
-                      Pushed preview application image as [`ghcr.io/gdcc/dataverse:${{ env.IMAGE_TAG }}`](https://github.com/orgs/gdcc/packages/container/package/dataverse).
-                      Use it by referencing it with its full name as printed above.
+                      :package: Pushed preview application image as
+                      ```
+                      ghcr.io/gdcc/dataverse:${{ env.IMAGE_TAG }}
+                      ```
+                      :ship: [See on GHCR](https://github.com/orgs/gdcc/packages/container/package/dataverse). Use by referencing with full name as printed above, mind the registry name.
