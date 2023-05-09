@@ -167,7 +167,8 @@ public class GlobusServiceBean implements java.io.Serializable {
     public void deletePermision(String ruleId, Logger globusLogger) throws MalformedURLException {
 
         if (ruleId.length() > 0) {
-            AccessToken clientTokenUser = getClientToken();
+            AccessToken clientTokenUser = getClientToken(settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, ""));
+
             globusLogger.info("Start deleting permissions.");
             String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
 
@@ -264,15 +265,21 @@ public class GlobusServiceBean implements java.io.Serializable {
         return task;
     }
 
-    public AccessToken getClientToken() throws MalformedURLException {
-        String globusBasicToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, "");
-        URL url = new URL(
-                "https://auth.globus.org/v2/oauth2/token?scope=openid+email+profile+urn:globus:auth:scope:transfer.api.globus.org:all&grant_type=client_credentials");
-
-        MakeRequestResponse result = makeRequest(url, "Basic", globusBasicToken, "POST", null);
+    public static AccessToken getClientToken(String globusBasicToken) {
+        URL url;
         AccessToken clientTokenUser = null;
-        if (result.status == 200) {
-            clientTokenUser = parseJson(result.jsonResponse, AccessToken.class, true);
+
+        try {
+            url = new URL(
+                    "https://auth.globus.org/v2/oauth2/token?scope=openid+email+profile+urn:globus:auth:scope:transfer.api.globus.org:all&grant_type=client_credentials");
+
+            MakeRequestResponse result = makeRequest(url, "Basic", globusBasicToken, "POST", null);
+            if (result.status == 200) {
+                clientTokenUser = parseJson(result.jsonResponse, AccessToken.class, true);
+            }
+        } catch (MalformedURLException e) {
+            // On a statically defined URL...
+            e.printStackTrace();
         }
         return clientTokenUser;
     }
@@ -306,7 +313,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     }
 
-    public MakeRequestResponse makeRequest(URL url, String authType, String authCode, String method,
+    public static MakeRequestResponse makeRequest(URL url, String authType, String authCode, String method,
             String jsonString) {
         String str = null;
         HttpURLConnection connection = null;
@@ -359,7 +366,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     }
 
-    private StringBuilder readResultJson(InputStream in) {
+    private static StringBuilder readResultJson(InputStream in) {
         StringBuilder sb = null;
         try {
 
@@ -378,7 +385,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         return sb;
     }
 
-    private <T> T parseJson(String sb, Class<T> jsonParserClass, boolean namingPolicy) {
+    private static <T> T parseJson(String sb, Class<T> jsonParserClass, boolean namingPolicy) {
         if (sb != null) {
             Gson gson = null;
             if (namingPolicy) {
@@ -420,7 +427,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     }
 
-    class MakeRequestResponse {
+    static class MakeRequestResponse {
         public String jsonResponse;
         public int status;
 
@@ -451,7 +458,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         if (globusEndpoint.equals("") || globusBasicToken.equals("")) {
             return false;
         }
-        AccessToken clientTokenUser = getClientToken();
+        AccessToken clientTokenUser = getClientToken(settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, ""));
         if (clientTokenUser == null) {
             logger.severe("Cannot get client token ");
             return false;
@@ -908,7 +915,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             try {
                 globusLogger.info("checking globus transfer task   " + taskId);
                 Thread.sleep(pollingInterval * 1000);
-                AccessToken clientTokenUser = getClientToken();
+                AccessToken clientTokenUser = getClientToken(settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, ""));
                 // success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskId);
                 task = getTask(clientTokenUser, taskId, globusLogger);
                 if (task != null) {

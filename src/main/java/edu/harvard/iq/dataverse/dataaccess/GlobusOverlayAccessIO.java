@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.globus.AccessToken;
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -28,10 +30,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -82,6 +82,8 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             .setCookieSpec(CookieSpecs.STANDARD).setExpectContinueEnabled(true).build();
     private static boolean trustCerts = false;
     private int httpConcurrency = 4;
+
+    private String globusAccessToken = null;
 
     public GlobusOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
@@ -190,18 +192,19 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         URI absoluteURI = null;
         try {
             int filenameStart = path.lastIndexOf("/") + 1;
-            int pathStart = endpointWithBasePath.indexOf("/") + 1;
-
-            String directoryPath = (pathStart > 0 ? endpointWithBasePath.substring(pathStart) : "")
+            int pathStart = endpointWithBasePath.indexOf("/");
+logger.info("endpointWithBasePath: " + endpointWithBasePath);
+            String directoryPath = "/" + (pathStart > 0 ? endpointWithBasePath.substring(pathStart) : "")
                     + path.substring(0, filenameStart);
+            logger.info("directoryPath: " + directoryPath);
             String filename = path.substring(filenameStart);
             String endpoint = pathStart > 0 ? endpointWithBasePath.substring(0, pathStart - 1) : endpointWithBasePath;
 
-            absoluteURI = new URI("https://transfer.api.globusonline.org/v0.10/operation/endpoint/" + endpoint + "/ls?path=" + path + "&filter=name:" + filename);
+            absoluteURI = new URI("https://transfer.api.globusonline.org/v0.10/operation/endpoint/" + endpoint + "/ls?path=" + directoryPath + "&filter=name:" + filename);
             HttpGet get = new HttpGet(absoluteURI);
-            String token = JvmSettings.GLOBUS_TOKEN.lookup(driverId);
-            logger.info("Token is " + token);
-            get.addHeader("Authorization", "Bearer " + token);
+            
+            logger.info("Token is " + globusAccessToken);
+            get.addHeader("Authorization", "Bearer " + globusAccessToken);
             CloseableHttpResponse response = getSharedHttpClient().execute(get, localContext);
             if (response.getStatusLine().getStatusCode() == 200) {
                 //Get reponse as string
@@ -482,6 +485,8 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     private void configureStores(DataAccessRequest req, String driverId, String storageLocation) throws IOException {
+        AccessToken accessToken = GlobusServiceBean.getClientToken(JvmSettings.GLOBUS_TOKEN.lookup(driverId));
+        globusAccessToken = accessToken.getOtherTokens().get(0).getAccessToken();
         endpointWithBasePath = JvmSettings.BASE_URI.lookup(this.driverId);
         logger.info("base-uri is " + endpointWithBasePath);
         if (endpointWithBasePath == null) {
@@ -692,8 +697,11 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                 DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
         System.setProperty("dataverse.files.file.directory", "/tmp/files");
         logger.info(JvmSettings.BASE_URI.lookup("globus"));
+        
+        
+        
         try {
-            GlobusOverlayAccessIO<DvObject> gsio = new GlobusOverlayAccessIO<DvObject>("globus://1234//2791b83e-b989-47c5-a7fa-ce65fd949522/hdc1/image001.mrc", "globus");
+            GlobusOverlayAccessIO<DvObject> gsio = new GlobusOverlayAccessIO<DvObject>("globus://1234///hdc1/image001.mrc", "globus");
         logger.info("Size is " + gsio.getSizeFromGlobus());
         
         } catch (IOException e) {
