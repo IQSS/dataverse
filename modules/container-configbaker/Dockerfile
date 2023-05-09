@@ -19,17 +19,19 @@ ENV PATH="${PATH}:${SCRIPT_DIR}"
 
 ARG APK_PACKAGES="curl bind-tools netcat-openbsd jq bash dumb-init wait4x"
 
-RUN <<EOT
-  apk add --no-cache ${APK_PACKAGES}
+RUN true && \
+  # Install necessary software and tools
+  apk add --no-cache ${APK_PACKAGES} && \
+  # Make our working directories
+  mkdir -p ${SCRIPT_DIR} ${SECRETS_DIR} ${SOLR_TEMPLATE}
 
-  mkdir ${SCRIPT_DIR} ${SECRETS_DIR}
-EOT
-
-COPY scripts/* ${SCRIPT_DIR}/
+# Get in the scripts and make them executable (just in case...)
+COPY maven/scripts ${SCRIPT_DIR}/
+RUN chmod +x ${SCRIPT_DIR}/*.sh ${BOOTSTRAP_DIR}/*/*.sh
 
 # Copy the Solr config bits
 COPY --from=solr /opt/solr/server/solr/configsets/_default ${SOLR_TEMPLATE}/
-COPY conf/solr/8.11.1/*.xml ${SOLR_TEMPLATE}/conf/
+COPY maven/solr/*.xml ${SOLR_TEMPLATE}/conf/
 
 
 RUN chmod +x scripts/*.sh

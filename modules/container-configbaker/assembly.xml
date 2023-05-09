@@ -1,0 +1,15 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <fileSets>
+        <!-- Get the scripts -->
+        <fileSet>
+            <directory>modules/container-configbaker/scripts</directory>
+            <outputDirectory>scripts</outputDirectory>
+        </fileSet>
+        <!-- Get our custom Solr files -->
+        <fileSet>
+            <directory>conf/solr/8.11.1</directory>
+            <outputDirectory>solr</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>
