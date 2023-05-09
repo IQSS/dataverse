@@ -53,8 +53,12 @@
         <distDate>1004-01-01</distDate>
       </distStmt>
       <serStmt>
-        <serName>SeriesName</serName>
-        <serInfo>SeriesInformation</serInfo>
+        <serName>SeriesName1</serName>
+        <serInfo>SeriesInformation1</serInfo>
+      </serStmt>
+      <serStmt>
+        <serName>SeriesName2</serName>
+        <serInfo>SeriesInformation2</serInfo>
       </serStmt>
       <holdings URI="https://doi.org/10.5072/FK2/WKUKGV"/>
     </citation>

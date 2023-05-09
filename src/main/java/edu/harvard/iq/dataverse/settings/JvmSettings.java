@@ -109,6 +109,11 @@ public enum JvmSettings {
     HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path", "dataverse.handlenet.admcredfile"),
     HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase", "dataverse.handlenet.admprivphrase"),
     
+    // MAIL SETTINGS
+    SCOPE_MAIL(PREFIX, "mail"),
+    SUPPORT_EMAIL(SCOPE_MAIL, "support-email"),
+    CC_SUPPORT_ON_CONTACT_EMAIL(SCOPE_MAIL, "cc-support-on-contact-email"),
+    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";

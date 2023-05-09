@@ -376,9 +376,13 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .when().get("/api/dataverses/" + alias + "/contents");
     }
-
+    
     static Response createRandomDatasetViaNativeApi(String dataverseAlias, String apiToken) {
-        String jsonIn = getDatasetJson();
+        return createRandomDatasetViaNativeApi(dataverseAlias, apiToken, false);
+    }
+
+    static Response createRandomDatasetViaNativeApi(String dataverseAlias, String apiToken, boolean withNoLicense) {
+        String jsonIn = getDatasetJson(withNoLicense);
         Response createDatasetResponse = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
@@ -388,7 +392,16 @@ public class UtilIT {
     }
 
     private static String getDatasetJson() {
-        File datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1.json");
+        return getDatasetJson(false); 
+    }
+     
+    private static String getDatasetJson(boolean nolicense) {
+        File datasetVersionJson; 
+        if (nolicense) {
+            datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1-nolicense.json");
+        } else {
+            datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1.json");
+        }
         try {
             String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
             return datasetVersionAsJson;
