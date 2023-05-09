@@ -9,11 +9,12 @@ import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHum
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+//import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.DataFileServiceBean.UserStorageQuota;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -42,8 +43,12 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipFile;
@@ -57,7 +62,10 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author landreev
  */
-@RequiredPermissions( Permission.EditDataset )
+// Note the commented out @RequiredPermissions. We need to use dynamic 
+// permissions instead, to accommodate both adding files to an existing 
+// dataset and files being uploaded on create of a new dataset. 
+//@RequiredPermissions( Permission.EditDataset )
 public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileResult> {
     private static final Logger logger = Logger.getLogger(CreateNewDataFilesCommand.class.getCanonicalName());
     
@@ -68,6 +76,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
     private final String newStorageIdentifier; 
     private final String newCheckSum; 
     private DataFile.ChecksumType newCheckSumType;
+    private final Dataverse dataverse;
 
     public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum) {
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, newCheckSum, null);
@@ -83,7 +92,25 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         this.newStorageIdentifier = newStorageIdentifier; 
         this.newCheckSum = newCheckSum; 
         this.newCheckSumType = newCheckSumType;
+        this.dataverse = null; 
     }
+    
+    // This version of the command must be used when files are created in the 
+    // context of creating a brand new dataset (from the Add Dataset page):
+    
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, DataFile.ChecksumType newCheckSumType, Dataverse dataverse) {
+        super(aRequest, dataverse);
+        
+        this.version = version;
+        this.inputStream = inputStream;
+        this.fileName = fileName;
+        this.suppliedContentType = suppliedContentType; 
+        this.newStorageIdentifier = newStorageIdentifier; 
+        this.newCheckSum = newCheckSum; 
+        this.newCheckSumType = newCheckSumType;
+        this.dataverse = dataverse;
+    }
+    
 
     @Override
     public CreateDataFileResult execute(CommandContext ctxt) throws CommandException {
@@ -637,4 +664,22 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
 
         return CreateDataFileResult.error(fileName, finalType);
     }   // end createDataFiles
+    
+    @Override
+    public Map<String, Set<Permission>> getRequiredPermissions() {
+        Map<String, Set<Permission>> ret = new HashMap<>();
+
+        ret.put("", new HashSet<>());
+        
+        if (dataverse != null) {
+            // The command is called in the context of uploading files on 
+            // create of a new dataset
+            ret.get("").add(Permission.AddDataset);
+        } else {
+            // An existing dataset
+            ret.get("").add(Permission.EditDataset);
+        }
+
+        return ret;
+    }
 }
