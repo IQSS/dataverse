@@ -184,7 +184,7 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.json</artifactId>
-            <scope>provided</scope>
+            <!--scope>provided</scope-->
             <!-- no version here as managed by Payara BOM above! -->
         </dependency>
         <dependency>
