@@ -64,7 +64,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 // Note the commented out @RequiredPermissions. We need to use dynamic 
 // permissions instead, to accommodate both adding files to an existing 
-// dataset and files being uploaded on create of a new dataset. 
+// dataset and files being uploaded in the context of creating a new dataset
+// via the Add Dataset page. 
 //@RequiredPermissions( Permission.EditDataset )
 public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileResult> {
     private static final Logger logger = Logger.getLogger(CreateNewDataFilesCommand.class.getCanonicalName());

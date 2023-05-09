@@ -2058,7 +2058,16 @@ public class EditDatafilesPage implements java.io.Serializable {
             // zip file.
             ///CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
             
-            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null);
+            Command<CreateDataFileResult> cmd;
+            if (mode == FileEditMode.CREATE) {
+                // This is a file upload in the context of creating a brand new
+                // dataset that does not yet exist in the database. We must 
+                // use the version of the Create New Files constructor that takes
+                // the parent Dataverse as the extra argument:
+                cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, null, workingVersion.getDataset().getOwner());
+            } else {
+                cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null);
+            }
             CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
 
         
