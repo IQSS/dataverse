@@ -2,7 +2,6 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
 import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
 import edu.harvard.iq.dataverse.export.spi.ExportException;
