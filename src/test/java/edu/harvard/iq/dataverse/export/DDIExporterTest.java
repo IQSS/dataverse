@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
-import edu.harvard.iq.dataverse.export.spi.ExportException;
+import io.gdcc.export.spi.ExportException;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;

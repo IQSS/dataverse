@@ -4,9 +4,9 @@ import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
-import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
-import edu.harvard.iq.dataverse.export.spi.ExportException;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.export.spi.ExportDataProviderInterface;
+import io.gdcc.export.spi.ExportException;
+import io.gdcc.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import javax.json.JsonObject;

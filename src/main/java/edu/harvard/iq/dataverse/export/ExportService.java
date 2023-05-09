@@ -9,9 +9,9 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
-import edu.harvard.iq.dataverse.export.spi.ExportException;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.export.spi.ExportDataProviderInterface;
+import io.gdcc.export.spi.ExportException;
+import io.gdcc.export.spi.Exporter;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 

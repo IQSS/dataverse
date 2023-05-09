@@ -10,9 +10,9 @@
         <version>${revision}</version>
         <relativePath>../../modules/dataverse-parent</relativePath>
     </parent>
-
+    <groupId>io.gdcc</groupId>
     <artifactId>dataverse-exporter-spi</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <properties>

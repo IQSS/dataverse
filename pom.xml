@@ -504,9 +504,9 @@
             <version>${netcdf.version}</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.iq</groupId>
+            <groupId>io.gdcc</groupId>
             <artifactId>dataverse-exporter-spi</artifactId>
-            <version>0.0.1</version>
+            <version>1.0.0</version>
         </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
@@ -748,11 +748,12 @@
                 <artifactId>maven-install-plugin</artifactId>
                 <version>2.5.1</version>
                 <configuration>
+                    <groupId>io.gdcc</groupId>
                     <artifactId>dataverse-exporter-spi</artifactId>
-                    <version>0.0.1</version>
+                    <version>1.0.0</version>
                     <packaging>jar</packaging>
                     <file>
-                        ${basedir}/modules/exporterSPI/target/dataverse-exporter-spi-0.0.1.jar</file>
+                        ${basedir}/modules/dataverse-exporter-spi/target/dataverse-exporter-spi-1.0.0.jar</file>
                     <generatePom>true</generatePom>
                 </configuration>
                 <executions>

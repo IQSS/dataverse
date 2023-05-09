@@ -10,9 +10,9 @@ import com.google.auto.service.AutoService;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
-import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
-import edu.harvard.iq.dataverse.export.spi.ExportException;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.export.spi.ExportDataProviderInterface;
+import io.gdcc.export.spi.ExportException;
+import io.gdcc.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 @AutoService(Exporter.class)

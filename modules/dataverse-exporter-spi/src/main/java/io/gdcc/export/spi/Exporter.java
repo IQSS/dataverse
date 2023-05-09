@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse.export.spi;
+package io.gdcc.export.spi;
 
-import edu.harvard.iq.dataverse.export.spi.ExportException;
+import io.gdcc.export.spi.ExportException;
 import java.io.OutputStream;
 import java.util.Locale;
 import javax.ws.rs.core.MediaType;
