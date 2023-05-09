@@ -4,10 +4,17 @@
 # You may obtain a copy of the License at
 # http://www.apache.org/licenses/LICENSE-2.0
 
+# This build arg must be given or build will fail
+ARG SOLR_VERSION
+# We simply have this intermediate stage here without any activity to copy the default configset over
+FROM solr:${SOLR_VERSION} AS solr
+
+# Let's build us a baker
 FROM alpine:3
 
-ENV SCRIPT_DIR="/scripts"
-ENV SECRETS_DIR="/secrets"
+ENV SCRIPT_DIR="/scripts" \
+    SECRETS_DIR="/secrets" \
+    SOLR_TEMPLATE="/template"
 ENV PATH="${PATH}:${SCRIPT_DIR}"
 
 ARG APK_PACKAGES="curl bind-tools netcat-openbsd jq bash dumb-init wait4x"
@@ -21,8 +28,8 @@ EOT
 COPY scripts/* ${SCRIPT_DIR}/
 
 # Copy the Solr config bits
-# Copy the scripts/api things
-
+COPY --from=solr /opt/solr/server/solr/configsets/_default ${SOLR_TEMPLATE}/
+COPY conf/solr/8.11.1/*.xml ${SOLR_TEMPLATE}/conf/
 
 
 RUN chmod +x scripts/*.sh
