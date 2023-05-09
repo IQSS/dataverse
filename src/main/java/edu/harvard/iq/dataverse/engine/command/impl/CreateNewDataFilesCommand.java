@@ -348,7 +348,11 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                                 if (storageQuotaLimit != null) {
                                     combinedUnzippedFileSize = combinedUnzippedFileSize + entry.getSize();
                                     if (combinedUnzippedFileSize > storageQuotaLimit) {
-                                        throw new FileExceedsStorageQuotaException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(combinedUnzippedFileSize), bytesToHumanReadable(storageQuotaLimit)));
+                                        //throw new FileExceedsStorageQuotaException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(combinedUnzippedFileSize), bytesToHumanReadable(storageQuotaLimit)));
+                                        // change of plans: if the unzipped content inside exceeds the remaining quota, 
+                                        // we reject the upload outright, rather than accepting the zip 
+                                        // file as is. 
+                                        throw new CommandExecutionException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.unzipped.quota_exceeded"), bytesToHumanReadable(storageQuotaLimit)), this);
                                     }
                                 }
                             }
@@ -476,11 +480,12 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     logger.warning("One of the unzipped files exceeds the size limit; resorting to saving the file as is. " + femsx.getMessage());
                     warningMessage =  BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed.size", Arrays.asList(FileSizeChecker.bytesToHumanReadable(fileSizeLimit)));
                     datafiles.clear();
-                } catch (FileExceedsStorageQuotaException fesqx) {
-                    logger.warning("One of the unzipped files exceeds the storage quota limit; resorting to saving the file as is. " + fesqx.getMessage());
-                    warningMessage =  BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed.quota", Arrays.asList(FileSizeChecker.bytesToHumanReadable(storageQuotaLimit)));
-                    datafiles.clear();
-                } finally {
+                } /*catch (FileExceedsStorageQuotaException fesqx) {
+                    //logger.warning("One of the unzipped files exceeds the storage quota limit; resorting to saving the file as is. " + fesqx.getMessage());
+                    //warningMessage =  BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed.quota", Arrays.asList(FileSizeChecker.bytesToHumanReadable(storageQuotaLimit)));
+                    //datafiles.clear();
+                    throw new CommandExecutionException(fesqx.getMessage(), fesqx, this);
+                }*/ finally {
                     if (zipFile != null) {
                         try {
                             zipFile.close();
