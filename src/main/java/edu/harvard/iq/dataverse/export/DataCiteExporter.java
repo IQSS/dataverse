@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.Locale;
 import java.util.Map;
 import javax.json.JsonObject;
 
@@ -34,10 +35,9 @@ public class DataCiteExporter implements Exporter {
     }
 
     @Override
-    public String getDisplayName() {
-        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.datacite") != null
-                ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.datacite")
-                : "DataCite";
+    public String getDisplayName(Locale locale) {
+        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.datacite", locale);
+        return displayName != null ? displayName : "DataCite";
     }
 
     @Override

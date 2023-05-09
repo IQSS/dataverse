@@ -54,7 +54,7 @@ public class OpenAireExporterTest {
         System.out.println("getDisplayName");
         OpenAireExporter instance = new OpenAireExporter();
         String expResult = "OpenAIRE";
-        String result = instance.getDisplayName();
+        String result = instance.getDisplayName(null);
         assertEquals(expResult, result);
     }
 

@@ -13,6 +13,8 @@ import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
 import edu.harvard.iq.dataverse.export.spi.ExportException;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -113,7 +115,7 @@ public class ExportService {
 
         exporterMap.values().forEach(exp -> {
             String[] temp = new String[2];
-            temp[0] = exp.getDisplayName();
+            temp[0] = exp.getDisplayName(BundleUtil.getCurrentLocale());
             temp[1] = exp.getProviderName();
             retList.add(temp);
         });

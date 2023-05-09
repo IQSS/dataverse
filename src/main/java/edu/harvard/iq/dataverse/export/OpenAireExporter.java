@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.export;
 
 import java.io.OutputStream;
+import java.util.Locale;
 
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
@@ -26,8 +27,8 @@ public class OpenAireExporter implements Exporter {
     }
 
     @Override
-    public String getDisplayName() {
-        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dataciteOpenAIRE");
+    public String getDisplayName(Locale locale) {
+        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dataciteOpenAIRE", locale);
     }
 
     @Override

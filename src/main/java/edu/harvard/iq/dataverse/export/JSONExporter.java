@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.export.spi.ExportException;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
+import java.util.Locale;
+
 import javax.json.JsonObject;
 import javax.ws.rs.core.MediaType;
 
@@ -25,8 +27,9 @@ public class JSONExporter implements Exporter {
     }
 
     @Override
-    public String getDisplayName() {
-        return  BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json") : "JSON";
+    public String getDisplayName(Locale locale) {
+        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json", locale); 
+        return displayName != null ? displayName : "JSON";
     }
 
     @Override

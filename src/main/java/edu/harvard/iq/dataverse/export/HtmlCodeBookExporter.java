@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 @AutoService(Exporter.class)
 public class HtmlCodeBookExporter implements Exporter {
@@ -28,8 +29,9 @@ public class HtmlCodeBookExporter implements Exporter {
     }
 
     @Override
-    public String getDisplayName() {
-        return  BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.html") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.html") : "DDI html codebook";
+    public String getDisplayName(Locale locale) {
+        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.html", locale);
+        return displayName != null ? displayName : "DDI html codebook";
     }
 
     @Override

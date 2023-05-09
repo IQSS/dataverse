@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.export.spi.ExportException;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
+import java.util.Locale;
+
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 
@@ -27,8 +29,10 @@ public class DublinCoreExporter implements Exporter {
     }
 
     @Override
-    public String getDisplayName() {
-        return  BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") : "Dublin Core";
+    public String getDisplayName(Locale locale) {
+        //ToDo: dataset.exportBtn.itemLabel.dublinCore is shared with the DCTermsExporter
+        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore", locale);
+        return displayName != null ? displayName : "Dublin Core";
     }
 
     @Override

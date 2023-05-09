@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.export.spi.ExportException;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
+import java.util.Locale;
+
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -36,8 +38,9 @@ public class DDIExporter implements Exporter {
     }
 
     @Override
-    public String getDisplayName() {
-        return  BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi") : "DDI";
+    public String getDisplayName(Locale locale) {
+        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi", locale);
+        return  displayName != null ? displayName : "DDI";
     }
 
     @Override

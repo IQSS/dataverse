@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.export.spi;
 
 import edu.harvard.iq.dataverse.export.spi.ExportException;
 import java.io.OutputStream;
+import java.util.Locale;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -28,7 +29,7 @@ public interface Exporter {
     
     public String getProviderName();
     
-    public String getDisplayName();
+    public String getDisplayName(Locale locale);
     
     public default String getPrerequisiteExporterName() {
         return null;

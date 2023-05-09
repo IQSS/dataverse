@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.Locale;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -99,8 +100,8 @@ public class SchemaDotOrgExporter implements Exporter {
     }
 
     @Override
-    public String getDisplayName() {
-        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.schemaDotOrg");
+    public String getDisplayName(Locale locale) {
+        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.schemaDotOrg", locale);
     }
 
     @Override

@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import java.io.OutputStream;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
@@ -41,10 +42,9 @@ public class OAI_OREExporter implements Exporter {
     }
 
     @Override
-    public String getDisplayName() {
-        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.oai_ore") != null
-                ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.oai_ore")
-                : "OAI_ORE";
+    public String getDisplayName(Locale locale) {
+        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.oai_ore", locale);
+        return displayName != null ? displayName : "OAI_ORE";
     }
 
     @Override

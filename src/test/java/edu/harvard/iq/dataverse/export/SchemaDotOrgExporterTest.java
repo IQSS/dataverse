@@ -241,7 +241,7 @@ public class SchemaDotOrgExporterTest {
     @Test
     public void testGetDisplayName() {
         // We capitalize "Schema.org" because it looks better in the dropdown list and it's what DataCite does in their UI.
-        assertEquals("Schema.org JSON-LD", schemaDotOrgExporter.getDisplayName());
+        assertEquals("Schema.org JSON-LD", schemaDotOrgExporter.getDisplayName(null));
     }
 
     /**
