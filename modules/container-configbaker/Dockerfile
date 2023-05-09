@@ -15,7 +15,8 @@ FROM alpine:3
 ENV SCRIPT_DIR="/scripts" \
     SECRETS_DIR="/secrets" \
     SOLR_TEMPLATE="/template"
-ENV PATH="${PATH}:${SCRIPT_DIR}"
+ENV PATH="${PATH}:${SCRIPT_DIR}" \
+    BOOTSTRAP_DIR="${SCRIPT_DIR}/bootstrap"
 
 ARG APK_PACKAGES="curl bind-tools netcat-openbsd jq bash dumb-init wait4x"
 
@@ -33,8 +34,9 @@ RUN chmod +x ${SCRIPT_DIR}/*.sh ${BOOTSTRAP_DIR}/*/*.sh
 COPY --from=solr /opt/solr/server/solr/configsets/_default ${SOLR_TEMPLATE}/
 COPY maven/solr/*.xml ${SOLR_TEMPLATE}/conf/
 
-
-RUN chmod +x scripts/*.sh
+# Copy the data from scripts/api that provide the common base setup you'd get from the installer.
+# ".dockerignore" will take care of taking only the bare necessities
+COPY maven/setup ${SCRIPT_DIR}/bootstrap/base/
 
 # Set the entrypoint to tini (as a process supervisor)
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
