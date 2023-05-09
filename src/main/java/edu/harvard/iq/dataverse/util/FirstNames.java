@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.export.openaire;
+package edu.harvard.iq.dataverse.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,10 +9,10 @@ import java.util.HashMap;
 import java.util.logging.Level;
 
 /**
- *
+ * Used by PersonOrOrgUtil
  * @author francesco.cadili@4science.it
  */
-public class FirstNames {
+class FirstNames {
 
     private static FirstNames instance = null;
 
