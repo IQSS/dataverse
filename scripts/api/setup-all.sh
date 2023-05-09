@@ -8,6 +8,8 @@ DATAVERSE_URL=${DATAVERSE_URL:-"http://localhost:8080"}
 export DATAVERSE_URL
 SOLR_URL=${SOLR_URL:-"http://localhost:8983"}
 
+SCRIPT_PATH="$(dirname "$0")"
+
 for opt in $*
 do
   case $opt in
@@ -44,18 +46,18 @@ curl "${SOLR_URL}/solr/collection1/update/json?commit=true" -H "Content-type: ap
 
 
 echo "Setup the metadata blocks"
-./setup-datasetfields.sh
+"$SCRIPT_PATH"/setup-datasetfields.sh
 
 echo "Setup the builtin roles"
-./setup-builtin-roles.sh
+"$SCRIPT_PATH"/setup-builtin-roles.sh
 
 echo "Setup the authentication providers"
-./setup-identity-providers.sh
+"$SCRIPT_PATH"/setup-identity-providers.sh
 
 echo "Setting up the settings"
 echo  "- Allow internal signup"
 curl -X PUT -d yes "${DATAVERSE_URL}/api/admin/settings/:AllowSignUp"
-curl -X PUT -d /dataverseuser.xhtml?editMode=CREATE "${DATAVERSE_URL}/api/admin/settings/:SignUpUrl"
+curl -X PUT -d "/dataverseuser.xhtml?editMode=CREATE" "${DATAVERSE_URL}/api/admin/settings/:SignUpUrl"
 
 curl -X PUT -d doi "${DATAVERSE_URL}/api/admin/settings/:Protocol"
 curl -X PUT -d 10.5072 "${DATAVERSE_URL}/api/admin/settings/:Authority"
@@ -67,14 +69,14 @@ curl -X PUT -d 'native/http' "${DATAVERSE_URL}/api/admin/settings/:UploadMethods
 echo
 
 echo "Setting up the admin user (and as superuser)"
-adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @data/user-admin.json "${DATAVERSE_URL}/api/builtin-users?password=$DV_SU_PASSWORD&key=burrito")
+adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @"$SCRIPT_PATH"/data/user-admin.json "${DATAVERSE_URL}/api/builtin-users?password=$DV_SU_PASSWORD&key=burrito")
 echo $adminResp
 curl -X POST "${DATAVERSE_URL}/api/admin/superuser/dataverseAdmin"
 echo
 
 echo "Setting up the root dataverse"
 adminKey=$(echo $adminResp | jq .data.apiToken | tr -d \")
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-root.json "${DATAVERSE_URL}/api/dataverses/?key=$adminKey"
+curl -s -H "Content-type:application/json" -X POST -d @"$SCRIPT_PATH"/data/dv-root.json "${DATAVERSE_URL}/api/dataverses/?key=$adminKey"
 echo
 echo "Set the metadata block for Root"
 curl -s -X POST -H "Content-type:application/json" -d "[\"citation\"]" "${DATAVERSE_URL}/api/dataverses/:root/metadatablocks/?key=$adminKey"
@@ -86,7 +88,7 @@ echo
 echo "Set up licenses"
 # Note: CC0 has been added and set as the default license through
 # Flyway script V5.9.0.1__7440-configurable-license-list.sql
-curl -X POST -H 'Content-Type: application/json' -H "X-Dataverse-key:$adminKey" "${DATAVERSE_URL}/api/licenses" --upload-file data/licenses/licenseCC-BY-4.0.json
+curl -X POST -H 'Content-Type: application/json' -H "X-Dataverse-key:$adminKey" "${DATAVERSE_URL}/api/licenses" --upload-file "$SCRIPT_PATH"/data/licenses/licenseCC-BY-4.0.json
 
 # OPTIONAL USERS AND DATAVERSES
 #./setup-optional.sh
