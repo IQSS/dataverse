@@ -1,7 +1,9 @@
-package edu.harvard.iq.dataverse.export;
+package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.export.openaire.Organizations;
 import org.junit.Test;
+
+import edu.harvard.iq.dataverse.util.Organizations;
+
 import static org.junit.Assert.*;
 
 /**
