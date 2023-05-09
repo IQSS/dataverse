@@ -32,6 +32,18 @@ services:
     mem_reservation: 1024m
     privileged: false
 
+  dev_bootstrap:
+    container_name: "dev_bootstrap"
+    image: gdcc/configbaker:unstable
+    restart: "no"
+    command:
+      - bootstrap.sh
+      - dev
+    depends_on:
+      - dev_dataverse
+    networks:
+      - dataverse
+
   dev_postgres:
     container_name: "dev_postgres"
     hostname: postgres
