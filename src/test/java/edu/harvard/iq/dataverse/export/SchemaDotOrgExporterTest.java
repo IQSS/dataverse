@@ -2,7 +2,8 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
-import io.gdcc.export.spi.ExportException;
+import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
@@ -218,7 +219,7 @@ public class SchemaDotOrgExporterTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         if(schemaDotOrgExporter == null) logger.fine("sdoe" + " null");
         try {
-            ExportDataProvider provider2 = new ExportDataProvider(version);
+            ExportDataProvider provider2 = new InternalExportDataProvider(version);
             schemaDotOrgExporter.exportDataset(provider2, byteArrayOutputStream);
         } catch (Exception e) {
             e.printStackTrace();

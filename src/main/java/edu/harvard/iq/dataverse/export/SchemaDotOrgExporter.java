@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-import io.gdcc.export.spi.ExportDataProviderInterface;
-import io.gdcc.export.spi.ExportException;
-import io.gdcc.export.spi.Exporter;
+import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -73,7 +73,7 @@ public class SchemaDotOrgExporter implements Exporter {
     public static final String NAME = "schema.org";
 
     @Override
-    public void exportDataset(ExportDataProviderInterface dataProvider, OutputStream outputStream)
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream)
             throws ExportException {
                 try {
             outputStream.write(dataProvider.getDatasetSchemaDotOrg().toString().getBytes("UTF8"));

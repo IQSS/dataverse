@@ -4,9 +4,9 @@ package edu.harvard.iq.dataverse.export;
 import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
-import io.gdcc.export.spi.ExportDataProviderInterface;
-import io.gdcc.export.spi.ExportException;
-import io.gdcc.export.spi.Exporter;
+import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
 import java.util.Locale;
@@ -36,7 +36,7 @@ public class DublinCoreExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(ExportDataProviderInterface dataProvider, OutputStream outputStream) throws ExportException {
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try {
             DublinCoreExportUtil.datasetJson2dublincore(dataProvider.getDatasetJson(), outputStream, DublinCoreExportUtil.DC_FLAVOR_OAI);
         } catch (XMLStreamException xse) {

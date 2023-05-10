@@ -4,9 +4,9 @@ import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
-import io.gdcc.export.spi.ExportDataProviderInterface;
-import io.gdcc.export.spi.ExportException;
-import io.gdcc.export.spi.Exporter;
+import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import javax.json.JsonObject;
@@ -35,7 +35,7 @@ public class HtmlCodeBookExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(ExportDataProviderInterface dataProvider, OutputStream outputStream) throws ExportException {
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
             try (InputStream ddiInputStream = dataProvider.getPrerequisiteInputStream()) {
                 DdiExportUtil.datasetHtmlDDI(ddiInputStream, outputStream);
             } catch (IOException e) {

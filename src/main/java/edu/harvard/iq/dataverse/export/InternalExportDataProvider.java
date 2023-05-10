@@ -18,7 +18,7 @@ import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import io.gdcc.export.spi.ExportDataProviderInterface;
+import io.gdcc.spi.export.ExportDataProvider;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -27,7 +27,7 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
  * Provides all data necessary to create an export
  * 
  */
-public class ExportDataProvider implements ExportDataProviderInterface {
+public class InternalExportDataProvider implements ExportDataProvider {
 
     private DatasetVersion dv;
     private JsonObject jsonRepresentation = null;
@@ -35,11 +35,11 @@ public class ExportDataProvider implements ExportDataProviderInterface {
     private JsonObject oreRepresentation = null;
     private InputStream is = null;
 
-    ExportDataProvider(DatasetVersion dv) {
+    InternalExportDataProvider(DatasetVersion dv) {
         this.dv = dv;
     }
     
-    ExportDataProvider(DatasetVersion dv, InputStream is) {
+    InternalExportDataProvider(DatasetVersion dv, InputStream is) {
         this.dv = dv;
         this.is=is;
     }

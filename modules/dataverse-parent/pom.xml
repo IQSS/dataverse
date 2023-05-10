@@ -14,7 +14,7 @@
         <module>../../pom.xml</module>
         <module>../../scripts/zipdownload</module>
         <module>../container-base</module>
-        <module>../dataverse-exporter-spi</module>
+        <module>../dataverse-spi</module>
     </modules>
     
     <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and

@@ -9,9 +9,9 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import io.gdcc.export.spi.ExportDataProviderInterface;
-import io.gdcc.export.spi.ExportException;
-import io.gdcc.export.spi.Exporter;
+import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
@@ -247,7 +247,7 @@ public class ExportService {
             if (releasedVersion == null) {
                 throw new ExportException("No released version for dataset " + dataset.getGlobalId().toString());
             }
-            ExportDataProvider dataProvider = new ExportDataProvider(releasedVersion);
+            ExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
             
             for (Exporter e : exporterMap.values()) {
                 String formatName = e.getProviderName();
@@ -295,7 +295,7 @@ public class ExportService {
                 if (releasedVersion == null) {
                     throw new ExportException("No published version found during export. " + dataset.getGlobalId().toString());
                 }
-                ExportDataProvider dataProvider = new ExportDataProvider(releasedVersion);
+                InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
                 cacheExport(dataset, dataProvider, formatName, e);
                 // As with exportAll, we should update the lastexporttime for the dataset
                 dataset.setLastExportTime(new Timestamp(new Date().getTime()));
@@ -329,7 +329,7 @@ public class ExportService {
 
     // This method runs the selected metadata exporter, caching the output
     // in a file in the dataset directory / container based on its DOI:
-    private void cacheExport(Dataset dataset, ExportDataProviderInterface dataProvider, String format, Exporter exporter)
+    private void cacheExport(Dataset dataset, ExportDataProvider dataProvider, String format, Exporter exporter)
             throws ExportException {
         boolean tempFileUsed = false;
         File tempFile = null;

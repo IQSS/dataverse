@@ -505,7 +505,7 @@
         </dependency>
         <dependency>
             <groupId>io.gdcc</groupId>
-            <artifactId>dataverse-exporter-spi</artifactId>
+            <artifactId>dataverse-spi</artifactId>
             <version>1.0.0</version>
         </dependency>
         <!-- TESTING DEPENDENCIES -->
@@ -749,11 +749,11 @@
                 <version>2.5.1</version>
                 <configuration>
                     <groupId>io.gdcc</groupId>
-                    <artifactId>dataverse-exporter-spi</artifactId>
+                    <artifactId>dataverse-spi</artifactId>
                     <version>1.0.0</version>
                     <packaging>jar</packaging>
                     <file>
-                        ${basedir}/modules/dataverse-exporter-spi/target/dataverse-exporter-spi-1.0.0.jar</file>
+                        ${basedir}/modules/dataverse-spi/target/dataverse-spi-1.0.0.jar</file>
                     <generatePom>true</generatePom>
                 </configuration>
                 <executions>

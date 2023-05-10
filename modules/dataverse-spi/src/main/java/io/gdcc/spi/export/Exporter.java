@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package io.gdcc.export.spi;
+package io.gdcc.spi.export;
 
-import io.gdcc.export.spi.ExportException;
+import io.gdcc.spi.export.ExportException;
 import java.io.OutputStream;
 import java.util.Locale;
 import javax.ws.rs.core.MediaType;
@@ -23,9 +18,8 @@ public interface Exporter {
        of an OAI response, where more XML needs to be written, for the outer 
        OAI-PMH record). -- L.A.  4.5
     */
-    //public void exportDataset(JsonObject json, OutputStream outputStream) throws ExportException;
     
-    public void exportDataset(ExportDataProviderInterface dataProvider, OutputStream outputStream) throws ExportException;
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException;
     
     public String getProviderName();
     
