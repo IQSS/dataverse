@@ -17,6 +17,12 @@ To test drive these local changes to the Dataverse codebase in a containerized a
 setup described in :doc:`../developers/dev-environment`), you must a) build the application container and b)
 run it in addition to the necessary dependencies.
 
+| **TL;DR** *I have all that, just give me containers!*
+| Execute ``mvn -Pct clean package docker:run``, wait and continue at :ref:`dev-bootstrap`.
+
+
+.. _dev-build:
+
 Building
 --------
 
@@ -31,6 +37,9 @@ avoid recompiling.
 
 **Note:** Also we have a ``docker-compose-dev.yml`` file, it's currently not possible to build the images without
 invoking Maven. This might change in the future.
+
+
+.. _dev-run:
 
 Running
 -------
@@ -99,6 +108,10 @@ at http://localhost:8080/api/info/version. or watch the logs.
 
 **Note:** To stop all containers you started in background, invoke ``mvn -Pct docker:stop`` or
 ``docker compose -f docker-compose-dev.yml down``.
+
+
+
+.. _dev-bootstrap:
 
 Bootstrapping New Instance
 --------------------------
