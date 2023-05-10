@@ -58,7 +58,7 @@ public class ExportService {
 
     private static ExportService service;
     private ServiceLoader<Exporter> loader;
-    private Map<String, Exporter> exporterMap = new HashMap<String, Exporter>();
+    private Map<String, Exporter> exporterMap = new HashMap<>();
 
     private static final Logger logger = Logger.getLogger(ExportService.class.getCanonicalName());
 
@@ -66,7 +66,7 @@ public class ExportService {
         /*
          * Step 1 - find the EXPORTERS dir and add all jar files there to a class loader
          */
-        List<URL> jarUrls = new ArrayList<URL>();
+        List<URL> jarUrls = new ArrayList<>();
         Optional<String> exportPathSetting = JvmSettings.EXPORTERS_DIRECTORY.lookupOptional(String.class);
         if (exportPathSetting.isPresent()) {
             Path exporterDir = Paths.get(exportPathSetting.get());
