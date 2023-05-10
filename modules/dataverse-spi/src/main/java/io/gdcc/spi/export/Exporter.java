@@ -2,7 +2,6 @@ package io.gdcc.spi.export;
 
 import java.io.OutputStream;
 import java.util.Locale;
-import javax.ws.rs.core.MediaType;
 
 public interface Exporter {
 
@@ -16,7 +15,7 @@ public interface Exporter {
 
     void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException;
 
-    String getProviderName();
+    String getFormatName();
 
     String getDisplayName(Locale locale);
 

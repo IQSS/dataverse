@@ -23,7 +23,7 @@ public class OpenAireExporter implements XMLExporter {
     }
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return "oai_datacite";
     }
 

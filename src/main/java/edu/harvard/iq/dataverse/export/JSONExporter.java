@@ -22,7 +22,7 @@ import javax.ws.rs.core.MediaType;
 public class JSONExporter implements Exporter {
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return "dataverse_json";
     }
 

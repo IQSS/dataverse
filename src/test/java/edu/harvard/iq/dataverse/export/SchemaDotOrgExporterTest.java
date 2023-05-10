@@ -235,7 +235,7 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testGetProviderName() {
-        assertEquals("schema.org", schemaDotOrgExporter.getProviderName());
+        assertEquals("schema.org", schemaDotOrgExporter.getFormatName());
     }
 
     /**

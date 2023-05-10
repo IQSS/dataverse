@@ -37,7 +37,7 @@ public class OAI_OREExporter implements Exporter {
 
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return NAME;
     }
 

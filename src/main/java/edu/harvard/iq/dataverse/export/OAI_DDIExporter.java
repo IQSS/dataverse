@@ -26,7 +26,7 @@ import javax.xml.stream.XMLStreamException;
 public class OAI_DDIExporter implements XMLExporter {
     
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         // TODO: Consider adding this "short form" to the "Export Metadata" dropdown in the GUI.
         return "oai_ddi";
     }

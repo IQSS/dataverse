@@ -10,7 +10,7 @@ import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 /**
@@ -27,7 +27,7 @@ public class DataCiteExporter implements XMLExporter {
     public static final String NAME = "Datacite";
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return NAME;
     }
 
@@ -41,9 +41,9 @@ public class DataCiteExporter implements XMLExporter {
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try {
             String xml = dataProvider.getDataCiteXml();
-            outputStream.write(xml.getBytes(Charset.forName("utf-8")));
+            outputStream.write(xml.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-            throw new ExportException("Caught IOException performing DataCite export");
+            throw new ExportException("Caught IOException performing DataCite export", e);
         }
     }
 

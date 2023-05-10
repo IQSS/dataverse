@@ -106,8 +106,9 @@ public enum JvmSettings {
     HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path", "dataverse.handlenet.admcredfile"),
     HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase", "dataverse.handlenet.admprivphrase"),
 
-    // EXPORT SETTINGS
-    SCOPE_EXPORTERS(PREFIX, "exporters"),
+    // SPI SETTINGS
+    SCOPE_SPI(PREFIX, "spi"),
+    SCOPE_EXPORTERS(SCOPE_SPI, "exporters"),
     EXPORTERS_DIRECTORY(SCOPE_EXPORTERS, "directory"),
     
     // MAIL SETTINGS

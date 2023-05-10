@@ -45,7 +45,7 @@ public class OpenAireExporterTest {
         System.out.println("getProviderName");
         OpenAireExporter instance = new OpenAireExporter();
         String expResult = "oai_datacite";
-        String result = instance.getProviderName();
+        String result = instance.getFormatName();
         assertEquals(expResult, result);
     }
 

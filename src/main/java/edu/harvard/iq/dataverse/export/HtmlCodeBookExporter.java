@@ -25,7 +25,7 @@ import java.util.Optional;
 public class HtmlCodeBookExporter implements Exporter {
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return "html";
     }
 

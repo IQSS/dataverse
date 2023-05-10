@@ -73,7 +73,6 @@ public class InternalExportDataProvider implements ExportDataProvider {
 
     @Override
     public String getDataCiteXml() {
-        // TODO Auto-generated method stub
         return DOIDataCiteRegisterService.getMetadataFromDvObject(
                 dv.getDataset().getGlobalId().asString(), new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
     }

@@ -24,7 +24,7 @@ public class DCTermsExporter implements XMLExporter {
     
     
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return "dcterms";
     }
 
@@ -39,7 +39,7 @@ public class DCTermsExporter implements XMLExporter {
         try {
             DublinCoreExportUtil.datasetJson2dublincore(dataProvider.getDatasetJson(), outputStream, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
         } catch (XMLStreamException xse) {
-            throw new ExportException("Caught XMLStreamException performing DCTERMS export");
+            throw new ExportException("Caught XMLStreamException performing DCTERMS export", xse);
         }
     }
 

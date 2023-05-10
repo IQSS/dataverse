@@ -32,7 +32,7 @@ public class DDIExporter implements XMLExporter {
     public static final String PROVIDER_NAME = "ddi";
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return PROVIDER_NAME;
     }
 
@@ -51,7 +51,7 @@ public class DDIExporter implements XMLExporter {
             DdiExportUtil.datasetJson2ddi(dataProvider.getDatasetJson(), dataProvider.getDatasetFileDetails(),
                     outputStream);
         } catch (XMLStreamException xse) {
-            throw new ExportException("Caught XMLStreamException performing DDI export");
+            throw new ExportException("Caught XMLStreamException performing DDI export", xse);
         }
     }
 

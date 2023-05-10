@@ -8,11 +8,12 @@
         <groupId>edu.harvard.iq</groupId>
         <artifactId>dataverse-parent</artifactId>
         <version>${revision}</version>
-        <relativePath>../../modules/dataverse-parent</relativePath>
+        <relativePath>../dataverse-parent</relativePath>
     </parent>
 
-    <artifactId>dataverse-example-exporter</artifactId>
-    <version>0.0.1</version>
+    <groupId>io.gdcc</groupId>
+    <artifactId>dataverse-spi-export-examples</artifactId>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -20,37 +21,29 @@
 
     <dependencies>
         <dependency>
-            <groupId>edu.harvard.iq</groupId>
-            <artifactId>dataverse-exporter-spi</artifactId>
-            <version>0.0.1</version>
+            <groupId>io.gdcc</groupId>
+            <artifactId>dataverse-spi</artifactId>
+            <version>1.0.0</version>
         </dependency>
-        <!--
-        https://mvnrepository.com/artifact/com.google.auto.service/auto-service -->
-        <dependency>
+       <dependency>
             <groupId>com.google.auto.service</groupId>
             <artifactId>auto-service</artifactId>
             <version>1.0.1</version>
         </dependency>
-
         <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>
-                jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee-api.version}</version>
-            <scope>
-                provided</scope>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <scope>provided</scope>
+            <!-- no version here as managed by parent -->
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>
-                jakarta.json</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
             <scope>provided</scope>
-            <!-- no version here as managed by Payara BOM above! -->
+            <!-- no version here as managed by parent -->
         </dependency>
     </dependencies>
     <build>
-        <sourceDirectory>
-            src/main/java</sourceDirectory>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>

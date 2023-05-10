@@ -23,7 +23,7 @@ import javax.xml.stream.XMLStreamException;
 public class DublinCoreExporter implements XMLExporter {
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return "oai_dc";
     }
 
@@ -41,7 +41,7 @@ public class DublinCoreExporter implements XMLExporter {
             DublinCoreExportUtil.datasetJson2dublincore(dataProvider.getDatasetJson(), outputStream,
                     DublinCoreExportUtil.DC_FLAVOR_OAI);
         } catch (XMLStreamException xse) {
-            throw new ExportException("Caught XMLStreamException performing DC export");
+            throw new ExportException("Caught XMLStreamException performing DC export", xse);
         }
     }
 

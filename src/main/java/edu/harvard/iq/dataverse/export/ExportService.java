@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -66,17 +67,21 @@ public class ExportService {
          * Step 1 - find the EXPORTERS dir and add all jar files there to a class loader
          */
         List<URL> jarUrls = new ArrayList<URL>();
-        Path exporterDir = Paths.get(JvmSettings.EXPORTERS_DIRECTORY.lookup());
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(exporterDir)) {
-            for (Path path : stream) {
-                if (!Files.isDirectory(path)) {
-                    logger.fine("Adding  " + path.toUri().toURL());
-                    //This is the syntax required to indicate a jar file from which classes should be loaded (versus a class file). 
+        Optional<String> exportPathSetting = JvmSettings.EXPORTERS_DIRECTORY.lookupOptional(String.class);
+        if (exportPathSetting.isPresent()) {
+            Path exporterDir = Paths.get(exportPathSetting.get());
+            // Get all JAR files from the configured directory
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(exporterDir, "*.jar")) {
+                // Using the foreach loop here to enable catching the URI/URL exceptions
+                for (Path path : stream) {
+                    logger.log(Level.FINE, "Adding {0}", path.toUri().toURL());
+                    // This is the syntax required to indicate a jar file from which classes should
+                    // be loaded (versus a class file).
                     jarUrls.add(new URL("jar:" + path.toUri().toURL() + "!/"));
                 }
+            } catch (IOException e) {
+                logger.warning("Problem accessing external Exporters: " + e.getLocalizedMessage());
             }
-        } catch (IOException e) {
-            logger.warning("Problem accessing external Exporters: " + e.getLocalizedMessage());
         }
         URLClassLoader cl = URLClassLoader.newInstance(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader());
 
@@ -93,12 +98,12 @@ public class ExportService {
          * providerName may be processed before or after external ones.
          */
         loader.forEach(exp -> {
-            String formatName = exp.getProviderName();
+            String formatName = exp.getFormatName();
             // If no entry for this providerName yet or if it is an external exporter
             if (!exporterMap.containsKey(formatName) || exp.getClass().getClassLoader().equals(cl)) {
                 exporterMap.put(formatName, exp);
             }
-            logger.fine("SL: " + exp.getProviderName() + " from " + exp.getClass().getCanonicalName()
+            logger.log(Level.FINE, "SL: " + exp.getFormatName() + " from " + exp.getClass().getCanonicalName()
                     + " and classloader: " + exp.getClass().getClassLoader().getClass().getCanonicalName());
         });
     }
@@ -116,7 +121,7 @@ public class ExportService {
         exporterMap.values().forEach(exp -> {
             String[] temp = new String[2];
             temp[0] = exp.getDisplayName(BundleUtil.getCurrentLocale());
-            temp[1] = exp.getProviderName();
+            temp[1] = exp.getFormatName();
             retList.add(temp);
         });
         return retList;
@@ -248,10 +253,10 @@ public class ExportService {
                 throw new ExportException("No released version for dataset " + dataset.getGlobalId().toString());
             }
             ExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
-            
+
             for (Exporter e : exporterMap.values()) {
-                String formatName = e.getProviderName();
-                
+                String formatName = e.getFormatName();
+
                 cacheExport(dataset, dataProvider, formatName, e);
             }
             // Finally, if we have been able to successfully export in all available
@@ -272,7 +277,7 @@ public class ExportService {
         try {
 
             for (Exporter e : exporterMap.values()) {
-                String formatName = e.getProviderName();
+                String formatName = e.getFormatName();
                 clearCachedExport(dataset, formatName);
             }
 
@@ -293,7 +298,8 @@ public class ExportService {
             if (e != null) {
                 DatasetVersion releasedVersion = dataset.getReleasedVersion();
                 if (releasedVersion == null) {
-                    throw new ExportException("No published version found during export. " + dataset.getGlobalId().toString());
+                    throw new ExportException(
+                            "No published version found during export. " + dataset.getGlobalId().toString());
                 }
                 InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
                 cacheExport(dataset, dataProvider, formatName, e);
@@ -303,15 +309,13 @@ public class ExportService {
                 throw new ExportException("Exporter not found");
             }
         } catch (IllegalStateException e) {
-            // IllegalStateException can potentially mean very different, and 
+            // IllegalStateException can potentially mean very different, and
             // unexpected things. An exporter attempting to get a single primitive
-            // value from a fieldDTO that is in fact a Multiple and contains a 
+            // value from a fieldDTO that is in fact a Multiple and contains a
             // json vector (this has happened, for example, when the code in the
-            // DDI exporter was not updated following a metadata fieldtype change), 
+            // DDI exporter was not updated following a metadata fieldtype change),
             // will result in IllegalStateException.
-            throw new ExportException("IllegalStateException caught when exporting " 
-                    + formatName 
-                    + " for dataset "
+            throw new ExportException("IllegalStateException caught when exporting " + formatName + " for dataset "
                     + dataset.getGlobalId().toString()
                     + "; may or may not be due to a mismatch between an exporter code and a metadata block update. "
                     + e.getMessage());
@@ -331,12 +335,12 @@ public class ExportService {
     // in a file in the dataset directory / container based on its DOI:
     private void cacheExport(Dataset dataset, ExportDataProvider dataProvider, String format, Exporter exporter)
             throws ExportException {
-        boolean tempFileUsed = false;
-        File tempFile = null;
         OutputStream outputStream = null;
-
-        StorageIO<Dataset> storageIO = null;
         try {
+            boolean tempFileUsed = false;
+            File tempFile = null;
+            StorageIO<Dataset> storageIO = null;
+
             // With some storage drivers, we can open a WritableChannel, or OutputStream
             // to directly write the generated metadata export that we want to cache;
             // Some drivers (like Swift) do not support that, and will give us an

@@ -17,8 +17,8 @@ import javax.ws.rs.core.MediaType;
  * and available as an export format.
  * <p>
  * Do not make any backward incompatible changes unless it's absolutely
- * necessary and list them in the API Guide. The existing list is in the
- * "Native API" section.
+ * necessary and list them in the API Guide. The existing list is in the "Native
+ * API" section.
  * <p>
  * {@link SchemaDotOrgExporterTest} has most of the tests but
  * {@link DatasetVersionTest} has some as well. See
@@ -73,9 +73,8 @@ public class SchemaDotOrgExporter implements Exporter {
     public static final String NAME = "schema.org";
 
     @Override
-    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream)
-            throws ExportException {
-                try {
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
+        try {
             outputStream.write(dataProvider.getDatasetSchemaDotOrg().toString().getBytes("UTF8"));
         } catch (IOException ex) {
             logger.info("IOException calling outputStream.write: " + ex);
@@ -88,7 +87,7 @@ public class SchemaDotOrgExporter implements Exporter {
     }
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return NAME;
     }
 
@@ -99,7 +98,8 @@ public class SchemaDotOrgExporter implements Exporter {
 
     @Override
     public Boolean isHarvestable() {
-        // Defer harvesting because the current effort was estimated as a "2": https://github.com/IQSS/dataverse/issues/3700
+        // Defer harvesting because the current effort was estimated as a "2":
+        // https://github.com/IQSS/dataverse/issues/3700
         return false;
     }
 
