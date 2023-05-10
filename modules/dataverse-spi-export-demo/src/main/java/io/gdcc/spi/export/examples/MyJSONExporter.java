@@ -2,9 +2,9 @@
 package io.gdcc.spi.export.examples;
 
 import com.google.auto.service.AutoService;
-import edu.harvard.iq.dataverse.export.spi.ExportDataProviderInterface;
-import edu.harvard.iq.dataverse.export.spi.ExportException;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 import java.io.OutputStream;
 import java.util.Locale;
 
@@ -21,7 +21,7 @@ import javax.ws.rs.core.MediaType;
 public class MyJSONExporter implements Exporter {
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return "dataverse_json";
     }
 
@@ -31,11 +31,11 @@ public class MyJSONExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(ExportDataProviderInterface dataProvider, OutputStream outputStream)
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream)
             throws ExportException {
         try {
             JsonObjectBuilder datasetJsonBuilder = Json.createObjectBuilder();
-            datasetJsonBuilder.add("name", getProviderName());
+            datasetJsonBuilder.add("name", getFormatName());
             datasetJsonBuilder.add("inputJson", dataProvider.getDatasetJson());
             outputStream.write(datasetJsonBuilder.build().toString().getBytes("UTF8"));
             outputStream.flush();
