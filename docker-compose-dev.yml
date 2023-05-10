@@ -12,6 +12,7 @@ services:
       - DATAVERSE_DB_HOST=postgres
       - DATAVERSE_DB_PASSWORD=secret
       - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
+      - ENABLE_JDWP=1
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
       - "4848:4848" # HTTP (Payara Admin Console)

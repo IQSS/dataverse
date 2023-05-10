@@ -161,4 +161,11 @@ TODO
 Using A Debugger
 ----------------
 
-TODO
+The :doc:`base-image` enables usage of the `Java Debugging Wire Protocol <https://dzone.com/articles/remote-debugging-java-applications-with-jdwp>`_
+for remote debugging if you set ``ENABLE_JDWP=1`` as environment variable for the application container.
+The default configuration when executing containers with the commands listed at :ref:`dev-run` already enables this.
+
+There are a lot of tutorials how to connect your IDE's debugger to a remote endpoint. Please use ``localhost:9009``
+as the endpoint. Here are links to the most common IDEs docs on remote debugging:
+`Eclipse <https://help.eclipse.org/latest/topic/org.eclipse.jdt.doc.user/concepts/cremdbug.htm?cp=1_2_12>`_,
+`IntelliJ <https://www.jetbrains.com/help/idea/tutorial-remote-debug.html#debugger_rc>`_
