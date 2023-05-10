@@ -43,11 +43,6 @@ public class JSONExporter implements Exporter {
     }
 
     @Override
-    public Boolean isXMLFormat() {
-        return false;
-    }
-    
-    @Override
     public Boolean isHarvestable() {
         return true;
     }
@@ -56,22 +51,6 @@ public class JSONExporter implements Exporter {
     public Boolean isAvailableToUsers() {
         return true;
     }
-    
-    @Override
-    public String getXMLNameSpace() throws ExportException {
-        throw new ExportException ("JSONExporter: not an XML format.");   
-    }
-    
-    @Override
-    public String getXMLSchemaLocation() throws ExportException {
-        throw new ExportException ("JSONExporter: not an XML format."); 
-    }
-    
-    @Override
-    public String getXMLSchemaVersion() throws ExportException {
-        throw new ExportException ("JSONExporter: not an XML format."); 
-    }
-    
 
     @Override
     public String getMediaType() {

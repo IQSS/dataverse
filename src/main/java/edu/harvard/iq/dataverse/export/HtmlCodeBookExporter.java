@@ -71,21 +71,6 @@ public class HtmlCodeBookExporter implements Exporter {
     }
 
     @Override
-    public String getXMLNameSpace() throws ExportException {
-        return null;
-    }
-
-    @Override
-    public String getXMLSchemaLocation() throws ExportException {
-        return null;
-    }
-
-    @Override
-    public String getXMLSchemaVersion() throws ExportException {
-        return null;
-    }
-
-    @Override
     public  String getPrerequisiteExporterName() {
         //This exporter relies on being able to get the output of the ddi exporter
         return "ddi";

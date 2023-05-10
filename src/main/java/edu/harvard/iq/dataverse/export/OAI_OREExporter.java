@@ -48,11 +48,6 @@ public class OAI_OREExporter implements Exporter {
     }
 
     @Override
-    public Boolean isXMLFormat() {
-        return false;
-    }
-
-    @Override
     public Boolean isHarvestable() {
         return false;
     }
@@ -62,21 +57,6 @@ public class OAI_OREExporter implements Exporter {
         return true;
     }
 
-    @Override
-    public String getXMLNameSpace() throws ExportException {
-        throw new ExportException(OAI_OREExporter.class.getSimpleName() + ": not an XML format.");
-    }
-
-    @Override
-    public String getXMLSchemaLocation() throws ExportException {
-        throw new ExportException(OAI_OREExporter.class.getSimpleName() + ": not an XML format.");
-    }
-
-    @Override
-    public String getXMLSchemaVersion() throws ExportException {
-        throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
-    }
-    
     @Override
     public String getMediaType() {
         return MediaType.APPLICATION_JSON;

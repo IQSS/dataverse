@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
 import java.util.Locale;
@@ -22,7 +23,7 @@ import javax.xml.stream.XMLStreamException;
  * @author skraffmi
  */
 @AutoService(Exporter.class)
-public class OAI_DDIExporter implements Exporter {
+public class OAI_DDIExporter implements XMLExporter {
     
     @Override
     public String getProviderName() {
@@ -47,11 +48,6 @@ public class OAI_DDIExporter implements Exporter {
     }
 
     @Override
-    public Boolean isXMLFormat() {
-        return true; 
-    }
-    
-    @Override
     public Boolean isHarvestable() {
         return true;
     }
@@ -62,17 +58,17 @@ public class OAI_DDIExporter implements Exporter {
     }
     
     @Override
-    public String getXMLNameSpace() throws ExportException {
+    public String getXMLNameSpace() {
         return DDIExporter.DEFAULT_XML_NAMESPACE;
     }
     
     @Override
-    public String getXMLSchemaLocation() throws ExportException {
+    public String getXMLSchemaLocation() {
         return DDIExporter.DEFAULT_XML_SCHEMALOCATION;
     }
     
     @Override
-    public String getXMLSchemaVersion() throws ExportException {
+    public String getXMLSchemaVersion() {
         return DDIExporter.DEFAULT_XML_VERSION;
     }
 }

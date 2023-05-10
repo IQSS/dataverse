@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
 import java.util.Locale;
@@ -17,21 +18,19 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLOutputFactory;
 
 /**
- * This exporter is for the "full" DDI, that includes the file-level,
- * <data> and <var> metadata.
+ * This exporter is for the "full" DDI, that includes the file-level, <data> and
+ * <var> metadata.
  *
- * @author Leonid Andreev
- * (based on the original DDIExporter by
- * @author skraffmi
- * - renamed OAI_DDIExporter)
+ * @author Leonid Andreev (based on the original DDIExporter by
+ * @author skraffmi - renamed OAI_DDIExporter)
  */
 @AutoService(Exporter.class)
-public class DDIExporter implements Exporter {
+public class DDIExporter implements XMLExporter {
     public static String DEFAULT_XML_NAMESPACE = "ddi:codebook:2_5";
     public static String DEFAULT_XML_SCHEMALOCATION = "https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd";
     public static String DEFAULT_XML_VERSION = "2.5";
     public static final String PROVIDER_NAME = "ddi";
-    
+
     @Override
     public String getProviderName() {
         return PROVIDER_NAME;
@@ -40,53 +39,48 @@ public class DDIExporter implements Exporter {
     @Override
     public String getDisplayName(Locale locale) {
         String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi", locale);
-        return  displayName != null ? displayName : "DDI";
+        return displayName != null ? displayName : "DDI";
     }
 
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try {
-        XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
-        xmlw.writeStartDocument();
-        xmlw.flush();
-            DdiExportUtil.datasetJson2ddi(dataProvider.getDatasetJson(), dataProvider.getDatasetFileDetails(), outputStream);
+            XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
+            xmlw.writeStartDocument();
+            xmlw.flush();
+            DdiExportUtil.datasetJson2ddi(dataProvider.getDatasetJson(), dataProvider.getDatasetFileDetails(),
+                    outputStream);
         } catch (XMLStreamException xse) {
-            throw new ExportException ("Caught XMLStreamException performing DDI export");
+            throw new ExportException("Caught XMLStreamException performing DDI export");
         }
     }
 
     @Override
-    public Boolean isXMLFormat() {
-        return true; 
-    }
-    
-    @Override
     public Boolean isHarvestable() {
         // No, we don't want this format to be harvested!
-        // For datasets with tabular data the <data> portions of the DDIs 
-        // become huge and expensive to parse; even as they don't contain any 
+        // For datasets with tabular data the <data> portions of the DDIs
+        // become huge and expensive to parse; even as they don't contain any
         // metadata useful to remote harvesters. -- L.A. 4.5
         return false;
     }
-    
+
     @Override
     public Boolean isAvailableToUsers() {
         return true;
     }
-    
+
     @Override
-    public String getXMLNameSpace() throws ExportException {
-        return DDIExporter.DEFAULT_XML_NAMESPACE;   
+    public String getXMLNameSpace() {
+        return DDIExporter.DEFAULT_XML_NAMESPACE;
     }
-    
+
     @Override
-    public String getXMLSchemaLocation() throws ExportException {
+    public String getXMLSchemaLocation() {
         return DDIExporter.DEFAULT_XML_SCHEMALOCATION;
     }
-    
+
     @Override
-    public String getXMLSchemaVersion() throws ExportException {
+    public String getXMLSchemaVersion() {
         return DDIExporter.DEFAULT_XML_VERSION;
     }
 }
-

@@ -13,10 +13,11 @@ import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 @AutoService(Exporter.class)
-public class OpenAireExporter implements Exporter {
+public class OpenAireExporter implements XMLExporter {
 
     public OpenAireExporter() {
     }
@@ -32,18 +33,12 @@ public class OpenAireExporter implements Exporter {
     }
 
     @Override
-    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream)
-            throws ExportException {
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try {
             OpenAireExportUtil.datasetJson2openaire(dataProvider.getDatasetJson(), outputStream);
         } catch (XMLStreamException xse) {
             throw new ExportException("Caught XMLStreamException performing DataCite OpenAIRE export", xse);
         }
-    }
-
-    @Override
-    public Boolean isXMLFormat() {
-        return true;
     }
 
     @Override
@@ -57,17 +52,17 @@ public class OpenAireExporter implements Exporter {
     }
 
     @Override
-    public String getXMLNameSpace() throws ExportException {
+    public String getXMLNameSpace() {
         return OpenAireExportUtil.RESOURCE_NAMESPACE;
     }
 
     @Override
-    public String getXMLSchemaLocation() throws ExportException {
+    public String getXMLSchemaLocation() {
         return OpenAireExportUtil.RESOURCE_SCHEMA_LOCATION;
     }
 
     @Override
-    public String getXMLSchemaVersion() throws ExportException {
+    public String getXMLSchemaVersion() {
         return OpenAireExportUtil.SCHEMA_VERSION;
     }
 }

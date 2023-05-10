@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository;
@@ -157,15 +158,10 @@ public class OAIServlet extends HttpServlet {
             if (exporter != null && exporter.isXMLFormat() && exporter.isHarvestable()) {
                 MetadataFormat metadataFormat;
 
-                try {
+                metadataFormat = MetadataFormat.metadataFormat(formatName);
+                metadataFormat.withNamespace(((XMLExporter) exporter).getXMLNameSpace());
+                metadataFormat.withSchemaLocation(((XMLExporter) exporter).getXMLSchemaLocation());
 
-                    metadataFormat = MetadataFormat.metadataFormat(formatName);
-                    metadataFormat.withNamespace(exporter.getXMLNameSpace());
-                    metadataFormat.withSchemaLocation(exporter.getXMLSchemaLocation());
-                    
-                } catch (ExportException ex) {
-                    metadataFormat = null;
-                }
                 if (metadataFormat != null) {
                     context.withMetadataFormat(metadataFormat);
                 }

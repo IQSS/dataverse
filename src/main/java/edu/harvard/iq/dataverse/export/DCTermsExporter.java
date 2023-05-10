@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
 import java.util.Locale;
@@ -18,7 +19,7 @@ import javax.xml.stream.XMLStreamException;
  * @author Leonid Andreev
  */
 @AutoService(Exporter.class)
-public class DCTermsExporter implements Exporter {
+public class DCTermsExporter implements XMLExporter {
     
     
     
@@ -43,11 +44,6 @@ public class DCTermsExporter implements Exporter {
     }
 
     @Override
-    public Boolean isXMLFormat() {
-        return true;
-    }
-    
-    @Override
     public Boolean isHarvestable() {
         return false;
     }
@@ -58,17 +54,17 @@ public class DCTermsExporter implements Exporter {
     }
     
     @Override
-    public String getXMLNameSpace() throws ExportException {
+    public String getXMLNameSpace() {
         return DublinCoreExportUtil.DCTERMS_XML_NAMESPACE;   
     }
     
     @Override
-    public String getXMLSchemaLocation() throws ExportException {
+    public String getXMLSchemaLocation() {
         return DublinCoreExportUtil.DCTERMS_XML_SCHEMALOCATION;
     }
     
     @Override
-    public String getXMLSchemaVersion() throws ExportException {
+    public String getXMLSchemaVersion() {
         return DublinCoreExportUtil.DEFAULT_XML_VERSION;
     }
 

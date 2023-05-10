@@ -215,7 +215,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                 try {
                     Metadata metadata = getDatasetMetadata(dataset, metadataFormat.getPrefix());
                     xoaiItem.withDataset(dataset).withMetadata(metadata);
-                } catch (ExportException | IOException ex) {
+                } catch (IOException ex) {
                     // This is not supposed to happen in normal operations; 
                     // since by design only the datasets for which the metadata
                     // records have been pre-generated ("exported") should be 

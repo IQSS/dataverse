@@ -98,11 +98,6 @@ public class SchemaDotOrgExporter implements Exporter {
     }
 
     @Override
-    public Boolean isXMLFormat() {
-        return false;
-    }
-
-    @Override
     public Boolean isHarvestable() {
         // Defer harvesting because the current effort was estimated as a "2": https://github.com/IQSS/dataverse/issues/3700
         return false;
@@ -111,21 +106,6 @@ public class SchemaDotOrgExporter implements Exporter {
     @Override
     public Boolean isAvailableToUsers() {
         return true;
-    }
-
-    @Override
-    public String getXMLNameSpace() throws ExportException {
-        throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
-    }
-
-    @Override
-    public String getXMLSchemaLocation() throws ExportException {
-        throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
-    }
-
-    @Override
-    public String getXMLSchemaVersion() throws ExportException {
-        throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
     }
 
     @Override

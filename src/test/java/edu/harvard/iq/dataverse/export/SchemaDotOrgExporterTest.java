@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -270,45 +272,11 @@ public class SchemaDotOrgExporterTest {
     }
 
     /**
-     * Test of getXMLNameSpace method, of class SchemaDotOrgExporter.
+     * Test of XMLExporter interface, of class SchemaDotOrgExporter.
      */
     @Test
-    public void testGetXMLNameSpace() {
-        ExportException expectedException = null;
-        try {
-            String result = schemaDotOrgExporter.getXMLNameSpace();
-        } catch (ExportException ex) {
-            expectedException = ex;
-        }
-        assertEquals(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.", expectedException.getMessage());
-    }
-
-    /**
-     * Test of getXMLSchemaLocation method, of class SchemaDotOrgExporter.
-     */
-    @Test
-    public void testGetXMLSchemaLocation() {
-        ExportException expectedException = null;
-        try {
-            String result = schemaDotOrgExporter.getXMLSchemaLocation();
-        } catch (ExportException ex) {
-            expectedException = ex;
-        }
-        assertEquals(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.", expectedException.getMessage());
-    }
-
-    /**
-     * Test of getXMLSchemaVersion method, of class SchemaDotOrgExporter.
-     */
-    @Test
-    public void testGetXMLSchemaVersion() {
-        ExportException expectedException = null;
-        try {
-            String result = schemaDotOrgExporter.getXMLSchemaVersion();
-        } catch (ExportException ex) {
-            expectedException = ex;
-        }
-        assertEquals(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.", expectedException.getMessage());
+    public void testNotAnXMLExporter() {
+        assertFalse(schemaDotOrgExporter instanceof XMLExporter);
     }
 
     private static void mockDatasetFieldSvc() {
