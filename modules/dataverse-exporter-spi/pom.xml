@@ -8,7 +8,7 @@
         <groupId>edu.harvard.iq</groupId>
         <artifactId>dataverse-parent</artifactId>
         <version>${revision}</version>
-        <relativePath>../../modules/dataverse-parent</relativePath>
+        <relativePath>../dataverse-parent</relativePath>
     </parent>
     
     <groupId>io.gdcc</groupId>
