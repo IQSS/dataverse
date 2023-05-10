@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+    
     <parent>
         <groupId>edu.harvard.iq</groupId>
         <artifactId>dataverse-parent</artifactId>
         <version>${revision}</version>
         <relativePath>../../modules/dataverse-parent</relativePath>
     </parent>
+    
     <groupId>io.gdcc</groupId>
     <artifactId>dataverse-exporter-spi</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-
+    
     <properties>
     </properties>
-
+    
     <dependencies>
         <dependency>
             <groupId>jakarta.platform</groupId>
@@ -32,6 +33,7 @@
             <!-- no version here as managed by Payara BOM above! -->
         </dependency>
     </dependencies>
+    
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
@@ -41,7 +43,6 @@
                     <release>${target.java.version}</release>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 </project>
