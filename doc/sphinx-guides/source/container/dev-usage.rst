@@ -133,10 +133,25 @@ You can also access the Payara Admin Console if needed, which is available at ht
 Note that data is persisted in ``./docker-dev-volumes`` in the root of the Git repo. For a clean start, you should
 remove this directory before running the ``mvn`` commands above.
 
+
+.. _dev-logs:
+
 Viewing Logs
 ------------
 
-TODO
+In case you started containers in background mode (see :ref:`dev-run`), you can use the following commands to view and/or
+watch logs from the containers.
+
+The safe bet for any running container's logs is to lookup the container name via ``docker ps`` and use it in
+``docker logs <name>``. You can tail logs by adding ``-n`` and follow them by adding ``-f`` (just like ``tail`` cmd).
+See ``docker logs --help`` for more.
+
+Alternatives:
+
+- In case you used Maven for running, you may use ``mvn -Pct docker:logs -Ddocker.filter=<service name>``.
+- If you used Docker Compose for running, you may use ``docker compose -f docker-compose-dev.yml logs <service name>``.
+  Options are the same.
+
 
 Re-Deploying
 ------------
