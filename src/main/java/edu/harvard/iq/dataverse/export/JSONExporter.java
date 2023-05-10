@@ -9,6 +9,7 @@ import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
 import java.util.Locale;
+import java.util.Optional;
 
 import javax.json.JsonObject;
 import javax.ws.rs.core.MediaType;
@@ -29,7 +30,7 @@ public class JSONExporter implements Exporter {
     @Override
     public String getDisplayName(Locale locale) {
         String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json", locale); 
-        return displayName != null ? displayName : "JSON";
+        return Optional.ofNullable(displayName).orElse("JSON");
     }
 
     @Override

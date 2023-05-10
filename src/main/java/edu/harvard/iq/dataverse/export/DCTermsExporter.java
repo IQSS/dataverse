@@ -10,6 +10,7 @@ import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
 import java.util.Locale;
+import java.util.Optional;
 
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
@@ -31,7 +32,7 @@ public class DCTermsExporter implements XMLExporter {
     @Override
     public String getDisplayName(Locale locale) {
         String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore", locale);
-        return  displayName != null ? displayName : "Dublin Core (DCTERMS)";
+        return Optional.ofNullable(displayName).orElse("Dublin Core (DCTERMS)");
     }
 
     @Override

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  *
@@ -34,7 +35,7 @@ public class DataCiteExporter implements XMLExporter {
     @Override
     public String getDisplayName(Locale locale) {
         String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.datacite", locale);
-        return displayName != null ? displayName : "DataCite";
+        return Optional.ofNullable(displayName).orElse("DataCite");
     }
 
     @Override

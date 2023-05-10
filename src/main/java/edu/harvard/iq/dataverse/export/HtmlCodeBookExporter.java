@@ -32,7 +32,7 @@ public class HtmlCodeBookExporter implements Exporter {
     @Override
     public String getDisplayName(Locale locale) {
         String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.html", locale);
-        return displayName != null ? displayName : "DDI html codebook";
+        return Optional.ofNullable(displayName).orElse("DDI html codebook");
     }
 
     @Override

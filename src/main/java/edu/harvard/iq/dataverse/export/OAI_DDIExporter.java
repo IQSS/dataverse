@@ -11,6 +11,7 @@ import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.OutputStream;
 import java.util.Locale;
+import java.util.Optional;
 
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
@@ -35,7 +36,7 @@ public class OAI_DDIExporter implements XMLExporter {
     public String getDisplayName(Locale locale) {
         // dataset.exportBtn.itemLabel.ddi is shared with the DDIExporter
         String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi",locale);
-        return displayName != null ? displayName : "DDI";
+        return Optional.ofNullable(displayName).orElse("DDI");
     }
 
     @Override
