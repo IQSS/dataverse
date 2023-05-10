@@ -71,9 +71,9 @@ public class HtmlCodeBookExporter implements Exporter {
     }
 
     @Override
-    public  String getPrerequisiteExporterName() {
+    public  Optional<String> getPrerequisiteFormatName() {
         //This exporter relies on being able to get the output of the ddi exporter
-        return "ddi";
+        return Optional.of("ddi");
     }
 
     @Override

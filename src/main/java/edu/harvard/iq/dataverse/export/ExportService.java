@@ -252,12 +252,22 @@ public class ExportService {
             if (releasedVersion == null) {
                 throw new ExportException("No released version for dataset " + dataset.getGlobalId().toString());
             }
-            ExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
+            InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
 
             for (Exporter e : exporterMap.values()) {
                 String formatName = e.getFormatName();
-
-                cacheExport(dataset, dataProvider, formatName, e);
+                if(e.getPrerequisiteFormatName().isPresent()) {
+                    String prereqFormatName = e.getPrerequisiteFormatName().get();
+                    try (InputStream preReqStream = getExport(dataset, prereqFormatName)) {
+                        dataProvider.setPrerequisiteInputStream(preReqStream);
+                        cacheExport(dataset, dataProvider, formatName, e);
+                        dataProvider.setPrerequisiteInputStream(null);
+                    } catch (IOException ioe) {
+                        throw new ExportException ("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
+                    }
+                } else {
+                    cacheExport(dataset, dataProvider, formatName, e);
+                }
             }
             // Finally, if we have been able to successfully export in all available
             // formats, we'll increment the "last exported" time stamp:
@@ -301,8 +311,18 @@ public class ExportService {
                     throw new ExportException(
                             "No published version found during export. " + dataset.getGlobalId().toString());
                 }
-                InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
-                cacheExport(dataset, dataProvider, formatName, e);
+                if(e.getPrerequisiteFormatName().isPresent()) {
+                    String prereqFormatName = e.getPrerequisiteFormatName().get();
+                    try (InputStream preReqStream = getExport(dataset, prereqFormatName)) {
+                        InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion, preReqStream);
+                        cacheExport(dataset, dataProvider, formatName, e);
+                    } catch (IOException ioe) {
+                        throw new ExportException ("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
+                    }
+                } else {
+                    InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);
+                    cacheExport(dataset, dataProvider, formatName, e);
+                }
                 // As with exportAll, we should update the lastexporttime for the dataset
                 dataset.setLastExportTime(new Timestamp(new Date().getTime()));
             } else {
@@ -333,8 +353,9 @@ public class ExportService {
 
     // This method runs the selected metadata exporter, caching the output
     // in a file in the dataset directory / container based on its DOI:
-    private void cacheExport(Dataset dataset, ExportDataProvider dataProvider, String format, Exporter exporter)
+    private void cacheExport(Dataset dataset, InternalExportDataProvider dataProvider, String format, Exporter exporter)
             throws ExportException {
+        
         OutputStream outputStream = null;
         try {
             boolean tempFileUsed = false;

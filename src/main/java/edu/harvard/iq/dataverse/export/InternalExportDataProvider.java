@@ -91,4 +91,8 @@ public class InternalExportDataProvider implements ExportDataProvider {
     public Optional<InputStream> getPrerequisiteInputStream() {
         return Optional.ofNullable(is);
     }
+
+    public void setPrerequisiteInputStream(InputStream prereqStream) {
+        this.is=prereqStream;
+    }
 }
