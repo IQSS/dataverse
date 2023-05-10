@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.Optional;
 
 @AutoService(Exporter.class)
 public class HtmlCodeBookExporter implements Exporter {
@@ -36,12 +37,17 @@ public class HtmlCodeBookExporter implements Exporter {
 
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
-            try (InputStream ddiInputStream = dataProvider.getPrerequisiteInputStream()) {
+        Optional<InputStream> ddiInputStreamOptional = dataProvider.getPrerequisiteInputStream();
+        if (ddiInputStreamOptional.isPresent()) {
+            try (InputStream ddiInputStream = ddiInputStreamOptional.get()) {
                 DdiExportUtil.datasetHtmlDDI(ddiInputStream, outputStream);
             } catch (IOException e) {
-                throw new ExportException ("Cannot open export_ddi cached file");
+                throw new ExportException("Cannot open export_ddi cached file");
             } catch (XMLStreamException xse) {
-            throw new ExportException ("Caught XMLStreamException performing DDI export");
+                throw new ExportException("Caught XMLStreamException performing DDI export");
+            }
+        } else {
+            throw new ExportException("No prerequisite input stream found");
         }
     }
 

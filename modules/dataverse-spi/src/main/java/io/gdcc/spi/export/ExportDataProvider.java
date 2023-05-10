@@ -1,6 +1,7 @@
 package io.gdcc.spi.export;
 
 import java.io.InputStream;
+import java.util.Optional;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -21,8 +22,8 @@ public interface ExportDataProvider {
 
     public String getDataCiteXml();
 
-    public default InputStream getPrerequisiteInputStream() {
-        return null;
+    public default Optional<InputStream> getPrerequisiteInputStream() {
+        return Optional.empty();
     }
 
 }

@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.export;
 
 import java.io.InputStream;
+import java.util.Optional;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -88,7 +89,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
     
     @Override
-    public InputStream getPrerequisiteInputStream() {
-        return is;
+    public Optional<InputStream> getPrerequisiteInputStream() {
+        return Optional.ofNullable(is);
     }
 }
