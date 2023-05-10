@@ -67,9 +67,9 @@ public class ExportService {
          * Step 1 - find the EXPORTERS dir and add all jar files there to a class loader
          */
         List<URL> jarUrls = new ArrayList<>();
-        Optional<Path> exportPathSetting = JvmSettings.EXPORTERS_DIRECTORY.lookupOptional(Path.class);
+        Optional<String> exportPathSetting = JvmSettings.EXPORTERS_DIRECTORY.lookupOptional(String.class);
         if (exportPathSetting.isPresent()) {
-            Path exporterDir = exportPathSetting.get();
+            Path exporterDir = Paths.get(exportPathSetting.get());
             // Get all JAR files from the configured directory
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(exporterDir, "*.jar")) {
                 // Using the foreach loop here to enable catching the URI/URL exceptions
