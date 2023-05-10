@@ -12,17 +12,17 @@ import javax.json.JsonObject;
  */
 public interface ExportDataProvider {
 
-    public JsonObject getDatasetJson();
+    JsonObject getDatasetJson();
 
-    public JsonObject getDatasetSchemaDotOrg();
+    JsonObject getDatasetSchemaDotOrg();
 
-    public JsonObject getDatasetORE();
+    JsonObject getDatasetORE();
 
-    public JsonArray getDatasetFileDetails();
+    JsonArray getDatasetFileDetails();
 
-    public String getDataCiteXml();
+    String getDataCiteXml();
 
-    public default Optional<InputStream> getPrerequisiteInputStream() {
+    default Optional<InputStream> getPrerequisiteInputStream() {
         return Optional.empty();
     }
 

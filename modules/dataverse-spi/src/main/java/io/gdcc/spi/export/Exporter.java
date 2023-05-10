@@ -5,10 +5,6 @@ import java.io.OutputStream;
 import java.util.Locale;
 import javax.ws.rs.core.MediaType;
 
-/**
- *
- * @author skraffmi
- */
 public interface Exporter {
     
     /* When implementing exportDataset, when done writing content, please make sure to flush() the outputStream, 
