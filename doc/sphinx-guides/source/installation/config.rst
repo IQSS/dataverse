@@ -2370,6 +2370,19 @@ The default is false.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAIL``.
 
+.. _dataverse.spi.exporters.directory:
+
+dataverse.spi.exporters.directory
++++++++++++++++++++++++++++++++++
+
+This JVM option is used to configure the file system path where external Exporter JARs can be placed. See :ref:`external-exporters` for more information.
+
+``./asadmin create-jvm-options '-Ddataverse.spi.exporters.directory=PATH_LOCATION_HERE'``
+
+If this value is set, Dataverse will examine all JARs in the specified directory and will use them to add, or replace existing, metadata export formats.
+If this value is not set (the default), Dataverse will not use external Exporters.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SPI_EXPORTERS_DIRECTORY``.
 
 .. _feature-flags:
 
