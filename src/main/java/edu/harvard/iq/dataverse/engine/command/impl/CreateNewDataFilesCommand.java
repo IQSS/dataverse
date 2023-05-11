@@ -118,7 +118,6 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
 
     @Override
     public CreateDataFileResult execute(CommandContext ctxt) throws CommandException {
-        logger.info("entering command.execute();");
         List<DataFile> datafiles = new ArrayList<>();
 
         //When there is no checksum/checksumtype being sent (normal upload, needs to be calculated), set the type to the current default
@@ -135,8 +134,6 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         Long storageQuotaLimit = null; 
         
         if (ctxt.systemConfig().isStorageQuotasEnforced()) {
-            //storageQuotaLimit = ctxt.files().getClass()...;
-            //UserStorageQuota quota = ctxt.files().getUserStorageQuota(super.getRequest().getAuthenticatedUser(), this.version.getDataset());
             if (quota != null) {
                 storageQuotaLimit = quota.getRemainingQuotaInBytes();
             }
@@ -220,9 +217,11 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 }
 
                 DataFile datafile = null;
+                long fileSize = 0L; 
                 try {
                     uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
                     File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit, storageQuotaLimit);
+                    fileSize = unZippedTempFile.length();
                     datafile = FileUtil.createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, ctxt.systemConfig().getFileFixityChecksumAlgorithm());
                 } catch (IOException | FileExceedsMaxSizeException | FileExceedsStorageQuotaException ioex) {
                     // it looks like we simply skip the file silently, if its uncompressed size
@@ -253,7 +252,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     datafiles.add(datafile);
                     // Update quota if present
                     if (quota != null) {
-                        quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() - datafile.getFilesize());
+                        quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + fileSize);
                     }
                     return CreateDataFileResult.success(fileName, finalType, datafiles);
                 }
@@ -539,7 +538,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     logger.severe("Processing of zipped shapefile failed.");
                     return CreateDataFileResult.error(fileName, finalType);
                 }
-                Long storageQuotaLimitForRezippedFiles = storageQuotaLimit;
+                long combinedRezippedFileSize = 0L;
 
                 try {
                     
@@ -551,7 +550,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                             continue;
                         }
 
-                        File unZippedShapeTempFile = saveInputStreamInTempFile(finalFileInputStream, fileSizeLimit, storageQuotaLimitForRezippedFiles);
+                        File unZippedShapeTempFile = saveInputStreamInTempFile(finalFileInputStream, fileSizeLimit, storageQuotaLimit != null ? storageQuotaLimit - combinedRezippedFileSize : null);
                         DataFile new_datafile = FileUtil.createSingleDataFile(version, unZippedShapeTempFile, finalFile.getName(), finalType, ctxt.systemConfig().getFileFixityChecksumAlgorithm());
                         
                         String directoryName = null;
@@ -569,10 +568,8 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                         }
                         if (new_datafile != null) {
                             datafiles.add(new_datafile);
+                            combinedRezippedFileSize += unZippedShapeTempFile.length();
                             // todo: can this new_datafile be null?
-                            if (storageQuotaLimitForRezippedFiles != null) {
-                                storageQuotaLimitForRezippedFiles = storageQuotaLimitForRezippedFiles - new_datafile.getFilesize();
-                            }
                         } else {
                             logger.severe("Could not add part of rezipped shapefile. new_datafile was null: " + finalFile.getName());
                         }
@@ -615,7 +612,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     }
                     // update the quota object: 
                     if (quota != null) {
-                        quota.setTotalUsageInBytes(storageQuotaLimitForRezippedFiles);
+                        quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + combinedRezippedFileSize);
                     }
                     return CreateDataFileResult.success(fileName, finalType, datafiles);
                 } else {
@@ -686,7 +683,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
 
             // Update quota (may not be necessary in the context of direct upload - ?)
             if (quota != null) {
-                quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() - datafile.getFilesize());
+                quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + fileSize);
             }
             return CreateDataFileResult.success(fileName, finalType, datafiles);
         }
