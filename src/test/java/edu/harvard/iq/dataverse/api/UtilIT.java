@@ -3183,4 +3183,11 @@ public class UtilIT {
         String signedUrl = jsonPath.getString("data.signedUrl");
         return signedUrl;
     }
+
+    static Response logout() {
+        Response response = given()
+                .contentType("application/json")
+                .post("/api/logout");
+        return response;
+    }
 }
