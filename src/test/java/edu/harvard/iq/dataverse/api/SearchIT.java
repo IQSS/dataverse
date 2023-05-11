@@ -747,6 +747,7 @@ public class SearchIT {
         System.out.println("identifier: " + identifier);
 
         String searchPart = identifier.replace("FK2/", "");
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublished = UtilIT.search(searchPart, apiToken);
         searchUnpublished.prettyPrint();
         searchUnpublished.then().assertThat()
@@ -762,7 +763,7 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
 
         searchPart = identifier.replace("FK2/", "");
-        UtilIT.sleepForReindex(identifier, apiToken, 5);
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchTargeted = UtilIT.search("dsPersistentId:" + searchPart, apiToken);
         searchTargeted.prettyPrint();
         searchTargeted.then().assertThat()
@@ -1007,25 +1008,29 @@ public class SearchIT {
                 // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
 
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedRootSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "&subtree=root");
         searchUnpublishedRootSubtreeForDataset.prettyPrint();
         searchUnpublishedRootSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
 
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedRootSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "&subtree=root");
         searchUnpublishedRootSubtreeForDatasetNoAPI.prettyPrint();
         searchUnpublishedRootSubtreeForDatasetNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
-        
+
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedNoSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "");
         searchUnpublishedNoSubtreeForDataset.prettyPrint();
         searchUnpublishedNoSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
         
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedNoSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "");
         searchUnpublishedNoSubtreeForDatasetNoAPI.prettyPrint();
         searchUnpublishedNoSubtreeForDatasetNoAPI.then().assertThat()
@@ -1075,12 +1080,14 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(2));
         
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchPublishedRootSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "&subtree=root");
         searchPublishedRootSubtreeForDataset.prettyPrint();
         searchPublishedRootSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
+
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchPublishedRootSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "&subtree=root");
         searchPublishedRootSubtreeForDatasetNoAPI.prettyPrint();
         searchPublishedRootSubtreeForDatasetNoAPI.then().assertThat()
