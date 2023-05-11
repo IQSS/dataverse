@@ -40,6 +40,7 @@ import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
@@ -81,6 +82,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Collection;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -233,6 +236,8 @@ public class DatasetPage implements java.io.Serializable {
     ExternalToolServiceBean externalToolService;
     @EJB
     SolrClientService solrClientService;
+    @EJB
+    DvObjectServiceBean dvObjectService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -678,48 +683,43 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<FileMetadata> selectFileMetadatasForDisplay() {
-        Set<Long> searchResultsIdSet = null;
-
-        if (isIndexedVersion()) {
+        final Set<Long> searchResultsIdSet;
+        if (StringUtil.isEmpty(fileLabelSearchTerm) && StringUtil.isEmpty(fileTypeFacet) && StringUtil.isEmpty(fileAccessFacet) && StringUtil.isEmpty(fileTagsFacet)) {
+            // But, if no search terms were specified, we return the full
+            // list of the files in the version:
+            // Since the search results should include the full set of fmds if all the
+            // terms/facets are empty, setting them to null should just be
+            // an optimization for the loop below
+            searchResultsIdSet = null;
+        } else if (isIndexedVersion()) {
             // We run the search even if no search term and/or facets are
             // specified - to generate the facet labels list:
             searchResultsIdSet = getFileIdsInVersionFromSolr(workingVersion.getId(), this.fileLabelSearchTerm);
-            // But, if no search terms were specified, we return the full
-            // list of the files in the version:
-            if (StringUtil.isEmpty(fileLabelSearchTerm)
-                    && StringUtil.isEmpty(fileTypeFacet)
-                    && StringUtil.isEmpty(fileAccessFacet)
-                    && StringUtil.isEmpty(fileTagsFacet)) {
-                // Since the search results should include the full set of fmds if all the
-                // terms/facets are empty, setting them to null should just be
-                // an optimization for the loop below
-                searchResultsIdSet = null;
-            }
-        } else {
+        } else if (!StringUtil.isEmpty(this.fileLabelSearchTerm)) {
             // No, this is not an indexed version.
             // If the search term was specified, we'll run a search in the db;
             // if not - return the full list of files in the version.
             // (no facets without solr!)
-            if (!StringUtil.isEmpty(this.fileLabelSearchTerm)) {
-                searchResultsIdSet = getFileIdsInVersionFromDb(workingVersion.getId(), this.fileLabelSearchTerm);
-            }
+            searchResultsIdSet = getFileIdsInVersionFromDb(workingVersion.getId(), this.fileLabelSearchTerm);
+        } else {
+            searchResultsIdSet = null;
         }
 
-        List<FileMetadata> retList = new ArrayList<>();
-
-        for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
-            if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getDataFile().getId())) {
-                retList.add(fileMetadata);
-            }
+        final List<FileMetadata> md = workingVersion.getFileMetadatas();
+        final List<FileMetadata> retList;
+        if (searchResultsIdSet == null) {
+            retList = new ArrayList<>(md);
+        } else {
+            retList = md.stream().filter(x -> searchResultsIdSet.contains(x.getDataFile().getId())).collect(Collectors.toList());
         }
         sortFileMetadatas(retList);
         return retList;
     }
 
-    private void sortFileMetadatas(List<FileMetadata> fileList) {
+    private void sortFileMetadatas(final List<FileMetadata> fileList) {
         
-        DataFileComparator dfc = new DataFileComparator();
-        Comparator<FileMetadata> comp = dfc.compareBy(folderPresort, tagPresort, fileSortField, !"desc".equals(fileSortOrder));
+        final DataFileComparator dfc = new DataFileComparator();
+        final Comparator<FileMetadata> comp = dfc.compareBy(folderPresort, tagPresort, fileSortField, !"desc".equals(fileSortOrder));
         Collections.sort(fileList, comp);
     }
 
@@ -1843,6 +1843,17 @@ public class DatasetPage implements java.io.Serializable {
         return settingsWrapper.isWebloaderUpload() && StorageIO.isDirectUploadEnabled(dataset.getEffectiveStorageDriverId());
     }
 
+    private void setIdByPersistentId() {
+        GlobalId gid = PidUtil.parseAsGlobalID(persistentId);
+        Long id = dvObjectService.findIdByGlobalId(gid, DvObject.DType.Dataset);
+        if (id == null) {
+            id = dvObjectService.findIdByAltGlobalId(gid, DvObject.DType.Dataset);
+        }
+        if (id != null) {
+            this.setId(id);
+        }
+    }
+
     private String init(boolean initFull) {
 
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
@@ -1866,21 +1877,9 @@ public class DatasetPage implements java.io.Serializable {
             // Set the workingVersion and Dataset
             // ---------------------------------------
             if (persistentId != null) {
-                logger.fine("initializing DatasetPage with persistent ID " + persistentId);
-                // Set Working Version and Dataset by PersistentID
-                dataset = datasetService.findByGlobalId(persistentId);
-                if (dataset == null) {
-                    logger.warning("No such dataset: "+persistentId);
-                    return permissionsWrapper.notFound();
-                }
-                logger.fine("retrieved dataset, id="+dataset.getId());
-
-                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
-                //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
-                this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
-
-            } else if (this.getId() != null) {
+                setIdByPersistentId();
+            }
+            if (this.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
                 dataset = datasetService.find(this.getId());
                 if (dataset == null) {
@@ -2835,15 +2834,14 @@ public class DatasetPage implements java.io.Serializable {
         DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
 
         if (persistentId != null) {
-            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
-            dataset = datasetService.findByGlobalId(persistentId);
-            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
-        } else if (versionId != null) {
-            retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
-        } else if (dataset.getId() != null) {
+            setIdByPersistentId();
+        }
+        if (dataset.getId() != null) {
             //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
             dataset = datasetService.find(dataset.getId());
             retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
+        } else if (versionId != null) {
+            retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
         }
 
         if (retrieveDatasetVersionResponse == null) {
