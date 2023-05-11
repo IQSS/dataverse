@@ -38,6 +38,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -103,6 +104,28 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public Dataset find(Object pk) {
         return em.find(Dataset.class, pk);
+    }
+
+    public Dataset findDeep(Object pk) {
+        return (Dataset) em.createNamedQuery("Dataset.findById")
+            .setParameter("id", pk)
+            .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
+            .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
+            .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
+            .setHint("eclipselink.left-join-fetch", "o.files.auxiliaryFiles")
+            .setHint("eclipselink.left-join-fetch", "o.files.ingestReports")
+            .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
+            .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
+            .setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses")
+            .setHint("eclipselink.left-join-fetch", "o.files.embargo")
+            .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
+            .setHint("eclipselink.left-join-fetch", "o.files.owner")
+            .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
+            .setHint("eclipselink.left-join-fetch", "o.files.creator")
+            .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
+            .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
+            .setLockMode(LockModeType.NONE)
+            .getSingleResult();
     }
 
     public List<Dataset> findByOwnerId(Long ownerId) {

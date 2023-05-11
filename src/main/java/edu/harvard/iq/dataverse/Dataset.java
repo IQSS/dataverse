@@ -43,6 +43,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
  * @author skraffmiller
  */
 @NamedQueries({
+    @NamedQuery(name = "Dataset.findById", 
+                query = "SELECT o FROM Dataset o LEFT JOIN FETCH o.files WHERE o.id=:id"),
     @NamedQuery(name = "Dataset.findIdStale",
                query = "SELECT d.id FROM Dataset d WHERE d.indexTime is NULL OR d.indexTime < d.modificationTime"),
     @NamedQuery(name = "Dataset.findIdStalePermission",
