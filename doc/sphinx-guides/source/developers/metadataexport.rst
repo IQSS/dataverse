@@ -38,6 +38,7 @@ in various formats. Your exporter would parse the information in one or more of 
 generate the Exporter's output format.
 
 The most important methods/input formats are:
+
 - ``getDatasetJson()`` - metadata in the internal Dataverse JSON format used in the native API and available via the built-in JSON metadata export.
 - ``getDatasetORE()`` - metadata in the OAI_ORE format available as a built-in metadata format and as used in Dataverse's BagIT-based Archiving capability. 
 - ``getDatasetFileDetails`` - detailed file-level metadata for ingested tabular files.
@@ -51,6 +52,7 @@ The last method above provides a new JSON-formatted serialization of the variabl
 This information has only been included in the built-in DDI export, as the content of a ``dataDscr`` element. (Hence inspecting the edu.harvard.iq.dataverse.export.DDIExporter and related classes would be a good way to explore how the JSON is structured.) 
 
 The interface also provides
+
 - ``getDatasetSchemaDotOrg();`` and
 - ``getDataCiteXml();``.
   
@@ -64,6 +66,7 @@ Building an Exporter
 The example at https://github.com/gdcc/dataverse-exporters provides a Maven pom.xml file suitable for building an Exporter JAR file and that repository provides additional development guidance.
 
 There are four dependencies needed to build an Exporter:
+
 - ``io.gdcc dataverse-spi`` library containing the interfaces discussed above and the ExportException class
 - ``com.google.auto.service auto-service``, which provides the @AutoService annotation
 - ``jakarta.json jakarata.json-api`` for JSON classes
