@@ -1212,7 +1212,11 @@ public class AddReplaceFileHelper{
                     this.newCheckSumType,
                     this.systemConfig);*/
             
-            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier, newCheckSum, newCheckSumType);
+            DataFileServiceBean.UserStorageQuota quota = null; 
+            if (systemConfig.isStorageQuotasEnforced()) {
+                quota = fileService.getUserStorageQuota(dvRequest.getAuthenticatedUser(), dataset);
+            }
+            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType);
             CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
             initialFileList = createDataFilesResult.getDataFiles();
 

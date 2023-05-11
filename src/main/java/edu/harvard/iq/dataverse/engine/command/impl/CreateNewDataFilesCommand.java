@@ -78,12 +78,13 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
     private final String newCheckSum; 
     private DataFile.ChecksumType newCheckSumType;
     private final Dataverse dataverse;
+    private final UserStorageQuota quota;
 
-    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum) {
-        this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, newCheckSum, null);
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum) {
+        this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, null);
     }
     
-    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, DataFile.ChecksumType newCheckSumType) {
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum, DataFile.ChecksumType newCheckSumType) {
         super(aRequest, version.getDataset());
         
         this.version = version;
@@ -94,12 +95,13 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         this.newCheckSum = newCheckSum; 
         this.newCheckSumType = newCheckSumType;
         this.dataverse = null; 
+        this.quota = quota;
     }
     
     // This version of the command must be used when files are created in the 
     // context of creating a brand new dataset (from the Add Dataset page):
     
-    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, DataFile.ChecksumType newCheckSumType, Dataverse dataverse) {
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Dataverse dataverse) {
         super(aRequest, dataverse);
         
         this.version = version;
@@ -110,11 +112,13 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         this.newCheckSum = newCheckSum; 
         this.newCheckSumType = newCheckSumType;
         this.dataverse = dataverse;
+        this.quota = quota; 
     }
     
 
     @Override
     public CreateDataFileResult execute(CommandContext ctxt) throws CommandException {
+        logger.info("entering command.execute();");
         List<DataFile> datafiles = new ArrayList<>();
 
         //When there is no checksum/checksumtype being sent (normal upload, needs to be calculated), set the type to the current default
@@ -132,7 +136,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         
         if (ctxt.systemConfig().isStorageQuotasEnforced()) {
             //storageQuotaLimit = ctxt.files().getClass()...;
-            UserStorageQuota quota = ctxt.files().getUserStorageQuota(super.getRequest().getAuthenticatedUser(), this.version.getDataset());
+            //UserStorageQuota quota = ctxt.files().getUserStorageQuota(super.getRequest().getAuthenticatedUser(), this.version.getDataset());
             if (quota != null) {
                 storageQuotaLimit = quota.getRemainingQuotaInBytes();
             }
@@ -247,6 +251,10 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     }
 
                     datafiles.add(datafile);
+                    // Update quota if present
+                    if (quota != null) {
+                        quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() - datafile.getFilesize());
+                    }
                     return CreateDataFileResult.success(fileName, finalType, datafiles);
                 }
 
@@ -259,6 +267,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 ZipEntry zipEntry = null;
 
                 int fileNumberLimit = ctxt.systemConfig().getZipUploadFilesLimit();
+                Long combinedUnzippedFileSize = 0L;
 
                 try {
                     Charset charset = null;
@@ -307,8 +316,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                      */
 
                     int numberOfUnpackableFiles = 0; 
-                    Long combinedUnzippedFileSize = 0L; 
-
+                     
                     /**
                      * Note that we can't just use zipFile.size(),
                      * unfortunately, since that's the total number of entries,
@@ -363,6 +371,8 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     
                     // Close the ZipFile, re-open as ZipInputStream: 
                     zipFile.close(); 
+                    // reset:
+                    combinedUnzippedFileSize = 0L;
 
                     if (charset != null) {
                         unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()), charset);
@@ -458,6 +468,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                                         }
 
                                         datafiles.add(datafile);
+                                        combinedUnzippedFileSize += datafile.getFilesize();
                                     }
                                 }
                             }
@@ -505,6 +516,10 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                         // do nothing - it's just a temp file.
                         logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
                     }
+                    // update the quota object: 
+                    if (quota != null) {
+                        quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + combinedUnzippedFileSize);
+                    }
                     // and return:
                     return CreateDataFileResult.success(fileName, finalType, datafiles);
                 }
@@ -524,9 +539,9 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     logger.severe("Processing of zipped shapefile failed.");
                     return CreateDataFileResult.error(fileName, finalType);
                 }
+                Long storageQuotaLimitForRezippedFiles = storageQuotaLimit;
 
                 try {
-                    Long storageQuotaLimitForRezippedFiles = storageQuotaLimit;
                     
                     for (File finalFile : shpIngestHelper.getFinalRezippedFiles()) {
                         FileInputStream finalFileInputStream = new FileInputStream(finalFile);
@@ -598,6 +613,10 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                         logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
                                 + se.getMessage());
                     }
+                    // update the quota object: 
+                    if (quota != null) {
+                        quota.setTotalUsageInBytes(storageQuotaLimitForRezippedFiles);
+                    }
                     return CreateDataFileResult.success(fileName, finalType, datafiles);
                 } else {
                     logger.severe("No files added from directory of rezipped shapefiles");
@@ -665,6 +684,10 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
             }
             datafiles.add(datafile);
 
+            // Update quota (may not be necessary in the context of direct upload - ?)
+            if (quota != null) {
+                quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() - datafile.getFilesize());
+            }
             return CreateDataFileResult.success(fileName, finalType, datafiles);
         }
 

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
+import edu.harvard.iq.dataverse.DataFileServiceBean.UserStorageQuota;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -206,6 +207,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private final int NUMBER_OF_SCROLL_ROWS = 25;
 
     private DataFile singleFile = null;
+    private UserStorageQuota userStorageQuota = null; 
 
     public DataFile getSingleFile() {
         return singleFile;
@@ -358,7 +360,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public boolean isStorageQuotaEnforced() {
-        return maxTotalUploadSizeInBytes != null; 
+        return userStorageQuota != null; 
     }
 
     public Long getMaxIngestSizeInBytes() {
@@ -529,22 +531,24 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
         if (systemConfig.isStorageQuotasEnforced()) {
-            this.maxTotalUploadSizeInBytes = datafileService.getUserStorageQuota((AuthenticatedUser) session.getUser(), dataset).getRemainingQuotaInBytes();
+            this.userStorageQuota = datafileService.getUserStorageQuota((AuthenticatedUser) session.getUser(), dataset);
+            this.maxTotalUploadSizeInBytes = userStorageQuota.getRemainingQuotaInBytes();
         } else {
             this.maxTotalUploadSizeInBytes = null; 
         }
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
-
+        
         logger.fine("done");
 
         saveEnabled = true;
+        
         return null;
     }
     
     public boolean isQuotaExceeded() {
-        return systemConfig.isStorageQuotasEnforced() && datafileService.getUserStorageQuota((AuthenticatedUser) session.getUser(), dataset).getRemainingQuotaInBytes() == 0;
+        return systemConfig.isStorageQuotasEnforced() && userStorageQuota != null && userStorageQuota.getRemainingQuotaInBytes() == 0;
     }
 
     public String init() {
@@ -589,7 +593,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         clone = workingVersion.cloneDatasetVersion();
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
         if (systemConfig.isStorageQuotasEnforced()) {
-            this.maxTotalUploadSizeInBytes = datafileService.getUserStorageQuota((AuthenticatedUser) session.getUser(), dataset).getRemainingQuotaInBytes();
+            this.userStorageQuota = datafileService.getUserStorageQuota((AuthenticatedUser) session.getUser(), dataset);
+            this.maxTotalUploadSizeInBytes = userStorageQuota.getRemainingQuotaInBytes();
         }
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
@@ -687,7 +692,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (isHasPublicStore()){
             JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.label.fileAccess"), getBundleString("dataset.message.publicInstall"));
         }
-
+       
         return null;
     }
 
@@ -1525,7 +1530,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // zip file.
                 //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
                 //CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", null, null, systemConfig);
-                Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, dropBoxStream, fileName, "application/octet-stream", null, null);
+                Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, dropBoxStream, fileName, "application/octet-stream", null, userStorageQuota, null);
                 CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
                 datafiles = createDataFilesResult.getDataFiles();
                 Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));
@@ -2064,9 +2069,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // dataset that does not yet exist in the database. We must 
                 // use the version of the Create New Files constructor that takes
                 // the parent Dataverse as the extra argument:
-                cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, null, workingVersion.getDataset().getOwner());
+                cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, userStorageQuota, null, null, workingVersion.getDataset().getOwner());
             } else {
-                cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null);
+                cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, userStorageQuota, null);
             }
             CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
 
@@ -2193,7 +2198,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
                     ///CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType, systemConfig);
                     
-                    Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType);
+                    Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, null, fileName, contentType, fullStorageIdentifier, userStorageQuota, checksumValue, checksumType);
                     CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
                     datafiles = createDataFilesResult.getDataFiles();
                     Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));

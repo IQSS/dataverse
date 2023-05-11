@@ -10,9 +10,8 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import edu.harvard.iq.dataverse.DataFileServiceBean.UserStorageQuota;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -22,7 +21,6 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -309,7 +307,11 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 
             try {
                 //CreateDataFileResult createDataFilesResponse =  FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, null, systemConfig);
-                Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvReq, editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, null);
+                UserStorageQuota quota = null; 
+                if (systemConfig.isStorageQuotasEnforced()) {
+                    quota = dataFileService.getUserStorageQuota(user, dataset);
+                }
+                Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvReq, editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, quota, null);
                 CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
                 dataFiles = createDataFilesResult.getDataFiles();
             } catch (CommandException ex) {
