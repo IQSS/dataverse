@@ -54,6 +54,7 @@ This information has only been included in the built-in DDI export, as the conte
 The interface also provides
   ``getDatasetSchemaDotOrg();`` and
   ``getDataCiteXml();``.
+  
 These provide subsets of metadata in the indicated formats. They may be useful starting points if your exporter will, for example, only add one or two additional fields to the given format.
 
 If an Exporter cannot create a requested metadata format for some reason, it should throw an ``io.gdcc.spi.export.ExportException``.
@@ -68,7 +69,7 @@ There are four dependencies needed to build an Exporter:
   ``com.google.auto.service auto-service``, which provides the @AutoService annotation
   ``jakarta.json jakarata.json-api`` for JSON classes
   ``jakarta.ws.rs jakarta.ws.rs-api``, which provides a MediaType enumeration for specifying mime types.
- 
+
 Specifying a Prerequisite Export
 --------------------------------
 
