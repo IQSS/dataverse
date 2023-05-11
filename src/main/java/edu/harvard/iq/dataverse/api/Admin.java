@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
@@ -1472,7 +1473,7 @@ public class Admin extends AbstractApiBean {
     public Response reregisterHdlToPID(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
         try {
-            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
+            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(HandlenetServiceBean.HDL_PROTOCOL)) {
                 logger.info("Bad Request protocol set to handle  " );
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
             }
@@ -1485,7 +1486,7 @@ public class Admin extends AbstractApiBean {
 
             DataverseRequest r = createDataverseRequest(u);
             Dataset ds = findDatasetOrDie(id);
-            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(GlobalId.HDL_PROTOCOL)) {
+            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(HandlenetServiceBean.HDL_PROTOCOL)) {
                 execCommand(new RegisterDvObjectCommand(r, ds, true));
             } else {
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.hdl.dataset"));
@@ -1503,188 +1504,191 @@ public class Admin extends AbstractApiBean {
         return ok(BundleUtil.getStringFromBundle("admin.api.migrateHDL.success"));
     }
 
-	@GET
-	@AuthRequired
-	@Path("{id}/registerDataFile")
-	public Response registerDataFile(@Context ContainerRequestContext crc, @PathParam("id") String id) {
-		logger.info("Starting to register  " + id + " file id. " + new Date());
+    @GET
+    @AuthRequired
+    @Path("{id}/registerDataFile")
+    public Response registerDataFile(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+        logger.info("Starting to register  " + id + " file id. " + new Date());
 
-		try {
-			User u = getRequestUser(crc);
-			DataverseRequest r = createDataverseRequest(u);
-			DataFile df = findDataFileOrDie(id);
-			if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
-				execCommand(new RegisterDvObjectCommand(r, df));
-			} else {
-				return ok("File was already registered. ");
-			}
+        try {
+            User u = getRequestUser(crc);
+            DataverseRequest r = createDataverseRequest(u);
+            DataFile df = findDataFileOrDie(id);
+            if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
+                execCommand(new RegisterDvObjectCommand(r, df));
+            } else {
+                return ok("File was already registered. ");
+            }
 
-		} catch (WrappedResponse r) {
-			logger.info("Failed to register file id: " + id);
-		} catch (Exception e) {
-			logger.info("Failed to register file id: " + id + " Unexpecgted Exception " + e.getMessage());
-		}
-		return ok("Datafile registration complete. File registered successfully.");
-	}
+        } catch (WrappedResponse r) {
+            logger.info("Failed to register file id: " + id);
+        } catch (Exception e) {
+            logger.info("Failed to register file id: " + id + " Unexpecgted Exception " + e.getMessage());
+        }
+        return ok("Datafile registration complete. File registered successfully.");
+    }
 
-	@GET
-	@AuthRequired
-	@Path("/registerDataFileAll")
-	public Response registerDataFileAll(@Context ContainerRequestContext crc) {
-		Integer count = fileService.findAll().size();
-		Integer successes = 0;
-		Integer alreadyRegistered = 0;
-		Integer released = 0;
-		Integer draft = 0;
-		logger.info("Starting to register: analyzing " + count + " files. " + new Date());
-		logger.info("Only unregistered, published files will be registered.");
-		for (DataFile df : fileService.findAll()) {
-			try {
-				if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
-					if (df.isReleased()) {
-						released++;
-						User u = getRequestAuthenticatedUserOrDie(crc);
-						DataverseRequest r = createDataverseRequest(u);
-						execCommand(new RegisterDvObjectCommand(r, df));
-						successes++;
-						if (successes % 100 == 0) {
-							logger.info(successes + " of  " + count + " files registered successfully. " + new Date());
-						}
-					} else {
-						draft++;
-						logger.info(draft + " of  " + count + " files not yet published");
-					}
-				} else {
-					alreadyRegistered++;
-					logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
-				}
-			} catch (WrappedResponse ex) {
-				released++;
-				logger.info("Failed to register file id: " + df.getId());
-				Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
-			} catch (Exception e) {
-				logger.info("Unexpected Exception: " + e.getMessage());
-			}
-		}
-		logger.info("Final Results:");
-		logger.info(alreadyRegistered + " of  " + count + " files were already registered. " + new Date());
-		logger.info(draft + " of  " + count + " files are not yet published. " + new Date());
-		logger.info(released + " of  " + count + " unregistered, published files to register. " + new Date());
-		logger.info(successes + " of  " + released + " unregistered, published files registered successfully. "
-				+ new Date());
+    @GET
+    @AuthRequired
+    @Path("/registerDataFileAll")
+    public Response registerDataFileAll(@Context ContainerRequestContext crc) {
+        Integer count = fileService.findAll().size();
+        Integer successes = 0;
+        Integer alreadyRegistered = 0;
+        Integer released = 0;
+        Integer draft = 0;
+        logger.info("Starting to register: analyzing " + count + " files. " + new Date());
+        logger.info("Only unregistered, published files will be registered.");
+        for (DataFile df : fileService.findAll()) {
+            try {
+                if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
+                    if (df.isReleased()) {
+                        released++;
+                        User u = getRequestAuthenticatedUserOrDie(crc);
+                        DataverseRequest r = createDataverseRequest(u);
+                        execCommand(new RegisterDvObjectCommand(r, df));
+                        successes++;
+                        if (successes % 100 == 0) {
+                            logger.info(successes + " of  " + count + " files registered successfully. " + new Date());
+                        }
+                    } else {
+                        draft++;
+                        logger.info(draft + " of  " + count + " files not yet published");
+                    }
+                } else {
+                    alreadyRegistered++;
+                    logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
+                }
+            } catch (WrappedResponse ex) {
+                released++;
+                logger.info("Failed to register file id: " + df.getId());
+                Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception e) {
+                logger.info("Unexpected Exception: " + e.getMessage());
+            }
+        }
+        logger.info("Final Results:");
+        logger.info(alreadyRegistered + " of  " + count + " files were already registered. " + new Date());
+        logger.info(draft + " of  " + count + " files are not yet published. " + new Date());
+        logger.info(released + " of  " + count + " unregistered, published files to register. " + new Date());
+        logger.info(successes + " of  " + released + " unregistered, published files registered successfully. "
+                + new Date());
 
-		return ok("Datafile registration complete." + successes + " of  " + released
-				+ " unregistered, published files registered successfully.");
-	}
+        return ok("Datafile registration complete." + successes + " of  " + released
+                + " unregistered, published files registered successfully.");
+    }
 
-	@GET
-	@AuthRequired
-	@Path("/updateHashValues/{alg}")
-	public Response updateHashValues(@Context ContainerRequestContext crc, @PathParam("alg") String alg, @QueryParam("num") int num) {
-		Integer count = fileService.findAll().size();
-		Integer successes = 0;
-		Integer alreadyUpdated = 0;
-		Integer rehashed = 0;
-		Integer harvested=0;
-		
-		if (num <= 0)
-			num = Integer.MAX_VALUE;
-		DataFile.ChecksumType cType = null;
-		try {
-			cType = DataFile.ChecksumType.fromString(alg);
-		} catch (IllegalArgumentException iae) {
-			return error(Status.BAD_REQUEST, "Unknown algorithm");
-		}
-		logger.info("Starting to rehash: analyzing " + count + " files. " + new Date());
-		logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
-				+ alg);
-		try {
-			User u = getRequestAuthenticatedUserOrDie(crc);
-			if (!u.isSuperuser())
-				return error(Status.UNAUTHORIZED, "must be superuser");
-		} catch (WrappedResponse e1) {
-			return error(Status.UNAUTHORIZED, "api key required");
-		}
+    @GET
+    @AuthRequired
+    @Path("/updateHashValues/{alg}")
+    public Response updateHashValues(@Context ContainerRequestContext crc, @PathParam("alg") String alg, @QueryParam("num") int num) {
+        Integer count = fileService.findAll().size();
+        Integer successes = 0;
+        Integer alreadyUpdated = 0;
+        Integer rehashed = 0;
+        Integer harvested = 0;
 
-		for (DataFile df : fileService.findAll()) {
-			if (rehashed.intValue() >= num)
-				break;
-			InputStream in = null;
-			InputStream in2 = null; 
-			try {
-				if (df.isHarvested()) {
-					harvested++;
-				} else {
-					if (!df.getChecksumType().equals(cType)) {
+        if (num <= 0)
+            num = Integer.MAX_VALUE;
+        DataFile.ChecksumType cType = null;
+        try {
+            cType = DataFile.ChecksumType.fromString(alg);
+        } catch (IllegalArgumentException iae) {
+            return error(Status.BAD_REQUEST, "Unknown algorithm");
+        }
+        logger.info("Starting to rehash: analyzing " + count + " files. " + new Date());
+        logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
+                + alg);
+        try {
+            User u = getRequestAuthenticatedUserOrDie(crc);
+            if (!u.isSuperuser())
+                return error(Status.UNAUTHORIZED, "must be superuser");
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
 
-						rehashed++;
-						logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
-								+ df.getIdentifier());
-						// verify hash and calc new one to replace it
-						StorageIO<DataFile> storage = df.getStorageIO();
-						storage.open(DataAccessOption.READ_ACCESS);
-						if (!df.isTabularData()) {
-							in = storage.getInputStream();
-						} else {
-							// if this is a tabular file, read the preserved original "auxiliary file"
-							// instead:
-							in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-						}
-						if (in == null)
-							logger.warning("Cannot retrieve file.");
-						String currentChecksum = FileUtil.calculateChecksum(in, df.getChecksumType());
-						if (currentChecksum.equals(df.getChecksumValue())) {
-							logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
-									+ df.getIdentifier() + " is valid");
-							storage.open(DataAccessOption.READ_ACCESS);
-							if (!df.isTabularData()) {
-								in2 = storage.getInputStream();
-							} else {
-								// if this is a tabular file, read the preserved original "auxiliary file"
-								// instead:
-								in2 = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-							}
-							if (in2 == null)
-								logger.warning("Cannot retrieve file to calculate new checksum.");
-							String newChecksum = FileUtil.calculateChecksum(in2, cType);
+        for (DataFile df : fileService.findAll()) {
+            if (rehashed.intValue() >= num)
+                break;
+            InputStream in = null;
+            InputStream in2 = null;
+            try {
+                if (df.isHarvested()) {
+                    harvested++;
+                } else {
+                    if (!df.getChecksumType().equals(cType)) {
 
-							df.setChecksumType(cType);
-							df.setChecksumValue(newChecksum);
-							successes++;
-							if (successes % 100 == 0) {
-								logger.info(
-										successes + " of  " + count + " files rehashed successfully. " + new Date());
-							}
-						} else {
-							logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
-									+ ", " + df.getIdentifier() + " is INVALID");
-						}
-					} else {
-						alreadyUpdated++;
-						if (alreadyUpdated % 100 == 0) {
-							logger.info(alreadyUpdated + " of  " + count
-									+ " files are already have hashes with the new algorithm. " + new Date());
-						}
-					}
-				}
-			} catch (Exception e) {
-				logger.warning("Unexpected Exception: " + e.getMessage());
+                        rehashed++;
+                        logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
+                                + df.getIdentifier());
+                        // verify hash and calc new one to replace it
+                        StorageIO<DataFile> storage = df.getStorageIO();
+                        storage.open(DataAccessOption.READ_ACCESS);
+                        if (!df.isTabularData()) {
+                            in = storage.getInputStream();
+                        } else {
+                            // if this is a tabular file, read the preserved original "auxiliary file"
+                            // instead:
+                            in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                        }
+                        if (in == null)
+                            logger.warning("Cannot retrieve file.");
+                        String currentChecksum = FileUtil.calculateChecksum(in, df.getChecksumType());
+                        if (currentChecksum.equals(df.getChecksumValue())) {
+                            logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
+                                    + df.getIdentifier() + " is valid");
+                            // Need to reset so we don't get the same stream (StorageIO class inputstreams
+                            // are normally only used once)
+                            storage.setInputStream(null);
+                            storage.open(DataAccessOption.READ_ACCESS);
+                            if (!df.isTabularData()) {
+                                in2 = storage.getInputStream();
+                            } else {
+                                // if this is a tabular file, read the preserved original "auxiliary file"
+                                // instead:
+                                in2 = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                            }
+                            if (in2 == null)
+                                logger.warning("Cannot retrieve file to calculate new checksum.");
+                            String newChecksum = FileUtil.calculateChecksum(in2, cType);
 
-			} finally {
-				IOUtils.closeQuietly(in);
-				IOUtils.closeQuietly(in2);
-			}
-		}
-		logger.info("Final Results:");
-		logger.info(harvested + " harvested files skipped.");
-		logger.info(
-				alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
-		logger.info(rehashed + " of  " + count + " files to rehash. " + new Date());
-		logger.info(
-				successes + " of  " + rehashed + " files successfully rehashed with the new algorithm. " + new Date());
+                            df.setChecksumType(cType);
+                            df.setChecksumValue(newChecksum);
+                            successes++;
+                            if (successes % 100 == 0) {
+                                logger.info(
+                                        successes + " of  " + count + " files rehashed successfully. " + new Date());
+                            }
+                        } else {
+                            logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
+                                    + ", " + df.getIdentifier() + " is INVALID");
+                        }
+                    } else {
+                        alreadyUpdated++;
+                        if (alreadyUpdated % 100 == 0) {
+                            logger.info(alreadyUpdated + " of  " + count
+                                    + " files are already have hashes with the new algorithm. " + new Date());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                logger.warning("Unexpected Exception: " + e.getMessage());
 
-		return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
-	}
+            } finally {
+                IOUtils.closeQuietly(in);
+                IOUtils.closeQuietly(in2);
+            }
+        }
+        logger.info("Final Results:");
+        logger.info(harvested + " harvested files skipped.");
+        logger.info(
+                alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
+        logger.info(rehashed + " of  " + count + " files to rehash. " + new Date());
+        logger.info(
+                successes + " of  " + rehashed + " files successfully rehashed with the new algorithm. " + new Date());
+
+        return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
+    }
         
     @POST
 	@AuthRequired

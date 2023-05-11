@@ -389,21 +389,19 @@ public class SwordIT {
 
         String persistentId = null;
         Integer datasetId = null;
-        String protocol;
-        String authority;
-        String identifier = null;
 
         Response createDataset = UtilIT.createDatasetViaSwordApi(rootDataverseAlias, datasetTitle, apiTokenContributor);
-        createDataset.prettyPrint();
+        String createResponse = createDataset.prettyPrint();
         createDataset.then().assertThat()
                 .statusCode(CREATED.getStatusCode())
                 .body("entry.treatment", equalTo("no treatment information available"));
 
         persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
-        GlobalId globalId = new GlobalId(persistentId);
-        protocol = globalId.getProtocol();
-        authority = globalId.getAuthority();
-        identifier = globalId.getIdentifier();
+        //previsouly the test parsed the persistentID but this is now done via PIDProviderBeans
+        //Instead, verify it starts with the protocol and the rest was what was returned in the createDataset call
+        assertTrue(persistentId.startsWith("doi:"));
+        String identifier = persistentId.substring(4);
+        assertTrue(createResponse.contains(identifier));
 
         Response listDatasetsAtRoot = UtilIT.listDatasetsViaSword(rootDataverseAlias, apiTokenContributor);
         listDatasetsAtRoot.prettyPrint();

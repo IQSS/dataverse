@@ -1049,7 +1049,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/BCCP9Z --upload-file dataset-update-metadata.json
 
-Note that in the example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``datasetVersion``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this:
+Note that in the example JSON file above, there are only two JSON objects with the ``license`` and ``metadataBlocks`` keys respectively. When you download a representation of your latest dataset version in JSON format, these objects will be nested inside another object called ``data`` in the API response. Note that there may be more objects in there, in addition to the ``license`` and ``metadataBlocks`` that you may need to preserve and re-import as well. Basically, you need everything in there except for the ``files``. This can be achived by downloading the metadata and selecting the sections you need with a JSON tool such as ``jq``, like this:
 
 .. code-block:: bash
 
@@ -1057,15 +1057,18 @@ Note that in the example JSON file above, there is a single JSON object with ``m
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
 
-  curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PERSISTENT_IDENTIFIER | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
-
+  curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PERSISTENT_IDENTIFIER | jq '.data | del(.files)' > dataset-update-metadata.json
+  
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/datasets/:persistentId/versions/:latest?persistentId=doi:10.5072/FK2/BCCP9Z | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
 
-Now that the resulting JSON file only contains the ``metadataBlocks`` key, you can edit the JSON such as with ``vi`` in the example below::
+
+Now you can edit the JSON produced by the command above with a text editor of your choice. For example, with ``vi`` in the example below.
+
+Note that you don't need to edit the top-level fields such as ``versionNumber``, ``minorVersonNumber``, ``versionState`` or any of the time stamps - these will be automatically updated as needed by the API::
 
     vi dataset-update-metadata.json
 
@@ -1618,6 +1621,8 @@ The fully expanded example above (without environment variables) looks like this
 
 The people who need to review the dataset (often curators or journal editors) can check their notifications periodically via API to see if any new datasets have been submitted for review and need their attention. See the :ref:`Notifications` section for details. Alternatively, these curators can simply check their email or notifications to know when datasets have been submitted (or resubmitted) for review.
 
+.. _return-a-dataset:
+
 Return a Dataset to Author
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1644,6 +1649,8 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/:persistentId/returnToAuthor?persistentId=doi:10.5072/FK2/J8SJZB" -H "Content-type: application/json" -d @reason-for-return.json
 
 The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
+
+The :ref:`send-feedback` API call may be useful as a way to move the conversation to email. However, note that these emails go to contacts (versus authors) and there is no database record of the email contents. (:ref:`dataverse.mail.cc-support-on-contact-email` will send a copy of these emails to the support email address which would provide a record.)
 
 Link a Dataset
 ~~~~~~~~~~~~~~
@@ -2084,9 +2091,33 @@ The response is a JSON object described in the :doc:`/api/external-tools` sectio
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
   export VERSION=1.0
   export TOOL_ID=1
-  
 
   curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/toolparams/$TOOL_ID?persistentId=$PERSISTENT_IDENTIFIER"
+
+.. _signposting-api:
+
+Retrieve Signposting Information
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dataverse supports :ref:`discovery-sign-posting` as a discovery mechanism.
+Signposting involves the addition of a `Link <https://tools.ietf.org/html/rfc5988>`__ HTTP header providing summary information on GET and HEAD requests to retrieve the dataset page and a separate /linkset API call to retrieve additional information.
+
+Here is an example of a "Link" header:
+
+``Link: <https://doi.org/10.5072/FK2/YD5QDG>;rel="cite-as", <https://doi.org/10.5072/FK2/YD5QDG>;rel="describedby";type="application/vnd.citationstyles.csl+json",<https://demo.dataverse.org/api/datasets/export?exporter=schema.org&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/json+ld", <https://schema.org/AboutPage>;rel="type",<https://schema.org/Dataset>;rel="type", https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/customlicense?persistentId=doi:10.5072/FK2/YD5QDG;rel="license", <https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/linkset?persistentId=doi:10.5072/FK2/YD5QDG> ; rel="linkset";type="application/linkset+json"``
+
+The URL for linkset information is discoverable under the ``rel="linkset";type="application/linkset+json`` entry in the "Link" header, such as in the example above.
+
+The reponse includes a JSON object conforming to the `Signposting <https://signposting.org>`__ specification.
+Signposting is not supported for draft dataset versions.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+  export VERSION=1.0
+
+  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
 
 Files
 -----
@@ -2443,6 +2474,49 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -F 'file=@data.tsv' \
     -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' \
     "https://demo.dataverse.org/api/files/:persistentId/replace?persistentId=doi:10.5072/FK2/AAA000"
+
+Deleting Files
+~~~~~~~~~~~~~~
+
+Delete an existing file where ``ID`` is the database id of the file to delete or ``PERSISTENT_ID`` is the persistent id (DOI or Handle, if it exists) of the file.
+
+Note that the behavior of deleting files depends on if the dataset has ever been published or not.
+
+- If the dataset has never been published, the file will be deleted forever.
+- If the dataset has published, the file is deleted from the draft (and future published versions).
+- If the dataset has published, the deleted file can still be downloaded because it was part of a published version.
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/files/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/files/24
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/files/:persistentId?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/files/:persistentId?persistentId=doi:10.5072/FK2/AAA000"
 
 Getting File Metadata
 ~~~~~~~~~~~~~~~~~~~~~
@@ -3260,7 +3334,7 @@ Each user can get a dump of their basic information in JSON format by passing in
 
     curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/users/:me    
 
-.. _pids-api:
+
 
 Managing Harvesting Server and Sets
 -----------------------------------
@@ -3371,6 +3445,9 @@ The fully expanded example above (without the environment variables) looks like 
 
 Only users with superuser permissions may delete harvesting sets.
 
+
+.. _managing-harvesting-clients-api:
+
 Managing Harvesting Clients
 ---------------------------
 
@@ -3458,6 +3535,9 @@ An example JSON file would look like this::
     "set": "user-lmops"
   }
 
+Something important to keep in mind about this API is that, unlike the harvesting clients GUI, it will create a client with the values supplied without making any attempts to validate them in real time. In other words, for the `harvestUrl` it will accept anything that looks like a well-formed url, without making any OAI calls to verify that the name of the set and/or the metadata format entered are supported by it. This is by design, to give an admin an option to still be able to create a client, in a rare case when it cannot be done via the GUI because of some real time failures in an exchange with an otherwise valid OAI server. This however puts the responsibility on the admin to supply the values already confirmed to be valid. 
+
+
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
 .. code-block:: bash
@@ -3513,6 +3593,9 @@ Self-explanatory:
 
 Only users with superuser permissions may delete harvesting clients.
 
+
+
+.. _pids-api:
 
 PIDs
 ----
@@ -4421,3 +4504,29 @@ A curl example using allowing access to a dataset's metadata
 
 Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
 security.
+
+.. _send-feedback:
+
+Send Feedback To Contact(s)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call allows sending an email to the contacts for a collection, dataset, or datafile or to the support email address when no object is specified.
+The call is protected by the normal /admin API protections (limited to localhost or requiring a separate key), but does not otherwise limit the sending of emails.
+Administrators should be sure only trusted applications have access to avoid the potential for spam.
+
+The call is a POST with a JSON object as input with four keys:
+- "targetId" - the id of the collection, dataset, or datafile. Persistent ids and collection aliases are not supported. (Optional)
+- "subject" - the email subject line
+- "body" - the email body to send
+- "fromEmail" - the email to list in the reply-to field. (Dataverse always sends mail from the system email, but does it "on behalf of" and with a reply-to for the specified user.)
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost
+  export JSON='{"targetId":24, "subject":"Data Question", "body":"Please help me understand your data. Thank you!", "fromEmail":"dataverseSupport@mailinator.com"}'
+
+  curl -X POST -H 'Content-Type:application/json' -d "$JSON" $SERVER_URL/api/admin/feedback
+
+Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.

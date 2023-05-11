@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.AuxiliaryFile;
 import edu.harvard.iq.dataverse.AuxiliaryFileServiceBean;
 import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.FileAccessRequest;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -1427,7 +1428,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.invalidRequest"));
         }
 
-        if (dataFile.getFileAccessRequesters().contains(requestor)) {
+        if (dataFile.containsFileAccessRequestFromUser(requestor)) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.requestExists"));
         }
 
@@ -1478,17 +1479,17 @@ public class Access extends AbstractApiBean {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
-        List<AuthenticatedUser> requesters = dataFile.getFileAccessRequesters();
+        List<FileAccessRequest> requests = dataFile.getFileAccessRequests();
 
-        if (requesters == null || requesters.isEmpty()) {
+        if (requests == null || requests.isEmpty()) {
             List<String> args = Arrays.asList(dataFile.getDisplayName());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
         }
 
         JsonArrayBuilder userArray = Json.createArrayBuilder();
 
-        for (AuthenticatedUser au : requesters) {
-            userArray.add(json(au));
+        for (FileAccessRequest fileAccessRequest : requests) {
+            userArray.add(json(fileAccessRequest.getAuthenticatedUser()));
         }
 
         return ok(userArray);
@@ -1534,7 +1535,7 @@ public class Access extends AbstractApiBean {
 
         try {
             engineSvc.submit(new AssignRoleCommand(ra, fileDownloaderRole, dataFile, dataverseRequest, null));
-            if (dataFile.getFileAccessRequesters().remove(ra)) {
+            if (dataFile.removeFileAccessRequester(ra)) {
                 dataFileService.save(dataFile);
             }
 
@@ -1660,8 +1661,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
-        if (dataFile.getFileAccessRequesters().contains(ra)) {
-            dataFile.getFileAccessRequesters().remove(ra);
+        if (dataFile.removeFileAccessRequester(ra)) {
             dataFileService.save(dataFile);
 
             try {
