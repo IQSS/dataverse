@@ -15,9 +15,10 @@ public interface XMLExporter extends Exporter {
     String getXMLNameSpace();
 
     /**
+     * @apiNote According to the XML specification, the value must be a URI
      * @implNote for the ddi exporter, this method returns
      *           "https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd"
-     * @return - the location of the XML schema
+     * @return - the location of the XML schema as a String (must be a valid URI)
      */
     String getXMLSchemaLocation();
 
