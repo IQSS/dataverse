@@ -110,7 +110,6 @@ public enum JvmSettings {
     SCOPE_MAIL(PREFIX, "mail"),
     SUPPORT_EMAIL(SCOPE_MAIL, "support-email"),
     CC_SUPPORT_ON_CONTACT_EMAIL(SCOPE_MAIL, "cc-support-on-contact-email"),
-    
     ;
     
     private static final String SCOPE_SEPARATOR = ".";
