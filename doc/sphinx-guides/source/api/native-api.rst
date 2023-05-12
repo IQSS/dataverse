@@ -1082,7 +1082,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/BCCP9Z --upload-file dataset-update-metadata.json
 
-Note that in the example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``datasetVersion``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this:
+Note that in the example JSON file above, there are only two JSON objects with the ``license`` and ``metadataBlocks`` keys respectively. When you download a representation of your latest dataset version in JSON format, these objects will be nested inside another object called ``data`` in the API response. Note that there may be more objects in there, in addition to the ``license`` and ``metadataBlocks`` that you may need to preserve and re-import as well. Basically, you need everything in there except for the ``files``. This can be achived by downloading the metadata and selecting the sections you need with a JSON tool such as ``jq``, like this:
 
 .. code-block:: bash
 
@@ -1090,15 +1090,18 @@ Note that in the example JSON file above, there is a single JSON object with ``m
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
 
-  curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PERSISTENT_IDENTIFIER | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
-
+  curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PERSISTENT_IDENTIFIER | jq '.data | del(.files)' > dataset-update-metadata.json
+  
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/datasets/:persistentId/versions/:latest?persistentId=doi:10.5072/FK2/BCCP9Z | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
 
-Now that the resulting JSON file only contains the ``metadataBlocks`` key, you can edit the JSON such as with ``vi`` in the example below::
+
+Now you can edit the JSON produced by the command above with a text editor of your choice. For example, with ``vi`` in the example below.
+
+Note that you don't need to edit the top-level fields such as ``versionNumber``, ``minorVersonNumber``, ``versionState`` or any of the time stamps - these will be automatically updated as needed by the API::
 
     vi dataset-update-metadata.json
 

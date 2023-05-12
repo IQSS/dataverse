@@ -1,4 +1,8 @@
 {
+  "license": {
+    "name": "CC0 1.0",
+    "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+  },
   "metadataBlocks": {
     "citation": {
       "displayName": "Citation Metadata",
