@@ -572,7 +572,7 @@ public class SettingsServiceBean {
         AllowIncompleteMetadataThroughAPI,
 
         /**
-         * Determines if dataset submitted via API with invalid metadata (for later
+         * Determines if dataset submitted via API with incomplete metadata (for later
          * corrections) can be submitted for review.
          */
         CanReviewIncomplete,
