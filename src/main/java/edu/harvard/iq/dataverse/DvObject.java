@@ -181,7 +181,20 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     public void setPreviewImageAvailable(boolean status) {
         this.previewImageAvailable = status;
     }
+    
+    /** Indicates whether a previous attempt to generate a preview image has failed, regardless of size.
+     * If so, we won't want to try again every time the preview/thumbnail is requested for a view.
+     */
+    private boolean previewsHaveFailed;
 
+    public boolean isPreviewsHaveFailed() {
+        return previewsHaveFailed;
+    }
+
+    public void setPreviewsHaveFailed(boolean previewsHaveFailed) {
+        this.previewsHaveFailed = previewsHaveFailed;
+    }
+    
     public Timestamp getModificationTime() {
         return modificationTime;
     }
@@ -462,6 +475,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      */
     public abstract boolean isAncestorOf( DvObject other );
     
+
     @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     List<RoleAssignment> roleAssignments;
 }

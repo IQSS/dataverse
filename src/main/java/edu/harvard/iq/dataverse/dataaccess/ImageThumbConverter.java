@@ -48,6 +48,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 //import org.primefaces.util.Base64;
@@ -110,15 +111,24 @@ public class ImageThumbConverter {
         }
 
         if (isThumbnailCached(storageIO, size)) {
+            logger.fine("Found cached thumbnail for " + file.getId());
             return true;
         }
 
-        logger.fine("Checking for thumbnail, file type: " + file.getContentType());
-
-        if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
-            return generateImageThumbnail(storageIO, size);
-        } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
-            return generatePDFThumbnail(storageIO, size);
+        logger.log(Level.FINE, (file.isPreviewsHaveFailed() ? "Not trying" : "Trying") + "to generate thumbnail, file id: " + file.getId());
+        // Don't try to generate if there have been failures:
+        if (!file.isPreviewsHaveFailed()) {
+            boolean thumbnailGenerated = false;
+            if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
+                thumbnailGenerated = generateImageThumbnail(storageIO, size);
+            } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
+                thumbnailGenerated = generatePDFThumbnail(storageIO, size);
+            }
+            if (!thumbnailGenerated) {
+                logger.fine("No thumbnail generated for " + file.getId());
+                file.setPreviewGenerationHasPreviouslyFailed(true);
+            }
+            return thumbnailGenerated;
         }
 
         return false;
@@ -436,20 +446,27 @@ public class ImageThumbConverter {
         if (cachedThumbnailChannel == null) {
             logger.fine("Null channel for aux object " + THUMBNAIL_SUFFIX + size);
 
-            // try to generate, if not available: 
-            boolean generated = false;
-            if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
-                generated = generateImageThumbnail(storageIO, size);
-            } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
-                generated = generatePDFThumbnail(storageIO, size);
-            }
+            // try to generate, if not available and hasn't failed before
+            logger.log(Level.FINE, (file.isPreviewsHaveFailed() ? "Not trying" : "Trying") + "to generate base64 thumbnail, file id: " + file.getId());
+            if (!file.isPreviewsHaveFailed()) {
+                boolean generated = false;
+                if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
+                    generated = generateImageThumbnail(storageIO, size);
+                } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
+                    generated = generatePDFThumbnail(storageIO, size);
+                }
 
-            if (generated) {
-                // try to open again: 
-                try {
-                    cachedThumbnailChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
-                } catch (Exception ioEx) {
-                    cachedThumbnailChannel = null;
+                if (!generated) {
+                    // Record failure
+                    logger.fine("Failed to generate base64 thumbnail for file id: " + file.getId());
+                    file.setPreviewGenerationHasPreviouslyFailed(true);
+                } else {
+                    // Success - try to open again:
+                    try {
+                        cachedThumbnailChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
+                    } catch (Exception ioEx) {
+                        cachedThumbnailChannel = null;
+                    }
                 }
             }
 
