@@ -694,9 +694,10 @@
           },
           {
             "typeName": "series",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "compound",
-            "value": {
+            "value": [
+              {
               "seriesName": {
                 "typeName": "seriesName",
                 "multiple": false,
@@ -710,6 +711,7 @@
                 "value": "SeriesInformation"
               }
             }
+            ]
           },
           {
             "typeName": "software",

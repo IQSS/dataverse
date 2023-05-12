@@ -53,6 +53,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataIngest;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITSFileMetadataExtractor;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.netcdf.NetcdfFileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReader;
@@ -341,6 +342,7 @@ public class IngestServiceBean {
 					String fileName = fileMetadata.getLabel();
 
 					boolean metadataExtracted = false;
+                                        boolean metadataExtractedFromNetcdf = false;
 					if (tabIngest && FileUtil.canIngestAsTabular(dataFile)) {
 						/*
 						 * Note that we don't try to ingest the file right away - instead we mark it as
@@ -367,7 +369,20 @@ public class IngestServiceBean {
 						} else {
 							logger.fine("Failed to extract indexable metadata from file " + fileName);
 						}
-					} else if (FileUtil.MIME_TYPE_INGESTED_FILE.equals(dataFile.getContentType())) {
+                                        } else if (fileMetadataExtractableFromNetcdf(dataFile, tempLocationPath)) {
+                                            try {
+                                                logger.fine("trying to extract metadata from netcdf");
+                                                metadataExtractedFromNetcdf = extractMetadataFromNetcdf(tempFileLocation, dataFile, version);
+                                            } catch (IOException ex) {
+                                                logger.fine("could not extract metadata from netcdf: " + ex);
+                                            }
+                                            if (metadataExtractedFromNetcdf) {
+                                                logger.fine("Successfully extracted indexable metadata from netcdf file " + fileName);
+                                            } else {
+                                                logger.fine("Failed to extract indexable metadata from netcdf file " + fileName);
+                                            }
+
+                                        } else if (FileUtil.MIME_TYPE_INGESTED_FILE.equals(dataFile.getContentType())) {
                         // Make sure no *uningested* tab-delimited files are saved with the type "text/tab-separated-values"!
                         // "text/tsv" should be used instead: 
                         dataFile.setContentType(FileUtil.MIME_TYPE_TSV);
@@ -1166,7 +1181,58 @@ public class IngestServiceBean {
         }
         return false;
     }
-    
+
+    // Inspired by fileMetadataExtractable, above
+    public boolean fileMetadataExtractableFromNetcdf(DataFile dataFile, Path tempLocationPath) {
+        logger.fine("fileMetadataExtractableFromNetcdf dataFileIn: " + dataFile + ". tempLocationPath: " + tempLocationPath);
+        boolean extractable = false;
+        String dataFileLocation = null;
+        if (tempLocationPath != null) {
+            // This file was just uploaded and hasn't been saved to S3 or local storage.
+            dataFileLocation = tempLocationPath.toString();
+        } else {
+            // This file is already on S3 or local storage.
+            File tempFile = null;
+            File localFile;
+            StorageIO<DataFile> storageIO;
+            try {
+                storageIO = dataFile.getStorageIO();
+                storageIO.open();
+                if (storageIO.isLocalFile()) {
+                    localFile = storageIO.getFileSystemPath().toFile();
+                    dataFileLocation = localFile.getAbsolutePath();
+                    logger.info("fileMetadataExtractable2: file is local. Path: " + dataFileLocation);
+                } else {
+                    // Need to create a temporary local file:
+                    tempFile = File.createTempFile("tempFileExtractMetadataNcml", ".tmp");
+                    try ( ReadableByteChannel targetFileChannel = (ReadableByteChannel) storageIO.getReadChannel();  FileChannel tempFileChannel = new FileOutputStream(tempFile).getChannel();) {
+                        tempFileChannel.transferFrom(targetFileChannel, 0, storageIO.getSize());
+                    }
+                    dataFileLocation = tempFile.getAbsolutePath();
+                    logger.info("fileMetadataExtractable2: file is on S3. Downloaded and saved to temp path: " + dataFileLocation);
+                }
+            } catch (IOException ex) {
+                logger.info("fileMetadataExtractable2, could not use storageIO for data file id " + dataFile.getId() + ". Exception: " + ex);
+            }
+        }
+        if (dataFileLocation != null) {
+            try ( NetcdfFile netcdfFile = NetcdfFiles.open(dataFileLocation)) {
+                logger.info("fileMetadataExtractable2: trying to open " + dataFileLocation);
+                if (netcdfFile != null) {
+                    logger.info("fileMetadataExtractable2: returning true");
+                    extractable = true;
+                } else {
+                    logger.info("NetcdfFiles.open() could not open file id " + dataFile.getId() + " (null returned).");
+                }
+            } catch (IOException ex) {
+                logger.info("NetcdfFiles.open() could not open file id " + dataFile.getId() + ". Exception caught: " + ex);
+            }
+        } else {
+            logger.info("dataFileLocation is null for file id " + dataFile.getId() + ". Can't extract NcML.");
+        }
+        return extractable;
+    }
+
     /* 
      * extractMetadata: 
      * framework for extracting metadata from uploaded files. The results will 
@@ -1211,6 +1277,63 @@ public class IngestServiceBean {
             
             processFileLevelMetadata(extractedMetadata, fileMetadata);
 
+        }
+
+        ingestSuccessful = true;
+
+        return ingestSuccessful;
+    }
+
+    /**
+     * Try to extract bounding box (west, south, east, north).
+     *
+     * Inspired by extractMetadata(). Consider merging the methods. Note that
+     * unlike extractMetadata(), we are not calling processFileLevelMetadata().
+     *
+     * Also consider merging with extractMetadataNcml() but while NcML should be
+     * extractable from all files that the NetCDF Java library can open only
+     * some NetCDF files will have a bounding box.
+     *
+     * Note that if we ever create an API endpoint for this method for files
+     * that are already persisted to disk or S3, we will need to use something
+     * like getExistingFile() from extractMetadataNcml() to pull the file down
+     * from S3 to a temporary file location on local disk so that it can
+     * (ultimately) be opened by the NetcdfFiles.open() method, which only
+     * operates on local files (not an input stream). What we have now is not a
+     * problem for S3 because the files are saved locally before the are
+     * uploaded to S3. It's during this time that the files are local that this
+     * method is run.
+     */
+    public boolean extractMetadataFromNetcdf(String tempFileLocation, DataFile dataFile, DatasetVersion editVersion) throws IOException {
+        boolean ingestSuccessful = false;
+
+        InputStream tempFileInputStream = null;
+        if (tempFileLocation == null) {
+            StorageIO<DataFile> sio = dataFile.getStorageIO();
+            sio.open(DataAccessOption.READ_ACCESS);
+            tempFileInputStream = sio.getInputStream();
+        } else {
+            try {
+                tempFileInputStream = new FileInputStream(new File(tempFileLocation));
+            } catch (FileNotFoundException notfoundEx) {
+                throw new IOException("Could not open temp file " + tempFileLocation);
+            }
+        }
+
+        // Locate metadata extraction plugin for the file format by looking
+        // it up with the Ingest Service Provider Registry:
+        NetcdfFileMetadataExtractor extractorPlugin = new NetcdfFileMetadataExtractor();
+        logger.fine("creating file from " + tempFileLocation);
+        File file = new File(tempFileLocation);
+        FileMetadataIngest extractedMetadata = extractorPlugin.ingestFile(file);
+        Map<String, Set<String>> extractedMetadataMap = extractedMetadata.getMetadataMap();
+
+        if (extractedMetadataMap != null) {
+            logger.fine("Ingest Service: Processing extracted metadata from netcdf;");
+            if (extractedMetadata.getMetadataBlockName() != null) {
+                logger.fine("Ingest Service: This metadata from netcdf belongs to the " + extractedMetadata.getMetadataBlockName() + " metadata block.");
+                processDatasetMetadata(extractedMetadata, editVersion);
+            }
         }
 
         ingestSuccessful = true;
@@ -1531,72 +1654,71 @@ public class IngestServiceBean {
                         // create a new compound field value and its child 
                         // 
                         DatasetFieldCompoundValue compoundDsfv = new DatasetFieldCompoundValue();
-                        int nonEmptyFields = 0; 
+                        int nonEmptyFields = 0;
                         for (DatasetFieldType cdsft : dsft.getChildDatasetFieldTypes()) {
                             String dsfName = cdsft.getName();
-                            if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {  
-                                logger.fine("Ingest Service: found extracted metadata for field " + dsfName + ", part of the compound field "+dsft.getName());
-                                
+                            if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
+                                logger.fine("Ingest Service: found extracted metadata for field " + dsfName + ", part of the compound field " + dsft.getName());
+
                                 if (cdsft.isPrimitive()) {
                                     // probably an unnecessary check - child fields
-                                    // of compound fields are always primitive... 
-                                    // but maybe it'll change in the future. 
+                                    // of compound fields are always primitive...
+                                    // but maybe it'll change in the future.
                                     if (!cdsft.isControlledVocabulary()) {
                                         // TODO: can we have controlled vocabulary
                                         // sub-fields inside compound fields?
-                                        
+
                                         DatasetField childDsf = new DatasetField();
                                         childDsf.setDatasetFieldType(cdsft);
-                                        
+
                                         DatasetFieldValue newDsfv = new DatasetFieldValue(childDsf);
-                                        newDsfv.setValue((String)fileMetadataMap.get(dsfName).toArray()[0]);
+                                        newDsfv.setValue((String) fileMetadataMap.get(dsfName).toArray()[0]);
                                         childDsf.getDatasetFieldValues().add(newDsfv);
-                                        
+
                                         childDsf.setParentDatasetFieldCompoundValue(compoundDsfv);
                                         compoundDsfv.getChildDatasetFields().add(childDsf);
-                                        
+
                                         nonEmptyFields++;
-    }
-                                } 
+                                    }
+                                }
                             }
                         }
-    
+
                         if (nonEmptyFields > 0) {
-                            // let's go through this dataset's fields and find the 
-                            // actual parent for this sub-field: 
+                            // let's go through this dataset's fields and find the
+                            // actual parent for this sub-field:
                             for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
                                 if (dsf.getDatasetFieldType().equals(dsft)) {
-    
+
                                     // Now let's check that the dataset version doesn't already have
-                                    // this compound value - we are only interested in aggregating 
-                                    // unique values. Note that we need to compare compound values 
-                                    // as sets! -- i.e. all the sub fields in 2 compound fields 
-                                    // must match in order for these 2 compounds to be recognized 
+                                    // this compound value - we are only interested in aggregating
+                                    // unique values. Note that we need to compare compound values
+                                    // as sets! -- i.e. all the sub fields in 2 compound fields
+                                    // must match in order for these 2 compounds to be recognized
                                     // as "the same":
-                                    
-                                    boolean alreadyExists = false; 
+                                    boolean alreadyExists = false;
                                     for (DatasetFieldCompoundValue dsfcv : dsf.getDatasetFieldCompoundValues()) {
-                                        int matches = 0; 
+                                        int matches = 0;
 
                                         for (DatasetField cdsf : dsfcv.getChildDatasetFields()) {
                                             String cdsfName = cdsf.getDatasetFieldType().getName();
                                             String cdsfValue = cdsf.getDatasetFieldValues().get(0).getValue();
                                             if (cdsfValue != null && !cdsfValue.equals("")) {
-                                                String extractedValue = (String)fileMetadataMap.get(cdsfName).toArray()[0];
-                                                logger.fine("values: existing: "+cdsfValue+", extracted: "+extractedValue);
+                                                String extractedValue = (String) fileMetadataMap.get(cdsfName).toArray()[0];
+                                                logger.fine("values: existing: " + cdsfValue + ", extracted: " + extractedValue);
                                                 if (cdsfValue.equals(extractedValue)) {
                                                     matches++;
                                                 }
                                             }
                                         }
                                         if (matches == nonEmptyFields) {
-                                            alreadyExists = true; 
+                                            alreadyExists = true;
                                             break;
                                         }
                                     }
-                                                                        
+
                                     if (!alreadyExists) {
-                                        // save this compound value, by attaching it to the 
+                                        // save this compound value, by attaching it to the
                                         // version for proper cascading:
                                         compoundDsfv.setParentDatasetField(dsf);
                                         dsf.getDatasetFieldCompoundValues().add(compoundDsfv);
