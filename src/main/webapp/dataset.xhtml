@@ -23,7 +23,8 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="showPublishLink" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion 
                                                       and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                      and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
+                                                      and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
+                                                      and DatasetPage.valid}"/>
 
             <ui:param name="showSubmitForReviewLink" value="#{DatasetPage.editMode != 'CREATE' and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                               and !DatasetPage.datasetLockedInWorkflow
