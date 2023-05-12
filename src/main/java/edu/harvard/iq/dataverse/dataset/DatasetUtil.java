@@ -44,6 +44,7 @@ import org.apache.commons.lang3.EnumUtils;
 public class DatasetUtil {
 
     private static final Logger logger = Logger.getLogger(DatasetUtil.class.getCanonicalName());
+    public static final String datasetDefaultSummaryFieldNames = "dsDescription,subject,keyword,publication,notesText";
     public static String datasetLogoFilenameFinal = "dataset_logo_original";
     public static String datasetLogoThumbnail = "dataset_logo";
     public static String thumbExtension = ".thumb";
@@ -429,32 +430,33 @@ public class DatasetUtil {
         return false;
     }
 
-    public static List<DatasetField> getDatasetSummaryFields(DatasetVersion datasetVersion, String customFields) {
-        
-        List<DatasetField> datasetFields = new ArrayList<>();
-        
-        //if customFields are empty, go with default fields. 
-        if(customFields==null || customFields.isEmpty()){
-               customFields="dsDescription,subject,keyword,publication,notesText";
-        }
-        
-        String[] customFieldList= customFields.split(",");
-        Map<String,DatasetField> DatasetFieldsSet=new HashMap<>(); 
-        
+    public static List<DatasetField> getDatasetSummaryFields(DatasetVersion datasetVersion, String customFieldNames) {
+        Map<String, DatasetField> datasetFieldsSet = new HashMap<>();
         for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
-            DatasetFieldsSet.put(dsf.getDatasetFieldType().getName(),dsf); 
+            datasetFieldsSet.put(dsf.getDatasetFieldType().getName(), dsf);
         }
-        
-        for(String cfl : customFieldList)
-        {
-                DatasetField df = DatasetFieldsSet.get(cfl);
-                if(df!=null)
-                datasetFields.add(df);
+        String[] summaryFieldNames = getDatasetSummaryFieldNames(customFieldNames);
+        List<DatasetField> datasetSummaryFields = new ArrayList<>();
+        for (String summaryFieldName : summaryFieldNames) {
+            DatasetField df = datasetFieldsSet.get(summaryFieldName);
+            if (df != null) {
+                datasetSummaryFields.add(df);
+            }
         }
-            
-        return datasetFields;
+        return datasetSummaryFields;
     }
-    
+
+    public static String[] getDatasetSummaryFieldNames(String customFieldNames) {
+        String summaryFieldNames;
+        // If the custom fields are empty, go with the default fields.
+        if(customFieldNames == null || customFieldNames.isEmpty()){
+            summaryFieldNames = datasetDefaultSummaryFieldNames;
+        } else {
+            summaryFieldNames = customFieldNames;
+        }
+        return summaryFieldNames.split(",");
+    }
+
     public static boolean isRsyncAppropriateStorageDriver(Dataset dataset){
         // ToDo - rsync was written before multiple store support and currently is hardcoded to use the DataAccess.S3 store.
         // When those restrictions are lifted/rsync can be configured per store, this test should check that setting

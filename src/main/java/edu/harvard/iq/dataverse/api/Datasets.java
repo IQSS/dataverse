@@ -3849,4 +3849,16 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
     }
+
+    @GET
+    @Path("summaryFieldNames")
+    public Response getDatasetSummaryFieldNames() {
+        String customFieldNames = settingsService.getValueForKey(SettingsServiceBean.Key.CustomDatasetSummaryFields);
+        String[] fieldNames = DatasetUtil.getDatasetSummaryFieldNames(customFieldNames);
+        JsonArrayBuilder fieldNamesArrayBuilder = Json.createArrayBuilder();
+        for (String fieldName : fieldNames) {
+            fieldNamesArrayBuilder.add(fieldName);
+        }
+        return ok(fieldNamesArrayBuilder);
+    }
 }
