@@ -592,8 +592,24 @@ public class SettingsServiceBean {
         /**
          * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
          */
-        WebloaderUrl
-
+        WebloaderUrl,
+        /**
+         * A comma-separated list of CategoryName in the desired order for files to be
+         * sorted in the file table display. If not set, files will be sorted
+         * alphabetically by default. If set, files will be sorted by these categories
+         * and alphabetically within each category.
+         */
+        CategoryOrder,
+        /**
+         * True(default)/false option deciding whether ordering by folder should be applied to the 
+         * dataset listing of datafiles.
+         */
+        OrderByFolder,
+        /**
+         * True/false(default) option deciding whether the dataset file table display should include checkboxes
+         * allowing users to dynamically turn folder and category ordering on/off.
+         */
+        AllowUserManagementOfOrder
         ;
 
         @Override

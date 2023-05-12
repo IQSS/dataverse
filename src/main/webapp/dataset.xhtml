@@ -89,6 +89,11 @@
                 </ui:fragment>
             </ui:define>
             <ui:define name="body">
+                <!-- Add Signposting-->
+                <c:if test="#{not empty DatasetPage.getSignpostingLinkHeader()}">
+                    <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Link', DatasetPage.getSignpostingLinkHeader())}" />
+                </c:if>
+                <!-- End add Signposting-->
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
                     <f:viewParam name="id" value="#{DatasetPage.id}"/>
@@ -99,6 +104,8 @@
                     <f:viewParam name="showIngestSuccess" value="#{DatasetPage.showIngestSuccess}"/>
                     <f:viewParam name="fileSortField" value="#{DatasetPage.fileSortField}"/>
                     <f:viewParam name="fileSortOrder" value="#{DatasetPage.fileSortOrder}"/>
+                    <o:viewParam name="tagPresort" value="#{DatasetPage.tagPresort}" default="true"/>
+                    <o:viewParam name="folderPresort" value="#{DatasetPage.folderPresort}" default="true"/>
                     <f:viewParam name="q" value="#{DatasetPage.fileLabelSearchTerm}"/>
                     <f:viewParam name="fileTypeGroupFacet" value="#{DatasetPage.fileTypeFacet}"/>
                     <f:viewParam name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
@@ -1890,19 +1897,21 @@
                         var termsofAccessHidden, fileAccessRequestHidden;
                         try{
                             termsofAccessHidden = document.getElementById("datasetForm:tabView:termsofAccessHiddenLT").value;
-                            fileAccessRequestHidden  = document.getElementById("datasetForm:tabView:fileAccessRequestHiddenLT").value;  
+                            fileAccessRequestHidden  = document.getElementById("datasetForm:tabView:fileAccessRequestHiddenLT").value;
+
+                            if ('#{DatasetPage.isHasRestrictedFiles()}' === 'true' && fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
+                                //Not compliant show error keep page open...
+                            } else {
+                                PF('blockDatasetForm').show();
+                                datasetSaveCommand();
+                            }
                         }
                         catch (error){
                             //terms not present so save...
                             PF('blockDatasetForm').show();
                             datasetSaveCommand();                        
                         }                         
-                        if ('#{DatasetPage.isHasRestrictedFiles()}' === 'true' && fileAccessRequestHidden === 'false' && termsofAccessHidden === '') {
-                           //Not compliant show error keep page open...
-                        } else {
-                            PF('blockDatasetForm').show();
-                            datasetSaveCommand();
-                        }
+
                     }
                                         
                     //]]>
