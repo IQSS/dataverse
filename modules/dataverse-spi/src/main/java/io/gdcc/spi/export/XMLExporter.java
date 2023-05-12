@@ -9,13 +9,6 @@ import javax.ws.rs.core.MediaType;
 public interface XMLExporter extends Exporter {
 
     /**
-     * @return - should always be true for XML Exporters
-     */
-    default Boolean isXMLFormat() {
-        return true;
-    };
-
-    /**
      * @implNote for the ddi exporter, this method returns "ddi:codebook:2_5"
      * @return - the name space of the XML schema
      */

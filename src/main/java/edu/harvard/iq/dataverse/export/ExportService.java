@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
@@ -475,7 +476,7 @@ public class ExportService {
     public Boolean isXMLFormat(String provider) {
         Exporter e = exporterMap.get(provider);
         if (e != null) {
-            return e.isXMLFormat();
+            return e instanceof XMLExporter;
         }
         return null;
     }

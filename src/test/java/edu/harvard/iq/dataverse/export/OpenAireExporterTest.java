@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.XMLExporter;
 
 import static org.junit.Assert.assertEquals;
 
@@ -133,14 +134,14 @@ public class OpenAireExporterTest {
     }
 
     /**
-     * Test of isXMLFormat method, of class OpenAireExporter.
+     * Test that OpenAireExporter is an XMLExporter
      */
     @Test
     public void testIsXMLFormat() {
         System.out.println("isXMLFormat");
         OpenAireExporter instance = new OpenAireExporter();
         Boolean expResult = true;
-        Boolean result = instance.isXMLFormat();
+        Boolean result = instance instanceof XMLExporter;
         assertEquals(expResult, result);
     }
 

@@ -248,11 +248,11 @@ public class SchemaDotOrgExporterTest {
     }
 
     /**
-     * Test of isXMLFormat method, of class SchemaDotOrgExporter.
+     * Test that SchemaDotOrgExporter is not an XMLExporter
      */
     @Test
     public void testIsXMLFormat() {
-        assertEquals(false, schemaDotOrgExporter.isXMLFormat());
+        assertEquals(false, schemaDotOrgExporter instanceof XMLExporter);
     }
 
     /**

@@ -155,7 +155,7 @@ public class OAIServlet extends HttpServlet {
                 exporter = null;
             }
 
-            if (exporter != null && exporter.isXMLFormat() && exporter.isHarvestable()) {
+            if (exporter != null && (exporter instanceof XMLExporter) && exporter.isHarvestable()) {
                 MetadataFormat metadataFormat;
 
                 metadataFormat = MetadataFormat.metadataFormat(formatName);

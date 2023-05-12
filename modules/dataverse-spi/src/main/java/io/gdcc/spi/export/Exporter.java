@@ -85,18 +85,6 @@ public interface Exporter {
         return Optional.empty();
     }
 
-    /**
-     * Exporters that return an XML-based format should implement the XMLExporter
-     * interface.
-     * 
-     * @apiNote XML-based exporters must implement additional methods. Returning
-     *          true by overriding this method without implementing the XMLExporter
-     *          interface will result in failure/exceptions being thrown when your
-     *          exporter is called.
-     */
-    default Boolean isXMLFormat() {
-        return false;
-    }
 
     /**
      * Harvestable Exporters will be available as options in Dataverse's Harvesting mechanism.

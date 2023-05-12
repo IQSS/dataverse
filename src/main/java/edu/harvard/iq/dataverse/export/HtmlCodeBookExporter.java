@@ -52,11 +52,6 @@ public class HtmlCodeBookExporter implements Exporter {
     }
 
     @Override
-    public Boolean isXMLFormat() {
-        return false;
-    }
-
-    @Override
     public Boolean isHarvestable() {
         // No, we don't want this format to be harvested!
         // For datasets with tabular data the <data> portions of the DDIs
