@@ -700,8 +700,8 @@ public class SettingsWrapper implements java.io.Serializable {
         return customLicenseAllowed;
     }
 
-    public boolean canReviewInvalid() {
-        return isTrueForKey(Key.CanReviewInvalid, false);
+    public boolean canReviewIncomplete() {
+        return isTrueForKey(Key.CanReviewIncomplete, false);
     }
     
     public boolean showValidityFilter() {

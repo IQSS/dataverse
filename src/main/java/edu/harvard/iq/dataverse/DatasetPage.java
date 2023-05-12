@@ -2185,8 +2185,8 @@ public class DatasetPage implements java.io.Serializable {
         return newVersion.isValid();
     }
 
-    public boolean isValidOrCanReviewInvalid() {
-        return isValid() || settingsWrapper.canReviewInvalid();
+    public boolean isValidOrCanReviewIncomplete() {
+        return isValid() || settingsWrapper.canReviewIncomplete();
     }
 
     private void displayLockInfo(Dataset dataset) {

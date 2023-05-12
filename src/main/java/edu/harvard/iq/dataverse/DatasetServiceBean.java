@@ -785,7 +785,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
         if (!isValid) {
-            reminderString = reminderString + "<br/><b style=\"color:red;\"> " + BundleUtil.getStringFromBundle("dataset.message.invalid.warning") + "</b>";
+            reminderString = reminderString + "<br/><b style=\"color:red;\"> " + BundleUtil.getStringFromBundle("dataset.message.incomplete.warning") + "</b>";
         }
 
         if (reminderString != null) {

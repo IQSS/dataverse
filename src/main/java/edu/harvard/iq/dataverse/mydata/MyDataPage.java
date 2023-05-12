@@ -114,7 +114,7 @@ public class MyDataPage implements java.io.Serializable {
     public List<String[]> getValidityInfoForCheckboxes(){
         return Arrays.asList(
             new String[] {"true", "valid", BundleUtil.getStringFromBundle("valid")},
-            new String[] {"false", "invalid", BundleUtil.getStringFromBundle("notValid")}
+            new String[] {"false", "incomplete", BundleUtil.getStringFromBundle("incomplete")}
         );
     }
 

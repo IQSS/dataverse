@@ -494,10 +494,10 @@ function submit_my_data_search(){
                     y[i].innerHTML = deaccessioned;
                 }
             }
-            if ($("span.label.invalid")) {
-                var y = $("span.label.invalid");
+            if ($("span.label.incomplete")) {
+                var y = $("span.label.incomplete");
                 for (var i = 0; i < y.length; i++) {
-                    y[i].innerHTML = invalid;
+                    y[i].innerHTML = incomplete;
                 }
             }
 

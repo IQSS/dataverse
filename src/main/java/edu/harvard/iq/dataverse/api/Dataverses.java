@@ -245,7 +245,7 @@ public class Dataverses extends AbstractApiBean {
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
             ds.setOwner(owner);
-            boolean skipValidation = u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) && settingsService.isTrueForKey(SettingsServiceBean.Key.AllowInvalidMetadataThroughAPI, false);
+            boolean skipValidation = u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) && settingsService.isTrueForKey(SettingsServiceBean.Key.AllowIncompleteMetadataThroughAPI, false);
             boolean validate = !skipValidation;
 
             if (ds.getVersions().isEmpty()) {
