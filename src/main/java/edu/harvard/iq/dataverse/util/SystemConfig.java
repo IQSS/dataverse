@@ -58,11 +58,6 @@ public class SystemConfig {
    public static final String DATAVERSE_PATH = "/dataverse/";
    
     /**
-     * A JVM option for where files are stored on the file system.
-     */
-    public static final String FILES_DIRECTORY = "dataverse.files.directory";
-
-    /**
      * Some installations may not want download URLs to their files to be
      * available in Schema.org JSON-LD output.
      */
@@ -1029,11 +1024,6 @@ public class SystemConfig {
 	public boolean directUploadEnabled(DvObjectContainer container) {
     	return Boolean.getBoolean("dataverse.files." + container.getEffectiveStorageDriverId() + ".upload-redirect");
 	}
-	
-	public String getDataCiteRestApiUrlString() {
-		//As of 5.0 the 'doi.dataciterestapiurlstring' is the documented jvm option. Prior versions used 'doi.mdcbaseurlstring' or were hardcoded to api.datacite.org, so the defaults are for backward compatibility.
-        return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
-	}
         
     public boolean isExternalDataverseValidationEnabled() {
         return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidatorScript) != null;
@@ -1107,9 +1097,8 @@ public class SystemConfig {
         Map<String, String[]> labelMap = new HashMap<String, String[]>();
         String setting = settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
         if (!setting.isEmpty()) {
-            try {
-                JsonReader jsonReader = Json.createReader(new StringReader(setting));
-
+            try (JsonReader jsonReader = Json.createReader(new StringReader(setting))){
+                
                 Pattern pattern = Pattern.compile("(^[\\w ]+$)"); // alphanumeric, underscore and whitespace allowed
 
                 JsonObject labelSets = jsonReader.readObject();

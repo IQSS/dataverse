@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -827,7 +828,7 @@ public class IndexServiceBean {
             }
 
             Set<String> langs = settingsService.getConfiguredLanguages();
-            Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
+            Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(true);
             Set<String> metadataBlocksWithValue = new HashSet<>();
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
@@ -1296,7 +1297,9 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_VALUE, fileMetadata.getDataFile().getChecksumValue());
                     datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, fileMetadata.getDescription());
                     datafileSolrInputDocument.addField(SearchFields.FILE_DESCRIPTION, fileMetadata.getDescription());
-                    datafileSolrInputDocument.addField(SearchFields.FILE_PERSISTENT_ID, fileMetadata.getDataFile().getGlobalId().toString());
+                    GlobalId filePid = fileMetadata.getDataFile().getGlobalId();
+                    datafileSolrInputDocument.addField(SearchFields.FILE_PERSISTENT_ID,
+                            (filePid != null) ? filePid.toString() : null);
                     datafileSolrInputDocument.addField(SearchFields.UNF, fileMetadata.getDataFile().getUnf());
                     datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
                     // datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE,
@@ -1497,6 +1500,7 @@ public class IndexServiceBean {
                 dataset = (Dataset) dvObject;
                 linkingDataverses = dsLinkingService.findLinkingDataverses(dataset.getId());
                 ancestorList = dataset.getOwner().getOwners();
+                ancestorList.add(dataset.getOwner()); //to show dataset in linking dv when parent dv is linked
             }
             if(dvObject.isInstanceofDataverse()){
                 dv = (Dataverse) dvObject;
@@ -1661,6 +1665,11 @@ public class IndexServiceBean {
             logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
         }        
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
+        if (dataversePaths.size() > 0 && dvo.isInstanceofDataverse()) {
+            // removing the dataverse's own id from the paths
+            // fixes bug where if my parent dv was linked my dv was shown as linked to myself
+            dataversePaths.remove(dataversePaths.size() - 1);
+        }
         /*
         add linking paths
         */

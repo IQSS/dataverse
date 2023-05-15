@@ -134,4 +134,3 @@ The following options are available:
     - A subtitle, currently not displayed by the UI.
     - N
     - ``OpenID Connect``
-

@@ -130,7 +130,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>5.12.1</revision>
+        <revision>5.13</revision>
     
         <target.java.version>11</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -148,7 +148,7 @@
     
         <!-- Major system components and dependencies -->
         <payara.version>5.2022.3</payara.version>
-        <postgresql.version>42.5.0</postgresql.version>
+        <postgresql.version>42.5.1</postgresql.version>
         <solr.version>8.11.1</solr.version>
         <aws.version>1.12.290</aws.version>
         <google.cloud.version>0.177.0</google.cloud.version>
@@ -164,7 +164,7 @@
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         
         <!-- NEW gdcc XOAI library implementation -->
-        <gdcc.xoai.version>5.0.0-RC2</gdcc.xoai.version>
+        <gdcc.xoai.version>5.0.0</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
         <testcontainers.version>1.17.6</testcontainers.version>
@@ -189,7 +189,7 @@
         <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.40.2</fabric8-dmp.version>
+        <fabric8-dmp.version>0.42.1</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>
@@ -345,8 +345,9 @@
                 <!--
                     Payara 5.2022.3 has problems with postboot deployment scripts.
                     Fixed in this release, see https://github.com/payara/Payara/pull/5991
+                    Payara 5.2022.4 has security issues.
                 -->
-                <payara.version>5.2022.4</payara.version>
+                <payara.version>5.2022.5</payara.version>
             </properties>
     
             <build>

@@ -927,6 +927,9 @@ thead.ui-datatable-scrollable-theadclone {display:none}
 #file-title-block span.glyphicon-lock, #file-title-block span.icon-unlock {top:1px;}
 #file-title-block span.ingest-warning {vertical-align:text-bottom;font-size:30px;}
 #fileCategoriesBlock span.label {margin-right: 0.5em;}
+#file-tags .label {
+    display:inline-block;
+}
 
 /* BLOCK UI */
 .ui-blockui.ui-widget-overlay {background:#fff; opacity:.6;}
@@ -1045,6 +1048,10 @@ progress::-webkit-progress-value {
 
 /*External vocabulary support*/
 
+.select2-container {
+    display:block!important;
+}
+
 .select2-container .select2-selection--single {
         border:1px solid #cccccc;
         border-radius: 3px;
@@ -1055,7 +1062,8 @@ progress::-webkit-progress-value {
 
 .select2-container .select2-selection--single .select2-selection__rendered {
         display:inline-block!important;
-        max-width:90%
+        max-width:80%;
+        padding-right:5px!important;
 }
 .select2-selection__clear, .select2-selection__rendered {
         vertical-align: -webkit-baseline-middle;
@@ -1133,4 +1141,19 @@ span.label-default { background-color: #757575 }
 /*Template Instructions Editing*/
 .ui-inplace .ui-inputfield {
     width:60%
+}
+/*File sorting*/
+#datasetForm .file-sort {
+	max-width: 255px;
+	float: right;
+	padding-right:21px;
+}
+
+#datasetForm .file-sort .btn-group {
+	padding-top: 4px;
+}
+
+#datasetForm .file-group-by {
+	min-width: 130px;
+	padding: 0px;
 }

@@ -6,7 +6,7 @@
 Dataverse Documentation v. |version|
 ====================================
 
-These documentation guides are for the |version| version of Dataverse. To find guides belonging to previous versions, :ref:`guides_versions` has a list of all available versions.
+These documentation guides are for the |version| version of Dataverse. To find guides belonging to previous or future versions, :ref:`guides_versions` has a list of all available versions.
 
 .. toctree::
   :glob:

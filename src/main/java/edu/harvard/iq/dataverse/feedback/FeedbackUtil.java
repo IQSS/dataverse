@@ -10,10 +10,14 @@ import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+
+import javax.json.JsonObject;
 import javax.mail.internet.InternetAddress;
 
 public class FeedbackUtil {
@@ -22,87 +26,118 @@ public class FeedbackUtil {
 
     private static final String NO_DATASET_CONTACT_INTRO = BundleUtil.getStringFromBundle("contact.context.dataset.noContact");
 
-    // TODO: consider changing "recipient" into an object called something like FeedbackTarget
-    public static List<Feedback> gatherFeedback(DvObject recipient, DataverseSession dataverseSession, String messageSubject, String userMessage, InternetAddress systemAddress, String userEmail, String dataverseSiteUrl, String installationBrandName, String supportTeamName) {
+    public static Feedback gatherFeedback(DvObject feedbackTarget, DataverseSession dataverseSession, String messageSubject, String userMessage, InternetAddress systemAddress, String userEmail, String dataverseSiteUrl, String installationBrandName, String supportTeamName, boolean ccSupport) {
         String systemEmail = null;
         if (systemAddress != null) {
             systemEmail = systemAddress.getAddress();
         }
         logger.fine("systemAddress: " + systemAddress);
-        List<Feedback> feedbacks = new ArrayList<>();
+        Feedback feedback = null;
         if (isLoggedIn(dataverseSession)) {
             userEmail = loggedInUserEmail(dataverseSession);
         }
-        if (recipient != null) {
+        String contextIntro;
+        String contextEnding;
+        String contactEmails;
+        String ccEmails = ccSupport ? systemEmail : null;
+
+        if (feedbackTarget != null) {
             messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.dvobject", Arrays.asList(installationBrandName, messageSubject));
-            if (recipient.isInstanceofDataverse()) {
-                Dataverse dataverse = (Dataverse) recipient;
-                String dataverseContextEnding = BundleUtil.getStringFromBundle("contact.context.dataverse.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, dataverse.getAlias(), supportTeamName, systemEmail));
-                List<DvObjectContact> dataverseContacts = getDataverseContacts(dataverse);
-                for (DvObjectContact dataverseContact : dataverseContacts) {
-                    String placeHolderIfDataverseContactsGetNames = "";
-                    String dataverseContextIntro = BundleUtil.getStringFromBundle("contact.context.dataverse.intro", Arrays.asList(placeHolderIfDataverseContactsGetNames, userEmail, installationBrandName, dataverse.getAlias()));
-                    Feedback feedback = new Feedback(userEmail, dataverseContact.getEmail(), messageSubject, dataverseContextIntro + userMessage + dataverseContextEnding);
-                    feedbacks.add(feedback);
+
+            String contactGreeting;
+
+            if (feedbackTarget.isInstanceofDataverse()) {
+                // Dataverse target
+                Dataverse dataverse = (Dataverse) feedbackTarget;
+                contextEnding = BundleUtil.getStringFromBundle("contact.context.dataverse.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, dataverse.getAlias(), supportTeamName, systemEmail));
+                List<DvObjectContact> contacts = getDataverseContacts(dataverse);
+                List<String> contactEmailList = new ArrayList<String>();
+                for (DvObjectContact contact : contacts) {
+                    contactEmailList.add(contact.getEmail());
                 }
-                if (!feedbacks.isEmpty()) {
-                    return feedbacks;
+                if (!contactEmailList.isEmpty()) {
+                    contactEmails = String.join(",", contactEmailList);
+                    // Dataverse contacts do not have a name, just email address
+                    contactGreeting = "";
+                    contextIntro = BundleUtil.getStringFromBundle("contact.context.dataverse.intro", Arrays.asList(contactGreeting, userEmail, installationBrandName, dataverse.getAlias()));
                 } else {
-                    String dataverseContextIntroError = BundleUtil.getStringFromBundle("contact.context.dataverse.noContact");
-                    Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, dataverseContextIntroError + userMessage + dataverseContextEnding);
-                    feedbacks.add(feedback);
-                    return feedbacks;
+                    // No contacts
+                    contextIntro = BundleUtil.getStringFromBundle("contact.context.dataverse.noContact");
+                    contactEmails = systemEmail;
+                    ccEmails = null;
                 }
-            } else if (recipient.isInstanceofDataset()) {
-                Dataset dataset = (Dataset) recipient;
+            } else if (feedbackTarget.isInstanceofDataset()) {
+                // Dataset target
+                Dataset dataset = (Dataset) feedbackTarget;
                 String datasetTitle = dataset.getLatestVersion().getTitle();
-                String datasetPid = dataset.getGlobalIdString();
-                String datasetContextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, dataset.getGlobalIdString(), supportTeamName, systemEmail));
-                List<DvObjectContact> datasetContacts = getDatasetContacts(dataset);
-                for (DvObjectContact datasetContact : datasetContacts) {
-                    String contactFullName = getGreeting(datasetContact);
-                    String datasetContextIntro = BundleUtil.getStringFromBundle("contact.context.dataset.intro", Arrays.asList(contactFullName, userEmail, installationBrandName, datasetTitle, datasetPid));
-                    Feedback feedback = new Feedback(userEmail, datasetContact.getEmail(), messageSubject, datasetContextIntro + userMessage + datasetContextEnding);
-                    feedbacks.add(feedback);
+                String datasetPid = dataset.getGlobalId().asString();
+                contextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, datasetPid, supportTeamName, systemEmail));
+                List<DvObjectContact> contacts = getDatasetContacts(dataset);
+                List<String> contactEmailList = new ArrayList<String>();
+                List<String> contactNameList = new ArrayList<String>();
+
+                for (DvObjectContact contact : contacts) {
+                    String name = getContactName(contact);
+                    if (name != null) {
+                        contactNameList.add(name);
+                    }
+                    contactEmailList.add(contact.getEmail());
                 }
-                if (!feedbacks.isEmpty()) {
-                    return feedbacks;
+                if (!contactEmailList.isEmpty()) {
+                    contactEmails = String.join(",", contactEmailList);
+                    contactGreeting = getGreeting(contactNameList);
+
+                    contextIntro = BundleUtil.getStringFromBundle("contact.context.dataset.intro", Arrays.asList(contactGreeting, userEmail, installationBrandName, datasetTitle, datasetPid));
                 } else {
-                    // TODO: Add more of an intro for the person receiving the system email in this "no dataset contact" scenario?
-                    Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + datasetContextEnding);
-                    feedbacks.add(feedback);
-                    return feedbacks;
+                    // No contacts
+                    // TODO: Add more of an intro for the person receiving the system email in this
+                    // "no dataset contact" scenario?
+                    contextIntro = NO_DATASET_CONTACT_INTRO;
+                    contactEmails = systemEmail;
+                    ccEmails = null;
                 }
             } else {
-                DataFile datafile = (DataFile) recipient;
+                // DataFile target
+                DataFile datafile = (DataFile) feedbackTarget;
                 String datasetTitle = datafile.getOwner().getLatestVersion().getTitle();
-                String datasetPid = datafile.getOwner().getGlobalIdString();
+                String datasetPid = datafile.getOwner().getGlobalId().asString();
                 String filename = datafile.getFileMetadatas().get(0).getLabel();
-                List<DvObjectContact> datasetContacts = getDatasetContacts(datafile.getOwner());
-                String fileContextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, datafile.getId().toString(), supportTeamName, systemEmail));
-                for (DvObjectContact datasetContact : datasetContacts) {
-                    String contactFullName = getGreeting(datasetContact);
-                    String fileContextIntro = BundleUtil.getStringFromBundle("contact.context.file.intro", Arrays.asList(contactFullName, userEmail, installationBrandName, filename, datasetTitle, datasetPid));
-                    Feedback feedback = new Feedback(userEmail, datasetContact.getEmail(), messageSubject, fileContextIntro + userMessage + fileContextEnding);
-                    feedbacks.add(feedback);
+                List<DvObjectContact> contacts = getDatasetContacts(datafile.getOwner());
+                contextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, datafile.getId().toString(), supportTeamName, systemEmail));
+                List<String> contactEmailList = new ArrayList<String>();
+                List<String> contactNameList = new ArrayList<String>();
+
+                for (DvObjectContact contact : contacts) {
+                    String name = getContactName(contact);
+                    if (name != null) {
+                        contactNameList.add(name);
+                    }
+                    contactEmailList.add(contact.getEmail());
                 }
-                if (!feedbacks.isEmpty()) {
-                    return feedbacks;
+                if (!contactEmailList.isEmpty()) {
+                    contactEmails = String.join(",", contactEmailList);
+                    contactGreeting = getGreeting(contactNameList);
+
+                    contextIntro = BundleUtil.getStringFromBundle("contact.context.file.intro", Arrays.asList(contactGreeting, userEmail, installationBrandName, filename, datasetTitle, datasetPid));
                 } else {
-                    // TODO: Add more of an intro for the person receiving the system email in this "no dataset contact" scenario?
-                    Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, NO_DATASET_CONTACT_INTRO + userMessage + fileContextEnding);
-                    feedbacks.add(feedback);
-                    return feedbacks;
+                    // No contacts
+                    // TODO: Add more of an intro for the person receiving the system email in this
+                    // "no dataset contact" scenario?
+                    contextIntro = NO_DATASET_CONTACT_INTRO;
+                    contactEmails = systemEmail;
+                    ccEmails = null;
                 }
             }
         } else {
+            // No target
             messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.support", Arrays.asList(installationBrandName, messageSubject));
-            String noDvObjectContextIntro = BundleUtil.getStringFromBundle("contact.context.support.intro", Arrays.asList(supportTeamName, userEmail));
-            String noDvObjectContextEnding = BundleUtil.getStringFromBundle("contact.context.support.ending", Arrays.asList(""));
-            Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, noDvObjectContextIntro + userMessage + noDvObjectContextEnding);
-            feedbacks.add(feedback);
-            return feedbacks;
+            contextIntro = BundleUtil.getStringFromBundle("contact.context.support.intro", Arrays.asList(supportTeamName, userEmail));
+            contextEnding = BundleUtil.getStringFromBundle("contact.context.support.ending", Arrays.asList(""));
+            contactEmails = systemEmail;
+            ccEmails = null;
         }
+        feedback = new Feedback(userEmail, contactEmails, ccEmails, messageSubject, contextIntro + userMessage + contextEnding);
+        return feedback;
     }
 
     private static boolean isLoggedIn(DataverseSession dataverseSession) {
@@ -156,30 +191,53 @@ public class FeedbackUtil {
     }
 
     /**
-     * When contacts are people we suggest that they be stored as "Simpson,
-     * Homer" so the idea of this method is that it returns "Homer Simpson", if
-     * it can.
+     * When contacts are people we suggest that they be stored as "Simpson, Homer"
+     * so the idea of this method is that it returns "Homer Simpson", if it can.
      *
      * Contacts don't necessarily have to be people, however. They can be
-     * organizations. We ran into similar trouble (but for authors) when
-     * implementing Schema.org JSON-LD support. See getJsonLd on DatasetVersion.
-     * Some day it might be nice to store whether an author or a contact is a
-     * person or an organization.
+     * organizations. This method uses the algorithm to detect whether an entry is a
+     * Person or Organization and relies on it to create a full name, i.e. removing
+     * the comma and reversion the order of names for a Person but not changing the
+     * string for an Organization.
      */
-    private static String getGreeting(DvObjectContact dvObjectContact) {
-        logger.fine("dvObjectContact: " + dvObjectContact);
-        try {
-            String name = dvObjectContact.getName();
-            logger.fine("dvObjectContact name: " + name);
-            String lastFirstString = dvObjectContact.getName();
-            String[] lastFirstParts = lastFirstString.split(",");
-            String last = lastFirstParts[0];
-            String first = lastFirstParts[1];
-            return BundleUtil.getStringFromBundle("contact.context.dataset.greeting.helloFirstLast", Arrays.asList(first.trim(), last.trim()));
-        } catch (Exception ex) {
-            logger.warning("problem in getGreeting: " + ex);
-            return BundleUtil.getStringFromBundle("contact.context.dataset.greeting.organization");
+    private static String getContactName(DvObjectContact dvObjectContact) {
+        String contactName = dvObjectContact.getName();
+        String name = null;
+        if (contactName != null) {
+            JsonObject entity = PersonOrOrgUtil.getPersonOrOrganization(contactName, false, false);
+            if (entity.getBoolean("isPerson") && entity.containsKey("givenName") && entity.containsKey("familyName")) {
+                name = entity.getString("givenName") + " " + entity.getString("familyName");
+            } else {
+                name = entity.getString("fullName");
+            }
         }
+        return name;
+
+    }
+
+    /**
+     * Concatenates names using commas and a final 'and' and creates the greeting
+     * string, e.g. "Hello Homer Simpson, Bart Simson, and Marge Simpson"
+     */
+    private static String getGreeting(List<String> contactNameList) {
+        int size = contactNameList.size();
+        String nameString;
+        String finalName = null;
+        // Treat the final name separately
+        switch (size) {
+        case 0:
+            return BundleUtil.getStringFromBundle("contact.context.dataset.greeting.organization");
+        case 1:
+            nameString = contactNameList.get(0);
+            break;
+        case 2:
+            nameString = contactNameList.get(0) + " and " + contactNameList.get(1);
+            break;
+        default:
+            finalName = contactNameList.remove(size - 1);
+            nameString = String.join(",", contactNameList) + ", and " + finalName;
+        }
+        return BundleUtil.getStringFromBundle("contact.context.dataset.greeting.helloFirstLast", Arrays.asList(nameString));
     }
 
 }
