@@ -115,7 +115,7 @@ public class ImageThumbConverter {
             return true;
         }
 
-        logger.log(Level.FINE, (file.isPreviewsHaveFailed() ? "Not trying" : "Trying") + "to generate thumbnail, file id: " + file.getId());
+        logger.log(Level.FINE, (file.isPreviewsHaveFailed() ? "Not trying" : "Trying") + " to generate thumbnail, file id: " + file.getId());
         // Don't try to generate if there have been failures:
         if (!file.isPreviewsHaveFailed()) {
             boolean thumbnailGenerated = false;
