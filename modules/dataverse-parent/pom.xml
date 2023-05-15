@@ -167,7 +167,7 @@
         <gdcc.xoai.version>5.0.0</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
-        <testcontainers.version>1.17.6</testcontainers.version>
+        <testcontainers.version>1.18.1</testcontainers.version>
         <smallrye-mpconfig.version>2.10.1</smallrye-mpconfig.version>
     
         <junit.version>4.13.1</junit.version>
