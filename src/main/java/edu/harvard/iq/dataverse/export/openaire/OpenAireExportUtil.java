@@ -331,7 +331,7 @@ public class OpenAireExportUtil {
     private static boolean writeMultipleTitleElement(XMLStreamWriter xmlw, String titleType, DatasetVersionDTO datasetVersionDTO, String metadataBlockName, boolean title_check, String language) throws XMLStreamException {
         MetadataBlockDTO block = datasetVersionDTO.getMetadataBlocks().get(metadataBlockName);
         if (block != null) {
-            logger.info("Block is not empty");
+            logger.fine("Block is not empty");
             List<FieldDTO> fieldsBlock =  block.getFields();
             if (fieldsBlock != null) {
                 for (FieldDTO fieldDTO : fieldsBlock) {
