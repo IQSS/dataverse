@@ -322,8 +322,6 @@ public class OpenAireExportUtil {
         String subtitle = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.subTitle);
         title_check = writeTitleElement(xmlw, "Subtitle", subtitle, title_check, language);
 
-        //String alternativeTitle = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.alternativeTitle);
-        //title_check = writeTitleElement(xmlw, "AlternativeTitle", alternativeTitle, title_check, language);
         title_check = writeMultipleTitleElement(xmlw, "AlternativeTitle", datasetVersionDTO, "citation", title_check, language);
         writeEndTag(xmlw, title_check);
     }
