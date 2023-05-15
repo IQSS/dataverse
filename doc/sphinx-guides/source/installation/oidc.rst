@@ -69,8 +69,31 @@ After adding a provider, the Log In page will by default show the "builtin" prov
    In contrast to our :doc:`oauth2`, you can use multiple providers by creating distinct configurations enabled by
    the same technology and without modifying the Dataverse Software code base (standards for the win!).
 
+
+.. _oidc-pkce:
+
+Enabling PKCE Security
+^^^^^^^^^^^^^^^^^^^^^^
+
+Many providers these days support or even require the usage of `PKCE <https://oauth.net/2/pkce/>`_ to safeguard against
+some attacks and enable public clients that cannot have a secure secret to still use OpenID Connect (or OAuth2).
+
+The Dataverse built OIDC client can be enabled to use PKCE and which method to use when creating the code challenge.
+See also `this explanation of the flow <https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow-with-proof-key-for-code-exchange-pkce>`_
+for details on how this works.
+
+As we are using the `Nimbus SDK <https://connect2id.com/products/nimbus-oauth-openid-connect-sdk>`_ as our client
+library, we support the standard ``PLAIN`` and ``S256`` code challenge methods. "SHA-256 method" is the default
+as recommend in `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636#section-4.2>`_. If your provider needs some
+other method (unlikely), please open an issue.
+
+The provisioning sections below contain in the example the parameters you may use to configure PKCE.
+
 Provision via REST API
 ^^^^^^^^^^^^^^^^^^^^^^
+
+Note: you may omit the PKCE related settings from ``factoryData`` below if you don't plan on using PKCE - default is
+disabled.
 
 Please create a ``my-oidc-provider.json`` file like this, replacing every ``<...>`` with your values:
 
@@ -81,7 +104,7 @@ Please create a ``my-oidc-provider.json`` file like this, replacing every ``<...
         "factoryAlias":"oidc",
         "title":"<a title - shown in UI>",
         "subtitle":"<a subtitle - currently unused in UI>",
-        "factoryData":"type: oidc | issuer: <issuer url> | clientId: <client id> | clientSecret: <client secret>",
+        "factoryData":"type: oidc | issuer: <issuer url> | clientId: <client id> | clientSecret: <client secret> | pkceEnabled: <true/false> | pkceMethod: <PLAIN/S256/...>",
         "enabled":true
     }
 
@@ -105,6 +128,7 @@ The following options are available:
 .. list-table::
   :widths: 25 55 10 10
   :header-rows: 1
+  :align: left
 
   * - Option
     - Description
@@ -126,6 +150,14 @@ The following options are available:
     - The base URL of the OpenID Connect (OIDC) server as explained above.
     - Y
     - \-
+  * - ``dataverse.auth.oidc.pkce.enabled``
+    - Set to ``true`` to enable :ref:`PKCE <oidc-pkce>` in auth flow.
+    - N
+    - ``false``
+  * - ``dataverse.auth.oidc.pkce.method``
+    - Set code challenge method. Default equals best practice.
+    - N
+    - ``S256``
   * - ``dataverse.auth.oidc.title``
     - The UI visible name for this provider in login options.
     - N
