@@ -329,13 +329,13 @@ public class OpenAireExportUtil {
     private static boolean writeMultipleTitleElement(XMLStreamWriter xmlw, String titleType, DatasetVersionDTO datasetVersionDTO, String metadataBlockName, boolean title_check, String language) throws XMLStreamException {
         MetadataBlockDTO block = datasetVersionDTO.getMetadataBlocks().get(metadataBlockName);
         if (block != null) {
-            logger.info("Block is not empty");
+            logger.fine("Block is not empty");
             List<FieldDTO> fieldsBlock =  block.getFields();
             if (fieldsBlock != null) {
                 for (FieldDTO fieldDTO : fieldsBlock) {
-                    logger.info(titleType + " " + fieldDTO.getTypeName());
+                    logger.fine(titleType + " " + fieldDTO.getTypeName());
                     if (titleType.toLowerCase().equals(fieldDTO.getTypeName().toLowerCase())) {
-                        logger.info("Found Alt title");
+                        logger.fine("Found Alt title");
                         List<String> fields = fieldDTO.getMultiplePrimitive();
                         for (String value : fields) {
                             if (!writeTitleElement(xmlw, titleType, value, title_check, language))
