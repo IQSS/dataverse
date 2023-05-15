@@ -18,6 +18,8 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.pkce.CodeChallengeMethod;
+import com.nimbusds.oauth2.sdk.pkce.CodeVerifier;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
 import com.nimbusds.openid.connect.sdk.Nonce;
@@ -39,7 +41,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
@@ -57,12 +61,25 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
     final Issuer issuer;
     final ClientAuthentication clientAuth;
     final OIDCProviderMetadata idpMetadata;
+    final boolean pkceEnabled;
+    final CodeChallengeMethod pkceMethod;
     
-    public OIDCAuthProvider(String aClientId, String aClientSecret, String issuerEndpointURL) throws AuthorizationSetupException {
+    /**
+     * Using PKCE, we create and send a special {@link CodeVerifier}. This contains a secret
+     * we need again when verifying the response by the provider, thus the cache.
+     */
+    private final Map<String,CodeVerifier> verifierCache = new ConcurrentHashMap<>();
+    
+    public OIDCAuthProvider(String aClientId, String aClientSecret, String issuerEndpointURL,
+                            boolean pkceEnabled, String pkceMethod) throws AuthorizationSetupException {
         this.clientSecret = aClientSecret; // nedded for state creation
         this.clientAuth = new ClientSecretBasic(new ClientID(aClientId), new Secret(aClientSecret));
         this.issuer = new Issuer(issuerEndpointURL);
+        
         this.idpMetadata = getMetadata();
+        
+        this.pkceEnabled = pkceEnabled;
+        this.pkceMethod = CodeChallengeMethod.parse(pkceMethod);
     }
     
     /**
@@ -147,6 +164,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         State stateObject = new State(state);
         URI callback = URI.create(callbackUrl);
         Nonce nonce = new Nonce();
+        CodeVerifier pkceVerifier = pkceEnabled ? new CodeVerifier() : null;
         
         AuthenticationRequest req = new AuthenticationRequest.Builder(new ResponseType("code"),
                                                                       Scope.parse(this.scope),
@@ -154,8 +172,14 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
                                                                       callback)
             .endpointURI(idpMetadata.getAuthorizationEndpointURI())
             .state(stateObject)
+            // Called method is nullsafe - will disable sending a PKCE challenge in case the verifier is not present
+            .codeChallenge(pkceVerifier, pkceMethod)
             .nonce(nonce)
             .build();
+        
+        // Cache the PKCE verifier, as we need the secret in it for verification later again, after the client sends us
+        // the auth code! We use the state to cache the verifier, as the state is unique per authentication event.
+        this.verifierCache.put(state, pkceVerifier);
         
         return req.toURI().toString();
     }
@@ -172,10 +196,14 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * @throws ExecutionException Thrown when the requests thread is failing
      */
     @Override
-    public OAuth2UserRecord getUserRecord(String code, String redirectUrl)
-        throws IOException, OAuth2Exception, InterruptedException, ExecutionException {
-        // Create grant object
-        AuthorizationGrant codeGrant = new AuthorizationCodeGrant(new AuthorizationCode(code), URI.create(redirectUrl));
+    public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
+        // Retrieve the verifier from the cache and clear from the cache. If not found, will be null.
+        // Will be sent to token endpoint for verification, so if required but missing, will lead to exception.
+        CodeVerifier verifier = verifierCache.remove(state);
+        
+        // Create grant object - again, this is null-safe for the verifier
+        AuthorizationGrant codeGrant = new AuthorizationCodeGrant(
+            new AuthorizationCode(code), URI.create(redirectUrl), verifier);
     
         // Get Access Token first
         Optional<BearerAccessToken> accessToken = getAccessToken(codeGrant);
