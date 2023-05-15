@@ -3190,4 +3190,11 @@ public class UtilIT {
                 .post("/api/logout");
         return response;
     }
+
+    static Response getDatasetSummaryFieldNames() {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/summaryFieldNames");
+        return response;
+    }
 }

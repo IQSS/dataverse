@@ -77,6 +77,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertFalse;
 
 
 public class DatasetsIT {
@@ -3051,4 +3052,14 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
     }
 
+    @Test
+    public void testGetDatasetSummaryFieldNames() {
+        Response summaryFieldNamesResponse = UtilIT.getDatasetSummaryFieldNames();
+        summaryFieldNamesResponse.then().assertThat().statusCode(OK.getStatusCode());
+        JsonArray actualSummaryFields;
+        try (StringReader rdr = new StringReader(summaryFieldNamesResponse.body().asString())) {
+            actualSummaryFields = Json.createReader(rdr).readObject().getJsonArray("data");
+        }
+        assertFalse(actualSummaryFields.isEmpty());
+    }
 }
