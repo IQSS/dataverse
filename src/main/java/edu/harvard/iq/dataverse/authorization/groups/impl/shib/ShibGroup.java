@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.io.Serializable;
+import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -133,7 +134,29 @@ public class ShibGroup implements Group, Serializable {
 
     @Override
     public boolean contains(DataverseRequest aRequest) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Set<ShibGroup> shibGroups = this.shibGroupProvider.groupsFor(aRequest);
+        for (ShibGroup shibGroup : shibGroups) {
+            if (this.equals(shibGroup)) {
+                return true;
+            }
+        }
+        return false;
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if ( ! (obj instanceof ShibGroup)) {
+            return false;
+        }
+        final ShibGroup other = (ShibGroup) obj;
+        if (id!=null && other.getId()!=null) {
+            return id.equals(other.getId());
+        } 
+        return false;
     }
 
 }
