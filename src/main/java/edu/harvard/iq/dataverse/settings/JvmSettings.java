@@ -121,6 +121,9 @@ public enum JvmSettings {
     OIDC_AUTH_SERVER_URL(SCOPE_OIDC, "auth-server-url"),
     OIDC_CLIENT_ID(SCOPE_OIDC, "client-id"),
     OIDC_CLIENT_SECRET(SCOPE_OIDC, "client-secret"),
+    SCOPE_OIDC_PKCE(SCOPE_OIDC, "pkce"),
+    OIDC_PKCE_ENABLED(SCOPE_OIDC_PKCE, "enabled"),
+    OIDC_PKCE_METHOD(SCOPE_OIDC_PKCE, "method"),
     
     ;
     
