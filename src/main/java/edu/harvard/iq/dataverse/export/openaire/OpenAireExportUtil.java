@@ -337,7 +337,7 @@ public class OpenAireExportUtil {
                 for (FieldDTO fieldDTO : fieldsBlock) {
                     logger.fine(titleType + " " + fieldDTO.getTypeName());
                     if (titleType.toLowerCase().equals(fieldDTO.getTypeName().toLowerCase())) {
-                        logger.info("Found Alt title");
+                        logger.fine("Found Alt title");
                         List<String> fields = fieldDTO.getMultiplePrimitive();
                         for (String value : fields) {
                             if (!writeTitleElement(xmlw, titleType, value, title_check, language))
