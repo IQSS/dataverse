@@ -58,7 +58,7 @@ public class BearerTokenAuthMechanismTest {
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
-        assertEquals(INVALID_BEARER_ACCESS_TOKEN, wrappedAuthErrorResponse.getMessage());
+        assertEquals(INVALID_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
     }
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth")
@@ -70,7 +70,7 @@ public class BearerTokenAuthMechanismTest {
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
-        assertEquals(BEARER_ACCESS_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED, wrappedAuthErrorResponse.getMessage());
+        assertEquals(BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED, wrappedAuthErrorResponse.getMessage());
     }
 
     @Test
@@ -96,7 +96,7 @@ public class BearerTokenAuthMechanismTest {
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
-        assertEquals(UNAUTHORIZED_BEARER_ACCESS_TOKEN, wrappedAuthErrorResponse.getMessage());
+        assertEquals(UNAUTHORIZED_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
     }
 
     @Test
@@ -122,7 +122,7 @@ public class BearerTokenAuthMechanismTest {
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
-        assertEquals(UNAUTHORIZED_BEARER_ACCESS_TOKEN, wrappedAuthErrorResponse.getMessage());
+        assertEquals(UNAUTHORIZED_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
     }
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth")

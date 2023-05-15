@@ -23,15 +23,15 @@ import java.util.stream.Collectors;
 
 public class BearerTokenAuthMechanism implements AuthMechanism {
     private static final String BEARER_AUTH_SCHEME = "Bearer";
-    public static final String UNAUTHORIZED_BEARER_ACCESS_TOKEN = "Unauthorized bearer access token";
-    public static final String INVALID_BEARER_ACCESS_TOKEN = "Could not parse bearer access token";
-    public static final String BEARER_ACCESS_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED = "Bearer access token detected, no OIDC provider configured";
+    public static final String UNAUTHORIZED_BEARER_TOKEN = "Unauthorized bearer token";
+    public static final String INVALID_BEARER_TOKEN = "Could not parse bearer token";
+    public static final String BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED = "Bearer token detected, no OIDC provider configured";
 
     @Inject
     protected AuthenticationServiceBean authSvc;
     @Inject
     protected UserServiceBean userSvc;
-    private static final Logger logger = Logger.getLogger(ApiKeyAuthMechanism.class.getName());
+    private static final Logger logger = Logger.getLogger(BearerTokenAuthMechanism.class.getCanonicalName());
     @Override
     public User findUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse {
         if (FeatureFlags.API_BEARER_AUTH.enabled()) {
@@ -51,7 +51,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
                 return authUser;
             } else {
                 // a valid Token was presented, but we have no associated user account.
-                logger.log(Level.WARNING, "Bearer access token detected, OIDC provider {0} validated Token but no linked UserAccount", userInfo.getUserRepoId());
+                logger.log(Level.WARNING, "Bearer  token detected, OIDC provider {0} validated Token but no linked UserAccount", userInfo.getUserRepoId());
                 return null;
             }
         }
@@ -59,7 +59,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
     }
 
     /**
-     * Verifies the given Bearer access token and obtain information about the corresponding user within respective AuthProvider.
+     * Verifies the given Bearer token and obtain information about the corresponding user within respective AuthProvider.
      *
      * @param token The string containing the encoded JWT
      * @return
@@ -74,8 +74,8 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
                     .collect(Collectors.toUnmodifiableList());
             // If not OIDC Provider are configured we cannot validate a Token
             if(providers.isEmpty()){
-                logger.log(Level.WARNING, "Bearer access token detected, no OIDC provider configured");
-                throw new WrappedAuthErrorResponse(BEARER_ACCESS_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED);
+                logger.log(Level.WARNING, "Bearer token detected, no OIDC provider configured");
+                throw new WrappedAuthErrorResponse(BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED);
             }
 
             // Iterate over all OIDC providers if multiple. Sadly needed as do not know which provided the Token.
@@ -84,21 +84,21 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
                     // The OIDCAuthProvider need to verify a Bearer Token and equip the client means to identify the corresponding AuthenticatedUser.
                     Optional<UserRecordIdentifier> userInfo = provider.getUserIdentifierForValidToken(accessToken);
                     if(userInfo.isPresent()) {
-                        logger.log(Level.FINE, "Bearer access token detected, provider {0} confirmed validity and provided identifier", provider.getId());
+                        logger.log(Level.FINE, "Bearer token detected, provider {0} confirmed validity and provided identifier", provider.getId());
                         return userInfo.get();
                     }
                 } catch ( IOException| OAuth2Exception e) {
-                    logger.log(Level.FINE, "Bearer access token detected, provider " + provider.getId() + " indicates an invalid Token, skipping", e);
+                    logger.log(Level.FINE, "Bearer token detected, provider " + provider.getId() + " indicates an invalid Token, skipping", e);
                 }
             }
         } catch (ParseException e) {
-            logger.log(Level.FINE, "Bearer access token detected, unable to parse bearer access token (invalid Token)", e);
-            throw new WrappedAuthErrorResponse(INVALID_BEARER_ACCESS_TOKEN);
+            logger.log(Level.FINE, "Bearer token detected, unable to parse bearer token (invalid Token)", e);
+            throw new WrappedAuthErrorResponse(INVALID_BEARER_TOKEN);
         }
 
         // No UserInfo returned means we have an invalid access token.
-        logger.log(Level.FINE, "Bearer access token detected, yet no configured OIDC provider validated it.");
-        throw new WrappedAuthErrorResponse(UNAUTHORIZED_BEARER_ACCESS_TOKEN);
+        logger.log(Level.FINE, "Bearer token detected, yet no configured OIDC provider validated it.");
+        throw new WrappedAuthErrorResponse(UNAUTHORIZED_BEARER_TOKEN);
     }
 
     /**
