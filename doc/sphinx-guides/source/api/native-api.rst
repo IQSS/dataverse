@@ -4506,6 +4506,33 @@ Please see :ref:`dataverse.api.signature-secret` for the configuration option to
 security.
 
 
+.. _send-feedback:
+
+Send Feedback To Contact(s)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call allows sending an email to the contacts for a collection, dataset, or datafile or to the support email address when no object is specified.
+The call is protected by the normal /admin API protections (limited to localhost or requiring a separate key), but does not otherwise limit the sending of emails.
+Administrators should be sure only trusted applications have access to avoid the potential for spam.
+
+The call is a POST with a JSON object as input with four keys:
+- "targetId" - the id of the collection, dataset, or datafile. Persistent ids and collection aliases are not supported. (Optional)
+- "subject" - the email subject line
+- "body" - the email body to send
+- "fromEmail" - the email to list in the reply-to field. (Dataverse always sends mail from the system email, but does it "on behalf of" and with a reply-to for the specified user.)
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost
+  export JSON='{"targetId":24, "subject":"Data Question", "body":"Please help me understand your data. Thank you!", "fromEmail":"dataverseSupport@mailinator.com"}'
+
+  curl -X POST -H 'Content-Type:application/json' -d "$JSON" $SERVER_URL/api/admin/feedback
+
+Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.
+
+
 MyData
 ------
 
@@ -4541,33 +4568,9 @@ Parameters:
 - ``7`` = Curator
 - ``8`` = Member
 
-``dvobject_types`` Type of object, several possible values among: ``DataFile``, ``Dataset``& ``Dataverse``.
-``published_states`` State of the object, several possible values among:``Published``, ``Unpublished``, ``Draft``, ``Deaccessioned`` & ``In+Review``.
+``dvobject_types`` Type of object, several possible values among: ``DataFile`` , ``Dataset`` & ``Dataverse`` .
+
+``published_states`` State of the object, several possible values among:``Published`` , ``Unpublished`` , ``Draft`` , ``Deaccessioned`` & ``In+Review`` .
+
 ``per_page`` Number of results returned per page.
 
-
-.. _send-feedback:
-
-Send Feedback To Contact(s)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This API call allows sending an email to the contacts for a collection, dataset, or datafile or to the support email address when no object is specified.
-The call is protected by the normal /admin API protections (limited to localhost or requiring a separate key), but does not otherwise limit the sending of emails.
-Administrators should be sure only trusted applications have access to avoid the potential for spam.
-
-The call is a POST with a JSON object as input with four keys:
-- "targetId" - the id of the collection, dataset, or datafile. Persistent ids and collection aliases are not supported. (Optional)
-- "subject" - the email subject line
-- "body" - the email body to send
-- "fromEmail" - the email to list in the reply-to field. (Dataverse always sends mail from the system email, but does it "on behalf of" and with a reply-to for the specified user.)
-
-A curl example using an ``ID``
-
-.. code-block:: bash
-
-  export SERVER_URL=http://localhost
-  export JSON='{"targetId":24, "subject":"Data Question", "body":"Please help me understand your data. Thank you!", "fromEmail":"dataverseSupport@mailinator.com"}'
-
-  curl -X POST -H 'Content-Type:application/json' -d "$JSON" $SERVER_URL/api/admin/feedback
-
-Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.
