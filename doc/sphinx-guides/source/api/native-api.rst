@@ -4505,6 +4505,43 @@ A curl example using allowing access to a dataset's metadata
 Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
 security.
 
+
+MyData
+-----
+
+The MyData API is used to get a list of just the datasets, dataverses or datafiles an authenticated user can edit.
+
+MyData API
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List objects::
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ROLE_IDS=6
+  export DVOBJECT_TYPES=Dataset
+  export PUBLISHED_STATES=Unpublished
+  export PER_PAGE=10
+
+  curl -H GET http://$SERVER_URL/api/mydata/retrieve?key=$API_TOKEN&role_ids=$ROLE_IDS&dvobject_types=$DVOBJECT_TYPES&published_states=$PUBLISHED_STATES&per_page=$PER_PAGE
+
+``key`` is the user token, for this API is must not be passed in the header.
+``role_id`` User roles, several possible values among:
+- ``1`` = Admin
+- ``2`` = File Downloader
+- ``3`` = Dataverse + Dataset Creator
+- ``4`` = Dataverse Creator
+- ``5`` = Dataset Creator
+- ``6`` = Contributor
+- ``7`` = Curator
+- ``8`` = Member
+``dvobject_types`` Type of object, several possible values among: ``DataFile``, ``Dataset``& ``Dataverse``
+``published_states`` State of the object, several possible values among:``Published``, ``Unpublished``, ``Draft``, ``Deaccessioned`` & ``In+Review``
+``per_page`` Number of results returned per page
+
+
 .. _send-feedback:
 
 Send Feedback To Contact(s)
