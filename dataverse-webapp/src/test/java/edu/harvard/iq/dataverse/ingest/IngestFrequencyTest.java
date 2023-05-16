@@ -1,17 +1,27 @@
 package edu.harvard.iq.dataverse.ingest;
 
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.UnitTestUtils;
-import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
+import edu.harvard.iq.dataverse.datafile.FileTypeDetector;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.enterprise.event.Event;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -26,12 +36,27 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+@ExtendWith(MockitoExtension.class)
 public class IngestFrequencyTest {
 
-    private IngestServiceBean ingestService = new IngestServiceBean();
+    @Mock private DatasetDao datasetDao;
+    @Mock private DataFileServiceBean fileService;
+    @Mock private SystemConfig systemConfig;
+    @Mock private SettingsServiceBean settingsService;
+    @Mock private FileTypeDetector fileTypeDetector;
+    @Mock private Event<IngestMessageSendEvent> ingestMessageSendEventEvent;
+    @Mock private FinalizeIngestService finalizeIngestService;
+
+    private IngestServiceBean ingestService;
+
+    @BeforeEach
+    void setUp() {
+        ingestService = new IngestServiceBean(datasetDao, fileService, systemConfig, settingsService, fileTypeDetector, ingestMessageSendEventEvent, finalizeIngestService);
+        Mockito.when(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.IngestMethodChangeThreshold)).thenReturn(1000000L);
+    }
 
     @Test
-    public void testFrequency() throws IOException {
+    void testFrequency() throws IOException {
         DataFile dataFile = readFileCalcFreq("sav/frequency-test.sav" , "application/x-spss-sav");
 
         assertNotNull(dataFile);
@@ -92,8 +117,7 @@ public class IngestFrequencyTest {
 
             dataFile.setDataTable(dataTable);
             dataTable.setDataFile(dataFile);
-            String[][] table = TabularSubsetGenerator.readFileIntoTable(dataTable, tabFile);
-            IngestServiceBean.produceFrequencyStatistics(table, dataFile);
+            ingestService.produceFrequencyStatistics(ingestService.createIngestDataProvider(dataTable, tabFile), dataFile);
             return dataFile;
         }
     }

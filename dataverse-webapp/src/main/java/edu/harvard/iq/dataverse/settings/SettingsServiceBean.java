@@ -258,6 +258,15 @@ public class SettingsServiceBean {
          */
         TabularIngestSizeLimit,
         /**
+         * Files with the number of cells (ie. cases times variables) above
+         * that number will be ingested using different method of reading
+         * and storing intermediate data (with the same final result), which
+         * may be more time-consuming but less resource-consuming.
+         * Those with number of cells below or equal to that number will
+         * be processed in-memory.
+         */
+        IngestMethodChangeThreshold,
+        /**
          * Whether to allow user to create GeoConnect Maps
          * This boolean effects whether the user sees the map button on
          * the dataset page and if the ingest will create a shape file
@@ -685,17 +694,17 @@ public class SettingsServiceBean {
          * Maximal size (in bytes) of files that can be uploaded in a single
          * batch. If set to 0 then there's no limit.
          */
-        SingleUploadBatchMaxSize, 
-        
+        SingleUploadBatchMaxSize,
+
         /**
          * Cron expression that indicates how often
          * checking of datasets after embargo for reindex should take place.
          * If empty then check will be skipped.
          * Default value: empty.
          */
-        
+
         ReindexAfterEmbargoTimerExpression,
-        
+
         /**
          * Wrap http requests with url from SiteUrl property
          * It is needed when glassfish is behind reverse proxy

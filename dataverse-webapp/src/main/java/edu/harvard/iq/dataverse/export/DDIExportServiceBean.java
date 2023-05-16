@@ -25,7 +25,6 @@ import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
-import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -59,29 +58,15 @@ import java.util.logging.Logger;
 public class DDIExportServiceBean {
 
     private static final Logger logger = Logger.getLogger(DDIExportServiceBean.class.getCanonicalName());
-    @EJB
-    DatasetDao datasetDao;
 
-    @EJB
-    DataFileServiceBean fileService;
-
-    @EJB
-    VariableServiceBean variableService;
-
-    @Inject
-    private CitationFactory citationFactory;
-
-    /*
-     * Constants used by the worker methods:
-     */
+    // Constants used by the worker methods:
     private static final String OBJECT_TAG_VARIABLE = "variable";
     private static final String OBJECT_TAG_DATAFILE = "datafile";
     private static final String OBJECT_TAG_DATASET = "dataset";
-    /*
-     * Database and schema-specific constants:
-     * Needless to say, we should *not* be defining these here - it should
-     * all live in the database somewhere/somehow.
-     */
+
+    // Database and schema-specific constants:
+    // Needless to say, we should *not* be defining these here - it should
+    // all live in the database somewhere/somehow.
     public static final String DB_VAR_INTERVAL_TYPE_CONTINUOUS = "continuous";
     public static final String VAR_INTERVAL_CONTIN = "contin";
     public static final String DB_VAR_RANGE_TYPE_POINT = "point";
@@ -90,11 +75,31 @@ public class DDIExportServiceBean {
     public static final String DB_VAR_RANGE_TYPE_MAX = "max";
     public static final String DB_VAR_RANGE_TYPE_MAX_EX = "max exclusive";
 
-    /*
-     * Internal service objects:
-     */
+    // Internal service objects:
     private XMLOutputFactory xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
 
+    private DatasetDao datasetDao;
+    private DataFileServiceBean fileService;
+    private VariableServiceBean variableService;
+    private CitationFactory citationFactory;
+    private IngestServiceBean ingestServiceBean;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public DDIExportServiceBean() { }
+
+    @Inject
+    public DDIExportServiceBean(DatasetDao datasetDao, DataFileServiceBean fileService,
+                                VariableServiceBean variableService, CitationFactory citationFactory,
+                                IngestServiceBean ingestServiceBean) {
+        this.datasetDao = datasetDao;
+        this.fileService = fileService;
+        this.variableService = variableService;
+        this.citationFactory = citationFactory;
+        this.ingestServiceBean = ingestServiceBean;
+    }
+
+    // -------------------- LOGIC --------------------
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void exportDataVariable(Long varId, OutputStream os, String partialExclude, String partialInclude) {
@@ -461,9 +466,7 @@ public class DDIExportServiceBean {
 
             Optional<File> tabFile = Optional.of(StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile()));
             tmpFile = storageIO.isRemoteFile() ? tabFile : Optional.empty();
-
-            IngestServiceBean.produceFrequencies(tabFile.get(), vars);
-
+            ingestServiceBean.produceFrequencies(tabFile.get(), vars);
         } catch (Exception ex) {
             logger.warning(ex.getMessage());
             return;

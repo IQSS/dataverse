@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
+import edu.harvard.iq.dataverse.dataaccess.ingest.InMemoryIngestDataProvider;
+import edu.harvard.iq.dataverse.dataaccess.ingest.IngestDataProvider;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
@@ -142,6 +144,9 @@ public class CSVFileReaderTest {
                 { 1.0, 3.0, 4.0, 6.0, 7.0, 8.0, 11.0, 12.0, 76.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0, 77.0 },
         };
 
+        IngestDataProvider dataProvider = new InMemoryIngestDataProvider();
+        dataProvider.initialize(generatedDataTable, generatedTabFile);
+
         int vectorCount = 0;
         for (int i : floatColumns) {
             // We'll be subsetting the column vectors one by one, re-opening the
@@ -150,10 +155,8 @@ public class CSVFileReaderTest {
             if (!generatedDataTable.getDataVariables().get(i).isIntervalContinuous()) {
                 fail("Column " + i + " was not properly processed as \"continuous\"");
             }
-            String[][] table = TabularSubsetGenerator.readFileIntoTable(generatedDataTable, generatedTabFile);
 
-            Double[] columnVector =
-                    TabularSubsetGenerator.subsetDoubleVector(table, i, generatedDataTable.getCaseQuantity().intValue());
+            Double[] columnVector = dataProvider.getDoubleColumn(i);
 
             assertThat(columnVector).isEqualTo(floatVectors[vectorCount++]);
         }
@@ -180,9 +183,8 @@ public class CSVFileReaderTest {
                     || !generatedDataTable.getDataVariables().get(i).isTypeNumeric()) {
                 fail("Column " + i + " was not properly processed as \"discrete numeric\"");
             }
-            String[][] table = TabularSubsetGenerator.readFileIntoTable(generatedDataTable, generatedTabFile);
-            Long[] columnVector =
-                    TabularSubsetGenerator.subsetLongVector(table, i, generatedDataTable.getCaseQuantity().intValue());
+
+            Long[] columnVector = dataProvider.getLongColumn(i);
 
             assertThat(columnVector).isEqualTo(longVectors[vectorCount++]);
         }
@@ -202,9 +204,7 @@ public class CSVFileReaderTest {
             if (!generatedDataTable.getDataVariables().get(i).isTypeCharacter()) {
                 fail("Column " + i + " was not properly processed as a character vector");
             }
-            String[][] table = TabularSubsetGenerator.readFileIntoTable(generatedDataTable, generatedTabFile);
-            String[] columnVector =
-                    TabularSubsetGenerator.subsetStringVector(table, i, generatedDataTable.getCaseQuantity().intValue());
+            String[] columnVector = dataProvider.getStringColumn(i);
 
             assertThat(columnVector).isEqualTo(stringVectors[vectorCount++]);
         }
@@ -253,24 +253,24 @@ public class CSVFileReaderTest {
         assertThat(generatedDataTable.getVarQuantity()).isEqualTo((long) generatedDataTable.getDataVariables().size());
         assertThat(generatedDataTable.getVarQuantity()).isEqualTo(expectedNumberOfVariables);
         assertThat(generatedDataTable.getCaseQuantity()).isEqualTo(expectedNumberOfCases);
-        String[][] table = TabularSubsetGenerator.readFileIntoTable(generatedDataTable, generatedTabFile);
+
+        IngestDataProvider dataProvider = new InMemoryIngestDataProvider();
+        dataProvider.initialize(generatedDataTable, generatedTabFile);
+
         for (int i = 0; i < expectedNumberOfVariables; i++) {
             String unf = null;
 
             if (generatedDataTable.getDataVariables().get(i).isIntervalContinuous()) {
-                Double[] columnVector =
-                        TabularSubsetGenerator.subsetDoubleVector(table, i, generatedDataTable.getCaseQuantity().intValue());
+                Double[] columnVector = dataProvider.getDoubleColumn(i);
                 unf = UNFUtil.calculateUNF(columnVector);
             }
             if (generatedDataTable.getDataVariables().get(i).isIntervalDiscrete()
                     && generatedDataTable.getDataVariables().get(i).isTypeNumeric()) {
-                Long[] columnVector =
-                        TabularSubsetGenerator.subsetLongVector(table, i, generatedDataTable.getCaseQuantity().intValue());
+                Long[] columnVector = dataProvider.getLongColumn(i);
                 unf = UNFUtil.calculateUNF(columnVector);
             }
             if (generatedDataTable.getDataVariables().get(i).isTypeCharacter()) {
-                String[] columnVector =
-                        TabularSubsetGenerator.subsetStringVector(table, i, generatedDataTable.getCaseQuantity().intValue());
+                String[] columnVector = dataProvider.getStringColumn(i);
                 String[] dateFormats = null;
 
                 // Special handling for Character strings that encode dates and times:

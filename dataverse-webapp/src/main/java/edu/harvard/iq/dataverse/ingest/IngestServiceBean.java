@@ -28,7 +28,9 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIOConstants;
 import edu.harvard.iq.dataverse.dataaccess.StorageIOUtils;
-import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
+import edu.harvard.iq.dataverse.dataaccess.ingest.FileIngestDataProvider;
+import edu.harvard.iq.dataverse.dataaccess.ingest.InMemoryIngestDataProvider;
+import edu.harvard.iq.dataverse.dataaccess.ingest.IngestDataProvider;
 import edu.harvard.iq.dataverse.datafile.FileTypeDetector;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
@@ -124,26 +126,33 @@ public class IngestServiceBean {
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
 
-    @EJB
     private DatasetDao datasetDao;
-    @EJB
     private DataFileServiceBean fileService;
-    @EJB
     private SystemConfig systemConfig;
-
-    @Inject
     private SettingsServiceBean settingsService;
-
-    @Inject
     private FileTypeDetector fileTypeDetector;
-
-    @Inject
     private Event<IngestMessageSendEvent> ingestMessageSendEventEvent;
-
-    @Inject
     private FinalizeIngestService finalizeIngestService;
 
     private DataAccess dataAccess = DataAccess.dataAccess();
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public IngestServiceBean() { }
+
+    @Inject
+    public IngestServiceBean(DatasetDao datasetDao, DataFileServiceBean fileService,
+                             SystemConfig systemConfig, SettingsServiceBean settingsService,
+                             FileTypeDetector fileTypeDetector, Event<IngestMessageSendEvent> ingestMessageSendEventEvent,
+                             FinalizeIngestService finalizeIngestService) {
+        this.datasetDao = datasetDao;
+        this.fileService = fileService;
+        this.systemConfig = systemConfig;
+        this.settingsService = settingsService;
+        this.fileTypeDetector = fileTypeDetector;
+        this.ingestMessageSendEventEvent = ingestMessageSendEventEvent;
+        this.finalizeIngestService = finalizeIngestService;
+    }
 
     // -------------------- LOGIC --------------------
 
@@ -418,18 +427,17 @@ public class IngestServiceBean {
         return sb.toString();
     }
 
-    public static void produceFrequencyStatistics(String[][] table, DataFile dataFile) throws IOException {
+    public void produceFrequencyStatistics(IngestDataProvider dataProvider, DataFile dataFile) throws IOException {
         List<DataVariable> vars = dataFile.getDataTable().getDataVariables();
-        produceFrequencies(table, vars);
+        produceFrequencies(dataProvider, vars);
     }
 
-    public static void produceFrequencies(File generatedTabularFile, List<DataVariable> vars) throws IOException {
+    public void produceFrequencies(File generatedTabularFile, List<DataVariable> vars) throws IOException {
         if (vars.isEmpty()) {
             return;
         }
         DataTable dataTable = vars.get(0).getDataTable();
-        String[][] table = TabularSubsetGenerator.readFileIntoTable(dataTable, generatedTabularFile);
-        produceFrequencies(table, vars);
+        produceFrequencies(createIngestDataProvider(dataTable, generatedTabularFile), vars);
     }
 
     public void recalculateDatasetVersionUNF(DatasetVersion version) {
@@ -564,9 +572,9 @@ public class IngestServiceBean {
         tabDataIngest.getDataTable().setDataFile(dataFile);
 
         try {
-            String[][] table = TabularSubsetGenerator.readFileIntoTable(dataFile.getDataTable(), tabFile);
-            produceSummaryStatistics(table, dataFile);
-            produceFrequencyStatistics(table, dataFile);
+            IngestDataProvider dataProvider = createIngestDataProvider(dataFile.getDataTable(), tabFile);
+            produceSummaryStatistics(dataProvider, dataFile);
+            produceFrequencyStatistics(dataProvider, dataFile);
         } catch (IOException postIngestEx) {
 
             dataFile.setIngestProblem();
@@ -585,6 +593,16 @@ public class IngestServiceBean {
         } finally {
             tabFile.delete();
         }
+    }
+
+    public IngestDataProvider createIngestDataProvider(DataTable dataTable, File dataFile) {
+        Long threshold = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.IngestMethodChangeThreshold);
+        boolean useInMemoryProvider = threshold.compareTo(dataTable.getCaseQuantity() * dataTable.getVarQuantity()) >= 0L;
+        IngestDataProvider provider = useInMemoryProvider
+                ? new InMemoryIngestDataProvider()
+                : new FileIngestDataProvider();
+        provider.initialize(dataTable, dataFile);
+        return provider;
     }
 
     public TabularDataFileReader getTabDataReaderByMimeType(String mimeType) {
@@ -718,17 +736,16 @@ public class IngestServiceBean {
 
     // -------------------- PRIVATE --------------------
 
-    private static void produceFrequencies(String[][] table, List<DataVariable> vars) {
+    private void produceFrequencies(IngestDataProvider dataProvider, List<DataVariable> vars) {
         for (int i = 0; i < vars.size(); i++) {
             Collection<VariableCategory> cats = vars.get(i).getCategories();
-            int caseQuantity = vars.get(i).getDataTable().getCaseQuantity().intValue();
             boolean isNumeric = vars.get(i).isTypeNumeric();
             Object[] variableVector;
             if (cats.size() > 0) {
                 if (isNumeric) {
-                    variableVector = TabularSubsetGenerator.subsetFloatVector(table, i, caseQuantity);
+                    variableVector = dataProvider.getFloatColumn(i);
                 } else {
-                    variableVector = TabularSubsetGenerator.subsetStringVector(table, i, caseQuantity);
+                    variableVector = dataProvider.getStringColumn(i);
                 }
                 Map<Object, Double> freq = calculateFrequency(variableVector);
                 for (VariableCategory cat : cats) {
@@ -749,7 +766,7 @@ public class IngestServiceBean {
         }
     }
 
-    private static Map<Object, Double> calculateFrequency(Object[] variableVector) {
+    private Map<Object, Double> calculateFrequency(Object[] variableVector) {
         Map<Object, Double> frequencies = new HashMap<>();
 
         for (Object variable : variableVector) {
@@ -1223,40 +1240,38 @@ public class IngestServiceBean {
         }
     }
 
-    private void produceSummaryStatistics(String[][] table, DataFile dataFile) throws IOException {
-        produceDiscreteNumericSummaryStatistics(table, dataFile);
-        produceContinuousSummaryStatistics(table, dataFile);
-        produceCharacterSummaryStatistics(table, dataFile);
+    private void produceSummaryStatistics(IngestDataProvider dataProvider, DataFile dataFile) throws IOException {
+        produceDiscreteNumericSummaryStatistics(dataProvider, dataFile);
+        produceContinuousSummaryStatistics(dataProvider, dataFile);
+        produceCharacterSummaryStatistics(dataProvider, dataFile);
 
         recalculateDataFileUNF(dataFile);
         recalculateDatasetVersionUNF(dataFile.getFileMetadata().getDatasetVersion());
     }
 
-    private void produceDiscreteNumericSummaryStatistics(String[][] table, DataFile dataFile) throws IOException {
+    private void produceDiscreteNumericSummaryStatistics(IngestDataProvider dataProvider, DataFile dataFile) throws IOException {
         DataTable dataTable = dataFile.getDataTable();
-        int numberOfCases = dataTable.getCaseQuantity().intValue();
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             DataVariable dataVariable = dataTable.getDataVariables().get(i);
             if (!dataVariable.isIntervalDiscrete() || !dataVariable.isTypeNumeric()) {
                 continue;
             }
-            Long[] vector = TabularSubsetGenerator.subsetLongVector(table, i, numberOfCases);
+            Long[] vector = dataProvider.getLongColumn(i);
             calculateContinuousSummaryStatistics(dataFile, i, vector);
             calculateUNF(dataFile, i, vector);
         }
     }
 
-    private void produceContinuousSummaryStatistics(String[][] table, DataFile dataFile) throws IOException {
+    private void produceContinuousSummaryStatistics(IngestDataProvider dataProvider, DataFile dataFile) throws IOException {
         DataTable dataTable = dataFile.getDataTable();
-        int numberOfCases = dataTable.getCaseQuantity().intValue();
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             if (dataTable.getDataVariables().get(i).isIntervalContinuous()) {
                 if ("float".equals(dataTable.getDataVariables().get(i).getFormat())) {
-                    Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(table, i, numberOfCases);
+                    Float[] variableVector = dataProvider.getFloatColumn(i);
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     calculateUNF(dataFile, i, variableVector);
                 } else {
-                    Double[] variableVector = TabularSubsetGenerator.subsetDoubleVector(table, i, numberOfCases);
+                    Double[] variableVector = dataProvider.getDoubleColumn(i);
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     calculateUNF(dataFile, i, variableVector);
                 }
@@ -1275,12 +1290,11 @@ public class IngestServiceBean {
     that this information is at all useful.
         -- L.A. Jul. 2014
     */
-    private void produceCharacterSummaryStatistics(String[][] table, DataFile dataFile) throws IOException {
+    private void produceCharacterSummaryStatistics(IngestDataProvider dataProvider, DataFile dataFile) throws IOException {
         DataTable dataTable = dataFile.getDataTable();
-        int numberOfCases = dataTable.getCaseQuantity().intValue();
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             if (dataTable.getDataVariables().get(i).isTypeCharacter()) {
-                String[] variableVector = TabularSubsetGenerator.subsetStringVector(table, i, numberOfCases);
+                String[] variableVector = dataProvider.getStringColumn(i);
                 calculateUNF(dataFile, i, variableVector);
             }
         }
