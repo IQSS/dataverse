@@ -3792,12 +3792,12 @@ The URL of an LDN Inbox to which the LDN Announce workflow step will send messag
 The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
 
 :AllowIncompleteMetadataThroughAPI
-+++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++
 
 When set to true, dataset with incomplete metadata can be submitted via API for later corrections. It is set to "false" by default. See :ref:`create-dataverse-api` for details.
 
 :CanReviewIncomplete
-+++++++++++++++++++++++++++++++
+++++++++++++++++++++
 
 Determines if dataset submitted via API with incomplete metadata (for later corrections) can be submitted for review. It is set to "false" by default.
 
