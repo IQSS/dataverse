@@ -4514,7 +4514,7 @@ The MyData API is used to get a list of just the datasets, dataverses or datafil
 MyData API
 ~~~~~~~~~~
 
-List objects::
+A curl example listing objects
 
 .. code-block:: bash
 
@@ -4527,8 +4527,11 @@ List objects::
 
   curl -H GET http://$SERVER_URL/api/mydata/retrieve?key=$API_TOKEN&role_ids=$ROLE_IDS&dvobject_types=$DVOBJECT_TYPES&published_states=$PUBLISHED_STATES&per_page=$PER_PAGE
 
+Parameters:
+
 ``key`` is the user token, for this API is must not be passed in the header.
 ``role_id`` User roles, several possible values among:
+
 - ``1`` = Admin
 - ``2`` = File Downloader
 - ``3`` = Dataverse + Dataset Creator
@@ -4537,9 +4540,10 @@ List objects::
 - ``6`` = Contributor
 - ``7`` = Curator
 - ``8`` = Member
-``dvobject_types`` Type of object, several possible values among: ``DataFile``, ``Dataset``& ``Dataverse``
-``published_states`` State of the object, several possible values among:``Published``, ``Unpublished``, ``Draft``, ``Deaccessioned`` & ``In+Review``
-``per_page`` Number of results returned per page
+
+``dvobject_types`` Type of object, several possible values among: ``DataFile``, ``Dataset``& ``Dataverse``.
+``published_states`` State of the object, several possible values among:``Published``, ``Unpublished``, ``Draft``, ``Deaccessioned`` & ``In+Review``.
+``per_page`` Number of results returned per page.
 
 
 .. _send-feedback:
