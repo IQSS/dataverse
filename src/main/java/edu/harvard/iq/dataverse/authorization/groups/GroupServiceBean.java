@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvi
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -97,9 +98,47 @@ public class GroupServiceBean {
      * @return The groups {@code req} is part of under {@code dvo}.
      */
     public Set<Group> groupsFor( DataverseRequest req, DvObject dvo ) {
-        return groupProviders.values().stream()
+        Set<Group> ret = groupProviders.values().stream()
                               .flatMap(gp->(Stream<Group>)gp.groupsFor(req, dvo).stream())
                               .collect(toSet());
+        
+        // ShibGroupProvider.groupsFor(), above, only returns the Shib Groups 
+        // (as you would expect), but not the Explicit Groups that may include them 
+        // (unlike the ExplicitGroupProvider, that returns all the ancestors too). 
+        // We appear to rely on this method returning all of the ancestor groups 
+        // for everything, so we need to perform some extra hacky steps in 
+        // order to obtain the ancestors for the shib groups as well:
+        
+        Set<ExplicitGroup> directAncestorsOfShibGroups = new HashSet<>();
+        for (Group group : ret) {
+
+            if (group instanceof ShibGroup) {
+                // if this is a shib group, we need to find if it is included in 
+                // some explicit group; i.e., if it has direct ancestors that 
+                // happen to be explicit groups:
+                
+                directAncestorsOfShibGroups.addAll(explicitGroupService.findDirectlyContainingGroups(group));
+            }
+        }
+        
+        if (!directAncestorsOfShibGroups.isEmpty()) {
+            // ... and now we can run the Monster Query in the ExplicitServiceBean
+            // that will find ALL the hierarchical explicit group ancestors of 
+            // these groups that include the shib groups fond
+            
+            Set<ExplicitGroup> allAncestorsOfShibGroups = explicitGroupService.findClosure(directAncestorsOfShibGroups);
+            
+            if (allAncestorsOfShibGroups != null) {
+                ret.addAll(allAncestorsOfShibGroups);
+            }
+        }
+        
+        // Perhaps the code above should be moved into the ShibGroupProvider (??)
+        // Also, this most likely applies not just to ShibGroups, but to the 
+        // all the groups that are not ExplicitGroups, i.e., IP- and domain-based 
+        // groups too. (??)
+        
+        return ret;
     }
     
     /**
