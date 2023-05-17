@@ -126,7 +126,6 @@ public class ImageThumbConverter {
             }
             if (!thumbnailGenerated) {
                 logger.fine("No thumbnail generated for " + file.getId());
-                file.setPreviewsHaveFailed(true);
             }
             return thumbnailGenerated;
         }
@@ -459,7 +458,6 @@ public class ImageThumbConverter {
                 if (!generated) {
                     // Record failure
                     logger.fine("Failed to generate base64 thumbnail for file id: " + file.getId());
-                    file.setPreviewsHaveFailed(true);
                 } else {
                     // Success - try to open again:
                     try {
