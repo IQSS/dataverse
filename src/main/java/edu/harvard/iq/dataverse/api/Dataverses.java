@@ -73,6 +73,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContri
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
@@ -245,7 +246,7 @@ public class Dataverses extends AbstractApiBean {
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
             ds.setOwner(owner);
-            boolean skipValidation = u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) && settingsService.isTrueForKey(SettingsServiceBean.Key.AllowIncompleteMetadataThroughAPI, false);
+            boolean skipValidation = u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) && JvmSettings.ALLOW_INCOMPLETE_METADATA_THROUGH_API.isTrue(false);
             boolean validate = !skipValidation;
 
             if (ds.getVersions().isEmpty()) {

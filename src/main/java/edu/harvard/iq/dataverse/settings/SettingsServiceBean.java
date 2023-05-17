@@ -566,21 +566,6 @@ public class SettingsServiceBean {
          */
         LDNMessageHosts,
 
-        /**
-         * When set to true, dataset with incomplete metadata can be submitted via API for later corrections.
-         */
-        AllowIncompleteMetadataThroughAPI,
-
-        /**
-         * Determines if dataset submitted via API with incomplete metadata (for later
-         * corrections) can be submitted for review.
-         */
-        CanReviewIncomplete,
-
-        /**
-         * When set to true, the filter for validity of metadata is shown in "My Data" page.
-         */
-        ShowValidityFilter,
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */

@@ -2370,6 +2370,21 @@ The default is false.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAIL``.
 
+dataverse.validation.allow-incomplete-metadata-through-api
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+When set to "true", dataset with incomplete metadata can be submitted via API for later corrections. It is set to "false" by default. See :ref:`create-dataverse-api` for details.
+
+dataverse.validation.can-review-incomplete
+++++++++++++++++++++++++++++++++++++++++++
+
+Determines if dataset submitted via API with incomplete metadata (for later corrections) can be submitted for review. It is set to "false" by default.
+
+dataverse.validation.show-validity-filter
++++++++++++++++++++++++++++++++++++++++++
+
+When set to "true", the filter for validity of metadata is shown in "My Data" page. It is set to "false" by default. When you wish to use this filter, you must reindex the datasets first, otherwise datasets with valid metadata will not be shown in the results.
+
 
 .. _feature-flags:
 
@@ -3790,21 +3805,6 @@ The URL of an LDN Inbox to which the LDN Announce workflow step will send messag
 ++++++++++++++++++++++++++
 
 The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
-
-:AllowIncompleteMetadataThroughAPI
-++++++++++++++++++++++++++++++++++
-
-When set to true, dataset with incomplete metadata can be submitted via API for later corrections. It is set to "false" by default. See :ref:`create-dataverse-api` for details.
-
-:CanReviewIncomplete
-++++++++++++++++++++
-
-Determines if dataset submitted via API with incomplete metadata (for later corrections) can be submitted for review. It is set to "false" by default.
-
-:ShowValidityFilter
-+++++++++++++++++++
-
-When set to true, the filter for validity of metadata is shown in "My Data" page. It is set to "false" by default. When you wish to use this filter, you must reindex the datasets first, otherwise datasets with valid metadata will not be shown in the results.
 
 .. _:GlobusBasicToken:
 

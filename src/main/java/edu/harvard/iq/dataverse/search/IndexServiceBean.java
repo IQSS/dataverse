@@ -767,7 +767,7 @@ public class IndexServiceBean {
             version.setDatasetFields(version.initDatasetFields());
             valid = version.isValid();
         }
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.AllowIncompleteMetadataThroughAPI, false)) {
+        if (JvmSettings.ALLOW_INCOMPLETE_METADATA_THROUGH_API.isTrue(false)) {
             solrInputDocument.addField(SearchFields.DATASET_VALID, valid);
         }
 

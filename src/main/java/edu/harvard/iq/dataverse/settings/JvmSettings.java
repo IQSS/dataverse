@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.settings;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
+import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -110,8 +112,25 @@ public enum JvmSettings {
     SCOPE_MAIL(PREFIX, "mail"),
     SUPPORT_EMAIL(SCOPE_MAIL, "support-email"),
     CC_SUPPORT_ON_CONTACT_EMAIL(SCOPE_MAIL, "cc-support-on-contact-email"),
-    ;
+
+    // VALIDATION SETTINGS
+    /**
+     * When set to true, dataset with incomplete metadata can be submitted via API for later corrections.
+     */
+    SCOPE_VALIDATION(PREFIX, "validation"),
+    ALLOW_INCOMPLETE_METADATA_THROUGH_API(SCOPE_VALIDATION, "allow-incomplete-metadata-through-api"),
+    /**
+     * Determines if dataset submitted via API with incomplete metadata (for later
+     * corrections) can be submitted for review.
+     */
+    CAN_REVIEW_INCOMPLETE(SCOPE_VALIDATION, "can-review-incomplete"),
+    /**
+     * When set to true, the filter for validity of metadata is shown in "My Data" page.
+     */
+    SHOW_VALIDITY_FILTER(SCOPE_VALIDATION, "show-validity-filter"),
     
+    ;
+
     private static final String SCOPE_SEPARATOR = ".";
     public static final String PLACEHOLDER_KEY = "%s";
     private static final Pattern OLD_NAME_PLACEHOLDER_PATTERN = Pattern.compile("%(\\d\\$)?s");
@@ -288,6 +307,11 @@ public enum JvmSettings {
      */
     public Optional<String> lookupOptional() {
         return lookupOptional(String.class);
+    }
+
+    public boolean isTrue(boolean defaultValue) {
+        Optional<String> val = lookupOptional();
+        return val.isEmpty() ? defaultValue : StringUtil.isTrue(val.get());
     }
     
     /**

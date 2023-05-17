@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
@@ -119,7 +120,7 @@ public class MyDataPage implements java.io.Serializable {
     }
 
     public boolean showValidityFilter() {
-        return settingsWrapper.showValidityFilter();
+        return JvmSettings.SHOW_VALIDITY_FILTER.isTrue(false);
     }
            
     public String getRetrieveDataFullAPIPath(){
