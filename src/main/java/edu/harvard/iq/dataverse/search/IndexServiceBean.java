@@ -413,7 +413,7 @@ public class IndexServiceBean {
         while (next != null) {
             try {
                 indexDataset(next, doNormalSolrDocCleanUp);
-            } catch (SolrServerException | IOException e) {
+            } catch (Exception e) { // catch all possible exceptions; otherwise when something unexpected happes the dataset wold remain locked and impossible to reindex
                 String failureLogText = "Indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
                 failureLogText += "\r\n" + e.getLocalizedMessage();
                 LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
