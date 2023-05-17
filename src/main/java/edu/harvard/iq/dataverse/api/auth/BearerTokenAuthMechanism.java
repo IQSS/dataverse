@@ -40,7 +40,8 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
             if (!bearerToken.isPresent()) {
                 return null;
             }
-            //validate and verify provided Bearer Token, and retrieve UserRecordIdentifier
+            // Validate and verify provided Bearer Token, and retrieve UserRecordIdentifier
+            // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token. Tokens in the cache should be removed after some (configurable) time.
             UserRecordIdentifier userInfo = verifyOidcBearerTokenAndGetUserIndentifier(bearerToken.get());
 
             // retrieve Authenticated User from AuthService
