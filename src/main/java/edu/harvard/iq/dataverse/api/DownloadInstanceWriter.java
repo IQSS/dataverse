@@ -274,8 +274,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             // and, since we now have tabular data files that can 
                             // have thumbnail previews... obviously, we don't want to 
                             // add the variable header to the image stream!
-                            storageIO.setNoVarHeader(Boolean.TRUE);
-                            storageIO.setVarHeader(null);
+                            if (storageIO != null) {
+                                storageIO.setNoVarHeader(Boolean.TRUE);
+                                storageIO.setVarHeader(null);
+                            }
                         }
                     } else if (dataFile.isTabularData()) {
                         logger.fine("request for tabular data download;");
