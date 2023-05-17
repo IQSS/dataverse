@@ -52,7 +52,9 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
                 return authUser;
             } else {
                 // a valid Token was presented, but we have no associated user account.
-                logger.log(Level.WARNING, "Bearer  token detected, OIDC provider {0} validated Token but no linked UserAccount", userInfo.getUserRepoId());
+                logger.log(Level.WARNING, "Bearer token detected, OIDC provider {0} validated Token but no linked UserAccount", userInfo.getUserRepoId());
+                // TODO: Instead of returning null, we should throw a meaningful error to the client.
+                // Probably this will be a wrapped auth error response with an error code and a string describing the problem.
                 return null;
             }
         }
