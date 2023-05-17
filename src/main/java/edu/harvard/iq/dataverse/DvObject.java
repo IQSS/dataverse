@@ -182,8 +182,11 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.previewImageAvailable = status;
     }
     
-    /** Indicates whether a previous attempt to generate a preview image has failed, regardless of size.
-     * If so, we won't want to try again every time the preview/thumbnail is requested for a view.
+    /**
+     * Indicates whether a previous attempt to generate a preview image has failed,
+     * regardless of size. This could be due to the file not being accessible, or a
+     * real failure in generating the thumbnail. In both cases, we won't want to try
+     * again every time the preview/thumbnail is requested for a view.
      */
     private boolean previewsHaveFailed;
 
