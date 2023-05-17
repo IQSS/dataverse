@@ -23,8 +23,7 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="showPublishLink" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion 
                                                       and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                      and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
-                                                      and DatasetPage.valid}"/>
+                                                      and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
 
             <ui:param name="showSubmitForReviewLink" value="#{DatasetPage.editMode != 'CREATE' and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                               and !DatasetPage.datasetLockedInWorkflow
@@ -316,13 +315,13 @@
                                             <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
                                                 <div class="btn-group">
                                                     <!-- Publish BTN -->
-                                                    <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess }">
+                                                    <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !DatasetPage.valid}">
                                                         <c:if test="#{!((showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedExternalStatuses) and showPublishLink)}">
-                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess ? 'disabled' : ''}"/>
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !DatasetPage.valid ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
                                                         </c:if>
                                                         <c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedExternalStatuses) and showPublishLink}">
-                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess ? 'disabled' : ''}"/>
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess  or !DatasetPage.valid ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="data-toggle" value="dropdown"/>
                                                             <f:passThroughAttribute name="aria-haspopup" value="true"/>
                                                             <f:passThroughAttribute name="aria-expanded" value="false"/>
