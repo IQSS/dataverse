@@ -330,6 +330,19 @@ As for the "Remote only" authentication mode, it means that:
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
+.. _bearer-token-auth:
+
+Bearer Token Authentication
+---------------------------
+
+Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to API tokens. This is an experimental feature hidden behind a feature flag.
+
+.. _RFC 6750: https://tools.ietf.org/html/rfc6750
+
+To enable bearer tokens, you must install and configure Keycloak (for now, see :ref:`oidc-dev` in the Developer Guide) and enable ``api-bearer-auth`` under :ref:`feature-flags`.
+
+You can test that bearer tokens are working by following the example under :ref:`bearer-tokens` in the API Guide.
+
 .. _database-persistence:
 
 Database Persistence
@@ -2391,6 +2404,9 @@ please find all known feature flags below. Any of these flags can be activated u
     * - api-session-auth
       - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and removed once support for bearer tokens has been implemented (see `#9229 <https://github.com/IQSS/dataverse/issues/9229>`_).
       - ``Off``
+    * - api-bearer-auth
+      - Enables API authentication via Bearer Token for OIDC User Accounts. **Information: This feature works only for OIDC UserAccounts!**
+      - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
@@ -3837,7 +3853,7 @@ To use the current GDCC version directly:
 :CategoryOrder
 ++++++++++++++
 
-A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. 
+A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed.
 The setting can include custom tag names along with the pre-defined tags(Documentation, Data, and Code are the defaults but the :ref:`:FileCategories` setting can be used to use a different set of tags).
 The default is category ordering disabled.
 
@@ -3849,7 +3865,7 @@ A true(default)/false option determining whether datafiles listed on the dataset
 :AllowUserManagementOfOrder
 +++++++++++++++++++++++++++
 
-A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically. 
+A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically.
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
 
