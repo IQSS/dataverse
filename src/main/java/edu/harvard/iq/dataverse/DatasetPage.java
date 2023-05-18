@@ -2183,7 +2183,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isValidOrCanReviewIncomplete() {
-        return isValid() || JvmSettings.CAN_REVIEW_INCOMPLETE.isTrue(false);
+        return isValid() || JvmSettings.UI_ALLOW_REVIEW_INCOMPLETE.lookupOptional(Boolean.class).orElse(false);
     }
 
     private void displayLockInfo(Dataset dataset) {

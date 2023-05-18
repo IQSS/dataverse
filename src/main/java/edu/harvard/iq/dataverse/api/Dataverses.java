@@ -246,8 +246,9 @@ public class Dataverses extends AbstractApiBean {
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
             ds.setOwner(owner);
-            boolean skipValidation = u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) && JvmSettings.ALLOW_INCOMPLETE_METADATA_THROUGH_API.isTrue(false);
-            boolean validate = !skipValidation;
+            // Will make validation happen always except for the (rare) occasion of all three conditions are true
+            boolean validate = ! ( u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) &&
+                JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false) );
 
             if (ds.getVersions().isEmpty()) {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeVersion"));

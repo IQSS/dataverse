@@ -69,6 +69,7 @@ public enum JvmSettings {
     // API SETTINGS
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
+    API_ALLOW_INCOMPLETE_METADATA(SCOPE_API, "allow-incomplete-metadata"),
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),
@@ -113,22 +114,10 @@ public enum JvmSettings {
     SUPPORT_EMAIL(SCOPE_MAIL, "support-email"),
     CC_SUPPORT_ON_CONTACT_EMAIL(SCOPE_MAIL, "cc-support-on-contact-email"),
 
-    // VALIDATION SETTINGS
-    /**
-     * When set to true, dataset with incomplete metadata can be submitted via API for later corrections.
-     */
-    SCOPE_VALIDATION(PREFIX, "validation"),
-    ALLOW_INCOMPLETE_METADATA_THROUGH_API(SCOPE_VALIDATION, "allow-incomplete-metadata-through-api"),
-    /**
-     * Determines if dataset submitted via API with incomplete metadata (for later
-     * corrections) can be submitted for review.
-     */
-    CAN_REVIEW_INCOMPLETE(SCOPE_VALIDATION, "can-review-incomplete"),
-    /**
-     * When set to true, the filter for validity of metadata is shown in "My Data" page.
-     */
-    SHOW_VALIDITY_FILTER(SCOPE_VALIDATION, "show-validity-filter"),
-    
+    // UI SETTINGS
+    SCOPE_UI(PREFIX, "ui"),
+    UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
+    UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
@@ -307,11 +296,6 @@ public enum JvmSettings {
      */
     public Optional<String> lookupOptional() {
         return lookupOptional(String.class);
-    }
-
-    public boolean isTrue(boolean defaultValue) {
-        Optional<String> val = lookupOptional();
-        return val.isEmpty() ? defaultValue : StringUtil.isTrue(val.get());
     }
     
     /**

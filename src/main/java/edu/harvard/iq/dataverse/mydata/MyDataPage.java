@@ -120,7 +120,7 @@ public class MyDataPage implements java.io.Serializable {
     }
 
     public boolean showValidityFilter() {
-        return JvmSettings.SHOW_VALIDITY_FILTER.isTrue(false);
+        return JvmSettings.UI_SHOW_VALIDITY_FILTER.lookupOptional(Boolean.class).orElse(false);
     }
            
     public String getRetrieveDataFullAPIPath(){
