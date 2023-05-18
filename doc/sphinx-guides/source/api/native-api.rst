@@ -526,9 +526,13 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 - Description Text
 - Subject
 
-Alternatively, you can turn off the validation of the dataset by using the optional "doNotValidate" parameter. This parameter works only when the "dataverse.validation.allow-incomplete-metadata-through-api" JVM option is set to "true". Your solr configuration must be up-to-date with the "schema.xml" file for this feature to work.
+Alternatively, you can turn off the validation of the dataset by using the optional ``doNotValidate`` parameter.
 
-Providing the "doNotValidate" query parameter with value "true" turns off the validation of metadata. In this case, only the "Author Name" is required. For example, a minimal json would look like this:
+**Note:** This feature works only when the :ref:`dataverse.api.allow-incomplete-metadata` is enabled and your Solr
+          Schema is up-to-date with the `datasetValid` field.
+
+Providing a ``.../datasets?doNotValidate=true`` query parameter turns off the validation of metadata.
+In this case, only the "Author Name" is required. For example, a minimal json would look like this:
 
 .. code-block:: bash
 
