@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 
 public class BearerTokenAuthMechanism implements AuthMechanism {
     private static final String BEARER_AUTH_SCHEME = "Bearer";
+    private static final Logger logger = Logger.getLogger(BearerTokenAuthMechanism.class.getCanonicalName());
+    
     public static final String UNAUTHORIZED_BEARER_TOKEN = "Unauthorized bearer token";
     public static final String INVALID_BEARER_TOKEN = "Could not parse bearer token";
     public static final String BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED = "Bearer token detected, no OIDC provider configured";
@@ -31,18 +33,19 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
     protected AuthenticationServiceBean authSvc;
     @Inject
     protected UserServiceBean userSvc;
-    private static final Logger logger = Logger.getLogger(BearerTokenAuthMechanism.class.getCanonicalName());
+    
     @Override
     public User findUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse {
         if (FeatureFlags.API_BEARER_AUTH.enabled()) {
             Optional<String> bearerToken = getRequestApiKey(containerRequestContext);
             // No Bearer Token present, hence no user can be authenticated
-            if (!bearerToken.isPresent()) {
+            if (bearerToken.isEmpty()) {
                 return null;
             }
+            
             // Validate and verify provided Bearer Token, and retrieve UserRecordIdentifier
             // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token. Tokens in the cache should be removed after some (configurable) time.
-            UserRecordIdentifier userInfo = verifyOidcBearerTokenAndGetUserIndentifier(bearerToken.get());
+            UserRecordIdentifier userInfo = verifyOidcBearerTokenAndGetUserIdentifier(bearerToken.get());
 
             // retrieve Authenticated User from AuthService
             AuthenticatedUser authUser = authSvc.lookupUser(userInfo);
@@ -67,7 +70,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
      * @param token The string containing the encoded JWT
      * @return
      */
-    private UserRecordIdentifier verifyOidcBearerTokenAndGetUserIndentifier(String token) throws WrappedAuthErrorResponse {
+    private UserRecordIdentifier verifyOidcBearerTokenAndGetUserIdentifier(String token) throws WrappedAuthErrorResponse {
         try {
             BearerAccessToken accessToken = BearerAccessToken.parse(token);
             // Get list of all authentication providers using Open ID Connect
@@ -108,7 +111,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
      * Retrieve the raw, encoded token value from the Authorization Bearer HTTP header as defined in RFC 6750
      * @return An {@link Optional} either empty if not present or the raw token from the header
      */
-    private  Optional<String> getRequestApiKey(ContainerRequestContext containerRequestContext) {
+    private Optional<String> getRequestApiKey(ContainerRequestContext containerRequestContext) {
         String headerParamApiKey = containerRequestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
         if (headerParamApiKey != null && headerParamApiKey.toLowerCase().startsWith(BEARER_AUTH_SCHEME.toLowerCase() + " ")) {
             return Optional.of(headerParamApiKey);
