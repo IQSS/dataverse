@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
@@ -175,5 +176,35 @@ public class DatasetUtilTest {
         String[] expected = testCustomFields.split(",");
 
         assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void testAnonymizeDatasetVersion() {
+        DatasetVersion testDatasetVersion = new DatasetVersion();
+
+        List<DatasetField> testDatasetFields = new ArrayList<>();
+        String[] fieldNames = {"author", "subject", "keyword"};
+        for (String fieldName : fieldNames) {
+            DatasetField datasetField = DatasetField.createNewEmptyDatasetField(new DatasetFieldType(fieldName, FieldType.TEXT, false), testDatasetVersion);
+            DatasetFieldValue datasetFieldValue = new DatasetFieldValue(datasetField, "testValue");
+            datasetField.setDatasetFieldValues(List.of(datasetFieldValue));
+            testDatasetFields.add(datasetField);
+        }
+        testDatasetVersion.setDatasetFields(testDatasetFields);
+
+        String testAnonymizedFieldNames = "subject, keyword";
+        String testAnonymizedFieldValue = "testValueToAnonymize";
+        DatasetVersion actualVersion = DatasetUtil.anonymizeDatasetVersion(testDatasetVersion, testAnonymizedFieldNames, testAnonymizedFieldValue);
+
+        // We check that the fields to be anonymized are successfully anonymized and others remain as originally
+        List<DatasetField> actualVersionDatasetFields = actualVersion.getDatasetFields();
+        for (DatasetField datasetField : actualVersionDatasetFields) {
+            String datasetFieldValue = datasetField.getDatasetFieldValues().get(0).getValue();
+            if (testAnonymizedFieldNames.contains(datasetField.getDatasetFieldType().getName())) {
+                assertEquals(testAnonymizedFieldValue, datasetFieldValue);
+            } else {
+                assertNotEquals(testAnonymizedFieldValue, datasetFieldValue);
+            }
+        }
     }
 }

@@ -3868,15 +3868,18 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @AuthRequired
-    @Path("anonymizedDraftVersion/{privateUrlToken}")
+    @Path("anonymizedDraftVersions/{privateUrlToken}")
     public Response getAnonymizedDraftVersion(@Context ContainerRequestContext crc,
                                               @PathParam("privateUrlToken") String privateUrlToken,
                                               @QueryParam("anonymizedFieldValue") String anonymizedFieldValue) {
-        // TODO: replace fields specified in AnonymizedFieldTypeNames setting with anonymizedFieldValue
+        String anonymizedFieldTypeNames = settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+        if (anonymizedFieldTypeNames == null) {
+            throw new NotAcceptableException("Anonymized Access not enabled");
+        }
         return response(req -> {
             DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(privateUrlToken);
             return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                    : ok(json(dsv));
+                    : ok(json(DatasetUtil.anonymizeDatasetVersion(dsv, anonymizedFieldTypeNames, anonymizedFieldValue)));
         }, getRequestUser(crc));
     }
 }
