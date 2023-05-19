@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -305,16 +306,42 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
     }
 
     /**
-     * Returns the UserRecordIdentifier corresponding to the given accessToken if valid.
-     * UserRecordIdentifier (same used as in OAuth2UserRecord), i.e. can be used to find a local UserAccount.
-     * @param accessToken
-     * @return Returns the UserRecordIdentifier corresponding to the given accessToken if valid.
-     * @throws IOException
-     * @throws OAuth2Exception
+     * Trades an access token for an {@link UserRecordIdentifier} (if valid).
+     *
+     * @apiNote The resulting {@link UserRecordIdentifier} may be used with
+     *          {@link edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean#lookupUser(UserRecordIdentifier)}
+     *          to look up an {@link edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser} from the database.
+     * @see edu.harvard.iq.dataverse.api.auth.BearerTokenAuthMechanism
+     *
+     * @param accessToken The token to use when requesting user information from the provider
+     * @return Returns an {@link UserRecordIdentifier} for a valid access token or an empty {@link Optional}.
+     * @throws IOException In case communication with the endpoint fails to succeed for an I/O reason
      */
-    public Optional<UserRecordIdentifier> getUserIdentifierForValidToken(BearerAccessToken accessToken) throws IOException, OAuth2Exception{
-        // Request the UserInfoEndpoint to obtain UserInfo, since this endpoint also validate the Token we can reuse the existing code path.
-        // As an alternative we could use the Introspect Endpoint or assume the Token as some encoded information (i.e. JWT).
-        return  Optional.of(new UserRecordIdentifier(  this.getId(), getUserInfo(accessToken).get().getSubject().getValue()));
+    public Optional<UserRecordIdentifier> getUserIdentifier(BearerAccessToken accessToken) throws IOException {
+        OAuth2UserRecord userRecord;
+        try {
+            // Try to retrieve with given token (throws if invalid token)
+            Optional<UserInfo> userInfo = getUserInfo(accessToken);
+            
+            if (userInfo.isPresent()) {
+                // Take this detour to avoid code duplication and potentially hard to track conversion errors.
+                userRecord = getUserRecord(userInfo.get());
+            } else {
+                // This should not happen - an error at the provider side will lead to an exception.
+                logger.log(Level.WARNING,
+                    "User info retrieval from {0} returned empty optional but expected exception for token {1}.",
+                    List.of(getId(), accessToken).toArray()
+                );
+                return Optional.empty();
+            }
+        } catch (OAuth2Exception e) {
+            logger.log(Level.FINE,
+                "Could not retrieve user info with token {0} at provider {1}: {2}",
+                List.of(accessToken, getId(), e.getMessage()).toArray());
+            logger.log(Level.FINER, "Retrieval failed, details as follows: ", e);
+            return Optional.empty();
+        }
+        
+        return Optional.of(userRecord.getUserRecordIdentifier());
     }
 }

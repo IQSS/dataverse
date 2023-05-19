@@ -5,7 +5,6 @@ import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -88,12 +87,12 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
             for (OIDCAuthProvider provider : providers) {
                 try {
                     // The OIDCAuthProvider need to verify a Bearer Token and equip the client means to identify the corresponding AuthenticatedUser.
-                    Optional<UserRecordIdentifier> userInfo = provider.getUserIdentifierForValidToken(accessToken);
+                    Optional<UserRecordIdentifier> userInfo = provider.getUserIdentifier(accessToken);
                     if(userInfo.isPresent()) {
                         logger.log(Level.FINE, "Bearer token detected, provider {0} confirmed validity and provided identifier", provider.getId());
                         return userInfo.get();
                     }
-                } catch ( IOException| OAuth2Exception e) {
+                } catch (IOException e) {
                     logger.log(Level.FINE, "Bearer token detected, provider " + provider.getId() + " indicates an invalid Token, skipping", e);
                 }
             }
