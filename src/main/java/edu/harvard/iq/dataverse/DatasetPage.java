@@ -3127,7 +3127,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private void startDownload(boolean downloadOriginal){
         boolean guestbookRequired = isDownloadPopupRequired();
-        boolean validate = validateFilesForDownload(guestbookRequired);
+        boolean validate = validateFilesForDownload(downloadOriginal);
         if (validate) {
             updateGuestbookResponse(guestbookRequired, downloadOriginal);
             if(!guestbookRequired && !getValidateFilesOutcome().equals("Mixed")){
