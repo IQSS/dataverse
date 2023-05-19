@@ -1197,7 +1197,12 @@ public class IngestServiceBean {
             StorageIO<DataFile> storageIO;
             try {
                 storageIO = dataFile.getStorageIO();
-                storageIO.open();
+                try {
+                    storageIO.open();
+                } catch (Exception ex) {
+                    logger.info("fileMetadataExtractableFromNetcdf skipped because of exception calling dataFile.getStorageIO(): " + ex);
+                    return false;
+                }
                 if (storageIO.isLocalFile()) {
                     localFile = storageIO.getFileSystemPath().toFile();
                     dataFileLocation = localFile.getAbsolutePath();
