@@ -82,6 +82,7 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
@@ -235,6 +236,9 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DatasetVersionServiceBean datasetversionService;
+
+    @Inject
+    PrivateUrlServiceBean privateUrlService;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -3860,5 +3864,19 @@ public class Datasets extends AbstractApiBean {
             fieldNamesArrayBuilder.add(fieldName);
         }
         return ok(fieldNamesArrayBuilder);
+    }
+
+    @GET
+    @AuthRequired
+    @Path("anonymizedDraftVersion/{privateUrlToken}")
+    public Response getAnonymizedDraftVersion(@Context ContainerRequestContext crc,
+                                              @PathParam("privateUrlToken") String privateUrlToken,
+                                              @QueryParam("anonymizedFieldValue") String anonymizedFieldValue) {
+        // TODO: replace fields specified in AnonymizedFieldTypeNames setting with anonymizedFieldValue
+        return response(req -> {
+            DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(privateUrlToken);
+            return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
+                    : ok(json(dsv));
+        }, getRequestUser(crc));
     }
 }
