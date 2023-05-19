@@ -93,6 +93,9 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
                         return userInfo.get();
                     }
                 } catch (IOException e) {
+                    // TODO: Just logging this is not sufficient - if there is an IO error with the one provider
+                    //       which would have validated successfully, this is not the users fault. We need to
+                    //       take note and refer to that later when occurred.
                     logger.log(Level.FINE, "Bearer token detected, provider " + provider.getId() + " indicates an invalid Token, skipping", e);
                 }
             }
