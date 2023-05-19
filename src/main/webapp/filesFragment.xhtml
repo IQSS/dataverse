@@ -481,8 +481,7 @@
                 </div>
 
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
-                               styleClass="btn btn-default btn-request"                                   
-                               action="#{DatasetPage.requestAccessMultipleFiles()}"
+                               styleClass="btn btn-default btn-request"
                                update="@form, @([id$=messagePanel])" 
                                action="#{DatasetPage.validateFilesForRequestAccess()}"
                                disabled="#{DatasetPage.locked or !DatasetPage.fileAccessRequestMultiButtonEnabled}">
