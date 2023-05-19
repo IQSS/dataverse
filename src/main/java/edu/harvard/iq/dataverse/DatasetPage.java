@@ -3127,7 +3127,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private void startDownload(boolean downloadOriginal){
         boolean guestbookRequired = isDownloadPopupRequired();
-        boolean validate = validateFilesForDownload(guestbookRequired, downloadOriginal);
+        boolean validate = validateFilesForDownload(guestbookRequired);
         if (validate) {
             updateGuestbookResponse(guestbookRequired, downloadOriginal);
             if(!guestbookRequired && !getValidateFilesOutcome().equals("Mixed")){
@@ -3236,65 +3236,6 @@ public class DatasetPage implements java.io.Serializable {
 
     /*helper function to filter the selected files into <selected downloadable>, 
     and <selected, non downloadable> and <selected restricted> for reuse*/
-
-    private boolean filterSelectedFiles(){
-        setSelectedDownloadableFiles(new ArrayList<>());
-        setSelectedNonDownloadableFiles(new ArrayList<>());
-        setSelectedRestrictedFiles(new ArrayList<>());
-        setSelectedUnrestrictedFiles(new ArrayList<>());
-
-        boolean someFiles = false;
-        for (FileMetadata fmd : this.selectedFiles){
-            if(this.fileDownloadHelper.canDownloadFile(fmd)){
-                getSelectedDownloadableFiles().add(fmd);
-                someFiles=true;
-            } else {
-                getSelectedNonDownloadableFiles().add(fmd);
-            }
-            if(fmd.isRestricted()){
-                getSelectedRestrictedFiles().add(fmd); //might be downloadable to user or not
-                someFiles=true;
-            } else {
-                getSelectedUnrestrictedFiles().add(fmd);
-                someFiles=true;
-            }
-
-        }
-        return someFiles;
-    }
-
-    public void validateFilesForRequestAccess(){
-        this.filterSelectedFiles();
-
-        if(!dataset.isFileAccessRequest()){ //is this needed? wouldn't be able to click Request Access if this !isFileAccessRequest()
-            return;
-        }
-
-        if(!this.selectedRestrictedFiles.isEmpty()){
-            ArrayList nonDownloadableRestrictedFiles = new ArrayList<>();
-
-            List<DataFile> userRequestedDataFiles = ((AuthenticatedUser) session.getUser()).getRequestedDataFiles();
-
-            for(FileMetadata fmd : this.selectedRestrictedFiles){
-                if(!this.fileDownloadHelper.canDownloadFile(fmd) && !userRequestedDataFiles.contains(fmd.getDataFile())){
-                    nonDownloadableRestrictedFiles.add(fmd);
-                }
-            }
-
-            if(!nonDownloadableRestrictedFiles.isEmpty()){
-                guestbookResponse.setDataFile(null);
-                guestbookResponse.setSelectedFileIds(this.getFilesIdsString(nonDownloadableRestrictedFiles));
-
-                if(this.isGuestbookAndTermsPopupRequired()){ //need to pop up the guestbook and terms dialog
-                    PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
-                } else {
-                    this.requestAccessMultipleFiles();
-                }
-            } else {
-                //popup select data files
-            }
-        }
-    }
 
     /*helper function to filter the selected files into <selected downloadable>, 
     and <selected, non downloadable> and <selected restricted> for reuse*/

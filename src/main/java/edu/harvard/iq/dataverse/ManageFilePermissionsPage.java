@@ -179,10 +179,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
                 // populate the file access requests map
                 for (FileAccessRequest fileAccessRequest : file.getFileAccessRequests()) {
-                    List<FileAccessRequest> requestedFiles = fileAccessRequestMap.get(fileAccessRequest.getAuthenticatedUser());
+                    List<FileAccessRequest> requestedFiles = fileAccessRequestMap.get(fileAccessRequest.getRequester());
                     if (requestedFiles == null) {
                         requestedFiles = new ArrayList<>();
-                        AuthenticatedUser withProvider = authenticationService.getAuthenticatedUserWithProvider(fileAccessRequest.getAuthenticatedUser().getUserIdentifier());
+                        AuthenticatedUser withProvider = authenticationService.getAuthenticatedUserWithProvider(fileAccessRequest.getRequester().getUserIdentifier());
                         fileAccessRequestMap.put(withProvider, requestedFiles);
                     }
                     requestedFiles.add(fileAccessRequest);

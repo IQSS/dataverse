@@ -52,38 +52,20 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         this.fileAccessRequest = new FileAccessRequest(file,requester);
         this.sendNotification = sendNotification;
     }
-        
-        public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr) {
-            // for data file check permission on owning dataset
-            super(dvRequest, file);        
-            this.file = file;        
-            this.requester = (AuthenticatedUser) dvRequest.getUser();
-            this.fileAccessRequest = new FileAccessRequest(file,requester,gbr);
-            this.sendNotification = false;
-        }
 
-        public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr, Boolean sendNotification) {
-            // for data file check permission on owning dataset
-            super(dvRequest, file);        
-            this.file = file;
-            this.requester = (AuthenticatedUser) dvRequest.getUser();
-            this.fileAccessRequest = new FileAccessRequest(file,requester,gbr);
-            this.sendNotification = sendNotification;
-        }
+    public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr) {
+        this(dvRequest, file, gbr, false);
+    }
 
-        
-        public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr) {
-            this(dvRequest, file, gbr, false);
-        }
+    public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr, Boolean sendNotification) {
+        // for data file check permission on owning dataset
+        super(dvRequest, file);
+        this.file = file;
+        this.requester = (AuthenticatedUser) dvRequest.getUser();
+        this.fileAccessRequest = new FileAccessRequest(file, requester, gbr);
+        this.sendNotification = sendNotification;
+    }
 
-        public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, GuestbookResponse gbr, Boolean sendNotification) {
-            // for data file check permission on owning dataset
-            super(dvRequest, file);        
-            this.file = file;
-            this.requester = (AuthenticatedUser) dvRequest.getUser();
-            this.fileAccessRequest = new FileAccessRequest(file,requester,gbr);
-            this.sendNotification = sendNotification;
-        }
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
 

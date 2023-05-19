@@ -1,20 +1,20 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
-import javax.persistence.CascadeType;
+import java.util.Date;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import javax.persistence.Index;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.EnumType;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import javax.persistence.Column;
 import javax.persistence.Enumerated;
 import javax.persistence.GenerationType;
@@ -50,6 +50,7 @@ import javax.persistence.NamedQuery;
                 query = "SELECT far FROM FileAccessRequest far WHERE far.user.id=:authenticatedUserId and far.dataFile.id=:dataFileId and far.requestState=:requestState")
 })
 
+
 public class FileAccessRequest implements Serializable{
     private static final long serialVersionUID = 1L;
     @Id
@@ -73,6 +74,10 @@ public class FileAccessRequest implements Serializable{
     @Enumerated(EnumType.STRING)
     @Column(name="request_state", nullable=false )
     private RequestState requestState;
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
+    @Column(name = "creation_time")
+    private Date creationTime;
     
     public FileAccessRequest(){
         
@@ -220,6 +225,14 @@ public class FileAccessRequest implements Serializable{
         return hash;
     }
 
+    public Date getCreationTime() {
+        return creationTime;
+    }
+
+    public void setCreationTime(Date creationTime) {
+        this.creationTime = creationTime;
+    }
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

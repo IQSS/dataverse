@@ -1489,7 +1489,7 @@ public class Access extends AbstractApiBean {
         JsonArrayBuilder userArray = Json.createArrayBuilder();
 
         for (FileAccessRequest fileAccessRequest : requests) {
-            userArray.add(json(fileAccessRequest.getAuthenticatedUser()));
+            userArray.add(json(fileAccessRequest.getRequester()));
         }
 
         return ok(userArray);

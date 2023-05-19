@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -72,10 +72,6 @@ public class DataFile extends DvObject implements Comparable {
     @Column( nullable = false )
     @Pattern(regexp = "^.*/.*$", message = "{contenttype.slash}")
     private String contentType;
-
-    public void setFileAccessRequests(List<FileAccessRequest> fileAccessRequests) {
-        this.fileAccessRequests = fileAccessRequests;
-    }
 
 //    @Expose    
 //    @SerializedName("storageIdentifier")
@@ -203,6 +199,13 @@ public class DataFile extends DvObject implements Comparable {
     @OneToMany(mappedBy="dataFile",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     private List<FileAccessRequest> fileAccessRequests;
 
+    @ManyToMany
+    @JoinTable(name = "fileaccessrequests",
+    joinColumns = @JoinColumn(name = "datafile_id"),
+    inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
+    private List<AuthenticatedUser> fileAccessRequesters;
+
+    
     public List<FileAccessRequest> getFileAccessRequests(){
         return fileAccessRequests;
     }
@@ -761,12 +764,14 @@ public class DataFile extends DvObject implements Comparable {
         return null; 
     }
 
-    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
-    private List<FileAccessRequest> fileAccessRequests;
-
-    public List<FileAccessRequest> getFileAccessRequests() {
-        return fileAccessRequests;
+    public List<AuthenticatedUser> getFileAccessRequesters() {
+        return fileAccessRequesters;
     }
+
+    public void setFileAccessRequesters(List<AuthenticatedUser> fileAccessRequesters) {
+        this.fileAccessRequesters = fileAccessRequesters;
+    }
+
 
     public void addFileAccessRequester(AuthenticatedUser authenticatedUser) {
         if (this.fileAccessRequests == null) {
@@ -774,7 +779,7 @@ public class DataFile extends DvObject implements Comparable {
         }
 
         Set<AuthenticatedUser> existingUsers = this.fileAccessRequests.stream()
-            .map(FileAccessRequest::getAuthenticatedUser)
+            .map(FileAccessRequest::getRequester)
             .collect(Collectors.toSet());
 
         if (existingUsers.contains(authenticatedUser)) {
@@ -784,13 +789,7 @@ public class DataFile extends DvObject implements Comparable {
         FileAccessRequest request = new FileAccessRequest();
         request.setCreationTime(new Date());
         request.setDataFile(this);
-        request.setAuthenticatedUser(authenticatedUser);
-
-        FileAccessRequest.FileAccessRequestKey key = new FileAccessRequest.FileAccessRequestKey();
-        key.setAuthenticatedUser(authenticatedUser.getId());
-        key.setDataFile(this.getId());
-
-        request.setId(key);
+        request.setRequester(authenticatedUser);
 
         this.fileAccessRequests.add(request);
     }
@@ -801,7 +800,7 @@ public class DataFile extends DvObject implements Comparable {
         }
 
         FileAccessRequest request = this.fileAccessRequests.stream()
-            .filter(fileAccessRequest -> fileAccessRequest.getAuthenticatedUser().equals(roleAssignee))
+            .filter(fileAccessRequest -> fileAccessRequest.getRequester().equals(roleAssignee))
             .findFirst()
             .orElse(null);
 
@@ -819,7 +818,7 @@ public class DataFile extends DvObject implements Comparable {
         }
 
         Set<AuthenticatedUser> existingUsers = this.fileAccessRequests.stream()
-            .map(FileAccessRequest::getAuthenticatedUser)
+            .map(FileAccessRequest::getRequester)
             .collect(Collectors.toSet());
 
         return existingUsers.contains(roleAssignee);
