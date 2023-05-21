@@ -27,6 +27,7 @@ import static edu.harvard.iq.dataverse.api.auth.BearerTokenAuthMechanism.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @LocalJvmSettings
+@JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth")
 class BearerTokenAuthMechanismTest {
 
     private static final String TEST_API_KEY = "test-api-key";
@@ -36,14 +37,12 @@ class BearerTokenAuthMechanismTest {
     @BeforeEach
     public void setUp() {
         sut = new BearerTokenAuthMechanism();
+        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
+        sut.userSvc = Mockito.mock(UserServiceBean.class);
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth")
-    public void testFindUserFromRequest_no_token() throws WrappedAuthErrorResponse {
-        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
-        sut.userSvc = Mockito.mock(UserServiceBean.class);
-
+    void testFindUserFromRequest_no_token() throws WrappedAuthErrorResponse {
         ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake(null);
         User actual = sut.findUserFromRequest(testContainerRequest);
 
@@ -51,11 +50,9 @@ class BearerTokenAuthMechanismTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth")
-    public void testFindUserFromRequest_invalid_token() throws WrappedAuthErrorResponse {
-        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
-        sut.userSvc = Mockito.mock(UserServiceBean.class);
+    void testFindUserFromRequest_invalid_token() throws WrappedAuthErrorResponse {
         Mockito.when(sut.authSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)).thenReturn(Collections.emptySet());
+        
         ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer ");
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
@@ -63,11 +60,9 @@ class BearerTokenAuthMechanismTest {
         assertEquals(INVALID_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
     }
     @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth")
-    public void testFindUserFromRequest_no_OidcProvider() throws WrappedAuthErrorResponse {
-        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
-        sut.userSvc = Mockito.mock(UserServiceBean.class);
+    void testFindUserFromRequest_no_OidcProvider() throws WrappedAuthErrorResponse {
         Mockito.when(sut.authSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)).thenReturn(Collections.emptySet());
+        
         ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " +TEST_API_KEY);
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
@@ -76,12 +71,7 @@ class BearerTokenAuthMechanismTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth")
-    public void testFindUserFromRequest_oneProvider_invalidToken_1() throws WrappedAuthErrorResponse, ParseException, IOException, OAuth2Exception {
-
-        sut.userSvc = Mockito.mock(UserServiceBean.class);
-        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
-
+    void testFindUserFromRequest_oneProvider_invalidToken_1() throws WrappedAuthErrorResponse, ParseException, IOException, OAuth2Exception {
         OIDCAuthProvider oidcAuthProvider = Mockito.mock(OIDCAuthProvider.class);
         String providerID = "OIEDC";
         Mockito.when(oidcAuthProvider.getId()).thenReturn(providerID);
@@ -91,7 +81,7 @@ class BearerTokenAuthMechanismTest {
 
         // ensure that the OIDCAuthProvider returns a valid UserRecordIdentifier for a given Token
         BearerAccessToken token = BearerAccessToken.parse("Bearer " + TEST_API_KEY);
-        Mockito.when(oidcAuthProvider.getUserIdentifierForValidToken(token)).thenReturn(Optional.empty());
+        Mockito.when(oidcAuthProvider.getUserIdentifier(token)).thenReturn(Optional.empty());
 
         // when
         ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
@@ -102,12 +92,7 @@ class BearerTokenAuthMechanismTest {
     }
 
     @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth")
-    public void testFindUserFromRequest_oneProvider_invalidToken_2() throws WrappedAuthErrorResponse, ParseException, IOException, OAuth2Exception {
-
-        sut.userSvc = Mockito.mock(UserServiceBean.class);
-        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
-
+    void testFindUserFromRequest_oneProvider_invalidToken_2() throws WrappedAuthErrorResponse, ParseException, IOException, OAuth2Exception {
         OIDCAuthProvider oidcAuthProvider = Mockito.mock(OIDCAuthProvider.class);
         String providerID = "OIEDC";
         Mockito.when(oidcAuthProvider.getId()).thenReturn(providerID);
@@ -127,12 +112,7 @@ class BearerTokenAuthMechanismTest {
         assertEquals(UNAUTHORIZED_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
     }
     @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth")
-    public void testFindUserFromRequest_oneProvider_validToken() throws WrappedAuthErrorResponse, ParseException, IOException, OAuth2Exception {
-
-        sut.userSvc = Mockito.mock(UserServiceBean.class);
-        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
-
+    void testFindUserFromRequest_oneProvider_validToken() throws WrappedAuthErrorResponse, ParseException, IOException, OAuth2Exception {
         OIDCAuthProvider oidcAuthProvider = Mockito.mock(OIDCAuthProvider.class);
         String providerID = "OIEDC";
         Mockito.when(oidcAuthProvider.getId()).thenReturn(providerID);
@@ -143,7 +123,7 @@ class BearerTokenAuthMechanismTest {
         // ensure that the OIDCAuthProvider returns a valid UserRecordIdentifier for a given Token
         UserRecordIdentifier userinfo = new UserRecordIdentifier(providerID, "KEY");
         BearerAccessToken token = BearerAccessToken.parse("Bearer " + TEST_API_KEY);
-        Mockito.when(oidcAuthProvider.getUserIdentifierForValidToken(token)).thenReturn(Optional.of(userinfo));
+        Mockito.when(oidcAuthProvider.getUserIdentifier(token)).thenReturn(Optional.of(userinfo));
 
         // ensures that the AuthenticationServiceBean can retrieve an Authenticated user based on the UserRecordIdentifier
         AuthenticatedUser testAuthenticatedUser = new AuthenticatedUser();
@@ -160,12 +140,7 @@ class BearerTokenAuthMechanismTest {
 
     }
     @Test
-    @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "true", varArgs = "api-bearer-auth")
-    public void testFindUserFromRequest_oneProvider_validToken_noAccount() throws WrappedAuthErrorResponse, ParseException, IOException, OAuth2Exception {
-
-        sut.userSvc = Mockito.mock(UserServiceBean.class);
-        sut.authSvc = Mockito.mock(AuthenticationServiceBean.class);
-
+    void testFindUserFromRequest_oneProvider_validToken_noAccount() throws WrappedAuthErrorResponse, ParseException, IOException, OAuth2Exception {
         OIDCAuthProvider oidcAuthProvider = Mockito.mock(OIDCAuthProvider.class);
         String providerID = "OIEDC";
         Mockito.when(oidcAuthProvider.getId()).thenReturn(providerID);
@@ -176,7 +151,7 @@ class BearerTokenAuthMechanismTest {
         // ensure that the OIDCAuthProvider returns a valid UserRecordIdentifier for a given Token
         UserRecordIdentifier userinfo = new UserRecordIdentifier(providerID, "KEY");
         BearerAccessToken token = BearerAccessToken.parse("Bearer " + TEST_API_KEY);
-        Mockito.when(oidcAuthProvider.getUserIdentifierForValidToken(token)).thenReturn(Optional.of(userinfo));
+        Mockito.when(oidcAuthProvider.getUserIdentifier(token)).thenReturn(Optional.of(userinfo));
 
         // ensures that the AuthenticationServiceBean can retrieve an Authenticated user based on the UserRecordIdentifier
         Mockito.when(sut.authSvc.lookupUser(userinfo)).thenReturn(null);
