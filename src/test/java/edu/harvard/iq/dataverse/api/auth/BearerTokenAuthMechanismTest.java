@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.api.auth.doubles.BearerTokenKeyContainerRequestTestFake;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -50,7 +49,7 @@ class BearerTokenAuthMechanismTest {
     }
 
     @Test
-    void testFindUserFromRequest_invalid_token() throws WrappedAuthErrorResponse {
+    void testFindUserFromRequest_invalid_token() {
         Mockito.when(sut.authSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)).thenReturn(Collections.emptySet());
         
         ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer ");
@@ -60,7 +59,7 @@ class BearerTokenAuthMechanismTest {
         assertEquals(INVALID_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
     }
     @Test
-    void testFindUserFromRequest_no_OidcProvider() throws WrappedAuthErrorResponse {
+    void testFindUserFromRequest_no_OidcProvider() {
         Mockito.when(sut.authSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)).thenReturn(Collections.emptySet());
         
         ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " +TEST_API_KEY);
@@ -71,7 +70,7 @@ class BearerTokenAuthMechanismTest {
     }
 
     @Test
-    void testFindUserFromRequest_oneProvider_invalidToken_1() throws WrappedAuthErrorResponse, ParseException, IOException, OAuth2Exception {
+    void testFindUserFromRequest_oneProvider_invalidToken_1() throws ParseException, IOException {
         OIDCAuthProvider oidcAuthProvider = Mockito.mock(OIDCAuthProvider.class);
         String providerID = "OIEDC";
         Mockito.when(oidcAuthProvider.getId()).thenReturn(providerID);
@@ -92,7 +91,7 @@ class BearerTokenAuthMechanismTest {
     }
 
     @Test
-    void testFindUserFromRequest_oneProvider_invalidToken_2() throws WrappedAuthErrorResponse, ParseException, IOException, OAuth2Exception {
+    void testFindUserFromRequest_oneProvider_invalidToken_2() throws ParseException, IOException {
         OIDCAuthProvider oidcAuthProvider = Mockito.mock(OIDCAuthProvider.class);
         String providerID = "OIEDC";
         Mockito.when(oidcAuthProvider.getId()).thenReturn(providerID);
@@ -102,7 +101,7 @@ class BearerTokenAuthMechanismTest {
 
         // ensure that the OIDCAuthProvider returns a valid UserRecordIdentifier for a given Token
         BearerAccessToken token = BearerAccessToken.parse("Bearer " + TEST_API_KEY);
-        Mockito.when(oidcAuthProvider.getUserIdentifierForValidToken(token)).thenThrow(OAuth2Exception.class);
+        Mockito.when(oidcAuthProvider.getUserIdentifier(token)).thenThrow(IOException.class);
 
         // when
         ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
@@ -112,7 +111,7 @@ class BearerTokenAuthMechanismTest {
         assertEquals(UNAUTHORIZED_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
     }
     @Test
-    void testFindUserFromRequest_oneProvider_validToken() throws WrappedAuthErrorResponse, ParseException, IOException, OAuth2Exception {
+    void testFindUserFromRequest_oneProvider_validToken() throws WrappedAuthErrorResponse, ParseException, IOException {
         OIDCAuthProvider oidcAuthProvider = Mockito.mock(OIDCAuthProvider.class);
         String providerID = "OIEDC";
         Mockito.when(oidcAuthProvider.getId()).thenReturn(providerID);
@@ -140,7 +139,7 @@ class BearerTokenAuthMechanismTest {
 
     }
     @Test
-    void testFindUserFromRequest_oneProvider_validToken_noAccount() throws WrappedAuthErrorResponse, ParseException, IOException, OAuth2Exception {
+    void testFindUserFromRequest_oneProvider_validToken_noAccount() throws WrappedAuthErrorResponse, ParseException, IOException {
         OIDCAuthProvider oidcAuthProvider = Mockito.mock(OIDCAuthProvider.class);
         String providerID = "OIEDC";
         Mockito.when(oidcAuthProvider.getId()).thenReturn(providerID);
