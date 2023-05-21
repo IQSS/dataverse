@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import javax.json.JsonObject;
 
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * For docs see {@link SchemaDotOrgExporter}.
  */
+@LocalJvmSettings
 public class SchemaDotOrgExporterTest {
 
     private static final Logger logger = Logger.getLogger(SchemaDotOrgExporterTest.class.getCanonicalName());

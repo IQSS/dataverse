@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -25,7 +26,8 @@ import java.util.Optional;
 import static edu.harvard.iq.dataverse.api.auth.BearerTokenAuthMechanism.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BearerTokenAuthMechanismTest {
+@LocalJvmSettings
+class BearerTokenAuthMechanismTest {
 
     private static final String TEST_API_KEY = "test-api-key";
 
