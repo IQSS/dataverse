@@ -85,19 +85,25 @@ JUnit 5 Test Helper Extensions
 Our codebase provides little helpers to ease dealing with state during tests.
 Some tests might need to change something which should be restored after the test ran.
 
-For unit tests, the most interesting part is to set a JVM setting just for the current test.
-Please use the ``@JvmSetting(key = JvmSettings.XXX, value = "")`` annotation on a test method or
-a test class to set and clear the property automatically.
+For unit tests, the most interesting part is to set a JVM setting just for the current test or a whole test class.
+(Which might be an inner class, too!). Please make use of the ``@JvmSetting(key = JvmSettings.XXX, value = "")``
+annotation and also make sure to annotate the test class with ``@LocalJvmSettings``.
 
 Inspired by JUnit's ``@MethodSource`` annotation, you may use ``@JvmSetting(key = JvmSettings.XXX, method = "zzz")``
-to reference a method located in the same test class by name (i. e. ``private static String zzz() {}``) to allow
+to reference a static method located in the same test class by name (i. e. ``private static String zzz() {}``) to allow
 retrieving dynamic data instead of String constants only. (Note the requirement for a *static* method!)
+
+If you want to delete a setting, simply provide a ``null`` value. This can be used to override a class-wide setting
+or some other default that is present for some reason.
 
 To set arbitrary system properties for the current test, a similar extension ``@SystemProperty(key = "", value = "")``
 has been added. (Note: it does not support method references.)
 
 Both extensions will ensure the global state of system properties is non-interfering for
 test executions. Tests using these extensions will be executed in serial.
+
+This settings helper may be extended at a later time to manipulate settings in a remote instance during integration
+or end-to-end testing. Stay tuned!
 
 Observing Changes to Code Coverage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
