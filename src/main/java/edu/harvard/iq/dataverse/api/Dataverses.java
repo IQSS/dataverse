@@ -75,6 +75,7 @@ import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
 import java.util.Collections;
@@ -122,6 +123,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.StreamingOutput;
@@ -573,6 +575,58 @@ public class Dataverses extends AbstractApiBean {
             execCommand(new DeleteDataverseCommand(req, findDataverseOrDie(idtf)));
             return ok("Dataverse " + idtf + " deleted");
         }, getRequestUser(crc));
+    }
+
+    /**
+     * Endpoint to change attributes of a Dataverse collection.
+     *
+     * @apiNote Example curl command:
+     *          <code>curl -X PUT -d "test" http://localhost:8080/api/dataverses/$ALIAS/attribute/alias</code>
+     *          to change the alias of the collection named $ALIAS to "test".
+     */
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/attribute/{attribute}")
+    public Response updateAttribute(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier,
+                                    @PathParam("attribute") String attribute, @NotNull String value) {
+        try {
+            Dataverse collection = findDataverseOrDie(identifier);
+            User user = getRequestUser(crc);
+            DataverseRequest dvRequest = createDataverseRequest(user);
+    
+            // TODO: The cases below use hard coded strings, because we have no place for definitions of those!
+            //       They are taken from util.json.JsonParser / util.json.JsonPrinter. This shall be changed.
+            //       This also should be extended to more attributes, like the type, theme, contacts, some booleans, etc.
+            switch (attribute) {
+                case "alias":
+                    collection.setAlias(value);
+                    break;
+                case "name":
+                    collection.setName(value);
+                    break;
+                case "description":
+                    collection.setDescription(value);
+                    break;
+                case "affiliation":
+                    collection.setAffiliation(value);
+                    break;
+                case "filePIDsEnabled":
+                    collection.setFilePIDsEnabled(parseBooleanOrDie(value));
+                default:
+                    return badRequest("'" + attribute + "' is not a supported attribute");
+            }
+        
+            // Off to persistence layer
+            execCommand(new UpdateDataverseCommand(collection, null, null, dvRequest, null));
+    
+            // Also return modified collection to user
+            return ok("Update successful", JsonPrinter.json(collection));
+        
+        // TODO: This is an anti-pattern, necessary due to this bean being an EJB, causing very noisy and unnecessary
+        //       logging by the EJB container for bubbling exceptions. (It would be handled by the error handlers.)
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
     }
 
     @DELETE

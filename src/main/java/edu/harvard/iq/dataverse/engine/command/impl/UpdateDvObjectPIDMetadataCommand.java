@@ -57,7 +57,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                 // didn't need updating.
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
                 String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-                boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
+                boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabledForCollection(target.getOwner());
                 // We will skip trying to update the global identifiers for datafiles if they
                 // aren't being used.
                 // If they are, we need to assure that there's an existing PID or, as when

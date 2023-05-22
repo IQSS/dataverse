@@ -590,8 +590,17 @@ public class Dataverse extends DvObjectContainer {
         this.citationDatasetFieldTypes = citationDatasetFieldTypes;
     }
     
-    
+    @Column(nullable = true)
+    private Boolean filePIDsEnabled;
 
+    public Boolean getFilePIDsEnabled() {
+        return filePIDsEnabled;
+    }
+    
+    public void setFilePIDsEnabled(boolean filePIDsEnabled) {
+        this.filePIDsEnabled = filePIDsEnabled;
+    }
+    
     public List<DataverseFacet> getDataverseFacets() {
         return getDataverseFacets(false);
     }

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -995,9 +996,34 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound);
     }
 
-    public boolean isFilePIDsEnabled() {
-        boolean safeDefaultIfKeyNotFound = true;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);
+    public boolean isFilePIDsEnabledForCollection(Dataverse collection) {
+        if (collection == null) {
+            return false;
+        }
+        
+        // Check the instance-wide setting first. If enabled for the entire 
+        // instance, it's enabled for any single collection as well: (TODO: ?)
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, true)) {
+            return true;
+        }
+        
+        // ... but if disabled instance-wide, it may still be enabled on a 
+        // specific collection (?)
+        Dataverse thisCollection = collection; 
+        
+        // If neither enabled nor disabled specifically for this collection,
+        // the parent collection setting is inhereted (recursively): 
+        while (thisCollection.getFilePIDsEnabled() == null) {
+            if (thisCollection.getOwner() == null) {
+                // We've reached the root collection, and file PIDs registration
+                // hasn't been explicitly enabled, therefore we presume it is
+                // disabled for our collection:
+                return false; 
+            }
+            thisCollection = thisCollection.getOwner();
+        }
+        
+        return thisCollection.getFilePIDsEnabled();
     }
     
     public boolean isIndependentHandleService() {
