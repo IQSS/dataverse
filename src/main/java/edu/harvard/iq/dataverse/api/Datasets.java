@@ -3872,6 +3872,9 @@ public class Datasets extends AbstractApiBean {
     public Response getPrivateUrlDatasetVersion(@PathParam("privateUrlToken") String privateUrlToken,
                                                 @QueryParam("anonymizedFieldValue") String anonymizedFieldValue) {
         PrivateUrlUser privateUrlUser = privateUrlService.getPrivateUrlUserFromToken(privateUrlToken);
+        if (privateUrlUser == null) {
+            return notFound("Private URL user not found");
+        }
         boolean isAnonymizedAccess = privateUrlUser.hasAnonymizedAccess();
         String anonymizedFieldTypeNames = settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
         if(isAnonymizedAccess && anonymizedFieldTypeNames == null) {

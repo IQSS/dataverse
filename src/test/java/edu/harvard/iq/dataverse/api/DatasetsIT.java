@@ -3125,5 +3125,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode());
 
         UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+
+        // Test invalid token
+        getPrivateUrlDatasetVersionAnonymizedResponse = UtilIT.getPrivateUrlDatasetVersion("invalidToken", null);
+        getPrivateUrlDatasetVersionAnonymizedResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
     }
 }
