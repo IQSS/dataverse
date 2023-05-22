@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.api.auth.BearerTokenAuthMechanism;
 import edu.harvard.iq.dataverse.api.auth.doubles.BearerTokenKeyContainerRequestTestFake;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.mocks.MockAuthenticatedUser;
@@ -17,6 +19,7 @@ import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.mockito.InjectMocks;
@@ -32,6 +35,7 @@ import static edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCA
 import static edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactoryIT.clientSecret;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -47,18 +51,19 @@ import static org.mockito.Mockito.when;
 @JvmSetting(key = JvmSettings.OIDC_AUTH_SERVER_URL, method = "getAuthUrl")
 class OIDCAuthenticationProviderFactoryIT {
     
-    // NOTE: the following values are taken from the realm import file!
-    static final String clientId = "oidc-client";
-    static final String clientSecret = "ss6gE8mODCDfqesQaSG3gwUwZqZt547E";
-    static final String realm = "oidc-realm";
-    static final String adminUser = "kcuser";
-    static final String adminPassword = "kcpassword";
-    static final String clientIdAdminCli = "admin-cli";
+    static final String clientId = "test";
+    static final String clientSecret = "94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8";
+    static final String realm = "test";
+    static final String realmAdminUser = "admin";
+    static final String realmAdminPassword = "admin";
     
-    // The realm JSON resides in conf/keycloak/oidc-realm.json and gets avail here using <testResources> in pom.xml
+    static final String adminUser = "kcadmin";
+    static final String adminPassword = "kcpassword";
+    
+    // The realm JSON resides in conf/keycloak/test-realm.json and gets avail here using <testResources> in pom.xml
     @Container
-    static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:19.0")
-        .withRealmImportFile("keycloak/oidc-realm.json")
+    static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:21.0")
+        .withRealmImportFile("keycloak/test-realm.json")
         .withAdminUsername(adminUser)
         .withAdminPassword(adminPassword);
     
@@ -76,31 +81,44 @@ class OIDCAuthenticationProviderFactoryIT {
         return oidcAuthProvider;
     }
     
-    Keycloak getAdminClient() {
-        return KeycloakBuilder.builder()
+    // NOTE: This requires the "direct access grants" for the client to be enabled!
+    String getBearerTokenViaKeycloakAdminClient() throws Exception {
+        try (Keycloak keycloak = KeycloakBuilder.builder()
             .serverUrl(keycloakContainer.getAuthServerUrl())
+            .grantType(OAuth2Constants.PASSWORD)
             .realm(realm)
-            .clientId(clientIdAdminCli)
-            .username(keycloakContainer.getAdminUsername())
-            .password(keycloakContainer.getAdminPassword())
-            .build();
+            .clientId(clientId)
+            .clientSecret(clientSecret)
+            .username(realmAdminUser)
+            .password(realmAdminPassword)
+            .scope("openid")
+            .build()) {
+            return keycloak.tokenManager().getAccessTokenString();
+        }
     }
     
-    String getBearerToken() throws Exception {
-        Keycloak keycloak = getAdminClient();
-        return keycloak.tokenManager().getAccessTokenString();
-    }
-    
+    /**
+     * This basic test covers configuring an OIDC provider via MPCONFIG and being able to use it.
+     */
     @Test
     void testCreateProvider() throws Exception {
+        // given
         OIDCAuthProvider oidcAuthProvider = getProvider();
-        String token = getBearerToken();
+        String token = getBearerTokenViaKeycloakAdminClient();
         assumeFalse(token == null);
         
-        Optional<UserInfo> info = oidcAuthProvider.getUserInfo(new BearerAccessToken(token));
+        Optional<UserInfo> info = Optional.empty();
         
+        // when
+        try {
+            info = oidcAuthProvider.getUserInfo(new BearerAccessToken(token));
+        } catch (OAuth2Exception e) {
+            System.out.println(e.getMessageBody());
+        }
+        
+        //then
         assertTrue(info.isPresent());
-        assertEquals(adminUser, info.get().getPreferredUsername());
+        assertEquals(realmAdminUser, info.get().getPreferredUsername());
     }
     
     @Mock
@@ -111,6 +129,11 @@ class OIDCAuthenticationProviderFactoryIT {
     @InjectMocks
     BearerTokenAuthMechanism bearerTokenAuthMechanism;
     
+    /**
+     * This test covers using an OIDC provider as authorization party when accessing the Dataverse API with a
+     * Bearer Token. See {@link BearerTokenAuthMechanism}. It needs to mock the auth services to avoid adding
+     * more dependencies.
+     */
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, varArgs = "api-bearer-auth", value = "true")
     void testApiBearerAuth() throws Exception {
@@ -120,7 +143,7 @@ class OIDCAuthenticationProviderFactoryIT {
         
         // given
         // Get the access token from the remote Keycloak in the container
-        String accessToken = getBearerToken();
+        String accessToken = getBearerTokenViaKeycloakAdminClient();
         assumeFalse(accessToken == null);
         
         OIDCAuthProvider oidcAuthProvider = getProvider();
