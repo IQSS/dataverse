@@ -526,6 +526,60 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 - Description Text
 - Subject
 
+Submit Incomplete Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Note:** This feature requires :ref:`dataverse.api.allow-incomplete-metadata` to be enabled and your Solr
+Schema to be up-to-date with the ``datasetValid`` field.
+
+Providing a ``.../datasets?doNotValidate=true`` query parameter turns off the validation of metadata.
+In this case, only the "Author Name" is required. For example, a minimal JSON file would look like this:
+
+.. code-block:: json
+  :name: dataset-incomplete.json
+
+  {
+    "datasetVersion": {
+      "metadataBlocks": {
+        "citation": {
+          "fields": [
+            {
+              "value": [
+                {
+                  "authorName": {
+                    "value": "Finch, Fiona",
+                    "typeClass": "primitive",
+                    "multiple": false,
+                    "typeName": "authorName"
+                  }
+                }
+              ],
+              "typeClass": "compound",
+              "multiple": true,
+              "typeName": "author"
+            }
+          ],
+          "displayName": "Citation Metadata"
+        }
+      }
+    }
+  }
+
+The following is an example HTTP call with deactivated validation:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export PARENT=root
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/dataverses/$PARENT/datasets?doNotValidate=true" --upload-file dataset-incomplete.json -H 'Content-type:application/json'
+
+**Note:** You may learn about an instance's support for deposition of incomplete datasets via :ref:`info-incomplete-metadata`.
+
+Submit Dataset
+^^^^^^^^^^^^^^
+
 As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-finch1_fr.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
 
 The curl command below assumes you have kept the name "dataset-finch1.json" and that this file is in your current working directory.
@@ -3237,6 +3291,27 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl https://demo.dataverse.org/api/info/apiTermsOfUse
+
+.. _info-incomplete-metadata:
+
+Show Support Of Incomplete Metadata Deposition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Learn if an instance has been configured to allow deposition of incomplete datasets via the API.
+See also :ref:`create-dataset-command` and :ref:`dataverse.api.allow-incomplete-metadata`
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/info/settings/incompleteMetadataViaApi
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/info/settings/incompleteMetadataViaApi
+
 
 .. _metadata-blocks-api:
 

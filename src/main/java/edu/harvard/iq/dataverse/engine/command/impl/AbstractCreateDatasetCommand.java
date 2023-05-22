@@ -31,6 +31,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
     private static final Logger logger = Logger.getLogger(AbstractCreateDatasetCommand.class.getCanonicalName());
     
     final protected boolean registrationRequired;
+    final protected boolean validate;
     
     public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         this(theDataset, aRequest, false);
@@ -39,6 +40,13 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
     public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isRegistrationRequired) {
         super(aRequest, theDataset);
         registrationRequired = isRegistrationRequired;
+        this.validate = true;
+    }
+
+    public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isRegistrationRequired, boolean validate) {
+        super(aRequest, theDataset);
+        registrationRequired = isRegistrationRequired;
+        this.validate = validate;
     }
    
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
@@ -81,7 +89,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         DatasetVersion dsv = getVersionToPersist(theDataset);
         // This re-uses the state setup logic of CreateDatasetVersionCommand, but
         // without persisting the new version, or altering its files. 
-        new CreateDatasetVersionCommand(getRequest(), theDataset, dsv).prepareDatasetAndVersion();
+        new CreateDatasetVersionCommand(getRequest(), theDataset, dsv, validate).prepareDatasetAndVersion();
         
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
