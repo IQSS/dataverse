@@ -100,8 +100,8 @@ services:
       - /mail:mode=770,size=128M,uid=1000,gid=1000
 
   dev_keycloak:
-    container_name: "dev_keycloack"
-    image: 'quay.io/keycloak/keycloak:19.0'
+    container_name: "dev_keycloak"
+    image: 'quay.io/keycloak/keycloak:21.0'
     hostname: keycloak
     environment:
       - KEYCLOAK_ADMIN=kcadmin
@@ -116,7 +116,7 @@ services:
     ports:
       - "8090:8090"
     volumes:
-      - './conf/keycloak/oidc-realm.json:/opt/keycloak/data/import/oidc-realm.json'
+      - './conf/keycloak/test-realm.json:/opt/keycloak/data/import/test-realm.json'
 
 networks:
   dataverse:
