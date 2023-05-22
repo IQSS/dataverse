@@ -6,7 +6,7 @@ You can also enable a valid/incomplete metadata filter in the "My Data" page usi
 
 It is not possible to publish datasets with incomplete or incomplete metadata. By default, you also cannot send such datasets for review. If you wish to enable sending for review of datasets with incomplete metadata, turn on the "dataverse.ui.allow-review-for-incomplete" JVM option.
 
-In order to customize the wording and add translations to the UI sections extended by this feature, you can edit the "bundle.properties" file and the localized versions of that file. The property keys used by this feature are:
+In order to customize the wording and add translations to the UI sections extended by this feature, you can edit the "Bundle.properties" file and the localized versions of that file. The property keys used by this feature are:
 - incomplete
 - valid
 - dataset.message.incomplete.warning
