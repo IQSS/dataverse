@@ -16,6 +16,13 @@ import edu.harvard.iq.dataverse.mocks.MockAuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSubmitInput;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,8 +35,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactoryIT.clientId;
 import static edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactoryIT.clientSecret;
@@ -165,5 +175,73 @@ class OIDCAuthenticationProviderFactoryIT {
         // then
         assertNotNull(lookedUpUser);
         assertEquals(user, lookedUpUser);
+    }
+    
+    /**
+     * This test covers the {@link OIDCAuthProvider#buildAuthzUrl(String, String)} and
+     * {@link OIDCAuthProvider#getUserRecord(String, String, String)} methods that are used when
+     * a user authenticates via the JSF UI. It covers enabling PKCE, which is no hard requirement
+     * by the protocol, but might be required by some provider (as seen with Microsoft Azure AD).
+     * As we don't have a real browser, we use {@link WebClient} from HtmlUnit as a replacement.
+     */
+    @Test
+    @JvmSetting(key = JvmSettings.OIDC_PKCE_ENABLED, value = "true")
+    void testAuthorizationCodeFlowWithPKCE() throws Exception {
+        // given
+        String state = "foobar";
+        String callbackUrl = "http://localhost:8080/oauth2callback.xhtml";
+        
+        OIDCAuthProvider oidcAuthProvider = getProvider();
+        String authzUrl = oidcAuthProvider.buildAuthzUrl(state, callbackUrl);
+        //System.out.println(authzUrl);
+        
+        try (WebClient webClient = new WebClient()) {
+            webClient.getOptions().setCssEnabled(false);
+            webClient.getOptions().setJavaScriptEnabled(false);
+            // We *want* to know about the redirect, as it contains the data we need!
+            webClient.getOptions().setRedirectEnabled(false);
+            
+            HtmlPage loginPage = webClient.getPage(authzUrl);
+            assumeTrue(loginPage.getTitleText().contains("Sign in to " + realm));
+            
+            HtmlForm form = loginPage.getForms().get(0);
+            HtmlInput username = form.getInputByName("username");
+            HtmlInput password = form.getInputByName("password");
+            HtmlSubmitInput submit = form.getInputByName("login");
+            
+            username.type(realmAdminUser);
+            password.type(realmAdminPassword);
+            
+            FailingHttpStatusCodeException exception = assertThrows(FailingHttpStatusCodeException.class, submit::click);
+            assertEquals(302, exception.getStatusCode());
+            
+            WebResponse response = exception.getResponse();
+            assertNotNull(response);
+            
+            String callbackLocation = response.getResponseHeaderValue("Location");
+            assertTrue(callbackLocation.startsWith(callbackUrl));
+            //System.out.println(callbackLocation);
+            
+            String queryPart = callbackLocation.trim().split("\\?")[1];
+            Map<String,String> parameters = Pattern.compile("\\s*&\\s*")
+                .splitAsStream(queryPart)
+                .map(s -> s.split("=", 2))
+                .collect(Collectors.toMap(a -> a[0], a -> a.length > 1 ? a[1]: ""));
+            //System.out.println(map);
+            assertTrue(parameters.containsKey("code"));
+            assertTrue(parameters.containsKey("state"));
+            
+            OAuth2UserRecord userRecord = oidcAuthProvider.getUserRecord(
+                parameters.get("code"),
+                parameters.get("state"),
+                callbackUrl
+            );
+            
+            assertNotNull(userRecord);
+            assertEquals(realmAdminUser, userRecord.getUsername());
+        } catch (OAuth2Exception e) {
+            System.out.println(e.getMessageBody());
+            throw e;
+        }
     }
 }

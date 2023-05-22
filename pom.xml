@@ -610,6 +610,12 @@
             <version>${smallrye-mpconfig.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+            <version>3.2.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <testResources>
