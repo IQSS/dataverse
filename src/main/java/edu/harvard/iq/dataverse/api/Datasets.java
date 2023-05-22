@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
@@ -3867,19 +3868,26 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
-    @AuthRequired
-    @Path("anonymizedDraftVersions/{privateUrlToken}")
-    public Response getAnonymizedDraftVersion(@Context ContainerRequestContext crc,
-                                              @PathParam("privateUrlToken") String privateUrlToken,
-                                              @QueryParam("anonymizedFieldValue") String anonymizedFieldValue) {
+    @Path("privateUrlDatasetVersion/{privateUrlToken}")
+    public Response getPrivateUrlDatasetVersion(@PathParam("privateUrlToken") String privateUrlToken,
+                                                @QueryParam("anonymizedFieldValue") String anonymizedFieldValue) {
+        PrivateUrlUser privateUrlUser = privateUrlService.getPrivateUrlUserFromToken(privateUrlToken);
+        boolean isAnonymizedAccess = privateUrlUser.hasAnonymizedAccess();
         String anonymizedFieldTypeNames = settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
-        if (anonymizedFieldTypeNames == null) {
+        if(isAnonymizedAccess && anonymizedFieldTypeNames == null) {
             throw new NotAcceptableException("Anonymized Access not enabled");
         }
-        return response(req -> {
-            DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(privateUrlToken);
-            return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                    : ok(json(DatasetUtil.anonymizeDatasetVersion(dsv, anonymizedFieldTypeNames, anonymizedFieldValue)));
-        }, getRequestUser(crc));
+        DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(privateUrlToken);
+        if (dsv == null || dsv.getId() == null) {
+            return notFound("Dataset version not found");
+        }
+        JsonObjectBuilder responseJson;
+        if (isAnonymizedAccess) {
+            List<String> anonymizedFieldTypeNamesList = new ArrayList<>(Arrays.asList(anonymizedFieldTypeNames.split(",\\s")));
+            responseJson = json(dsv, anonymizedFieldTypeNamesList, anonymizedFieldValue);
+        } else {
+            responseJson = json(dsv);
+        }
+        return ok(responseJson);
     }
 }

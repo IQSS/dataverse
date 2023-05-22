@@ -28,6 +28,7 @@ import org.junit.Before;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class JsonPrinterTest {
 
@@ -319,4 +320,33 @@ public class JsonPrinterTest {
         assertTrue(typesSet.contains("ASSIGNROLE"));
     }
 
+    @Test
+    public void testMetadataBlockAnonymized() {
+        MetadataBlock block = new MetadataBlock();
+        block.setName("citation");
+        List<DatasetField> fields = new ArrayList<>();
+        DatasetField datasetAuthorField = new DatasetField();
+        DatasetFieldType datasetAuthorFieldType = datasetFieldTypeSvc.findByName("author");
+        datasetAuthorFieldType.setMetadataBlock(block);
+        datasetAuthorField.setDatasetFieldType(datasetAuthorFieldType);
+        List<DatasetFieldCompoundValue> compoundValues = new LinkedList<>();
+        DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
+        compoundValue.setParentDatasetField(datasetAuthorField);
+        compoundValue.setChildDatasetFields(Arrays.asList(
+                constructPrimitive("authorName", "Test Author"),
+                constructPrimitive("authorAffiliation", "Test Affiliation")
+        ));
+        compoundValues.add(compoundValue);
+        datasetAuthorField.setDatasetFieldCompoundValues(compoundValues);
+        fields.add(datasetAuthorField);
+
+        String testAnonymizedFieldValue = "test";
+        JsonObject actualJsonObject = JsonPrinter.json(block, fields, List.of("author"), testAnonymizedFieldValue).build();
+
+        assertNotNull(actualJsonObject);
+        JsonObject actualAuthorJsonObject = actualJsonObject.getJsonArray("fields").getJsonObject(0);
+        assertEquals(testAnonymizedFieldValue, actualAuthorJsonObject.getString("value"));
+        assertEquals("primitive", actualAuthorJsonObject.getString("typeClass"));
+        assertFalse(actualAuthorJsonObject.getBoolean("multiple"));
+    }
 }

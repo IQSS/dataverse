@@ -40,6 +40,7 @@ import edu.harvard.iq.dataverse.globus.FileDetailsHolder;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
@@ -357,6 +358,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv) {
+        return json(dsv, null, null);
+    }
+
+    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, String anonymizedFieldValue) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dsv.getDataset().getId())
                 .add("datasetPersistentId", dsv.getDataset().getGlobalId().asString())
@@ -368,7 +373,7 @@ public class JsonPrinter {
                 .add("UNF", dsv.getUNF()).add("archiveTime", format(dsv.getArchiveTime()))
                 .add("lastUpdateTime", format(dsv.getLastUpdateTime())).add("releaseTime", format(dsv.getReleaseTime()))
                 .add("createTime", format(dsv.getCreateTime()));
-        License license = DatasetUtil.getLicense(dsv);;
+        License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
             // Standard license
             bld.add("license", jsonObjectBuilder()
@@ -394,14 +399,15 @@ public class JsonPrinter {
                 .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
                 .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
 
-        bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
-
+        bld.add("metadataBlocks", (anonymizedFieldTypeNamesList != null) ?
+                jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList, anonymizedFieldValue)
+                : jsonByBlocks(dsv.getDatasetFields())
+        );
         bld.add("files", jsonFileMetadatas(dsv.getFileMetadatas()));
 
         return bld;
     }
-    
-    
+
     public static JsonObjectBuilder jsonDataFileList(List<DataFile> dataFiles){
     
         if (dataFiles==null){
@@ -474,11 +480,15 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields) {
+        return jsonByBlocks(fields, null, null);
+    }
+
+    public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList, String anonymizedFieldValue) {
         JsonObjectBuilder blocksBld = jsonObjectBuilder();
 
         for (Map.Entry<MetadataBlock, List<DatasetField>> blockAndFields : DatasetField.groupByBlock(fields).entrySet()) {
             MetadataBlock block = blockAndFields.getKey();
-            blocksBld.add(block.getName(), JsonPrinter.json(block, blockAndFields.getValue()));
+            blocksBld.add(block.getName(), JsonPrinter.json(block, blockAndFields.getValue(), anonymizedFieldTypeNamesList, anonymizedFieldValue));
         }
         return blocksBld;
     }
@@ -492,6 +502,10 @@ public class JsonPrinter {
      * @return JSON Object builder with the block and fields information.
      */
     public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields) {
+        return json(block, fields, null, null);
+    }
+
+    public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList, String anonymizedFieldValue) {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
         blockBld.add("displayName", block.getDisplayName());
@@ -499,7 +513,7 @@ public class JsonPrinter {
         
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
         Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
-        DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray));
+        DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray, anonymizedFieldTypeNamesList, anonymizedFieldValue));
 
         blockBld.add("fields", fieldsArray);
         return blockBld;
@@ -734,10 +748,17 @@ public class JsonPrinter {
 
         Deque<JsonObjectBuilder> objectStack = new LinkedList<>();
         Deque<JsonArrayBuilder> valueArrStack = new LinkedList<>();
-        JsonObjectBuilder result = null;
+        List<String> anonymizedFieldTypeNamesList = null;
+        String anonymizedFieldValue = null;
 
         DatasetFieldsToJson(JsonArrayBuilder result) {
             valueArrStack.push(result);
+        }
+
+        DatasetFieldsToJson(JsonArrayBuilder result, List<String> anonymizedFieldTypeNamesList, String anonymizedFieldValue) {
+            this(result);
+            this.anonymizedFieldTypeNamesList = anonymizedFieldTypeNamesList;
+            this.anonymizedFieldValue = anonymizedFieldValue;
         }
 
         @Override
@@ -764,15 +785,19 @@ public class JsonPrinter {
             JsonArray expandedValues = valueArrStack.pop().build();
             JsonArray jsonValues = valueArrStack.pop().build();
             if (!jsonValues.isEmpty()) {
-                jsonField.add("value",
-                        f.getDatasetFieldType().isAllowMultiples() ? jsonValues
-                                : jsonValues.get(0));
-                if (!expandedValues.isEmpty()) {
-                    jsonField.add("expandedvalue",
-                            f.getDatasetFieldType().isAllowMultiples() ? expandedValues
-                                    : expandedValues.get(0));
+                String datasetFieldName = f.getDatasetFieldType().getName();
+                if (anonymizedFieldTypeNamesList != null && anonymizedFieldTypeNamesList.contains(datasetFieldName)) {
+                    anonymizeField(jsonField);
+                } else {
+                    jsonField.add("value",
+                            f.getDatasetFieldType().isAllowMultiples() ? jsonValues
+                                    : jsonValues.get(0));
+                    if (!expandedValues.isEmpty()) {
+                        jsonField.add("expandedvalue",
+                                f.getDatasetFieldType().isAllowMultiples() ? expandedValues
+                                        : expandedValues.get(0));
+                    }
                 }
-
                 valueArrStack.peek().add(jsonField);
             }
         }
@@ -816,6 +841,12 @@ public class JsonPrinter {
                 }
                 valueArrStack.peek().add(jsonField);
             }
+        }
+
+        private void anonymizeField(JsonObjectBuilder jsonField) {
+            jsonField.add("typeClass", "primitive");
+            jsonField.add("value", (anonymizedFieldValue == null) ? BundleUtil.getStringFromBundle("dataset.anonymized.withheld") : anonymizedFieldValue);
+            jsonField.add("multiple", false);
         }
     }
 

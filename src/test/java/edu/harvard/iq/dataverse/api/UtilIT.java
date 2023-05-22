@@ -1693,9 +1693,10 @@ public class UtilIT {
         return response;
     }
 
-    static Response privateUrlCreate(Integer datasetId, String apiToken) {
+    static Response privateUrlCreate(Integer datasetId, String apiToken, boolean anonymizedAccess) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("anonymizedAccess", anonymizedAccess)
                 .post("/api/datasets/" + datasetId + "/privateUrl");
         return response;
     }
@@ -3195,6 +3196,14 @@ public class UtilIT {
         Response response = given()
                 .contentType("application/json")
                 .get("/api/datasets/summaryFieldNames");
+        return response;
+    }
+
+    static Response getPrivateUrlDatasetVersion(String privateUrlToken, String anonymizedFieldValue) {
+        Response response = given()
+                .contentType("application/json")
+                .queryParam("anonymizedFieldValue", anonymizedFieldValue)
+                .get("/api/datasets/privateUrlDatasetVersion/" + privateUrlToken);
         return response;
     }
 }

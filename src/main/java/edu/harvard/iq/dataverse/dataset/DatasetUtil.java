@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.dataset;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -620,20 +619,5 @@ public class DatasetUtil {
             localizedName = status ;
         }
         return localizedName;
-    }
-
-    public static DatasetVersion anonymizeDatasetVersion(DatasetVersion datasetVersion, String anonymizedFieldTypeNames, String anonymizedFieldValue) {
-        List<String> anonymizedFieldTypeNamesList = new ArrayList<>(Arrays.asList(anonymizedFieldTypeNames.split(",\\s")));
-        List<DatasetField> datasetFields = datasetVersion.getDatasetFields();
-        for (DatasetField datasetField : datasetFields) {
-            if (anonymizedFieldTypeNamesList.contains(datasetField.getDatasetFieldType().getName())) {
-                List<DatasetFieldValue> datasetFieldValues = datasetField.getDatasetFieldValues();
-                for (DatasetFieldValue datasetFieldValue : datasetFieldValues) {
-                    datasetFieldValue.setValue((anonymizedFieldValue == null) ? BundleUtil.getStringFromBundle("dataset.anonymized.withheld") : anonymizedFieldValue);
-                }
-                datasetField.setDatasetFieldValues(datasetFieldValues);
-            }
-        }
-        return datasetVersion;
     }
 }
