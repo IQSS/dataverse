@@ -1,0 +1,396 @@
+cff-version: 1.2.0
+title: The Dataverse Software
+message: Dataverse is an open source software platform for sharing, finding, citing, and preserving research data.
+type: software
+authors:
+  - given-names: Rehan
+    family-names: Ahmed
+    email: 73068765+Rehan-stack@users.noreply.github.com
+  - given-names: Luigi
+    family-names: Andrea Pascarelli
+    email: luigiandrea.pascarelli.at.work@gmail.com
+  - given-names: Ruben
+    family-names: Andreassen
+    email: rubean85@gmail.com
+  - given-names: Leonid
+    family-names: Andreev
+    email: leonid@hmdc.harvard.edu
+  - given-names: Michael
+    family-names: Bar-Sinai
+    email: mich.barsinai@gmail.com
+  - given-names: Oliver
+    family-names: Bertuch
+    email: o.bertuch@fz-juelich.de
+  - given-names: Rohit
+    family-names: Bhattacharjee
+    email: rohit.bhattacharjee99@gmail.com
+  - given-names: Alan
+    family-names: Bid
+    email: alanbidart@gmail.com
+  - given-names: Andrea
+    family-names: Bollini
+    email: andrea.bollini@4science.it
+  - given-names: Paul
+    family-names: Boon
+    email: paul.boon@dans.knaw.nl
+  - given-names: Danny
+    family-names: Brooke
+    email: danny_brooke@harvard.edu
+  - given-names: Aday
+    family-names: Bujeda
+    email: aday@theagilemonkeys.com
+  - given-names: Francesco
+    family-names: Cadili
+    email: francesco.cadili@4science.it
+  - given-names: Patrick
+    family-names: Carlson
+    email: carlson2442@gmail.com
+  - given-names: Nicolas
+    family-names: Carpi
+    email: nico-git@deltablot.email
+  - given-names: José
+    family-names: Carvalho
+    email: jnsc@ua.pt
+  - given-names: Brian
+    family-names: Cassidy
+    email: brian.cassidy@unb.ca
+  - given-names: Eleni
+    family-names: Castro
+    email: posixeleni@gmail.com
+  - given-names: Jayanthy
+    family-names: Chengan
+    email: jayanthy.chengan@utoronto.ca
+  - given-names: Vera
+    family-names: Clemens
+    email: clemens@zbmed.de
+  - given-names: Kevin
+    family-names: Condon
+    email: kcondon@hmdc.harvard.edu
+  - given-names: Philipp
+    family-names: Conzett
+    email: philippconzett@users.noreply.github.com
+  - given-names: Juan
+    family-names: Corrales
+    email: webmaster@consorciomadrono.es
+  - given-names: Thibault
+    family-names: Coupin
+    email: thibault.coupin@gmail.com
+  - given-names: Andrew
+    family-names: Crerar
+    email: ascrerar@ncsu.edu
+  - given-names: Merce
+    family-names: Crosas
+    email: mcrosas@hmdc.harvard.edu
+  - given-names: Aaron
+    family-names: Curtis
+    email: foobarbecue@gmail.com
+  - given-names: Kenneth
+    family-names: D. Mankoff
+    email: mankoff@gmail.com
+  - given-names: Ludovic
+    family-names: Daniel
+    email: ludovic.daniel@smile.fr
+  - given-names: Naomi
+    family-names: Day
+    email: nday@wellesley.edu
+  - given-names: Menko
+    family-names: De Ruijter
+    email: 56864998+mderuijter@users.noreply.github.com
+  - given-names: Eric
+    family-names: De Vries
+    email: hro.mail@gmail.com
+  - given-names: Kris
+    family-names: Dekeyser
+    email: kris.dekeyser@libis.be
+  - given-names: Patrick
+    family-names: Dillon
+    email: patrick.dillon@gmail.com
+  - given-names: Vic
+    family-names: Ding
+    email: qiqing.ding@dans.knaw.nl
+  - given-names: Gustavo
+    family-names: Durand
+    email: gdurand@iq.harvard.edu
+  - given-names: Philip
+    family-names: Durbin
+    email: philip_durbin@harvard.edu
+  - given-names: Sarah
+    family-names: Ferry
+    email: ferrys@bu.edu
+  - given-names: Julian
+    family-names: Gautier
+    email: juliangautier@g.harvard.edu
+  - given-names: Markus
+    family-names: HaarläNder
+    email: haarlaender@mpdl.mpg.de
+  - given-names: Michael
+    family-names: Heppler
+    email: mheppler@hmdc.harvard.edu
+  - given-names: Darío
+    family-names: Hereñú
+    email: magallania@gmail.com
+  - given-names: Stefano
+    family-names: Iacus
+    email: smiacus@gmail.com
+  - given-names: Alex
+    family-names: Ivanov
+    email: alex@calmforce.com
+  - given-names: Thomas
+    family-names: J. Leeper
+    email: thosjleeper@gmail.com
+  - given-names: Jamie
+    family-names: Jamison
+    email: jamison@library.ucla.edu
+  - given-names: Sebastian
+    family-names: Karcher
+    email: karcher@u.northwestern.edu
+  - given-names: Stefan
+    family-names: Kasberger
+    email: mail@stefankasberger.at
+  - given-names: Dominic
+    family-names: Kempf
+    email: dokempf@users.noreply.github.com
+  - given-names: Gary
+    family-names: King
+    email: king@harvard.edu
+  - given-names: Peter
+    family-names: Kiraly
+    email: peter.kiraly@gwdg.de
+  - given-names: Péter
+    family-names: Király
+    email: pkiraly@gwdg.de
+  - given-names: Tom
+    family-names: Koch
+    email: tomck@users.noreply.github.com
+  - given-names: Kacper
+    family-names: Kowalik (Xarthisius)
+    email: xarthisius.kk@gmail.com
+  - given-names: Stephen
+    family-names: Kraffmiller
+    email: skraffmiller@hmdc.harvard.edu
+  - given-names: Heinz
+    family-names: Kramski
+    email: kramski@web.de
+  - given-names: Karol
+    family-names: Kulik
+    email: kkulik@icm.edu.pl
+  - given-names: Eryk
+    family-names: Kulikowski
+    email: eryk.kulikowski@kuleuven.be
+  - given-names: Shiro
+    family-names: Kuriwaki
+    email: shirokuriwaki@gmail.com
+  - given-names: Sherry
+    family-names: Lake
+    email: shlake@virginia.edu
+  - given-names: Jonathan
+    family-names: Leitschuh
+    email: Jonathan.Leitschuh@gmail.com
+  - given-names: Maylein,
+    family-names: Leonhard
+    email: rt126@uni-heidelberg.de
+  - given-names: Victoria
+    family-names: Lubitch
+    email: victoria.lubitch@utoronto.ca
+  - given-names: Jing
+    family-names: Ma
+    email: ma.jing@outlook.com
+  - given-names: Benjamin
+    family-names: Martinez
+    email: benjamin.martiinez@gmail.com
+  - given-names: Esteban
+    family-names: Martinez
+    email: esteban.martinez@csuc.cat
+  - given-names: Leonhard
+    family-names: Maylein
+    email: Maylein@ub.uni-heidelberg.de
+  - given-names: Carlos
+    family-names: Mcgregor
+    email: c.mcgregormuro@mail.utoronto.ca
+  - given-names: Dan
+    family-names: Mcpherson
+    email: dmcphers@redhat.com
+  - given-names: Pete
+    family-names: Meyer
+    email: pameyer@crystal.harvard.edu
+  - given-names: Tommy
+    family-names: Monson
+    email: tmonson@redhat.com
+  - given-names: Pietro
+    family-names: Monticone
+    email: 38562595+pitmonticone@users.noreply.github.com
+  - given-names: Usman
+    family-names: Muchlish
+    email: u.muchlish@gmail.com
+  - given-names: Derek
+    family-names: Murphy
+    email: dlmurphy@g.harvard.edu
+  - given-names: Jim
+    family-names: Myers
+    email: qqmyers@hotmail.com
+  - given-names: Kaitlin
+    family-names: Newson
+    email: kaitlin.newson@utoronto.ca
+  - given-names: Tai
+    family-names: Nguyen Bui
+    email: tai@theagilemonkeys.com
+  - given-names: Florent
+    family-names: Nisseron
+    email: florent.nisseron@open-groupe.com
+  - given-names: Benjamin
+    family-names: Peuch
+    email: benjamin.peuch@gmail.com
+  - given-names: Francesco
+    family-names: Pio Scognamiglio
+    email: francescopio.scognamiglio@4science.it
+  - given-names: Joke
+    family-names: Pol
+    email: joke.pol@dans.knaw.nl
+  - given-names: Raman
+    family-names: Prasad
+    email: raman_prasad@harvard.edu
+  - given-names: Pallinger
+    family-names: Péter
+    email: pallinger@dsd.sztaki.hu
+  - given-names: Elizabeth
+    family-names: Quigley
+    email: equigley@iq.harvard.edu
+  - given-names: Jan
+    family-names: Range
+    email: 30547301+JR-1991@users.noreply.github.com
+  - given-names: Adam
+    family-names: Reiner
+    email: adam.reiner@wzb.eu
+  - given-names: Anthony
+    family-names: Reyes
+    email: anthony.reyes@jpl.nasa.gov
+  - given-names: Florian
+    family-names: Rhiem
+    email: f.rhiem@fz-juelich.de
+  - given-names: Jeremy
+    family-names: Richard
+    email: jeremy.richard@sciencespo.fr
+  - given-names: Rok
+    family-names: Roskar
+    email: rok.roskar@sdsc.ethz.ch
+  - given-names: Jérôme
+    family-names: Roucou
+    email: jerome.roucou@inrae.fr
+  - given-names: Claudio
+    family-names: Satriano
+    email: satriano@gmail.com
+  - given-names: Alex
+    family-names: Scheitlin
+    email: alex.scheitlin@bluewin.ch
+  - given-names: Roland
+    family-names: Schlaefli
+    email: rolandschlaefli@gmail.com
+  - given-names: Tania
+    family-names: Schlatter
+    email: tania.schlatter@gmail.com
+  - given-names: Major
+    family-names: Seitan
+    email: major.seitan@gmail.com
+  - given-names: Brian
+    family-names: Silverstein
+    email: bsilverstein95@gmail.com
+  - given-names: Bikramjit
+    family-names: Singh
+    email: bikramjit@live.ca
+  - given-names: Don
+    family-names: Sizemore
+    email: don.sizemore@gmail.com
+  - given-names: Eunice
+    family-names: Soh
+    email: eunice.sjy@gmail.com
+  - given-names: Akio
+    family-names: Sone
+    email: asone@email.unc.edu
+  - given-names: Susan
+    family-names: Sons
+    email: hedgemage@binaryredneck.net
+  - given-names: A.
+    family-names: Soroka
+    email: ajs6f@apache.org
+  - given-names: Elda
+    family-names: Sotiri
+    email: esotiri@hmdc.harvard.edu
+  - given-names: Yamil
+    family-names: Suarez
+    email: github@yamil.com
+  - given-names: Michael
+    family-names: Suo
+    email: darthsuo@gmail.com
+  - given-names: Brandon
+    family-names: T. Kowalski
+    email: brandon@kowalski.io
+  - given-names: Felker
+    family-names: Tamás
+    email: felker.tomi@gmail.com
+  - given-names: Alejandra
+    family-names: Tenorio
+    email: 31973211+alejandratenorio@users.noreply.github.com
+  - given-names: Thanh
+    family-names: Thanh
+    email: tttle@softeam.fr
+  - given-names: Charles
+    family-names: Thao
+    email: khanhchuong7396@gmail.com
+  - given-names: Henning
+    family-names: Timm
+    email: henning.timm@tu-dortmund.de
+  - given-names: Miguel
+    family-names: Tomas Silva
+    email: mtpsilva@gmail.com
+  - given-names: Robert
+    family-names: Treacy
+    email: rtreacy@hmdc.harvard.edu
+  - given-names: Ana
+    family-names: Trisovic
+    email: ana.trisovic@gmail.com
+  - given-names: Vyacheslav
+    family-names: Tykhonov
+    email: 4tikhonov@gmail.com
+  - given-names: Jan
+    family-names: Van Mansum
+    email: janvanmansum@users.noreply.github.com
+  - given-names: Lucien
+    family-names: Van Wouw
+    email: lwo@iisg.nl
+  - given-names: Robert
+    family-names: Verkerk
+    email: robert.verkerk@surfsara.nl
+  - given-names: Marie-Hélène
+    family-names: Vézina
+    email: marie-helene.vezina@umontreal.ca
+  - given-names: Craig
+    family-names: Willis
+    email: willis8@illinois.edu
+  - given-names: Dan
+    family-names: Willoughby
+    email: amozoss@gmail.com
+  - given-names: Calvin
+    family-names: Winkowski (Telnoratti)
+    email: cwinkowski@vtti.vt.edu
+  - given-names: Adoal
+    family-names: Xu
+    email: adoalxu@gmail.com
+  - given-names: Akira
+    family-names: Yoshiyama
+    email: luckyanchor2@gmail.com
+  - given-names: Ouahalou
+    family-names: Youssef
+    email: 46802308+youssefOuahalou@users.noreply.github.com
+  - given-names: Nik
+    family-names: Zaugg
+    email: zauggnik@gmail.com
+repository-code: 'https://github.com/IQSS/dataverse'
+url: 'https://dataverse.org'
+abstract: Dataverse is an open-source platform developed by the Data Science and Products team at the Institute for Quantitative Social Science and the Dataverse community. It's designed to promote the sharing, preservation, citation, and analysis of research data. In Dataverse, datasets are organized by flexible containers called "dataverses", which can hold one or more datasets or collections. Each dataset contains metadata that describes the data, as well as the actual deposited data and documentation files. Researchers can use Dataverse to share their data, collaborate with others, and meet the data data sharing requirements of their institutions or funders. They can store data in a wide variety of formats, control who has access to the data, and use the API for creating new modules and tools. Libraries and institutions can use Dataverse as a publishing system to provide citation, persistent identifiers (such as DOIs) and long-term access to datasets.
+keywords:
+  - research data
+  - open-source platform
+  - data repository
+  - open data
+  - open science
+license: Apache-2.0
