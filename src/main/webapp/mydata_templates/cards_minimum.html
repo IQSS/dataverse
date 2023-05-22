@@ -35,6 +35,7 @@
         {% if card_info.is_unpublished_state %}<span class="label label-warning unpublished"></span> {% endif %}
         {% if card_info.is_published %} <span class="label label-warning published"></span> {% endif %}
         {% if card_info.is_deaccesioned %} <span class="label label-danger deaccessioned"></span> {% endif %}
+        {% if not card_info.is_valid %} <span class="label label-danger incomplete"></span> {% endif %}
         
         <!-- roles -->
         {% for role_name in card_info.user_roles %}
