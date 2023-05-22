@@ -883,7 +883,12 @@ public class Dataset extends DvObjectContainer {
     @Override
     public String getDisplayName() {
         DatasetVersion dsv = getReleasedVersion();
-        return dsv != null ? dsv.getTitle() : getLatestVersion().getTitle();
+        String result = dsv != null ? dsv.getTitle() : getLatestVersion().getTitle();
+        boolean resultIsEmpty = result == null || "".equals(result);
+        if (resultIsEmpty && getGlobalId() != null) {
+            return getGlobalId().asString();
+        }
+        return result;
     }
     
     @Override

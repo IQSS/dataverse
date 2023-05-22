@@ -2167,8 +2167,22 @@ public class DatasetPage implements java.io.Serializable {
         if (workingVersion.isDraft() && workingVersion.getId() != null && canUpdateDataset() 
                 && !dataset.isLockedFor(DatasetLock.Reason.finalizePublication)
               &&   (canPublishDataset() || !dataset.isLockedFor(DatasetLock.Reason.InReview) )){
-            JsfHelper.addWarningMessage(datasetService.getReminderString(dataset, canPublishDataset()));
+            JsfHelper.addWarningMessage(datasetService.getReminderString(dataset, canPublishDataset(), false, isValid()));
         }               
+    }
+
+    public boolean isValid() {
+        DatasetVersion version = dataset.getLatestVersion();
+        if (!version.isDraft()) {
+            return true;
+        }
+        DatasetVersion newVersion = version.cloneDatasetVersion();
+        newVersion.setDatasetFields(newVersion.initDatasetFields());
+        return newVersion.isValid();
+    }
+
+    public boolean isValidOrCanReviewIncomplete() {
+        return isValid() || JvmSettings.UI_ALLOW_REVIEW_INCOMPLETE.lookupOptional(Boolean.class).orElse(false);
     }
 
     private void displayLockInfo(Dataset dataset) {

@@ -233,6 +233,9 @@
     <field name="geolocation" type="location_rpt" multiValued="true" stored="true" indexed="true"/>
     <!-- https://solr.apache.org/guide/8_11/spatial-search.html#bboxfield -->
     <field name="boundingBox" type="bbox" multiValued="true" stored="true" indexed="true"/>
+
+    <!-- incomplete datasets issue 8822 -->
+    <field name="datasetValid" type="boolean" stored="true" indexed="true" multiValued="false"/>
     
     <!--
         METADATA SCHEMA FIELDS
@@ -469,6 +472,8 @@
     <!-- <copyField source="*_s" dest="_text_" maxChars="3000"/> -->
     <!-- <copyField source="*_ss" dest="_text_" maxChars="3000"/> -->
     <!-- <copyField source="*_i" dest="_text_" maxChars="3000"/> -->
+    
+    <copyField source="datasetValid" dest="_text_" maxChars="3000"/>
     
     <!--
         METADATA SCHEMA FIELDS
