@@ -2350,7 +2350,7 @@ dataverse.api.allow-incomplete-metadata
 +++++++++++++++++++++++++++++++++++++++
 
 When enabled, dataset with incomplete metadata can be submitted via API for later corrections.
-See :ref:`create-dataverse-api` for details.
+See :ref:`create-dataset-command` for details.
 
 Defaults to ``false``.
 
@@ -2410,7 +2410,7 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 dataverse.ui.show-validity-filter
 +++++++++++++++++++++++++++++++++
 
-When enabled, the filter for validity of metadata is shown in :ref:`my-data` page.
+When enabled, the filter for validity of metadata is shown in "My Data" page.
 **Note:** When you wish to use this filter, you must reindex the datasets first, otherwise datasets with valid metadata
 will not be shown in the results.
 

@@ -532,8 +532,6 @@ Submit Incomplete Dataset
 **Note:** This feature requires :ref:`dataverse.api.allow-incomplete-metadata` to be enabled and your Solr
 Schema to be up-to-date with the ``datasetValid`` field.
 
-Alternatively, you can turn off the validation of the dataset by using the optional ``doNotValidate`` parameter.
-
 Providing a ``.../datasets?doNotValidate=true`` query parameter turns off the validation of metadata.
 In this case, only the "Author Name" is required. For example, a minimal JSON file would look like this:
 
