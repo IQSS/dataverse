@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.settings;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
+import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -67,6 +69,7 @@ public enum JvmSettings {
     // API SETTINGS
     SCOPE_API(PREFIX, "api"),
     API_SIGNING_SECRET(SCOPE_API, "signing-secret"),
+    API_ALLOW_INCOMPLETE_METADATA(SCOPE_API, "allow-incomplete-metadata"),
 
     // SIGNPOSTING SETTINGS
     SCOPE_SIGNPOSTING(PREFIX, "signposting"),
@@ -110,8 +113,13 @@ public enum JvmSettings {
     SCOPE_MAIL(PREFIX, "mail"),
     SUPPORT_EMAIL(SCOPE_MAIL, "support-email"),
     CC_SUPPORT_ON_CONTACT_EMAIL(SCOPE_MAIL, "cc-support-on-contact-email"),
+
+    // UI SETTINGS
+    SCOPE_UI(PREFIX, "ui"),
+    UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
+    UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
     ;
-    
+
     private static final String SCOPE_SEPARATOR = ".";
     public static final String PLACEHOLDER_KEY = "%s";
     private static final Pattern OLD_NAME_PLACEHOLDER_PATTERN = Pattern.compile("%(\\d\\$)?s");

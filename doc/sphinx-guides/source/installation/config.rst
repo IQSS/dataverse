@@ -2344,6 +2344,19 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 **WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
 production context! Rely on password alias, secrets directory or cloud based sources instead!
 
+.. _dataverse.api.allow-incomplete-metadata:
+
+dataverse.api.allow-incomplete-metadata
++++++++++++++++++++++++++++++++++++++++
+
+When enabled, dataset with incomplete metadata can be submitted via API for later corrections.
+See :ref:`create-dataset-command` for details.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
 .. _dataverse.signposting.level1-author-limit:
 
 dataverse.signposting.level1-author-limit
@@ -2382,6 +2395,29 @@ A CC line is added to the contact form when this setting is true so that users a
 The default is false.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAIL``.
+
+dataverse.ui.allow-review-for-incomplete
+++++++++++++++++++++++++++++++++++++++++
+
+Determines if dataset submitted via API with incomplete metadata (for later corrections) can be submitted for review
+from the UI.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_UI_ALLOW_REVIEW_FOR_INCOMPLETE``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+dataverse.ui.show-validity-filter
++++++++++++++++++++++++++++++++++
+
+When enabled, the filter for validity of metadata is shown in "My Data" page.
+**Note:** When you wish to use this filter, you must reindex the datasets first, otherwise datasets with valid metadata
+will not be shown in the results.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_UI_SHOW_VALIDITY_FILTER``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
 
 .. _feature-flags:
