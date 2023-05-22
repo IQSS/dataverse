@@ -77,6 +77,7 @@ public class MyDataFilterParams {
     private List<DvObject.DType> dvObjectTypes;
     private List<String> publicationStatuses;
     private List<Long> roleIds;
+    private List<Boolean> datasetValidities;
     
     //private ArrayList<DataverseRole> roles;
     public static final String defaultSearchTerm = "*:*";
@@ -110,6 +111,7 @@ public class MyDataFilterParams {
         }
         this.dvObjectTypes = MyDataFilterParams.allDvObjectTypes;
         this.publicationStatuses = MyDataFilterParams.allPublishedStates;
+        this.datasetValidities = null;
         this.searchTerm = MyDataFilterParams.defaultSearchTerm;
         this.roleIds = roleHelper.getRoleIdList();
     }
@@ -119,8 +121,9 @@ public class MyDataFilterParams {
      * @param dvObjectTypes
      * @param publicationStatuses 
      * @param searchTerm 
-     */    
-    public MyDataFilterParams(DataverseRequest dataverseRequest, List<DvObject.DType> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm){
+     * @param datasetValidities
+     */
+    public MyDataFilterParams(DataverseRequest dataverseRequest, List<DvObject.DType> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm, List<Boolean> datasetValidities) {
         if (dataverseRequest==null){
             throw new NullPointerException("MyDataFilterParams constructor: dataverseRequest cannot be null ");
         }
@@ -139,6 +142,8 @@ public class MyDataFilterParams {
         }else{
             this.publicationStatuses = publicationStatuses;
         }
+
+        this.datasetValidities = datasetValidities;
         
         // Do something here if none chosen!
         this.roleIds = roleIds;
@@ -286,6 +291,20 @@ public class MyDataFilterParams {
         return  "(" + SearchFields.PUBLICATION_STATUS + ":" + valStr + ")";
     }
 
+    public String getSolrFragmentForDatasetValidity(){
+        if ((this.datasetValidities == null) || (this.datasetValidities.isEmpty())){
+            return "";
+        }
+    
+        
+        String valStr = StringUtils.join(datasetValidities, " OR ");
+        if (this.datasetValidities.size() > 1){
+            valStr = "(" + valStr + ")";
+        }
+
+        return  "(" + SearchFields.DATASET_VALID + ":" + valStr + ")";
+    }
+
     public String getDvObjectTypesAsJSONString(){
         
         return this.getDvObjectTypesAsJSON().build().toString();
@@ -305,6 +324,25 @@ public class MyDataFilterParams {
         }
         return jsonArray;
                 
+    }
+
+        
+    /**
+     * "dataset_valid" : [ true, false ]
+     *
+     * @return
+     */
+    public JsonArrayBuilder getListofSelectedValidities(){
+        if (this.datasetValidities == null || this.datasetValidities.isEmpty()) {
+            return null;
+        }
+
+        JsonArrayBuilder jsonArray = Json.createArrayBuilder();
+
+        for (Boolean valid : this.datasetValidities){
+            jsonArray.add(valid);
+        }
+        return jsonArray;
     }
     
     
