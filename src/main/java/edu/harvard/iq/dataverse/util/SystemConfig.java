@@ -1001,14 +1001,6 @@ public class SystemConfig {
             return false;
         }
         
-        // Check the instance-wide setting first. If enabled for the entire 
-        // instance, it's enabled for any single collection as well: (TODO: ?)
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, true)) {
-            return true;
-        }
-        
-        // ... but if disabled instance-wide, it may still be enabled on a 
-        // specific collection (?)
         Dataverse thisCollection = collection; 
         
         // If neither enabled nor disabled specifically for this collection,
@@ -1016,13 +1008,16 @@ public class SystemConfig {
         while (thisCollection.getFilePIDsEnabled() == null) {
             if (thisCollection.getOwner() == null) {
                 // We've reached the root collection, and file PIDs registration
-                // hasn't been explicitly enabled, therefore we presume it is
-                // disabled for our collection:
-                return false; 
+                // hasn't been explicitly enabled, therefore we presume that it is
+                // subject to how the registration is configured for the 
+                // entire instance:
+                return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, true); 
             }
             thisCollection = thisCollection.getOwner();
         }
         
+        // If present, the setting of the first direct ancestor collection 
+        // takes precedent:
         return thisCollection.getFilePIDsEnabled();
     }
     
