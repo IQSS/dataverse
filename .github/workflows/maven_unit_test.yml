@@ -60,6 +60,23 @@ jobs:
     integration-test:
         runs-on: ubuntu-latest
         needs: unittest
+        name: (${{ matrix.status}} / JDK ${{ matrix.jdk }}) Integration Tests
+        strategy:
+            fail-fast: false
+            matrix:
+                jdk: [ '11' ]
+                experimental: [ false ]
+                status: [ "Stable" ]
+                #
+                # JDK 17 builds disabled due to non-essential fails marking CI jobs as completely failed within
+                # Github Projects, PR lists etc. This was consensus on Slack #dv-tech. See issue #8094
+                # (This is a limitation of how Github is currently handling these things.)
+                #
+                #include:
+                #    - jdk: '17'
+                #      experimental: true
+                #      status: "Experimental"
+        continue-on-error: ${{ matrix.experimental }}
         steps:
             # Basic setup chores
             - uses: actions/checkout@v3
