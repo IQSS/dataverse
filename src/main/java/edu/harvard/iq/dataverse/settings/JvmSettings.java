@@ -125,6 +125,8 @@ public enum JvmSettings {
     SCOPE_OIDC_PKCE(SCOPE_OIDC, "pkce"),
     OIDC_PKCE_ENABLED(SCOPE_OIDC_PKCE, "enabled"),
     OIDC_PKCE_METHOD(SCOPE_OIDC_PKCE, "method"),
+    OIDC_PKCE_CACHE_MAXSIZE(SCOPE_OIDC_PKCE, "max-cache-size"),
+    OIDC_PKCE_CACHE_MAXAGE(SCOPE_OIDC_PKCE, "max-cache-age"),
 
     // UI SETTINGS
     SCOPE_UI(PREFIX, "ui"),

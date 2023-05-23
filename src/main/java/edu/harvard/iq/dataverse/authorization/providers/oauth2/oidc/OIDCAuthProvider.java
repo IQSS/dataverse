@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
@@ -36,10 +38,13 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupExcep
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -69,8 +74,13 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
     /**
      * Using PKCE, we create and send a special {@link CodeVerifier}. This contains a secret
      * we need again when verifying the response by the provider, thus the cache.
+     * To be absolutely sure this may not be abused to DDoS us and not let unused verifiers rot,
+     * use an evicting cache implementation and not a standard map.
      */
-    private final Map<String,CodeVerifier> verifierCache = new ConcurrentHashMap<>();
+    private final Cache<String,CodeVerifier> verifierCache = Caffeine.newBuilder()
+        .maximumSize(JvmSettings.OIDC_PKCE_CACHE_MAXSIZE.lookup(Integer.class))
+        .expireAfterWrite(Duration.of(JvmSettings.OIDC_PKCE_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.SECONDS))
+        .build();
     
     public OIDCAuthProvider(String aClientId, String aClientSecret, String issuerEndpointURL,
                             boolean pkceEnabled, String pkceMethod) throws AuthorizationSetupException {
@@ -201,7 +211,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
     public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
         // Retrieve the verifier from the cache and clear from the cache. If not found, will be null.
         // Will be sent to token endpoint for verification, so if required but missing, will lead to exception.
-        CodeVerifier verifier = verifierCache.remove(state);
+        CodeVerifier verifier = verifierCache.getIfPresent(state);
         
         // Create grant object - again, this is null-safe for the verifier
         AuthorizationGrant codeGrant = new AuthorizationCodeGrant(
