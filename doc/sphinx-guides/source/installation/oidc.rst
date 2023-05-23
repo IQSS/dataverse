@@ -168,3 +168,12 @@ The following options are available:
     - A subtitle, currently not displayed by the UI.
     - N
     - ``OpenID Connect``
+  * - ``dataverse.auth.oidc.pkce.max-cache-size``
+    - Tune the maximum size of all OIDC providers' verifier cache (= number of outstanding PKCE-enabled auth responses).
+    - N
+    - 10000
+  * - ``dataverse.auth.oidc.pkce.max-cache-age``
+    - Tune the maximum age of all OIDC providers' verifier cache entries. Default is 5 minutes, equivalent to lifetime
+      of many OIDC access tokens.
+    - N
+    - 300
