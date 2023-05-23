@@ -329,6 +329,8 @@ You can also search for files within datasets that have been tagged as "Workflow
 
 |cw-image6|
 
+.. _fits:
+
 Astronomy (FITS)
 ----------------
 
@@ -373,6 +375,8 @@ Please note the following rules regarding these fields:
 - If the bounding box was successfully populated, the subsequent removal of the NetCDF or HDF5 file from the dataset does not automatically remove the bounding box from the dataset metadata. You must remove the bounding box manually, if desired.
 
 If the bounding box was successfully populated, :ref:`geospatial-search` should be able to find it.
+
+.. _compressed-files:
 
 Compressed Files
 ----------------
