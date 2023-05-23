@@ -116,6 +116,8 @@ The Dataverse installation will automatically try to load the provider and retri
 You should see the new provider under "Other options" on the Log In page, as described in the :doc:`/user/account`
 section of the User Guide.
 
+.. _oidc-mpconfig:
+
 Provision via MPCONFIG
 ^^^^^^^^^^^^^^^^^^^^^^
 

@@ -2420,6 +2420,13 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 ``DATAVERSE_UI_SHOW_VALIDITY_FILTER``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
 
+dataverse.auth.oidc.*
++++++++++++++++++++++
+
+Provision a single :doc:`OpenID Connect authentication provider <oidc>` using MicroProfile Config. You can find a list of
+all available options at :ref:`oidc-mpconfig`.
+
+
 .. _feature-flags:
 
 Feature Flags
