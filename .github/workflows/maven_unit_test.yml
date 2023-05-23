@@ -1,4 +1,4 @@
-name: Maven Unit Tests
+name: Maven Tests
 
 on:
     push:
@@ -96,21 +96,22 @@ jobs:
             - uses: actions/download-artifact@v3
               with:
                   name: java-builddir
-            - run: tar -xvf java-builddir.tar; ls -laR target
+            - run: tar -xvf java-builddir.tar
 
-            # Run integration tests
-            - run: mvn -Dtarget.java.version=${{ matrix.jdk }} verify
+            # Run integration tests (but not unit tests again)
+            - run: mvn -DskipUnitTests -Dtarget.java.version=${{ matrix.jdk }} verify
 
             # Wrap up and send to coverage job
-            - run: tar -cvf java-builddir.tar target
+            - run: tar -cvf java-reportdir.tar target/site
             - uses: actions/upload-artifact@v3
               with:
-                  name: java-builddir
-                  path: java-builddir.tar
+                  name: java-reportdir
+                  path: java-reportdir.tar
                   retention-days: 3
     coverage-report:
         runs-on: ubuntu-latest
         needs: integration-test
+        name: Coverage Report Submission
         steps:
             # Basic setup chores
             - uses: actions/checkout@v3
@@ -128,8 +129,8 @@ jobs:
             # Get the build output from the integration test job
             - uses: actions/download-artifact@v3
               with:
-                  name: java-builddir
-            - run: tar -xvf java-builddir.tar; ls -laR target
+                  name: java-reportdir
+            - run: tar -xvf java-reportdir.tar
 
             # Deposit Code Coverage
             - name: Maven Code Coverage
