@@ -27,6 +27,7 @@ function bind_checkbox_labels(){
     bind_checkbox_labels_by_names('mydata_dvobject_label', 'div_dvobject_types');
     bind_checkbox_labels_by_names('mydata_pubstate_label', 'div_published_states');
     bind_checkbox_labels_by_names('mydata_role_label', 'div_role_states');
+    bind_checkbox_labels_by_names('mydata_validity_label', 'div_dataset_valid');
 
 }
 
@@ -491,6 +492,12 @@ function submit_my_data_search(){
                 var y = $("span.label.deaccessioned");
                 for (var i = 0; i < y.length; i++) {
                     y[i].innerHTML = deaccessioned;
+                }
+            }
+            if ($("span.label.incomplete")) {
+                var y = $("span.label.incomplete");
+                for (var i = 0; i < y.length; i++) {
+                    y[i].innerHTML = incomplete;
                 }
             }
 

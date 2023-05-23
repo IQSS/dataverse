@@ -266,10 +266,19 @@ public class FilePage implements java.io.Serializable {
     private void displayPublishMessage(){
         if (fileMetadata.getDatasetVersion().isDraft()  && canUpdateDataset()
                 &&   (canPublishDataset() || !fileMetadata.getDatasetVersion().getDataset().isLockedFor(DatasetLock.Reason.InReview))){
-            JsfHelper.addWarningMessage(datasetService.getReminderString(fileMetadata.getDatasetVersion().getDataset(), canPublishDataset(), true));
+            JsfHelper.addWarningMessage(datasetService.getReminderString(fileMetadata.getDatasetVersion().getDataset(), canPublishDataset(), true, isValid()));
         }               
     }
     
+    public boolean isValid() {
+        if (!fileMetadata.getDatasetVersion().isDraft()) {
+            return true;
+        }
+        DatasetVersion newVersion = fileMetadata.getDatasetVersion().cloneDatasetVersion();
+        newVersion.setDatasetFields(newVersion.initDatasetFields());
+        return newVersion.isValid();
+    }
+
     private boolean canViewUnpublishedDataset() {
         return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), fileMetadata.getDatasetVersion().getDataset());
     }

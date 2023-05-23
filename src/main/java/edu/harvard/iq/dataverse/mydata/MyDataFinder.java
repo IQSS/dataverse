@@ -238,6 +238,12 @@ public class MyDataFinder {
         filterQueries.add(this.filterParams.getSolrFragmentForPublicationStatus());
         //fq=publicationStatus:"Unpublished"&fq=publicationStatus:"Draft"
 
+        // -----------------------------------------------------------------
+        // (4) FQ by dataset metadata vlidity
+        // -----------------------------------------------------------------
+        filterQueries.add(this.filterParams.getSolrFragmentForDatasetValidity());
+        //fq=datasetValid:(true OR false)
+
         return filterQueries;
     }
 
@@ -392,11 +398,16 @@ public class MyDataFinder {
      *
      * @return
      */
-    public JsonObjectBuilder getSelectedFilterParamsAsJSON(){
+    public JsonObjectBuilder getSelectedFilterParamsAsJSON() {
 
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
         jsonData.add("publication_statuses", this.filterParams.getListofSelectedPublicationStatuses())
                 .add("role_names", this.getListofSelectedRoles());
+
+        JsonArrayBuilder selVal = this.filterParams.getListofSelectedValidities();
+        if (selVal != null) {
+            jsonData.add("dataset_valid", selVal);
+        }
 
         return jsonData;
     }
