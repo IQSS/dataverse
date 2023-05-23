@@ -34,9 +34,9 @@ jobs:
         runs-on: ubuntu-latest
         steps:
           # Basic setup chores
-          - uses: actions/checkout@v2
+          - uses: actions/checkout@v3
           - name: Set up JDK ${{ matrix.jdk }}
-            uses: actions/setup-java@v2
+            uses: actions/setup-java@v3
             with:
                 java-version: ${{ matrix.jdk }}
                 distribution: 'adopt'
@@ -64,7 +64,7 @@ jobs:
             # Basic setup chores
             - uses: actions/checkout@v3
             - name: Set up JDK ${{ matrix.jdk }}
-              uses: actions/setup-java@v2
+              uses: actions/setup-java@v3
               with:
                   java-version: ${{ matrix.jdk }}
                   distribution: 'adopt'
@@ -97,10 +97,9 @@ jobs:
         steps:
             # Basic setup chores
             - uses: actions/checkout@v3
-            - name: Set up JDK ${{ matrix.jdk }}
-              uses: actions/setup-java@v2
+            - uses: actions/setup-java@v3
               with:
-                  java-version: ${{ matrix.jdk }}
+                  java-version: '11'
                   distribution: 'adopt'
             - name: Cache Maven packages
               uses: actions/cache@v2
