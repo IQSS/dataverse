@@ -2712,7 +2712,7 @@ If you don't want to register file-based PIDs for your installation, set:
 
 Note: File-level PID registration was added in Dataverse Software 4.9; it could not be disabled until Dataverse Software 4.9.3.
 
-It is possible to override the installation-wide setting for specific collections. For example, it registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See ... for details. 
+It is possible to override the installation-wide setting for specific collections. For example, it registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
 
 .. _:IndependentHandleService:
 

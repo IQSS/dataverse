@@ -161,7 +161,7 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     SwordServiceBean swordService;
-
+    
     @POST
     @AuthRequired
     public Response addRoot(@Context ContainerRequestContext crc, String body) {
@@ -610,12 +610,22 @@ public class Dataverses extends AbstractApiBean {
                 case "affiliation":
                     collection.setAffiliation(value);
                     break;
+                /* commenting out the code from the draft pr #9462:
+                case "versionPidsConduct":
+                    CollectionConduct conduct = CollectionConduct.findBy(value);
+                    if (conduct == null) {
+                        return badRequest("'" + value + "' is not one of [" +
+                            String.join(",", CollectionConduct.asList()) + "]");
+                    }
+                    collection.setDatasetVersionPidConduct(conduct);
+                    break;
+                 */
                 case "filePIDsEnabled":
                     collection.setFilePIDsEnabled(parseBooleanOrDie(value));
                 default:
                     return badRequest("'" + attribute + "' is not a supported attribute");
             }
-        
+            
             // Off to persistence layer
             execCommand(new UpdateDataverseCommand(collection, null, null, dvRequest, null));
     

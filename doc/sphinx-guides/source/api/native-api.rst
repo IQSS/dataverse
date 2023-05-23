@@ -682,6 +682,24 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/guestbookResponses?guestbookId=1 -o myResponses.csv
 
+.. _collection-attributes-api:
+  
+Change Collection Attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: 
+
+  curl -H  X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/attribute/$ATTRIBUTE?value=$VALUE
+
+The following attributes are supported:
+
+* ``alias``  Collection alias
+* ``name`` Name
+* ``description`` Description
+* ``affiliation`` Affiliation
+* ``filePIDsEnabled`` ("true" or "false") Enables or disables registraion of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
+
+
 Datasets
 --------
 
