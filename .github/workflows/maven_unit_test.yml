@@ -33,6 +33,7 @@ jobs:
         continue-on-error: ${{ matrix.experimental }}
         runs-on: ubuntu-latest
         steps:
+          # Basic setup chores
           - uses: actions/checkout@v2
           - name: Set up JDK ${{ matrix.jdk }}
             uses: actions/setup-java@v2
@@ -45,13 +46,84 @@ jobs:
                 path: ~/.m2
                 key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                 restore-keys: ${{ runner.os }}-m2
+
           - name: Build with Maven
             run: mvn -DcompilerArgument=-Xlint:unchecked -Dtarget.java.version=${{ matrix.jdk }} -P all-unit-tests clean test
-          - name: Maven Code Coverage
-            env:
+
+          # Store the build for the next step (integration test) to avoid recompilation and to transfer coverage reports
+          - run: tar -cvf java-builddir.tar target
+          - uses: actions/upload-artifact@v3
+            with:
+                name: java-builddir
+                path: java-builddir.tar
+                retention-days: 3
+    integration-test:
+        runs-on: ubuntu-latest
+        needs: unittest
+        steps:
+            # Basic setup chores
+            - uses: actions/checkout@v3
+            - name: Set up JDK ${{ matrix.jdk }}
+              uses: actions/setup-java@v2
+              with:
+                  java-version: ${{ matrix.jdk }}
+                  distribution: 'adopt'
+            - name: Cache Maven packages
+              uses: actions/cache@v2
+              with:
+                  path: ~/.m2
+                  key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                  restore-keys: ${{ runner.os }}-m2
+
+            # Get the build output from the unit test job
+            - uses: actions/download-artifact@v3
+              with:
+                  name: java-builddir
+            - run: tar -xvf java-builddir.tar; ls -laR target
+
+            # Run integration tests
+            - run: mvn -Dtarget.java.version=${{ matrix.jdk }} verify
+
+            # Wrap up and send to coverage job
+            - run: tar -cvf java-builddir.tar target
+            - uses: actions/upload-artifact@v3
+              with:
+                  name: java-builddir
+                  path: java-builddir.tar
+                  retention-days: 3
+    coverage-report:
+        runs-on: ubuntu-latest
+        needs: integration-test
+        steps:
+            # Basic setup chores
+            - uses: actions/checkout@v3
+            - name: Set up JDK ${{ matrix.jdk }}
+              uses: actions/setup-java@v2
+              with:
+                  java-version: ${{ matrix.jdk }}
+                  distribution: 'adopt'
+            - name: Cache Maven packages
+              uses: actions/cache@v2
+              with:
+                  path: ~/.m2
+                  key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                  restore-keys: ${{ runner.os }}-m2
+
+            # Get the build output from the integration test job
+            - uses: actions/download-artifact@v3
+              with:
+                  name: java-builddir
+            - run: tar -xvf java-builddir.tar; ls -laR target
+
+            # Deposit Code Coverage
+            - name: Maven Code Coverage
+              env:
                 CI_NAME: github
                 COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
-            run: mvn -V -B jacoco:report coveralls:report -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
+              run: mvn -V -B coveralls:report -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
+
+            # NOTE: this may be extended with adding a report to the build output, leave a comment, send to Sonarcloud, ...
+
     push-app-img:
         name: Publish App Image
         permissions:
