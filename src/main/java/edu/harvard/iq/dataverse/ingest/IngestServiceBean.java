@@ -1185,52 +1185,14 @@ public class IngestServiceBean {
     // Inspired by fileMetadataExtractable, above
     public boolean fileMetadataExtractableFromNetcdf(DataFile dataFile, Path tempLocationPath) {
         logger.fine("fileMetadataExtractableFromNetcdf dataFileIn: " + dataFile + ". tempLocationPath: " + tempLocationPath);
-        boolean extractable = false;
-        String dataFileLocation = null;
-        if (tempLocationPath != null) {
-            // This file was just uploaded and hasn't been saved to S3 or local storage.
-            dataFileLocation = tempLocationPath.toString();
-        } else {
-            // This file is already on S3 or local storage.
-            File tempFile = null;
-            File localFile;
-            StorageIO<DataFile> storageIO;
-            try {
-                storageIO = dataFile.getStorageIO();
-                storageIO.open();
-                if (storageIO.isLocalFile()) {
-                    localFile = storageIO.getFileSystemPath().toFile();
-                    dataFileLocation = localFile.getAbsolutePath();
-                    logger.info("fileMetadataExtractable2: file is local. Path: " + dataFileLocation);
-                } else {
-                    // Need to create a temporary local file:
-                    tempFile = File.createTempFile("tempFileExtractMetadataNcml", ".tmp");
-                    try ( ReadableByteChannel targetFileChannel = (ReadableByteChannel) storageIO.getReadChannel();  FileChannel tempFileChannel = new FileOutputStream(tempFile).getChannel();) {
-                        tempFileChannel.transferFrom(targetFileChannel, 0, storageIO.getSize());
-                    }
-                    dataFileLocation = tempFile.getAbsolutePath();
-                    logger.info("fileMetadataExtractable2: file is on S3. Downloaded and saved to temp path: " + dataFileLocation);
-                }
-            } catch (IOException ex) {
-                logger.info("fileMetadataExtractable2, could not use storageIO for data file id " + dataFile.getId() + ". Exception: " + ex);
-            }
+        logger.info("fileMetadataExtractableFromNetcdf dataFileIn: " + dataFile + ". tempLocationPath: " + tempLocationPath + ". contentType: " + dataFile.getContentType());
+        if (dataFile.getContentType() != null
+                && (dataFile.getContentType().equals(FileUtil.MIME_TYPE_NETCDF)
+                || dataFile.getContentType().equals(FileUtil.MIME_TYPE_XNETCDF)
+                || dataFile.getContentType().equals(FileUtil.MIME_TYPE_HDF5))) {
+            return true;
         }
-        if (dataFileLocation != null) {
-            try ( NetcdfFile netcdfFile = NetcdfFiles.open(dataFileLocation)) {
-                logger.info("fileMetadataExtractable2: trying to open " + dataFileLocation);
-                if (netcdfFile != null) {
-                    logger.info("fileMetadataExtractable2: returning true");
-                    extractable = true;
-                } else {
-                    logger.info("NetcdfFiles.open() could not open file id " + dataFile.getId() + " (null returned).");
-                }
-            } catch (IOException ex) {
-                logger.info("NetcdfFiles.open() could not open file id " + dataFile.getId() + ". Exception caught: " + ex);
-            }
-        } else {
-            logger.info("dataFileLocation is null for file id " + dataFile.getId() + ". Can't extract NcML.");
-        }
-        return extractable;
+        return false;
     }
 
     /* 
