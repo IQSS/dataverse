@@ -13,6 +13,7 @@ import com.jayway.restassured.path.xml.XmlPath;
 import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
@@ -2019,6 +2020,8 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
     }
     
+    // The following specifically tests file-level PIDs configuration in 
+    // individual collections (#8889/#9614)
     @Test
     public void testFilePIDsBehavior() {
         // Create user
@@ -2057,7 +2060,8 @@ public class FilesIT {
         String fileInfoResponseString = fileInfoResponse.body().asString();
         msg(fileInfoResponseString);
         
-        assertNotNull(JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId"));
+        String origFilePersistentId = JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId");
+        assertTrue("The file did not get a persistent identifier assigned (check that file PIDs are enabled instance-wide!)", StringUtil.nonEmpty(origFilePersistentId));
 
         // Now change the file PIDs registration configuration for the collection:
         
