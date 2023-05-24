@@ -243,7 +243,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.SOURCE, HARVESTED);
         } else { (this means that all dataverses are "local" - should this be removed? */
         solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-        solrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName()); //rootDataverseName);
+        solrInputDocument.addField(SearchFields.METADATA_SOURCE, rootDataverse.getName()); //rootDataverseName);
         /*}*/
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
@@ -437,7 +437,8 @@ public class IndexServiceBean {
     }
 
     private void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
-        doIndexDataset(dataset, doNormalSolrDocCleanUp);
+        Dataset deep = datasetService.findDeep(dataset.getId());
+        doIndexDataset(deep, doNormalSolrDocCleanUp);
         updateLastIndexedTime(dataset.getId());
     }
     
@@ -817,10 +818,15 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.DATASET_VALID, valid);
         }
 
+        final Dataverse dataverse = dataset.getDataverseContext();
+        final String dvIndexableCategoryName = dataverse.getIndexableCategoryName();
+        final String dvAlias = dataverse.getAlias();
+        final String dvDisplayName = dataverse.getDisplayName();
+        final String rdvName = findRootDataverseCached().getName();
         //This only grabs the immediate parent dataverse's category. We do the same for dataverses themselves.
-        solrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
-        solrInputDocument.addField(SearchFields.IDENTIFIER_OF_DATAVERSE, dataset.getDataverseContext().getAlias());
-        solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataset.getDataverseContext().getDisplayName());
+        solrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dvIndexableCategoryName);
+        solrInputDocument.addField(SearchFields.IDENTIFIER_OF_DATAVERSE, dvAlias);
+        solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dvDisplayName);
         
         Date datasetSortByDate = new Date();
         Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
@@ -866,7 +872,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
         } else {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName()); //rootDataverseName);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName); //rootDataverseName);
         }
 
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
@@ -1127,6 +1133,9 @@ public class IndexServiceBean {
             }
             LocalDate embargoEndDate=null;
             LocalDate end = null;
+            final String datasetCitation = dataset.getCitation();
+            final Long datasetId = dataset.getId();
+            final String datasetGlobalId = dataset.getGlobalId().toString();
             for (FileMetadata fileMetadata : fileMetadatas) {
                
                 Embargo emb= fileMetadata.getDataFile().getEmbargo();
@@ -1164,7 +1173,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
                     datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
-                    datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
+                    datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dvIndexableCategoryName);
                     if(end!=null) {
                         datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, end.toEpochDay()); 
                     }
@@ -1296,7 +1305,7 @@ public class IndexServiceBean {
                             datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
                         } else {
                             datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-                            datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName());
+                            datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName);
                         }
                     }
                     if (fileSortByDate == null) {
@@ -1363,9 +1372,9 @@ public class IndexServiceBean {
                     // dataFile.getOwner().getOwner().getName());
                     // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME,
                     // dataFile.getDataset().getTitle());
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_ID, fileMetadata.getDataFile().getOwner().getId());
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, fileMetadata.getDataFile().getOwner().getGlobalId().toString());
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION, fileMetadata.getDataFile().getOwner().getCitation());
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_ID, datasetId);
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, datasetGlobalId);
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION, datasetCitation);
 
                     datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentDatasetTitle);
 
@@ -1686,7 +1695,11 @@ public class IndexServiceBean {
                 sid.addField(fieldName, doc.getFieldValue(fieldName));
             }
 
-            List<String> paths =  object.isInstanceofDataset() ? retrieveDVOPaths(datasetService.find(object.getId())) 
+            Dataset dataset = null;
+            if (object.isInstanceofDataset()) {
+                dataset = datasetService.findDeep(object.getId());
+            }
+            List<String> paths =  object.isInstanceofDataset() ? retrieveDVOPaths(dataset) 
                     : retrieveDVOPaths(dataverseService.find(object.getId()));
 
             sid.removeField(SearchFields.SUBTREE);
@@ -1694,7 +1707,7 @@ public class IndexServiceBean {
             UpdateResponse addResponse = solrClientService.getSolrClient().add(sid);
             UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
             if (object.isInstanceofDataset()) {
-                for (DataFile df : datasetService.find(object.getId()).getFiles()) {
+                for (DataFile df : dataset.getFiles()) {
                     solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, df.getId().toString()));
                     res = solrClientService.getSolrClient().query(solrQuery);
                     if (!res.getResults().isEmpty()) {
