@@ -2043,8 +2043,8 @@ public class FilesIT {
         // Publish dataverse and dataset
         // -------------------------
         msg("Publish dataverse and dataset");
-        Response publishDataversetResp = UtilIT.publishDataverseViaSword(collectionAlias, apiToken);
-        publishDataversetResp.then().assertThat()
+        Response publishCollectionResp = UtilIT.publishDataverseViaSword(collectionAlias, apiToken);
+        publishCollectionResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
         Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
