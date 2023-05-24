@@ -588,7 +588,7 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/attribute/{attribute}")
     public Response updateAttribute(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier,
-                                    @PathParam("attribute") String attribute, @NotNull String value) {
+                                    @PathParam("attribute") String attribute, @QueryParam("value") String value) {
         try {
             Dataverse collection = findDataverseOrDie(identifier);
             User user = getRequestUser(crc);
@@ -622,6 +622,7 @@ public class Dataverses extends AbstractApiBean {
                  */
                 case "filePIDsEnabled":
                     collection.setFilePIDsEnabled(parseBooleanOrDie(value));
+                    break;
                 default:
                     return badRequest("'" + attribute + "' is not a supported attribute");
             }

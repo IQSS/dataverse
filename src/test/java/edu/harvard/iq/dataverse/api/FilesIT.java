@@ -2079,7 +2079,7 @@ public class FilesIT {
         
         // And confirm that the file didn't get a PID:
         
-        fileInfoResponse = UtilIT.getFileData(origFileId.toString(), apiToken);
+        fileInfoResponse = UtilIT.getFileData(newFileId.toString(), apiToken);
         fileInfoResponse.then().assertThat().statusCode(OK.getStatusCode());
         fileInfoResponseString = fileInfoResponse.body().asString();
         msg(fileInfoResponseString);
