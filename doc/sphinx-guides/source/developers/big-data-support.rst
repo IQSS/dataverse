@@ -36,6 +36,17 @@ At present, one potential drawback for direct-upload is that files are only part
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.ingestsizelimit=<size in bytes>"``
 
+.. _s3-direct-upload-features-disabled:
+
+Features that are Disabled if S3 Direct Upload is Enabled
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following features are disabled when S3 direct upload is enabled.
+
+- Unzipping of zip files. (See :ref:`compressed-files`.)
+- Extraction of metadata from FITS files. (See :ref:`fits`.)
+- Creation of NcML auxiliary files (See :ref:`netcdf-and-hdf5`.)
+
 .. _cors-s3-bucket:
 
 Allow CORS for S3 Buckets
