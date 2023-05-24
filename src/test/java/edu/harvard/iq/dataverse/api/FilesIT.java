@@ -2084,7 +2084,7 @@ public class FilesIT {
         fileInfoResponseString = fileInfoResponse.body().asString();
         msg(fileInfoResponseString);
         
-        assertNull(JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId"));
+        org.junit.Assert.assertEquals("The file was NOT supposed to be issued a PID", "", JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId"));
       
     }
 }
