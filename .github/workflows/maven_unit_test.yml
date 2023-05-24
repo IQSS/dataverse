@@ -6,11 +6,15 @@ on:
             - "**.java"
             - "pom.xml"
             - "modules/**/pom.xml"
+            - "!modules/container-base/**"
+            - "!modules/dataverse-spi/**"
     pull_request:
         paths:
             - "**.java"
             - "pom.xml"
             - "modules/**/pom.xml"
+            - "!modules/container-base/**"
+            - "!modules/dataverse-spi/**"
 
 jobs:
     unittest:
