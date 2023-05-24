@@ -2061,7 +2061,7 @@ public class FilesIT {
         msg(fileInfoResponseString);
         
         String origFilePersistentId = JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId");
-        assertTrue("The file did not get a persistent identifier assigned (check that file PIDs are enabled instance-wide!)", StringUtil.nonEmpty(origFilePersistentId));
+        assertNotNull("The file did not get a persistent identifier assigned (check that file PIDs are enabled instance-wide!)", origFilePersistentId);
 
         // Now change the file PIDs registration configuration for the collection:
         
