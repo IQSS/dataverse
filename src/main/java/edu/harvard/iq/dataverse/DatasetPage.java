@@ -370,6 +370,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setTermsGuestbookPopupAction(String popupAction){
         if(popupAction != null && popupAction.length() > 0){
+            logger.info("TGPA set to " + popupAction);
             this.termsGuestbookPopupAction = popupAction;
         }
 
@@ -5178,6 +5179,9 @@ public class DatasetPage implements java.io.Serializable {
         if (!isSessionUserAuthenticated() || !dataset.isFileAccessRequest()){
             return false;
         }
+        //populate file lists
+        filterSelectedFiles();
+        
         if( this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty() ){
             return false;
         }
