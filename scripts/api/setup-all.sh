@@ -8,6 +8,7 @@ DATAVERSE_URL=${DATAVERSE_URL:-"http://localhost:8080"}
 export DATAVERSE_URL
 SOLR_URL=${SOLR_URL:-"http://localhost:8983"}
 
+# scripts/api when called from the root of the source tree
 SCRIPT_PATH="$(dirname "$0")"
 
 for opt in $*
