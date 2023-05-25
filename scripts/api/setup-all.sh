@@ -6,7 +6,6 @@ DV_SU_PASSWORD="admin"
 DATAVERSE_URL=${DATAVERSE_URL:-"http://localhost:8080"}
 # Make sure scripts we call from this one also get this env var!
 export DATAVERSE_URL
-SOLR_URL=${SOLR_URL:-"http://localhost:8983"}
 
 # scripts/api when called from the root of the source tree
 SCRIPT_PATH="$(dirname "$0")"
@@ -33,9 +32,6 @@ do
 done
 
 command -v jq >/dev/null 2>&1 || { echo >&2 '`jq` ("sed for JSON") is required, but not installed. Download the binary for your platform from http://stedolan.github.io/jq/ and make sure it is in your $PATH (/usr/bin/jq is fine) and executable with `sudo chmod +x /usr/bin/jq`. On Mac, you can install it with `brew install jq` if you use homebrew: http://brew.sh . Aborting.'; exit 1; }
-
-echo "deleting all data from Solr"
-curl "${SOLR_URL}/solr/collection1/update/json?commit=true" -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"
 
 # Everything + the kitchen sink, in a single script
 # - Setup the metadata blocks and controlled vocabulary
