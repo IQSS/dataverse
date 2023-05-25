@@ -526,6 +526,60 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 - Description Text
 - Subject
 
+Submit Incomplete Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Note:** This feature requires :ref:`dataverse.api.allow-incomplete-metadata` to be enabled and your Solr
+Schema to be up-to-date with the ``datasetValid`` field.
+
+Providing a ``.../datasets?doNotValidate=true`` query parameter turns off the validation of metadata.
+In this case, only the "Author Name" is required. For example, a minimal JSON file would look like this:
+
+.. code-block:: json
+  :name: dataset-incomplete.json
+
+  {
+    "datasetVersion": {
+      "metadataBlocks": {
+        "citation": {
+          "fields": [
+            {
+              "value": [
+                {
+                  "authorName": {
+                    "value": "Finch, Fiona",
+                    "typeClass": "primitive",
+                    "multiple": false,
+                    "typeName": "authorName"
+                  }
+                }
+              ],
+              "typeClass": "compound",
+              "multiple": true,
+              "typeName": "author"
+            }
+          ],
+          "displayName": "Citation Metadata"
+        }
+      }
+    }
+  }
+
+The following is an example HTTP call with deactivated validation:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export PARENT=root
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/dataverses/$PARENT/datasets?doNotValidate=true" --upload-file dataset-incomplete.json -H 'Content-type:application/json'
+
+**Note:** You may learn about an instance's support for deposition of incomplete datasets via :ref:`info-incomplete-metadata`.
+
+Submit Dataset
+^^^^^^^^^^^^^^
+
 As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-finch1_fr.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
 
 The curl command below assumes you have kept the name "dataset-finch1.json" and that this file is in your current working directory.
@@ -1049,7 +1103,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/BCCP9Z --upload-file dataset-update-metadata.json
 
-Note that in the example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``datasetVersion``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this:
+Note that in the example JSON file above, there are only two JSON objects with the ``license`` and ``metadataBlocks`` keys respectively. When you download a representation of your latest dataset version in JSON format, these objects will be nested inside another object called ``data`` in the API response. Note that there may be more objects in there, in addition to the ``license`` and ``metadataBlocks`` that you may need to preserve and re-import as well. Basically, you need everything in there except for the ``files``. This can be achived by downloading the metadata and selecting the sections you need with a JSON tool such as ``jq``, like this:
 
 .. code-block:: bash
 
@@ -1057,15 +1111,18 @@ Note that in the example JSON file above, there is a single JSON object with ``m
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
 
-  curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PERSISTENT_IDENTIFIER | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
-
+  curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PERSISTENT_IDENTIFIER | jq '.data | del(.files)' > dataset-update-metadata.json
+  
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/datasets/:persistentId/versions/:latest?persistentId=doi:10.5072/FK2/BCCP9Z | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
 
-Now that the resulting JSON file only contains the ``metadataBlocks`` key, you can edit the JSON such as with ``vi`` in the example below::
+
+Now you can edit the JSON produced by the command above with a text editor of your choice. For example, with ``vi`` in the example below.
+
+Note that you don't need to edit the top-level fields such as ``versionNumber``, ``minorVersonNumber``, ``versionState`` or any of the time stamps - these will be automatically updated as needed by the API::
 
     vi dataset-update-metadata.json
 
@@ -3187,6 +3244,27 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl https://demo.dataverse.org/api/info/apiTermsOfUse
+
+.. _info-incomplete-metadata:
+
+Show Support Of Incomplete Metadata Deposition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Learn if an instance has been configured to allow deposition of incomplete datasets via the API.
+See also :ref:`create-dataset-command` and :ref:`dataverse.api.allow-incomplete-metadata`
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/info/settings/incompleteMetadataViaApi
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/info/settings/incompleteMetadataViaApi
+
 
 .. _metadata-blocks-api:
 
