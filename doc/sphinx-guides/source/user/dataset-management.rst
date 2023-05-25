@@ -373,6 +373,7 @@ Please note the following rules regarding these fields:
 - If West Longitude and East Longitude are both over 180 (outside the expected -180:180 range), 360 will be subtracted to shift the values from the 0:360 range to the expected -180:180 range.
 - If either West Longitude or East Longitude are less than zero but the other longitude is greater than 180 (which would imply an indeterminate domain, a lack of clarity of if the domain is -180:180 or 0:360), metadata will be not be extracted.
 - If the bounding box was successfully populated, the subsequent removal of the NetCDF or HDF5 file from the dataset does not automatically remove the bounding box from the dataset metadata. You must remove the bounding box manually, if desired.
+- This feature is disabled if S3 direct upload is enabled (see :ref:`s3-direct-upload-features-disabled`) unless :ref:`dataverse.netcdf.geo-extract-s3-direct-upload` has been set to true.
 
 If the bounding box was successfully populated, :ref:`geospatial-search` should be able to find it.
 

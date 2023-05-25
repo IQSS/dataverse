@@ -69,6 +69,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.*;
 
 import org.apache.commons.io.IOUtils;
@@ -105,6 +106,7 @@ import java.util.Comparator;
 import java.util.ListIterator;
 import java.util.logging.Logger;
 import java.util.Hashtable;
+import java.util.Optional;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -1280,6 +1282,11 @@ public class IngestServiceBean {
                     dataFileLocation = localFile.getAbsolutePath();
                     logger.info("extractMetadataFromNetcdf: file is local. Path: " + dataFileLocation);
                 } else {
+                    Optional<Boolean> allow = JvmSettings.GEO_EXTRACT_S3_DIRECT_UPLOAD.lookupOptional(Boolean.class);
+                    if (!(allow.isPresent() && allow.get())) {
+                        logger.info("extractMetadataFromNetcdf: skipping because of config is set to not slow down S3 remote upload.");
+                        return false;
+                    }
                     // Need to create a temporary local file:
                     tempFile = File.createTempFile("tempFileExtractMetadataNetcdf", ".tmp");
                     try ( ReadableByteChannel targetFileChannel = (ReadableByteChannel) storageIO.getReadChannel();  FileChannel tempFileChannel = new FileOutputStream(tempFile).getChannel();) {
