@@ -41,7 +41,7 @@
                 </div>
             </div>
         </div>
-        <div class="button-block">
+        <div class="button-block" jsf:rendered="#{DatasetPage.termsGuestbookPopupAction == bundle.download}">
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" 
                            action="#{fileDownloadHelper.requestAccessIndirect()}"    
                            update="@([id$=requestAccessConsolidated]), @([id$=requestPanel]), @([id$=messagePanel]) @([id$=filesTable])" oncomplete="PF('requestAccessPopup').hide();">
@@ -51,6 +51,7 @@
             </button>
         </div>
         <div class="button-block" jsf:rendered="#{DatasetPage.termsGuestbookPopupAction == bundle['file.requestAccess']}">
+        <!--TODO - add "Accept and" if ToA exist?-->
             <p:commandLink type="button" styleClass="btn btn-default" rendered="#{workingVersion.dataset.hasEnabledGuestbook()}" value="#{bundle['file.requestAccess']}"
                     actionListener="#{fileDownloadHelper.writeGuestbookResponseAndRequestAccess(guestbookResponse)}"                          
                     update="@([id$=Messages])"
