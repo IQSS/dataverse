@@ -7,8 +7,10 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.BuiltInGroupsP
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
@@ -112,10 +114,12 @@ public class GroupServiceBean {
         Set<ExplicitGroup> directAncestorsOfShibGroups = new HashSet<>();
         for (Group group : ret) {
 
-            if (group instanceof ShibGroup) {
-                // if this is a shib group, we need to find if it is included in 
-                // some explicit group; i.e., if it has direct ancestors that 
-                // happen to be explicit groups:
+            if (group instanceof ShibGroup 
+                    || group instanceof IpGroup 
+                    || group instanceof MailDomainGroup) {
+                // if this is one of the non-explicit group types above, we 
+                // need to find if it is included in some explicit group; i.e., 
+                // if it has direct ancestors that happen to be explicit groups:
                 
                 directAncestorsOfShibGroups.addAll(explicitGroupService.findDirectlyContainingGroups(group));
             }
