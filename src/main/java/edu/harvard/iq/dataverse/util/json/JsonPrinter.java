@@ -375,10 +375,7 @@ public class JsonPrinter {
                 .add("createTime", format(dsv.getCreateTime()));
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
-            // Standard license
-            bld.add("license", jsonObjectBuilder()
-                    .add("name", DatasetUtil.getLicenseName(dsv))
-                    .add("uri", DatasetUtil.getLicenseURI(dsv)));
+            bld.add("license", jsonLicense(dsv));
         } else {
             // Custom terms
             bld.add("termsOfUse", dsv.getTermsOfUseAndAccess().getTermsOfUse())
@@ -1026,5 +1023,16 @@ public class JsonPrinter {
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
+    }
+
+    private static JsonObjectBuilder jsonLicense(DatasetVersion dsv) {
+        JsonObjectBuilder licenseJsonObjectBuilder = jsonObjectBuilder()
+                .add("name", DatasetUtil.getLicenseName(dsv))
+                .add("uri", DatasetUtil.getLicenseURI(dsv));
+        String licenseIconUri = DatasetUtil.getLicenseIcon(dsv);
+        if (licenseIconUri != null) {
+            licenseJsonObjectBuilder.add("iconUri", licenseIconUri);
+        }
+        return licenseJsonObjectBuilder;
     }
 }
