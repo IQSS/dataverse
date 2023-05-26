@@ -106,9 +106,19 @@ public class DatasetServiceBean implements java.io.Serializable {
         return em.find(Dataset.class, pk);
     }
 
+    /**
+     * Retrieve a dataset with the deep underlying structure in one query execution.
+     * This is a more optimal choice when accessing files of a dataset.
+     * In a contrast, the find() method does not pre-fetch the file objects and results in point queries when accessing these objects.
+     * Since the files have a deep structure, many queries can be prevented by using the findDeep() method, especially for large datasets
+     * containing many files, and when iterating over all the files.
+     * When you are not going to access the file objects, the default find() method is better because of the lazy loading.
+     * @return a dataset with pre-fetched file objects
+     */
     public Dataset findDeep(Object pk) {
         return (Dataset) em.createNamedQuery("Dataset.findById")
             .setParameter("id", pk)
+            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files 
             .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
             .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
             .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
@@ -125,7 +135,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.files.creator")
             .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
             .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
-            .setLockMode(LockModeType.NONE)
+            .setLockMode(LockModeType.NONE) // Explicit default ostrich locking (default for em.find() and named query executions)
             .getSingleResult();
     }
 
