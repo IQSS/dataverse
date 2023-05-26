@@ -1977,11 +1977,6 @@ public class DatasetPage implements java.io.Serializable {
                 // init the list of FileMetadatas
                 if (workingVersion.isDraft() && canUpdateDataset()) {
                     readOnly = false;
-                } else {
-                    // an attempt to retreive both the filemetadatas and datafiles early on, so that
-                    // we don't have to do so later (possibly, many more times than necessary):
-                    //AuthenticatedUser au = session.getUser() instanceof AuthenticatedUser ? (AuthenticatedUser) session.getUser() : null;
-                    //datafileService.findFileMetadataOptimizedExperimental(dataset, workingVersion, au);
                 }
                 // This will default to all the files in the version, if the search term
                 // parameter hasn't been specified yet:
@@ -2878,11 +2873,6 @@ public class DatasetPage implements java.io.Serializable {
             // this would be the case if we were retrieving the version by
             // the versionId, above.
             this.dataset = this.workingVersion.getDataset();
-        }
-
-        if (readOnly) {
-            //AuthenticatedUser au = session.getUser() instanceof AuthenticatedUser ? (AuthenticatedUser) session.getUser() : null;
-            //datafileService.findFileMetadataOptimizedExperimental(dataset, workingVersion, au);
         }
 
         fileMetadatasSearch = selectFileMetadatasForDisplay();
