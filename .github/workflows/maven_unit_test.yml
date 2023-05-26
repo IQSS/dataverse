@@ -50,12 +50,21 @@ jobs:
                 key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                 restore-keys: ${{ runner.os }}-m2
           - name: Build with Maven
-            run: mvn -DcompilerArgument=-Xlint:unchecked -Dtarget.java.version=${{ matrix.jdk }} -P all-unit-tests clean test
+            run: > 
+                mvn -B -f modules/dataverse-parent
+                -Dtarget.java.version=${{ matrix.jdk }}
+                -DcompilerArgument=-Xlint:unchecked -P all-unit-tests
+                -pl edu.harvard.iq:dataverse -am
+                test
           - name: Maven Code Coverage
             env:
                 CI_NAME: github
                 COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
-            run: mvn -V -B jacoco:report coveralls:report -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
+            run: >
+                mvn -B -f modules/dataverse-parent 
+                -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
+                -pl edu.harvard.iq:dataverse -am
+                jacoco:report coveralls:report
     push-app-img:
         name: Publish App Image
         permissions:
