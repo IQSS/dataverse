@@ -1,4 +1,4 @@
-name: Dataverse SPI
+name: Dataverse SPI 
 
 on:
     push:
