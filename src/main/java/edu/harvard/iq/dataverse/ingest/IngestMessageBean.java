@@ -75,6 +75,11 @@ public class IngestMessageBean implements MessageListener {
             ingestMessage = (IngestMessage) om.getObject();
 
             // if the lock was removed while an ingest was queued, ratake the lock
+            // The "if" is the first thing that addDatasetLock method does.
+            // It has some complexity and would result in the code duplication if repeated here.
+            // If that check would be removed from the addDatasetLock method in the future without
+            // updating the code using this method, ingest code would still not break because
+            // we remove "all" ingest locks at the end (right now, there can be at most one ingest lock).
             datasetService.addDatasetLock(ingestMessage.getDatasetId(),
                     DatasetLock.Reason.Ingest,
                     ingestMessage.getAuthenticatedUserId(),
