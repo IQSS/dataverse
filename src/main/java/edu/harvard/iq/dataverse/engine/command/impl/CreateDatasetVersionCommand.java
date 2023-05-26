@@ -65,10 +65,9 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         //good wrapped response if the TOA/Request Access not in compliance
         prepareDatasetAndVersion();
         
-        // TODO make async
-        // ctxt.index().asyncIndexDataset(dataset);
-        return ctxt.datasets().storeVersion(newVersion);
-        
+        DatasetVersion version = ctxt.datasets().storeVersion(newVersion);
+        ctxt.index().asyncIndexDataset(dataset, true);
+        return version;
     }
     
     /**
