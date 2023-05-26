@@ -50,20 +50,21 @@ jobs:
                 key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                 restore-keys: ${{ runner.os }}-m2
           - name: Build with Maven
+            # The reason why we use install here is because we want the dependent submodules to be available in
+            # the next step. Also, we can cache them this way.
             run: > 
                 mvn -B -f modules/dataverse-parent
                 -Dtarget.java.version=${{ matrix.jdk }}
                 -DcompilerArgument=-Xlint:unchecked -P all-unit-tests
                 -pl edu.harvard.iq:dataverse -am
-                test
+                install
           - name: Maven Code Coverage
             env:
                 CI_NAME: github
                 COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
             run: >
-                mvn -B -f modules/dataverse-parent 
+                mvn -B
                 -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
-                -pl edu.harvard.iq:dataverse -am
                 jacoco:report coveralls:report
     push-app-img:
         name: Publish App Image
