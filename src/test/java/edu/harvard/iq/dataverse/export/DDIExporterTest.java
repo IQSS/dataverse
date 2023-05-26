@@ -32,18 +32,25 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.xml.transform.Source;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.xml.sax.SAXException;
 import org.xmlunit.assertj3.XmlAssert;
+import org.xmlunit.builder.Input;
 
 public class DDIExporterTest {
 
@@ -88,7 +95,7 @@ public class DDIExporterTest {
         // then
         String xml = XmlPrinter.prettyPrintXml(byteArrayOutputStream.toString(StandardCharsets.UTF_8));
         logger.fine(xml);
-        XmlAssert.assertThat(xml).isValid();
+        XmlAssert.assertThat(xml).isValidAgainst(Input.fromPath(Path.of("src/test/resources/xml/xsd/ddi-codebook-2.5/ddi_codebook_2_5.xsd")).build());
         logger.severe("DDIExporterTest.testExportDataset() creates XML that should now be valid, since DDIExportUtil has been fixed.");
     }
 

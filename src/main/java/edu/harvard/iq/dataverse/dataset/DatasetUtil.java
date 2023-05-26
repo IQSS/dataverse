@@ -548,6 +548,10 @@ public class DatasetUtil {
 
     public static String getLicenseName(DatasetVersion dsv) {
         License license = DatasetUtil.getLicense(dsv);
+        return getLocalizedLicenseName(license);
+    }
+    
+    public static String getLocalizedLicenseName(License license) {
         return license != null ? getLocalizedLicenseDetails(license,"NAME")
                 : BundleUtil.getStringFromBundle("license.custom");
     }
