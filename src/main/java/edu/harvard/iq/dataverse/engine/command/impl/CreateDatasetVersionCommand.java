@@ -66,7 +66,9 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         prepareDatasetAndVersion();
         
         DatasetVersion version = ctxt.datasets().storeVersion(newVersion);
-        ctxt.index().asyncIndexDataset(dataset, true);
+        if (ctxt.index() != null) {
+            ctxt.index().asyncIndexDataset(dataset, true);
+        }
         return version;
     }
     
