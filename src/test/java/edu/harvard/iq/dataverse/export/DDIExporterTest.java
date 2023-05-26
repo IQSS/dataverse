@@ -44,6 +44,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.xmlunit.assertj3.XmlAssert;
+import org.xmlunit.builder.Input;
 
 public class DDIExporterTest {
 
@@ -92,7 +93,7 @@ public class DDIExporterTest {
         // then
         String xml = XmlPrinter.prettyPrintXml(byteArrayOutputStream.toString(StandardCharsets.UTF_8));
         logger.fine(xml);
-        XmlAssert.assertThat(xml).isValid();
+        XmlAssert.assertThat(xml).isValidAgainst(Input.fromPath(Path.of("src/test/resources/xml/xsd/ddi-codebook-2.5/ddi_codebook_2_5.xsd")).build());
         logger.severe("DDIExporterTest.testExportDataset() creates XML that should now be valid, since DDIExportUtil has been fixed.");
     }
 
