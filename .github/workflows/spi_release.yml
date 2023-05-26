@@ -13,10 +13,29 @@ on:
             - "modules/dataverse-spi/**"
 
 jobs:
+    # Note: Pushing packages to Maven Central requires access to secrets, which pull requests from remote forks
+    #       don't have. Skip in these cases.
+    check-secrets:
+        name: Check for Secrets Availability
+        runs-on: ubuntu-latest
+        outputs:
+            available: ${{ steps.secret-check.outputs.available }}
+        steps:
+            -   id: secret-check
+                # perform secret check & put boolean result as an output
+                shell: bash
+                run: |
+                    if [ "${{ secrets.DATAVERSEBOT_SONATYPE_USERNAME }}" != '' ]; then
+                        echo "available=true" >> $GITHUB_OUTPUT;
+                    else
+                        echo "available=false" >> $GITHUB_OUTPUT;
+                    fi
+
     snapshot:
         name: Release Snapshot
+        needs: check-secrets
         runs-on: ubuntu-latest
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && needs.check-secrets.outputs.available == 'true'
         steps:
             - uses: actions/checkout@v3
             - uses: actions/setup-java@v3
@@ -40,8 +59,9 @@ jobs:
 
     release:
         name: Release
+        needs: check-secrets
         runs-on: ubuntu-latest
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && needs.check-secrets.outputs.available == 'true'
         steps:
             -   uses: actions/checkout@v3
             -   uses: actions/setup-java@v3
