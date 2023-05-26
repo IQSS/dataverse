@@ -135,7 +135,6 @@ public class DatasetServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.files.creator")
             .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
             .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
-            .setLockMode(LockModeType.NONE) // Explicit default ostrich locking (default for em.find() and named query executions)
             .getSingleResult();
     }
 
