@@ -139,9 +139,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         //Use for code that requires database ids
         postDBFlush(theDataset, ctxt);
         
-        // TODO: this needs to be moved in to an onSuccess method; not adding to this PR as its out of scope
-        // TODO: switch to asynchronous version when JPA sync works
-        // ctxt.index().asyncIndexDataset(theDataset.getId(), true); 
         ctxt.index().asyncIndexDataset(theDataset, true);
                  
         return theDataset;
