@@ -3130,4 +3130,24 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getPrivateUrlDatasetVersionAnonymizedResponse = UtilIT.getPrivateUrlDatasetVersion("invalidToken", null);
         getPrivateUrlDatasetVersionAnonymizedResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
     }
+
+    @Test
+    public void getDatasetVersionCitation() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        Response getDatasetVersionCitationResponse = UtilIT.getDatasetVersionCitation(datasetId, ":draft", apiToken);
+        getDatasetVersionCitationResponse.prettyPrint();
+
+        getDatasetVersionCitationResponse.then().assertThat()
+                // We check that the returned message contains information expected for the citation string
+                .body("data.message", containsString("DRAFT VERSION"))
+                .statusCode(OK.getStatusCode());
+    }
 }

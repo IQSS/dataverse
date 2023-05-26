@@ -3206,4 +3206,12 @@ public class UtilIT {
                 .get("/api/datasets/privateUrlDatasetVersion/" + privateUrlToken);
         return response;
     }
+
+    static Response getDatasetVersionCitation(Integer datasetId, String version, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation");
+        return response;
+    }
 }
