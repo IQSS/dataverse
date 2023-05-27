@@ -3894,6 +3894,18 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @Path("privateUrlDatasetVersion/{privateUrlToken}/citation")
+    public Response getPrivateUrlDatasetVersionCitation(@PathParam("privateUrlToken") String privateUrlToken) {
+        PrivateUrlUser privateUrlUser = privateUrlService.getPrivateUrlUserFromToken(privateUrlToken);
+        if (privateUrlUser == null) {
+            return notFound("Private URL user not found");
+        }
+        DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(privateUrlToken);
+        return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
+                : ok(dsv.getCitation(true, privateUrlUser.hasAnonymizedAccess()));
+    }
+
+    @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/citation")
     public Response getDatasetVersionCitation(@Context ContainerRequestContext crc,
