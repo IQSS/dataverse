@@ -506,7 +506,7 @@
         <dependency>
             <groupId>io.gdcc</groupId>
             <artifactId>dataverse-spi</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.0-PR9175-SNAPSHOT</version>
         </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
