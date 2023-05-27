@@ -3869,8 +3869,7 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @Path("privateUrlDatasetVersion/{privateUrlToken}")
-    public Response getPrivateUrlDatasetVersion(@PathParam("privateUrlToken") String privateUrlToken,
-                                                @QueryParam("anonymizedFieldValue") String anonymizedFieldValue) {
+    public Response getPrivateUrlDatasetVersion(@PathParam("privateUrlToken") String privateUrlToken) {
         PrivateUrlUser privateUrlUser = privateUrlService.getPrivateUrlUserFromToken(privateUrlToken);
         if (privateUrlUser == null) {
             return notFound("Private URL user not found");
@@ -3887,7 +3886,7 @@ public class Datasets extends AbstractApiBean {
         JsonObjectBuilder responseJson;
         if (isAnonymizedAccess) {
             List<String> anonymizedFieldTypeNamesList = new ArrayList<>(Arrays.asList(anonymizedFieldTypeNames.split(",\\s")));
-            responseJson = json(dsv, anonymizedFieldTypeNamesList, anonymizedFieldValue);
+            responseJson = json(dsv, anonymizedFieldTypeNamesList);
         } else {
             responseJson = json(dsv);
         }

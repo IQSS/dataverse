@@ -3077,7 +3077,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertFalse(actualSummaryFields.isEmpty());
     }
 
-
     @Test
     public void getPrivateUrlDatasetVersion() {
         Response createUser = UtilIT.createRandomUser();
@@ -3096,7 +3095,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String tokenForPrivateUrlUser = JsonPath.from(privateUrlGet.body().asString()).getString("data.token");
 
         // We verify that the response contains the dataset associated to the private URL token
-        Response getPrivateUrlDatasetVersionResponse = UtilIT.getPrivateUrlDatasetVersion(tokenForPrivateUrlUser, null);
+        Response getPrivateUrlDatasetVersionResponse = UtilIT.getPrivateUrlDatasetVersion(tokenForPrivateUrlUser);
         getPrivateUrlDatasetVersionResponse.then().assertThat()
                 .body("data.datasetId", equalTo(datasetId))
                 .statusCode(OK.getStatusCode());
@@ -3113,13 +3112,12 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         privateUrlGet = UtilIT.privateUrlGet(datasetId, apiToken);
         tokenForPrivateUrlUser = JsonPath.from(privateUrlGet.body().asString()).getString("data.token");
 
-        String testAnonymizedValue = "testAnonymizedValue";
-        Response getPrivateUrlDatasetVersionAnonymizedResponse = UtilIT.getPrivateUrlDatasetVersion(tokenForPrivateUrlUser, testAnonymizedValue);
+        Response getPrivateUrlDatasetVersionAnonymizedResponse = UtilIT.getPrivateUrlDatasetVersion(tokenForPrivateUrlUser);
 
         // We verify that the response is anonymized for the author field
         getPrivateUrlDatasetVersionAnonymizedResponse.then().assertThat()
                 .body("data.datasetId", equalTo(datasetId))
-                .body("data.metadataBlocks.citation.fields[1].value", equalTo(testAnonymizedValue))
+                .body("data.metadataBlocks.citation.fields[1].value", equalTo(BundleUtil.getStringFromBundle("dataset.anonymized.withheld")))
                 .body("data.metadataBlocks.citation.fields[1].typeClass", equalTo("primitive"))
                 .body("data.metadataBlocks.citation.fields[1].multiple", equalTo(false))
                 .statusCode(OK.getStatusCode());
@@ -3127,7 +3125,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
 
         // Test invalid token
-        getPrivateUrlDatasetVersionAnonymizedResponse = UtilIT.getPrivateUrlDatasetVersion("invalidToken", null);
+        getPrivateUrlDatasetVersionAnonymizedResponse = UtilIT.getPrivateUrlDatasetVersion("invalidToken");
         getPrivateUrlDatasetVersionAnonymizedResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
     }
 

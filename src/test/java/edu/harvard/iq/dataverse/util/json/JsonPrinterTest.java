@@ -23,6 +23,8 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.assertEquals;
@@ -202,7 +204,7 @@ public class JsonPrinterTest {
         SettingsServiceBean nullServiceBean = null;
         DatasetFieldServiceBean nullDFServiceBean = null;
         JsonPrinter.injectSettingsService(nullServiceBean, nullDFServiceBean);
-        
+
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
 
@@ -241,7 +243,7 @@ public class JsonPrinterTest {
         vals.add(val);
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
-        
+
         DatasetFieldServiceBean nullDFServiceBean = null;
         JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean);
 
@@ -340,12 +342,11 @@ public class JsonPrinterTest {
         datasetAuthorField.setDatasetFieldCompoundValues(compoundValues);
         fields.add(datasetAuthorField);
 
-        String testAnonymizedFieldValue = "test";
-        JsonObject actualJsonObject = JsonPrinter.json(block, fields, List.of("author"), testAnonymizedFieldValue).build();
+        JsonObject actualJsonObject = JsonPrinter.json(block, fields, List.of("author")).build();
 
         assertNotNull(actualJsonObject);
         JsonObject actualAuthorJsonObject = actualJsonObject.getJsonArray("fields").getJsonObject(0);
-        assertEquals(testAnonymizedFieldValue, actualAuthorJsonObject.getString("value"));
+        assertEquals(BundleUtil.getStringFromBundle("dataset.anonymized.withheld"), actualAuthorJsonObject.getString("value"));
         assertEquals("primitive", actualAuthorJsonObject.getString("typeClass"));
         assertFalse(actualAuthorJsonObject.getBoolean("multiple"));
     }

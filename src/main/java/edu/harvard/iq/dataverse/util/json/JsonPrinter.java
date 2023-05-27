@@ -358,10 +358,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv) {
-        return json(dsv, null, null);
+        return json(dsv, null);
     }
 
-    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, String anonymizedFieldValue) {
+    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dsv.getDataset().getId())
                 .add("datasetPersistentId", dsv.getDataset().getGlobalId().asString())
@@ -397,7 +397,7 @@ public class JsonPrinter {
                 .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
 
         bld.add("metadataBlocks", (anonymizedFieldTypeNamesList != null) ?
-                jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList, anonymizedFieldValue)
+                jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList)
                 : jsonByBlocks(dsv.getDatasetFields())
         );
         bld.add("files", jsonFileMetadatas(dsv.getFileMetadatas()));
@@ -477,15 +477,15 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields) {
-        return jsonByBlocks(fields, null, null);
+        return jsonByBlocks(fields, null);
     }
 
-    public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList, String anonymizedFieldValue) {
+    public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList) {
         JsonObjectBuilder blocksBld = jsonObjectBuilder();
 
         for (Map.Entry<MetadataBlock, List<DatasetField>> blockAndFields : DatasetField.groupByBlock(fields).entrySet()) {
             MetadataBlock block = blockAndFields.getKey();
-            blocksBld.add(block.getName(), JsonPrinter.json(block, blockAndFields.getValue(), anonymizedFieldTypeNamesList, anonymizedFieldValue));
+            blocksBld.add(block.getName(), JsonPrinter.json(block, blockAndFields.getValue(), anonymizedFieldTypeNamesList));
         }
         return blocksBld;
     }
@@ -499,10 +499,10 @@ public class JsonPrinter {
      * @return JSON Object builder with the block and fields information.
      */
     public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields) {
-        return json(block, fields, null, null);
+        return json(block, fields, null);
     }
 
-    public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList, String anonymizedFieldValue) {
+    public static JsonObjectBuilder json(MetadataBlock block, List<DatasetField> fields, List<String> anonymizedFieldTypeNamesList) {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
         blockBld.add("displayName", block.getDisplayName());
@@ -510,7 +510,7 @@ public class JsonPrinter {
         
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
         Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
-        DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray, anonymizedFieldTypeNamesList, anonymizedFieldValue));
+        DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray, anonymizedFieldTypeNamesList));
 
         blockBld.add("fields", fieldsArray);
         return blockBld;
@@ -746,16 +746,13 @@ public class JsonPrinter {
         Deque<JsonObjectBuilder> objectStack = new LinkedList<>();
         Deque<JsonArrayBuilder> valueArrStack = new LinkedList<>();
         List<String> anonymizedFieldTypeNamesList = null;
-        String anonymizedFieldValue = null;
-
         DatasetFieldsToJson(JsonArrayBuilder result) {
             valueArrStack.push(result);
         }
 
-        DatasetFieldsToJson(JsonArrayBuilder result, List<String> anonymizedFieldTypeNamesList, String anonymizedFieldValue) {
+        DatasetFieldsToJson(JsonArrayBuilder result, List<String> anonymizedFieldTypeNamesList) {
             this(result);
             this.anonymizedFieldTypeNamesList = anonymizedFieldTypeNamesList;
-            this.anonymizedFieldValue = anonymizedFieldValue;
         }
 
         @Override
@@ -842,7 +839,7 @@ public class JsonPrinter {
 
         private void anonymizeField(JsonObjectBuilder jsonField) {
             jsonField.add("typeClass", "primitive");
-            jsonField.add("value", (anonymizedFieldValue == null) ? BundleUtil.getStringFromBundle("dataset.anonymized.withheld") : anonymizedFieldValue);
+            jsonField.add("value", BundleUtil.getStringFromBundle("dataset.anonymized.withheld"));
             jsonField.add("multiple", false);
         }
     }

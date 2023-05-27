@@ -3199,10 +3199,9 @@ public class UtilIT {
         return response;
     }
 
-    static Response getPrivateUrlDatasetVersion(String privateUrlToken, String anonymizedFieldValue) {
+    static Response getPrivateUrlDatasetVersion(String privateUrlToken) {
         Response response = given()
                 .contentType("application/json")
-                .queryParam("anonymizedFieldValue", anonymizedFieldValue)
                 .get("/api/datasets/privateUrlDatasetVersion/" + privateUrlToken);
         return response;
     }
