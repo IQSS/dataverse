@@ -19,6 +19,8 @@
     <name>dataverse</name>
     <properties>
         <skipUnitTests>false</skipUnitTests>
+        <skipIntegrationTests>false</skipIntegrationTests>
+        
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
         <packaging.type>war</packaging.type>
@@ -766,6 +768,7 @@
             <properties>
                 <!-- Let's go FAST here - building the image should be quick to do by default. -->
                 <skipUnitTests>true</skipUnitTests>
+                <skipIntegrationTests>true</skipIntegrationTests>
                 <!-- Once we truly run tests with Testcontainers, this should be switch to "docker", activating ITs -->
                 <packaging.type>docker-build</packaging.type>
                 <postgresql.server.version>13</postgresql.server.version>
@@ -862,10 +865,11 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <version>${maven-failsafe-plugin.version}</version>
                         <configuration>
-                            <groups>testcontainers</groups>
+                            <groups>end2end</groups>
                             <systemPropertyVariables>
                                 <postgresql.server.version>${postgresql.server.version}</postgresql.server.version>
                             </systemPropertyVariables>
+                            <skip>${skipIntegrationTests}</skip>
                         </configuration>
                         <executions>
                             <execution>

@@ -42,10 +42,13 @@ jobs:
                   distribution: temurin
                   cache: maven
 
-            - name: Build app container image with local architecture
-              run: mvn -Pct package
+            - name: Build app container image with local architecture and submodules (profile will skip tests)
+              run:
+                  mvn -B -f modules/dataverse-parent
+                  -P ct -pl edu.harvard.iq:dataverse -am
+                  install
 
-            # TODO: add smoke / integration testing here
+            # TODO: add smoke / integration testing here (add "-Pct -DskipIntegrationTests=false")
 
     hub-description:
         needs: build
