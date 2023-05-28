@@ -72,14 +72,25 @@ jobs:
                 -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
                 jacoco:report coveralls:report
 
-          # We don't want to cache the WAR file, so delete it
-          - run: rm -rf ~/.m2/repository/edu/harvard/iq/dataverse
+          # Prepare to replace the cache. Also: we don't want to cache the WAR file, so delete it
+          - id: clear-cache
+            if: ${{ steps.restore-m2-cache.outputs.cache-hit }}
+            continue-on-error: true # This is not crucial, just carry on
+            env:
+                GH_TOKEN: ${{ github.token }}
+            run: |
+                rm -rf ~/.m2/repository/edu/harvard/iq/dataverse
+                
+                gh extension install actions/gh-actions-cache
+                gh actions-cache delete ${{ steps.restore-m2-cache.outputs.cache-primary-key }} --confirm
+
           # To cache built Maven submodules, summon the save to cache action
           - name: Save Maven packages in Cache
             uses: actions/cache/save@v3
+            if: always() # Try to save cache, will not fail if key still exists because clean failed
             with:
                 path: ~/.m2
-                key: ${{ steps.restore-m2-cache.outputs.cache-primary-key }}-${{ github.run_id }}
+                key: ${{ steps.restore-m2-cache.outputs.cache-primary-key }}
     push-app-img:
         name: Publish App Image
         permissions:
