@@ -79,7 +79,7 @@ jobs:
             uses: actions/cache/save@v3
             with:
                 path: ~/.m2
-                key: ${{ steps.restore-m2-cache.outputs.cache-primary-key }}
+                key: ${{ steps.restore-m2-cache.outputs.cache-primary-key }}-${{ github.run_id }}
     push-app-img:
         name: Publish App Image
         permissions:
