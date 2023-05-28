@@ -65,6 +65,8 @@ jobs:
             env:
                 CI_NAME: github
                 COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
+            # The coverage commit is sometimes flaky. Don't bail out just because this optional step failed.
+            continue-on-error: true
             run: >
                 mvn -B
                 -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
