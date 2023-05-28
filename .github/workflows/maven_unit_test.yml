@@ -44,20 +44,23 @@ jobs:
                 java-version: ${{ matrix.jdk }}
                 distribution: 'adopt'
           - name: Cache Maven packages
-            uses: actions/cache@v2
+            id: restore-m2-cache
+            uses: actions/cache/restore@v3
             with:
                 path: ~/.m2
                 key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                 restore-keys: ${{ runner.os }}-m2
+
+          # The reason why we use "install" here is that we want the submodules to be available in the next step.
+          # Also, we can cache them this way for jobs triggered by this one.
           - name: Build with Maven
-            # The reason why we use install here is because we want the dependent submodules to be available in
-            # the next step. Also, we can cache them this way.
             run: > 
                 mvn -B -f modules/dataverse-parent
                 -Dtarget.java.version=${{ matrix.jdk }}
                 -DcompilerArgument=-Xlint:unchecked -P all-unit-tests
                 -pl edu.harvard.iq:dataverse -am
                 install
+
           - name: Maven Code Coverage
             env:
                 CI_NAME: github
@@ -66,6 +69,15 @@ jobs:
                 mvn -B
                 -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
                 jacoco:report coveralls:report
+
+          # We don't want to cache the WAR file, so delete it
+          - run: rm -rf ~/.m2/repository/edu/harvard/iq/dataverse
+          # To cache built Maven submodules, summon the save to cache action
+          - name: Save Maven packages in Cache
+            uses: actions/cache/save@v3
+            with:
+                path: ~/.m2
+                key: ${{ steps.restore-m2-cache.outputs.cache-primary-key }}
     push-app-img:
         name: Publish App Image
         permissions:
