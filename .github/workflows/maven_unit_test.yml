@@ -79,7 +79,7 @@ jobs:
             if: ${{ steps.restore-m2-cache.outputs.cache-hit }}
             continue-on-error: true # This is not crucial, just carry on
             env:
-                GH_TOKEN: ${{ github.token }}
+                GITHUB_TOKEN: ${{ github.token }}
             run: |
                 rm -rf ~/.m2/repository/edu/harvard/iq/dataverse
                 
