@@ -36,6 +36,8 @@ jobs:
                 #      status: "Experimental"
         continue-on-error: ${{ matrix.experimental }}
         runs-on: ubuntu-latest
+        permissions:
+            actions: write # necessary to clear and save the Maven cache
         steps:
           - uses: actions/checkout@v3
           - name: Set up JDK ${{ matrix.jdk }}
@@ -43,7 +45,7 @@ jobs:
             with:
                 java-version: ${{ matrix.jdk }}
                 distribution: 'adopt'
-          - name: Cache Maven packages
+          - name: Restore Maven packages from cache
             id: restore-m2-cache
             uses: actions/cache/restore@v3
             with:
@@ -85,7 +87,7 @@ jobs:
                 gh actions-cache delete ${{ steps.restore-m2-cache.outputs.cache-primary-key }} --confirm
 
           # To cache built Maven submodules, summon the save to cache action
-          - name: Save Maven packages in Cache
+          - name: Save Maven packages to cache
             uses: actions/cache/save@v3
             if: always() # Try to save cache, will not fail if key still exists because clean failed
             with:
