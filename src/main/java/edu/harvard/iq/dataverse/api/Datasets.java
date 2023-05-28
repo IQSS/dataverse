@@ -3908,15 +3908,8 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/citation")
-    public Response getDatasetVersionCitation(@Context ContainerRequestContext crc,
-                                              @PathParam("id") String datasetId,
-                                              @PathParam("versionId") String versionId,
-                                              @Context UriInfo uriInfo,
-                                              @Context HttpHeaders headers) {
-        return response( req -> {
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                    : ok(dsv.getCitation(true, false));
-        }, getRequestUser(crc));
+    public Response getDatasetVersionCitation(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return response(req -> ok(
+                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getCitation(true, false)), getRequestUser(crc));
     }
 }
