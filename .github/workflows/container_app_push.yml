@@ -43,7 +43,7 @@ jobs:
                   cache: maven
 
             - name: Build app container image with local architecture and submodules (profile will skip tests)
-              run:
+              run: >
                   mvn -B -f modules/dataverse-parent
                   -P ct -pl edu.harvard.iq:dataverse -am
                   install
@@ -98,12 +98,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   java-version: "11"
-                  distribution: 'adopt'
-            - uses: actions/cache@v3
-              with:
-                  path: ~/.m2
-                  key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                  restore-keys: ${{ runner.os }}-m2
+                  distribution: temurin
 
             # Depending on context, we push to different targets. Login accordingly.
             - if: ${{ github.event_name != 'pull_request' }}
@@ -135,7 +130,12 @@ jobs:
                   echo "REGISTRY='-Ddocker.registry=ghcr.io'" >> $GITHUB_ENV
 
             - name: Deploy multi-arch application container image
-              run: mvn -Pct deploy -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }} ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
+              run: >
+                  mvn -B -f modules/dataverse-parent
+                  -Pct -pl edu.harvard.iq:dataverse -am 
+                  -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }}
+                  ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
+                  deploy
 
             - uses: marocchino/sticky-pull-request-comment@v2
               if: ${{ github.event_name == 'pull_request' }}

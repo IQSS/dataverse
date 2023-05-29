@@ -58,7 +58,12 @@ jobs:
                   echo "IMAGE_TAG=$(echo "${{ github.event.client_payload.pull_request.head.ref }}" | tr '\\/_:&+,;#*' '-')" >> $GITHUB_ENV
 
             - name: Deploy multi-arch application container image
-              run: mvn -Pct deploy -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }} -Ddocker.registry=ghcr.io -Ddocker.platforms=${{ env.PLATFORMS }}
+              run: >
+                  mvn -B -f modules/dataverse-parent
+                  -Pct -pl edu.harvard.iq:dataverse -am 
+                  -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }}
+                  ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
+                  deploy
 
             - uses: marocchino/sticky-pull-request-comment@v2
               with:
