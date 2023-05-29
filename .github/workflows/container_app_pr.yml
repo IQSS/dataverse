@@ -57,13 +57,18 @@ jobs:
               run: |
                   echo "IMAGE_TAG=$(echo "${{ github.event.client_payload.pull_request.head.ref }}" | tr '\\/_:&+,;#*' '-')" >> $GITHUB_ENV
 
-            - name: Deploy multi-arch application container image
+            # Necessary to split as otherwise the submodules are not available (deploy skips install)
+            - name: Build app container image with local architecture and submodules (profile will skip tests)
               run: >
                   mvn -B -f modules/dataverse-parent
-                  -Pct -pl edu.harvard.iq:dataverse -am 
+                  -P ct -pl edu.harvard.iq:dataverse -am
+                  install
+            - name: Deploy multi-arch application container image
+              run: >
+                  mvn 
                   -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }}
                   ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
-                  deploy
+                  -P ct deploy
 
             - uses: marocchino/sticky-pull-request-comment@v2
               with:
