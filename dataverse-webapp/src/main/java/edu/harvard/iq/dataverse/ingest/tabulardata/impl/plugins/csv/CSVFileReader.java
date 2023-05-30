@@ -36,14 +36,11 @@ import org.apache.commons.lang.StringUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -104,23 +101,23 @@ public class CSVFileReader extends TabularDataFileReader {
     @Override
     public TabularDataIngest read(Tuple2<BufferedInputStream, File> streamAndFile, File dataFile) throws IOException {
         init();
-        BufferedInputStream stream = streamAndFile._1();
-        File file = streamAndFile._2();
-        if (stream == null) {
-            throw new IngestException(IngestError.UNKNOWN_ERROR);
+
+        boolean trySemicolonFormat;
+        // that stream is closed elsewhere, but as we've no reason to keep it open, let it be closed right after use:
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(streamAndFile._1()))) {
+            trySemicolonFormat = isHeaderOfSemicolonType(reader);
         }
+
         TabularDataIngest ingesteddata = new TabularDataIngest();
         DataTable dataTable = new DataTable();
 
         File tabFileDestination = File.createTempFile("data-", ".tab");
         File firstPassTempFile = File.createTempFile("firstpass-", ".csv");
-        boolean trySemicolonFormat = isHeaderOfSemicolonType(new BufferedReader(new InputStreamReader(stream)));
         boolean ingestExceptionHappened = false;
 
         if (trySemicolonFormat) {
-            try (BufferedReader newReader = createReader(file);
-                 PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath())) {
-                readFile(newReader, dataTable, tabFileWriter, firstPassTempFile, inFormat.withHeader().withDelimiter(';'));
+            try (PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath())) {
+                readFile(streamAndFile._2(), dataTable, tabFileWriter, firstPassTempFile, inFormat.withHeader().withDelimiter(';'));
             } catch (IngestException ie) {
                 logger.log(Level.WARNING, "Semicolon-format ingest failed – deleting intermediate files " +
                         "and trying again with default settings", ie);
@@ -133,12 +130,11 @@ public class CSVFileReader extends TabularDataFileReader {
             }
         }
         if (!trySemicolonFormat || ingestExceptionHappened) {
-            try (BufferedReader newReader = createReader(file);
-                 PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath())) {
+            try (PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath())) {
                 if (!firstPassTempFile.exists()) {
                     firstPassTempFile.createNewFile();
                 }
-                readFile(newReader, dataTable, tabFileWriter, firstPassTempFile, inFormat.withHeader());
+                readFile(streamAndFile._2(), dataTable, tabFileWriter, firstPassTempFile, inFormat.withHeader());
             } finally {
                 firstPassTempFile.delete();
             }
@@ -150,10 +146,14 @@ public class CSVFileReader extends TabularDataFileReader {
         return ingesteddata;
     }
 
-    public int readFile(BufferedReader csvReader, DataTable dataTable, PrintWriter finalOut, File firstPassTempFile, CSVFormat csvFormat) throws IOException {
+    public int readFile(File file, DataTable dataTable, PrintWriter finalOut, File firstPassTempFile, CSVFormat csvFormat) throws IOException {
+
+        if (file == null) {
+            throw new IngestException(IngestError.UNKNOWN_ERROR);
+        }
 
         List<DataVariable> variableList = new ArrayList<>();
-        CSVParser parser = new CSVParser(csvReader, csvFormat);
+        CSVParser parser = CSVParser.parse(file, selectCharset(), csvFormat);
         Map<String, Integer> headers = parser.getHeaderMap();
 
         int i = 0;
@@ -199,7 +199,7 @@ public class CSVFileReader extends TabularDataFileReader {
                 new FileWriter(firstPassTempFile.getAbsolutePath()), inFormat)) {
             // Write  headers
             csvFilePrinter.printRecord(headers.keySet());
-            for (CSVRecord record : parser.getRecords()) {
+            for (CSVRecord record : parser) {
                 // Checks if #records = #columns in header
                 if (!record.isConsistent()) {
                     List<String> args = Arrays.asList("" + (parser.getCurrentLineNumber() - 1),
@@ -310,7 +310,6 @@ public class CSVFileReader extends TabularDataFileReader {
         }
         dataTable.setCaseQuantity(parser.getRecordNumber());
         parser.close();
-        csvReader.close();
 
         // Re-type the variables that we've determined are numerics:
         for (i = 0; i < headers.size(); i++) {
@@ -416,11 +415,6 @@ public class CSVFileReader extends TabularDataFileReader {
     }
 
     // -------------------- PRIVATE --------------------
-
-    private BufferedReader createReader(File file) throws FileNotFoundException {
-        Charset charset = selectCharset();
-        return new BufferedReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(file)), charset));
-    }
 
     private boolean isHeaderOfSemicolonType(BufferedReader reader) {
         return reader.lines()
