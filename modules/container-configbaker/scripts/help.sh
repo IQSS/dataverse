@@ -5,6 +5,7 @@ set -euo pipefail
 # [INFO]: This script.
 
 # This is the Dataverse logo in ASCII
+# shellcheck disable=SC2016
 echo -e '          ╓mαo\n         ╫   jh\n         `%╥æ╨\n           ╫µ\n          ╓@M%╗,\n         ▓`    ╫U\n         ▓²    ╫╛\n          ▓M#M╝"\n  ┌æM╝╝%φ╫┘\n┌╫"      "╫┐\n▓          ▓\n▓          ▓\n`╫µ      ¿╫"\n  "╜%%MM╜`'
 echo ""
 echo "Hello!"
