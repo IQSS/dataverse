@@ -43,7 +43,7 @@ jobs:
                   distribution: temurin
                   cache: maven
 
-            - name: Build app container image with local architecture and submodules (profile will skip tests)
+            - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
               run: >
                   mvn -B -f modules/dataverse-parent
                   -P ct -pl edu.harvard.iq:dataverse -am
@@ -138,12 +138,12 @@ jobs:
                   echo "REGISTRY='-Ddocker.registry=ghcr.io'" >> $GITHUB_ENV
 
             # Necessary to split as otherwise the submodules are not available (deploy skips install)
-            - name: Build app container image with local architecture and submodules (profile will skip tests)
+            - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
               run: >
                   mvn -B -f modules/dataverse-parent
                   -P ct -pl edu.harvard.iq:dataverse -am
                   install
-            - name: Deploy multi-arch application container image
+            - name: Deploy multi-arch application and configbaker container image
               run: >
                   mvn 
                   -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }}
@@ -153,12 +153,15 @@ jobs:
             - uses: marocchino/sticky-pull-request-comment@v2
               if: ${{ github.event_name == 'pull_request' }}
               with:
-                  header: app-registry-push
+                  header: registry-push
                   hide_and_recreate: true
                   hide_classify: "OUTDATED"
                   message: |
-                      :package: Pushed preview application image as
+                      :package: Pushed preview images as
                       ```
                       ghcr.io/gdcc/dataverse:${{ env.IMAGE_TAG }}
                       ```
-                      :ship: [See on GHCR](https://github.com/orgs/gdcc/packages/container/package/dataverse). Use by referencing with full name as printed above, mind the registry name.
+                      ```
+                      ghcr.io/gdcc/configbaker:${{ env.IMAGE_TAG }}
+                      ```
+                      :ship: [See on GHCR](https://github.com/orgs/gdcc/packages/container). Use by referencing with full name as printed above, mind the registry name.
