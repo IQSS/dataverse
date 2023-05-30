@@ -855,6 +855,15 @@
                                             <descriptor>${project.basedir}/modules/container-configbaker/assembly.xml</descriptor>
                                         </assembly>
                                     </build>
+                                    
+                                    <!--
+                                        We skip the run here as it is already included in the external run config
+                                        above for the main image via the docker-compose file. Even if using
+                                        -Ddocker.filter=dev_bootstrap, the run config from above is still enforced.
+                                    -->
+                                    <run>
+                                        <skip>true</skip>
+                                    </run>
                                 </image>
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
