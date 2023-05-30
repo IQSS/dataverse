@@ -29,6 +29,7 @@ import org.dataverse.unf.UnfException;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -132,7 +133,7 @@ public class IngestUtil {
             int dashIndex = baseName.lastIndexOf("_");
             String numSuffix = baseName.substring(dashIndex + 1);
             String basePrefix = baseName.substring(0, dashIndex);
-            int numSuffixValue = Integer.parseInt(numSuffix) + 1;
+            BigInteger numSuffixValue = (new BigInteger(numSuffix)).add(BigInteger.ONE);
             baseName = basePrefix + "_" + numSuffixValue;
         } else {
             baseName = baseName + "_1";

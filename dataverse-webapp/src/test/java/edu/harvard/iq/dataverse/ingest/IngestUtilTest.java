@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class IngestUtilTest {
 
     // -------------------- LOGIC --------------------
-    
+
     @Test
     public void checkForDuplicateFileNamesFinal_noDirectories_expectedSuffix() throws Exception {
 
@@ -250,6 +250,18 @@ public class IngestUtilTest {
     public void shouldHaveUnf_null_expectedFalse() {
         // when & then
         assertFalse(IngestUtil.shouldHaveUnf(null));
+    }
+
+    @Test
+    public void duplicateForFileEndingWithHugeNumber() {
+        // given
+        String fileName = "abc_12345678912345667891234567891234567891234567891234567890.txt";
+
+        // when
+        String generated = IngestUtil.generateNewFileName(fileName);
+
+        // then
+        assertEquals("abc_12345678912345667891234567891234567891234567891234567891.txt", generated);
     }
 
     // -------------------- PRIVATE --------------------
