@@ -67,8 +67,8 @@ jobs:
               run: >
                   mvn 
                   -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }}
-                  ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
-                  -P ct deploy
+                  -Ddocker.registry=ghcr.io -Ddocker.platforms=${{ env.PLATFORMS }}
+                  -Pct deploy
 
             - uses: marocchino/sticky-pull-request-comment@v2
               with:
