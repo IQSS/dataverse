@@ -53,4 +53,4 @@ LABEL org.opencontainers.image.created="@git.build.time@" \
       org.opencontainers.image.vendor="Global Dataverse Community Consortium" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.title="Dataverse ConfigBaker Image" \
-      org.opencontainers.image.description="This container image configures Dataverse"
+      org.opencontainers.image.description="This container image configures Dataverse and provides other tooling"
