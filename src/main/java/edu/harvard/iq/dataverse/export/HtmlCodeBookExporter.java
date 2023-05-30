@@ -4,7 +4,9 @@ import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import javax.json.JsonObject;
@@ -16,38 +18,37 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
+import java.util.Optional;
 
 @AutoService(Exporter.class)
 public class HtmlCodeBookExporter implements Exporter {
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return "html";
     }
 
     @Override
-    public String getDisplayName() {
-        return  BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.html") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.html") : "DDI html codebook";
+    public String getDisplayName(Locale locale) {
+        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.html", locale);
+        return Optional.ofNullable(displayName).orElse("DDI html codebook");
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
-        try {
-            InputStream ddiInputStream;
-            try {
-                ddiInputStream = ExportService.getInstance().getExport(version.getDataset(), "ddi");
-            } catch(ExportException | IOException e) {
-                throw new ExportException ("Cannot open export_ddi cached file");
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
+        Optional<InputStream> ddiInputStreamOptional = dataProvider.getPrerequisiteInputStream();
+        if (ddiInputStreamOptional.isPresent()) {
+            try (InputStream ddiInputStream = ddiInputStreamOptional.get()) {
+                DdiExportUtil.datasetHtmlDDI(ddiInputStream, outputStream);
+            } catch (IOException e) {
+                throw new ExportException("Cannot open export_ddi cached file");
+            } catch (XMLStreamException xse) {
+                throw new ExportException("Caught XMLStreamException performing DDI export");
             }
-            DdiExportUtil.datasetHtmlDDI(ddiInputStream, outputStream);
-        } catch (XMLStreamException xse) {
-            throw new ExportException ("Caught XMLStreamException performing DDI export");
+        } else {
+            throw new ExportException("No prerequisite input stream found");
         }
-    }
-
-    @Override
-    public Boolean isXMLFormat() {
-        return false;
     }
 
     @Override
@@ -65,23 +66,9 @@ public class HtmlCodeBookExporter implements Exporter {
     }
 
     @Override
-    public String getXMLNameSpace() throws ExportException {
-        return null;
-    }
-
-    @Override
-    public String getXMLSchemaLocation() throws ExportException {
-        return null;
-    }
-
-    @Override
-    public String getXMLSchemaVersion() throws ExportException {
-        return null;
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter does not uses or supports any parameters as of now.
+    public  Optional<String> getPrerequisiteFormatName() {
+        //This exporter relies on being able to get the output of the ddi exporter
+        return Optional.of("ddi");
     }
 
     @Override
