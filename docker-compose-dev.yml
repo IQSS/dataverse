@@ -40,8 +40,8 @@ services:
     command:
       - bootstrap.sh
       - dev
-    depends_on:
-      - dev_dataverse
+    #depends_on:
+    #  - dev_dataverse
     networks:
       - dataverse
 
@@ -62,17 +62,15 @@ services:
 
   dev_solr_initializer:
     container_name: "dev_solr_initializer"
-    image: alpine
+    image: gdcc/configbaker:unstable
     restart: "no"
     command:
       - sh
       - -c
-      - "chown 8983:8983 /conf /var/solr && cp *.xml /conf"
+      - "fix-fs-perms.sh solr && cp -a ${SOLR_TEMPLATE}/* /solr-template"
     volumes:
       - ./docker-dev-volumes/solr/data:/var/solr
-      - ./docker-dev-volumes/solr/conf:/conf
-      - ./conf/solr/8.11.1/schema.xml:/schema.xml
-      - ./conf/solr/8.11.1/solrconfig.xml:/solrconfig.xml
+      - ./docker-dev-volumes/solr/conf:/solr-template
 
   dev_solr:
     container_name: "dev_solr"
@@ -86,9 +84,9 @@ services:
     networks:
       - dataverse
     command:
-      - bash
-      - -c
-      - "cd /opt/solr-${SOLR_VERSION}/server/solr/configsets/_default/conf && cp -R -n . /template && solr-precreate collection1 /template"
+      - "solr-precreate"
+      - "collection1"
+      - "/template"
     volumes:
       - ./docker-dev-volumes/solr/data:/var/solr
       - ./docker-dev-volumes/solr/conf:/template
