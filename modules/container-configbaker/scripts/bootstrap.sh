@@ -5,17 +5,20 @@
 set -euo pipefail
 
 function usage() {
-  echo "Usage: $(basename "$0") [-u instanceUrl] [-t timeout] [<persona>]"
+  echo "Usage: $(basename "$0") [-h] [-u instanceUrl] [-t timeout] [<persona>]"
   echo ""
   echo "Execute initial configuration (bootstrapping) of an empty Dataverse instance."
-  echo "Known personas are: $(ls )"
+  echo -n "Known personas: "
+  find "${BOOTSTRAP_DIR}" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | paste -sd ' '
   echo ""
   echo "Parameters:"
   echo "instanceUrl - Location on container network where to reach your instance. Default: 'http://dataverse:8080'"
   echo "    timeout - Provide how long to wait for the instance to become available (using wait4x). Default: '2m'"
   echo "    persona - Configure persona to execute. Calls ${BOOTSTRAP_DIR}/<persona>/init.sh. Default: 'base'"
   echo ""
-  echo "This script will wait for the Dataverse instance to be available before executing the bootstrapping."
+  echo "Note: This script will wait for the Dataverse instance to be available before executing the bootstrapping."
+  echo "      It also checks if already bootstrapped before (availability of metadata blocks) and skip if true."
+  echo ""
   exit 1
 }
 
@@ -23,11 +26,12 @@ function usage() {
 DATAVERSE_URL=${DATAVERSE_URL:-"http://dataverse:8080"}
 TIMEOUT=${TIMEOUT:-"2m"}
 
-while getopts "u:t:" OPTION
+while getopts "u:t:h" OPTION
 do
   case "$OPTION" in
     u) DATAVERSE_URL="$OPTARG" ;;
     t) TIMEOUT="$OPTARG" ;;
+    h) usage;;
     \?) usage;;
   esac
 done
