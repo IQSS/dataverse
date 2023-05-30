@@ -379,6 +379,10 @@ public class EditDatafilesPage implements java.io.Serializable {
                 : bytesToHumanReadable(batchSize);
     }
 
+    public String getUploadBatchTooBigMessage() {
+        return getStringFromBundle("dataset.file.uploadBatchTooBig", getHumanMaxBatchUploadSize());
+    }
+
     public void reset() { }
 
     public String getDropBoxKey() {
@@ -864,7 +868,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         long fileSize = uploadedFile.getSize();
         if (getMaxBatchSize() > 0 && (currentBatchSize + fileSize) > getMaxBatchSize()) {
-            uploadWarningMessage = getStringFromBundle("dataset.file.uploadBatchTooBig");
+            uploadWarningMessage = getUploadBatchTooBigMessage();
             uploadComponentId = event.getComponent().getClientId();
             return;
         }
