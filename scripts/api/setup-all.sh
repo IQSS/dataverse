@@ -10,7 +10,7 @@ export DATAVERSE_URL
 # scripts/api when called from the root of the source tree
 SCRIPT_PATH="$(dirname "$0")"
 
-for opt in $*
+for opt in "$@"
 do
   case $opt in
       "--insecure")
@@ -31,6 +31,7 @@ do
   esac
 done
 
+# shellcheck disable=SC2016
 command -v jq >/dev/null 2>&1 || { echo >&2 '`jq` ("sed for JSON") is required, but not installed. Download the binary for your platform from http://stedolan.github.io/jq/ and make sure it is in your $PATH (/usr/bin/jq is fine) and executable with `sudo chmod +x /usr/bin/jq`. On Mac, you can install it with `brew install jq` if you use homebrew: http://brew.sh . Aborting.'; exit 1; }
 
 # Everything + the kitchen sink, in a single script
@@ -67,12 +68,12 @@ echo
 
 echo "Setting up the admin user (and as superuser)"
 adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @"$SCRIPT_PATH"/data/user-admin.json "${DATAVERSE_URL}/api/builtin-users?password=$DV_SU_PASSWORD&key=burrito")
-echo $adminResp
+echo "$adminResp"
 curl -X POST "${DATAVERSE_URL}/api/admin/superuser/dataverseAdmin"
 echo
 
 echo "Setting up the root dataverse"
-adminKey=$(echo $adminResp | jq .data.apiToken | tr -d \")
+adminKey=$(echo "$adminResp" | jq .data.apiToken | tr -d \")
 curl -s -H "Content-type:application/json" -X POST -d @"$SCRIPT_PATH"/data/dv-root.json "${DATAVERSE_URL}/api/dataverses/?key=$adminKey"
 echo
 echo "Set the metadata block for Root"
