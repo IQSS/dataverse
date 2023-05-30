@@ -703,8 +703,10 @@ public class JsonPrinter {
 
     public static JsonArrayBuilder jsonDV(List<DataVariable> dvl) {
         JsonArrayBuilder varArr = Json.createArrayBuilder();
-        for (DataVariable dv: dvl){
-            varArr.add(JsonPrinter.json(dv));
+        if(dvl!=null){
+            for (DataVariable dv: dvl){
+                varArr.add(JsonPrinter.json(dv));
+            }
         }
         return varArr;
     }
