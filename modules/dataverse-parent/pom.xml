@@ -196,7 +196,7 @@
         
         <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
         <nexus-staging-plugin.version>1.6.13</nexus-staging-plugin.version>
-        <pomchecker-maven-plugin.version>1.9.0</pomchecker-maven-plugin.version>
+        <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
         
         <!-- Container related -->
         <fabric8-dmp.version>0.42.1</fabric8-dmp.version>
