@@ -40,8 +40,6 @@ services:
     command:
       - bootstrap.sh
       - dev
-    #depends_on:
-    #  - dev_dataverse
     networks:
       - dataverse
 
@@ -67,7 +65,7 @@ services:
     command:
       - sh
       - -c
-      - "fix-fs-perms.sh solr && cp -a ${SOLR_TEMPLATE}/* /solr-template"
+      - "fix-fs-perms.sh solr && cp -a /template/* /solr-template"
     volumes:
       - ./docker-dev-volumes/solr/data:/var/solr
       - ./docker-dev-volumes/solr/conf:/solr-template
