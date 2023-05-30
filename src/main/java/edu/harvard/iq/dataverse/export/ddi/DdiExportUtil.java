@@ -1474,11 +1474,11 @@ public class DdiExportUtil {
             // and observations, etc.)
             if (!fileJson.containsKey("dataTables")) {
                 xmlw.writeStartElement("otherMat");
-                writeAttribute(xmlw, "ID", "f" + fileJson.getString("id"));
+                writeAttribute(xmlw, "ID", "f" + fileJson.getJsonNumber(("id").toString()));
                 if (fileJson.containsKey("pidUrl")){
                     writeAttribute(xmlw, "URI",  fileJson.getString("pidUrl")); 
                 }  else {
-                    writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileJson.getString("id")); 
+                    writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileJson.getJsonNumber("id").toString()); 
                 }
 
                 writeAttribute(xmlw, "level", "datafile");
@@ -1747,9 +1747,11 @@ public class DdiExportUtil {
                 }
                 JsonObject dataTable = fileJson.getJsonArray("dataTables").getJsonObject(0);
                 JsonArray vars = dataTable.getJsonArray("dataVariables");
-
-                for (int j=0;j<vars.size();j++) {
-                    createVarDDI(xmlw, vars.getJsonObject(j), fileJson.getString("id"), fileJson.getString("fileMetadataId"));
+                if (vars != null) {
+                    for (int j = 0; j < vars.size(); j++) {
+                        createVarDDI(xmlw, vars.getJsonObject(j), fileJson.getJsonNumber("id").toString(),
+                                fileJson.getString("fileMetadataId"));
+                    }
                 }
             }
         }
@@ -1760,7 +1762,7 @@ public class DdiExportUtil {
     }
     private static void createVarGroupDDI(XMLStreamWriter xmlw, JsonObject varGrp) throws XMLStreamException {
         xmlw.writeStartElement("varGrp");
-        writeAttribute(xmlw, "ID", "VG" + varGrp.getString("id"));
+        writeAttribute(xmlw, "ID", "VG" + varGrp.getJsonNumber("id").toString());
         String vars = "";
         JsonArray varsInGroup = varGrp.getJsonArray("dataVariableIds");
         for (int j=0;j<varsInGroup.size();j++){
@@ -1781,7 +1783,7 @@ public class DdiExportUtil {
     
     private static void createVarDDI(XMLStreamWriter xmlw, JsonObject dvar, String fileId, String fileMetadataId) throws XMLStreamException {
         xmlw.writeStartElement("var");
-        writeAttribute(xmlw, "ID", "v" + dvar.getString("id"));
+        writeAttribute(xmlw, "ID", "v" + dvar.getJsonNumber("id").toString());
         writeAttribute(xmlw, "name", dvar.getString("name"));
 
         JsonObject vm = null;
@@ -2015,7 +2017,7 @@ public class DdiExportUtil {
             if (fileJson.containsKey("dataTables")) {
                 JsonObject dt = fileJson.getJsonArray("dataTables").getJsonObject(0);
                 xmlw.writeStartElement("fileDscr");
-                String fileId = fileJson.getString("id");
+                String fileId = fileJson.getJsonNumber("id").toString();
                 writeAttribute(xmlw, "ID", "f" + fileId);
                 writeAttribute(xmlw, "URI", dataverseUrl + "/api/access/datafile/" + fileId);
 

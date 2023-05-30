@@ -245,7 +245,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             exportServiceInstance.exportAllFormats(dataset);
             dataset = datasetService.merge(dataset);
         } catch (Exception e) {
-            logger.fine("Caught unknown exception while trying to export");
+            logger.log(Level.FINE, "Caught unknown exception while trying to export", e);
             throw new ExportException(e.getMessage());
         }
     }
