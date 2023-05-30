@@ -11,6 +11,7 @@ on:
             - master
         paths:
             - 'src/main/docker/**'
+            - 'modules/container-configbaker/**'
             - '.github/workflows/container_app_push.yml'
 
 env:
@@ -52,7 +53,7 @@ jobs:
 
     hub-description:
         needs: build
-        name: Push image description to Docker Hub
+        name: Push image descriptions to Docker Hub
         # Run this when triggered via push or schedule as reused workflow from base / maven unit tests.
         # Excluding PRs here means we will have no trouble with secrets access. Also avoid runs in forks.
         if: ${{ github.event_name != 'pull_request' && github.ref_name == 'develop' && github.repository_owner == 'IQSS' }}
@@ -66,6 +67,13 @@ jobs:
                   repository: gdcc/dataverse
                   short-description: "Dataverse Application Container Image providing the executable"
                   readme-filepath: ./src/main/docker/README.md
+            - uses: peter-evans/dockerhub-description@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+                  repository: gdcc/configbaker
+                  short-description: "Dataverse Configbaker Container Image providing setup tooling and more"
+                  readme-filepath: ./modules/container-configbaker/README.md
 
     # Note: Accessing, pushing tags etc. to DockerHub or GHCR will only succeed in upstream because secrets.
     # We check for them here and subsequent jobs can rely on this to decide if they shall run.
