@@ -2,7 +2,7 @@ Config Baker Image
 ==================
 
 The config baker container may be used to execute all sorts of tasks around setting up, preparing and finalizing
-an instance of the Dataverse software. It's focus is bootstrapping non-initialized installations.
+an instance of the Dataverse software. Its focus is bootstrapping non-initialized installations.
 
 .. contents:: |toctitle|
     :local:

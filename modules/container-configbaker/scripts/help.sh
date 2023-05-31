@@ -10,7 +10,7 @@ echo -e '          ╓mαo\n         ╫   jh\n         `%╥æ╨\n           �
 echo ""
 echo "Hello!"
 echo ""
-echo "I'm ConfigBaker, a container image with lots of tooling to 'bake' a containerized Dataverse instance!"
+echo "My name is Config Baker. I'm a container image with lots of tooling to 'bake' a containerized Dataverse instance!"
 echo "I can cook up an instance (initial config), put icing on your Solr search index configuration, and more!"
 echo ""
 echo "Here's a list of things I can do for you:"

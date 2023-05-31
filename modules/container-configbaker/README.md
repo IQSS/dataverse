@@ -1,6 +1,9 @@
-# ConfigBaker
+# Config Baker
 
-The ConfigBaker image is designed to run shortly after the Dataverse software has been installed and configures it.
+The config baker container may be used to execute all sorts of tasks around setting up, preparing and finalizing
+an instance of the Dataverse software. Its focus is bootstrapping non-initialized installations.
+
+You may use this image as is, base your own derivative image on it or use bind mounts to change behavior.
 
 ## Quick Reference
 
@@ -10,7 +13,7 @@ This image is created, maintained and supported by the Dataverse community on a 
 
 **Where to find documentation:**
 
-The [Dataverse Container Guide - ConfigBaker Image](https://guides.dataverse.org/en/latest/container/configbaker-image.html)
+The [Dataverse Container Guide - Config Baker Image](https://guides.dataverse.org/en/latest/container/configbaker-image.html)
 provides information about this image. 
 
 **Where to get help and ask questions:**
