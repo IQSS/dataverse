@@ -585,11 +585,18 @@ public class SettingsWrapper implements java.io.Serializable {
     
     private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
         String mlLabel = BundleUtil.getStringFromBundle("dataverse.metadatalanguage.setatdatasetcreation");
-        String mlOwnerCode = target.getOwner().getEffectiveMetadataLanguage();
-        // If every parents are 'undefined', it's the global default
-        if (!mlOwnerCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+        String mlCode = "";
+
+        if(target.getOwner() == null) { // Root collection has no owner; Get direct configuration of root
+            mlCode = target.getEffectiveMetadataLanguage();
+        } else { // Otherwise get parent configuration
+            mlCode = target.getOwner().getEffectiveMetadataLanguage();
+        }
+
+        // If it's undefined, no parent has a metadata language defined, and the global default should be used.
+        if (!mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
             // Get the label for the language code found
-            mlLabel = getBaseMetadataLanguageMap(false).get(mlOwnerCode);
+            mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
             mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
         }
         return mlLabel;
