@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.export;
 
 import java.io.OutputStream;
+import java.util.Locale;
 
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
@@ -9,38 +10,35 @@ import com.google.auto.service.AutoService;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 @AutoService(Exporter.class)
-public class OpenAireExporter implements Exporter {
+public class OpenAireExporter implements XMLExporter {
 
     public OpenAireExporter() {
     }
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return "oai_datacite";
     }
 
     @Override
-    public String getDisplayName() {
-        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dataciteOpenAIRE");
+    public String getDisplayName(Locale locale) {
+        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dataciteOpenAIRE", locale);
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
-            throws ExportException {
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try {
-            OpenAireExportUtil.datasetJson2openaire(json, outputStream);
+            OpenAireExportUtil.datasetJson2openaire(dataProvider.getDatasetJson(), outputStream);
         } catch (XMLStreamException xse) {
             throw new ExportException("Caught XMLStreamException performing DataCite OpenAIRE export", xse);
         }
-    }
-
-    @Override
-    public Boolean isXMLFormat() {
-        return true;
     }
 
     @Override
@@ -54,22 +52,17 @@ public class OpenAireExporter implements Exporter {
     }
 
     @Override
-    public String getXMLNameSpace() throws ExportException {
+    public String getXMLNameSpace() {
         return OpenAireExportUtil.RESOURCE_NAMESPACE;
     }
 
     @Override
-    public String getXMLSchemaLocation() throws ExportException {
+    public String getXMLSchemaLocation() {
         return OpenAireExportUtil.RESOURCE_SCHEMA_LOCATION;
     }
 
     @Override
-    public String getXMLSchemaVersion() throws ExportException {
+    public String getXMLSchemaVersion() {
         return OpenAireExportUtil.SCHEMA_VERSION;
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // not used
     }
 }
