@@ -72,7 +72,7 @@ jobs:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
                   repository: gdcc/configbaker
-                  short-description: "Dataverse Configbaker Container Image providing setup tooling and more"
+                  short-description: "Dataverse Config Baker Container Image providing setup tooling and more"
                   readme-filepath: ./modules/container-configbaker/README.md
 
     # Note: Accessing, pushing tags etc. to DockerHub or GHCR will only succeed in upstream because secrets.

@@ -1,6 +1,6 @@
 # Config Baker
 
-The config baker container may be used to execute all sorts of tasks around setting up, preparing and finalizing
+The Config Baker container may be used to execute all sorts of tasks around setting up, preparing and finalizing
 an instance of the Dataverse software. Its focus is bootstrapping non-initialized installations.
 
 You may use this image as is, base your own derivative image on it or use bind mounts to change behavior.

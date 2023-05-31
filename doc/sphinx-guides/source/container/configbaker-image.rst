@@ -7,7 +7,12 @@ an instance of the Dataverse software. Its focus is bootstrapping non-initialize
 .. contents:: |toctitle|
     :local:
 
+Quickstart
+++++++++++
 
+To see the Config Baker help screen:
+
+``docker run -it --rm gdcc/configbaker:unstable``
 
 Supported Image Tags
 ++++++++++++++++++++
