@@ -805,7 +805,7 @@ public class JsonPrinter {
                     .add("label", vm.getLabel())
                     .add("isWeightVar", vm.isIsweightvar())
                     .add("isWeighted",vm.isWeighted())
-                    .add("weightVariableId", vm.getWeightvariable().getId())
+                    .add("weightVariableId", (vm.getWeightvariable()==null) ? null : vm.getWeightvariable().getId())
                     .add("literalQuestion", vm.getLiteralquestion())
                     .add("interviewInstruction", vm.getInterviewinstruction())
                     .add("postQuestion", vm.getPostquestion())
