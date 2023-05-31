@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 
 import java.time.LocalDate;
@@ -84,6 +83,7 @@ public class SettingsWrapper implements java.io.Serializable {
     
     //External Vocabulary support
     private Map<Long, JsonObject> cachedCvocMap = null;
+    private Map<Long, JsonObject> cachedCvocByTermFieldMap = null;
     
     private Long zipDownloadLimit = null; 
     
@@ -656,12 +656,19 @@ public class SettingsWrapper implements java.io.Serializable {
         return footerCopyrightAndYear; 
     }
     
-    public Map<Long, JsonObject> getCVocConf() {
-        //Cache this in the view
-        if(cachedCvocMap==null) {
-        cachedCvocMap = fieldService.getCVocConf(false);
+    public Map<Long, JsonObject> getCVocConf(boolean byTermField) {
+        if (byTermField) {
+            if (cachedCvocByTermFieldMap == null) {
+                cachedCvocByTermFieldMap = fieldService.getCVocConf(true);
+            }
+            return cachedCvocByTermFieldMap;
+        } else {
+            // Cache this in the view
+            if (cachedCvocMap == null) {
+                cachedCvocMap = fieldService.getCVocConf(false);
+            }
+            return cachedCvocMap;
         }
-        return cachedCvocMap;
     }
     
     public String getMetricsUrl() {
@@ -700,4 +707,5 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return customLicenseAllowed;
     }
+
 }

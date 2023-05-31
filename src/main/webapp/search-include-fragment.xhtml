@@ -9,7 +9,7 @@
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <c:set var="page" value="/dataverse/#{DataversePage.dataverse.alias}"/>
-    <c:set var="cvocConf" value="#{settingsWrapper.getCVocConf()}"/>
+    <c:set var="cvocConf" value="#{settingsWrapper.getCVocConf(true)}"/>
     <p:fragment>
         <p:autoUpdate/>
         <ui:repeat value="#{DatasetPage.vocabScripts}" var="vocabScriptUrl">
@@ -555,6 +555,7 @@
                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{SearchIncludeFragment.isActivelyEmbargoed(result)}"/>
                             <h:outputText value="#{DatasetUtil:getLocaleExternalStatus(result.externalStatus)}" styleClass="label label-info" rendered="#{!empty result.externalStatus and SearchIncludeFragment.canPublishDataset(result.entityId)}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
+                            <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!SearchIncludeFragment.isValid(result)}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" aria-label="#{result.title}">

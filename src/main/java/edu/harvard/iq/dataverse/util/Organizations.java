@@ -1,6 +1,5 @@
-package edu.harvard.iq.dataverse.export.openaire;
+package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -15,10 +14,10 @@ import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.Span;
 
 /**
- *
+ * Used by PersonOrOrgUtil
  * @author francesco.cadili@4science.it
  */
-public class Organizations {
+class Organizations {
 
     private static Organizations instance = null;
 

@@ -2,6 +2,9 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
+import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
@@ -38,6 +41,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -77,7 +81,10 @@ public class SchemaDotOrgExporterTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
 
         JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
-        JsonObject json2 = createExportFromJson(json);
+        ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
+        Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
+        
+        JsonObject json2 = createExportFromJson(exportDataProviderStub);
         
         assertEquals("http://schema.org", json2.getString("@context"));
         assertEquals("Dataset", json2.getString("@type"));
@@ -156,16 +163,19 @@ public class SchemaDotOrgExporterTest {
     String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
 
     JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
-    JsonObject json2 = createExportFromJson(json);
+    ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
+    Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
+    
+    JsonObject json2 = createExportFromJson(exportDataProviderStub);
 
     assertTrue(json2.getString("description").endsWith("at..."));
     }
     
-    private JsonObject createExportFromJson(JsonObject json) throws JsonParseException, ParseException {
+    private JsonObject createExportFromJson(ExportDataProvider provider) throws JsonParseException, ParseException {
         License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
         license.setDefault(true);
         JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
-        DatasetVersion version = jsonParser.parseDatasetVersion(json.getJsonObject("datasetVersion"));
+        DatasetVersion version = jsonParser.parseDatasetVersion(provider.getDatasetJson().getJsonObject("datasetVersion"));
         version.setVersionState(DatasetVersion.VersionState.RELEASED);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
         Date publicationDate = dateFmt.parse("19551105");
@@ -211,7 +221,8 @@ public class SchemaDotOrgExporterTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         if(schemaDotOrgExporter == null) logger.fine("sdoe" + " null");
         try {
-        schemaDotOrgExporter.exportDataset(version, json, byteArrayOutputStream);
+            ExportDataProvider provider2 = new InternalExportDataProvider(version);
+            schemaDotOrgExporter.exportDataset(provider2, byteArrayOutputStream);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -224,7 +235,7 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testGetProviderName() {
-        assertEquals("schema.org", schemaDotOrgExporter.getProviderName());
+        assertEquals("schema.org", schemaDotOrgExporter.getFormatName());
     }
 
     /**
@@ -233,15 +244,15 @@ public class SchemaDotOrgExporterTest {
     @Test
     public void testGetDisplayName() {
         // We capitalize "Schema.org" because it looks better in the dropdown list and it's what DataCite does in their UI.
-        assertEquals("Schema.org JSON-LD", schemaDotOrgExporter.getDisplayName());
+        assertEquals("Schema.org JSON-LD", schemaDotOrgExporter.getDisplayName(null));
     }
 
     /**
-     * Test of isXMLFormat method, of class SchemaDotOrgExporter.
+     * Test that SchemaDotOrgExporter is not an XMLExporter
      */
     @Test
     public void testIsXMLFormat() {
-        assertEquals(false, schemaDotOrgExporter.isXMLFormat());
+        assertEquals(false, schemaDotOrgExporter instanceof XMLExporter);
     }
 
     /**
@@ -261,57 +272,13 @@ public class SchemaDotOrgExporterTest {
     }
 
     /**
-     * Test of getXMLNameSpace method, of class SchemaDotOrgExporter.
+     * Test of XMLExporter interface, of class SchemaDotOrgExporter.
      */
     @Test
-    public void testGetXMLNameSpace() {
-        ExportException expectedException = null;
-        try {
-            String result = schemaDotOrgExporter.getXMLNameSpace();
-        } catch (ExportException ex) {
-            expectedException = ex;
-        }
-        assertEquals(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.", expectedException.getMessage());
+    public void testNotAnXMLExporter() {
+        assertFalse(schemaDotOrgExporter instanceof XMLExporter);
     }
 
-    /**
-     * Test of getXMLSchemaLocation method, of class SchemaDotOrgExporter.
-     */
-    @Test
-    public void testGetXMLSchemaLocation() {
-        ExportException expectedException = null;
-        try {
-            String result = schemaDotOrgExporter.getXMLSchemaLocation();
-        } catch (ExportException ex) {
-            expectedException = ex;
-        }
-        assertEquals(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.", expectedException.getMessage());
-    }
-
-    /**
-     * Test of getXMLSchemaVersion method, of class SchemaDotOrgExporter.
-     */
-    @Test
-    public void testGetXMLSchemaVersion() {
-        ExportException expectedException = null;
-        try {
-            String result = schemaDotOrgExporter.getXMLSchemaVersion();
-        } catch (ExportException ex) {
-            expectedException = ex;
-        }
-        assertEquals(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.", expectedException.getMessage());
-    }
-
-    /**
-     * Test of setParam method, of class SchemaDotOrgExporter.
-     */
-    @Test
-    public void testSetParam() {
-        String name = "";
-        Object value = null;
-        schemaDotOrgExporter.setParam(name, value);
-    }
-    
     private static void mockDatasetFieldSvc() {
         datasetFieldTypeSvc.setMetadataBlock("citation");
     

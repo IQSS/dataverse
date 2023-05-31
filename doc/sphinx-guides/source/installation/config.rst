@@ -330,6 +330,19 @@ As for the "Remote only" authentication mode, it means that:
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
+.. _bearer-token-auth:
+
+Bearer Token Authentication
+---------------------------
+
+Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to API tokens. This is an experimental feature hidden behind a feature flag.
+
+.. _RFC 6750: https://tools.ietf.org/html/rfc6750
+
+To enable bearer tokens, you must install and configure Keycloak (for now, see :ref:`oidc-dev` in the Developer Guide) and enable ``api-bearer-auth`` under :ref:`feature-flags`.
+
+You can test that bearer tokens are working by following the example under :ref:`bearer-tokens` in the API Guide.
+
 .. _database-persistence:
 
 Database Persistence
@@ -646,14 +659,14 @@ To **create a user** with full S3 access and nothing more for security reasons, 
 (Identity and Access Management). See `IAM User Guide <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html>`_
 for more info on this process.
 
-**Generate the user keys** needed for a Dataverse installation afterwards by clicking on the created user.
+To use programmatic access, **Generate the user keys** needed for a Dataverse installation afterwards by clicking on the created user.
 (You can skip this step when running on EC2, see below.)
 
 .. TIP::
   If you are hosting your Dataverse installation on an AWS EC2 instance alongside storage in S3, it is possible to use IAM Roles instead
   of the credentials file (the file at ``~/.aws/credentials`` mentioned below). Please note that you will still need the
   ``~/.aws/config`` file to specify the region. For more information on this option, see
-  http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+  https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
 
 Preparation When Using Custom S3-Compatible Service
 ###################################################
@@ -2331,6 +2344,19 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 **WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
 production context! Rely on password alias, secrets directory or cloud based sources instead!
 
+.. _dataverse.api.allow-incomplete-metadata:
+
+dataverse.api.allow-incomplete-metadata
++++++++++++++++++++++++++++++++++++++++
+
+When enabled, dataset with incomplete metadata can be submitted via API for later corrections.
+See :ref:`create-dataset-command` for details.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
 .. _dataverse.signposting.level1-author-limit:
 
 dataverse.signposting.level1-author-limit
@@ -2349,6 +2375,63 @@ See :ref:`discovery-sign-posting` for details.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_ITEM_LIMIT``.
 
+dataverse.mail.support-email
+++++++++++++++++++++++++++++
+
+This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address for Contact Forms and Feedback API. This address is used as the To address when the Contact form is launched from the Support entry in the top navigation bar and, if configured via :ref:`dataverse.mail.cc-support-on-contact-email`, as a CC address when the form is launched from a Dataverse/Dataset Contact button.
+This allows configuration of a no-reply email address for :ref:`systemEmail` while allowing feedback to go to/be cc'd to the support email address, which would normally accept replies. If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
+
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
+
+.. _dataverse.mail.cc-support-on-contact-email:
+
+dataverse.mail.cc-support-on-contact-email
+++++++++++++++++++++++++++++++++++++++++++
+
+If this setting is true, the contact forms and feedback API will cc the system (:SupportEmail if set, :SystemEmail if not) when sending email to the collection, dataset, or datafile contacts.
+A CC line is added to the contact form when this setting is true so that users are aware that the cc will occur.
+The default is false.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAIL``.
+
+dataverse.ui.allow-review-for-incomplete
+++++++++++++++++++++++++++++++++++++++++
+
+Determines if dataset submitted via API with incomplete metadata (for later corrections) can be submitted for review
+from the UI.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_UI_ALLOW_REVIEW_FOR_INCOMPLETE``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+dataverse.ui.show-validity-filter
++++++++++++++++++++++++++++++++++
+
+When enabled, the filter for validity of metadata is shown in "My Data" page.
+**Note:** When you wish to use this filter, you must reindex the datasets first, otherwise datasets with valid metadata
+will not be shown in the results.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_UI_SHOW_VALIDITY_FILTER``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+.. _dataverse.spi.exporters.directory:
+
+dataverse.spi.exporters.directory
++++++++++++++++++++++++++++++++++
+
+This JVM option is used to configure the file system path where external Exporter JARs can be placed. See :ref:`external-exporters` for more information.
+
+``./asadmin create-jvm-options '-Ddataverse.spi.exporters.directory=PATH_LOCATION_HERE'``
+
+If this value is set, Dataverse will examine all JARs in the specified directory and will use them to add, or replace existing, metadata export formats.
+If this value is not set (the default), Dataverse will not use external Exporters.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SPI_EXPORTERS_DIRECTORY``.
 
 .. _feature-flags:
 
@@ -3710,6 +3793,8 @@ For example:
 
 When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 
 
+.. _:FileCategories:
+
 :FileCategories
 +++++++++++++++
 
@@ -3805,6 +3890,28 @@ A true/false option to add a Globus transfer option to the file download menu wh
 :WebloaderUrl
 +++++++++++++
 
-The URL for main HTML file in https://github.com/gdcc/dvwebloader when that app is deployed. See also :ref:`:UploadMethods` for another required settings.
+The URL of `dvuploader <https://github.com/gdcc/dvwebloader>`'s HTML file when dvuploader is enabled in :ref:`:UploadMethods`.
+
+To use the current GDCC version directly:
+
+``curl -X PUT -d 'https://gdcc.github.io/dvwebloader/src/dvwebloader.html' http://localhost:8080/api/admin/settings/:WebloaderUrl``
+
+:CategoryOrder
+++++++++++++++
+
+A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. 
+The setting can include custom tag names along with the pre-defined tags(Documentation, Data, and Code are the defaults but the :ref:`:FileCategories` setting can be used to use a different set of tags).
+The default is category ordering disabled.
+
+:OrderByFolder
+++++++++++++++
+
+A true(default)/false option determining whether datafiles listed on the dataset page should be grouped by folder.
+
+:AllowUserManagementOfOrder
++++++++++++++++++++++++++++
+
+A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically. 
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
+
