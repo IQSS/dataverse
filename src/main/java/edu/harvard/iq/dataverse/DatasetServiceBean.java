@@ -743,7 +743,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                             exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                             countSuccess++;
                         } catch (Exception ex) {
-                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage());
+                            exportLogger.log(Level.INFO, "Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage(), ex);
                             countError++;
                         }
                     }
@@ -781,7 +781,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                         recordService.exportAllFormatsInNewTransaction(dataset);
                         logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                     } catch (Exception ex) {
-                        logger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage());
+                        logger.log(Level.INFO, "Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage(), ex);
                     }
                 }
             }

@@ -33,9 +33,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
@@ -4438,6 +4438,8 @@ public class DatasetPage implements java.io.Serializable {
             try {
                 exporter = ExportService.getInstance().getExporter(formatName);
             } catch (ExportException ex) {
+                logger.warning("Failed to get : " + formatName);
+                logger.warning(ex.getLocalizedMessage());
                 exporter = null;
             }
             if (exporter != null && exporter.isAvailableToUsers()) {

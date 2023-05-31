@@ -39,18 +39,16 @@ jobs:
               uses: actions/setup-java@v3
               with:
                   java-version: "11"
-                  distribution: 'adopt'
-            - name: Cache Maven packages
-              uses: actions/cache@v3
-              with:
-                  path: ~/.m2
-                  key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                  restore-keys: ${{ runner.os }}-m2
+                  distribution: temurin
+                  cache: maven
 
-            - name: Build app container image with local architecture
-              run: mvn -Pct package
+            - name: Build app container image with local architecture and submodules (profile will skip tests)
+              run: >
+                  mvn -B -f modules/dataverse-parent
+                  -P ct -pl edu.harvard.iq:dataverse -am
+                  install
 
-            # TODO: add smoke / integration testing here
+            # TODO: add smoke / integration testing here (add "-Pct -DskipIntegrationTests=false")
 
     hub-description:
         needs: build
@@ -100,12 +98,7 @@ jobs:
             - uses: actions/setup-java@v3
               with:
                   java-version: "11"
-                  distribution: 'adopt'
-            - uses: actions/cache@v3
-              with:
-                  path: ~/.m2
-                  key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                  restore-keys: ${{ runner.os }}-m2
+                  distribution: temurin
 
             # Depending on context, we push to different targets. Login accordingly.
             - if: ${{ github.event_name != 'pull_request' }}
@@ -136,8 +129,18 @@ jobs:
                   echo "IMAGE_TAG=$(echo "$GITHUB_HEAD_REF" | tr '\\/_:&+,;#*' '-')" >> $GITHUB_ENV
                   echo "REGISTRY='-Ddocker.registry=ghcr.io'" >> $GITHUB_ENV
 
+            # Necessary to split as otherwise the submodules are not available (deploy skips install)
+            - name: Build app container image with local architecture and submodules (profile will skip tests)
+              run: >
+                  mvn -B -f modules/dataverse-parent
+                  -P ct -pl edu.harvard.iq:dataverse -am
+                  install
             - name: Deploy multi-arch application container image
-              run: mvn -Pct deploy -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }} ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
+              run: >
+                  mvn 
+                  -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }}
+                  ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
+                  -P ct deploy
 
             - uses: marocchino/sticky-pull-request-comment@v2
               if: ${{ github.event_name == 'pull_request' }}
