@@ -30,8 +30,6 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
@@ -43,14 +41,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
-import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -58,7 +53,6 @@ import java.io.StringReader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -77,11 +71,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
@@ -94,10 +88,9 @@ public abstract class AbstractApiBean {
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     private static final String PERSISTENT_ID_KEY=":persistentId";
     private static final String ALIAS_KEY=":alias";
-    public static final String STATUS_ERROR = "ERROR";
-    public static final String STATUS_OK = "OK";
     public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
     public static final String DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME = "X-Dataverse-invocationID";
+    public static final String RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED = "Only authenticated users can perform the requested operation";
 
     /**
      * Utility class to convey a proper error response using Java's exceptions.
@@ -166,6 +159,9 @@ public abstract class AbstractApiBean {
     protected EjbDataverseEngine engineSvc;
 
     @EJB
+    protected DvObjectServiceBean dvObjectSvc;
+    
+    @EJB
     protected DatasetServiceBean datasetSvc;
     
     @EJB
@@ -209,9 +205,6 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected SavedSearchServiceBean savedSearchSvc;
-
-    @EJB
-    protected PrivateUrlServiceBean privateUrlSvc;
 
     @EJB
     protected ConfirmEmailServiceBean confirmEmailSvc;
@@ -279,7 +272,7 @@ public abstract class AbstractApiBean {
     /**
      * Functional interface for handling HTTP requests in the APIs.
      *
-     * @see #response(edu.harvard.iq.dataverse.api.AbstractApiBean.DataverseRequestHandler)
+     * @see #response(edu.harvard.iq.dataverse.api.AbstractApiBean.DataverseRequestHandler, edu.harvard.iq.dataverse.authorization.users.User)
      */
     protected static interface DataverseRequestHandler {
         Response handle( DataverseRequest u ) throws WrappedResponse;
@@ -321,12 +314,30 @@ public abstract class AbstractApiBean {
                 
         return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
     }
-    
-    protected String getRequestWorkflowInvocationID() {
-        String headerParamWFKey = httpRequest.getHeader(DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME);
-        String queryParamWFKey = httpRequest.getParameter("invocationID");
-                
-        return headerParamWFKey!=null ? headerParamWFKey : queryParamWFKey;
+
+    protected User getRequestUser(ContainerRequestContext crc) {
+        return (User) crc.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER);
+    }
+
+    /**
+     * Gets the authenticated user from the ContainerRequestContext user property. If the user from the property
+     * is not authenticated, throws a wrapped "authenticated user required" user (HTTP UNAUTHORIZED) response.
+     * @param crc a ContainerRequestContext implementation
+     * @return The authenticated user
+     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse in case the user is not authenticated.
+     *
+     * TODO:
+     *  This method is designed to comply with existing authorization logic, based on the old findAuthenticatedUserOrDie method.
+     *  Ideally, as for authentication, a filter could be implemented for authorization, which would extract and encapsulate the
+     *  authorization logic from the AbstractApiBean.
+     */
+    protected AuthenticatedUser getRequestAuthenticatedUserOrDie(ContainerRequestContext crc) throws WrappedResponse {
+        User requestUser = (User) crc.getProperty(ApiConstants.CONTAINER_REQUEST_CONTEXT_USER);
+        if (requestUser.isAuthenticated()) {
+            return (AuthenticatedUser) requestUser;
+        } else {
+            throw new WrappedResponse(authenticatedUserRequired());
+        }
     }
 
     /* ========= *\
@@ -347,109 +358,11 @@ public abstract class AbstractApiBean {
     }
 
     /**
-     *
      * @param apiKey the key to find the user with
      * @return the user, or null
-     * @see #findUserOrDie(java.lang.String)
      */
     protected AuthenticatedUser findUserByApiToken( String apiKey ) {
         return authSvc.lookupUser(apiKey);
-    }
-
-    /**
-     * Returns the user of pointed by the API key, or the guest user
-     * @return a user, may be a guest user.
-     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse iff there is an api key present, but it is invalid.
-     */
-    protected User findUserOrDie() throws WrappedResponse {
-        final String requestApiKey = getRequestApiKey();
-        final String requestWFKey = getRequestWorkflowInvocationID();
-        if (requestApiKey == null && requestWFKey == null && getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN)==null) {
-            return GuestUser.get();
-        }
-        PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
-        // For privateUrlUsers restricted to anonymized access, all api calls are off-limits except for those used in the UI
-        // to download the file or image thumbs
-        if (privateUrlUser != null) {
-            if (privateUrlUser.hasAnonymizedAccess()) {
-                String pathInfo = httpRequest.getPathInfo();
-                String prefix= "/access/datafile/";
-                if (!(pathInfo.startsWith(prefix) && !pathInfo.substring(prefix.length()).contains("/"))) {
-                    logger.info("Anonymized access request for " + pathInfo);
-                    throw new WrappedResponse(error(Status.UNAUTHORIZED, "API Access not allowed with this Key"));
-                }
-            }
-            return privateUrlUser;
-        }
-        return findAuthenticatedUserOrDie(requestApiKey, requestWFKey);
-    }
-
-    /**
-     * Finds the authenticated user, based on (in order):
-     * <ol>
-     *  <li>The key in the HTTP header {@link #DATAVERSE_KEY_HEADER_NAME}</li>
-     *  <li>The key in the query parameter {@code key}
-     * </ol>
-     *
-     * If no user is found, throws a wrapped bad api key (HTTP UNAUTHORIZED) response.
-     *
-     * @return The authenticated user which owns the passed api key
-     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse in case said user is not found.
-     */
-    protected AuthenticatedUser findAuthenticatedUserOrDie() throws WrappedResponse {
-        return findAuthenticatedUserOrDie(getRequestApiKey(), getRequestWorkflowInvocationID());
-    }
-
-
-    private AuthenticatedUser findAuthenticatedUserOrDie( String key, String wfid ) throws WrappedResponse {
-        if (key != null) {
-            // No check for deactivated user because it's done in authSvc.lookupUser.
-            AuthenticatedUser authUser = authSvc.lookupUser(key);
-
-            if (authUser != null) {
-                authUser = userSvc.updateLastApiUseTime(authUser);
-
-                return authUser;
-            }
-            else {
-                throw new WrappedResponse(badApiKey(key));
-            }
-        } else if (wfid != null) {
-            AuthenticatedUser authUser = authSvc.lookupUserForWorkflowInvocationID(wfid);
-            if (authUser != null) {
-                return authUser;
-            } else {
-                throw new WrappedResponse(badWFKey(wfid));
-            }
-        } else if (getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN) != null) {
-            AuthenticatedUser authUser = getAuthenticatedUserFromSignedUrl();
-            if (authUser != null) {
-                return authUser;
-            }
-        }
-        //Just send info about the apiKey - workflow users will learn about invocationId elsewhere
-        throw new WrappedResponse(badApiKey(null));
-    }
-    
-    private AuthenticatedUser getAuthenticatedUserFromSignedUrl() {
-        AuthenticatedUser authUser = null;
-        // The signedUrl contains a param telling which user this is supposed to be for.
-        // We don't trust this. So we lookup that user, and get their API key, and use
-        // that as a secret in validating the signedURL. If the signature can't be
-        // validated with their key, the user (or their API key) has been changed and
-        // we reject the request.
-        // ToDo - add null checks/ verify that calling methods catch things.
-        String user = httpRequest.getParameter("user");
-        AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(user);
-        String key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("")
-                + authSvc.findApiTokenByUser(targetUser).getTokenString();
-        String signedUrl = httpRequest.getRequestURL().toString() + "?" + httpRequest.getQueryString();
-        String method = httpRequest.getMethod();
-        boolean validated = UrlSignerUtil.isValidUrl(signedUrl, user, method, key);
-        if (validated) {
-            authUser = targetUser;
-        }
-        return authUser;
     }
 
     protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {
@@ -703,49 +616,39 @@ public abstract class AbstractApiBean {
         } catch ( WrappedResponse rr ) {
             return rr.getResponse();
         } catch ( Exception ex ) {
-            String incidentId = UUID.randomUUID().toString();
-            logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
-            return Response.status(500)
-                .entity( Json.createObjectBuilder()
-                             .add("status", "ERROR")
-                             .add("code", 500)
-                             .add("message", "Internal server error. More details available at the server logs.")
-                             .add("incidentId", incidentId)
-                        .build())
-                .type("application/json").build();
+            return handleDataverseRequestHandlerException(ex);
         }
     }
 
-    /**
-     * The preferred way of handling a request that requires a user. The system
-     * looks for the user and, if found, handles it to the handler for doing the
-     * actual work.
-     *
-     * This is a relatively secure way to handle things, since if the user is not
-     * found, the response is about the bad API key, rather than something else
-     * (say, 404 NOT FOUND which leaks information about the existence of the
-     * sought object).
+    /***
+     * The preferred way of handling a request that requires a user. The method
+     * receives a user and handles it to the handler for doing the actual work.
      *
      * @param hdl handling code block.
+     * @param user the associated request user.
      * @return HTTP Response appropriate for the way {@code hdl} executed.
      */
-    protected Response response( DataverseRequestHandler hdl ) {
+    protected Response response(DataverseRequestHandler hdl, User user) {
         try {
-            return hdl.handle(createDataverseRequest(findUserOrDie()));
+            return hdl.handle(createDataverseRequest(user));
         } catch ( WrappedResponse rr ) {
             return rr.getResponse();
         } catch ( Exception ex ) {
-            String incidentId = UUID.randomUUID().toString();
-            logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
-            return Response.status(500)
-                .entity( Json.createObjectBuilder()
-                             .add("status", "ERROR")
-                             .add("code", 500)
-                             .add("message", "Internal server error. More details available at the server logs.")
-                             .add("incidentId", incidentId)
+            return handleDataverseRequestHandlerException(ex);
+        }
+    }
+
+    private Response handleDataverseRequestHandlerException(Exception ex) {
+        String incidentId = UUID.randomUUID().toString();
+        logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
+        return Response.status(500)
+                .entity(Json.createObjectBuilder()
+                        .add("status", "ERROR")
+                        .add("code", 500)
+                        .add("message", "Internal server error. More details available at the server logs.")
+                        .add("incidentId", incidentId)
                         .build())
                 .type("application/json").build();
-        }
     }
 
     /* ====================== *\
@@ -754,21 +657,21 @@ public abstract class AbstractApiBean {
 
     protected Response ok( JsonArrayBuilder bld ) {
         return Response.ok(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
+            .add("status", ApiConstants.STATUS_OK)
             .add("data", bld).build())
             .type(MediaType.APPLICATION_JSON).build();
     }
     
     protected Response ok( JsonArray ja ) {
         return Response.ok(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
+            .add("status", ApiConstants.STATUS_OK)
             .add("data", ja).build())
             .type(MediaType.APPLICATION_JSON).build();
     }
 
     protected Response ok( JsonObjectBuilder bld ) {
         return Response.ok( Json.createObjectBuilder()
-            .add("status", STATUS_OK)
+            .add("status", ApiConstants.STATUS_OK)
             .add("data", bld).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
@@ -776,7 +679,7 @@ public abstract class AbstractApiBean {
     
     protected Response ok( JsonObject jo ) {
         return Response.ok( Json.createObjectBuilder()
-                .add("status", STATUS_OK)
+                .add("status", ApiConstants.STATUS_OK)
                 .add("data", jo).build() )
                 .type(MediaType.APPLICATION_JSON)
                 .build();    
@@ -784,7 +687,7 @@ public abstract class AbstractApiBean {
 
     protected Response ok( String msg ) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
+            .add("status", ApiConstants.STATUS_OK)
             .add("data", Json.createObjectBuilder().add("message",msg)).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
@@ -792,7 +695,7 @@ public abstract class AbstractApiBean {
     
     protected Response ok( String msg, JsonObjectBuilder bld  ) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
+            .add("status", ApiConstants.STATUS_OK)
             .add("message", Json.createObjectBuilder().add("message",msg))     
             .add("data", bld).build())      
             .type(MediaType.APPLICATION_JSON)
@@ -801,7 +704,7 @@ public abstract class AbstractApiBean {
 
     protected Response ok( boolean value ) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", STATUS_OK)
+            .add("status", ApiConstants.STATUS_OK)
             .add("data", value).build() ).build();
     }
 
@@ -858,16 +761,11 @@ public abstract class AbstractApiBean {
     protected Response conflict( String msg ) {
         return error( Status.CONFLICT, msg );
     }
-    
-    protected Response badApiKey( String apiKey ) {
-        return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME);
+
+    protected Response authenticatedUserRequired() {
+        return error(Status.UNAUTHORIZED, RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED);
     }
 
-    protected Response badWFKey( String wfId ) {
-        String message = (wfId != null ) ? "Bad workflow invocationId " : "Please provide an invocationId query parameter (?invocationId=XXX) or via the HTTP header " + DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME;
-        return error(Status.UNAUTHORIZED, message );
-    }
-    
     protected Response permissionError( PermissionException pe ) {
         return permissionError( pe.getMessage() );
     }
@@ -883,7 +781,7 @@ public abstract class AbstractApiBean {
     protected static Response error( Status sts, String msg ) {
         return Response.status(sts)
                 .entity( NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("status", STATUS_ERROR)
+                        .add("status", ApiConstants.STATUS_ERROR)
                         .add( "message", msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }

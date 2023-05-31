@@ -272,7 +272,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             // Just like with indexing, a failure to export is not a fatal
             // condition. We'll just log the error as a warning and keep
             // going:
-            logger.warning("Finalization: exception caught while exporting: "+ex.getMessage());
+            logger.log(Level.WARNING, "Finalization: exception caught while exporting: "+ex.getMessage(), ex);
             // ... but it is important to only update the export time stamp if the 
             // export was indeed successful.
         }        
@@ -368,7 +368,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
  
         if (idServiceBean != null) {
-            List<String> args = idServiceBean.getProviderInformation();
+            
             try {
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
                 String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
@@ -406,12 +406,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
                 logger.warning("Failed to register the identifier "+dataset.getGlobalId().asString()+", or to register a file in the dataset; notifying the user(s), unlocking the dataset");
-
+                
                 // Send failure notification to the user: 
                 notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
                 
                 ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.finalizePublication);
-                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
+                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()), this);
             }
         }
     }

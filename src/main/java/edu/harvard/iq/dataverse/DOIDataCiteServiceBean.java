@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 
@@ -22,7 +24,7 @@ import org.apache.commons.httpclient.HttpStatus;
  * @author luopc
  */
 @Stateless
-public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
+public class DOIDataCiteServiceBean extends DOIServiceBean {
 
     private static final Logger logger = Logger.getLogger(DOIDataCiteServiceBean.class.getCanonicalName());
     
@@ -34,22 +36,12 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
     @EJB
     DOIDataCiteRegisterService doiDataCiteRegisterService;
 
-    public DOIDataCiteServiceBean() {
-    }
-
     @Override
     public boolean registerWhenPublished() {
         return false;
     }
 
-    @Override
-    public boolean alreadyExists(DvObject dvObject) {
-        if(dvObject==null) {
-            logger.severe("Null DvObject sent to alreadyExists().");
-            return false;
-        }
-        return alreadyExists(dvObject.getGlobalId());
-    }
+
 
     @Override
     public boolean alreadyExists(GlobalId pid) {
@@ -90,10 +82,10 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     @Override
-    public HashMap getIdentifierMetadata(DvObject dvObject) {
+    public Map<String, String> getIdentifierMetadata(DvObject dvObject) {
         logger.log(Level.FINE,"getIdentifierMetadata");
         String identifier = getIdentifier(dvObject);
-        HashMap<String, String> metadata = new HashMap<>();
+        Map<String, String> metadata = new HashMap<>();
         try {
             metadata = doiDataCiteRegisterService.getMetadata(identifier);
         } catch (Exception e) {
@@ -102,29 +94,6 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         return metadata;
     }
     
-
-    /**
-     * Looks up the metadata for a Global Identifier
-     * @param protocol the identifier system, e.g. "doi"
-     * @param authority the namespace that the authority manages in the identifier system
-     * @param identifier the local identifier part
-     * @return a Map of metadata. It is empty when the lookup failed, e.g. when
-     * the identifier does not exist.
-     */
-    @Override
-    public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String identifier) {
-        logger.log(Level.FINE,"lookupMetadataFromIdentifier");
-        String identifierOut = getIdentifierForLookup(protocol, authority, identifier);
-        HashMap<String, String> metadata = new HashMap<>();
-        try {
-            metadata = doiDataCiteRegisterService.getMetadata(identifierOut);
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "None existing so we can use this identifier");
-            logger.log(Level.WARNING, "identifier: {0}", identifierOut);
-        }
-        return metadata;
-    }
-
 
     /**
      * Modifies the DOI metadata for a Dataset
@@ -219,9 +188,9 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
     private void deleteDraftIdentifier(DvObject dvObject) throws IOException {
     	
     	//ToDo - incorporate into DataCiteRESTfulClient
-        String baseUrl = systemConfig.getDataCiteRestApiUrlString();
-        String username = System.getProperty("doi.username");
-        String password = System.getProperty("doi.password");
+        String baseUrl = JvmSettings.DATACITE_REST_API_URL.lookup();
+        String username = JvmSettings.DATACITE_USERNAME.lookup();
+        String password = JvmSettings.DATACITE_PASSWORD.lookup();
         GlobalId doi = dvObject.getGlobalId();
         /**
          * Deletes the DOI from DataCite if it can. Returns 204 if PID was deleted
@@ -269,13 +238,13 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
     
     @Override
     public List<String> getProviderInformation(){
-        ArrayList <String> providerInfo = new ArrayList<>();
-        String providerName = "DataCite";
-        String providerLink = "http://status.datacite.org";
-        providerInfo.add(providerName);
-        providerInfo.add(providerLink);
-        return providerInfo;
+        return List.of("DataCite", "https://status.datacite.org");
     }
 
 
+
+    @Override
+    protected String getProviderKeyName() {
+        return "DataCite";
+    }
 }

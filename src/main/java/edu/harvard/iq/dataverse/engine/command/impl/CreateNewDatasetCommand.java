@@ -55,9 +55,14 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired) {
         this( theDataset, aRequest, registrationRequired, null);
     }
+
     
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, Template template) {
-        super(theDataset, aRequest, registrationRequired);
+        this(theDataset, aRequest, registrationRequired, template, true);
+    }
+    
+    public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, Template template, boolean validate) {
+        super(theDataset, aRequest, registrationRequired, validate);
         this.template = template;
         dv = theDataset.getOwner();
     }
@@ -71,7 +76,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
         if ( nonEmpty(getDataset().getIdentifier()) ) {
             GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(getDataset().getProtocol(), ctxt);
-            if ( !ctxt.datasets().isIdentifierUnique(getDataset().getIdentifier(), getDataset(), idServiceBean) ) {
+            if ( !idServiceBean.isGlobalIdUnique(getDataset().getGlobalId()) ) {
                 throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                                  getDataset().getIdentifier(), getDataset().getProtocol(), getDataset().getAuthority()), 
                     this);
@@ -87,6 +92,9 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     @Override
     protected void handlePid(Dataset theDataset, CommandContext ctxt) throws CommandException {
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+        if(!idServiceBean.isConfigured()) {
+            throw new IllegalCommandException("PID Provider " + idServiceBean.getProviderInformation().get(0) + " is not configured.", this);
+        }
         if ( !idServiceBean.registerWhenPublished() ) {
             // pre-register a persistent id
             registerExternalIdentifier(theDataset, ctxt, true);

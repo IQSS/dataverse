@@ -216,7 +216,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         Dataset d = ctxt.getDataset();
         job.add("object",
                 Json.createObjectBuilder().add("id", d.getLocalURL())
-                        .add("ietf:cite-as", d.getGlobalId().toURL().toExternalForm())
+                        .add("ietf:cite-as", d.getGlobalId().asURL())
                         .add("sorg:name", d.getDisplayName()).add("type", "sorg:Dataset"));
         job.add("origin", Json.createObjectBuilder().add("id", SystemConfig.getDataverseSiteUrlStatic())
                 .add("inbox", SystemConfig.getDataverseSiteUrlStatic() + "/api/inbox").add("type", "Service"));

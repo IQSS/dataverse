@@ -455,8 +455,8 @@ public class MetricsServiceBean implements Serializable {
                 Query query = em.createNativeQuery(""
                         + "select count(id)\n"
                         + "from guestbookresponse\n"
-                        + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
-                        + "or responsetime is NULL\n" // includes historic guestbook records without date
+                        + "where (date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
+                        + "or responsetime is NULL)\n" // includes historic guestbook records without date
                     + ((d==null) ? ";": "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");") 
                 );
                 logger.log(Level.FINE, "Metric query: {0}", query);

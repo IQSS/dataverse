@@ -35,6 +35,13 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
+import edu.harvard.iq.dataverse.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
+import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.globus.FileDetailsHolder;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
@@ -50,6 +57,10 @@ import java.util.*;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -498,7 +509,7 @@ public class JsonPrinter {
         blockBld.add("name", block.getName());
         
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
-        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false);
+        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
         DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray));
 
         blockBld.add("fields", fieldsArray);
@@ -520,7 +531,7 @@ public class JsonPrinter {
             return null;
         } else {
             JsonArrayBuilder fieldArray = Json.createArrayBuilder();
-            Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false);
+            Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
             DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray), cvocMap);
             JsonArray out = fieldArray.build();
             return out.getJsonObject(0);
@@ -625,18 +636,16 @@ public class JsonPrinter {
         }
          
         fileName = fileMetadata.getLabel();
-        
-        String pidURL = "";
-        
-        if (new GlobalId(df).toURL() != null){
-            pidURL = new GlobalId(df).toURL().toString();
-        }
+        GlobalId filePid = df.getGlobalId();
+        String pidURL = (filePid!=null)? filePid.asURL(): null;
+        //For backward compatibility - prior to #8674, asString() returned "" for the value when no PID exists.
+        String pidString = (filePid!=null)? filePid.asString(): "";
 
         JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
 
         return jsonObjectBuilder()
                 .add("id", df.getId())
-                .add("persistentId", df.getGlobalIdString())
+                .add("persistentId", pidString)
                 .add("pidURL", pidURL)
                 .add("filename", fileName)
                 .add("contentType", df.getContentType())
@@ -645,7 +654,7 @@ public class JsonPrinter {
                 .add("categories", getFileCategories(fileMetadata))
                 .add("embargo", embargo)
                 //.add("released", df.isReleased())
-                //.add("restricted", df.isRestricted())
+                .add("restricted", df.isRestricted())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
@@ -664,11 +673,161 @@ public class JsonPrinter {
                 //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
+                .add("fileMetadataId", fileMetadata.getId())
                 .add("tabularTags", getTabularFileTags(df))
                 .add("creationDate",  df.getCreateDateFormattedYYYYMMDD())
-                ;
+                .add("dataTables", df.getDataTables().isEmpty() ? null : JsonPrinter.jsonDT(df.getDataTables()))
+                .add("varGroups", fileMetadata.getVarGroups().isEmpty()
+                        ? JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups())
+                        : null);
     }
     
+    //Started from https://github.com/RENCI-NRIG/dataverse/, i.e. https://github.com/RENCI-NRIG/dataverse/commit/2b5a1225b42cf1caba85e18abfeb952171c6754a
+    public static JsonArrayBuilder jsonDT(List<DataTable> ldt) {
+        JsonArrayBuilder ldtArr = Json.createArrayBuilder();
+        for(DataTable dt: ldt){
+            ldtArr.add(jsonObjectBuilder().add("dataTable", JsonPrinter.json(dt)));
+        }
+        return ldtArr;
+    }
+
+    public static JsonObjectBuilder json(DataTable dt) {
+        return jsonObjectBuilder()
+                .add("varQuantity", dt.getVarQuantity())
+                .add("caseQuantity", dt.getCaseQuantity())
+                .add("recordsPerCase", dt.getRecordsPerCase())
+                .add("UNF", dt.getUnf())
+                .add("dataVariables", JsonPrinter.jsonDV(dt.getDataVariables()))
+                ;
+    }
+
+    public static JsonArrayBuilder jsonDV(List<DataVariable> dvl) {
+        JsonArrayBuilder varArr = Json.createArrayBuilder();
+        if(dvl!=null){
+            for (DataVariable dv: dvl){
+                varArr.add(JsonPrinter.json(dv));
+            }
+        }
+        return varArr;
+    }
+
+    // TODO: add sumstat and variable categories, check formats
+    public static JsonObjectBuilder json(DataVariable dv) {
+    return jsonObjectBuilder()
+            .add("name", dv.getName())
+            .add("label", dv.getLabel())
+            .add("weighted", dv.isWeighted())
+            .add("variableIntervalType", dv.getIntervalLabel())
+            .add("variableFormatType", dv.getType().name()) // varFormat
+            .add("formatCategory", dv.getFormatCategory())
+            .add("format", dv.getFormat())
+            .add("isOrderedCategorical", dv.isOrderedCategorical()) 
+            .add("fileOrder", dv.getFileOrder()) 
+            .add("UNF",dv.getUnf())
+            .add("fileStartPosition", dv.getFileStartPosition())
+            .add("fileEndPosition", dv.getFileEndPosition())
+            .add("recordSegmentNumber", dv.getRecordSegmentNumber())
+            .add("numberOfDecimalPoints",dv.getNumberOfDecimalPoints())
+            .add("variableMetadata",jsonVarMetadata(dv.getVariableMetadatas()))
+            .add("invalidRanges", dv.getInvalidRanges().isEmpty() ? JsonPrinter.jsonInvalidRanges(dv.getInvalidRanges()) : null)
+            .add("summaryStatistics", dv.getSummaryStatistics().isEmpty() ? JsonPrinter.jsonSumStat(dv.getSummaryStatistics()) : null)
+            .add("variableCategories", dv.getCategories().isEmpty() ? JsonPrinter.jsonCatStat(dv.getCategories()) : null) 
+            ;
+    }
+
+    private static JsonArrayBuilder jsonInvalidRanges(Collection<VariableRange> invalidRanges) {
+        JsonArrayBuilder invRanges = Json.createArrayBuilder();
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        for (VariableRange vr: invalidRanges){
+            job.add("beginValue", vr.getBeginValue())
+            .add("hasBeginValueType", vr.getBeginValueType()!=null)
+            .add("isBeginValueTypePoint", vr.isBeginValueTypePoint())
+            .add("isBeginValueTypeMin", vr.isBeginValueTypeMin())
+            .add("isBeginValueTypeMinExcl", vr.isBeginValueTypeMinExcl())
+            .add("isBeginValueTypeMax", vr.isBeginValueTypeMax())
+            .add("isBeginValueTypeMaxExcl", vr.isBeginValueTypeMaxExcl())
+            .add("endValue", vr.getEndValue())
+            .add("hasEndValueType", vr.getEndValueType()!=null)
+            .add("endValueTypeMax", vr.isEndValueTypeMax())
+            .add("endValueTypeMaxExcl", vr.isEndValueTypeMaxExcl());
+            
+            invRanges.add(job);
+        }
+        return invRanges;
+    }
+
+    private static JsonObjectBuilder jsonSumStat(Collection<SummaryStatistic> sumStat){
+        //JsonArrayBuilder sumStatArr = Json.createArrayBuilder();
+        JsonObjectBuilder sumStatObj = Json.createObjectBuilder();
+        for (SummaryStatistic stat: sumStat){
+            String label = stat.getTypeLabel()==null ? "unknown":stat.getTypeLabel();
+            sumStatObj.add(label, stat.getValue());
+        }
+        return sumStatObj;
+    }
+
+
+    private static JsonArrayBuilder jsonCatStat(Collection<VariableCategory> catStat){
+        JsonArrayBuilder catArr = Json.createArrayBuilder();
+
+        for (VariableCategory stat: catStat){
+            JsonObjectBuilder catStatObj = Json.createObjectBuilder();
+            catStatObj.add("label", stat.getLabel())
+                      .add("value", stat.getValue())
+                      .add("isMissing", stat.isMissing())
+                      .add("frequency", stat.getFrequency())
+                    ;
+            catArr.add(catStatObj);
+        }
+        return catArr;
+    }
+    
+    private static JsonArrayBuilder jsonVarGroup(List<VarGroup> varGroups) {
+        JsonArrayBuilder vgArr = Json.createArrayBuilder();
+        for (VarGroup vg : varGroups) {
+            JsonObjectBuilder vgJson = jsonObjectBuilder().add("id", vg.getId()).add("label", vg.getLabel());
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for (DataVariable dvar : vg.getVarsInGroup()) {
+                jab.add(dvar.getId());
+            }
+            vgJson.add("dataVariableIds", jab);
+            vgArr.add(vgJson);
+        }
+        return vgArr;
+    }
+    
+    private static JsonArrayBuilder jsonVarMetadata(Collection<VariableMetadata> varMetadatas) {
+        JsonArrayBuilder vmArr = Json.createArrayBuilder();
+        for (VariableMetadata vm : varMetadatas) {
+            JsonObjectBuilder vmJson = jsonObjectBuilder()
+                    .add("id", vm.getId())
+                    .add("fileMetadataId", vm.getFileMetadata().getId())
+                    .add("label", vm.getLabel())
+                    .add("isWeightVar", vm.isIsweightvar())
+                    .add("isWeighted",vm.isWeighted())
+                    .add("weightVariableId", vm.getWeightvariable().getId())
+                    .add("literalQuestion", vm.getLiteralquestion())
+                    .add("interviewInstruction", vm.getInterviewinstruction())
+                    .add("postQuestion", vm.getPostquestion())
+                    .add("universe", vm.getUniverse())
+                    .add("notes", vm.getNotes())
+                    .add("categoryMetadatas",json(vm.getCategoriesMetadata()));
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+        }
+        return vmArr;
+    }
+    
+    private static JsonArrayBuilder json(Collection<CategoryMetadata> categoriesMetadata) {
+        JsonArrayBuilder cmArr = Json.createArrayBuilder();
+        for(CategoryMetadata cm: categoriesMetadata) {
+            JsonObjectBuilder job = jsonObjectBuilder()
+                    .add("wFreq", cm.getWfreq())
+                    .add("categoryValue", cm.getCategory().getValue());
+            cmArr.add(job);
+        }
+        return cmArr;
+    }
+
     public static JsonObjectBuilder json(HarvestingClient harvestingClient) {
         if (harvestingClient == null) {
             return null; 
@@ -745,7 +904,7 @@ public class JsonPrinter {
         @Override
         public void startField(DatasetField f) {
             objectStack.push(jsonObjectBuilder());
-            // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
+            // Invariant: all values are multiple. Differentiation between multiple and single is done at endField.
             valueArrStack.push(Json.createArrayBuilder());
 
             DatasetFieldType typ = f.getDatasetFieldType();
@@ -756,7 +915,7 @@ public class JsonPrinter {
 
         @Override
         public void addExpandedValuesArray(DatasetField f) {
-            // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
+            // Invariant: all values are multiple. Differentiation between multiple and single is done at endField.
             valueArrStack.push(Json.createArrayBuilder());
         }
 
@@ -978,5 +1137,24 @@ public class JsonPrinter {
         JsonObjectBuilder b = jsonObjectBuilder();
         in.keySet().forEach( k->b.add(k, in.get(k)) );
         return b;
+    }
+
+
+    /**
+     * Get signposting from Dataset
+     * @param ds the designated Dataset
+     * @return json linkset
+     */
+    public static JsonObjectBuilder jsonLinkset(Dataset ds) {
+        return jsonObjectBuilder()
+                .add("anchor", ds.getPersistentURL())
+                .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
+                .add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage")))
+                .add("author", ds.getPersistentURL())
+                .add("protocol", ds.getProtocol())
+                .add("authority", ds.getAuthority())
+                .add("publisher", BrandingUtil.getInstallationBrandName())
+                .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
+                .add("storageIdentifier", ds.getStorageIdentifier());
     }
 }

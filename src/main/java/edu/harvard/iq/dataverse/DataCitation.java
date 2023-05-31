@@ -57,7 +57,7 @@ public class DataCitation {
     private String publisher;
     private boolean direct;
     private List<String> funders;
-    private String seriesTitle;
+    private List<String> seriesTitles;
     private String description;
     private List<String> datesOfCollection;
     private List<String> keywords;
@@ -135,7 +135,7 @@ public class DataCitation {
 
         datesOfCollection = dsv.getDatesOfCollection();
         title = dsv.getTitle();
-        seriesTitle = dsv.getSeriesTitle();
+        seriesTitles = dsv.getSeriesTitles();
         keywords = dsv.getKeywords();
         languages = dsv.getLanguages();
         spatialCoverages = dsv.getSpatialCoverages();
@@ -207,7 +207,7 @@ public class DataCitation {
 
         if (persistentId != null) {
         	// always show url format
-            citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); 
+            citationList.add(formatURL(persistentId.asURL(), persistentId.asURL(), html)); 
         }
         citationList.add(formatString(publisher, html));
         citationList.add(version);
@@ -298,7 +298,7 @@ public class DataCitation {
         out.write(persistentId.getIdentifier());
         out.write("},\r\n");
         out.write("url = {");
-        out.write(persistentId.toURL().toString());
+        out.write(persistentId.asURL());
         out.write("}\r\n");
         out.write("}\r\n");
         out.flush();
@@ -330,8 +330,10 @@ public class DataCitation {
             out.write("TY  - DATA" + "\r\n");
             out.write("T1  - " + getTitle() + "\r\n");
         }
-        if (seriesTitle != null) {
-            out.write("T3  - " + seriesTitle + "\r\n");
+        if (seriesTitles != null) {
+            for (String seriesTitle : seriesTitles) {
+                out.write("T3  - " + seriesTitle + "\r\n");
+            }
         }
         /* Removing abstract/description per Request from G. King in #3759
         if(description!=null) {
@@ -387,7 +389,7 @@ public class DataCitation {
         
         out.write("SE  - " + date + "\r\n");
 
-        out.write("UR  - " + persistentId.toURL().toString() + "\r\n");
+        out.write("UR  - " + persistentId.asURL() + "\r\n");
         out.write("PB  - " + publisher + "\r\n");
 
         // a DataFile citation also includes filename und UNF, if applicable:
@@ -505,12 +507,22 @@ public class DataCitation {
         xmlw.writeCharacters(title);
         xmlw.writeEndElement(); // title
         }
-        
-        if (seriesTitle != null) {
-            xmlw.writeStartElement("tertiary-title");
-            xmlw.writeCharacters(seriesTitle);
+
+        /*
+        If I say just !"isEmpty" for series titles I get a failure 
+        on testToEndNoteString_withoutTitleAndAuthor
+        with a null pointer on build -SEK 3/31/23
+        */
+        if (seriesTitles != null && !seriesTitles.isEmpty() ) {
+            xmlw.writeStartElement("tertiary-titles");
+            for (String seriesTitle : seriesTitles){
+                xmlw.writeStartElement("tertiary-title");
+                xmlw.writeCharacters(seriesTitle);
+                xmlw.writeEndElement(); // tertiary-title
+            }
             xmlw.writeEndElement(); // tertiary-title
         }
+        
         xmlw.writeEndElement(); // titles
 
         xmlw.writeStartElement("section");
@@ -584,7 +596,7 @@ public class DataCitation {
         xmlw.writeStartElement("urls");
         xmlw.writeStartElement("related-urls");
         xmlw.writeStartElement("url");
-        xmlw.writeCharacters(getPersistentId().toURL().toString());
+        xmlw.writeCharacters(getPersistentId().asURL());
         xmlw.writeEndElement(); // url
         xmlw.writeEndElement(); // related-urls
         xmlw.writeEndElement(); // urls
@@ -781,18 +793,13 @@ public class DataCitation {
                 || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
                 || HarvestingClient.HARVEST_STYLE_DATAVERSE
                         .equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
-                // creating a global id like this:
-                // persistentId = new GlobalId(dv.getGlobalId());
-                // you end up doing new GlobalId((New GlobalId(dv)).toString())
-                // - doing an extra formatting-and-parsing-again
-                // This achieves the same thing:
                 if(!isDirect()) {
                 if (!StringUtils.isEmpty(dsv.getDataset().getIdentifier())) {
-                    return new GlobalId(dsv.getDataset());
+                    return dsv.getDataset().getGlobalId();
                 }
                 } else {
                 if (!StringUtils.isEmpty(dv.getIdentifier())) {
-                    return new GlobalId(dv);
+                    return dv.getGlobalId();
                 }
             }
         }
