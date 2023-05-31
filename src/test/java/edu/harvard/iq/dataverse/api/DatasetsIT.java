@@ -2803,6 +2803,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         
         UtilIT.publishDatasetViaNativeApi(datasetId, "updatecurrent", apiToken).then().assertThat().statusCode(OK.getStatusCode());
         
+        UtilIT.sleepForReindex(datasetId, apiToken, 5);
         Response getDatasetJsonAfterUpdate = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJsonAfterUpdate.prettyPrint();
         getDatasetJsonAfterUpdate.then().assertThat()
