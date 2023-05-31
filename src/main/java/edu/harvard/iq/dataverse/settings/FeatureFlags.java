@@ -30,7 +30,12 @@ public enum FeatureFlags {
      * @since Dataverse 5.14
      */
     API_SESSION_AUTH("api-session-auth"),
-    
+    /**
+     * Enables API authentication via Bearer Token.
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth"
+     * @since Dataverse @TODO:
+     */
+    API_BEARER_AUTH("api-bearer-auth"),
     ;
     
     final String flag;

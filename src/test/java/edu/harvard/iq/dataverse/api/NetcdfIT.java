@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import javax.json.Json;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -177,6 +178,50 @@ public class NetcdfIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.result", CoreMatchers.equalTo(false));
 
+    }
+
+    @Test
+    public void testExtraBoundingBoxFromNetcdf() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("geospatial"), apiToken);
+        setMetadataBlocks.prettyPrint();
+        setMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        // From https://www.ncei.noaa.gov/data/international-comprehensive-ocean-atmosphere/v3/archive/nrt/ICOADS_R3.0.0_1662-10.nc
+        // via https://data.noaa.gov/onestop/collections/details/9bd5c743-0684-4e70-817a-ed977117f80c?f=temporalResolution:1%20Minute%20-%20%3C%201%20Hour;dataFormats:NETCDF
+        String pathToFile = "src/test/resources/netcdf/ICOADS_R3.0.0_1662-10.nc";
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getJson = UtilIT.nativeGet(datasetId, apiToken);
+        getJson.prettyPrint();
+        getJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.metadataBlocks.geospatial.fields[0].value[0].westLongitude.value", equalTo("-16.320007"))
+                .body("data.latestVersion.metadataBlocks.geospatial.fields[0].value[0].eastLongitude.value", equalTo("-6.220001"))
+                .body("data.latestVersion.metadataBlocks.geospatial.fields[0].value[0].northLongitude.value", equalTo("49.62"))
+                .body("data.latestVersion.metadataBlocks.geospatial.fields[0].value[0].southLongitude.value", equalTo("41.8"));
     }
 
 }

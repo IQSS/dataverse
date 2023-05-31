@@ -128,9 +128,9 @@ public class IngestMessageBean implements MessageListener {
                             IngestReport errorReport = new IngestReport();
                             errorReport.setFailure();
                             if (ex.getMessage() != null) {
-                                errorReport.setReport("Ingest succeeded, but failed to save the ingested tabular data in the database: " + ex.getMessage());
+                                errorReport.setReport(BundleUtil.getStringFromBundle("file.ingest.saveFailed.detail.message") + ex.getMessage());
                             } else {
-                                errorReport.setReport("Ingest succeeded, but failed to save the ingested tabular data in the database; no further information is available");
+                                errorReport.setReport(BundleUtil.getStringFromBundle("file.ingest.saveFailed.message"));
                             }
                             errorReport.setDataFile(datafile);
                             datafile.setIngestReport(errorReport);

@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 
 import java.time.LocalDate;
@@ -708,4 +707,5 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return customLicenseAllowed;
     }
+
 }

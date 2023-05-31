@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -40,6 +41,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 
@@ -261,11 +263,13 @@ public class DataRetrieverAPI extends AbstractApiBean {
     public String retrieveMyDataAsJsonString(
             @Context ContainerRequestContext crc,
             @QueryParam("dvobject_types") List<DvObject.DType> dvobject_types,
-            @QueryParam("published_states") List<String> published_states,
-            @QueryParam("selected_page") Integer selectedPage,
-            @QueryParam("mydata_search_term") String searchTerm,
-            @QueryParam("role_ids") List<Long> roleIds,
-            @QueryParam("userIdentifier") String userIdentifier) {
+            @QueryParam("published_states") List<String> published_states, 
+            @QueryParam("selected_page") Integer selectedPage, 
+            @QueryParam("mydata_search_term") String searchTerm,             
+            @QueryParam("role_ids") List<Long> roleIds, 
+            @QueryParam("userIdentifier") String userIdentifier,
+            @QueryParam("filter_validities") Boolean filterValidities,
+            @QueryParam("dataset_valid") List<Boolean> datasetValidities) {
         boolean OTHER_USER = false;
 
         String localeCode = session.getLocaleCode();
@@ -309,6 +313,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
         if (published_states != null){
             pub_states = published_states;
         }
+        List<Boolean> validities = null;
+        if (filterValidities != null && filterValidities){
+            validities = datasetValidities;
+        }
         
         // ---------------------------------
         // (1) Initialize filterParams and check for Errors 
@@ -316,7 +324,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         DataverseRequest dataverseRequest = createDataverseRequest(authUser);
 
         
-        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, dtypes, pub_states, roleIds, searchTerm);
+        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, dtypes, pub_states, roleIds, searchTerm, validities);
         if (filterParams.hasError()){
             return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
         }
