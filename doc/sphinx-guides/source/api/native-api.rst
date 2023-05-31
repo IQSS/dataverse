@@ -751,7 +751,7 @@ The following attributes are supported:
 * ``name`` Name
 * ``description`` Description
 * ``affiliation`` Affiliation
-* ``filePIDsEnabled`` ("true" or "false") Enables or disables registraion of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
+* ``filePIDsEnabled`` ("true" or "false") Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
 
 
 Datasets
