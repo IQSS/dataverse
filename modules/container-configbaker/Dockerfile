@@ -27,7 +27,7 @@ RUN true && \
   mkdir -p ${SCRIPT_DIR} ${SECRETS_DIR} ${SOLR_TEMPLATE}
 
 # Get in the scripts and make them executable (just in case...)
-COPY maven/scripts ${SCRIPT_DIR}/
+COPY maven/scripts maven/solr/update-fields.sh ${SCRIPT_DIR}/
 RUN chmod +x ${SCRIPT_DIR}/*.sh ${BOOTSTRAP_DIR}/*/*.sh
 
 # Copy the Solr config bits
