@@ -11,6 +11,7 @@ on:
             - master
         paths:
             - 'src/main/docker/**'
+            - 'modules/container-configbaker/**'
             - '.github/workflows/container_app_push.yml'
 
 env:
@@ -42,7 +43,7 @@ jobs:
                   distribution: temurin
                   cache: maven
 
-            - name: Build app container image with local architecture and submodules (profile will skip tests)
+            - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
               run: >
                   mvn -B -f modules/dataverse-parent
                   -P ct -pl edu.harvard.iq:dataverse -am
@@ -52,7 +53,7 @@ jobs:
 
     hub-description:
         needs: build
-        name: Push image description to Docker Hub
+        name: Push image descriptions to Docker Hub
         # Run this when triggered via push or schedule as reused workflow from base / maven unit tests.
         # Excluding PRs here means we will have no trouble with secrets access. Also avoid runs in forks.
         if: ${{ github.event_name != 'pull_request' && github.ref_name == 'develop' && github.repository_owner == 'IQSS' }}
@@ -66,6 +67,13 @@ jobs:
                   repository: gdcc/dataverse
                   short-description: "Dataverse Application Container Image providing the executable"
                   readme-filepath: ./src/main/docker/README.md
+            - uses: peter-evans/dockerhub-description@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+                  repository: gdcc/configbaker
+                  short-description: "Dataverse Config Baker Container Image providing setup tooling and more"
+                  readme-filepath: ./modules/container-configbaker/README.md
 
     # Note: Accessing, pushing tags etc. to DockerHub or GHCR will only succeed in upstream because secrets.
     # We check for them here and subsequent jobs can rely on this to decide if they shall run.
@@ -130,12 +138,12 @@ jobs:
                   echo "REGISTRY='-Ddocker.registry=ghcr.io'" >> $GITHUB_ENV
 
             # Necessary to split as otherwise the submodules are not available (deploy skips install)
-            - name: Build app container image with local architecture and submodules (profile will skip tests)
+            - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
               run: >
                   mvn -B -f modules/dataverse-parent
                   -P ct -pl edu.harvard.iq:dataverse -am
                   install
-            - name: Deploy multi-arch application container image
+            - name: Deploy multi-arch application and configbaker container image
               run: >
                   mvn 
                   -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }}
@@ -145,12 +153,15 @@ jobs:
             - uses: marocchino/sticky-pull-request-comment@v2
               if: ${{ github.event_name == 'pull_request' }}
               with:
-                  header: app-registry-push
+                  header: registry-push
                   hide_and_recreate: true
                   hide_classify: "OUTDATED"
                   message: |
-                      :package: Pushed preview application image as
+                      :package: Pushed preview images as
                       ```
                       ghcr.io/gdcc/dataverse:${{ env.IMAGE_TAG }}
                       ```
-                      :ship: [See on GHCR](https://github.com/orgs/gdcc/packages/container/package/dataverse). Use by referencing with full name as printed above, mind the registry name.
+                      ```
+                      ghcr.io/gdcc/configbaker:${{ env.IMAGE_TAG }}
+                      ```
+                      :ship: [See on GHCR](https://github.com/orgs/gdcc/packages/container). Use by referencing with full name as printed above, mind the registry name.
