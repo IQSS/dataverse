@@ -4556,8 +4556,9 @@ A curl example listing objects
 
 Parameters:
 
-``key`` is the user token, for this API is must not be passed in the header.
-``role_id`` User roles, several possible values among:
+``key`` Is the user token, for this API is must not be passed in the header.
+
+``role_id`` Roles are customizable. Standard roles include:
 
 - ``1`` = Admin
 - ``2`` = File Downloader
