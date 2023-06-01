@@ -1148,11 +1148,10 @@ public class DataFileServiceBean implements java.io.Serializable {
             file.setPreviewImageAvailable(true);
             this.save(file);
             return true;
-        } else {
-            file.setPreviewsHaveFailed(true);
-            this.save(file);
-            return false;
         }
+        file.setPreviewsHaveFailed(true);
+        this.save(file);
+        return false;
     }
 
     
