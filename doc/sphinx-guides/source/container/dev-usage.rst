@@ -14,11 +14,12 @@ Assuming you have `Docker <https://docs.docker.com/engine/install/>`_, `Docker D
 you have Java and Maven installed, as you are at least about to develop code changes.
 
 To test drive these local changes to the Dataverse codebase in a containerized application server (and avoid the
-setup described in :doc:`../developers/dev-environment`), you must a) build the application container and b)
-run it in addition to the necessary dependencies.
+setup described in :doc:`../developers/dev-environment`), you must a) build the application and b) run it in addition
+to the necessary dependencies. (Which might involve building a new local version of the :doc:`configbaker-image`.)
 
 | **TL;DR** *I have all that, just give me containers!*
-| Execute ``mvn -Pct clean package docker:run``, wait and continue at :ref:`dev-bootstrap`.
+| Execute ``mvn -Pct clean package docker:run``, wait for "done" message and log in at http://localhost:8080.
+| (Username: ``dataverseAdmin``, Password: ``admin1``)
 
 
 .. _dev-build:
@@ -26,14 +27,15 @@ run it in addition to the necessary dependencies.
 Building
 --------
 
-To build the application image, run the following command, as described in :doc:`app-image`:
+To build the :doc:`application <app-image>` and :doc:`config baker image <configbaker-image>`, run the following command:
 
 ``mvn -Pct clean package``
 
-Once this is done, you will see an image ``gdcc/dataverse:unstable`` available in your Docker cache.
+Once this is done, you will see images ``gdcc/dataverse:unstable`` and ``gdcc/configbaker:unstable`` available in your
+Docker cache.
 
-**Note:** This will skip any unit tests. If you have built the code before for testing, etc. you might omit the ``clean`` to
-avoid recompiling.
+**Note:** This will skip any unit tests. If you have built the code before for testing, etc. you might omit the
+``clean`` to avoid recompiling.
 
 **Note:** Also we have a ``docker-compose-dev.yml`` file, it's currently not possible to build the images without
 invoking Maven. This might change in the future.
@@ -44,8 +46,8 @@ invoking Maven. This might change in the future.
 Running
 -------
 
-After building the app image containing your local changes to the Dataverse application, you want to run it together
-with all dependencies. There are four ways to do this (commands executed at root of project directory):
+After building the app and config baker image containing your local changes to the Dataverse application, you want to
+run it together with all dependencies. There are four ways to do this (commands executed at root of project directory):
 
 .. list-table:: Cheatsheet: Running Containers
    :widths: 15 40 45
@@ -104,31 +106,17 @@ In case you want to concatenate building and running, here's a cheatsheet for yo
      - ``mvn -Pct package && docker compose -f docker-compose-dev.yml up -d``
 
 Once all containers have been started, you can check if the application was deployed correctly by checking the version
-at http://localhost:8080/api/info/version. or watch the logs.
+at http://localhost:8080/api/info/version or watch the logs.
 
 **Note:** To stop all containers you started in background, invoke ``mvn -Pct docker:stop`` or
 ``docker compose -f docker-compose-dev.yml down``.
 
-
-
-.. _dev-bootstrap:
-
-Bootstrapping New Instance
---------------------------
-
-If all looks good, run the :download:`docker-final-setup.sh <../../../../scripts/dev/docker-final-setup.sh>` script below.
-(This is a simplified version of the script described in :ref:`rebuilding-dev-environment`.)
-In the future, we are planning on running this script within a container as part of https://github.com/IQSS/dataverse/issues/9443
-
-.. literalinclude:: ../../../../scripts/dev/docker-final-setup.sh
-  :language: shell
-  :encoding: utf-8
-  :caption: ``scripts/dev/docker-final-setup.sh``
-  :name: docker-final-setup
-
 Check that you can log in to http://localhost:8080 using user ``dataverseAdmin`` and password ``admin1``.
 
-You can also access the Payara Admin Console if needed, which is available at http://localhost:4848. To log in, use user ``admin`` and password ``admin``. As a reminder, the application container is for development use only, so we are exposing the admin console for testing purposes. In a production environment, it may be more convenient to leave this console unopened.
+You can also access the Payara Admin Console if needed, which is available at http://localhost:4848. To log in, use
+user ``admin`` and password ``admin``. As a reminder, the application container is for development use only, so we
+are exposing the admin console for testing purposes. In a production environment, it may be more convenient to leave
+this console unopened.
 
 Note that data is persisted in ``./docker-dev-volumes`` in the root of the Git repo. For a clean start, you should
 remove this directory before running the ``mvn`` commands above.
