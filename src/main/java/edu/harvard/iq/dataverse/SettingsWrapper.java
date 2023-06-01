@@ -582,23 +582,21 @@ public class SettingsWrapper implements java.io.Serializable {
         currentMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
         return currentMap;
     }
-    
+
     private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
         String mlLabel = BundleUtil.getStringFromBundle("dataverse.metadatalanguage.setatdatasetcreation");
-        String mlCode = "";
 
-        if(target.getOwner() == null) { // Root collection has no owner; Get direct configuration of root
-            mlCode = target.getEffectiveMetadataLanguage();
-        } else { // Otherwise get parent configuration
-            mlCode = target.getOwner().getEffectiveMetadataLanguage();
+        if(target.getOwner() != null) { // Root collection is excluded from inherit metadata language research
+            String mlCode = target.getOwner().getEffectiveMetadataLanguage();
+
+            // If it's undefined, no parent has a metadata language defined, and the global default should be used.
+            if (!mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+                // Get the label for the language code found
+                mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
+                mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+            }
         }
 
-        // If it's undefined, no parent has a metadata language defined, and the global default should be used.
-        if (!mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-            // Get the label for the language code found
-            mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
-            mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
-        }
         return mlLabel;
     }
     
