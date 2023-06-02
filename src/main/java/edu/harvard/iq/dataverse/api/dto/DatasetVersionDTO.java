@@ -56,6 +56,9 @@ public class DatasetVersionDTO {
     }
 
     public String getTermsOfUse() {
+    	if (termsOfUse != null && termsOfUse.contains("CC0")) {
+    		termsOfUse = termsOfUse.replace("CC0", "CC BY");
+    	}
         return termsOfUse;
     }
 

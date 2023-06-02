@@ -420,6 +420,18 @@ public class JsonPrinter {
         return bld;
     }
 
+    private static String getLicense(DatasetVersion dsv) {
+        if (dsv.getTermsOfUseAndAccess().getLicense() != null) {
+            if (dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)) {
+                return "CC BY";
+            } else {
+                return dsv.getTermsOfUseAndAccess().getLicense().toString();
+            }
+        } else {
+        	return null;
+        }
+    }
+    
     /**
      * Export formats such as DDI require the citation to be included. See
      * https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.
