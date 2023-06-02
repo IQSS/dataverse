@@ -4538,9 +4538,6 @@ MyData
 
 The MyData API is used to get a list of just the datasets, dataverses or datafiles an authenticated user can edit.
 
-MyData API
-~~~~~~~~~~
-
 A curl example listing objects
 
 .. code-block:: bash
