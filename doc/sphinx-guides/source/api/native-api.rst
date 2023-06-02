@@ -4549,7 +4549,7 @@ A curl example listing objects
   export PUBLISHED_STATES=Unpublished
   export PER_PAGE=10
 
-  curl -H GET http://$SERVER_URL/api/mydata/retrieve?key=$API_TOKEN&role_ids=$ROLE_IDS&dvobject_types=$DVOBJECT_TYPES&published_states=$PUBLISHED_STATES&per_page=$PER_PAGE
+  curl "$SERVER_URL/api/mydata/retrieve?key=$API_TOKEN&role_ids=$ROLE_IDS&dvobject_types=$DVOBJECT_TYPES&published_states=$PUBLISHED_STATES&per_page=$PER_PAGE"
 
 Parameters:
 
