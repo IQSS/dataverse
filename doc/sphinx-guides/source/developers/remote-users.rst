@@ -26,7 +26,7 @@ In addition to setting up OAuth on your laptop for real per above, you can also 
 
 For a list of possible values, please "find usages" on the settings key above and look at the enum.
 
-Now when you go to http://localhost:8080/oauth2/firstLogin.xhtml you should be prompted to create a Shibboleth account.
+Now when you go to http://localhost:8080/oauth2/firstLogin.xhtml you should be prompted to create an OAuth account.
 
 ----
 

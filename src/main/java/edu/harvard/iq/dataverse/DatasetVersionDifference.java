@@ -550,12 +550,12 @@ public final class DatasetVersionDifference {
         }
     }
 
-    private boolean compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
+    public static boolean compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
 
-        if (!StringUtils.equals(fmdo.getDescription(), fmdn.getDescription())) {
+        if (!StringUtils.equals(StringUtil.nullToEmpty(fmdo.getDescription()), StringUtil.nullToEmpty(fmdn.getDescription()))) {
             return false;
         }
-        
+
         if (!StringUtils.equals(fmdo.getCategoriesByName().toString(), fmdn.getCategoriesByName().toString())) {
             return false;
         }

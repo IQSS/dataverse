@@ -29,7 +29,7 @@ ${INSTALL_SCRIPT}: install ${INSTALLER_ZIP_DIR}
 
 ${DISTRIBUTION_WAR_FILE}: 
 	@echo copying war file...
-	@VERSION_NUMBER=`grep -m1 '<version>' ../../pom.xml | sed 's/ *<\/*version>//g'`; export VERSION_NUMBER; \
+	@VERSION_NUMBER=`grep -m1 '<revision>' ../../modules/dataverse-parent/pom.xml | sed 's/ *<\/*revision>//g'`; export VERSION_NUMBER; \
 	BUILT_WAR_FILE=../../target/dataverse-$$VERSION_NUMBER.war; export BUILT_WAR_FILE; \
 	if [ -f $$BUILT_WAR_FILE ]; \
 	then \
@@ -56,13 +56,13 @@ ${JHOVE_SCHEMA}:	../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 	@echo copying jhove schema file
 	/bin/cp ../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 
-${SOLR_SCHEMA}:		../../conf/solr/8.8.1/schema.xml ../../conf/solr/8.8.1/update-fields.sh ${INSTALLER_ZIP_DIR}
+${SOLR_SCHEMA}:		../../conf/solr/8.11.1/schema.xml ../../conf/solr/8.11.1/update-fields.sh ${INSTALLER_ZIP_DIR}
 	@echo copying Solr schema file
-	/bin/cp ../../conf/solr/8.8.1/schema.xml ../../conf/solr/8.8.1/update-fields.sh ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/8.11.1/schema.xml ../../conf/solr/8.11.1/update-fields.sh ${INSTALLER_ZIP_DIR}
 
-${SOLR_CONFIG}:		../../conf/solr/8.8.1/solrconfig.xml ${INSTALLER_ZIP_DIR}
+${SOLR_CONFIG}:		../../conf/solr/8.11.1/solrconfig.xml ${INSTALLER_ZIP_DIR}
 	@echo copying Solr config file
-	/bin/cp ../../conf/solr/8.8.1/solrconfig.xml ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/8.11.1/solrconfig.xml ${INSTALLER_ZIP_DIR}
 
 ${PYTHON_FILES}: README_python.txt install.py installConfig.py installAppServer.py installUtils.py requirements.txt default.config interactive.config ${INSTALLER_ZIP_DIR}
 	@echo copying Python installer files

@@ -33,4 +33,8 @@ public class ShibAuthenticationProvider implements AuthenticationProvider {
         return false;
     }
 
+    // We don't override "isEmailVerified" because we're using timestamps
+    // ("emailconfirmed" on the "authenticateduser" table) to know if
+    // Shib users have confirmed/verified their email or not.
+
 }

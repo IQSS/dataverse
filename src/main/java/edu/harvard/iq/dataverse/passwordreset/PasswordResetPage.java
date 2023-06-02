@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.passwordreset;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.SettingsWrapper;
-import edu.harvard.iq.dataverse.ValidateEmail;
+import edu.harvard.iq.dataverse.validation.ValidateEmail;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;

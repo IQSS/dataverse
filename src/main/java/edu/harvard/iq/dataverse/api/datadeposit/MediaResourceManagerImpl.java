@@ -35,6 +35,8 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+
+import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
@@ -301,7 +303,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             List<DataFile> dataFiles = new ArrayList<>();
             try {
                 try {
-                    dataFiles = FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, null, systemConfig);
+                    CreateDataFileResult createDataFilesResponse =  FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, null, systemConfig);
+                    dataFiles = createDataFilesResponse.getDataFiles();
                 } catch (EJBException ex) {
                     Throwable cause = ex.getCause();
                     if (cause != null) {
@@ -336,7 +339,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
                 } else {
 
-                    ingestService.saveAndAddFilesToDataset(editVersion, dataFiles, null);
+                    ingestService.saveAndAddFilesToDataset(editVersion, dataFiles, null, true);
 
                 }
             } else {

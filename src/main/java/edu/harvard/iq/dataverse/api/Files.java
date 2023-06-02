@@ -12,8 +12,8 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
@@ -147,6 +148,12 @@ public class Files extends AbstractApiBean {
         // update the dataset
         try {
             engineSvc.submit(new UpdateDatasetVersionCommand(dataFile.getOwner(), dataverseRequest));
+        } catch (IllegalCommandException ex) {
+            //special case where terms of use are out of compliance   
+            if (!TermsOfUseAndAccessValidator.isTOUAValid(dataFile.getOwner().getLatestVersion().getTermsOfUseAndAccess(), null)) {
+                return conflict(BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+            }
+            return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         } catch (CommandException ex) {
             return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         }
@@ -233,7 +240,7 @@ public class Files extends AbstractApiBean {
                 }
             } else {
                 return error(BAD_REQUEST,
-                        "You must upload a file or provide a storageidentifier, filename, and mimetype.");
+                        "You must upload a file or provide a valid storageidentifier, filename, and mimetype.");
             }
         } else {
             newFilename = contentDispositionHeader.getFileName();
@@ -250,7 +257,8 @@ public class Files extends AbstractApiBean {
                                                 this.fileService,
                                                 this.permissionSvc,
                                                 this.commandEngine,
-                                                this.systemConfig);
+                                                this.systemConfig,
+                                                this.licenseSvc);
 
         // (5) Run "runReplaceFileByDatasetId"
         long fileToReplaceId = 0;

@@ -276,63 +276,6 @@ public class ExternalTool implements Serializable {
         return jab;
     }
 
-    public enum ReservedWord {
-
-        // TODO: Research if a format like "{reservedWord}" is easily parse-able or if another format would be
-        // better. The choice of curly braces is somewhat arbitrary, but has been observed in documenation for
-        // various REST APIs. For example, "Variable substitutions will be made when a variable is named in {brackets}."
-        // from https://swagger.io/specification/#fixed-fields-29 but that's for URLs.
-        FILE_ID("fileId"),
-        FILE_PID("filePid"),
-        SITE_URL("siteUrl"),
-        API_TOKEN("apiToken"),
-        // datasetId is the database id
-        DATASET_ID("datasetId"),
-        // datasetPid is the DOI or Handle
-        DATASET_PID("datasetPid"),
-        DATASET_VERSION("datasetVersion"),
-        FILE_METADATA_ID("fileMetadataId"),
-        LOCALE_CODE("localeCode");
-
-        private final String text;
-        private final String START = "{";
-        private final String END = "}";
-
-        private ReservedWord(final String text) {
-            this.text = START + text + END;
-        }
-
-        /**
-         * This is a centralized method that enforces that only reserved words
-         * are allowed to be used by external tools. External tool authors
-         * cannot pass their own query parameters through Dataverse such as
-         * "mode=mode1".
-         *
-         * @throws IllegalArgumentException
-         */
-        public static ReservedWord fromString(String text) throws IllegalArgumentException {
-            if (text != null) {
-                for (ReservedWord reservedWord : ReservedWord.values()) {
-                    if (text.equals(reservedWord.text)) {
-                        return reservedWord;
-                    }
-                }
-            }
-            // TODO: Consider switching to a more informative message that enumerates the valid reserved words.
-            boolean moreInformativeMessage = false;
-            if (moreInformativeMessage) {
-                throw new IllegalArgumentException("Unknown reserved word: " + text + ". A reserved word must be one of these values: " + Arrays.asList(ReservedWord.values()) + ".");
-            } else {
-                throw new IllegalArgumentException("Unknown reserved word: " + text);
-            }
-        }
-
-        @Override
-        public String toString() {
-            return text;
-        }
-    }
-
     public String getDescriptionLang() {
         String description = "";
         if (this.toolName != null) {

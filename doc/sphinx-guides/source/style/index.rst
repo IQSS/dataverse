@@ -14,3 +14,4 @@ This style guide is meant to help developers implement clear and appropriate UI 
 
    foundations
    patterns
+   text

@@ -1,2 +1,1 @@
 edu.harvard.iq.dataverse.settings.spi.AliasConfigSourceProvider
-edu.harvard.iq.dataverse.settings.spi.DbSettingConfigSourceProvider

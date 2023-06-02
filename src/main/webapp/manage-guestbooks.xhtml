@@ -67,7 +67,8 @@
                                     </li>
                                 </ul>
                                 <p>
-                                    <h:outputFormat value="#{bundle['dataset.manageGuestbooks.noGuestbooks.getStarted']}" escape="false">
+                                    <h:outputText value="#{bundle['dataset.manageGuestbooks.noGuestbooks.getStarted']} "/>
+                                    <h:outputFormat value="#{bundle['dataset.manageGuestbooks.noGuestbooks.learnMore']}" escape="false">
                                         <f:param value="#{systemConfig.guidesBaseUrl}"/>
                                         <f:param value="#{systemConfig.guidesVersion}"/>
                                     </h:outputFormat>
@@ -102,18 +103,16 @@
                                                    value="#{bundle['dataset.manageGuestbooks.tab.action.btn.enable']}"
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and !guestbook.enabled}"
                                                    action="#{manageGuestbooksPage.enableGuestbook(guestbook)}"
-                                                   update="@form,:messagePanel"
-                                                   oncomplete="bind_bsui_components();"/>
+                                                   update="@form,:messagePanel"/>
                                     <p:commandLink styleClass="btn btn-default"
                                                    value="#{bundle['dataset.manageGuestbooks.tab.action.btn.disable']}"
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.enabled}"
                                                    action="#{manageGuestbooksPage.disableGuestbook(guestbook)}"
-                                                   update="@form,:messagePanel"
-                                                   oncomplete="bind_bsui_components();"/>
+                                                   update="@form,:messagePanel"/>
                                     <div class="btn-group" role="group">
                                         <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"
-                                                       oncomplete="PF('viewGuestbook').show();bind_bsui_components();"
+                                                       oncomplete="PF('viewGuestbook').show();"
                                                        update=":manageGuestbooksForm"
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view']}">
                                             <span class="glyphicon glyphicon-eye-open no-text"></span>
@@ -129,10 +128,14 @@
                                                       title="#{bundle['dataset.manageGuestbooks.tab.action.btn.edit']}">
                                             <span class="glyphicon glyphicon-pencil no-text"></span>
                                         </h:outputLink>
+                                        <button class="btn btn-default" data-toggle="tooltip" title="#{bundle['dataset.manageGuestbooks.download.responses']}"
+                                                jsf:id="downloadResponsesByDvAndGuestbook" jsf:action="#{manageGuestbooksPage.streamResponsesByDataverseAndGuestbook(guestbook.id)}">
+                                            <span class="glyphicon glyphicon-download-alt"/>
+                                        </button>
                                         <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                        action="#{manageGuestbooksPage.setSelectedGuestbook(guestbook)}"
                                                        rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.deletable}"
-                                                       oncomplete="PF('deleteConfirmation').show();bind_bsui_components();"
+                                                       oncomplete="PF('deleteConfirmation').show();"
                                                        title="#{bundle['dataset.manageGuestbooks.tab.action.btn.delete']}">
                                             <span class="glyphicon glyphicon-trash no-text"></span>
                                         </p:commandLink>
@@ -150,7 +153,7 @@
                             <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataset.manageGuestbooks.tab.action.btn.delete.dialog.tip']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGuestbooksPage.deleteGuestbook()}" update="@all"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGuestbooksPage.deleteGuestbook()}" update="@form,:messagePanel"/>
                             <button class="btn btn-link" onclick="PF('deleteConfirmation').hide();" type="button">
                                 #{bundle.cancel}
                             </button>

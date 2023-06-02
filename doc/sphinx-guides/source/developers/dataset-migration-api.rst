@@ -31,7 +31,7 @@ To import a dataset with an existing persistent identifier (PID), the provided j
   
   curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$DATAVERSE_ID/datasets/:startmigration --upload-file dataset-migrate.jsonld
 
-An example jsonld file is available at :download:`dataset-migrate.jsonld <../_static/api/dataset-migrate.jsonld>` . Note that you would need to replace the PID in the sample file with one supported in your Dataverse instance. (Also note that `Issue #8028 <https://github.com/IQSS/dataverse/issues/8028>`_ currently breaks testing this API with DataCite test DOIs.)
+An example jsonld file is available at :download:`dataset-migrate.jsonld <../_static/api/dataset-migrate.jsonld>` . Note that you would need to replace the PID in the sample file with one supported in your Dataverse instance.
 
 Publish a Migrated Dataset
 --------------------------

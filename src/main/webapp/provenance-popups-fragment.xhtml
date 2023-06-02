@@ -25,7 +25,7 @@
                         
                     </p>
                 </div>
-                <label for="provenanceBundle" class="col-sm-3 control-label">
+                <label jsf:for="provUpload_input" class="col-sm-3 control-label">
                     #{bundle['file.editProvenanceDialog.bundleFile']}
                 </label>
                 <div class="col-sm-9">
@@ -51,7 +51,6 @@
                                           label="#{bundle['file.editProvenanceDialog.selectToAddBtn']}"
                                           onstart="javascript:uploadStarted();"
                                           onerror="javascript:uploadFailure();"
-                                          oncomplete="bind_bsui_components();"
                                           fileLimit="1" 
                                           invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"/>
                         </ui:fragment>
@@ -116,7 +115,7 @@
                 </div>
             </div>
             <div class="form-group text-left">
-                <label for="provenanceAddDescription" class="col-sm-3 control-label">
+                <label jsf:for="provenanceFreeform" class="col-sm-3 control-label">
                     #{bundle['file.editProvenanceDialog.description']}
                 </label>
                 <div class="col-sm-9">
@@ -167,8 +166,11 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('confirmProvenancePopup').hide();javascript:bind_bsui_components();" action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}" update=":messagePanel"/>
-            <button type="button" jsf:id="confirmProvenancePopupCancelButton" class="btn btn-link" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();" oncomplete="javascript:bind_bsui_components();">
+            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" 
+                             value="#{bundle.saveChanges}" oncomplete="PF('confirmProvenancePopup').hide();" 
+                             action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}" update=":messagePanel"/>
+            <button type="button" jsf:id="confirmProvenancePopupCancelButton" class="btn btn-link" 
+                    onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();">
                 #{bundle.cancel}
             </button>
         </div>

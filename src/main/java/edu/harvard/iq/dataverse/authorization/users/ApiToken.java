@@ -92,5 +92,9 @@ public class ApiToken implements Serializable {
     public void setExpireTime(Timestamp expireTime) {
         this.expireTime = expireTime;
     }
+
+    public boolean isExpired() {
+        return getExpireTime().before(new Timestamp(System.currentTimeMillis()));
+    }
     
 }

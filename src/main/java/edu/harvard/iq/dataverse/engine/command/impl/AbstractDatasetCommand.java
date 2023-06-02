@@ -15,13 +15,13 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 import javax.validation.ConstraintViolation;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 
 /**
@@ -101,6 +101,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             if (lenient) {
                 // populate invalid fields with N/A
                 constraintViolations.stream()
+                    .filter(cv -> cv.getRootBean() instanceof DatasetField)
                     .map(cv -> ((DatasetField) cv.getRootBean()))
                     .forEach(f -> f.setSingleValue(DatasetField.NA_VALUE));
 
@@ -109,33 +110,23 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                 String validationMessage = constraintViolations.stream()
                     .map(cv -> cv.getMessage() + " (Invalid value:" + cv.getInvalidValue() + ")")
                     .collect(joining(", ", "Validation Failed: ", "."));
+                
+                validationMessage  += constraintViolations.stream()
+                    .filter(cv -> cv.getRootBean() instanceof TermsOfUseAndAccess)
+                    .map(cv -> cv.toString());
+                
+                for (ConstraintViolation cv : constraintViolations){
+                    if (cv.getRootBean() instanceof TermsOfUseAndAccess){
+                        throw new IllegalCommandException(validationMessage,  this);
+                    }
+                }
 
                 throw new IllegalCommandException(validationMessage, this);
             }
         }
     }
 
-    /**
-     * Removed empty fields, sets field value display order.
-     *
-     * @param dsv the dataset version show fields we want to tidy up.
-     */
-    protected void tidyUpFields(DatasetVersion dsv) {
-        Iterator<DatasetField> dsfIt = dsv.getDatasetFields().iterator();
-        while (dsfIt.hasNext()) {
-            if (dsfIt.next().removeBlankDatasetFieldValues()) {
-                dsfIt.remove();
-            }
-        }
-        Iterator<DatasetField> dsfItSort = dsv.getDatasetFields().iterator();
-        while (dsfItSort.hasNext()) {
-            dsfItSort.next().setValueDisplayOrder();
-        }
-        Iterator<DatasetField> dsfItTrim = dsv.getDatasetFields().iterator();
-        while (dsfItTrim.hasNext()) {
-            dsfItTrim.next().trimTrailingSpaces();
-        }
-    }
+
 
     /**
      * Whether it's EZID or DataCite, if the registration is refused because the

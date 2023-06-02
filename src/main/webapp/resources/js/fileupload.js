@@ -124,7 +124,7 @@ async function cancelDatasetEdit() {
 
 var inDataverseCall = false;
 
-class fileUpload {
+var fileUpload = class fileUploadClass {
         constructor(file) {
                 this.file = file;
                 this.state = UploadState.QUEUED;
@@ -404,7 +404,7 @@ async function uploadFileDirectly(urls, storageId, filesize) {
                 //As long as we have the right file size, we're OK
                 for (i = 0; i < fileList.length; i++) {
                         if (fileList[i].file.size == filesize) {
-                                upload = fileList.splice(i,i+1)[0];
+                                upload = fileList.splice(i,1)[0];
                                 break;
                         }
                 }
@@ -549,8 +549,9 @@ async function uploadFailure(jqXHR, upid, filename) {
                         id = arguments.callee.caller.caller.arguments[1].files[0].row[0].attributes.upid.value;
                         status = arguments.callee.caller.caller.arguments[1].jqXHR.status;
                         statusText = arguments.callee.caller.caller.arguments[1].jqXHR.statusText;
-                } catch {
+                } catch(err) {
                         console.log("Unable to determine status for error - assuming network issue");
+                        console.log("Exception: " + err.message);
                 }
         }
 

@@ -138,7 +138,7 @@ The following table lists the available metrics endpoints (not including the Mak
     /api/info/metrics/datasets/monthly,"date, count","json, csv",collection subtree,"released, choice of all, local or remote (harvested)",y,monthly cumulative  timeseries from first date of first entry to now,released means only currently released dataset versions (not unpublished or DEACCESSIONED versions)
     /api/info/metrics/datasets/pastDays/{n},count,json,collection subtree,"released, choice of all, local or remote (harvested)",y,aggregate count for past n days,
     /api/info/metrics/datasets/bySubject,"subject, count","json, csv",collection subtree,"released, choice of all, local or remote (harvested)",y,total count per subject,
-    /api/info/metrics/datasets/bySubjecttoMonth/{yyyy-MM},"subject, count","json, csv",collection subtree,"released, choice of all, local or remote (harvested)",y,cumulative cont per subject up to month specified,
+    /api/info/metrics/datasets/bySubject/toMonth/{yyyy-MM},"subject, count","json, csv",collection subtree,"released, choice of all, local or remote (harvested)",y,cumulative cont per subject up to month specified,
     /api/info/metrics/files,count,json,collection subtree,in released datasets,y,as of now/total,
     /api/info/metrics/files/toMonth/{yyyy-MM},count,json,collection subtree,in released datasets,y,cumulative up to month specified,
     /api/info/metrics/files/monthly,"date, count","json, csv",collection subtree,in released datasets,y,monthly cumulative  timeseries from first date of first entry to now,date is the month when the first version containing the file was released (or created for harvested versions)

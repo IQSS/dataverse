@@ -5,23 +5,42 @@
  */
 package edu.harvard.iq.dataverse.authorization.users;
 
-import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.List;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
+
+import javax.json.JsonObject;
+import javax.json.JsonString;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Tested class: AuthenticatedUser.java
  *
  * @author bsilverstein
  */
+@RunWith(MockitoJUnitRunner.class)
 public class AuthenticatedUserTest {
+
+    @Mock
+    private SettingsServiceBean settingsServiceBean;
+    @InjectMocks
+    private UserNotificationServiceBean userNotificationService;
 
     public AuthenticatedUserTest() {
     }
@@ -30,6 +49,7 @@ public class AuthenticatedUserTest {
     public static Timestamp expResult;
     public static Timestamp loginTime = Timestamp.valueOf("2000-01-01 00:00:00.0");
     public static final String IDENTIFIER_PREFIX = "@";
+    public static final Set<Type> mutedTypes = EnumSet.of(Type.ASSIGNROLE, Type.REVOKEROLE);
 
     @Before
     public void setUp() {
@@ -320,6 +340,100 @@ public class AuthenticatedUserTest {
         int result = instance.hashCode();
         assertEquals(expResult, result);
     }
+
+    @Test
+    public void testMutingEmails() {
+        System.out.println("setMutedEmails");
+        testUser.setMutedEmails(mutedTypes);
+        assertEquals(mutedTypes, testUser.getMutedEmails());
+    }
+
+    @Test
+    public void testMutingNotifications() {
+        System.out.println("setMutedNotifications");
+        testUser.setMutedNotifications(mutedTypes);
+        assertEquals(mutedTypes, testUser.getMutedNotifications());
+    }
+
+    @Test
+    public void testMutingInJson() {
+        testUser.setMutedEmails(mutedTypes);
+        testUser.setMutedNotifications(mutedTypes);
+        System.out.println("toJson");
+        JsonObject jObject = testUser.toJson().build();
+
+        Set<String> mutedEmails = new HashSet<>(jObject.getJsonArray("mutedEmails").getValuesAs(JsonString::getString));
+        assertTrue("Set contains two elements", mutedEmails.size() == 2);
+        assertTrue("Set contains REVOKEROLE", mutedEmails.contains("REVOKEROLE"));
+        assertTrue("Set contains ASSIGNROLE", mutedEmails.contains("ASSIGNROLE"));
+
+        Set<String> mutedNotifications = new HashSet<>(jObject.getJsonArray("mutedNotifications").getValuesAs(JsonString::getString));
+        assertTrue("Set contains two elements", mutedNotifications.size() == 2);
+        assertTrue("Set contains REVOKEROLE", mutedNotifications.contains("REVOKEROLE"));
+        assertTrue("Set contains ASSIGNROLE", mutedNotifications.contains("ASSIGNROLE"));
+    }
+
+    @Test
+    public void testHasEmailMuted() {
+        testUser.setMutedEmails(mutedTypes);
+        System.out.println("hasEmailMuted");
+        assertEquals(true, testUser.hasEmailMuted(Type.ASSIGNROLE));
+        assertEquals(true, testUser.hasEmailMuted(Type.REVOKEROLE));
+        assertEquals(false, testUser.hasEmailMuted(Type.CREATEDV));
+        assertEquals(false, testUser.hasEmailMuted(null));
+    }
+
+    @Test
+    public void testHasNotificationsMutedMuted() {
+        testUser.setMutedNotifications(mutedTypes);
+        System.out.println("hasNotificationMuted");
+        assertEquals(true, testUser.hasNotificationMuted(Type.ASSIGNROLE));
+        assertEquals(true, testUser.hasNotificationMuted(Type.REVOKEROLE));
+        assertEquals(false, testUser.hasNotificationMuted(Type.CREATEDV));
+        assertEquals(false, testUser.hasNotificationMuted(null));
+    }
+
+    @Test
+    public void testTypeTokenizer() {
+        final Set<Type> typeSet = Type.tokenizeToSet(
+            Type.toStringValue(
+                Type.tokenizeToSet(" ASSIGNROLE , CREATEDV,REVOKEROLE  ")
+            )
+        );
+        assertTrue("typeSet contains 3 elements", typeSet.size() == 3);
+        assertTrue("typeSet contains ASSIGNROLE", typeSet.contains(Type.ASSIGNROLE));
+        assertTrue("typeSet contains CREATEDV", typeSet.contains(Type.CREATEDV));
+        assertTrue("typeSet contains REVOKEROLE", typeSet.contains(Type.REVOKEROLE));
+    }
+
+    @Test
+    public void testIsEmailMuted() {
+        testUser.setMutedEmails(mutedTypes);
+        UserNotification userNotification = new UserNotification();
+        userNotification.setUser(testUser);
+        userNotification.setSendDate(null);
+        userNotification.setObjectId(null);
+        userNotification.setRequestor(null);
+        userNotification.setType(Type.ASSIGNROLE); // muted
+        assertTrue(userNotificationService.isEmailMuted(userNotification));
+        userNotification.setType(Type.APIGENERATED); // not muted
+        assertFalse(userNotificationService.isEmailMuted(userNotification));
+    }
+
+    @Test
+    public void isNotificationMuted() {
+        testUser.setMutedNotifications(mutedTypes);
+        UserNotification userNotification = new UserNotification();
+        userNotification.setUser(testUser);
+        userNotification.setSendDate(null);
+        userNotification.setObjectId(null);
+        userNotification.setRequestor(null);
+        userNotification.setType(Type.ASSIGNROLE); // muted
+        assertTrue(userNotificationService.isNotificationMuted(userNotification));
+        userNotification.setType(Type.APIGENERATED); // not muted
+        assertFalse(userNotificationService.isNotificationMuted(userNotification));
+    }
+
     /**
      * All commented tests below have only been generated / are not complete for
      * AuthenticatedUser.java The tests above should all run fine, due to time

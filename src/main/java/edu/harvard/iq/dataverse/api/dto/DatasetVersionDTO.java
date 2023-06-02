@@ -40,7 +40,7 @@ public class DatasetVersionDTO {
     String studyCompletion;
     boolean fileAccessRequest;
     String citation;
-    String license;
+    LicenseDTO license;
     boolean inReview;
     
     Map<String,MetadataBlockDTO> metadataBlocks;
@@ -308,15 +308,12 @@ public class DatasetVersionDTO {
     public void setArchiveTime(String archiveTime) {
         this.archiveTime = archiveTime;
     }
-    
-    public String getLicense() {
-        if (license != null && license.contains("CC0")) {
-            license = license.replace("CC0", "CC BY");
-        }
+
+    public LicenseDTO getLicense() {
         return license;
     }
 
-    public void setLicense(String license) {
+    public void setLicense(LicenseDTO license) {
         this.license = license;
     }
 

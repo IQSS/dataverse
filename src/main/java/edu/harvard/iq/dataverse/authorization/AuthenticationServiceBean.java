@@ -373,42 +373,32 @@ public class AuthenticationServiceBean {
         TypedQuery<ApiToken> typedQuery = em.createNamedQuery("ApiToken.findByUser", ApiToken.class);
         typedQuery.setParameter("user", au);
         List<ApiToken> tokens = typedQuery.getResultList();
-        Timestamp latest = new Timestamp(java.time.Instant.now().getEpochSecond()*1000);
         if (tokens.isEmpty()) {
             // Normal case - no token exists
             return null;
         }
         if (tokens.size() == 1) {
             // Normal case - one token that may or may not have expired
-            ApiToken token = tokens.get(0);
-            if (token.getExpireTime().before(latest)) {
-                // Don't return an expired token which is unusable, delete it instead
-                em.remove(token);
-                return null;
-            } else {
-                return tokens.get(0);
-            }
+            return tokens.get(0);
         } else {
             // We have more than one due to https://github.com/IQSS/dataverse/issues/6389 or
-            // similar, so we should delete all but one token.
-            // Since having an expired token also makes no sense, if we only have an expired
-            // token, remove that as well
-            ApiToken goodToken = null;
+            // similar, so we should delete all but one token - pick the latest.
+            ApiToken newestToken = null;
             for (ApiToken token : tokens) {
-                Timestamp time = token.getExpireTime();
-                if (time.before(latest)) {
-                    em.remove(token);
+                if (newestToken == null) {
+                    newestToken = token;
                 } else {
-                    if(goodToken != null) {
-                      em.remove(goodToken);
-                      goodToken = null;
+                    Timestamp time = token.getExpireTime();
+                    if (time.before(newestToken.getExpireTime())) {
+                        em.remove(token);
+                    } else {
+                        em.remove(newestToken);
+                        newestToken = token;
                     }
-                    latest = time;
-                    goodToken = token;
                 }
             }
-            // Null if there are no un-expired ones
-            return goodToken;
+            // Null if there are no tokens
+            return newestToken;
         }
     }
     
@@ -646,9 +636,8 @@ public class AuthenticationServiceBean {
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
 
         if (ShibAuthenticationProvider.PROVIDER_ID.equals(auusLookup.getAuthenticationProviderId())) {
-            Timestamp emailConfirmedNow = new Timestamp(new Date().getTime());
             // Email addresses for Shib users are confirmed by the Identity Provider.
-            authenticatedUser.setEmailConfirmed(emailConfirmedNow);
+            authenticatedUser.updateEmailConfirmedToNow();
             authenticatedUser = save(authenticatedUser);
         } else {
             /* @todo Rather than creating a token directly here it might be
@@ -675,6 +664,7 @@ public class AuthenticationServiceBean {
     
     public AuthenticatedUser updateAuthenticatedUser(AuthenticatedUser user, AuthenticatedUserDisplayInfo userDisplayInfo) {
         user.applyDisplayInfo(userDisplayInfo);
+        user.updateEmailConfirmedToNow();
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "updateUser")
             .setInfo(user.getIdentifier()));
         return update(user);

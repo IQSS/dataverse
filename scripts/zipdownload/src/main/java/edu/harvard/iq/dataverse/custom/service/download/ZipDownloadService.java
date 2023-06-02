@@ -148,9 +148,9 @@ public class ZipDownloadService {
             String zipEntryName = checkZipEntryName(fileName, fileNamesList);
             // this may not be needed anymore - some extra sanitizing of the file 
             // name we used to have to do - since all the values in a current Dataverse 
-            // database may already be santized enough. 
-	    // (Edit: Yes, we still need this - there are still datasets with multiple 
-	    // files with duplicate names; this method takes care of that)
+            // database may already be santized enough.
+            // (Edit: Yes, we still need this - there are still datasets with multiple
+            // files with duplicate names; this method takes care of that)
             if (inputStream != null && this.zipOutputStream != null) {
                 
                 ZipEntry entry = new ZipEntry(zipEntryName);

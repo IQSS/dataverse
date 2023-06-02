@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
 import java.util.Collection;
 
@@ -54,7 +55,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     /**
      * The internal, DDI-like name, no spaces, etc.
      */
-    @Column(name = "name", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "name", columnDefinition = "TEXT", nullable = false, unique=true)
     private String name;
 
     /**
@@ -309,6 +310,14 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public String getUri() {
     	return uri;
     }
+    
+    public JsonLDTerm getJsonLDTerm() {
+        if(uri!=null) {
+        return new JsonLDTerm(name,uri);
+        } else {
+            return new JsonLDTerm(metadataBlock.getJsonLDNamespace(), name);
+        }
+    }
 
     public void setUri(String uri) {
     	this.uri=uri;
@@ -543,7 +552,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             
             boolean makeSolrFieldMultivalued;
             // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
-            if (allowMultiples || parentAllowsMultiplesBoolean) {
+            if (allowMultiples || parentAllowsMultiplesBoolean || isControlledVocabulary()) {
                 makeSolrFieldMultivalued = true;
             } else {
                 makeSolrFieldMultivalued = false;

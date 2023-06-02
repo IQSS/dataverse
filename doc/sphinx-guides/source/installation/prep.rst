@@ -27,11 +27,12 @@ Advanced Installation
 There are some community-lead projects to use configuration management tools such as Ansible and Puppet to automate the installation and configuration of the Dataverse Software, but support for these solutions is limited to what the Dataverse Community can offer as described in each project's webpage:
 
 - https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible
+- https://gitlab.com/lip-computing/dataverse
 - https://github.com/IQSS/dataverse-puppet
 
 (Please note that the "dataverse-ansible" repo is used in a script that allows the Dataverse Software to be installed on Amazon Web Services (AWS) from arbitrary GitHub branches as described in the :doc:`/developers/deployment` section of the Developer Guide.)
 
-The Dataverse Project team is happy to "bless" additional community efforts along these lines (i.e. Docker, Chef, Salt, etc.) by creating a repo under https://github.com/GlobalDataverseCommunityConsortium and managing team access.
+The Dataverse Project team is happy to "bless" additional community efforts along these lines (i.e. Docker, Chef, Salt, etc.) by creating a repo under https://github.com/gdcc and managing team access.
 
 The Dataverse Software permits a fair amount of flexibility in where you choose to install the various components. The diagram below shows a load balancer, multiple proxies and web servers, redundant database servers, and offloading of potentially resource intensive work to a separate server. (Glassfish is shown rather than Payara.)
 
@@ -82,7 +83,7 @@ A basic Dataverse installation runs fine on modest hardware. For example, as of 
 
 In contrast, before we moved it to the Amazon Cloud, the production installation at https://dataverse.harvard.edu was backed by six servers with two Intel Xeon 2.53 Ghz CPUs and either 48 or 64 GB of RAM. The three servers with 48 GB of RAM run were web frontends running Glassfish 4 and Apache and were load balanced by a hardware device. The remaining three servers with 64 GB of RAM were the primary and backup database servers and a server dedicated to running Rserve. Multiple TB of storage were mounted from a SAN via NFS.
 
-Currently, the Harvard Dataverse Repository is served by four AWS server nodes: two "m4.4xlarge" instances (64GB/16 vCPU) as web frontends, one 32GB/8 vCPU ("m4.2xlarge") instance for the Solr search engine, and one 16GB/4 vCPU ("m4.xlarge") instance for R and TwoRavens. The PostgreSQL database is served by Amazon RDS, and physical files are stored on Amazon S3.
+Currently, the Harvard Dataverse Repository is served by four AWS server nodes: two "m4.4xlarge" instances (64GB/16 vCPU) as web frontends, one 32GB/8 vCPU ("m4.2xlarge") instance for the Solr search engine, and one 16GB/4 vCPU ("m4.xlarge") instance for R. The PostgreSQL database is served by Amazon RDS, and physical files are stored on Amazon S3.
 
 The Dataverse Software installation script will attempt to give your app server the right amount of RAM based on your system.
 
@@ -106,6 +107,7 @@ Here are some questions to keep in the back of your mind as you test and move in
 - Do I want to to run my app server on the standard web ports (80 and 443) or do I want to "front" my app server with a proxy such as Apache or nginx? See "Network Ports" in the :doc:`config` section.
 - How many points of failure am I willing to tolerate? How much complexity do I want?
 - How much does it cost to subscribe to a service to create persistent identifiers such as DOIs or handles?
+- What licenses should I make available to my users?
 
 Next Steps
 ----------

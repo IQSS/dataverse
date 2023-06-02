@@ -99,6 +99,10 @@ public class DatasetDTO implements java.io.Serializable {
         return "DatasetDTO{" + "id=" + id + ", identifier=" + identifier + ", protocol=" + protocol + ", authority=" + authority + ", globalIdCreateTime=" + globalIdCreateTime + ", datasetVersion=" + datasetVersion + ", dataFiles=" + dataFiles + '}';
     }
 
+    public void setMetadataLanguage(String metadataLanguage) {
+        this.metadataLanguage = metadataLanguage;
+    }
+    
     public String getMetadataLanguage() {
         return metadataLanguage;
     }

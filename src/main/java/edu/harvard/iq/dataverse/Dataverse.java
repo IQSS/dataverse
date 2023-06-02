@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -322,8 +324,31 @@ public class Dataverse extends DvObjectContainer {
         return harvestingClient != null; 
     }
     */
-    
-    
+    private boolean metadataBlockFacetRoot;
+
+    public boolean isMetadataBlockFacetRoot() {
+        return metadataBlockFacetRoot;
+    }
+
+    public void setMetadataBlockFacetRoot(boolean metadataBlockFacetRoot) {
+        this.metadataBlockFacetRoot = metadataBlockFacetRoot;
+    }
+
+    @OneToMany(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST }, orphanRemoval=true)
+    private List<DataverseMetadataBlockFacet> metadataBlockFacets = new ArrayList<>();
+
+    public List<DataverseMetadataBlockFacet> getMetadataBlockFacets() {
+        if (isMetadataBlockFacetRoot() || getOwner() == null) {
+            return metadataBlockFacets;
+        } else {
+            return getOwner().getMetadataBlockFacets();
+        }
+    }
+
+    public void setMetadataBlockFacets(List<DataverseMetadataBlockFacet> metadataBlockFacets) {
+        this.metadataBlockFacets = metadataBlockFacets;
+    }
+
     public List<Guestbook> getParentGuestbooks() {
         List<Guestbook> retList = new ArrayList<>();
         Dataverse testDV = this;
@@ -764,5 +789,9 @@ public class Dataverse extends DvObjectContainer {
             other = other.getOwner();
         }
         return false;
+    }
+    
+    public String getLocalURL() {
+        return  SystemConfig.getDataverseSiteUrlStatic() + "/dataverse/" + this.getAlias();
     }
 }

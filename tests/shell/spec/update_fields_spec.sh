@@ -1,16 +1,16 @@
 #shellcheck shell=sh
 
 update_fields() {
-  ../../conf/solr/8.8.1/update-fields.sh "$@"
+  ../../conf/solr/8.11.1/update-fields.sh "$@"
 }
 
 Describe "Update fields command"
 
   Describe "can operate on upstream data"
-    copyUpstreamSchema() { cp ../../conf/solr/8.8.1/schema.xml data/solr/upstream-schema.xml; }
+    copyUpstreamSchema() { cp ../../conf/solr/8.11.1/schema.xml data/solr/upstream-schema.xml; }
     AfterAll 'copyUpstreamSchema'
 
-    Path schema-xml="../../conf/solr/8.8.1/schema.xml"
+    Path schema-xml="../../conf/solr/8.11.1/schema.xml"
     It "needs upstream schema.xml"
       The path schema-xml should be exist
     End

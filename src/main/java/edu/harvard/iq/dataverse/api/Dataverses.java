@@ -7,7 +7,10 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseMetadataBlockFacet;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
+import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -15,7 +18,6 @@ import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -28,6 +30,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AddRoleAssigneesToExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -38,6 +41,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetRootCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseStorageSizeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
@@ -46,6 +50,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListExplicitGroupsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlockFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
@@ -59,6 +64,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
@@ -87,7 +93,6 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonParsingException;
-import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -112,6 +117,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -147,6 +153,9 @@ public class Dataverses extends AbstractApiBean {
     
     @EJB
     DataverseServiceBean dataverseService;
+
+    @EJB
+    SwordServiceBean swordService;
 
     @POST
     public Response addRoot(String body) {
@@ -219,6 +228,7 @@ public class Dataverses extends AbstractApiBean {
     @Consumes("application/json")
     public Response createDataset(String jsonBody, @PathParam("identifier") String parentIdtf) {
         try {
+            logger.fine("Json is: " + jsonBody);
             User u = findUserOrDie();
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
@@ -232,11 +242,16 @@ public class Dataverses extends AbstractApiBean {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.superuserFiles"));
             }
 
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
+
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
+            version.getTermsOfUseAndAccess().setFileAccessRequest(true);
+            version.getTermsOfUseAndAccess().setDatasetVersion(version);
 
             ds.setAuthority(null);
             ds.setIdentifier(null);
@@ -286,7 +301,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false); 
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc);
             
             ds.setOwner(owner);
 
@@ -295,11 +310,16 @@ public class Dataverses extends AbstractApiBean {
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
+            version.getTermsOfUseAndAccess().setFileAccessRequest(true);
+            version.getTermsOfUseAndAccess().setDatasetVersion(version);
 
             ds.setAuthority(null);
             ds.setIdentifier(null);
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
+            
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
             Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
@@ -328,6 +348,9 @@ public class Dataverses extends AbstractApiBean {
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Supplied json must contain a single dataset version.");
             }
+
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
             DatasetVersion version = ds.getVersions().get(0);
             if (version.getVersionState() == null) {
@@ -396,6 +419,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = null;
             try {
                 ds = jsonParser().parseDataset(importService.ddiToJson(xml));
+                DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
             } catch (JsonParseException jpe) {
                 return badRequest("Error parsing data as Json: "+jpe.getMessage());
             } catch (ImportException e) {
@@ -403,6 +427,9 @@ public class Dataverses extends AbstractApiBean {
             } catch (XMLStreamException e) {
                 return badRequest("Invalid file content: "+e.getMessage());
             }
+
+            swordService.addDatasetSubjectIfMissing(ds.getLatestVersion());
+
             ds.setOwner(owner);
             if (nonEmpty(pidParam)) {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
@@ -468,7 +495,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true); 
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc);
           //ToDo - verify PID is one Dataverse can manage (protocol/authority/shoulder match)
             if(!
             (ds.getAuthority().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Authority))&& 
@@ -479,8 +506,10 @@ public class Dataverses extends AbstractApiBean {
             if(!datasetSvc.isIdentifierLocallyUnique(ds)) {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
-
             
+            //Throw BadRequestException if metadataLanguage isn't compatible with setting
+            DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
+
 
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Supplied json must contain a single dataset version.");
@@ -679,6 +708,78 @@ public class Dataverses extends AbstractApiBean {
             // by passing null for Featured Dataverses and DataverseFieldTypeInputLevel, those are not changed
             execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(findUserOrDie()), null));
             return ok("Facets of dataverse " + dvIdtf + " updated.");
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @GET
+    @Path("{identifier}/metadatablockfacets")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listMetadataBlockFacets(@PathParam("identifier") String dvIdtf) {
+        try {
+            User u = findUserOrDie();
+            DataverseRequest request = createDataverseRequest(u);
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            List<DataverseMetadataBlockFacet> metadataBlockFacets = Optional.ofNullable(execCommand(new ListMetadataBlockFacetsCommand(request, dataverse))).orElse(Collections.emptyList());
+            List<DataverseMetadataBlockFacetDTO.MetadataBlockDTO> metadataBlocksDTOs = metadataBlockFacets.stream()
+                    .map(item -> new DataverseMetadataBlockFacetDTO.MetadataBlockDTO(item.getMetadataBlock().getName(), item.getMetadataBlock().getLocaleDisplayFacet()))
+                    .collect(Collectors.toList());
+            DataverseMetadataBlockFacetDTO response = new DataverseMetadataBlockFacetDTO(dataverse.getId(), dataverse.getAlias(), dataverse.isMetadataBlockFacetRoot(), metadataBlocksDTOs);
+            return Response.ok(response).build();
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    @POST
+    @Path("{identifier}/metadatablockfacets")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setMetadataBlockFacets(@PathParam("identifier") String dvIdtf, List<String> metadataBlockNames) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+
+            if(!dataverse.isMetadataBlockFacetRoot()) {
+                return badRequest(String.format("Dataverse: %s must have metadata block facet root set to true", dvIdtf));
+            }
+
+            List<DataverseMetadataBlockFacet> metadataBlockFacets = new LinkedList<>();
+            for(String metadataBlockName: metadataBlockNames) {
+                MetadataBlock metadataBlock = findMetadataBlock(metadataBlockName);
+                if (metadataBlock == null) {
+                    return badRequest(String.format("Invalid metadata block name: %s", metadataBlockName));
+                }
+
+                DataverseMetadataBlockFacet metadataBlockFacet = new DataverseMetadataBlockFacet();
+                metadataBlockFacet.setDataverse(dataverse);
+                metadataBlockFacet.setMetadataBlock(metadataBlock);
+                metadataBlockFacets.add(metadataBlockFacet);
+            }
+
+            execCommand(new UpdateMetadataBlockFacetsCommand(createDataverseRequest(findUserOrDie()), dataverse, metadataBlockFacets));
+            return ok(String.format("Metadata block facets updated. DataverseId: %s blocks: %s", dvIdtf, metadataBlockNames));
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @POST
+    @Path("{identifier}/metadatablockfacets/isRoot")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateMetadataBlockFacetsRoot(@PathParam("identifier") String dvIdtf, String body) {
+        try {
+            final boolean blockFacetsRoot = parseBooleanOrDie(body);
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            if(dataverse.isMetadataBlockFacetRoot() == blockFacetsRoot) {
+                return ok(String.format("No update needed, dataverse already consistent with new value. DataverseId: %s blockFacetsRoot: %s", dvIdtf, blockFacetsRoot));
+            }
+
+            execCommand(new UpdateMetadataBlockFacetRootCommand(createDataverseRequest(findUserOrDie()), dataverse, blockFacetsRoot));
+            return ok(String.format("Metadata block facets root updated. DataverseId: %s blockFacetsRoot: %s", dvIdtf, blockFacetsRoot));
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();

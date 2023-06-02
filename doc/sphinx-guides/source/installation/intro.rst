@@ -39,6 +39,17 @@ To get help installing or configuring a Dataverse installation, please try one o
 - asking at http://chat.dataverse.org
 - emailing support@dataverse.org to open a private ticket at https://help.hmdc.harvard.edu
 
+Information to Send to Support When Installation Fails
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you've encountered a problem installing Dataverse and are ready to ask for help, please consider sending along the following information so that the Dataverse team and community can more easily assist you.
+
+- Version of Dataverse you are trying to install.
+- Operating system (usually a Linux distribution) and version.
+- Output from the installer (STDOUT, STDERR).
+- The ``scripts/api/setup-all.*.log`` files left behind by the installer.
+- The ``server.log`` file from Payara (by default at ``/usr/local/payara5/glassfish/domains/domain1/logs/server.log``).
+
 Improving this Guide
 --------------------
 

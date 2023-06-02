@@ -60,7 +60,9 @@
                         <p>
                             <h:outputText styleClass="highlightBold" value="#{bundle['contact.question']}"/> <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                         </p>
-                        <h:outputFormat value="#{sendFeedbackDialog.op1} + #{sendFeedbackDialog.op2} = "/>
+                        <label for="emailForm:messageSum">
+                            <h:outputFormat value="#{sendFeedbackDialog.op1} + #{sendFeedbackDialog.op2} = "/>
+                        </label>
                         <p:inputText id="messageSum" label="Sum" size="4" value="#{sendFeedbackDialog.userSum}" converterMessage="#{bundle['contact.sum.converterMessage']}"
                                      required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['contact.sum.required']}"
                                      validatorMessage="#{bundle['contact.sum.invalid']}" validator="#{sendFeedbackDialog.validateUserSum}"

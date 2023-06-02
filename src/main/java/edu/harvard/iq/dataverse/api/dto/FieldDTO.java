@@ -290,6 +290,10 @@ public class FieldDTO {
         }
     }
 
+    public boolean isControlledVocabularyField() {
+        return getTypeClass().equals("controlledVocabulary");
+    }
+    
     @Override
     public int hashCode() {
         int hash = 3;
