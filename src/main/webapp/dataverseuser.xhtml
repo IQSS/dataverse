@@ -422,6 +422,7 @@
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'STATUSUPDATED'}">
+                                                    <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
                                                     <span class="icon-dataset text-icon-inline text-muted"></span>
                                                     <h:outputFormat value="#{bundle['notification.statusUpdated']}" escape="false">
                                                         <o:param>
