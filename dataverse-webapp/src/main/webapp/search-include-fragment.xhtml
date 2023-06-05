@@ -259,7 +259,8 @@
                     <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
                         <!--BROWSE GUEST ZERO COUNTS-->
                         <p>
-                            <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.zero']}" escape="false">
+                            <h:outputFormat value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.empty.browse.guest.zero.signup'] : bundle['dataverse.results.empty.browse.guest.zero']}"
+                                            escape="false">
                                 <f:param value="#{navigationWrapper.redirectPage}"/>
                             </h:outputFormat>
                         </p>
@@ -267,7 +268,8 @@
                     <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses gt 0 or SearchIncludeFragment.facetCountDatasets gt 0 or SearchIncludeFragment.facetCountFiles gt 0}">
                         <!--BROWSE GUEST HIDDEN-->
                         <p>
-                            <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.hidden']}" escape="false">
+                            <h:outputFormat value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.empty.browse.guest.hidden.signup'] : bundle['dataverse.results.empty.browse.guest.hidden']}"
+                                            escape="false">
                                 <f:param value="#{navigationWrapper.redirectPage}"/>
                             </h:outputFormat>
                         </p>
