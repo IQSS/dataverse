@@ -60,11 +60,15 @@ jobs:
           - run: rm -rf ~/.m2/repository/edu/harvard/iq/dataverse
 
           # Store the build for the next step (integration test) to avoid recompilation and to transfer coverage reports
-          - run: tar -cvf java-builddir.tar target
+          - run: |
+                tar -cvf java-builddir.tar target
+                tar -cvf java-m2-selection.tar ~/.m2/repository/io/gdcc/dataverse-*
           - uses: actions/upload-artifact@v3
             with:
-                name: java-builddir
-                path: java-builddir.tar
+                name: java-artifacts
+                path: |
+                    java-builddir.tar
+                    java-m2-selection.tar
                 retention-days: 3
 
     integration-test:
@@ -100,11 +104,12 @@ jobs:
             # Get the build output from the unit test job
             - uses: actions/download-artifact@v3
               with:
-                  name: java-builddir
-            - run: tar -xvf java-builddir.tar
+                  name: java-artifacts
+            - run: |
+                tar -xvf java-builddir.tar
+                tar -xvf java-m2-selection.tar -C /
 
             # Run integration tests (but not unit tests again)
-            # TODO - adopt to parent module
             - run: mvn -DskipUnitTests -Dtarget.java.version=${{ matrix.jdk }} verify
 
             # Wrap up and send to coverage job
@@ -148,6 +153,7 @@ jobs:
                 jacoco:report coveralls:report
 
           # NOTE: this may be extended with adding a report to the build output, leave a comment, send to Sonarcloud, ...
+
     push-app-img:
         name: Publish App Image
         permissions:
