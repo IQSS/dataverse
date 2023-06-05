@@ -135,5 +135,4 @@ public class ShibGroup implements Group, Serializable {
     public boolean contains(DataverseRequest aRequest) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
 }
