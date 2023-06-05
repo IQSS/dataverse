@@ -270,6 +270,10 @@ public class SystemConfig {
         return getFromBundleIfEmptyLocalizedProperty(Key.AccessibilityStatement, locale, "system.accessibility.statement");
     }
 
+    public String getLoginInfo(Locale locale) {
+        return getLocalizedProperty(SettingsServiceBean.Key.LoginInfo, locale);
+    }
+
     public long getTabularIngestSizeLimit() {
         // This method will return the blanket ingestable size limit, if
         // set on the system. I.e., the universal limit that applies to all

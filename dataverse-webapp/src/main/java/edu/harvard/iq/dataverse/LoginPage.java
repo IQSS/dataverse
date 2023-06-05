@@ -7,14 +7,14 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
-import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.omnifaces.cdi.ViewScoped;
 
-import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -24,6 +24,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,6 +57,7 @@ public class LoginPage implements java.io.Serializable {
     private AuthenticationServiceBean authSvc;
     private SettingsServiceBean settingsService;
     private DataverseRequestServiceBean dvRequestService;
+    private SystemConfig systemConfig;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -63,13 +65,15 @@ public class LoginPage implements java.io.Serializable {
     public LoginPage() { }
 
     @Inject
-    public LoginPage(DataverseSession session, DataverseDao dataverseDao, AuthenticationServiceBean authSvc,
-                     SettingsServiceBean settingsService, DataverseRequestServiceBean dvRequestService) {
+    public LoginPage(DataverseSession session, DataverseDao dataverseDao,
+                     AuthenticationServiceBean authSvc, SettingsServiceBean settingsService,
+                     DataverseRequestServiceBean dvRequestService, SystemConfig systemConfig) {
         this.session = session;
         this.dataverseDao = dataverseDao;
         this.authSvc = authSvc;
         this.settingsService = settingsService;
         this.dvRequestService = dvRequestService;
+        this.systemConfig = systemConfig;
     }
 
     // -------------------- GETTERS --------------------
@@ -104,6 +108,10 @@ public class LoginPage implements java.io.Serializable {
 
     public int getNumFailedLoginAttempts() {
         return numFailedLoginAttempts;
+    }
+
+    public AuthenticationProvider getAuthProvider() {
+        return authProvider;
     }
 
     // -------------------- LOGIC --------------------
@@ -250,6 +258,20 @@ public class LoginPage implements java.io.Serializable {
         }
     }
 
+    public String getLoginInfo() {
+        return systemConfig.getLoginInfo(session.getLocale());
+    }
+
+    public String getSignUpRedirect() {
+        String url = settingsService.getValueForKey(SettingsServiceBean.Key.SignUpUrl);
+        List<String> params = new ArrayList<>();
+        if (StringUtils.isNotBlank(redirectPage)) {
+            params.add("redirectPage=" + redirectPage);
+        }
+        params.add("faces-redirect=true");
+        return url + (url.contains("?") ? "&" : "?") + String.join("&", params);
+    }
+
     // -------------------- PRIVATE --------------------
 
     private String redirectToRoot() {
@@ -276,10 +298,6 @@ public class LoginPage implements java.io.Serializable {
 
     public void setFilledCredentials(List<FilledCredential> filledCredentials) {
         this.filledCredentials = filledCredentials;
-    }
-
-    public AuthenticationProvider getAuthProvider() {
-        return authProvider;
     }
 
     // -------------------- INNER CLASSES --------------------

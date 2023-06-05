@@ -711,7 +711,13 @@ public class SettingsServiceBean {
          * for matching url in saml assertions with the server
          * url
          */
-        SamlWrapHttpRequestUrl
+        SamlWrapHttpRequestUrl,
+
+        /**
+         * Additional (localized) text to show at the top
+         * of the login page.
+         */
+        LoginInfo
         ;
 
 
