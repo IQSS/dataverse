@@ -36,6 +36,7 @@ public enum IngestError {
     RTAB_UNREDABLE_BOOLEAN,
     RTAB_VARQNTY_MISSING,
     RTAB_VARQNTY_ZERO,
+    GENERAL_TOO_MANY_VARIABLES,
     UNKNOWN_ERROR;
 
     public static String ERROR_KEY_PREFIX = "ingest.error.";

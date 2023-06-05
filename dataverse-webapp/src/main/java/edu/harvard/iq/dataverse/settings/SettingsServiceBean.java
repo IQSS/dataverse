@@ -267,6 +267,11 @@ public class SettingsServiceBean {
          */
         IngestMethodChangeThreshold,
         /**
+         * If the number of variables of ingested file exceeds that limit,
+         * the ingest will fail.
+         */
+        IngestedVariablesLimit,
+        /**
          * Whether to allow user to create GeoConnect Maps
          * This boolean effects whether the user sees the map button on
          * the dataset page and if the ingest will create a shape file

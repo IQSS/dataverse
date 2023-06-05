@@ -524,6 +524,11 @@ public class IngestServiceBean {
         TabularDataIngest tabDataIngest;
         try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(localFile.get()))) {
             tabDataIngest = ingestPlugin.read(Tuple.of(inputStream, localFile.get()), additionalData);
+            Long variablesLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.IngestedVariablesLimit);
+            Long varQuantity = tabDataIngest.getDataTable().getVarQuantity();
+            if (variablesLimit < varQuantity) {
+                throw new IngestException(IngestError.GENERAL_TOO_MANY_VARIABLES, variablesLimit.toString(), varQuantity.toString());
+            }
         } catch (IngestException ex) {
             dataFile.setIngestProblem();
 
