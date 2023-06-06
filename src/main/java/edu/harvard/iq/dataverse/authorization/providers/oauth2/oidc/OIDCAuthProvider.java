@@ -191,7 +191,9 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         
         // Cache the PKCE verifier, as we need the secret in it for verification later again, after the client sends us
         // the auth code! We use the state to cache the verifier, as the state is unique per authentication event.
-        this.verifierCache.put(state, pkceVerifier);
+        if (pkceVerifier != null) {
+            this.verifierCache.put(state, pkceVerifier);
+        }
         
         return req.toURI().toString();
     }
