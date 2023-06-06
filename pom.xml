@@ -747,6 +747,7 @@
                         <configuration>
                             <destFile>${project.build.directory}/coverage-reports/jacoco-integration.exec</destFile>
                             <propertyName>failsafe.jacoco.args</propertyName>
+                            <skip>${skipIntegrationTests}</skip>
                         </configuration>
                     </execution>
                     <execution>
@@ -758,6 +759,7 @@
                         <configuration>
                             <dataFile>${project.build.directory}/coverage-reports/jacoco-integration.exec</dataFile>
                             <outputDirectory>${project.reporting.outputDirectory}/jacoco-integration-test-coverage-report</outputDirectory>
+                            <skip>${skipIntegrationTests}</skip>
                         </configuration>
                     </execution>
                     <execution>
@@ -776,6 +778,7 @@
                                 </fileSet>
                             </fileSets>
                             <destFile>${project.build.directory}/coverage-reports/merged.exec</destFile>
+                            <skip>${skipIntegrationTests}</skip>
                         </configuration>
                     </execution>
                     <execution>
@@ -787,6 +790,7 @@
                         <configuration>
                             <dataFile>${project.build.directory}/coverage-reports/merged.exec</dataFile>
                             <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
+                            <skip>${skipIntegrationTests}</skip>
                         </configuration>
                     </execution>
                 </executions>
@@ -824,6 +828,7 @@
                 <configuration>
                     <groups>testcontainers</groups>
                     <argLine>${failsafe.jacoco.args} ${argLine}</argLine>
+                    <skip>${skipIntegrationTests}</skip>
                 </configuration>
                 <executions>
                     <execution>
