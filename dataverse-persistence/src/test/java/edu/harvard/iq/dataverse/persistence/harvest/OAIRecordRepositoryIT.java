@@ -20,7 +20,6 @@ public class OAIRecordRepositoryIT extends PersistenceArquillianDeployment {
     @Inject
     private OAIRecordRepository repository;
 
-
     @Before
     public void setUp() {
         repository.save(new OAIRecord("", "global_id_1", Date.from(Instant.parse("2007-12-03T10:15:29.00Z"))));
@@ -189,4 +188,26 @@ public class OAIRecordRepositoryIT extends PersistenceArquillianDeployment {
             .noneMatch(setName -> StringUtils.equals(setName, "oai_set_2"));
     }
 
+    @Test
+    public void findEarliestDate() {
+        // when
+        Date earliestDate = repository.findEarliestDate();
+
+        // then
+        assertThat(earliestDate).isEqualTo("2007-12-03T10:15:29.00Z");
+    }
+
+    @Test
+    public void findEarliestDate__noRecords() {
+        // given
+        for (OAIRecord record : repository.findAll()) {
+            repository.delete(record);
+        }
+
+        // when
+        Date earliestDate = repository.findEarliestDate();
+
+        // then
+        assertThat(earliestDate).isNull();
+    }
 }

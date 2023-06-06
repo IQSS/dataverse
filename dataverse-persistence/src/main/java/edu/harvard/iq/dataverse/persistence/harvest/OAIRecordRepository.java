@@ -7,9 +7,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -29,24 +27,30 @@ public class OAIRecordRepository extends JpaRepository<Long, OAIRecord> {
             .setParameter("setName", setName)
             .getResultList();
     }
-    
+
     public List<OAIRecord> findBySetNameAndRemoved(String setName, boolean removed) {
         return em.createQuery("SELECT r from OAIRecord r where r.setName = :setName and r.removed = :removed", OAIRecord.class)
             .setParameter("setName", setName)
             .setParameter("removed", removed)
             .getResultList();
     }
-    
+
     public List<OAIRecord> findByGlobalId(String globalId) {
         return em.createQuery("SELECT r from OAIRecord r where r.globalId = :globalId", OAIRecord.class)
                 .setParameter("globalId", globalId)
                 .getResultList();
     }
-    
+
     public List<OAIRecord> findByGlobalIds(List<String> globalIds) {
         return em.createQuery("SELECT r from OAIRecord r where r.globalId in :globalIds", OAIRecord.class)
                 .setParameter("globalIds", globalIds)
                 .getResultList();
+    }
+
+    public Date findEarliestDate() {
+        List<java.sql.Date> dates = em.createQuery("SELECT min(r.lastUpdateTime) FROM OAIRecord r", java.sql.Date.class)
+                .getResultList();
+        return dates.isEmpty() ? null : dates.get(0);
     }
 
     public List<OAIRecord> findBySetNameAndLastUpdateBetween(String setName, Date from, Date until) {
@@ -54,7 +58,7 @@ public class OAIRecordRepository extends JpaRepository<Long, OAIRecord> {
 
         CriteriaQuery<OAIRecord> query = criteriaBuilder.createQuery(OAIRecord.class);
         Root<OAIRecord> root = query.from(OAIRecord.class);
-        
+
         List<Predicate> predicates = new ArrayList<>();
         predicates.add(criteriaBuilder.equal(root.get("setName"), setName));
 
@@ -67,7 +71,7 @@ public class OAIRecordRepository extends JpaRepository<Long, OAIRecord> {
         query.select(root)
             .where(predicates.toArray(new Predicate[]{}))
             .orderBy(criteriaBuilder.asc(root.get("globalId")));
-        
+
         return em.createQuery(query).getResultList();
     }
 

@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-
 import com.lyncode.builder.Builder;
+import org.apache.log4j.Logger;
 import org.dspace.xoai.dataprovider.exceptions.BadArgumentException;
 import org.dspace.xoai.dataprovider.exceptions.BadResumptionToken;
 import org.dspace.xoai.dataprovider.exceptions.DuplicateDefinitionException;
@@ -23,7 +23,6 @@ import org.dspace.xoai.model.oaipmh.OAIPMH;
 import org.dspace.xoai.model.oaipmh.Request;
 import org.dspace.xoai.services.api.DateProvider;
 import org.dspace.xoai.services.impl.UTCDateProvider;
-import org.apache.log4j.Logger;
 
 import static org.dspace.xoai.dataprovider.parameters.OAIRequest.Parameter.From;
 import static org.dspace.xoai.dataprovider.parameters.OAIRequest.Parameter.Identifier;
@@ -54,6 +53,8 @@ public class XdataProvider {
     private final ListMetadataFormatsHandler listMetadataFormatsHandler;
     private final ErrorHandler errorsHandler;
 
+    // -------------------- CONSTRUCTORS --------------------
+
     public XdataProvider(Context context, Repository repository) {
         this.repository = repository;
         this.dateProvider = new UTCDateProvider();
@@ -63,10 +64,12 @@ public class XdataProvider {
         this.listMetadataFormatsHandler = new ListMetadataFormatsHandler(context, repository);
         this.listRecordsHandler = new XlistRecordsHandler(context, repository);
         this.listIdentifiersHandler = new ListIdentifiersHandler(context, repository);
-        //this.getRecordHandler = new GetRecordHandler(context, repository);
+        // this.getRecordHandler = new GetRecordHandler(context, repository);
         this.getRecordHandler = new XgetRecordHandler(context, repository);
         this.errorsHandler = new ErrorHandler();
     }
+
+    // -------------------- LOGIC --------------------
 
     public OAIPMH handle(Builder<OAIRequest> builder) throws OAIException {
         return handle(builder.build());
@@ -117,6 +120,8 @@ public class XdataProvider {
         return response;
     }
 
+    // -------------------- PRIVATE --------------------
+
     private OAICompiledRequest compileParameters(OAIRequest requestParameters) throws IllegalVerbException, UnknownParameterException, BadArgumentException, DuplicateDefinitionException, BadResumptionToken {
         try {
             return requestParameters.compile();
@@ -124,5 +129,4 @@ public class XdataProvider {
             throw new BadResumptionToken("The resumption token is invalid");
         }
     }
-
 }
