@@ -782,6 +782,8 @@
                 <app.image.tag>unstable</app.image.tag>
                 <base.image>gdcc/base:${base.image.tag}</base.image>
                 <base.image.tag>unstable</base.image.tag>
+                <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
+                <conf.image.tag>${app.image.tag}</conf.image.tag>
     
                 <docker.platforms></docker.platforms>
             
@@ -836,23 +838,8 @@
                                             <descriptor>assembly.xml</descriptor>
                                         </assembly>
                                     </build>
-                                
+                                    
                                     <run>
-                                        <!-- <autoRemove>true</autoRemove> -->
-                                        <!--
-                                        <wait>
-                                            <http>
-                                                <url>http://localhost:8080/robots.txt</url>
-                                                <method>GET</method>
-                                                <status>200..399</status>
-                                            </http>
-                                            <log>dataverse was successfully deployed</log>
-                                            <time>${ct.run.wait}</time>
-                                            <exec>
-                                                <postStart>/opt/payara/scripts/bootstrap-job.sh</postStart>
-                                            </exec>
-                                        </wait>
-                                        -->
                                     </run>
                                     
                                     <external>
@@ -860,6 +847,35 @@
                                         <basedir>${project.basedir}</basedir>
                                         <composeFile>docker-compose-dev.yml</composeFile>
                                     </external>
+                                </image>
+                                
+                                <image>
+                                    <alias>dev_bootstrap</alias>
+                                    <name>${conf.image}</name>
+                                    <build>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>${docker.platforms}</platform>
+                                            </platforms>
+                                        </buildx>
+                                        <dockerFile>${project.basedir}/modules/container-configbaker/Dockerfile</dockerFile>
+                                        <args>
+                                            <SOLR_VERSION>${SOLR_VERSION}</SOLR_VERSION>
+                                        </args>
+                                        <filter>@</filter>
+                                        <assembly>
+                                            <descriptor>${project.basedir}/modules/container-configbaker/assembly.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                    
+                                    <!--
+                                        We skip the run here as it is already included in the external run config
+                                        above for the main image via the docker-compose file. Even if using
+                                        -Ddocker.filter=dev_bootstrap, the run config from above is still enforced.
+                                    -->
+                                    <run>
+                                        <skip>true</skip>
+                                    </run>
                                 </image>
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
