@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Developer Guide
-=======================================================
+===============
 
 **Contents:**
 
@@ -27,6 +27,7 @@ Developer Guide
    deployment
    containers
    making-releases
+   metadataexport
    tools
    unf/index
    make-data-count
