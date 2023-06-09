@@ -352,7 +352,7 @@ public class IndexServiceBean {
     @TransactionAttribute(REQUIRES_NEW)
     public void indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
-        Dataset dataset = em.find(Dataset.class, datasetId);
+        Dataset dataset = datasetService.findDeep(datasetId);
         asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
         dataset = null;
     }
@@ -1694,7 +1694,11 @@ public class IndexServiceBean {
                 sid.addField(fieldName, doc.getFieldValue(fieldName));
             }
 
-            List<String> paths =  object.isInstanceofDataset() ? retrieveDVOPaths(datasetService.find(object.getId()))
+            Dataset dataset = null;
+            if (object.isInstanceofDataset()) {
+                dataset = datasetService.findDeep(object.getId());
+            }
+            List<String> paths = object.isInstanceofDataset() ? retrieveDVOPaths(dataset)
                     : retrieveDVOPaths(dataverseService.find(object.getId()));
 
             sid.removeField(SearchFields.SUBTREE);
@@ -1702,7 +1706,7 @@ public class IndexServiceBean {
             UpdateResponse addResponse = solrClientService.getSolrClient().add(sid);
             UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
             if (object.isInstanceofDataset()) {
-                for (DataFile df : datasetService.find(object.getId()).getFiles()) {
+                for (DataFile df : dataset.getFiles()) {
                     solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, df.getId().toString()));
                     res = solrClientService.getSolrClient().query(solrQuery);
                     if (!res.getResults().isEmpty()) {
