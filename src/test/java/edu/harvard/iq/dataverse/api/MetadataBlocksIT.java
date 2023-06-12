@@ -4,18 +4,18 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 import static javax.ws.rs.core.Response.Status.OK;
 import org.hamcrest.CoreMatchers;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class MetadataBlocksIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
     @Test
-    public void testGetCitationBlock() {
+    void testGetCitationBlock() {
         Response getCitationBlock = UtilIT.getMetadataBlock("citation");
         getCitationBlock.prettyPrint();
         getCitationBlock.then().assertThat()
