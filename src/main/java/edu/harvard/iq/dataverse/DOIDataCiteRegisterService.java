@@ -23,6 +23,8 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -53,7 +55,11 @@ public class DOIDataCiteRegisterService {
     
     private DataCiteRESTfullClient getClient() throws IOException {
         if (client == null) {
-            client = new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
+            client = new DataCiteRESTfullClient(
+                JvmSettings.DATACITE_MDS_API_URL.lookup(),
+                JvmSettings.DATACITE_USERNAME.lookup(),
+                JvmSettings.DATACITE_PASSWORD.lookup()
+            );
         }
         return client;
     }

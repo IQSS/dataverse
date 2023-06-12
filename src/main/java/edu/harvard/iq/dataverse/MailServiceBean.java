@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -81,37 +82,6 @@ public class MailServiceBean implements java.io.Serializable {
     public MailServiceBean() {
     }
 
-    public void sendMail(String host, String reply, String to, String subject, String messageText) {
-        Properties props = System.getProperties();
-        props.put("mail.smtp.host", host);
-        Session session = Session.getDefaultInstance(props, null);
-
-        try {
-            MimeMessage msg = new MimeMessage(session);
-            String[] recipientStrings = to.split(",");
-            InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
-            try {
-            	InternetAddress fromAddress = getSystemAddress();
-                setContactDelegation(reply, fromAddress);
-                msg.setFrom(fromAddress);
-                msg.setReplyTo(new Address[] {new InternetAddress(reply, charset)});
-                for (int i = 0; i < recipients.length; i++) {
-                    recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
-                }
-            } catch (UnsupportedEncodingException ex) {
-                logger.severe(ex.getMessage());
-            }
-            msg.setRecipients(Message.RecipientType.TO, recipients);
-            msg.setSubject(subject, charset);
-            msg.setText(messageText, charset);
-            Transport.send(msg, recipients);
-        } catch (AddressException ae) {
-            ae.printStackTrace(System.out);
-        } catch (MessagingException me) {
-            me.printStackTrace(System.out);
-        }
-    }
-
     @Resource(name = "mail/notifyMailSession")
     private Session session;
 
@@ -177,11 +147,7 @@ public class MailServiceBean implements java.io.Serializable {
     }
 
     //@Resource(name="mail/notifyMailSession")
-    public void sendMail(String from, String to, String subject, String messageText) {
-        sendMail(from, to, subject, messageText, new HashMap<>());
-    }
-
-    public void sendMail(String reply, String to, String subject, String messageText, Map<Object, Object> extraHeaders) {
+    public void sendMail(String reply, String to, String cc, String subject, String messageText) {
         try {
             MimeMessage msg = new MimeMessage(session);
             // Always send from system address to avoid email being blocked
@@ -202,17 +168,11 @@ public class MailServiceBean implements java.io.Serializable {
             msg.setSentDate(new Date());
             msg.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(to, false));
+            if (cc != null) {
+                msg.setRecipients(Message.RecipientType.CC, InternetAddress.parse(cc, false));
+            }
             msg.setSubject(subject, charset);
             msg.setText(messageText, charset);
-
-            if (extraHeaders != null) {
-                for (Object key : extraHeaders.keySet()) {
-                    String headerName = key.toString();
-                    String headerValue = extraHeaders.get(key).toString();
-
-                    msg.addHeader(headerName, headerValue);
-                }
-            }
 
             Transport.send(msg);
         } catch (AddressException ae) {
@@ -535,7 +495,7 @@ public class MailServiceBean implements java.io.Serializable {
             case STATUSUPDATED:
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.status.change");
-                String[] paramArrayStatus = {version.getDataset().getDisplayName(), (version.getExternalStatusLabel()==null) ? "<none>" : version.getExternalStatusLabel()};
+                String[] paramArrayStatus = {version.getDataset().getDisplayName(), (version.getExternalStatusLabel()==null) ? "<none>" : DatasetUtil.getLocaleExternalStatus(version.getExternalStatusLabel())};
                 messageText += MessageFormat.format(pattern, paramArrayStatus);
                 return messageText;
             case CREATEACC:

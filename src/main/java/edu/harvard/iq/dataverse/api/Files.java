@@ -31,8 +31,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -47,6 +47,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,10 +56,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -311,6 +315,54 @@ public class Files extends AbstractApiBean {
         }
             
     } // end: replaceFileInDataset
+
+    /**
+     * Delete an Existing File 
+     * 
+     * @param id file ID or peristent ID
+     */
+    @DELETE
+    @AuthRequired
+    @Path("{id}")
+    public Response deleteFileInDataset(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId){
+        // (1) Get the user from the API key and create request
+        User authUser = getRequestUser(crc);
+        DataverseRequest dvRequest = createDataverseRequest(authUser);
+
+        // (2) Delete
+        boolean deletePhysicalFile = false;
+        try {
+            DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
+            FileMetadata fileToDelete = dataFile.getLatestFileMetadata();
+            Dataset dataset = dataFile.getOwner();
+            DatasetVersion v = dataset.getOrCreateEditVersion();
+            deletePhysicalFile = !dataFile.isReleased();
+
+            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest,  Arrays.asList(fileToDelete), v);
+            update_cmd.setValidateLenient(true);
+
+            try {
+                commandEngine.submit(update_cmd);
+            } catch (CommandException ex) {
+                return error(BAD_REQUEST, "Delete failed for file ID " + fileIdOrPersistentId + " (CommandException): " + ex.getMessage());
+            } catch (EJBException ex) {
+                return error(BAD_REQUEST, "Delete failed for file ID " + fileIdOrPersistentId + "(EJBException): " + ex.getMessage());
+            }
+    
+            if (deletePhysicalFile) {
+                try {
+                    fileService.finalizeFileDelete(dataFile.getId(), fileService.getPhysicalFileToDelete(dataFile));
+                } catch (IOException ioex) {
+                    logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                            + dataFile.getId() + ", storage location: " + fileService.getPhysicalFileToDelete(dataFile));
+                }
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        return ok(deletePhysicalFile);
+    }
     
     //Much of this code is taken from the replace command, 
     //simplified as we aren't actually switching files

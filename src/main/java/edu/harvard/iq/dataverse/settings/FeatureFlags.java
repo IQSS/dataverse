@@ -23,22 +23,19 @@ import java.util.Objects;
  * @see <a href="https://guides.dataverse.org/en/latest/developers/configuration.html#adding-a-feature-flag">Developer Guide</a>
  */
 public enum FeatureFlags {
-    
-    /* None yet - please add the first here. Example code with JavaDoc example:
-     *
-     * /**
-     *  * Your (short) description of what will happen when enabling here.
-     *  * @apiNote Raise flag by setting "dataverse.feature.flag-name"
-     *  * @since Dataverse 5.13
-     *  * /
-     * DESCRIPTIVE_NAME_HERE("flag-name"),
-     *
+
+    /**
+     * Enables API authentication via session cookie (JSESSIONID). Caution: Enabling this feature flag exposes the installation to CSRF risks
+     * @apiNote Raise flag by setting "dataverse.feature.api-session-auth"
+     * @since Dataverse 5.14
      */
-    
-    // This is used for testing only, thus no documentation! Might be removed when adding the first real flag
-    // and replace it in the unit test!
-    TEST_MODE("test_mode"),
-    
+    API_SESSION_AUTH("api-session-auth"),
+    /**
+     * Enables API authentication via Bearer Token.
+     * @apiNote Raise flag by setting "dataverse.feature.api-bearer-auth"
+     * @since Dataverse @TODO:
+     */
+    API_BEARER_AUTH("api-bearer-auth"),
     ;
     
     final String flag;
