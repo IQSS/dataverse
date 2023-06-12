@@ -1404,7 +1404,7 @@
             "multiple": true,
             "typeClass": "controlledVocabulary",
             "value": [
-              "cell counting",
+              "genome sequencing",
               "cell sorting",
               "clinical chemistry analysis",
               "DNA methylation profiling"
