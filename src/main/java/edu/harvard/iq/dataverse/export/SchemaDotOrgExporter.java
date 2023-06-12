@@ -1,16 +1,14 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
+import java.util.Locale;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -19,8 +17,8 @@ import javax.ws.rs.core.MediaType;
  * and available as an export format.
  * <p>
  * Do not make any backward incompatible changes unless it's absolutely
- * necessary and list them in the API Guide. The existing list is in the
- * "Native API" section.
+ * necessary and list them in the API Guide. The existing list is in the "Native
+ * API" section.
  * <p>
  * {@link SchemaDotOrgExporterTest} has most of the tests but
  * {@link DatasetVersionTest} has some as well. See
@@ -75,41 +73,33 @@ public class SchemaDotOrgExporter implements Exporter {
     public static final String NAME = "schema.org";
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
-        String jsonLdAsString = version.getJsonLd();
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonLdAsString));) {
-            JsonObject jsonLdJsonObject = jsonReader.readObject();
-            try {
-                outputStream.write(jsonLdJsonObject.toString().getBytes("UTF8"));
-            } catch (IOException ex) {
-                logger.info("IOException calling outputStream.write: " + ex);
-            }
-            try {
-                outputStream.flush();
-            } catch (IOException ex) {
-                logger.info("IOException calling outputStream.flush: " + ex);
-            }
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
+        try {
+            outputStream.write(dataProvider.getDatasetSchemaDotOrg().toString().getBytes("UTF8"));
+        } catch (IOException ex) {
+            logger.info("IOException calling outputStream.write: " + ex);
+        }
+        try {
+            outputStream.flush();
+        } catch (IOException ex) {
+            logger.info("IOException calling outputStream.flush: " + ex);
         }
     }
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return NAME;
     }
 
     @Override
-    public String getDisplayName() {
-        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.schemaDotOrg");
-    }
-
-    @Override
-    public Boolean isXMLFormat() {
-        return false;
+    public String getDisplayName(Locale locale) {
+        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.schemaDotOrg", locale);
     }
 
     @Override
     public Boolean isHarvestable() {
-        // Defer harvesting because the current effort was estimated as a "2": https://github.com/IQSS/dataverse/issues/3700
+        // Defer harvesting because the current effort was estimated as a "2":
+        // https://github.com/IQSS/dataverse/issues/3700
         return false;
     }
 
@@ -117,27 +107,6 @@ public class SchemaDotOrgExporter implements Exporter {
     public Boolean isAvailableToUsers() {
         return true;
     }
-
-    @Override
-    public String getXMLNameSpace() throws ExportException {
-        throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
-    }
-
-    @Override
-    public String getXMLSchemaLocation() throws ExportException {
-        throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
-    }
-
-    @Override
-    public String getXMLSchemaVersion() throws ExportException {
-        throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter doesn't need/doesn't currently take any parameters
-    }
-    
 
     @Override
     public String getMediaType() {
