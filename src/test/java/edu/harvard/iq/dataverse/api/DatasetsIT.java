@@ -81,8 +81,10 @@ import org.hamcrest.CoreMatchers;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.contains;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -113,6 +115,11 @@ public class DatasetsIT {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
                 .statusCode(200);
+
+        Response removeAnonymizedFieldTypeNames = UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+        removeAnonymizedFieldTypeNames.then().assertThat()
+                .statusCode(200);
+        
         /* With Dual mode, we can no longer mess with upload methods since native is now required for anything to work
                
         Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
@@ -135,6 +142,11 @@ public class DatasetsIT {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
                 .statusCode(200);
+
+        Response removeAnonymizedFieldTypeNames = UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+        removeAnonymizedFieldTypeNames.then().assertThat()
+                .statusCode(200);
+        
         /* See above
         Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
         removeDcmUrl.then().assertThat()
@@ -3069,58 +3081,70 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     @Test
     public void testGetDatasetSummaryFieldNames() {
         Response summaryFieldNamesResponse = UtilIT.getDatasetSummaryFieldNames();
-        summaryFieldNamesResponse.then().assertThat().statusCode(OK.getStatusCode());
-        JsonArray actualSummaryFields;
-        try (StringReader rdr = new StringReader(summaryFieldNamesResponse.body().asString())) {
-            actualSummaryFields = Json.createReader(rdr).readObject().getJsonArray("data");
-        }
-        assertFalse(actualSummaryFields.isEmpty());
+        summaryFieldNamesResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // check for any order
+                .body("data", hasItems("dsDescription", "subject", "keyword", "publication", "notesText"))
+                // check for exact order
+                .body("data", contains("dsDescription", "subject", "keyword", "publication", "notesText"));
     }
 
     @Test
     public void getPrivateUrlDatasetVersion() {
         Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
         // Non-anonymized test
-
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
-        UtilIT.privateUrlCreate(datasetId, apiToken, false);
+        UtilIT.privateUrlCreate(datasetId, apiToken, false).then().assertThat().statusCode(OK.getStatusCode());
         Response privateUrlGet = UtilIT.privateUrlGet(datasetId, apiToken);
+        privateUrlGet.then().assertThat().statusCode(OK.getStatusCode());
         String tokenForPrivateUrlUser = JsonPath.from(privateUrlGet.body().asString()).getString("data.token");
 
         // We verify that the response contains the dataset associated to the private URL token
         Response getPrivateUrlDatasetVersionResponse = UtilIT.getPrivateUrlDatasetVersion(tokenForPrivateUrlUser);
         getPrivateUrlDatasetVersionResponse.then().assertThat()
-                .body("data.datasetId", equalTo(datasetId))
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data.datasetId", equalTo(datasetId));
 
         // Test anonymized
-
         Response setAnonymizedFieldsSettingResponse = UtilIT.setSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames, "author");
         setAnonymizedFieldsSettingResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
-        UtilIT.privateUrlCreate(datasetId, apiToken, true);
+        UtilIT.privateUrlCreate(datasetId, apiToken, true).then().assertThat().statusCode(OK.getStatusCode());
         privateUrlGet = UtilIT.privateUrlGet(datasetId, apiToken);
+        privateUrlGet.then().assertThat().statusCode(OK.getStatusCode());
         tokenForPrivateUrlUser = JsonPath.from(privateUrlGet.body().asString()).getString("data.token");
 
         Response getPrivateUrlDatasetVersionAnonymizedResponse = UtilIT.getPrivateUrlDatasetVersion(tokenForPrivateUrlUser);
+        getPrivateUrlDatasetVersionAnonymizedResponse.prettyPrint();
 
         // We verify that the response is anonymized for the author field
         getPrivateUrlDatasetVersionAnonymizedResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
                 .body("data.datasetId", equalTo(datasetId))
                 .body("data.metadataBlocks.citation.fields[1].value", equalTo(BundleUtil.getStringFromBundle("dataset.anonymized.withheld")))
                 .body("data.metadataBlocks.citation.fields[1].typeClass", equalTo("primitive"))
-                .body("data.metadataBlocks.citation.fields[1].multiple", equalTo(false))
-                .statusCode(OK.getStatusCode());
+                .body("data.metadataBlocks.citation.fields[1].multiple", equalTo(false));
+
+        // Similar to the check above but doesn't rely on fields[1]
+        List<JsonObject> authors = with(getPrivateUrlDatasetVersionAnonymizedResponse.body().asString()).param("fieldToFind", "author")
+                .getJsonObject("data.metadataBlocks.citation.fields.findAll { fields -> fields.typeName == fieldToFind }");
+        Map firstAuthor = authors.get(0);
+        String value = (String) firstAuthor.get("value");
+        assertEquals(BundleUtil.getStringFromBundle("dataset.anonymized.withheld"), value);
 
         UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
 
@@ -3132,42 +3156,50 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     @Test
     public void getPrivateUrlDatasetVersionCitation() {
         Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
-        UtilIT.privateUrlCreate(datasetId, apiToken, false);
+        UtilIT.privateUrlCreate(datasetId, apiToken, false).then().assertThat().statusCode(OK.getStatusCode());
         Response privateUrlGet = UtilIT.privateUrlGet(datasetId, apiToken);
         String tokenForPrivateUrlUser = JsonPath.from(privateUrlGet.body().asString()).getString("data.token");
 
         Response getPrivateUrlDatasetVersionCitation = UtilIT.getPrivateUrlDatasetVersionCitation(tokenForPrivateUrlUser);
+        getPrivateUrlDatasetVersionCitation.prettyPrint();
+
         getPrivateUrlDatasetVersionCitation.then().assertThat()
+                .statusCode(OK.getStatusCode())
                 // We check that the returned message contains information expected for the citation string
-                .body("data.message", containsString("DRAFT VERSION"))
-                .statusCode(OK.getStatusCode());
+                .body("data.message", containsString("DRAFT VERSION"));
     }
 
     @Test
     public void getDatasetVersionCitation() {
         Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
-        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
         Response getDatasetVersionCitationResponse = UtilIT.getDatasetVersionCitation(datasetId, ":draft", apiToken);
         getDatasetVersionCitationResponse.prettyPrint();
 
         getDatasetVersionCitationResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
                 // We check that the returned message contains information expected for the citation string
-                .body("data.message", containsString("DRAFT VERSION"))
-                .statusCode(OK.getStatusCode());
+                .body("data.message", containsString("DRAFT VERSION"));
     }
 }
