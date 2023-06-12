@@ -1,53 +1,56 @@
+
+
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+        import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+        import io.gdcc.spi.export.ExportDataProvider;
+        import io.gdcc.spi.export.ExportException;
+        import io.gdcc.spi.export.Exporter;
+        import edu.harvard.iq.dataverse.util.BundleUtil;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.MediaType;
-import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+        import javax.json.JsonObject;
+        import javax.ws.rs.core.MediaType;
+        import javax.xml.stream.XMLStreamException;
+        import java.io.File;
+        import java.io.IOException;
+        import java.io.InputStream;
+        import java.io.OutputStream;
+        import java.nio.file.Path;
+        import java.nio.file.Paths;
+        import java.util.Locale;
+        import java.util.Optional;
 
 @AutoService(Exporter.class)
 public class PdfCodeBookExporter implements Exporter {
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return "pdf";
     }
 
     @Override
-    public String getDisplayName() {
-        return  BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.pdf") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.pdf") : "DDI PDF Codebook";
+    public String getDisplayName(Locale locale) {
+        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.pdf", locale);
+        return Optional.ofNullable(displayName).orElse("DDI pdf codebook");
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
-        try {
-            InputStream ddiInputStream;
-            try {
-                ddiInputStream = ExportService.getInstance().getExport(version.getDataset(), "ddi");
-            } catch(ExportException | IOException e) {
-                throw new ExportException ("Cannot open export_ddi cached file");
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
+        Optional<InputStream> ddiInputStreamOptional = dataProvider.getPrerequisiteInputStream();
+        if (ddiInputStreamOptional.isPresent()) {
+            try (InputStream ddiInputStream = ddiInputStreamOptional.get()) {
+                DdiExportUtil.datasetPdfDDI(ddiInputStream, outputStream);
+            } catch (IOException e) {
+                throw new ExportException("Cannot open export_ddi cached file");
+            } catch (XMLStreamException xse) {
+                throw new ExportException("Caught XMLStreamException performing DDI export");
             }
-            DdiExportUtil.datasetPdfDDI(ddiInputStream, outputStream);
-        } catch (XMLStreamException xse) {
-            throw new ExportException ("Caught XMLStreamException performing DDI export");
+        } else {
+            throw new ExportException("No prerequisite input stream found");
         }
-    }
-
-    @Override
-    public Boolean isXMLFormat() {
-        return false;
     }
 
     @Override
@@ -65,27 +68,16 @@ public class PdfCodeBookExporter implements Exporter {
     }
 
     @Override
-    public String getXMLNameSpace() throws ExportException {
-        return null;
-    }
-
-    @Override
-    public String getXMLSchemaLocation() throws ExportException {
-        return null;
-    }
-
-    @Override
-    public String getXMLSchemaVersion() throws ExportException {
-        return null;
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter does not uses or supports any parameters as of now.
+    public  Optional<String> getPrerequisiteFormatName() {
+        //This exporter relies on being able to get the output of the ddi exporter
+        return Optional.of("ddi");
     }
 
     @Override
     public String  getMediaType() {
-        return MediaType.WILDCARD;
+        return MediaType.TEXT_HTML;
     };
 }
+
+
+
