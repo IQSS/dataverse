@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -14,16 +9,26 @@ import edu.harvard.iq.dataverse.engine.command.exception.move.AdditionalMoveStat
 import edu.harvard.iq.dataverse.engine.command.exception.move.DatasetMoveStatus;
 import edu.harvard.iq.dataverse.engine.command.exception.move.MoveException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.notification.NotificationObjectType;
+import edu.harvard.iq.dataverse.notification.NotificationParameter;
+import edu.harvard.iq.dataverse.notification.NotificationParametersUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.link.DatasetLinkingDataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
+import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,9 +44,12 @@ import java.util.logging.Logger;
 public class MoveDatasetCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(MoveDatasetCommand.class.getCanonicalName());
-    final Dataset moved;
-    final Dataverse destination;
-    final Boolean force;
+
+    private final Dataset moved;
+    private final Dataverse destination;
+    private final Boolean force;
+
+    // -------------------- CONSTRUCTORS --------------------
 
     public MoveDatasetCommand(DataverseRequest aRequest, Dataset moved, Dataverse destination, Boolean force) {
         super(
@@ -53,6 +61,8 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         this.destination = destination;
         this.force = force;
     }
+
+    // -------------------- LOGIC --------------------
 
     @Override
     public void executeImpl(CommandContext ctxt)  {
@@ -80,9 +90,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
             List<Guestbook> gbs = destination.getGuestbooks();
             boolean inheritGuestbooksValue = !destination.isGuestbookRoot();
             if (inheritGuestbooksValue && destination.getOwner() != null) {
-                for (Guestbook pg : destination.getParentGuestbooks()) {
-                    gbs.add(pg);
-                }
+                gbs.addAll(destination.getParentGuestbooks());
             }
             if (gbs == null || !gbs.contains(gb)) {
                 if (force == null || !force) {
@@ -100,7 +108,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
             ownersToCheck.addAll(destination.getOwners());
         }
 
-        // if the dataset is linked to the new dataverse or any of 
+        // if the dataset is linked to the new dataverse or any of
         // its parent dataverses then remove the link
         List<DatasetLinkingDataverse> linkingDatasets = new ArrayList<>();
         if (moved.getDatasetLinkingDataverses() != null) {
@@ -140,6 +148,8 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         moved.setOwner(destination);
         ctxt.em().merge(moved);
 
+        sendNotificationIfInReview(ctxt);
+
         try {
             boolean doNormalSolrDocCleanUp = true;
             ctxt.index().indexDataset(moved, doNormalSolrDocCleanUp);
@@ -148,5 +158,35 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
             throw new MoveException("Dataset could not be moved. Indexing failed", this,
                     DatasetMoveStatus.INDEXING_ISSUE);
         }
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private void sendNotificationIfInReview(CommandContext ctxt) {
+        if (moved.getLatestVersion().isInReview()) {
+            Map<String, String> parameters = createParams(ctxt);
+            List<AuthenticatedUser> curators = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, moved);
+            Timestamp timestamp = new Timestamp(new Date().getTime());
+            curators.forEach(c -> ctxt.notifications()
+                    .sendNotificationWithEmail(c, timestamp, NotificationType.SUBMITTEDDS,
+                            moved.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION, parameters));
+        }
+    }
+
+    private Map<String, String> createParams(CommandContext ctxt) {
+        UserNotification lastSubmitNotification;
+        DatasetLock submitLock;
+        Map<String, String> parameters = new HashMap<>();
+        if ((lastSubmitNotification = ctxt.notifications().findLastSubmitNotificationForDataset(moved)) != null) {
+            Map<String, String> lastSubmitParams = new NotificationParametersUtil().getParameters(lastSubmitNotification);
+            parameters.put(NotificationParameter.REQUESTOR_ID.key(),
+                    lastSubmitParams.get(NotificationParameter.REQUESTOR_ID.key()));
+            parameters.put(NotificationParameter.MESSAGE.key(),
+                    lastSubmitParams.get(NotificationParameter.MESSAGE.key()));
+        } else if ((submitLock = moved.getLockFor(DatasetLock.Reason.InReview)) != null) {
+            AuthenticatedUser requestor = submitLock.getUser();
+            parameters.put(NotificationParameter.REQUESTOR_ID.key(), requestor.getId().toString());
+        }
+        return parameters;
     }
 }

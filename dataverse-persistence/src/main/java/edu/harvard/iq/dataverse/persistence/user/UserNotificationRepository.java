@@ -56,4 +56,13 @@ public class UserNotificationRepository extends JpaRepository<Long, UserNotifica
                 .executeUpdate();
     }
 
+    public UserNotification findLastSubmitNotificationByObjectId(long datasetId) {
+        List<UserNotification> notifications = em.createQuery("SELECT un FROM UserNotification un " +
+                "WHERE un.objectId = :objectId AND un.type = :type " +
+                "ORDER BY un.sendDate DESC", UserNotification.class)
+                .setParameter("objectId", datasetId)
+                .setParameter("type", NotificationType.SUBMITTEDDS)
+                .getResultList();
+        return notifications.isEmpty() ? null : notifications.get(0);
+    }
 }

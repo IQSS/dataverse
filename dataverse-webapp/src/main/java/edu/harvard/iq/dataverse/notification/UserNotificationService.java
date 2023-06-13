@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.notification;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationDto;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationMapper;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.UserNotification;
@@ -75,6 +75,10 @@ public class UserNotificationService {
         UserNotification userNotification = createUserNotification(dataverseUser, sendDate, type, dvObjectId, parameters);
         userNotificationRepository.saveAndFlush(userNotification);
         executorService.submit(() -> sendEmail(userNotification.getId(), notificationObjectType));
+    }
+
+    public UserNotification findLastSubmitNotificationForDataset(Dataset dataset) {
+        return userNotificationRepository.findLastSubmitNotificationByObjectId(dataset.getLatestVersion().getId());
     }
 
     // -------------------- PRIVATE --------------------

@@ -75,4 +75,14 @@ public class UserNotificationRepositoryIT extends PersistenceArquillianDeploymen
             .asInstanceOf(InstanceOfAssertFactories.BOOLEAN)
             .isTrue();
     }
+
+    @Test
+    public void findLastSubmitNotificationForDataset() {
+        // given & when
+        UserNotification notification = userNotificationRepository.findLastSubmitNotificationByObjectId(44L);
+
+        // then
+        assertThat(notification).extracting(UserNotification::getId, UserNotification::getType)
+                .containsExactly(3L, NotificationType.SUBMITTEDDS);
+    }
 }
