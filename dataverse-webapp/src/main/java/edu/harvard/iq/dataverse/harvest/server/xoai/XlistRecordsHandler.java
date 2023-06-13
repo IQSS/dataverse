@@ -110,7 +110,7 @@ public class XlistRecordsHandler extends VerbHandler<ListRecords> {
             throw new NoMatchesException();
         }
         for (Item i : results) {
-            res.withRecord(this.createRecord(parameters, i));
+            res.withRecord(createRecord(parameters, i));
         }
 
 

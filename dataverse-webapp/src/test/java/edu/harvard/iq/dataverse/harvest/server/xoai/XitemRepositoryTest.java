@@ -32,9 +32,9 @@ public class XitemRepositoryTest {
     private OAIRecordServiceBean recordService;
     @Mock
     private DatasetDao datasetDao;
-    
+
     // -------------------- TESTS --------------------
-    
+
     @Test
     void getRecord() throws IdDoesNotExistException, OAIException {
         // given
@@ -43,12 +43,12 @@ public class XitemRepositoryTest {
         OAIRecord oaiRecord3 = new OAIRecord("set3", "id", Date.from(Instant.parse("1990-01-01T12:00:00.00Z")));
         Dataset dataset = new Dataset();
         dataset.setId(1L);
-        when(recordService.findOaiRecordsByGlobalId("id")).thenReturn(Lists.newArrayList(oaiRecord1, oaiRecord2, oaiRecord3));
+        when(recordService.findOaiRecordsByGlobalId("id")).thenReturn(Lists.newArrayList(oaiRecord2, oaiRecord1, oaiRecord3));
         when(datasetDao.findByGlobalId("id")).thenReturn(dataset);
-        
+
         // when
         Item item = xitemRepository.getItem("id");
-        
+
         // then
         assertThat(item).isInstanceOf(Xitem.class);
         assertThat(item.getIdentifier()).isEqualTo("id");
@@ -62,7 +62,7 @@ public class XitemRepositoryTest {
     void getRecord_no_oai_record_present() throws IdDoesNotExistException, OAIException {
         // given
         when(recordService.findOaiRecordsByGlobalId("id")).thenReturn(Lists.newArrayList());
-        
+
         // when & then
         assertThatThrownBy(() -> xitemRepository.getItem("id"))
             .isInstanceOf(IdDoesNotExistException.class);
@@ -73,10 +73,9 @@ public class XitemRepositoryTest {
         // given
         OAIRecord oaiRecord1 = new OAIRecord("", "id", Date.from(Instant.parse("1990-01-01T10:00:00.00Z")));
         when(recordService.findOaiRecordsByGlobalId("id")).thenReturn(Lists.newArrayList(oaiRecord1));
-        
+
         // when & then
         assertThatThrownBy(() -> xitemRepository.getItem("id"))
             .isInstanceOf(IdDoesNotExistException.class);
     }
-
 }
