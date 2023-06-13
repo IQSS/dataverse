@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DataFileComparator;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -54,7 +55,6 @@ import javax.persistence.Version;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import javax.validation.constraints.Size;
 import org.apache.commons.lang3.StringUtils;
 
@@ -76,6 +76,7 @@ import org.apache.commons.lang3.StringUtils;
 public class DatasetVersion implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
+    private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     /**
      * Convenience comparator to compare dataset versions by their version number.
@@ -319,14 +320,34 @@ public class DatasetVersion implements Serializable {
     }
     
     public List<FileMetadata> getFileMetadatasSorted() {
-        Collections.sort(fileMetadatas, FileMetadata.compareByLabel);
+ 
+        /*
+         * fileMetadatas can sometimes be an
+         * org.eclipse.persistence.indirection.IndirectList When that happens, the
+         * comparator in the Collections.sort below is not called, possibly due to
+         * https://bugs.eclipse.org/bugs/show_bug.cgi?id=446236 which is Java 1.8+
+         * specific Converting to an ArrayList solves the problem, but the longer term
+         * solution may be in avoiding the IndirectList or moving to a new version of
+         * the jar it is in.
+         */
+        if(!(fileMetadatas instanceof ArrayList)) {
+            List<FileMetadata> newFMDs = new ArrayList<FileMetadata>();
+            for(FileMetadata fmd: fileMetadatas) {
+                newFMDs.add(fmd);
+            }
+            setFileMetadatas(newFMDs);
+        }
+        
+        DataFileComparator dfc = new DataFileComparator();
+        Collections.sort(fileMetadatas, dfc.compareBy(true, null!=FileMetadata.getCategorySortOrder(), "name", true));
         return fileMetadatas;
     }
     
     public List<FileMetadata> getFileMetadatasSortedByLabelAndFolder() {
         ArrayList<FileMetadata> fileMetadatasCopy = new ArrayList<>();
         fileMetadatasCopy.addAll(fileMetadatas);
-        Collections.sort(fileMetadatasCopy, FileMetadata.compareByLabelAndFolder);
+        DataFileComparator dfc = new DataFileComparator();
+        Collections.sort(fileMetadatasCopy, dfc.compareBy(true, null!=FileMetadata.getCategorySortOrder(), "name", true));
         return fileMetadatasCopy;
     }
     
@@ -1443,17 +1464,14 @@ public class DatasetVersion implements Serializable {
     }
 
     /**
-     * @return String containing the version's series title
+     * @return List of Strings containing the version's series title(s)
      */
-    public String getSeriesTitle() {
+    public List<String>  getSeriesTitles() {
 
         List<String> seriesNames = getCompoundChildFieldValues(DatasetFieldConstant.series,
                 DatasetFieldConstant.seriesName);
-        if (seriesNames.size() > 1) {
-            logger.warning("More than one series title found for datasetVersion: " + this.id);
-        }
         if (!seriesNames.isEmpty()) {
-            return seriesNames.get(0);
+            return seriesNames;
         } else {
             return null;
         }
@@ -1765,8 +1783,6 @@ public class DatasetVersion implements Serializable {
 
     public List<ConstraintViolation<DatasetField>> validateRequired() {
         List<ConstraintViolation<DatasetField>> returnListreturnList = new ArrayList<>();
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
         for (DatasetField dsf : this.getFlatDatasetFields()) {
             dsf.setValidationMessage(null); // clear out any existing validation message
             Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
@@ -1780,11 +1796,13 @@ public class DatasetVersion implements Serializable {
         return returnListreturnList;
     }
     
+    public boolean isValid() {
+        return validate().isEmpty();
+    }
+
     public Set<ConstraintViolation> validate() {
         Set<ConstraintViolation> returnSet = new HashSet<>();
 
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
 
         for (DatasetField dsf : this.getFlatDatasetFields()) {
             dsf.setValidationMessage(null); // clear out any existing validation message

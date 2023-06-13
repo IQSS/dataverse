@@ -23,7 +23,19 @@ public class BundleUtil {
     private static final Map<String, ClassLoader> classLoaderCache = new HashMap<String, ClassLoader>();
 
     public static String getStringFromBundle(String key) {
-        return getStringFromBundle(key, null);
+        return getStringFromBundle(key, (List<String>)null);
+    }
+    
+    public static String getStringFromBundle(String key, Locale locale) {
+        return getStringFromBundle(key, null, locale);
+    }
+
+    private static String getStringFromBundle(String key, List<String> arguments, Locale locale) {
+        ResourceBundle bundle = getResourceBundle(defaultBundleFile, locale);
+        if (bundle == null) {
+            return null;
+        }
+        return getStringFromBundle(key, arguments, bundle);
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {

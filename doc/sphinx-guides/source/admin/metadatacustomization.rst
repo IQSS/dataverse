@@ -494,6 +494,8 @@ Running a curl command like "load" example above should make the new custom meta
 
 ``curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
 
+.. _update-solr-schema:
+
 Updating the Solr Schema
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
