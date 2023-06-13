@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-//import cern.colt.list.*;
-//import cern.jet.stat.Descriptive;
 
 
 /**
@@ -41,11 +39,10 @@ public class SumStatCalculator {
     public static double[] calculateSummaryStatistics(Number[] x) {
         logger.fine("entering calculate summary statistics (" + x.length + " Number values);");
 
+        // {"mean", "medn", "mode", "vald", "invd", "min", "max", "stdev"};
         double[] nx = new double[8];
-        //("mean", "medn", "mode", "vald", "invd", "min", "max", "stdev");
 
-        Float testNanValue = new Float(Float.NaN);
-        Number testNumberValue = testNanValue;
+        Number testNumberValue = Float.NaN;
         if (Double.isNaN(testNumberValue.doubleValue())) {
             logger.fine("Float test NaN value is still recognized as a Double NaN.");
         }
@@ -67,7 +64,7 @@ public class SumStatCalculator {
         ////nx[1] = StatUtils.percentile(newx, 50);
         nx[1] = calculateMedian(newx);
         logger.fine("calculated medn: " + nx[1]);
-        nx[2] = 0.0; //getMode(newx); 
+        nx[2] = 0.0; //getMode(newx);
 
         nx[5] = StatUtils.min(newx);
         logger.fine("calculated min: " + nx[5]);
@@ -115,8 +112,8 @@ public class SumStatCalculator {
     /**
      * Returns a new double array of nulls and non-Double.NaN values only
      */
-    // TODO: 
-    // implement this in some way that does not require allocating a new 
+    // TODO:
+    // implement this in some way that does not require allocating a new
     // ArrayList for the values of every vector. -- L.A. Aug. 11 2014
     private static double[] removeInvalidValues(Double[] x) {
         List<Double> dl = new ArrayList<Double>();
@@ -223,41 +220,4 @@ public class SumStatCalculator {
         }
         return sum;
     }
-
-
-    /**
-     * Returns the mode statistic of a double variable
-     *
-     */
-    /*
-    public static double getMode(double[] x){
-        double mode = Double.NaN;
-
-        if ((countNaNs(x) == x.length) || (x.length < 1)){
-            return mode;
-        } else {
-            DoubleArrayList dx = new DoubleArrayList(x);
-            dx.sort();
-            DoubleArrayList freqTable = new DoubleArrayList(1);
-            IntArrayList countTable = new IntArrayList(1);
-            Descriptive.frequencies(dx, freqTable, countTable);
-            //out.println("freqTable="+
-            //    ReflectionToStringBuilder.toString(freqTable));
-            //out.println("freqTable="+
-            //    ReflectionToStringBuilder.toString(countTable));
-            int max_i = 0;
-            for (int i=1; i< countTable.size();i++ ){
-                if (countTable.get(i)> countTable.get(max_i)){
-                    max_i = i;
-                }
-            }
-            mode = freqTable.get(max_i);
-            //out.println("position = "+
-            //max_i+"\tits value="+freqTable.get(max_i));
-        }
-        return mode;
-    }
-    */
-
-
 }
