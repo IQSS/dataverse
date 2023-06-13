@@ -18,9 +18,9 @@ import javax.inject.Inject;
 @ApplicationScoped
 public class DataCiteExporter implements Exporter {
 
-    private static String DEFAULT_XML_NAMESPACE = "http://datacite.org/schema/kernel-3";
-    private static String DEFAULT_XML_SCHEMALOCATION = "http://datacite.org/schema/kernel-3 http://schema.datacite.org/meta/kernel-3/metadata.xsd";
-    private static String DEFAULT_XML_VERSION = "3.0";
+    private static String DEFAULT_XML_NAMESPACE = "http://datacite.org/schema/kernel-4";
+    private static String DEFAULT_XML_SCHEMALOCATION = "http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd";
+    private static String DEFAULT_XML_VERSION = "4.0";
 
     private final CitationFactory citationFactory;
 
