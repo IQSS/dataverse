@@ -594,20 +594,23 @@ public class Dataverse extends DvObjectContainer {
      * Indicate if this Dataverse Collection wants to publicize PIDs for each (major) {@link DatasetVersion}
      * for any {@link Dataset} in it.
      *
-     * @see edu.harvard.iq.dataverse.pidproviders.VersionPidMode#COLLECTION
+     * @see edu.harvard.iq.dataverse.pidproviders.VersionPidMode#ALLOW_MAJOR
+     * @see edu.harvard.iq.dataverse.pidproviders.VersionPidMode#ALLOW_MINOR
      * @see CollectionConduct
      */
-    @NotNull
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private CollectionConduct datasetVersionPidConduct = CollectionConduct.INHERIT;
+    private CollectionConduct datasetVersionPidConduct;
     
     public void setDatasetVersionPidConduct(CollectionConduct conduct) {
         this.datasetVersionPidConduct = conduct;
     }
     
+    /**
+     * Retrieve the version PID conduct mode for this collection
+     * @return One of {@link CollectionConduct}. Never null, defaults to {@link CollectionConduct#INHERIT}.
+     */
     public CollectionConduct getDatasetVersionPidConduct() {
-        return this.datasetVersionPidConduct;
+        return this.datasetVersionPidConduct != null ? this.datasetVersionPidConduct : CollectionConduct.INHERIT;
     }
     
     
