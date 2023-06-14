@@ -195,6 +195,7 @@ public class ImageThumbConverter {
         // will run the ImageMagick on it, and will save its output in another temp 
         // file, and will save it as an "auxiliary" file via the driver. 
         boolean tempFilesRequired = false;
+        File tempFile = null;
 
         try {
             Path pdfFilePath = storageIO.getFileSystemPath();
@@ -222,7 +223,7 @@ public class ImageThumbConverter {
                 return false;
             }
 
-            File tempFile;
+
             FileChannel tempFileChannel = null;
             try {
                 tempFile = File.createTempFile("tempFileToRescale", ".tmp");
@@ -254,9 +255,13 @@ public class ImageThumbConverter {
             try {
                 logger.fine("attempting to save generated pdf thumbnail, as AUX file " + THUMBNAIL_SUFFIX + size);
                 storageIO.savePathAsAux(Paths.get(imageThumbFileName), THUMBNAIL_SUFFIX + size);
+
             } catch (IOException ioex) {
                 logger.warning("failed to save generated pdf thumbnail, as AUX file " + THUMBNAIL_SUFFIX + size + "!");
                 return false;
+            }
+            finally {
+                tempFile.delete();
             }
         }
 
@@ -353,11 +358,17 @@ public class ImageThumbConverter {
 
             if (tempFileRequired) {
                 storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), THUMBNAIL_SUFFIX + size);
+
             }
 
         } catch (Exception ioex) {
             logger.warning("Failed to rescale and/or save the image: " + ioex.getMessage());
             return false;
+        }
+        finally {
+            if(tempFileRequired) {
+                tempFile.delete();
+            }
         }
 
         return true;
