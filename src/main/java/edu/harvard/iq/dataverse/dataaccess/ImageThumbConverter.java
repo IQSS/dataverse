@@ -261,7 +261,10 @@ public class ImageThumbConverter {
                 return false;
             }
             finally {
-                tempFile.delete();
+                try {
+                    tempFile.delete();
+                }
+                catch (Exception e) {}
             }
         }
 
@@ -367,7 +370,10 @@ public class ImageThumbConverter {
         }
         finally {
             if(tempFileRequired) {
-                tempFile.delete();
+                try {
+                    tempFile.delete();
+                }
+                catch (Exception e) {}
             }
         }
 
