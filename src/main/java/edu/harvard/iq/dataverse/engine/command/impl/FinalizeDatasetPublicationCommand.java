@@ -191,8 +191,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                  * Note: although it may seem wrong to trigger registering any version, it is a (configurable?)
                  * decision in the provider's realm if minor versions are just updates of a major or their own.
                  */
-                if (ctxt.dataverses().wantsDatasetVersionPids(theDataset.getOwner())) {
-                    DatasetVersion version = theDataset.getLatestVersion();
+                DatasetVersion version = theDataset.getLatestVersion();
+                
+                if (ctxt.dataverses().wantsDatasetVersionPids(theDataset.getOwner(), version.getMinorVersionNumber() > 0)) {
                     GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
                     Objects.requireNonNull(idServiceBean, "Could not retrieve PID provider");
                     
@@ -434,7 +435,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 }
     
                 // Publish a PID for this dataset version (if activated). Leave details to the provider.
-                if (ctxt.dataverses().wantsDatasetVersionPids(dataset.getOwner())) {
+                
+                if (ctxt.dataverses().wantsDatasetVersionPids(dataset.getOwner(), dataset.getLatestVersion().getMinorVersionNumber() > 0)) {
                     DatasetVersion version = dataset.getLatestVersion();
                     idServiceBean.publicizeIdentifier(version);
                 }

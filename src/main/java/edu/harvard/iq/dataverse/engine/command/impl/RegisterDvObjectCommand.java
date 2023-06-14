@@ -86,7 +86,9 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                 if (target.isReleased()) {
                     // If this is a dataset, release a new dataset version first before, to be included in the dataset
                     if (target.isInstanceofDataset() &&
-                        ctxt.dataverses().wantsDatasetVersionPids((Dataverse) target.getOwner())) {
+                        ctxt.dataverses().wantsDatasetVersionPids(
+                            (Dataverse) target.getOwner(),
+                            ((Dataset) target).getLatestVersion().getMinorVersionNumber() > 0)) {
                         // TODO: publicize dataset version as well
                     }
                     

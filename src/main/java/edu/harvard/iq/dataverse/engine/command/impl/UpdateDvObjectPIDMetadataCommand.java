@@ -50,7 +50,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(target.getProtocol(), ctxt);
         try {
             // First publicize new dataset version if enabled, so it can be included in the update of the dataset
-            if (ctxt.dataverses().wantsDatasetVersionPids(target.getOwner())) {
+            if (ctxt.dataverses().wantsDatasetVersionPids(target.getOwner(), target.getLatestVersion().getMinorVersionNumber() > 0)) {
                 // TODO: publicize dataset version as well
             }
             
