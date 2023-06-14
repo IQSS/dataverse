@@ -59,6 +59,8 @@ Installing Payara
 	# unzip payara-5.2022.3.zip
 	# mv payara5 /usr/local
 
+If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/
+
 If you intend to install and run Payara under a service account (and we hope you do), chown -R the Payara hierarchy to root to protect it but give the service account access to the below directories:
 
 - Set service account permissions::
