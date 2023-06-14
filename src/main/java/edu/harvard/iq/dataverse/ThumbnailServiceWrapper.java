@@ -194,6 +194,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             return null;
         }
         Dataset dataset = (Dataset)result.getEntity();
+        dataset.setId(result.getEntityId());
         
         Long versionId = result.getDatasetVersionId();
 
