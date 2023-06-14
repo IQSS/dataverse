@@ -10,15 +10,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class VersionPidModeTest {
     
     @Test
-    @JvmSetting(key = JvmSettings.PID_VERSIONS_MODE, value = "collection")
+    @JvmSetting(key = JvmSettings.PID_VERSIONS_MODE, value = "allow-minor")
     void setToValidValue() {
-        assertEquals(VersionPidMode.COLLECTION, JvmSettings.PID_VERSIONS_MODE.lookup(VersionPidMode.class));
+        assertEquals(VersionPidMode.ALLOW_MINOR, JvmSettings.PID_VERSIONS_MODE.lookup(VersionPidMode.class));
     }
     
     @Test
-    @JvmSetting(key = JvmSettings.PID_VERSIONS_MODE, value = "GloBal")
+    @JvmSetting(key = JvmSettings.PID_VERSIONS_MODE, value = "ALLOW-major")
     void setToOtherValidValue() {
-        assertEquals(VersionPidMode.GLOBAL, JvmSettings.PID_VERSIONS_MODE.lookup(VersionPidMode.class));
+        assertEquals(VersionPidMode.ALLOW_MAJOR, JvmSettings.PID_VERSIONS_MODE.lookup(VersionPidMode.class));
     }
     
     @Test

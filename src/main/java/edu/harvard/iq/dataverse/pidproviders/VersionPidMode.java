@@ -17,32 +17,35 @@ public final class VersionPidMode {
     /**
      * Means feature is switched off, no version PIDs will be minted
      */
-    public static final VersionPidMode OFF = new VersionPidMode("OFF");
+    public static final VersionPidMode OFF = new VersionPidMode("off");
     
     /**
-     * Means the feature is activated instance wide for all collections and datasets
-     * (No opt-out so far!)
+     * Means the feature is activated, but instance wide for all collections and datasets
+     * only major versions can have a PID. Enabling for minor versions is prohibited.
      */
-    public static final VersionPidMode GLOBAL = new VersionPidMode("GLOBAL");
+    public static final VersionPidMode ALLOW_MAJOR = new VersionPidMode("allow-major");
     
     /**
-     * Means the feature must be activated per Dataverse Collection (opt-in)
+     * Means the feature is activated and any collection may go for PIDs assigned to major and/or minor versions.
      */
-    public static final VersionPidMode COLLECTION = new VersionPidMode("COLLECTION");
+    public static final VersionPidMode ALLOW_MINOR = new VersionPidMode("allow-minor");
     
     /**
-     * A collection of conducts for mode {@link #COLLECTION}, used in {@link edu.harvard.iq.dataverse.Dataverse}
+     * A collection of conducts for Dataverse collections, used in {@link edu.harvard.iq.dataverse.Dataverse}
      * and {@link edu.harvard.iq.dataverse.DataverseServiceBean#wantsDatasetVersionPids(Dataverse)}:
      * <ol>
      *     <li>Collection may inherit version pid behaviour from the parent collection(s),</li>
-     *     <li>Collection may choose to be actively enabling it</li>
-     *     <li>Collection may choose to opt out and skip the minting</li>
+     *     <li>collection may choose to opt out and skip the minting,</li>
+     *     <li>collection may choose to activate it for major versions only, or</li>
+     *     <li>collection may choose to activate it for major and minor versions.</li>
      * </ol>
+     * Note that the instance wide configuration will limit available choices.
      */
     public enum CollectionConduct {
         INHERIT("inherit"),
-        ACTIVE("active"),
-        SKIP("skip");
+        SKIP("skip"),
+        MAJOR("major"),
+        MINOR("minor");
         
         private final String name;
         
@@ -107,7 +110,7 @@ public final class VersionPidMode {
     // Init as unmodifiable set
     public static final Set<VersionPidMode> values;
     static {
-        values = Set.of(OFF, GLOBAL, COLLECTION);
+        values = Set.of(OFF, ALLOW_MAJOR, ALLOW_MINOR);
     }
     
     private final String mode;
