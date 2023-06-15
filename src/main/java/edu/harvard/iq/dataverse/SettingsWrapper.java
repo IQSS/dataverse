@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 
 import java.time.LocalDate;
@@ -465,7 +464,16 @@ public class SettingsWrapper implements java.io.Serializable {
     public boolean isMakeDataCountDisplayEnabled() {
         boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
         return isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, safeDefaultIfKeyNotFound);
+    }
     
+    public LocalDate getMDCStartDate() {
+        String date = getValueForKey(SettingsServiceBean.Key.MDCStartDate);
+        LocalDate ld=null;
+        if(date!=null) {
+          ld = LocalDate.parse(date);
+        }
+        return ld;
+        
     }
     
     public boolean displayChronologicalDateFacets() {
@@ -583,16 +591,21 @@ public class SettingsWrapper implements java.io.Serializable {
         currentMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
         return currentMap;
     }
-    
+
     private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
         String mlLabel = BundleUtil.getStringFromBundle("dataverse.metadatalanguage.setatdatasetcreation");
-        String mlCode = target.getEffectiveMetadataLanguage();
-        // If it's 'undefined', it's the global default
-        if (!mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-            // Get the label for the language code found
-            mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
-            mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+
+        if(target.getOwner() != null) { // Root collection is excluded from inherit metadata language research
+            String mlCode = target.getOwner().getEffectiveMetadataLanguage();
+
+            // If it's undefined, no parent has a metadata language defined, and the global default should be used.
+            if (!mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+                // Get the label for the language code found
+                mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
+                mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+            }
         }
+
         return mlLabel;
     }
     
@@ -708,4 +721,5 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return customLicenseAllowed;
     }
+
 }

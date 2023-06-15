@@ -64,15 +64,15 @@ public class OREMap {
         outputStream.flush();
     }
 
-    public JsonObject getOREMap() throws Exception {
+    public JsonObject getOREMap() {
         return getOREMap(false);
     }
     
-    public JsonObject getOREMap(boolean aggregationOnly) throws Exception {
+    public JsonObject getOREMap(boolean aggregationOnly) {
         return getOREMapBuilder(aggregationOnly).build();
     }
     
-    public JsonObjectBuilder getOREMapBuilder(boolean aggregationOnly) throws Exception {
+    public JsonObjectBuilder getOREMapBuilder(boolean aggregationOnly) {
 
         //Set this flag if it wasn't provided
         if(excludeEmail==null) {

@@ -20,6 +20,8 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 
 /**
@@ -197,5 +199,24 @@ public class StringUtil {
 
         SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
         return secretKeySpec;
+    }
+    
+    /**
+     * Normalize sentence
+     * 
+     * @author francesco.cadili@4science.it
+     *
+     *
+     * @param sentence full name or organization name
+     * @return normalize string value
+     */
+    static public String normalize(String sentence) {
+        if (StringUtils.isBlank(sentence)) {
+            return "";
+        }
+
+        sentence = sentence.trim().replaceAll(", *", ", ").replaceAll(" +", " ");
+
+        return sentence;
     }
 }
