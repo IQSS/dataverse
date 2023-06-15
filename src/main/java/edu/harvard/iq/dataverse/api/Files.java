@@ -704,7 +704,7 @@ public class Files extends AbstractApiBean {
         dataFile = fileService.save(dataFile);
         
         // queue the data ingest job for asynchronous execution: 
-        String status = ingestService.startIngestJobs(new ArrayList<>(Arrays.asList(dataFile)), u);
+        String status = ingestService.startIngestJobs(dataset.getId(), new ArrayList<>(Arrays.asList(dataFile)), u);
         
         if (!StringUtil.isEmpty(status)) {
             // This most likely indicates some sort of a problem (for example, 
