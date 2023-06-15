@@ -63,7 +63,9 @@ public class TestApi extends AbstractApiBean {
                 ApiToken apiToken = externalToolService.getApiToken(getRequestApiKey());
                 ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataFile, apiToken, dataFile.getFileMetadata(), null);
                 JsonObjectBuilder toolToJson = externalToolService.getToolAsJsonWithQueryParameters(externalToolHandler);
-                tools.add(toolToJson);
+                if (externalToolService.meetsRequirements(tool, dataFile)) {
+                    tools.add(toolToJson);
+                }
             }
             return ok(tools);
         } catch (WrappedResponse wr) {

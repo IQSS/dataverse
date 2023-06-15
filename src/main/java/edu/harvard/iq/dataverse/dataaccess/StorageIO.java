@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -621,5 +622,7 @@ public abstract class StorageIO<T extends DvObject> {
         Matcher m = r.matcher(identifier);
         return m.find();
     }
+
+    public abstract List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException;
 
 }

@@ -846,6 +846,7 @@
                                 <ui:param name="editDatafilesPage" value="false"/>
                                 <ui:param name="rsyncSupported" value="#{DatasetPage.rsyncUploadSupported()}"/>
                                 <ui:param name="globusUploadSupported" value="#{DatasetPage.globusUploadSupported()}"/>
+                                <ui:param name="webloaderUploadSupported" value="#{DatasetPage.webloaderUploadSupported()}"/>
                                 <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
                                 <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
                                 <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
@@ -1789,6 +1790,7 @@
                     <p:remoteCommand name="datasetSaveCommand" action="#{DatasetPage.save()}" update=":datasetForm,:messagePanel"/>
                     <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
+                <c:set var="descriptionText" value="#{DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle}" />
                 <script>
                     //<![CDATA[
                     $(document).ready(function () {
@@ -1798,13 +1800,13 @@
                     function summaryDescTruncation() {
                         // truncate summary description, contentTruncate function in dv_rebind_bootstrap_ui.js
                         // add summary desc row id to pass as selector param
-                        var descId = 'dsDescription';
+                        var descId = 'dsDescription td > div';
                         // add metadata dynamic label text, tooltip text from bundle as param
-                        var truncMoreBtn = '#{of:format1(bundle.truncateMoreBtn, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
-                        var truncMoreTip = '#{of:format1(bundle.truncateMoreTip, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
-                        var truncLessBtn = '#{of:format1(bundle.truncateLessBtn, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
-                        var truncLessTip = '#{of:format1(bundle.truncateLessTip, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
-                        
+                        var truncMoreBtn = '#{of:format1(bundle.truncateMoreBtn, descriptionText)}';
+                        var truncMoreTip = '#{of:format1(bundle.truncateMoreTip, descriptionText)}';
+                        var truncLessBtn = '#{of:format1(bundle.truncateLessBtn, descriptionText)}';
+                        var truncLessTip = '#{of:format1(bundle.truncateLessTip, descriptionText)}';
+
                         // pass bundle text variabls as params to function
                         contentTruncate(descId, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip);
                     }

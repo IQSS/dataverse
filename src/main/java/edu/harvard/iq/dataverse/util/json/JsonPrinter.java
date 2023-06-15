@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.globus.FileDetailsHolder;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
@@ -550,6 +551,17 @@ public class JsonPrinter {
         fieldsBld.add("type", fld.getFieldType().toString());
         fieldsBld.add("watermark", fld.getWatermark());
         fieldsBld.add("description", fld.getDescription());
+        fieldsBld.add("multiple", fld.isAllowMultiples());
+        fieldsBld.add("isControlledVocabulary", fld.isControlledVocabulary());
+        if (fld.isControlledVocabulary()) {
+            // If the field has a controlled vocabulary,
+            // add all values to the resulting JSON
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for (ControlledVocabularyValue cvv : fld.getControlledVocabularyValues()) {
+                jab.add(cvv.getStrValue());
+            }
+            fieldsBld.add("controlledVocabularyValues", jab);
+        }
         if (!fld.getChildDatasetFieldTypes().isEmpty()) {
             JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
             for (DatasetFieldType subFld : fld.getChildDatasetFieldTypes()) {
@@ -568,6 +580,7 @@ public class JsonPrinter {
                 // in a sense that there's no longer the category field in the 
                 // fileMetadata object; but there are now multiple, oneToMany file 
                 // categories - and we probably need to export them too!) -- L.A. 4.5
+                // DONE: catgegories by name 
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
                 .add("restricted", fmd.isRestricted()) 
@@ -605,13 +618,13 @@ public class JsonPrinter {
         // (TODO...? L.A. 4.5, Aug 7 2016)
         String fileName = null;
         
-        if (fileMetadata != null) {
-            fileName = fileMetadata.getLabel();
-        } else if (df.getFileMetadata() != null) {
+        if (fileMetadata == null){
             // Note that this may not necessarily grab the file metadata from the 
             // version *you want*! (L.A.)
-            fileName = df.getFileMetadata().getLabel();
+            fileMetadata = df.getFileMetadata();
         }
+         
+        fileName = fileMetadata.getLabel();
         
         String pidURL = "";
         
@@ -628,7 +641,8 @@ public class JsonPrinter {
                 .add("filename", fileName)
                 .add("contentType", df.getContentType())
                 .add("filesize", df.getFilesize())
-                .add("description", df.getDescription())
+                .add("description", fileMetadata.getDescription())
+                .add("categories", getFileCategories(fileMetadata))
                 .add("embargo", embargo)
                 //.add("released", df.isReleased())
                 //.add("restricted", df.isRestricted())
@@ -653,6 +667,32 @@ public class JsonPrinter {
                 .add("tabularTags", getTabularFileTags(df))
                 .add("creationDate",  df.getCreateDateFormattedYYYYMMDD())
                 ;
+    }
+    
+    public static JsonObjectBuilder json(HarvestingClient harvestingClient) {
+        if (harvestingClient == null) {
+            return null; 
+        }
+        
+        return jsonObjectBuilder().add("nickName", harvestingClient.getName()).
+                add("dataverseAlias", harvestingClient.getDataverse().getAlias()).
+                add("type", harvestingClient.getHarvestType()).
+                add("style", harvestingClient.getHarvestStyle()).
+                add("harvestUrl", harvestingClient.getHarvestingUrl()).
+                add("archiveUrl", harvestingClient.getArchiveUrl()).
+                add("archiveDescription", harvestingClient.getArchiveDescription()).
+                add("metadataFormat", harvestingClient.getMetadataPrefix()).
+                add("set", harvestingClient.getHarvestingSet()).
+                add("schedule", harvestingClient.isScheduled() ? harvestingClient.getScheduleDescription() : "none").
+                add("status", harvestingClient.isHarvestingNow() ? "inProgress" : "inActive").
+                add("customHeaders", harvestingClient.getCustomHttpHeaders()).
+                add("lastHarvest", harvestingClient.getLastHarvestTime() == null ? null : harvestingClient.getLastHarvestTime().toString()).
+                add("lastResult", harvestingClient.getLastResult()).
+                add("lastSuccessful", harvestingClient.getLastSuccessfulHarvestTime() == null ? null : harvestingClient.getLastSuccessfulHarvestTime().toString()).
+                add("lastNonEmpty", harvestingClient.getLastNonEmptyHarvestTime() == null ? null : harvestingClient.getLastNonEmptyHarvestTime().toString()).
+                add("lastDatasetsHarvested", harvestingClient.getLastHarvestedDatasetCount()). // == null ? "N/A" : harvestingClient.getLastHarvestedDatasetCount().toString()).
+                add("lastDatasetsDeleted", harvestingClient.getLastDeletedDatasetCount()). // == null ? "N/A" : harvestingClient.getLastDeletedDatasetCount().toString()).
+                add("lastDatasetsFailed", harvestingClient.getLastFailedDatasetCount()); // == null ? "N/A" : harvestingClient.getLastFailedDatasetCount().toString());
     }
     
     public static String format(Date d) {
@@ -691,7 +731,7 @@ public class JsonPrinter {
         }
         return tabularTags;
     }
-
+    
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
 
         Deque<JsonObjectBuilder> objectStack = new LinkedList<>();
@@ -833,7 +873,8 @@ public class JsonPrinter {
             .add("uri", license.getUri().toString())
             .add("iconUrl", license.getIconUrl() == null ? null : license.getIconUrl().toString())
             .add("active", license.isActive())
-            .add("isDefault", license.isDefault());
+            .add("isDefault", license.isDefault())
+            .add("sortOrder", license.getSortOrder());
     }
 
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {

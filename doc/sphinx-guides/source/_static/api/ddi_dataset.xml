@@ -34,7 +34,8 @@
         <producer affiliation="ProducerAffiliation1" abbr="ProducerAbbreviation1" role="http://ProducerLogoURL1.org" URI="http://ProducerURL1.org">LastProducer1, FirstProducer1</producer>
         <producer affiliation="ProducerAffiliation2" abbr="ProducerAbbreviation2" role="http://ProducerLogoURL2.org" URI="http://ProducerURL2.org">LastProducer2, FirstProducer2</producer>
         <prodDate>1003-01-01</prodDate>
-        <prodPlac>ProductionPlace</prodPlac>
+        <prodPlac>ProductionPlace One</prodPlac>
+        <prodPlac>ProductionPlace Two</prodPlac>
         <software version="SoftwareVersion1">SoftwareName1</software>
         <software version="SoftwareVersion2">SoftwareName2</software>
         <grantNo agency="GrantInformationGrantAgency1">GrantInformationGrantNumber1</grantNo>
@@ -88,12 +89,12 @@
         <geoBndBox>
           <westBL>10</westBL>
           <eastBL>20</eastBL>
-          <northBL>30</northBL>
-          <southBL>40</southBL>
+          <northBL>40</northBL>
+          <southBL>30</southBL>
         </geoBndBox>
         <geoBndBox>
-          <southBL>80</southBL>
-          <northBL>70</northBL>
+          <southBL>70</southBL>
+          <northBL>80</northBL>
           <eastBL>60</eastBL>
           <westBL>50</westBL>
         </geoBndBox>
