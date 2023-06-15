@@ -4,9 +4,11 @@
 Dataverse Software Documentation Versions
 =========================================
 
-This list provides a way to refer to the documentation for previous versions of the Dataverse Software. In order to learn more about the updates delivered from one version to another, visit the `Releases <https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo.
+This list provides a way to refer to the documentation for previous and future versions of the Dataverse Software. In order to learn more about the updates delivered from one version to another, visit the `Releases <https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo.
 
-- 5.12.1
+- `develop Git branch <http://preview.guides.gdcc.io/en/develop/>`__
+- 5.13
+- `5.12.1 </en/5.12.1/>`__
 - `5.12 </en/5.12/>`__
 - `5.11.1 </en/5.11.1/>`__
 - `5.11 </en/5.11/>`__

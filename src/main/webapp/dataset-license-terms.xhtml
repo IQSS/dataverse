@@ -25,6 +25,7 @@
                <p:fragment id="touFragment">
                    <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker"/>
                    <o:importFunctions type="org.apache.commons.text.StringEscapeUtils" />
+                   <o:importFunctions type="edu.harvard.iq.dataverse.dataset.DatasetUtil" />
                    <div class="panel-body">
                        <div class="form-group">
                            <label for="datasetForm:tabView:metadata_Terms" class="col-sm-3 control-label">
@@ -46,7 +47,7 @@
                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.edit.description']}" escape="false"/></p>
                                    <p:selectOneMenu id="licenses" value="#{termsOfUseAndAccess.license}" style="width: 40%" converter="licenseConverter">
                                        <f:selectItems value="#{licenseServiceBean.listAllActive()}"
-                                                   var="license" itemLabel="#{license.name}" itemValue="#{license}"/>
+                                                   var="license" itemLabel="#{DatasetUtil:getLocalizedLicenseDetails(license, 'NAME')}" itemValue="#{license}"/>
                                        <c:if test="#{settingsWrapper.customLicenseAllowed}">
                                            <f:selectItem itemLabel="#{bundle['license.custom']}" itemValue="#{null}"/>
                                        </c:if>
@@ -55,8 +56,8 @@
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty termsOfUseAndAccess.license}">
                                    <p>
-                                       <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{termsOfUseAndAccess.license.shortDescription}"  style="display:none"  onload="this.style.display='inline'" />
-                                       <a href="#{termsOfUseAndAccess.license.uri}" title="#{termsOfUseAndAccess.license.shortDescription}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
+                                       <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{DatasetUtil:getLocalizedLicenseDetails(termsOfUseAndAccess.license, 'DESCRIPTION')}"  style="display:none"  onload="this.style.display='inline'" />
+                                       <a href="#{termsOfUseAndAccess.license.uri}" title="#{DatasetUtil:getLocalizedLicenseDetails(termsOfUseAndAccess.license,'DESCRIPTION')}" target="_blank">#{DatasetUtil:getLocalizedLicenseDetails(termsOfUseAndAccess.license,'NAME')}</a>
                                    </p>
                                </ui:fragment>
                            </div>
@@ -236,11 +237,12 @@
                 </p:fragment>
             </div>
         </div>
-       <div class="panel panel-default" jsf:rendered="#{!empty editMode or empty editMode and ((!empty termsOfUseAndAccess.termsOfAccess and DatasetPage.restrictedFileCount > 0) 
+       <div class="panel panel-default" jsf:rendered="#{!empty editMode or DatasetPage.restrictedFileCount > 0 
+                                                        or !empty termsOfUseAndAccess.termsOfAccess
                                                         or !empty termsOfUseAndAccess.dataAccessPlace 
                                         or !empty termsOfUseAndAccess.originalArchive or !empty termsOfUseAndAccess.availabilityStatus 
                                         or !empty termsOfUseAndAccess.contactForAccess or !empty termsOfUseAndAccess.sizeOfCollection 
-                                        or !empty termsOfUseAndAccess.studyCompletion)}">
+                                        or !empty termsOfUseAndAccess.studyCompletion}">
            <div data-toggle="collapse" data-target="#panelCollapseTOA" class="panel-heading text-info">
                <h:outputText value="#{publicStore ? bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess'] : bundle['file.dataFilesTab.terms.list.termsOfAccess.header']}"/>
                &#160;<span class="glyphicon glyphicon-chevron-up"/>

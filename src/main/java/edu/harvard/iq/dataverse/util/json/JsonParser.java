@@ -902,12 +902,13 @@ public class JsonParser {
         String dataverseAlias = obj.getString("dataverseAlias",null);
         
         harvestingClient.setName(obj.getString("nickName",null));
-        harvestingClient.setHarvestType(obj.getString("type",null));
+        harvestingClient.setHarvestStyle(obj.getString("style", "default"));
         harvestingClient.setHarvestingUrl(obj.getString("harvestUrl",null));
         harvestingClient.setArchiveUrl(obj.getString("archiveUrl",null));
-        harvestingClient.setArchiveDescription(obj.getString("archiveDescription"));
+        harvestingClient.setArchiveDescription(obj.getString("archiveDescription", null));
         harvestingClient.setMetadataPrefix(obj.getString("metadataFormat",null));
         harvestingClient.setHarvestingSet(obj.getString("set",null));
+        harvestingClient.setCustomHttpHeaders(obj.getString("customHeaders", null));
 
         return dataverseAlias;
     }
