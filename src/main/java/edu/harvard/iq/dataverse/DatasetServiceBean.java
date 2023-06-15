@@ -710,7 +710,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                             exportLogger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                             countSuccess++;
                         } catch (Exception ex) {
-                            exportLogger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage());
+                            exportLogger.log(Level.INFO, "Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage(), ex);
                             countError++;
                         }
                     }
@@ -727,7 +727,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
     }
-    
 
     @Asynchronous
     public void reExportDatasetAsync(Dataset dataset) {
@@ -749,7 +748,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                         recordService.exportAllFormatsInNewTransaction(dataset);
                         logger.info("Success exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString());
                     } catch (Exception ex) {
-                        logger.info("Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage());
+                        logger.log(Level.INFO, "Error exporting dataset: " + dataset.getDisplayName() + " " + dataset.getGlobalId().asString() + "; " + ex.getMessage(), ex);
                     }
                 }
             }
@@ -757,13 +756,9 @@ public class DatasetServiceBean implements java.io.Serializable {
         
     }
 
-    public String getReminderString(Dataset dataset, boolean canPublishDataset) {
-        return getReminderString( dataset, canPublishDataset, false);
-    }
-
     //get a string to add to save success message
     //depends on page (dataset/file) and user privleges
-    public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage) {
+    public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage, boolean isValid) {
        
         String reminderString;
 
@@ -787,6 +782,10 @@ public class DatasetServiceBean implements java.io.Serializable {
                 reminderString = reminderString + " " + BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft.filePage");
                 reminderString = reminderString.replace("{0}", "" + (dataset.getGlobalId().asString().concat("&version=DRAFT")));
             }
+        }
+
+        if (!isValid) {
+            reminderString = reminderString + "<br/><b style=\"color:red;\"> " + BundleUtil.getStringFromBundle("dataset.message.incomplete.warning") + "</b>";
         }
 
         if (reminderString != null) {
