@@ -188,7 +188,9 @@ public class HarvestingClient implements Serializable {
     }
 
     public void setHarvestingUrl(String harvestingUrl) {
-        this.harvestingUrl = harvestingUrl.trim();
+        if (harvestingUrl != null) {
+            this.harvestingUrl = harvestingUrl.trim();
+        }
     }
     
     private String archiveUrl; 
@@ -230,6 +232,16 @@ public class HarvestingClient implements Serializable {
 
     public void setMetadataPrefix(String metadataPrefix) {
         this.metadataPrefix = metadataPrefix;
+    }
+    
+    private String customHttpHeaders; 
+    
+    public String getCustomHttpHeaders() {
+        return customHttpHeaders;
+    }
+    
+    public void setCustomHttpHeaders(String customHttpHeaders) {
+        this.customHttpHeaders = customHttpHeaders;
     }
     
     // TODO: do we need "orphanRemoval=true"? -- L.A. 4.4
@@ -343,95 +355,7 @@ public class HarvestingClient implements Serializable {
             return lastNonEmptyHarvest.getDeletedDatasetCount();
         }
         return null;
-    }
-    
-    /* move the fields below to the new HarvestingClientRun class: 
-    private String harvestResult;
-    
-    public String getResult() {
-        return harvestResult;
-    }
-
-    public void setResult(String harvestResult) {
-        this.harvestResult = harvestResult;
-    }
-    
-    // "Last Harvest Time" is the last time we *attempted* to harvest 
-    // from this remote resource. 
-    // It wasn't necessarily a successful attempt!
-    
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date lastHarvestTime;
-
-    public Date getLastHarvestTime() {
-        return lastHarvestTime;
-    }
-
-    public void setLastHarvestTime(Date lastHarvestTime) {
-        this.lastHarvestTime = lastHarvestTime;
-    }
-    
-    // This is the last "successful harvest" - i.e., the last time we 
-    // tried to harvest, and got a response from the remote server. 
-    // We may not have necessarily harvested any useful content though; 
-    // the result may have been a "no content" or "no changes since the last harvest"
-    // response. 
-    
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date lastSuccessfulHarvestTime; 
-    
-    public Date getLastSuccessfulHarvestTime() {
-        return lastSuccessfulHarvestTime;
-    }
-
-    public void setLastSuccessfulHarvestTime(Date lastSuccessfulHarvestTime) {
-        this.lastSuccessfulHarvestTime = lastSuccessfulHarvestTime;
-    }
-    
-    // Finally, this is the time stamp from the last "non-empty" harvest. 
-    // I.e. the last time we ran a harvest that actually resulted in 
-    // some Datasets created, updated or deleted:
-    
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date lastNonEmptyHarvestTime;
-    
-    public Date getLastNonEmptyHarvestTime() {
-        return lastNonEmptyHarvestTime;
-    }
-
-    public void setLastNonEmptyHarvestTime(Date lastNonEmptyHarvestTime) {
-        this.lastNonEmptyHarvestTime = lastNonEmptyHarvestTime;
-    }
-    
-    // And these are the Dataset counts from that last "non-empty" harvest:
-    private Long harvestedDatasetCount;
-    private Long failedDatasetCount;
-    private Long deletedDatasetCount;
-    
-    public Long getLastHarvestedDatasetCount() {
-        return harvestedDatasetCount;
-    }
-
-    public void setHarvestedDatasetCount(Long harvestedDatasetCount) {
-        this.harvestedDatasetCount = harvestedDatasetCount;
-    }
-    
-    public Long getLastFailedDatasetCount() {
-        return failedDatasetCount;
-    }
-
-    public void setFailedDatasetCount(Long failedDatasetCount) {
-        this.failedDatasetCount = failedDatasetCount;
-    }
-    
-    public Long getLastDeletedDatasetCount() {
-        return deletedDatasetCount;
-    }
-
-    public void setDeletedDatasetCount(Long deletedDatasetCount) {
-        this.deletedDatasetCount = deletedDatasetCount;
-    }
-    */
+    }   
     
     private boolean scheduled;
 

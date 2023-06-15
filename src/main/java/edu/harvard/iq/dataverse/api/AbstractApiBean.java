@@ -46,9 +46,11 @@ import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -362,7 +364,7 @@ public abstract class AbstractApiBean {
     protected User findUserOrDie() throws WrappedResponse {
         final String requestApiKey = getRequestApiKey();
         final String requestWFKey = getRequestWorkflowInvocationID();
-        if (requestApiKey == null && requestWFKey == null) {
+        if (requestApiKey == null && requestWFKey == null && getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN)==null) {
             return GuestUser.get();
         }
         PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
@@ -419,9 +421,35 @@ public abstract class AbstractApiBean {
             } else {
                 throw new WrappedResponse(badWFKey(wfid));
             }
+        } else if (getRequestParameter(UrlSignerUtil.SIGNED_URL_TOKEN) != null) {
+            AuthenticatedUser authUser = getAuthenticatedUserFromSignedUrl();
+            if (authUser != null) {
+                return authUser;
+            }
         }
         //Just send info about the apiKey - workflow users will learn about invocationId elsewhere
         throw new WrappedResponse(badApiKey(null));
+    }
+    
+    private AuthenticatedUser getAuthenticatedUserFromSignedUrl() {
+        AuthenticatedUser authUser = null;
+        // The signedUrl contains a param telling which user this is supposed to be for.
+        // We don't trust this. So we lookup that user, and get their API key, and use
+        // that as a secret in validating the signedURL. If the signature can't be
+        // validated with their key, the user (or their API key) has been changed and
+        // we reject the request.
+        // ToDo - add null checks/ verify that calling methods catch things.
+        String user = httpRequest.getParameter("user");
+        AuthenticatedUser targetUser = authSvc.getAuthenticatedUser(user);
+        String key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("")
+                + authSvc.findApiTokenByUser(targetUser).getTokenString();
+        String signedUrl = httpRequest.getRequestURL().toString() + "?" + httpRequest.getQueryString();
+        String method = httpRequest.getMethod();
+        boolean validated = UrlSignerUtil.isValidUrl(signedUrl, user, method, key);
+        if (validated) {
+            authUser = targetUser;
+        }
+        return authUser;
     }
 
     protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {
@@ -477,6 +505,7 @@ public abstract class AbstractApiBean {
     }
     
     protected DataFile findDataFileOrDie(String id) throws WrappedResponse {
+        
         DataFile datafile;
         if (id.equals(PERSISTENT_ID_KEY)) {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
