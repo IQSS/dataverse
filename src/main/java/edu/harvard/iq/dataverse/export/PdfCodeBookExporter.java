@@ -75,7 +75,7 @@ public class PdfCodeBookExporter implements Exporter {
 
     @Override
     public String  getMediaType() {
-        return MediaType.TEXT_HTML;
+        return MediaType.WILDCARD;
     };
 }
 

@@ -43,6 +43,7 @@ import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -2110,7 +2111,10 @@ public class DdiExportUtil {
 
     public static void datasetPdfDDI(InputStream datafile, OutputStream outputStream) throws XMLStreamException {
         try {
-            File xsltfile = new File("/home/victoria/ddi-to-fo.xsl");
+            //File xsltfile = new File("/home/victoria/fop-2.8/fop/ddi-to-fo.xsl");
+            //URL resource = DdiExportUtil.class.getResource("edu/harvard/iq/dataverse/ddi-to-fo.xsl");
+            //File xsltfile = new File(resource.toURI());
+            InputStream  styleSheetInput = DdiExportUtil.class.getClassLoader().getResourceAsStream("edu/harvard/iq/dataverse/ddi-to-fo.xsl");
             logger.info("start datasetPdfDDI");
             //InputStream xsltfile = DdiExportUtil.class.getClassLoader().getResourceAsStream(
             //        "edu/harvard/iq/dataverse/from-ddi-2.5/ddi-to-fo.xsl");
@@ -2122,7 +2126,7 @@ public class DdiExportUtil {
                 Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, outputStream);
                 // Setup XSLT
                 TransformerFactory factory = TransformerFactory.newInstance();
-                Transformer transformer = factory.newTransformer(new StreamSource(xsltfile));
+                Transformer transformer = factory.newTransformer(new StreamSource(styleSheetInput));
 
                 // Set the value of a <param> in the stylesheet
                 transformer.setParameter("versionParam", "2.0");
@@ -2135,10 +2139,13 @@ public class DdiExportUtil {
 
                 // Start XSLT transformation and FOP processing
                 transformer.transform(src, res);
-            } finally {
-                outputStream.close();
+
+            } catch (Exception e) {
+                logger.info("First try");
+                logger.severe(e.getMessage());
             }
         }  catch (Exception e) {
+            logger.info("Second try");
             logger.severe(e.getMessage());
         }
     }
