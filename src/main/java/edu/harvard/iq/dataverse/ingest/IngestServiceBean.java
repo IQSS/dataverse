@@ -334,6 +334,7 @@ public class IngestServiceBean {
 				} catch (IOException e) {
 					logger.warning("Error getting ingest limit for file: " + dataFile.getIdentifier() + " : " + e.getMessage());
 				} 
+
 				if (savedSuccess && belowLimit) {
 					// These are all brand new files, so they should all have
 					// one filemetadata total. -- L.A.
@@ -387,9 +388,9 @@ public class IngestServiceBean {
                         dataFile.setContentType(FileUtil.MIME_TYPE_TSV);
                     }
 				}
-				if (unattached) {
-					dataFile.setOwner(null);
-				}
+                if (unattached) {
+                    dataFile.setOwner(null);
+                }
 				// ... and let's delete the main temp file if it exists:
 				if(tempLocationPath!=null) {
     				try {

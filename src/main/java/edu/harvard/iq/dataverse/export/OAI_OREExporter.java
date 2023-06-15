@@ -2,12 +2,15 @@ package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import java.io.OutputStream;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
@@ -22,10 +25,11 @@ public class OAI_OREExporter implements Exporter {
     public static final String NAME = "OAI_ORE";
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream)
             throws ExportException {
         try {
-            new OREMap(version).writeOREMap(outputStream);
+            outputStream.write(dataProvider.getDatasetORE().toString().getBytes("UTF8"));
+            outputStream.flush();
         } catch (Exception e) {
             logger.severe(e.getMessage());
             e.printStackTrace();
@@ -34,20 +38,14 @@ public class OAI_OREExporter implements Exporter {
 
 
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return NAME;
     }
 
     @Override
-    public String getDisplayName() {
-        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.oai_ore") != null
-                ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.oai_ore")
-                : "OAI_ORE";
-    }
-
-    @Override
-    public Boolean isXMLFormat() {
-        return false;
+    public String getDisplayName(Locale locale) {
+        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.oai_ore", locale);
+        return Optional.ofNullable(displayName).orElse("OAI_ORE");
     }
 
     @Override
@@ -60,26 +58,6 @@ public class OAI_OREExporter implements Exporter {
         return true;
     }
 
-    @Override
-    public String getXMLNameSpace() throws ExportException {
-        throw new ExportException(OAI_OREExporter.class.getSimpleName() + ": not an XML format.");
-    }
-
-    @Override
-    public String getXMLSchemaLocation() throws ExportException {
-        throw new ExportException(OAI_OREExporter.class.getSimpleName() + ": not an XML format.");
-    }
-
-    @Override
-    public String getXMLSchemaVersion() throws ExportException {
-        throw new ExportException(SchemaDotOrgExporter.class.getSimpleName() + ": not an XML format.");
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter doesn't need/doesn't currently take any parameters
-    }
-    
     @Override
     public String getMediaType() {
         return MediaType.APPLICATION_JSON;
