@@ -375,4 +375,16 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         }
     }
     
+    public Instant getEarliestDate() {
+        String queryString = "SELECT min(r.lastUpdateTime) FROM OAIRecord r";
+        TypedQuery<Date> query = em.createQuery(queryString, Date.class);
+        Date retDate = query.getSingleResult();
+        if (retDate != null) {
+            return retDate.toInstant();
+        }
+        
+        // if there are no records yet, return the default "now"
+        return new Date().toInstant();
+    }
+    
 }

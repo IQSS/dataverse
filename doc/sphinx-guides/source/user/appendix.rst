@@ -26,8 +26,8 @@ Detailed below are what metadata schemas we support for Citation and Domain Spec
 - `Geospatial Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=4>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/geospatial.tsv>`__): compliant with DDI Lite, DDI 2.5 Codebook, DataCite, and Dublin Core. Country / Nation field uses `ISO 3166-1 <http://en.wikipedia.org/wiki/ISO_3166-1>`_ controlled vocabulary.
 - `Social Science & Humanities Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=1>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/social_science.tsv>`__): compliant with DDI Lite, DDI 2.5 Codebook, and Dublin Core.
 - `Astronomy and Astrophysics Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=3>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/astrophysics.tsv>`__): These metadata elements can be mapped/exported to the International Virtual Observatory Alliance’s (IVOA) 
-  `VOResource Schema format <http://www.ivoa.net/documents/latest/RM.html>`__ and is based on 
-  `Virtual Observatory (VO) Discovery and Provenance Metadata <http://perma.cc/H5ZJ-4KKY>`__.
+  `VOResource Schema format <http://www.ivoa.net/documents/latest/RM.html>`__ and is based on
+  `Virtual Observatory (VO) Discovery and Provenance Metadata <http://perma.cc/H5ZJ-4KKY>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/astrophysics.tsv>`__).
 - `Life Sciences Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodHFEWGpoa19ia3pldEFyVFR0aFVGa0E#gid=2>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/biomedical.tsv>`__): based on `ISA-Tab Specification <https://isa-specs.readthedocs.io/en/latest/isamodel.html>`__, along with controlled vocabulary from subsets of the `OBI Ontology <http://bioportal.bioontology.org/ontologies/OBI>`__ and the `NCBI Taxonomy for Organisms <http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/>`__.
 - `Journal Metadata <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=8>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/journals.tsv>`__): based on the `Journal Archiving and Interchange Tag Set, version 1.2 <https://jats.nlm.nih.gov/archiving/tag-library/1.2/chapter/how-to-read.html>`__.
 
@@ -36,7 +36,11 @@ Experimental Metadata
 
 Unlike supported metadata, experimental metadata is not enabled by default in a new Dataverse installation. Feedback via any `channel <https://dataverse.org/contact>`_ is welcome!
 
+- `CodeMeta Software Metadata <https://docs.google.com/spreadsheets/d/e/2PACX-1vTE-aSW0J7UQ0prYq8rP_P_AWVtqhyv46aJu9uPszpa9_UuOWRsyFjbWFDnCd7us7PSIpW7Qg2KwZ8v/pub>`__: based on the `CodeMeta Software Metadata Schema, version 2.0 <https://codemeta.github.io/terms/>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/codemeta.tsv>`__)
 - `Computational Workflow Metadata <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=447508596>`__ (`see .tsv version <https://github.com/IQSS/dataverse/blob/master/scripts/api/data/metadatablocks/computationalworkflow.tsv>`__): adapted from `Bioschemas Computational Workflow Profile, version 1.0 <https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE>`__ and `Codemeta <https://codemeta.github.io/terms/>`__.
+
+Please note: these custom metadata schemas are not included in the Solr schema for indexing by default, you will need
+to add them as necessary for your custom metadata blocks. See "Update the Solr Schema" in :doc:`../admin/metadatacustomization`.
 
 See Also
 ~~~~~~~~
