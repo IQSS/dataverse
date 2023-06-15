@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import com.jayway.restassured.path.xml.XmlPath;
@@ -407,6 +408,20 @@ public class UtilIT {
         return createDatasetResponse;
     }
 
+    static Response createDataset(String dataverseAlias, JsonObjectBuilder datasetJson, String apiToken) {
+        return createDataset(dataverseAlias, datasetJson.build().toString(), apiToken);
+    }
+
+    static Response createDataset(String dataverseAlias, String datasetJson, String apiToken) {
+        System.out.println("creating with " + datasetJson);
+        Response createDatasetResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(datasetJson)
+                .contentType("application/json")
+                .post("/api/dataverses/" + dataverseAlias + "/datasets");
+        return createDatasetResponse;
+    }
+
     static String getDatasetJson(String pathToJsonFile) {
         File datasetVersionJson = new File(pathToJsonFile);
         try {
@@ -542,6 +557,19 @@ public class UtilIT {
           .contentType("text/tab-separated-values; charset=utf-8")
           .body(body)
           .post("/api/admin/datasetfield/load");
+    }
+
+    static Response setMetadataBlocks(String dataverseAlias, JsonArrayBuilder blocks, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .body(blocks.build().toString())
+                .post("/api/dataverses/" + dataverseAlias + "/metadatablocks");
+    }
+
+    static Response getMetadataBlock(String block) {
+        return given()
+                .get("/api/metadatablocks/" + block);
     }
 
     static private String getDatasetXml(String title, String author, String description) {
@@ -715,10 +743,11 @@ public class UtilIT {
     }
 
     static Response downloadAuxFile(Long fileId, String formatTag, String formatVersion, String apiToken) {
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
-        return response;
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
     }
 
     static Response listAuxFilesByOrigin(Long fileId, String origin, String apiToken) {
@@ -969,6 +998,12 @@ public class UtilIT {
                 .urlEncodingEnabled(false)
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + optionalQueryParam);
     }
+    
+    static Response getFileData(String fileId, String apiToken) {       
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId );
+    }
 
     static Response testIngest(String fileName, String fileType) {
         return given()
@@ -1142,7 +1177,14 @@ public class UtilIT {
                 .post("/api/files/" + fileId + "/uningest/?key=" + apiToken);
         return uningestFileResponse;
     }
-    
+
+    public static Response extractNcml(Long fileId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/files/" + fileId + "/extractNcml");
+        return response;
+    }
+
     //I don't understand why this blows up when I remove the key
     public static Response getDataFileMetadata(Long fileId, String apiToken) {
         Response fileResponse = given()
@@ -2429,26 +2471,63 @@ public class UtilIT {
 
     }
     
-    static boolean sleepForReindex(String idOrPersistentId, String apiToken, int duration) {
+    static boolean sleepForReindex(String idOrPersistentId, String apiToken, int durationInSeconds) {
         int i = 0;
         Response timestampResponse;
+        int sleepStep = 500;
+        int repeats = durationInSeconds * (1000 / sleepStep);
+        boolean stale=true;
         do {
             timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
+            System.out.println(timestampResponse.body().asString());
+            String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
+            System.out.println(hasStaleIndex);
+            stale = Boolean.parseBoolean(hasStaleIndex);
             
             try {
-                Thread.sleep(200);
+                Thread.sleep(sleepStep);
                 i++;
-                if (i > duration) {
-                    break; 
-                }
             } catch (InterruptedException ex) {
                 Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+                i = repeats + 1;
             }
-        } while (timestampResponse.body().jsonPath().getBoolean("data.hasStaleIndex"));
-
-        return i <= duration;
+        } while ((i <= repeats) && stale);
+        System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds");
+        return i <= repeats;
 
     }
+    static boolean sleepForReexport(String idOrPersistentId, String apiToken, int durationInSeconds) {
+        int i = 0;
+        Response timestampResponse;
+        int sleepStep = 500;
+        int repeats = durationInSeconds * (1000 / sleepStep);
+        boolean staleExport=true;
+        do {
+            timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
+            //logger.fine(timestampResponse.body().asString());
+            String updateTimeString = timestampResponse.body().jsonPath().getString("data.lastUpdateTime");
+            String exportTimeString = timestampResponse.body().jsonPath().getString("data.lastMetadataExportTime");
+            if (updateTimeString != null && exportTimeString != null) {
+                LocalDateTime updateTime = LocalDateTime.parse(updateTimeString);
+                LocalDateTime exportTime = LocalDateTime.parse(exportTimeString);
+                if (exportTime.isAfter(updateTime)) {
+                    staleExport = false;
+                }
+            }
+            try {
+                Thread.sleep(sleepStep);
+                i++;
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+                i = repeats + 1;
+            }
+        } while ((i <= repeats) && staleExport);
+        System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds for export");
+        return i <= repeats;
+
+    }
+    
+    
     
     
     //Helper function that returns true if a given search returns a non-zero response within a fixed time limit
@@ -2560,18 +2639,49 @@ public class UtilIT {
         return given().put(apiPath);
     }
     
+    static Response getOaiIdentify() {
+        String oaiVerbPath = "/oai?verb=Identify";
+        return given().get(oaiVerbPath);
+    }
+    
+    static Response getOaiListMetadataFormats() {
+        String oaiVerbPath = "/oai?verb=ListMetadataFormats";
+        return given().get(oaiVerbPath);
+    }
+    
+    static Response getOaiListSets() {
+        String oaiVerbPath = "/oai?verb=ListSets";
+        return given().get(oaiVerbPath);
+    }
+    
     static Response getOaiRecord(String datasetPersistentId, String metadataFormat) {
         String apiPath = String.format("/oai?verb=GetRecord&identifier=%s&metadataPrefix=%s", datasetPersistentId, metadataFormat);
         return given().get(apiPath);
     }
     
     static Response getOaiListIdentifiers(String setName, String metadataFormat) {
-        String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        
+        String apiPath;
+        if (StringUtil.nonEmpty(setName)) {
+            apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        } else {
+            apiPath = String.format("/oai?verb=ListIdentifiers&metadataPrefix=%s", metadataFormat);
+        }
+        return given().get(apiPath);
+    }
+    
+    static Response getOaiListIdentifiersWithResumptionToken(String resumptionToken) {
+        String apiPath = String.format("/oai?verb=ListIdentifiers&resumptionToken=%s", resumptionToken);
         return given().get(apiPath);
     }
 
     static Response getOaiListRecords(String setName, String metadataFormat) {
         String apiPath = String.format("/oai?verb=ListRecords&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        return given().get(apiPath);
+    }
+    
+    static Response getOaiListRecordsWithResumptionToken(String resumptionToken) {
+        String apiPath = String.format("/oai?verb=ListRecords&resumptionToken=%s", resumptionToken);
         return given().get(apiPath);
     }
 
@@ -2898,7 +3008,14 @@ public class UtilIT {
                 .put("/api/licenses/"+id.toString() + "/:active/" + state);
         return activateLicenseResponse;
     }
-
+    
+    static Response setLicenseSortOrderById(Long id, Long sortOrder, String apiToken) {
+        Response setSortOrderLicenseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .put("/api/licenses/"+id.toString() + "/:sortOrder/" + sortOrder);
+        return setSortOrderLicenseResponse;
+    }
 
     static Response updateDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody, boolean replace) {
         Response response = given()

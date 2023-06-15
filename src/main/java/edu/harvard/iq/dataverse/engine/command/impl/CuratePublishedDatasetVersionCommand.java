@@ -56,7 +56,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         DatasetVersion updateVersion = getDataset().getLatestVersionForCopy();
 
         // Copy metadata from draft version to latest published version
-        updateVersion.setDatasetFields(getDataset().getEditVersion().initDatasetFields());
+        updateVersion.setDatasetFields(getDataset().getOrCreateEditVersion().initDatasetFields());
 
         validateOrDie(updateVersion, isValidateLenient());
 
@@ -68,14 +68,14 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
 
 
         TermsOfUseAndAccess oldTerms = updateVersion.getTermsOfUseAndAccess();
-        TermsOfUseAndAccess newTerms = getDataset().getEditVersion().getTermsOfUseAndAccess();
+        TermsOfUseAndAccess newTerms = getDataset().getOrCreateEditVersion().getTermsOfUseAndAccess();
         newTerms.setDatasetVersion(updateVersion);
         updateVersion.setTermsOfUseAndAccess(newTerms);
         //Put old terms on version that will be deleted....
-        getDataset().getEditVersion().setTermsOfUseAndAccess(oldTerms);
+        getDataset().getOrCreateEditVersion().setTermsOfUseAndAccess(oldTerms);
         //Also set the fileaccessrequest boolean on the dataset to match the new terms
         getDataset().setFileAccessRequest(updateVersion.getTermsOfUseAndAccess().isFileAccessRequest());
-        List<WorkflowComment> newComments = getDataset().getEditVersion().getWorkflowComments();
+        List<WorkflowComment> newComments = getDataset().getOrCreateEditVersion().getWorkflowComments();
         if (newComments!=null && newComments.size() >0) {
             for(WorkflowComment wfc: newComments) {
                 wfc.setDatasetVersion(updateVersion);
@@ -91,7 +91,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // Look for file metadata changes and update published metadata if needed
         List<FileMetadata> pubFmds = updateVersion.getFileMetadatas();
         int pubFileCount = pubFmds.size();
-        int newFileCount = tempDataset.getEditVersion().getFileMetadatas().size();
+        int newFileCount = tempDataset.getOrCreateEditVersion().getFileMetadatas().size();
         /* The policy for this command is that it should only be used when the change is a 'minor update' with no file changes.
          * Nominally we could call .isMinorUpdate() for that but we're making the same checks as we go through the update here. 
          */
@@ -99,6 +99,10 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             logger.severe("Draft version of dataset: " + tempDataset.getId() + " has: " + newFileCount + " while last published version has " + pubFileCount);
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasetversion.update.failure"), this);
         }
+        Long thumbId = null;
+        if(tempDataset.getThumbnailFile()!=null) {
+            thumbId = tempDataset.getThumbnailFile().getId();
+        };
         for (FileMetadata publishedFmd : pubFmds) {
             DataFile dataFile = publishedFmd.getDataFile();
             FileMetadata draftFmd = dataFile.getLatestFileMetadata();
@@ -131,10 +135,14 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             ctxt.em().remove(mergedFmd);
             // including removing metadata from the list on the datafile
             draftFmd.getDataFile().getFileMetadatas().remove(draftFmd);
-            tempDataset.getEditVersion().getFileMetadatas().remove(draftFmd);
+            tempDataset.getOrCreateEditVersion().getFileMetadatas().remove(draftFmd);
             // And any references in the list held by categories
             for (DataFileCategory cat : tempDataset.getCategories()) {
                 cat.getFileMetadatas().remove(draftFmd);
+            }
+            //And any thumbnail reference
+            if(publishedFmd.getDataFile().getId()==thumbId) {
+                tempDataset.setThumbnailFile(publishedFmd.getDataFile());
             }
         }
 
