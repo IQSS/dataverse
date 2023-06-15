@@ -2173,6 +2173,50 @@ Signposting is not supported for draft dataset versions.
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
 
+Get Dataset By Private URL Token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PRIVATE_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+
+  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN"
+
+Get Citation
+~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+  export VERSION=1.0
+
+  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER"
+
+Get Citation by Private URL Token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PRIVATE_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+
+  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN/citation"
+
+.. _get-dataset-summary-field-names:
+
+Get Summary Field Names
+~~~~~~~~~~~~~~~~~~~~~~~
+
+See :ref:`:CustomDatasetSummaryFields` in the Installation Guide for how the list of dataset fields that summarize a dataset can be customized. Here's how to list them:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/datasets/summaryFieldNames"
+
 Files
 -----
 
