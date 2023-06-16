@@ -687,7 +687,7 @@ public class DatasetPage implements java.io.Serializable {
         if (isIndexedVersion() && StringUtil.isEmpty(fileLabelSearchTerm) && StringUtil.isEmpty(fileTypeFacet) && StringUtil.isEmpty(fileAccessFacet) && StringUtil.isEmpty(fileTagsFacet)) {
             // Indexed version: we need facets, they are set as a side effect of getFileIdsInVersionFromSolr method.
             // But, no search terms were specified, we will return the full
-            // list of the files in the version: we discard the getFileIdsInVersionFromSolr.
+            // list of the files in the version: we discard the result from getFileIdsInVersionFromSolr.
             getFileIdsInVersionFromSolr(workingVersion.getId(), this.fileLabelSearchTerm);
             // Since the search results should include the full set of fmds if all the
             // terms/facets are empty, setting them to null should just be
