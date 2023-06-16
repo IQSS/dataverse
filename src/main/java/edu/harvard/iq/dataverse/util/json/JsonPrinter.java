@@ -685,7 +685,7 @@ public class JsonPrinter {
     public static JsonArrayBuilder jsonDT(List<DataTable> ldt) {
         JsonArrayBuilder ldtArr = Json.createArrayBuilder();
         for(DataTable dt: ldt){
-            ldtArr.add(jsonObjectBuilder().add("dataTable", JsonPrinter.json(dt)));
+            ldtArr.add(JsonPrinter.json(dt));
         }
         return ldtArr;
     }
@@ -713,6 +713,7 @@ public class JsonPrinter {
     // TODO: add sumstat and variable categories, check formats
     public static JsonObjectBuilder json(DataVariable dv) {
     return jsonObjectBuilder()
+            .add("id", dv.getId())
             .add("name", dv.getName())
             .add("label", dv.getLabel())
             .add("weighted", dv.isWeighted())
@@ -728,9 +729,9 @@ public class JsonPrinter {
             .add("recordSegmentNumber", dv.getRecordSegmentNumber())
             .add("numberOfDecimalPoints",dv.getNumberOfDecimalPoints())
             .add("variableMetadata",jsonVarMetadata(dv.getVariableMetadatas()))
-            .add("invalidRanges", dv.getInvalidRanges().isEmpty() ? JsonPrinter.jsonInvalidRanges(dv.getInvalidRanges()) : null)
-            .add("summaryStatistics", dv.getSummaryStatistics().isEmpty() ? JsonPrinter.jsonSumStat(dv.getSummaryStatistics()) : null)
-            .add("variableCategories", dv.getCategories().isEmpty() ? JsonPrinter.jsonCatStat(dv.getCategories()) : null) 
+            .add("invalidRanges", dv.getInvalidRanges().isEmpty() ? null : JsonPrinter.jsonInvalidRanges(dv.getInvalidRanges()))
+            .add("summaryStatistics", dv.getSummaryStatistics().isEmpty() ? null : JsonPrinter.jsonSumStat(dv.getSummaryStatistics()))
+            .add("variableCategories", dv.getCategories().isEmpty() ? null : JsonPrinter.jsonCatStat(dv.getCategories())) 
             ;
     }
 
