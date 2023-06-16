@@ -3125,6 +3125,8 @@ The default checksum algorithm used is MD5 and should be sufficient for establis
 
 To update the algorithm used for existing files, see :ref:`UpdateChecksums`
 
+The fixity checksum algorithm in use can be discovered via API. See :ref:`get-fixity-algorithm` in the API Guide.
+
 .. _:PVMinLength:
 
 :PVMinLength

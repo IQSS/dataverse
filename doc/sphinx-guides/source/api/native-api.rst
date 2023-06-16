@@ -2963,6 +2963,8 @@ The response is a JSON object described in the :doc:`/api/external-tools` sectio
 
   curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/files/$FILE_ID/metadata/$FILEMETADATA_ID/toolparams/$TOOL_ID
 
+.. _get-fixity-algorithm:
+
 Get Fixity Algorithm
 ~~~~~~~~~~~~~~~~~~~~~~
 
