@@ -3014,6 +3014,20 @@ Optionally, you may use a third query parameter "sendEmailNotification=false" to
 Roles
 -----
 
+JSON Representation of a Role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The JSON representation of a role (``roles.json``) looks like this::
+
+  {
+    "alias": "sys1",
+    "name": “Restricted System Role”,
+    "description": “A person who may only add datasets.”,
+    "permissions": [
+      "AddDataset"
+    ]
+  } 
+
 Show Role
 ~~~~~~~~~
 
