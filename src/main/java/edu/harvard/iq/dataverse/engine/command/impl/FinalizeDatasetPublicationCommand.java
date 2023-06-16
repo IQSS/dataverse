@@ -238,14 +238,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (Exception e) {
             logger.warning("Failure to send dataset published messages for : " + dataset.getId() + " : " + e.getMessage());
         }
-        try {
-            Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
-        } catch (IOException | SolrServerException e) {    
-            String failureLogText = "Post-publication indexing failed. You can kick off a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  dataset);
-            retVal = false;
-        }
+        ctxt.index().asyncIndexDataset(dataset, true);                   
         
         //re-indexing dataverses that have additional subjects
         if (!dataversesToIndex.isEmpty()){
