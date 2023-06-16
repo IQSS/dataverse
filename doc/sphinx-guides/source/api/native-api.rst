@@ -315,16 +315,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
 
-Where ``roles.json`` looks like this::
-
-  {
-    "alias": "sys1",
-    "name": “Restricted System Role”,
-    "description": “A person who may only add datasets.”,
-    "permissions": [
-      "AddDataset"
-    ]
-  } 
+``roles.json`` see :ref:`json-representation-of-a-role`
 
 .. note:: Only a Dataverse installation account with superuser permissions is allowed to create roles in a Dataverse Collection.
 
@@ -3893,6 +3884,16 @@ Create Global Role
 Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON. ::
 
     POST http://$SERVER/api/admin/roles
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/admin/roles --upload-file roles.json
+
+``roles.json`` see :ref:`json-representation-of-a-role`
     
 Delete Global Role
 ~~~~~~~~~~~~~~~~~~
