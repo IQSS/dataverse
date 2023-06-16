@@ -406,9 +406,10 @@ public class SettingsServiceBean {
          */
         InheritParentRoleAssignments,
         
-        /** Make Data Count Logging and Display */
+        /** Make Data Count Logging, Display, and Start Date */
         MDCLogPath, 
         DisplayMDCMetrics,
+        MDCStartDate,
 
         /**
          * Allow CORS flag (true or false). It is true by default
@@ -565,6 +566,7 @@ public class SettingsServiceBean {
          * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
          */
         LDNMessageHosts,
+
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */

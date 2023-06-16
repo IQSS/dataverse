@@ -330,6 +330,19 @@ As for the "Remote only" authentication mode, it means that:
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
+.. _bearer-token-auth:
+
+Bearer Token Authentication
+---------------------------
+
+Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to API tokens. This is an experimental feature hidden behind a feature flag.
+
+.. _RFC 6750: https://tools.ietf.org/html/rfc6750
+
+To enable bearer tokens, you must install and configure Keycloak (for now, see :ref:`oidc-dev` in the Developer Guide) and enable ``api-bearer-auth`` under :ref:`feature-flags`.
+
+You can test that bearer tokens are working by following the example under :ref:`bearer-tokens` in the API Guide.
+
 .. _database-persistence:
 
 Database Persistence
@@ -2331,6 +2344,19 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 **WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
 production context! Rely on password alias, secrets directory or cloud based sources instead!
 
+.. _dataverse.api.allow-incomplete-metadata:
+
+dataverse.api.allow-incomplete-metadata
++++++++++++++++++++++++++++++++++++++++
+
+When enabled, dataset with incomplete metadata can be submitted via API for later corrections.
+See :ref:`create-dataset-command` for details.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
 .. _dataverse.signposting.level1-author-limit:
 
 dataverse.signposting.level1-author-limit
@@ -2370,6 +2396,42 @@ The default is false.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAIL``.
 
+dataverse.ui.allow-review-for-incomplete
+++++++++++++++++++++++++++++++++++++++++
+
+Determines if dataset submitted via API with incomplete metadata (for later corrections) can be submitted for review
+from the UI.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_UI_ALLOW_REVIEW_FOR_INCOMPLETE``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+dataverse.ui.show-validity-filter
++++++++++++++++++++++++++++++++++
+
+When enabled, the filter for validity of metadata is shown in "My Data" page.
+**Note:** When you wish to use this filter, you must reindex the datasets first, otherwise datasets with valid metadata
+will not be shown in the results.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_UI_SHOW_VALIDITY_FILTER``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+.. _dataverse.spi.exporters.directory:
+
+dataverse.spi.exporters.directory
++++++++++++++++++++++++++++++++++
+
+This JVM option is used to configure the file system path where external Exporter JARs can be placed. See :ref:`external-exporters` for more information.
+
+``./asadmin create-jvm-options '-Ddataverse.spi.exporters.directory=PATH_LOCATION_HERE'``
+
+If this value is set, Dataverse will examine all JARs in the specified directory and will use them to add, or replace existing, metadata export formats.
+If this value is not set (the default), Dataverse will not use external Exporters.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SPI_EXPORTERS_DIRECTORY``.
 
 .. _feature-flags:
 

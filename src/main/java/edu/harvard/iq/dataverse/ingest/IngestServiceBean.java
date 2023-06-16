@@ -332,9 +332,7 @@ public class IngestServiceBean {
 				} catch (IOException e) {
 					logger.warning("Error getting ingest limit for file: " + dataFile.getIdentifier() + " : " + e.getMessage());
 				} 
-				if (unattached) {
-					dataFile.setOwner(null);
-				}
+
 				if (savedSuccess && belowLimit) {
 					// These are all brand new files, so they should all have
 					// one filemetadata total. -- L.A.
@@ -388,6 +386,9 @@ public class IngestServiceBean {
                         dataFile.setContentType(FileUtil.MIME_TYPE_TSV);
                     }
 				}
+                if (unattached) {
+                    dataFile.setOwner(null);
+                }
 				// ... and let's delete the main temp file if it exists:
 				if(tempLocationPath!=null) {
     				try {
@@ -482,15 +483,17 @@ public class IngestServiceBean {
                 // todo: investigate why when calling save with the file object
                 // gotten from the loop, the roles assignment added at create is removed
                 // (switching to refinding via id resolves that)                
+                // possible explanation: when flush-mode is auto, flush is on query,
+                // we make sure that the roles assignment added at create is flushed
                 dataFile = fileService.find(dataFile.getId());
                 scheduledFiles.add(dataFile);
             }
         }
 
-        startIngestJobs(scheduledFiles, user);
+        startIngestJobs(dataset.getId(), scheduledFiles, user);
     }
     
-    public String startIngestJobs(List<DataFile> dataFiles, AuthenticatedUser user) {
+    public String startIngestJobs(Long datasetId, List<DataFile> dataFiles, AuthenticatedUser user) {
 
         IngestMessage ingestMessage = null;
         StringBuilder sb = new StringBuilder();
@@ -531,7 +534,7 @@ public class IngestServiceBean {
         if (count > 0) {
             String info = "Ingest of " + count + " tabular data file(s) is in progress.";
             logger.info(info);
-            datasetService.addDatasetLock(scheduledFiles.get(0).getOwner().getId(),
+            datasetService.addDatasetLock(datasetId,
                     DatasetLock.Reason.Ingest,
                     (user != null) ? user.getId() : null,
                     info);
@@ -549,10 +552,12 @@ public class IngestServiceBean {
                 }
             });
 
-            ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO, user.getId());
+            ingestMessage = new IngestMessage(user.getId());
             for (int i = 0; i < count; i++) {
                 ingestMessage.addFileId(scheduledFilesArray[i].getId());
             }
+            ingestMessage.setDatasetId(datasetId);
+            ingestMessage.setInfo(info);
 
             QueueConnection conn = null;
             QueueSession session = null;
