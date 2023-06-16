@@ -3005,6 +3005,8 @@ Optionally, you may use a third query parameter "sendEmailNotification=false" to
 Roles
 -----
 
+.. _json-representation-of-a-role:
+
 JSON Representation of a Role
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
