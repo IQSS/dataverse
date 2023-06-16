@@ -678,8 +678,7 @@ public class JsonPrinter {
                 .add("creationDate",  df.getCreateDateFormattedYYYYMMDD())
                 .add("dataTables", df.getDataTables().isEmpty() ? null : JsonPrinter.jsonDT(df.getDataTables()))
                 .add("varGroups", fileMetadata.getVarGroups().isEmpty()
-                        ? JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups())
-                        : null);
+                        ? null: JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups()));
     }
     
     //Started from https://github.com/RENCI-NRIG/dataverse/, i.e. https://github.com/RENCI-NRIG/dataverse/commit/2b5a1225b42cf1caba85e18abfeb952171c6754a
