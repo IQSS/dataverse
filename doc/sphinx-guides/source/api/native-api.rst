@@ -3014,39 +3014,6 @@ Optionally, you may use a third query parameter "sendEmailNotification=false" to
 Roles
 -----
 
-Create a New Role in a Dataverse Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Creates a new role under Dataverse collection ``id``. Needs a json file with the role description:
-
-.. code-block:: bash
-
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export SERVER_URL=https://demo.dataverse.org
-  export ID=root
-
-  curl -H X-Dataverse-key:$API_TOKEN -X POST -H "Content-type:application/json" $SERVER_URL/api/dataverses/$ID/roles --upload-file roles.json
-
-The fully expanded example above (without environment variables) looks like this:
-
-.. code-block:: bash
-
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
-
-Where ``roles.json`` looks like this::
-
-  {
-    "alias": "sys1",
-    "name": “Restricted System Role”,
-    "description": “A person who may only add datasets.”,
-    "permissions": [
-      "AddDataset"
-    ]
-  } 
-
-.. note:: Only a Dataverse installation account with superuser permissions is allowed to create roles in a Dataverse Collection.
-
-
 Show Role
 ~~~~~~~~~
 
