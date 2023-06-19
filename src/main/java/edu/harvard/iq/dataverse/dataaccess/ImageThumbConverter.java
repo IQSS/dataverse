@@ -196,6 +196,7 @@ public class ImageThumbConverter {
         // We rely on ImageMagick to convert PDFs; so if it's not installed, 
         // better give up right away: 
         if (!isImageMagickInstalled()) {
+            logger.info("Couldn't find IM");
             return false;
         }
 
@@ -218,12 +219,15 @@ public class ImageThumbConverter {
             tempFilesRequired = true;
 
         } catch (IOException ioex) {
+            logger.warning(ioex.getMessage());
+            ioex.printStackTrace();
             // this on the other hand is likely a fatal condition :(
             return false;
         }
 
         if (tempFilesRequired) {
             //ReadableByteChannel pdfFileChannel;
+            logger.info("Creating temp file");
             InputStream inputStream = null; 
             try {
                 storageIO.open();
@@ -241,7 +245,7 @@ public class ImageThumbConverter {
                 tempFile = File.createTempFile("tempFileToRescale", ".tmp");
                 outputStream = new FileOutputStream(tempFile);
                 long sz = inputStream.transferTo(outputStream);
-                logger.info(" wrote " + sz + " bytes to " + tempFile.getAbsolutePath());
+                logger.info("Wrote " + sz + " bytes to " + tempFile.getAbsolutePath());
 
                 //tempFileChannel.transferFrom(pdfFileChannel, 0, storageIO.getSize());
             } catch (IOException ioex) {
