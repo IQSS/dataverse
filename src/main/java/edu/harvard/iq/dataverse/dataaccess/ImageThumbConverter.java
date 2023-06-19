@@ -223,30 +223,32 @@ public class ImageThumbConverter {
         }
 
         if (tempFilesRequired) {
-            ReadableByteChannel pdfFileChannel;
-
+            //ReadableByteChannel pdfFileChannel;
+            InputStream inputStream = null; 
             try {
                 storageIO.open();
-                //inputStream = storageIO.getInputStream();
-                pdfFileChannel = storageIO.getReadChannel();
+                inputStream = storageIO.getInputStream();
+                //pdfFileChannel = storageIO.getReadChannel();
             } catch (Exception ioex) {
                 logger.warning("caught Exception trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier());
                 return false;
             }
 
             File tempFile;
-            FileChannel tempFileChannel = null;
+            OutputStream outputStream = null;
+            //FileChannel tempFileChannel = null;
             try {
                 tempFile = File.createTempFile("tempFileToRescale", ".tmp");
-                tempFileChannel = new FileOutputStream(tempFile).getChannel();
+                outputStream = new FileOutputStream(tempFile);
+                inputStream.transferTo(outputStream);
 
-                tempFileChannel.transferFrom(pdfFileChannel, 0, storageIO.getSize());
+                //tempFileChannel.transferFrom(pdfFileChannel, 0, storageIO.getSize());
             } catch (IOException ioex) {
                 logger.warning("GenerateImageThumb: failed to save pdf bytes in a temporary file.");
                 return false;
             } finally {
-                IOUtils.closeQuietly(tempFileChannel);
-                IOUtils.closeQuietly(pdfFileChannel);
+                IOUtils.closeQuietly(inputStream);
+                IOUtils.closeQuietly(outputStream);
             }
             sourcePdfFile = tempFile;
         }
