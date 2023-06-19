@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.api.Datasets;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.datasetLogoThumbnail;
@@ -222,6 +223,20 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             this.dvobjectThumbnailsMap.put(datasetId, "");
             return null; 
         }
+        DataFile thumbnailFile = dataset.getThumbnailFile();
+
+        if (thumbnailFile == null) {
+                thumbnailFile = DatasetUtil.attemptToAutomaticallySelectThumbnailFromDataFiles(dataset, null);
+                if (thumbnailFile == null) {
+                    logger.fine("Dataset (id :" + dataset.getId() + ") does not have a logo available that could be selected automatically.");
+                    return null;
+                }
+        }
+        if (thumbnailFile.isRestricted()) {
+            logger.fine("Dataset (id :" + dataset.getId() + ") has a logo the user selected but the file must have later been restricted. Returning null.");
+            return null;
+        }
+        
 
         String url = SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/" + dataset.getId() + "/logo";
         logger.fine("getDatasetCardImageAsBase64Url: " + url);
