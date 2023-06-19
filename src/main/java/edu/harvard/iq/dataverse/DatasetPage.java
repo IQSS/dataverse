@@ -3341,6 +3341,14 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
+    public List<Dataverse> getLinkedDataverses() {
+        List<Dataverse> linkedDataverses = new ArrayList<>();
+        if (session.getUser().isAuthenticated()) {
+            linkedDataverses = dataverseService.findDataversesThatLinkToThisDatasetId(dataset.getId());
+        }
+        return linkedDataverses;
+    }
+
     public List<Dataverse> completeHostDataverseMenuList(String query) {
         if (session.getUser().isAuthenticated()) {
             return dataverseService.filterDataversesForHosting(query, dvRequestService.getDataverseRequest());

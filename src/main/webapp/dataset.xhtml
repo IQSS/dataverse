@@ -1612,6 +1612,18 @@
                                 #{bundle.cancel}
                             </button>
                         </div>
+                        <p:fragment id="linkedDataversesList" rendered="#{!empty DatasetPage.linkedDataverses}">
+                            <p style="margin-top: 10px; margin-bottom: 0;"><strong><h:outputText value="#{bundle['dataset.link.list']}" escape="false" /></strong></p>
+                            <ul style="margin-top: 0; padding-top: 0;">
+                                <ui:repeat value="#{DatasetPage.linkedDataverses}" var="linkedDataverse">
+                                    <li>
+                                        <a href="/dataverse/#{linkedDataverse.alias}">
+                                            <h:outputText value="#{linkedDataverse.displayName}" />
+                                        </a>
+                                    </li>
+                                </ui:repeat>
+                            </ul>
+                        </p:fragment>
                     </p:dialog>
                     <p:remoteCommand name="linkDatasetCommand" oncomplete="PF('linkDatasetForm').hide();" update=":messagePanel  @([id$=Messages])" actionListener="#{DatasetPage.saveLinkingDataverses}"/>
                     <p:dialog id="computeBatchListPopup" header="#{bundle['dataset.compute.computeBatchListHeader']}" widgetVar="computeBatchListPopup" modal="true">
