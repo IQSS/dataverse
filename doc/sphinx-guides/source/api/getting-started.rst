@@ -60,7 +60,7 @@ For example, curl command parameter below might cause error such as ``warning: g
 
   -F jsonData={\"description\":\"My description.\",\"categories\":[\"Data\"]}
 
-Instead, use --from-string with outer quote. See https://github.com/curl/curl/issues/2022
+Instead, use --form-string with outer quote. See https://github.com/curl/curl/issues/2022
 
 .. code-block:: bash
 
