@@ -32,7 +32,7 @@ public final class VersionPidMode {
     
     /**
      * A collection of conducts for Dataverse collections, used in {@link edu.harvard.iq.dataverse.Dataverse}
-     * and {@link edu.harvard.iq.dataverse.DataverseServiceBean#wantsDatasetVersionPids(Dataverse)}:
+     * and {@link edu.harvard.iq.dataverse.DataverseServiceBean#wantsDatasetVersionPids(Dataverse, boolean)}:
      * <ol>
      *     <li>Collection may inherit version pid behaviour from the parent collection(s),</li>
      *     <li>collection may choose to opt out and skip the minting,</li>
