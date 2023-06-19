@@ -240,7 +240,8 @@ public class ImageThumbConverter {
             try {
                 tempFile = File.createTempFile("tempFileToRescale", ".tmp");
                 outputStream = new FileOutputStream(tempFile);
-                inputStream.transferTo(outputStream);
+                long sz = inputStream.transferTo(outputStream);
+                logger.info(" wrote " + sz + " bytes to " + tempFile.getAbsolutePath());
 
                 //tempFileChannel.transferFrom(pdfFileChannel, 0, storageIO.getSize());
             } catch (IOException ioex) {
@@ -763,7 +764,7 @@ public class ImageThumbConverter {
             try {
                 fileSize = new File(fileLocation).length();
             } catch (Exception ex) {
-                // 
+               logger.warning("Can't open file: " + fileLocation);
             }
 
             if (fileSize == 0 || fileSize > sizeLimit) {
