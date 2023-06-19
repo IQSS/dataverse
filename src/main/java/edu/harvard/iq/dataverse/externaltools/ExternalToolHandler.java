@@ -111,6 +111,7 @@ public class ExternalToolHandler extends URLTokenUtil {
                 case DATASET:
                     callback=SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/datasets/"
                             + dataset.getId() + "/versions/:latest/toolparams/" + externalTool.getId();
+                    break;
                 case FILE:
                     callback= SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/files/"
                             + dataFile.getId() + "/metadata/" + fileMetadata.getId() + "/toolparams/"

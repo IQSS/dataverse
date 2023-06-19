@@ -243,12 +243,7 @@ public class Index extends AbstractApiBean {
                 Dataset dataset = datasetService.find(id);
                 if (dataset != null) {
                     boolean doNormalSolrDocCleanUp = true;
-                    try {
-                        Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
-                    } catch (IOException | SolrServerException e) {
-                        //
-                        return error(Status.BAD_REQUEST, writeFailureToLog(e.getLocalizedMessage(), dataset));
-                    }
+                    indexService.asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
 
                     return ok("starting reindex of dataset " + id);
                 } else {
@@ -266,11 +261,7 @@ public class Index extends AbstractApiBean {
                  * @todo How can we display the result to the user?
                  */
                 boolean doNormalSolrDocCleanUp = true;
-                try {
-                    Future<String> indexDatasetFuture = indexService.indexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
-                } catch (IOException | SolrServerException e) {
-                    writeFailureToLog(e.getLocalizedMessage(), datasetThatOwnsTheFile);
-                }
+                indexService.asyncIndexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
                 
                 return ok("started reindexing " + type + "/" + id);
             } else {
@@ -318,11 +309,7 @@ public class Index extends AbstractApiBean {
         }
         if (dataset != null) {
             boolean doNormalSolrDocCleanUp = true;
-            try {
-                Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
-            } catch (IOException | SolrServerException e) {
-                writeFailureToLog(e.getLocalizedMessage(), dataset);               
-            }
+            indexService.asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
             JsonObjectBuilder data = Json.createObjectBuilder();
             data.add("message", "Reindexed dataset " + persistentId);
             data.add("id", dataset.getId());
