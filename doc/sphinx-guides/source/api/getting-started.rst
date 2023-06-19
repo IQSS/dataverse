@@ -64,7 +64,7 @@ Instead, use --form-string with outer quote. See https://github.com/curl/curl/is
 
 .. code-block:: bash
 
-  --from-string 'jsonData={"description":"My description.","categories":["Data"]}'
+  --form-string 'jsonData={"description":"My description.","categories":["Data"]}'
 
 If you don't like curl, don't have curl, or want to use a different programming language, you are encouraged to check out the Python, Javascript, R, and Java options in the :doc:`client-libraries` section.
 
