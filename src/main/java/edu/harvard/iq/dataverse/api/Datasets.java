@@ -2085,7 +2085,7 @@ public class Datasets extends AbstractApiBean {
             JsonObjectBuilder response = Json.createObjectBuilder();
             response.add("id", datasetId);
             response.add("identifier", dataset.getIdentifier());
-            response.add("linked-dataverses", dataversesThatLinkToThisDatasetIdBuilder);
+            response.add("dataverses that link to dataset id " + datasetId, dataversesThatLinkToThisDatasetIdBuilder);
             return ok(response);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
