@@ -1,0 +1,3 @@
+Performance improvements, especially for large datasets containing thousands of files.
+Uploading files one by one to the dataset is much faster now, allowing uploading thousands of files in an acceptable timeframe. Not only uploading a file, but all edit operations on datasets containing many files, got faster.
+Performance tweaks include indexing of the datasets in the background and optimizations in the amount of the indexing operations needed. Furthermore, updates to the dateset no longer wait for ingesting to finish. Ingesting was already running in the background, but it took a lock, preventing updating the dataset and degrading performance for datasets containing many files.

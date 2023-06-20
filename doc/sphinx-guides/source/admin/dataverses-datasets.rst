@@ -118,6 +118,28 @@ Creates a link between a dataset and a Dataverse collection (see the :ref:`datas
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
 
+List Collections that are Linked from a Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Lists the link(s) created between a dataset and a Dataverse collection (see the :ref:`dataset-linking` section of the User Guide for more information). ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/datasets/$linked-dataset-id/links
+
+It returns a list in the following format:
+
+.. code-block:: json
+
+  {
+    "status": "OK",
+    "data": {
+      "dataverses that link to dataset id 56782": [
+        "crc990 (id 18802)"
+      ]
+    }
+  }
+
+.. _unlink-a-dataset:
+
 Unlink a Dataset
 ^^^^^^^^^^^^^^^^
 
