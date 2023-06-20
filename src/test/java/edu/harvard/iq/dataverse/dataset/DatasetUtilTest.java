@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -10,7 +9,6 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
@@ -65,6 +63,7 @@ public class DatasetUtilTest {
         DatasetThumbnail result = DatasetUtil.getThumbnail(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
         assertNull(result);
     }
+
     /**
      * Test of deleteDatasetLogo method, of class DatasetUtil.
      */
@@ -159,5 +158,22 @@ public class DatasetUtilTest {
         version.setDatasetFields(fields);
 
         assertEquals(0, DatasetUtil.getDatasetSummaryFields(version, "object").size());
+    }
+
+    @Test
+    public void testGetDatasetSummaryFieldNames_emptyCustomFields() {
+        String[] actual = DatasetUtil.getDatasetSummaryFieldNames(null);
+        String[] expected = DatasetUtil.datasetDefaultSummaryFieldNames.split(",");
+
+        assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetDatasetSummaryFieldNames_notEmptyCustomFields() {
+        String testCustomFields = "test1,test2";
+        String[] actual = DatasetUtil.getDatasetSummaryFieldNames(testCustomFields);
+        String[] expected = testCustomFields.split(",");
+
+        assertArrayEquals(expected, actual);
     }
 }
