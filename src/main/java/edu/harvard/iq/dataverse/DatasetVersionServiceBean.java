@@ -1118,13 +1118,7 @@ w
 
         // reindexing the dataset, to make sure the new UNF is in SOLR:
         boolean doNormalSolrDocCleanUp = true;
-        try {
-            Future<String> indexingResult = indexService.indexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
-        } catch (IOException | SolrServerException e) {    
-            String failureLogText = "Post UNF update indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + datasetVersion.getDataset().getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText,  datasetVersion.getDataset());
-        }
+        indexService.asyncIndexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
         return info;
     }
     

@@ -43,6 +43,10 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
  * @author skraffmiller
  */
 @NamedQueries({
+    // Dataset.findById should only be used if you're going to iterate over files (otherwise, lazy loading in DatasetService.find() is better).
+    // If you are going to iterate over files, preferably call the DatasetService.findDeep() method i.s.o. using this query directly.
+    @NamedQuery(name = "Dataset.findById", 
+                query = "SELECT o FROM Dataset o LEFT JOIN FETCH o.files WHERE o.id=:id"),
     @NamedQuery(name = "Dataset.findIdStale",
                query = "SELECT d.id FROM Dataset d WHERE d.indexTime is NULL OR d.indexTime < d.modificationTime"),
     @NamedQuery(name = "Dataset.findIdStalePermission",
