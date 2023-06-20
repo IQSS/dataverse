@@ -812,4 +812,10 @@ public class Files extends AbstractApiBean {
         eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale);
         return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters()))));
     }
+    
+    @GET
+    @Path("fixityAlgorithm")
+    public Response getFixityAlgorithm() {
+        return ok(systemConfig.getFileFixityChecksumAlgorithm().toString());
+    }
 }
