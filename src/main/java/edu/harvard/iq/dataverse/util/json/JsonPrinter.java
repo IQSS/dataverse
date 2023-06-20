@@ -384,19 +384,10 @@ public class JsonPrinter {
                 .add("distributionDate", dsv.getDistributionDate()).add("productionDate", dsv.getProductionDate())
                 .add("UNF", dsv.getUNF()).add("archiveTime", format(dsv.getArchiveTime()))
                 .add("lastUpdateTime", format(dsv.getLastUpdateTime())).add("releaseTime", format(dsv.getReleaseTime()))
-                .add("createTime", format(dsv.getCreateTime()));
-        String alternativePersistentId = dataset.getAlternativePersistentIdentifier();
-        if (alternativePersistentId != null) {
-            bld.add("alternativePersistentId", alternativePersistentId);
-        }
-        String publicationDate = dataset.getPublicationDateFormattedYYYYMMDD();
-        if (publicationDate != null) {
-            bld.add("publicationDate", publicationDate);
-        }
-        String citationDate = dataset.getCitationDateFormattedYYYYMMDD();
-        if (citationDate != null) {
-            bld.add("citationDate", citationDate);
-        }
+                .add("createTime", format(dsv.getCreateTime()))
+                .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
+                .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
+                .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD());
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
             bld.add("license", jsonLicense(dsv));
