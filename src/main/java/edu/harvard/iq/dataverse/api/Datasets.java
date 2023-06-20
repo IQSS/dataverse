@@ -2076,10 +2076,16 @@ public class Datasets extends AbstractApiBean {
             List<Dataverse> dvsThatLinkToThisDatasetId = dataverseSvc.findDataversesThatLinkToThisDatasetId(datasetId);
             JsonArrayBuilder dataversesThatLinkToThisDatasetIdBuilder = Json.createArrayBuilder();
             for (Dataverse dataverse : dvsThatLinkToThisDatasetId) {
-                dataversesThatLinkToThisDatasetIdBuilder.add(dataverse.getAlias() + " (id " + dataverse.getId() + ")");
+                JsonObjectBuilder entry = Json.createObjectBuilder();
+                entry.add("id", dataverse.getId());
+                entry.add("alias", dataverse.getAlias());
+                entry.add("displayName", dataverse.getDisplayName());
+                dataversesThatLinkToThisDatasetIdBuilder.add(entry);
             }
             JsonObjectBuilder response = Json.createObjectBuilder();
-            response.add("dataverses that link to dataset id " + datasetId, dataversesThatLinkToThisDatasetIdBuilder);
+            response.add("id", datasetId);
+            response.add("identifier", dataset.getIdentifier());
+            response.add("linked-dataverses", dataversesThatLinkToThisDatasetIdBuilder);
             return ok(response);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
