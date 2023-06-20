@@ -196,7 +196,7 @@ public class ImageThumbConverter {
         // We rely on ImageMagick to convert PDFs; so if it's not installed, 
         // better give up right away: 
         if (!isImageMagickInstalled()) {
-            logger.info("Couldn't find IM");
+            logger.fine("Couldn't find ImageMagick");
             return false;
         }
 
@@ -220,19 +220,15 @@ public class ImageThumbConverter {
 
         } catch (IOException ioex) {
             logger.warning(ioex.getMessage());
-            ioex.printStackTrace();
             // this on the other hand is likely a fatal condition :(
             return false;
         }
 
         if (tempFilesRequired) {
-            //ReadableByteChannel pdfFileChannel;
-            logger.info("Creating temp file");
             InputStream inputStream = null; 
             try {
                 storageIO.open();
                 inputStream = storageIO.getInputStream();
-                //pdfFileChannel = storageIO.getReadChannel();
             } catch (Exception ioex) {
                 logger.warning("caught Exception trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier());
                 return false;
@@ -240,14 +236,11 @@ public class ImageThumbConverter {
 
             File tempFile;
             OutputStream outputStream = null;
-            //FileChannel tempFileChannel = null;
             try {
                 tempFile = File.createTempFile("tempFileToRescale", ".tmp");
                 outputStream = new FileOutputStream(tempFile);
-                long sz = inputStream.transferTo(outputStream);
-                logger.info("Wrote " + sz + " bytes to " + tempFile.getAbsolutePath());
-
-                //tempFileChannel.transferFrom(pdfFileChannel, 0, storageIO.getSize());
+                //Reads/transfers all bytes from the input stream to the output stream. 
+                inputStream.transferTo(outputStream);
             } catch (IOException ioex) {
                 logger.warning("GenerateImageThumb: failed to save pdf bytes in a temporary file.");
                 return false;
