@@ -3023,6 +3023,11 @@ The JSON representation of a role (``roles.json``) looks like this::
 
 .. note:: alias is constrained to a length of 16 characters
 
+Create Role
+~~~~~~~~~
+
+Roles can be created globally or for individual Dataverse Collections (see the corresponding sections in this document).
+
 Show Role
 ~~~~~~~~~
 
