@@ -226,23 +226,20 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
         DataFile thumbnailFile = dataset.getThumbnailFile();
 
         if (thumbnailFile == null) {
-                thumbnailFile = DatasetUtil.attemptToAutomaticallySelectThumbnailFromDataFiles(dataset, null);
-                if (thumbnailFile == null) {
-                    logger.fine("Dataset (id :" + dataset.getId() + ") does not have a logo available that could be selected automatically.");
-                    return null;
-                }
+
+            // We attempt to auto-select via the optimized, native query-based method
+            // from the DatasetVersionService:
+            if (datasetVersionService.getThumbnailByVersionId(versionId) == null) {
+                return null;
+            }
         }
-        if (thumbnailFile.isRestricted()) {
-            logger.fine("Dataset (id :" + dataset.getId() + ") has a logo the user selected but the file must have later been restricted. Returning null.");
-            return null;
-        }
-        
 
         String url = SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/" + dataset.getId() + "/logo";
         logger.fine("getDatasetCardImageAsBase64Url: " + url);
         this.dvobjectThumbnailsMap.put(datasetId,url);
         return url;
         
+
 /*        
         String cardImageUrl = null;
         StorageIO<Dataset> dataAccess = null;
