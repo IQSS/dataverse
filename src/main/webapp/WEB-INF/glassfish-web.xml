@@ -10,6 +10,7 @@
   </jsp-config>
   <parameter-encoding default-charset="UTF-8"/>
   <!-- Find a list of properties here: https://docs.oracle.com/cd/E19798-01/821-1750/beayb/index.html -->
+  <!-- NOTE: relative paths given will be relative to com.sun.aas.instanceRoot (usually domain1 folder) -->
   <property name="alternatedocroot_1" value="from=/guides/* dir=${MPCONFIG=dataverse.files.docroot:${ENV=STORAGE_DIR:.}/docroot}"/>
   <property name="alternatedocroot_2" value="from=/dataexplore/* dir=${MPCONFIG=dataverse.files.docroot:${ENV=STORAGE_DIR:.}/docroot}"/>
   <property name="alternatedocroot_logos" value="from=/logos/* dir=${MPCONFIG=dataverse.files.docroot:${ENV=STORAGE_DIR:.}/docroot}"/>
