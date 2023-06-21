@@ -23,6 +23,7 @@ services:
     depends_on:
       - dev_postgres
       - dev_solr
+      - dev_dv_initializer
     volumes:
       - ./docker-dev-volumes/app/data:/dv
       - ./docker-dev-volumes/app/secrets:/secrets
@@ -42,6 +43,17 @@ services:
       - dev
     networks:
       - dataverse
+
+  dev_dv_initializer:
+    container_name: "dev_dv_initializer"
+    image: gdcc/configbaker:unstable
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - "fix-fs-perms.sh dv"
+    volumes:
+      - ./docker-dev-volumes/app/data:/dv
 
   dev_postgres:
     container_name: "dev_postgres"
