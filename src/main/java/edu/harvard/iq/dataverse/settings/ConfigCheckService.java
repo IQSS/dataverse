@@ -43,7 +43,8 @@ public class ConfigCheckService {
     public boolean checkSystemDirectories() {
         Map<Path, String> paths = Map.of(
                 Path.of(JvmSettings.UPLOADS_DIRECTORY.lookup()), "temporary JSF upload space (see " + JvmSettings.UPLOADS_DIRECTORY.getScopedKey() + ")",
-                Path.of(FileUtil.getFilesTempDirectory()), "temporary processing space (see " + JvmSettings.FILES_DIRECTORY.getScopedKey() + ")");
+                Path.of(FileUtil.getFilesTempDirectory()), "temporary processing space (see " + JvmSettings.FILES_DIRECTORY.getScopedKey() + ")",
+                Path.of(JvmSettings.DOCROOT_DIRECTORY.lookup()), "docroot space (see " + JvmSettings.DOCROOT_DIRECTORY.getScopedKey() + ")");
         
         boolean success = true;
         for (Path path : paths.keySet()) {

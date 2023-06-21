@@ -50,6 +50,7 @@ public enum JvmSettings {
     SCOPE_FILES(PREFIX, "files"),
     FILES_DIRECTORY(SCOPE_FILES, "directory"),
     UPLOADS_DIRECTORY(SCOPE_FILES, "uploads"),
+    DOCROOT_DIRECTORY(SCOPE_FILES, "docroot"),
     
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),
