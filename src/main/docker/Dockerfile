@@ -27,9 +27,7 @@ FROM $BASE_IMAGE
 # Make Payara use the "ct" profile for MicroProfile Config. Will switch various defaults for the application
 # setup in META-INF/microprofile-config.properties.
 # See also https://download.eclipse.org/microprofile/microprofile-config-3.0/microprofile-config-spec-3.0.html#configprofile
-ENV MP_CONFIG_PROFILE=ct \
-    # NOTE: this cannot be provided as default from microprofile-config.properties as not yet avail when servlet starts
-    DATAVERSE_FILES_UPLOADS="${STORAGE_DIR}/uploads"
+ENV MP_CONFIG_PROFILE=ct
 
 # Copy app and deps from assembly in proper layers
 COPY --chown=payara:payara maven/deps ${DEPLOY_DIR}/dataverse/WEB-INF/lib/

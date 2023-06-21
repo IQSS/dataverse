@@ -18,5 +18,5 @@
     This folder is not only holding compiled JSP pages but also the place where file streams are stored
     during uploads. As Dataverse does not use any JSP, there will only be uploads stored here.
   -->
-  <property name="tempdir" value="${MPCONFIG=dataverse.files.uploads:./uploads}"/>
+  <property name="tempdir" value="${MPCONFIG=dataverse.files.uploads:${ENV=STORAGE_DIR:.}/uploads}"/>
 </glassfish-web-app>
