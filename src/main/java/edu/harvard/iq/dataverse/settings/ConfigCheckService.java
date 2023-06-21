@@ -7,6 +7,7 @@ import javax.ejb.DependsOn;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import java.io.IOException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -52,7 +53,14 @@ public class ConfigCheckService {
                 try {
                     Files.createDirectories(path);
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE, () -> "Could not create directory " + path + " for " + paths.get(path));
+                    String details;
+                    if (e instanceof FileSystemException) {
+                        details = ": " + e.getClass();
+                    } else {
+                        details = "";
+                    }
+                    
+                    logger.log(Level.SEVERE, () -> "Could not create directory " + path + " for " + paths.get(path) + details);
                     success = false;
                 }
             } else if (!Files.isWritable(path)) {
