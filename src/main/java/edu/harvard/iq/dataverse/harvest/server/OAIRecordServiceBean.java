@@ -8,8 +8,8 @@ package edu.harvard.iq.dataverse.harvest.server;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.time.Instant;
@@ -245,7 +245,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             exportServiceInstance.exportAllFormats(dataset);
             dataset = datasetService.merge(dataset);
         } catch (Exception e) {
-            logger.fine("Caught unknown exception while trying to export");
+            logger.log(Level.FINE, "Caught unknown exception while trying to export", e);
             throw new ExportException(e.getMessage());
         }
     }

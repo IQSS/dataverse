@@ -2419,6 +2419,19 @@ Defaults to ``false``.
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_UI_SHOW_VALIDITY_FILTER``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
+.. _dataverse.spi.exporters.directory:
+
+dataverse.spi.exporters.directory
++++++++++++++++++++++++++++++++++
+
+This JVM option is used to configure the file system path where external Exporter JARs can be placed. See :ref:`external-exporters` for more information.
+
+``./asadmin create-jvm-options '-Ddataverse.spi.exporters.directory=PATH_LOCATION_HERE'``
+
+If this value is set, Dataverse will examine all JARs in the specified directory and will use them to add, or replace existing, metadata export formats.
+If this value is not set (the default), Dataverse will not use external Exporters.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SPI_EXPORTERS_DIRECTORY``.
 
 .. _feature-flags:
 
@@ -2439,9 +2452,6 @@ please find all known feature flags below. Any of these flags can be activated u
       - Default status
     * - api-session-auth
       - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and removed once support for bearer tokens has been implemented (see `#9229 <https://github.com/IQSS/dataverse/issues/9229>`_).
-      - ``Off``
-    * - api-bearer-auth
-      - Enables API authentication via Bearer Token for OIDC User Accounts. **Information: This feature works only for OIDC UserAccounts!**
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
@@ -3102,6 +3112,8 @@ This curl command...
 
 See also :doc:`oauth2`.
 
+.. _:FileFixityChecksumAlgorithm:
+
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
 
@@ -3111,12 +3123,9 @@ The default checksum algorithm used is MD5 and should be sufficient for establis
 
 ``curl -X PUT -d 'SHA-512' http://localhost:8080/api/admin/settings/:FileFixityChecksumAlgorithm``
 
-The fixity algorithm used on existing files can be changed by a superuser using the API. An optional query parameter (num) can be used to limit the number of updates attempted.
-The API call will only update the algorithm and checksum for a file if the existing checksum can be validated against the file.
-Statistics concerning the updates are returned in the response to the API call with details in the log.
+To update the algorithm used for existing files, see :ref:`UpdateChecksums`
 
-``curl http://localhost:8080/api/admin/updateHashValues/{alg}``
-``curl http://localhost:8080/api/admin/updateHashValues/{alg}?num=1``
+The fixity checksum algorithm in use can be discovered via API. See :ref:`get-fixity-algorithm` in the API Guide.
 
 .. _:PVMinLength:
 
@@ -3396,6 +3405,8 @@ Limit on how many guestbook entries to display on the guestbook-responses page. 
 
 ``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit``
 
+.. _:CustomDatasetSummaryFields:
+
 :CustomDatasetSummaryFields
 +++++++++++++++++++++++++++
 
@@ -3404,6 +3415,10 @@ You can replace the default dataset metadata fields that are displayed above fil
 ``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
 
 You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work.
+
+The default fields are ``dsDescription,subject,keyword,publication,notesText``.
+
+This setting can be retrieved via API. See :ref:`get-dataset-summary-field-names` in the API Guide.
 
 :AllowApiTokenLookupViaApi
 ++++++++++++++++++++++++++
@@ -3889,7 +3904,7 @@ To use the current GDCC version directly:
 :CategoryOrder
 ++++++++++++++
 
-A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed.
+A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. 
 The setting can include custom tag names along with the pre-defined tags(Documentation, Data, and Code are the defaults but the :ref:`:FileCategories` setting can be used to use a different set of tags).
 The default is category ordering disabled.
 
@@ -3901,7 +3916,7 @@ A true(default)/false option determining whether datafiles listed on the dataset
 :AllowUserManagementOfOrder
 +++++++++++++++++++++++++++
 
-A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically.
+A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically. 
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
 

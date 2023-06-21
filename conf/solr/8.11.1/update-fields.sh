@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+# [INFO]: Update a prepared Solr schema.xml for Dataverse with a given list of metadata fields
+
 #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### #### ####
 # This script will
 # 1. take a file (or read it from STDIN) with all <field> and <copyField> definitions

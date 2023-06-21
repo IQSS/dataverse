@@ -20,9 +20,10 @@ import io.gdcc.xoai.model.oaipmh.OAIPMH;
 import io.gdcc.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository;
@@ -154,18 +155,13 @@ public class OAIServlet extends HttpServlet {
                 exporter = null;
             }
 
-            if (exporter != null && exporter.isXMLFormat() && exporter.isHarvestable()) {
+            if (exporter != null && (exporter instanceof XMLExporter) && exporter.isHarvestable()) {
                 MetadataFormat metadataFormat;
 
-                try {
+                metadataFormat = MetadataFormat.metadataFormat(formatName);
+                metadataFormat.withNamespace(((XMLExporter) exporter).getXMLNameSpace());
+                metadataFormat.withSchemaLocation(((XMLExporter) exporter).getXMLSchemaLocation());
 
-                    metadataFormat = MetadataFormat.metadataFormat(formatName);
-                    metadataFormat.withNamespace(exporter.getXMLNameSpace());
-                    metadataFormat.withSchemaLocation(exporter.getXMLSchemaLocation());
-                    
-                } catch (ExportException ex) {
-                    metadataFormat = null;
-                }
                 if (metadataFormat != null) {
                     context.withMetadataFormat(metadataFormat);
                 }

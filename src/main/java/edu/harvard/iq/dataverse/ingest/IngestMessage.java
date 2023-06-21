@@ -19,7 +19,6 @@
 */
 package edu.harvard.iq.dataverse.ingest;
 
-import edu.harvard.iq.dataverse.DataFile;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
@@ -32,49 +31,21 @@ import java.util.ArrayList;
  * @author Leonid Andreev
  */
 public class IngestMessage implements Serializable {
-    public static final int INGEST_MESAGE_LEVEL_ERROR = 1; 
-    public static final int INGEST_MESAGE_LEVEL_INFO = 2;
-
     /** Creates a new instance of IngestMessage */
-    public IngestMessage()  {
-        this(INGEST_MESAGE_LEVEL_INFO);
-    }
 
-    public IngestMessage(int messageLevel)  {
-        this.messageLevel = messageLevel;
+    public IngestMessage()  {
         datafile_ids = new ArrayList<Long>();
     }
 
-    public IngestMessage(int messageLevel, Long authenticatedUserId) {
-        this.messageLevel = messageLevel;
+    public IngestMessage(Long authenticatedUserId) {
         this.authenticatedUserId = authenticatedUserId;
         datafile_ids = new ArrayList<Long>();
     }
-
-    private int messageLevel = INGEST_MESAGE_LEVEL_INFO;
     
     private Long datasetId;
-    private Long datasetVersionId;
-    private String versionNote;
-    private String datasetVersionNumber;
     private List<Long> datafile_ids;
     private Long authenticatedUserId;
-
-    public String getVersionNote() {
-        return versionNote;
-    }
-
-    public void setVersionNote(String versionNote) {
-        this.versionNote = versionNote;
-    }
-
-    public int getMessageLevel() {
-        return messageLevel;
-    }
-
-    public void setMessageLevel(int messageLevel) {
-        this.messageLevel = messageLevel;
-    }
+    private String info;
 
     public Long getDatasetId() {
         return datasetId;
@@ -82,30 +53,6 @@ public class IngestMessage implements Serializable {
 
     public void setDatasetId(Long datasetId) {
         this.datasetId = datasetId;
-    }
-
-    public Long getDatasetVersionId() {
-        return datasetVersionId;
-    }
-
-    public void setDatasetVersionId(Long datasetVersionId) {
-        this.datasetVersionId = datasetVersionId;
-    }
-
-    public boolean sendInfoMessage() {
-        return messageLevel >= INGEST_MESAGE_LEVEL_INFO;
-    }
-
-    public boolean sendErrorMessage() {
-        return messageLevel >= INGEST_MESAGE_LEVEL_ERROR;
-    }
-
-    public String getDatasetVersionNumber() {
-        return datasetVersionNumber;
-    }
-
-    public void setDatasetVersionNumber(String datasetVersionNumber) {
-        this.datasetVersionNumber = datasetVersionNumber;
     }
     
     public List<Long> getFileIds() {
@@ -122,5 +69,13 @@ public class IngestMessage implements Serializable {
 
     public Long getAuthenticatedUserId() {
         return authenticatedUserId;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
+    }
+
+    public String getInfo() {
+        return info;
     }
 }

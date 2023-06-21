@@ -1,0 +1,46 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <fileSets>
+        <!-- Get the scripts -->
+        <fileSet>
+            <directory>modules/container-configbaker/scripts</directory>
+            <outputDirectory>scripts</outputDirectory>
+        </fileSet>
+        <!-- Get our custom Solr files -->
+        <fileSet>
+            <directory>conf/solr/8.11.1</directory>
+            <outputDirectory>solr</outputDirectory>
+        </fileSet>
+        <!-- Get the setup scripts from the installer (selected choice only) -->
+        <fileSet>
+            <directory>scripts/api</directory>
+            <outputDirectory>setup</outputDirectory>
+            <includes>
+                <include>setup-all.sh</include>
+                <include>setup-builtin-roles.sh</include>
+                <include>setup-datasetfields.sh</include>
+                <include>setup-identity-providers.sh</include>
+                
+                <include>data/licenses/*.json</include>
+                <include>data/authentication-providers/builtin.json</include>
+                <include>data/metadatablocks/*.tsv</include>
+                
+                <include>data/dv-root.json</include>
+                
+                <include>data/role-admin.json</include>
+                <include>data/role-curator.json</include>
+                <include>data/role-dsContributor.json</include>
+                <include>data/role-dvContributor.json</include>
+                <include>data/role-editor.json</include>
+                <include>data/role-filedownloader.json</include>
+                <include>data/role-fullContributor.json</include>
+                <include>data/role-member.json</include>
+                
+                <include>data/user-admin.json</include>
+            </includes>
+            <excludes>
+                <exclude>data/metadatablocks/custom*</exclude>
+            </excludes>
+        </fileSet>
+    </fileSets>
+</assembly>
