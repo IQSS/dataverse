@@ -95,6 +95,11 @@ Each of the three main sections own sets of properties:
 | displayName    | Acts as a brief label for display related to this       | Should be relatively brief. The limit is 256 character, |
 |                | #metadataBlock.                                         | but very long names might cause display problems.       |
 +----------------+---------------------------------------------------------+---------------------------------------------------------+
+| displayFacet   | Label displayed in the search area when this            | Should be brief. Long names will cause display problems |
+|                | #metadataBlock is configured as a search facet          | in the search area.                                     |
+|                | for a collection. See                                   |                                                         |
+|                | :ref:`the api <metadata-block-facet-api>`               |                                                         |
++----------------+---------------------------------------------------------+---------------------------------------------------------+
 | blockURI       | Associates the properties in a block with an external   | The citation #metadataBlock has the blockURI            |
 |                | URI.                                                    | https://dataverse.org/schema/citation/ which assigns a  |
 |                | Properties will be assigned the                         | default global URI to terms such as                     |
@@ -452,11 +457,15 @@ metadatablock.name=(the value of **name** property from #metadatablock)
 
 metadatablock.displayName=(the value of **displayName** property from #metadatablock)
 
+metadatablock.displayFacet=(the value of **displayFacet** property from #metadatablock)
+
 example:
 
 metadatablock.name=citation
 
 metadatablock.displayName=Citation Metadata
+
+metadatablock.displayFacet=Citation
 
 #datasetField (field) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
