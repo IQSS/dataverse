@@ -40,6 +40,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.settings.ConfigCheckService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandler;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
@@ -1478,25 +1479,17 @@ public class FileUtil implements java.io.Serializable  {
         }
     }
     
+    /**
+     * Return the location where data should be stored temporarily after uploading (UI or API)
+     * for local processing (ingest, unzip, ...) and transfer to final destination (see storage subsystem).
+     *
+     * This location is checked to be configured, does exist, and is writeable via
+     * {@link ConfigCheckService#checkSystemDirectories()}.
+     *
+     * @return String with a path to the temporary location. Will not be null (former versions did to indicate failure)
+     */
     public static String getFilesTempDirectory() {
-        
-        String filesRootDirectory = JvmSettings.FILES_DIRECTORY.lookup();
-        String filesTempDirectory = filesRootDirectory + "/temp";
-
-        if (!Files.exists(Paths.get(filesTempDirectory))) {
-            /* Note that "createDirectories()" must be used - not 
-             * "createDirectory()", to make sure all the parent 
-             * directories that may not yet exist are created as well. 
-             */
-            try {
-                Files.createDirectories(Paths.get(filesTempDirectory));
-            } catch (IOException ex) {
-                logger.severe("Failed to create filesTempDirectory: " + filesTempDirectory );
-                return null;
-            }
-        }
-
-        return filesTempDirectory;
+        return JvmSettings.FILES_DIRECTORY.lookup() + File.separator + "temp";
     }
     
     public static void generateS3PackageStorageIdentifier(DataFile dataFile) {
