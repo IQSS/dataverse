@@ -87,11 +87,13 @@ To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2022.3/payara-5.2022.3.zip``
+``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/5.2022.3/payara-5.2022.3.zip``
 
 ``sudo unzip payara-5.2022.3.zip``
 
 ``sudo chown -R $USER /usr/local/payara5``
+
+If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/
 
 Install Service Dependencies Directly on localhost
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

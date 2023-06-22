@@ -1763,7 +1763,7 @@ public class DdiExportUtil {
                 if (vars != null) {
                     for (int j = 0; j < vars.size(); j++) {
                         createVarDDI(xmlw, vars.getJsonObject(j), fileJson.getJsonNumber("id").toString(),
-                                fileJson.getString("fileMetadataId"));
+                                fileJson.getJsonNumber("fileMetadataId").toString());
                     }
                 }
             }
@@ -1810,7 +1810,7 @@ public class DdiExportUtil {
         }
 
         if (dvar.containsKey("numberOfDecimalPoints")) {
-            writeAttribute(xmlw, "dcml", dvar.getString("numberOfDecimalPoints"));
+            writeAttribute(xmlw, "dcml", dvar.getJsonNumber("numberOfDecimalPoints").toString());
         }
 
         if (dvar.getBoolean("isOrderedCategorical")) {
@@ -1833,13 +1833,13 @@ public class DdiExportUtil {
         // location
         xmlw.writeEmptyElement("location");
         if (dvar.containsKey("fileStartPosition")) {
-            writeAttribute(xmlw, "StartPos", dvar.getString("fileStartPosition"));
+            writeAttribute(xmlw, "StartPos", dvar.getJsonNumber("fileStartPosition").toString());
         }
         if (dvar.containsKey("fileEndPosition")) {
-            writeAttribute(xmlw, "EndPos", dvar.getString("fileEndPosition"));
+            writeAttribute(xmlw, "EndPos", dvar.getJsonNumber("fileEndPosition").toString());
         }
         if (dvar.containsKey("recordSegmentNumber")) {
-            writeAttribute(xmlw, "RecSegNo", dvar.getString("recordSegmentNumber"));
+            writeAttribute(xmlw, "RecSegNo", dvar.getJsonNumber("recordSegmentNumber").toString());
         }
 
         writeAttribute(xmlw, "fileid", "f" + fileId);
@@ -1880,38 +1880,41 @@ public class DdiExportUtil {
         }
 
         // invalrng
-        boolean invalrngAdded = false;
-        JsonArray ranges = dvar.getJsonArray("invalidRanges");
-        for (int i=0;i<ranges.size();i++) {
-            JsonObject range = ranges.getJsonObject(0); 
-            //if (range.getBeginValueType() != null && range.getBeginValueType().getName().equals(DB_VAR_RANGE_TYPE_POINT)) {
-            if (range.getBoolean("hasBeginValueType") && range.getBoolean("isBeginValueTypePoint")) {
-                if (range.containsKey("beginValue")) {
-                    invalrngAdded = checkParentElement(xmlw, "invalrng", invalrngAdded);
-                    xmlw.writeEmptyElement("item");
-                    writeAttribute(xmlw, "VALUE", range.getString("beginValue"));
-                }
-            } else {
-                invalrngAdded = checkParentElement(xmlw, "invalrng", invalrngAdded);
-                xmlw.writeEmptyElement("range");
-                if (range.getBoolean("hasBeginValueType") && range.containsKey("beginValue")) {
-                    if (range.getBoolean("isBeginValueTypeMin")) {
-                        writeAttribute(xmlw, "min", range.getString("beginValue"));
-                    } else if (range.getBoolean("isBeginValueTypeMinExcl")) {
-                        writeAttribute(xmlw, "minExclusive", range.getString("beginValue"));
+        if (dvar.containsKey("invalidRanges")) {
+            boolean invalrngAdded = false;
+            JsonArray ranges = dvar.getJsonArray("invalidRanges");
+            for (int i = 0; i < ranges.size(); i++) {
+                JsonObject range = ranges.getJsonObject(0);
+                // if (range.getBeginValueType() != null &&
+                // range.getBeginValueType().getName().equals(DB_VAR_RANGE_TYPE_POINT)) {
+                if (range.getBoolean("hasBeginValueType") && range.getBoolean("isBeginValueTypePoint")) {
+                    if (range.containsKey("beginValue")) {
+                        invalrngAdded = checkParentElement(xmlw, "invalrng", invalrngAdded);
+                        xmlw.writeEmptyElement("item");
+                        writeAttribute(xmlw, "VALUE", range.getString("beginValue"));
                     }
-                }
-                if (range.getBoolean("hasEndValueType") && range.containsKey("endValue")) {
-                    if (range.getBoolean("isEndValueTypeMax")) {
-                        writeAttribute(xmlw, "max", range.getString("endValue"));
-                    } else if (range.getBoolean("isEndValueTypeMaxExcl")) {
-                        writeAttribute(xmlw, "maxExclusive", range.getString("endValue"));
+                } else {
+                    invalrngAdded = checkParentElement(xmlw, "invalrng", invalrngAdded);
+                    xmlw.writeEmptyElement("range");
+                    if (range.getBoolean("hasBeginValueType") && range.containsKey("beginValue")) {
+                        if (range.getBoolean("isBeginValueTypeMin")) {
+                            writeAttribute(xmlw, "min", range.getString("beginValue"));
+                        } else if (range.getBoolean("isBeginValueTypeMinExcl")) {
+                            writeAttribute(xmlw, "minExclusive", range.getString("beginValue"));
+                        }
+                    }
+                    if (range.getBoolean("hasEndValueType") && range.containsKey("endValue")) {
+                        if (range.getBoolean("isEndValueTypeMax")) {
+                            writeAttribute(xmlw, "max", range.getString("endValue"));
+                        } else if (range.getBoolean("isEndValueTypeMaxExcl")) {
+                            writeAttribute(xmlw, "maxExclusive", range.getString("endValue"));
+                        }
                     }
                 }
             }
-        }
-        if (invalrngAdded) {
-            xmlw.writeEndElement(); // invalrng
+            if (invalrngAdded) {
+                xmlw.writeEndElement(); // invalrng
+            }
         }
 
         //universe
@@ -1923,67 +1926,72 @@ public class DdiExportUtil {
             }
         }
 
-        //sum stats
-        for (Entry<String, JsonValue> sumStat : dvar.getJsonObject("summaryStatistics").entrySet()) {
-            xmlw.writeStartElement("sumStat");
-            writeAttribute(xmlw, "type", sumStat.getKey());
-            xmlw.writeCharacters(sumStat.getValue().toString());
-            xmlw.writeEndElement(); //sumStat
+        // sum stats
+        if (dvar.containsKey("summaryStatistics")) {
+            for (Entry<String, JsonValue> sumStat : dvar.getJsonObject("summaryStatistics").entrySet()) {
+                xmlw.writeStartElement("sumStat");
+                writeAttribute(xmlw, "type", sumStat.getKey());
+                xmlw.writeCharacters(sumStat.getValue().toString());
+                xmlw.writeEndElement(); // sumStat
+            }
         }
 
         // categories
-        JsonArray varCats = dvar.getJsonArray("variableCategories");
-        for (int i=0;i<varCats.size();i++) {
-            JsonObject varCat = varCats.getJsonObject(i);
-            xmlw.writeStartElement("catgry");
-            if (varCat.getBoolean("isMissing")) {
-                writeAttribute(xmlw, "missing", "Y");
-            }
-
-            // catValu
-            xmlw.writeStartElement("catValu");
-            xmlw.writeCharacters(varCat.getString("value"));
-            xmlw.writeEndElement(); //catValu
-
-            // label
-            if (varCat.containsKey("label")) {
-                xmlw.writeStartElement("labl");
-                writeAttribute(xmlw, "level", "category");
-                xmlw.writeCharacters(varCat.getString("label"));
-                xmlw.writeEndElement(); //labl
-            }
-
-            // catStat
-            if (varCat.containsKey("frequency")) {
-                xmlw.writeStartElement("catStat");
-                writeAttribute(xmlw, "type", "freq");
-                Double freq = Double.parseDouble(varCat.getString("frequency"));
-                // if frequency is actually a long value, we want to write "100" instead of "100.0"
-                if (Math.floor(freq) == freq) {
-                    xmlw.writeCharacters(Long.valueOf(freq.longValue()).toString());
-                } else {
-                    xmlw.writeCharacters(freq.toString());
+        if (dvar.containsKey("variableCategories")) {
+            JsonArray varCats = dvar.getJsonArray("variableCategories");
+            for (int i = 0; i < varCats.size(); i++) {
+                JsonObject varCat = varCats.getJsonObject(i);
+                xmlw.writeStartElement("catgry");
+                if (varCat.getBoolean("isMissing")) {
+                    writeAttribute(xmlw, "missing", "Y");
                 }
-                xmlw.writeEndElement(); //catStat
-            }
 
-            //catStat weighted freq
-            if (vm != null && vm.getBoolean("isWeighted")) {
-                JsonArray catMetas = vm.getJsonArray("categoryMetadatas");
-                for (int j=0;i<catMetas.size();j++) {
-                    JsonObject cm = catMetas.getJsonObject(j);
-                    if (cm.getString("categoryValue").equals(varCat.getString("value"))) {
-                        xmlw.writeStartElement("catStat");
-                        writeAttribute(xmlw, "wgtd", "wgtd");
-                        writeAttribute(xmlw, "type", "freq");
-                        xmlw.writeCharacters(cm.getString("wFreq"));
-                        xmlw.writeEndElement(); //catStat
-                        break;
+                // catValu
+                xmlw.writeStartElement("catValu");
+                xmlw.writeCharacters(varCat.getString("value"));
+                xmlw.writeEndElement(); // catValu
+
+                // label
+                if (varCat.containsKey("label")) {
+                    xmlw.writeStartElement("labl");
+                    writeAttribute(xmlw, "level", "category");
+                    xmlw.writeCharacters(varCat.getString("label"));
+                    xmlw.writeEndElement(); // labl
+                }
+
+                // catStat
+                if (varCat.containsKey("frequency")) {
+                    xmlw.writeStartElement("catStat");
+                    writeAttribute(xmlw, "type", "freq");
+                    Double freq = varCat.getJsonNumber("frequency").doubleValue();
+                    // if frequency is actually a long value, we want to write "100" instead of
+                    // "100.0"
+                    if (Math.floor(freq) == freq) {
+                        xmlw.writeCharacters(Long.valueOf(freq.longValue()).toString());
+                    } else {
+                        xmlw.writeCharacters(freq.toString());
+                    }
+                    xmlw.writeEndElement(); // catStat
+                }
+
+                // catStat weighted freq
+                if (vm != null && vm.getBoolean("isWeighted")) {
+                    JsonArray catMetas = vm.getJsonArray("categoryMetadatas");
+                    for (int j = 0; i < catMetas.size(); j++) {
+                        JsonObject cm = catMetas.getJsonObject(j);
+                        if (cm.getString("categoryValue").equals(varCat.getString("value"))) {
+                            xmlw.writeStartElement("catStat");
+                            writeAttribute(xmlw, "wgtd", "wgtd");
+                            writeAttribute(xmlw, "type", "freq");
+                            xmlw.writeCharacters(cm.getJsonNumber("wFreq").toString());
+                            xmlw.writeEndElement(); // catStat
+                            break;
+                        }
                     }
                 }
-            }
 
-            xmlw.writeEndElement(); //catgry
+                xmlw.writeEndElement(); // catgry
+            }
         }
 
 
@@ -1994,9 +2002,13 @@ public class DdiExportUtil {
         } else {
             throw new XMLStreamException("Illegal Variable Format Type!");
         }
-        writeAttribute(xmlw, "formatname", dvar.getString("format"));
+        if(dvar.containsKey("format")) {
+            writeAttribute(xmlw, "formatname", dvar.getString("format"));
+        }
         //experiment writeAttribute(xmlw, "schema", dv.getFormatSchema());
-        writeAttribute(xmlw, "category", dvar.getString("formatCategory"));
+        if(dvar.containsKey("formatCategory")) {
+            writeAttribute(xmlw, "category", dvar.getString("formatCategory"));
+        }
 
         // notes
         if (dvar.containsKey("UNF") && !dvar.getString("UNF").isBlank()) {
@@ -2044,19 +2056,19 @@ public class DdiExportUtil {
 
                     if (dt.containsKey("caseQuantity")) {
                         xmlw.writeStartElement("caseQnty");
-                        xmlw.writeCharacters(dt.getString("caseQuantity"));
+                        xmlw.writeCharacters(dt.getJsonNumber("caseQuantity").toString());
                         xmlw.writeEndElement(); // caseQnty
                     }
 
                     if (dt.containsKey("varQuantity")) {
                         xmlw.writeStartElement("varQnty");
-                        xmlw.writeCharacters(dt.getString("varQuantity"));
+                        xmlw.writeCharacters(dt.getJsonNumber("varQuantity").toString());
                         xmlw.writeEndElement(); // varQnty
                     }
 
                     if (dt.containsKey("recordsPerCase")) {
                         xmlw.writeStartElement("recPrCas");
-                        xmlw.writeCharacters(dt.getString("recordsPerCase"));
+                        xmlw.writeCharacters(dt.getJsonNumber("recordsPerCase").toString());
                         xmlw.writeEndElement(); // recPrCas
                     }
 

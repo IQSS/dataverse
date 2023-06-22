@@ -464,7 +464,16 @@ public class SettingsWrapper implements java.io.Serializable {
     public boolean isMakeDataCountDisplayEnabled() {
         boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
         return isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, safeDefaultIfKeyNotFound);
+    }
     
+    public LocalDate getMDCStartDate() {
+        String date = getValueForKey(SettingsServiceBean.Key.MDCStartDate);
+        LocalDate ld=null;
+        if(date!=null) {
+          ld = LocalDate.parse(date);
+        }
+        return ld;
+        
     }
     
     public boolean displayChronologicalDateFacets() {

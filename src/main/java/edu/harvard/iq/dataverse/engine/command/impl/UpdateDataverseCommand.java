@@ -113,13 +113,9 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
         
         // first kick of async index of datasets
         // TODO: is this actually needed? Is there a better way to handle
-        try {
-            Dataverse result = (Dataverse) r;
-            List<Dataset> datasets = ctxt.datasets().findByOwnerId(result.getId());
-            ctxt.index().asyncIndexDatasetList(datasets, true);
-        } catch (IOException | SolrServerException e) {
-            // these datasets are being indexed asynchrounously, so not sure how to handle errors here
-        }
+        Dataverse result = (Dataverse) r;
+        List<Dataset> datasets = ctxt.datasets().findByOwnerId(result.getId());
+        ctxt.index().asyncIndexDatasetList(datasets, true);
         
         return ctxt.dataverses().index((Dataverse) r);
     }  

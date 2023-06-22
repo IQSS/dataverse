@@ -247,11 +247,7 @@ public class EditDDI  extends AbstractApiBean {
         }
 
         boolean doNormalSolrDocCleanUp = true;
-        try {
-            Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
-        } catch (IOException | SolrServerException ex) {
-            logger.log(Level.SEVERE, "Couldn''t index dataset: " + ex.getMessage());
-        }
+        indexService.asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
 
         return true;
     }

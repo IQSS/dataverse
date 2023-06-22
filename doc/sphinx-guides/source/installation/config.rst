@@ -3112,6 +3112,8 @@ This curl command...
 
 See also :doc:`oauth2`.
 
+.. _:FileFixityChecksumAlgorithm:
+
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
 
@@ -3121,12 +3123,9 @@ The default checksum algorithm used is MD5 and should be sufficient for establis
 
 ``curl -X PUT -d 'SHA-512' http://localhost:8080/api/admin/settings/:FileFixityChecksumAlgorithm``
 
-The fixity algorithm used on existing files can be changed by a superuser using the API. An optional query parameter (num) can be used to limit the number of updates attempted.
-The API call will only update the algorithm and checksum for a file if the existing checksum can be validated against the file.
-Statistics concerning the updates are returned in the response to the API call with details in the log.
+To update the algorithm used for existing files, see :ref:`UpdateChecksums`
 
-``curl http://localhost:8080/api/admin/updateHashValues/{alg}``
-``curl http://localhost:8080/api/admin/updateHashValues/{alg}?num=1``
+The fixity checksum algorithm in use can be discovered via API. See :ref:`get-fixity-algorithm` in the API Guide.
 
 .. _:PVMinLength:
 
@@ -3406,6 +3405,8 @@ Limit on how many guestbook entries to display on the guestbook-responses page. 
 
 ``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit``
 
+.. _:CustomDatasetSummaryFields:
+
 :CustomDatasetSummaryFields
 +++++++++++++++++++++++++++
 
@@ -3414,6 +3415,10 @@ You can replace the default dataset metadata fields that are displayed above fil
 ``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
 
 You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work.
+
+The default fields are ``dsDescription,subject,keyword,publication,notesText``.
+
+This setting can be retrieved via API. See :ref:`get-dataset-summary-field-names` in the API Guide.
 
 :AllowApiTokenLookupViaApi
 ++++++++++++++++++++++++++

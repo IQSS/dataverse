@@ -229,6 +229,8 @@ The fully expanded example above (without environment variables) looks like this
 
 Where :download:`dataverse-facets.json <../_static/api/dataverse-facets.json>` contains a JSON encoded list of metadata keys (e.g. ``["authorName","authorAffiliation"]``).
 
+.. _metadata-block-facet-api:
+
 List Metadata Block Facets Configured for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2173,6 +2175,50 @@ Signposting is not supported for draft dataset versions.
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
 
+Get Dataset By Private URL Token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PRIVATE_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+
+  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN"
+
+Get Citation
+~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+  export VERSION=1.0
+
+  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER"
+
+Get Citation by Private URL Token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PRIVATE_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+
+  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN/citation"
+
+.. _get-dataset-summary-field-names:
+
+Get Summary Field Names
+~~~~~~~~~~~~~~~~~~~~~~~
+
+See :ref:`:CustomDatasetSummaryFields` in the Installation Guide for how the list of dataset fields that summarize a dataset can be customized. Here's how to list them:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/datasets/summaryFieldNames"
+
 Files
 -----
 
@@ -2962,6 +3008,22 @@ The response is a JSON object described in the :doc:`/api/external-tools` sectio
   export TOOL_ID=1
 
   curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/files/$FILE_ID/metadata/$FILEMETADATA_ID/toolparams/$TOOL_ID
+
+.. _get-fixity-algorithm:
+
+Get Fixity Algorithm
+~~~~~~~~~~~~~~~~~~~~~~
+
+This API call can be used to discover the configured fixity/checksum algorithm being used by a Dataverse installation (as configured by - :ref:`:FileFixityChecksumAlgorithm`).
+Currently, the possible values are MD5, SHA-1, SHA-256, and SHA-512.
+This algorithm will be used when the Dataverse software manages a file upload and should be used by external clients uploading files to a Dataverse instance. (Existing files may or may not have checksums with this algorithm.) 
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/files/fixityAlgorithm
+
 
 Users Token Management
 ----------------------
@@ -4350,6 +4412,26 @@ It will report the specific files that have failed the validation. For example::
       }
   
 These are only available to super users.
+
+.. _UpdateChecksums:
+
+Update Checksums To Use New Algorithm
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The fixity algorithm used on existing files can be changed by a superuser using this API call. An optional query parameter (num) can be used to limit the number of updates attempted (i.e. to do processing in batches).
+The API call will only update the algorithm and checksum for a file if the existing checksum can be validated against the file.
+Statistics concerning the updates are returned in the response to the API call with details in the log.
+The primary use for this API call is to update existing files after the algorithm used when uploading new files is changes - see - :ref:`:FileFixityChecksumAlgorithm`.
+Allowed values are MD5, SHA-1, SHA-256, and SHA-512
+
+.. code-block:: bash
+
+  export ALG=SHA-256
+  export BATCHSIZE=1
+
+  curl http://localhost:8080/api/admin/updateHashValues/$ALG
+  curl http://localhost:8080/api/admin/updateHashValues/$ALG?num=$BATCHSIZE
+
 
 .. _dataset-validation-api:
 
