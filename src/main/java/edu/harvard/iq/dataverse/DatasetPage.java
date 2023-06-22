@@ -244,7 +244,7 @@ public class DatasetPage implements java.io.Serializable {
     DatasetVersionUI datasetVersionUI;
     @Inject
     PermissionsWrapper permissionsWrapper;
-    @Inject
+    @EJB
     FileDownloadHelper fileDownloadHelper;
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
