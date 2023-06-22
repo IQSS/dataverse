@@ -244,7 +244,7 @@ public class DatasetPage implements java.io.Serializable {
     DatasetVersionUI datasetVersionUI;
     @Inject
     PermissionsWrapper permissionsWrapper;
-    @EJB
+    @Inject
     FileDownloadHelper fileDownloadHelper;
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
@@ -5475,6 +5475,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setFileDownloadService(FileDownloadServiceBean fileDownloadService) {
         this.fileDownloadService = fileDownloadService;
+    }
+    
+    public FileDownloadHelper getFileDownloadHelper() {
+        return fileDownloadHelper;
+    }
+
+    public void setFileDownloadHelper(FileDownloadHelper fileDownloadHelper) {
+        this.fileDownloadHelper = fileDownloadHelper;
     }
 
 
