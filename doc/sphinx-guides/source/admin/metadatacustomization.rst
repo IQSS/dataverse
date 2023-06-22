@@ -98,7 +98,7 @@ Each of the three main sections own sets of properties:
 | displayFacet   | Label displayed in the search area when this            | Should be brief. Long names will cause display problems |
 |                | #metadataBlock is configured as a search facet          | in the search area.                                     |
 |                | for a collection. See                                   |                                                         |
-|                | :ref:`the api <metadata-block-facet-api>`               |                                                         |
+|                | :ref:`the API <metadata-block-facet-api>`.              |                                                         |
 +----------------+---------------------------------------------------------+---------------------------------------------------------+
 | blockURI       | Associates the properties in a block with an external   | The citation #metadataBlock has the blockURI            |
 |                | URI.                                                    | https://dataverse.org/schema/citation/ which assigns a  |
