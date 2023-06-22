@@ -1,4 +1,4 @@
-anaging Datasets and Dataverse Collections
+Managing Datasets and Dataverse Collections
 ===========================================
 
 .. contents:: |toctitle|
