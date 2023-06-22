@@ -444,6 +444,7 @@
                                    onclick="if (!testFilesSelected()) return false;" 
                                    action="#{DatasetPage.startDownloadSelectedOriginal()}"
                                    update="@form" oncomplete="showPopup();">
+                        <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                         <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
@@ -462,6 +463,7 @@
                                            update="@form" oncomplete="showPopup();"
                                            onclick="if (!testFilesSelected()) return false;" 
                                            actionListener="#{DatasetPage.startDownloadSelectedOriginal()}">
+                                <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                 <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
                                 #{bundle.downloadOriginal}
                             </p:commandLink>
