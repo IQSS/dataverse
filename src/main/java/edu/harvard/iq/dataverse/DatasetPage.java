@@ -383,6 +383,8 @@ public class DatasetPage implements java.io.Serializable {
     Map<Long, List<ExternalTool>> previewToolsByFileId = new HashMap<>();
     // TODO: Consider renaming "previewTools" to "filePreviewTools".
     List<ExternalTool> previewTools = new ArrayList<>();
+    Map<Long, List<ExternalTool>> fileQueryToolsByFileId = new HashMap<>();
+    List<ExternalTool> fileQueryTools = new ArrayList<>();
     private List<ExternalTool> datasetExploreTools;
 
     public Boolean isHasRsyncScript() {
@@ -2131,6 +2133,7 @@ public class DatasetPage implements java.io.Serializable {
         configureTools = externalToolService.findFileToolsByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
         previewTools = externalToolService.findFileToolsByType(ExternalTool.Type.PREVIEW);
+        fileQueryTools = externalToolService.findFileToolsByType(ExternalTool.Type.QUERY);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
         if (dataset.getId() != null && canUpdateDataset()) {
@@ -5483,12 +5486,19 @@ public class DatasetPage implements java.io.Serializable {
         List<ExternalTool> previewTools = getPreviewToolsForDataFile(fileId);
         return previewTools.size() > 0;
     }
+    
+    public boolean isShowQueryButton(Long fileId) {
+        List<ExternalTool> fileQueryTools = getQueryToolsForDataFile(fileId);
+        return fileQueryTools.size() > 0;
+    }
 
     public List<ExternalTool> getPreviewToolsForDataFile(Long fileId) {
         return getCachedToolsForDataFile(fileId, ExternalTool.Type.PREVIEW);
     }
 
-
+    public List<ExternalTool> getQueryToolsForDataFile(Long fileId) {
+        return getCachedToolsForDataFile(fileId, ExternalTool.Type.QUERY);
+    }
     public List<ExternalTool> getConfigureToolsForDataFile(Long fileId) {
         return getCachedToolsForDataFile(fileId, ExternalTool.Type.CONFIGURE);
     }
@@ -5513,6 +5523,10 @@ public class DatasetPage implements java.io.Serializable {
                 cachedToolsByFileId = previewToolsByFileId;
                 externalTools = previewTools;
                 break;
+            case QUERY:
+                cachedToolsByFileId = fileQueryToolsByFileId;
+                externalTools = fileQueryTools;
+                break;    
             default:
                 break;
         }

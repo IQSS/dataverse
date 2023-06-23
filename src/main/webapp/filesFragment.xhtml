@@ -528,6 +528,13 @@
                     
                     <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
+                    <ui:fragment rendered="#{DatasetPage.isShowQueryButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
+                        <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getQueryToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
+                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                            <span class="glyphicon glyphicon-question-sign"/><span class="sr-only">#{bundle.preview} "#{empty(fileMetadata.directoryLabel) ? "":fileMetadata.directoryLabel.concat("/")}#{fileMetadata.label}"</span>
+                        </a>
+                    </ui:fragment>
+                    
                     <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
                         <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getPreviewToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
                             href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">

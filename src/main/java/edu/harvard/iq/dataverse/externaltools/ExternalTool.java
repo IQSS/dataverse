@@ -148,7 +148,8 @@ public class ExternalTool implements Serializable {
 
         EXPLORE("explore"),
         CONFIGURE("configure"),
-        PREVIEW("preview");
+        PREVIEW("preview"),
+        QUERY("query");
 
         private final String text;
 
