@@ -184,6 +184,10 @@ If you want to remove the containers, then run:
 
 ``docker-compose -f docker-compose-dev.yml down``
 
+If you want to run a single container (the mail server, for example) then run:
+
+``docker-compose -f docker-compose-dev.yml up dev_smtp``
+
 For a fresh installation, and before running the Software Installer Script, it is recommended to delete the docker-dev-env folder to avoid installation problems due to existing data in the containers.
 
 Run the Dataverse Software Installer Script
