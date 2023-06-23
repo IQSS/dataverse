@@ -6,6 +6,21 @@ Please note! This Docker setup is not for production!
 .. contents:: |toctitle|
         :local:
 
+Quickstart
+----------
+
+First, install Java 11 and Maven.
+
+After cloning the repo, try this:
+
+``mvn -Pct clean package docker:run``
+
+After some time you should be able to log in:
+
+- url: http://localhost:8080
+- username: dataverseAdmin
+- password: admin1
+
 Intro
 -----
 
@@ -16,11 +31,6 @@ you have Java and Maven installed, as you are at least about to develop code cha
 To test drive these local changes to the Dataverse codebase in a containerized application server (and avoid the
 setup described in :doc:`../developers/dev-environment`), you must a) build the application and b) run it in addition
 to the necessary dependencies. (Which might involve building a new local version of the :doc:`configbaker-image`.)
-
-| **TL;DR** *I have all that, just give me containers!*
-| Execute ``mvn -Pct clean package docker:run``, wait for "done" message and log in at http://localhost:8080.
-| (Username: ``dataverseAdmin``, Password: ``admin1``)
-
 
 .. _dev-build:
 
