@@ -362,7 +362,7 @@
                                    rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                 <!-- PREVIEW TERMS/GUESTBOOK FORM -->
                                 <ui:fragment rendered="#{FilePage.guestbookAndTermsPopupRequired and !FilePage.termsMet}">
-                                    <ui:include src="file-download-popup-fragment.xhtml">
+                                    <ui:include src="guestbook-terms-popup-fragment.xhtml">
                                         <ui:param name="popupContext" value="previewTab"/>
                                         <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                                         <ui:param name="guestbookAndTermsPopupRequired" value="#{FilePage.guestbookAndTermsPopupRequired}"/>
