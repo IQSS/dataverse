@@ -22,7 +22,7 @@ Supported Operating Systems
 
 Mac OS X or Linux is required because the setup scripts assume the presence of standard Unix utilities.
 
-Windows is not well supported, unfortunately, but Vagrant and Minishift environments are described in the :doc:`windows` section.
+Windows is gaining support through Docker as described in the :doc:`windows` section.
 
 Install Java
 ~~~~~~~~~~~~
