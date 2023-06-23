@@ -68,7 +68,7 @@ public class FileDownloadHelper implements java.io.Serializable {
     // This helper method is called from the Download terms/guestbook/etc. popup,
     // when the user clicks the "ok" button. We use it, instead of calling
     // downloadServiceBean directly, in order to differentiate between single
-    // file downloads and multiple (batch) downloads - sice both use the same
+    // file downloads and multiple (batch) downloads - since both use the same
     // terms/etc. popup.
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
