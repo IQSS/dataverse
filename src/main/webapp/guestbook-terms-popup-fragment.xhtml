@@ -40,7 +40,7 @@
                     </div>
                 </div>
             </div>
-            <p:fragment rendered="#{workingVersion.dataset.guestbook != null and workingVersion.dataset.guestbook.enabled and guestbookAndTermsPopupRequired}" id="guestbookUIFragment">
+            <p:fragment rendered="#{guestbookAndTermsPopupRequired and ((DatasetPage.termsGuestbookPopupAction != bundle.download) or DatasetPage.guestbookPopupRequiredAtDownload)}" id="guestbookUIFragment">
                 <!--
                 Only validate the active context. For example, the user might be filling out
                 the guestbook on the Preview tab rather than after clicking the "download file"
@@ -147,11 +147,15 @@
             </p:fragment>
         </div>
         <div class="button-block" jsf:rendered="#{DatasetPage.termsGuestbookPopupAction == bundle.download}">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" 
-                           action="#{fileDownloadHelper.requestAccessIndirect()}"    
-                           update="@([id$=requestAccessConsolidated]), @([id$=requestPanel]), @([id$=messagePanel]) @([id$=filesTable])" oncomplete="PF('requestAccessPopup').hide();">
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                             rendered="#{guestbookResponse.fileFormat != 'externalTool' and
+                                         guestbookResponse.fileFormat != 'package' and
+                                         popupContext != 'previewTab'}"
+                             actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
+                             update="guestbookUIFragment">
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
-            <button class="btn btn-link" onclick="PF('requestAccessPopup').hide();PF('blockDatasetForm').hide();" type="button">
+            <button class="btn btn-link" onclick="PF('guestbookAndTermsPopup').hide();PF('blockDatasetForm').hide();" type="button">
                 #{bundle.cancel}
             </button>
         </div>
