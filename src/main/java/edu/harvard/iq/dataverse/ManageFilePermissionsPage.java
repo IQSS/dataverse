@@ -72,6 +72,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject
     PermissionsWrapper permissionsWrapper;
+    @EJB
+    FileAccessRequestServiceBean fileAccessRequestService;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -408,15 +410,24 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                         sendNotification = true;
                     }
                     // remove request, if it exist
-                    if (file.removeFileAccessRequester(roleAssignee)) {
-                        datafileService.save(file);
+                    for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
+                            if (file.getFileAccessRequesters().remove(au)) {
+                                List<FileAccessRequest> fileAccessRequests = fileAccessRequestService.findAllByAuthenticatedUserIdAndRequestState(au.getId(), FileAccessRequest.RequestState.CREATED);
+                                for(FileAccessRequest far : fileAccessRequests){
+                                    far.setStateGranted();
+                                    fileAccessRequestService.save(far);
+                                }
+                                file.setFileAccessRequests(fileAccessRequests); 
+                                datafileService.save(file);
+                            }       
                     }
                 }
+
             }
 
             if (sendNotification) {
                 for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
-                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId());
+                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId());                
                 }
              }
         }
@@ -444,7 +455,14 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
         for (DataFile file : files) {
             if (assignRole(au, file, fileDownloaderRole)) {
+                //TODO - why remove requests just to set them again?
                 if (file.removeFileAccessRequester(au)) {
+                    List<FileAccessRequest> fileAccessRequests = fileAccessRequestService.findAll(au.getId(), file.getId(), FileAccessRequest.RequestState.CREATED);
+                    for(FileAccessRequest far : fileAccessRequests){
+                        far.setStateGranted();
+                        fileAccessRequestService.save(far);
+                    }
+                    file.setFileAccessRequests(fileAccessRequests); 
                     datafileService.save(file);
                 }
                 actionPerformed = true;
@@ -476,9 +494,12 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     private void rejectAccessToRequests(AuthenticatedUser au, List<DataFile> files) {
         boolean actionPerformed = false;
         for (DataFile file : files) {
-            file.removeFileAccessRequester(au);
-            datafileService.save(file);
-            actionPerformed = true;
+            if(file.removeFileAccessRequester(au)) {
+            
+                // TODO - set FileAccessRequest.RequestState to REJECTED
+                datafileService.save(file);
+                actionPerformed = true;
+            }
         }
 
         if (actionPerformed) {
