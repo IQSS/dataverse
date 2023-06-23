@@ -3172,17 +3172,12 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
-        for (FileMetadata fmd : this.selectedFiles) {
-            if (this.fileDownloadHelper.canDownloadFile(fmd)) {
-                getSelectedDownloadableFiles().add(fmd);
-                DataFile dataFile = fmd.getDataFile();
-                if (downloadOriginal && dataFile.isTabularData()) {
-                    bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
-                } else {
-                    bytes += dataFile.getFilesize();
-                }
+        for (FileMetadata fmd : getSelectedDownloadableFiles()) {
+            DataFile dataFile = fmd.getDataFile();
+            if (downloadOriginal && dataFile.isTabularData()) {
+                bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
             } else {
-                getSelectedNonDownloadableFiles().add(fmd);
+                bytes += dataFile.getFilesize();
             }
         }
 
@@ -3193,13 +3188,6 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
-        
-//QDRADA handle new state from
-        if (isTermsPopupRequired() || isGuestbookPopupRequiredAtDownload()){
-            PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
-        }
-        
-        
         // If some of the files were restricted and we had to drop them off the
         // list, and NONE of the files are left on the downloadable list
         // - we show them a "you're out of luck" popup:
@@ -3213,11 +3201,9 @@ public class DatasetPage implements java.io.Serializable {
             return true;
         }
 
-      //QDRADA - still needed?
-/*        if (guestbookRequired) {
+        if (isTermsPopupRequired() || isGuestbookPopupRequiredAtDownload()) {
             setValidateFilesOutcome("GuestbookRequired");
         }
-*/
         return true;
 
     }
