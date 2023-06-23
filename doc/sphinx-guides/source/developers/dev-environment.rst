@@ -7,12 +7,20 @@ These instructions are purposefully opinionated and terse to help you get your d
 .. contents:: |toctitle|
 	:local:
 
-Quick Start
------------
+Quick Start (Docker)
+--------------------
 
-The quickest way to get the Dataverse Software running is to use Vagrant as described in the :doc:`tools` section, or use Docker containers as described the :doc:`../container/dev-usage` section of the Container Guide.
+The quickest way to get Dataverse running is in Docker as explained in :doc:`../container/dev-usage` section of the Container Guide.
 
-For day to day development work, we recommended the following setup.
+
+Classic Dev Environment
+-----------------------
+
+Since before Docker existed, we have encouraged installing Dataverse and all its dependencies directly on your development machine, as described below. This can be thought of as the "classic" development environment for Dataverse.
+
+However, in 2023 we decided that we'd like to encourage all developers to start using Docker instead and opened https://github.com/IQSS/dataverse/issues/9616 to indicate that we plan to rewrite this page to recommend the use of Docker.
+
+There's nothing wrong with the classic instructions below and we don't plan to simply delete them. They are a valid alternative to running Dataverse in Docker. We will likely move them to another page.
 
 Set Up Dependencies
 -------------------
