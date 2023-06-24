@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.pidproviders.VersionPidMode.CollectionConduct;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -30,14 +30,13 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  *
@@ -182,8 +181,7 @@ public class Dataverse extends DvObjectContainer {
     private boolean facetRoot;
     // By default, themeRoot should be true, as new dataverses should start with the default theme
     private boolean themeRoot = true;
-    private boolean templateRoot;    
-
+    private boolean templateRoot;
     
     @OneToOne(mappedBy = "dataverse",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
       private DataverseTheme dataverseTheme;
@@ -588,6 +586,31 @@ public class Dataverse extends DvObjectContainer {
 
     public void setCitationDatasetFieldTypes(List<DatasetFieldType> citationDatasetFieldTypes) {
         this.citationDatasetFieldTypes = citationDatasetFieldTypes;
+    }
+    
+    
+    
+    /**
+     * Indicate if this Dataverse Collection wants to publicize PIDs for each (major) {@link DatasetVersion}
+     * for any {@link Dataset} in it.
+     *
+     * @see edu.harvard.iq.dataverse.pidproviders.VersionPidMode#ALLOW_MAJOR
+     * @see edu.harvard.iq.dataverse.pidproviders.VersionPidMode#ALLOW_MINOR
+     * @see CollectionConduct
+     */
+    @Enumerated(EnumType.STRING)
+    private CollectionConduct datasetVersionPidConduct;
+    
+    public void setDatasetVersionPidConduct(CollectionConduct conduct) {
+        this.datasetVersionPidConduct = conduct;
+    }
+    
+    /**
+     * Retrieve the version PID conduct mode for this collection
+     * @return One of {@link CollectionConduct}. Never null, defaults to {@link CollectionConduct#INHERIT}.
+     */
+    public CollectionConduct getDatasetVersionPidConduct() {
+        return this.datasetVersionPidConduct != null ? this.datasetVersionPidConduct : CollectionConduct.INHERIT;
     }
     
     

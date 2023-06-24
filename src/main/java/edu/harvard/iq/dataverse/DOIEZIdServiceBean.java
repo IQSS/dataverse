@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
+
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -240,7 +242,7 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
     }
 
     @Override
-    public String createIdentifier(DvObject dvObject) throws Throwable {
+    public String createIdentifier(DvObject dvObject) throws IOException {
         logger.log(Level.FINE, "createIdentifier");
         if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
             dvObject = generateIdentifier(dvObject);
@@ -265,7 +267,7 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
             logger.log(Level.WARNING, "cause", e.getCause());
             logger.log(Level.WARNING, "message {0}", e.getMessage());
             logger.log(Level.WARNING, "identifier: ", identifier);
-            throw e;
+            throw new IOException(e);
         }
     }
     

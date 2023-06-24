@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
+import java.io.IOException;
 import java.lang.StackWalker.StackFrame;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,7 +85,7 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
     }
 
     @Override
-    public String createIdentifier(DvObject dvo) throws Throwable {
+    public String createIdentifier(DvObject dvo) throws IOException {
         //Call external resolver and send landing URL?
         //FWIW: Return value appears to only be used in RegisterDvObjectCommand where success requires finding the dvo identifier in this string. (Also logged a couple places).
         return(dvo.getGlobalId().asString());

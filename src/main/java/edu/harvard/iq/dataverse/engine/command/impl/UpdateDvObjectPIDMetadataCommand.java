@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -48,7 +49,14 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
         }
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(target.getProtocol(), ctxt);
         try {
+            // First publicize new dataset version if enabled, so it can be included in the update of the dataset
+            if (ctxt.dataverses().wantsDatasetVersionPids(target.getOwner(), target.getLatestVersion().getMinorVersionNumber() > 0)) {
+                // TODO: publicize dataset version as well
+            }
+            
+            // Publicize the dataset
             Boolean doiRetString = idServiceBean.publicizeIdentifier(target);
+            
             if (doiRetString) {
                 target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 ctxt.em().merge(target);

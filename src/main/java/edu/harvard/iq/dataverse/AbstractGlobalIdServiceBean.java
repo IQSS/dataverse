@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.pidproviders.VersionPidMode.GenStyle;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
@@ -153,6 +155,50 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             dvObject.setAuthority(authority);
         }
         return dvObject;
+    }
+    
+    /**
+     * Generate an identifier for a given dataset version, depending on the chosen (configured) generation style.
+     * (See also {@link GenStyle} for available styles.)
+     *
+     * @param datasetVersion The version of a dataset to create a PID for
+     * @return The identifier (will never be null)
+     * @throws IllegalArgumentException If the style configured is not supported by this generator, the version is
+     *                                  already released or a minor version, or if the owning dataset has no identifier
+     *                                  while creating a suffix style identifier.
+     */
+    @Override
+    public String generateDatasetVersionIdentifier(final DatasetVersion datasetVersion) throws IllegalArgumentException {
+        if (datasetVersion == null || datasetVersion.isReleased()) {
+            throw new IllegalArgumentException("Version may not be null or released");
+        }
+        
+        // If this is a minor version update, reuse the identifier of the last released version
+        if (datasetVersion.getMinorVersionNumber() > 0) {
+            return datasetVersion.getDataset().getReleasedVersion().getPersistentIdentifier();
+        }
+        
+        try {
+            GenStyle style = JvmSettings.PID_VERSIONS_STYLE.lookup(GenStyle.class);
+            
+            if (style == GenStyle.DATASET) {
+                return generateDatasetIdentifier(datasetVersion.getDataset());
+                
+            } else if (style == GenStyle.SUFFIX) {
+                String datasetIdentifier = datasetVersion.getDataset().getIdentifier();
+                if (datasetIdentifier == null || datasetIdentifier.isEmpty()) {
+                    throw new IllegalArgumentException("Dataset must not have empty identifier when creating dataset version identifier by suffix");
+                }
+                
+                return datasetIdentifier + getVersionSuffixDelimiter() + datasetVersion.getVersionNumber();
+            
+            // Nothing appropriate found - bail out
+            } else {
+                throw new IllegalArgumentException("No supported version PID generation style configured");
+            }
+        } catch (NoSuchElementException e) {
+            throw new IllegalArgumentException("No supported version PID generation style configured", e);
+        }
     }
     
     //ToDo just send the DvObject.DType

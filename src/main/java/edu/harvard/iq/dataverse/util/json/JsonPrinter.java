@@ -286,7 +286,8 @@ public class JsonPrinter {
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
                 .add("name", dv.getName())
-                .add("affiliation", dv.getAffiliation());
+                .add("affiliation", dv.getAffiliation())
+                .add("versionPidsConduct", dv.getDatasetVersionPidConduct().toString());
         if(!hideEmail) { 
             bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
         }
@@ -376,6 +377,8 @@ public class JsonPrinter {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dsv.getDataset().getId())
                 .add("datasetPersistentId", dsv.getDataset().getGlobalId().asString())
+                // This might be null if this version does not have a version, the builder will silently omit it then.
+                .add("persistentId", dsv.getGlobalId().asString())
                 .add("storageIdentifier", dsv.getDataset().getStorageIdentifier())
                 .add("versionNumber", dsv.getVersionNumber()).add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name()).add("versionNote", dsv.getVersionNote())

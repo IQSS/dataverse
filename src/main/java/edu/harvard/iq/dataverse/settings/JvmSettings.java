@@ -108,7 +108,12 @@ public enum JvmSettings {
     SCOPE_PID_HANDLENET_KEY(SCOPE_PID_HANDLENET, "key"),
     HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path", "dataverse.handlenet.admcredfile"),
     HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase", "dataverse.handlenet.admprivphrase"),
-
+    
+    // VERSION PID SETTINGS
+    SCOPE_PID_VERSIONS(SCOPE_PID, "version"),
+    PID_VERSIONS_MODE(SCOPE_PID_VERSIONS, "mode"),
+    PID_VERSIONS_STYLE(SCOPE_PID_VERSIONS, "style"),
+    
     // SPI SETTINGS
     SCOPE_SPI(PREFIX, "spi"),
     SCOPE_EXPORTERS(SCOPE_SPI, "exporters"),
@@ -123,6 +128,7 @@ public enum JvmSettings {
     SCOPE_UI(PREFIX, "ui"),
     UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
     UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
+    
     ;
 
     private static final String SCOPE_SEPARATOR = ".";

@@ -2,10 +2,12 @@ package edu.harvard.iq.dataverse;
 
 import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.exception.NotImplementedException;
 import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -24,9 +26,36 @@ public interface GlobalIdServiceBean {
     boolean isConfigured();
     
     List<String> getProviderInformation();
-
-    String createIdentifier(DvObject dvo) throws Throwable;
-
+    
+    /**
+     * Let the PID provider create the identifier for a dataset or datafile (collections are not yet supported) by
+     * linking it to the target URL. This might involve registering metadata of the object alongside.
+     * The identifier is not yet to be published - this step is done by {@link #publicizeIdentifier(DvObject)}.
+     *
+     * @param dvo The object to create the identifier for
+     * @return Some response or nothing at all (null). Up to the provider.
+     * @throws IOException If creation fails. May contain wrapped root causes.
+     */
+    String createIdentifier(DvObject dvo) throws IOException;
+    
+    /**
+     * Let the PID provider create the identifier for a dataset version like it does in {@link #createIdentifier(DvObject)}.
+     * The identifier is not yet to be published - this step is done by {@link #publicizeIdentifier(DatasetVersion)}.
+     * Note that the provider needs to decide if minor versions get their own identifiers as well. If minor versions
+     * are to be updates of majors, this may be done in {@link #publicizeIdentifier(DatasetVersion)} as well.
+     *
+     * @implNote This method is expected to create a new identifier, not overwrite an existing one, and not make
+     *           an identifier findable yet (this is the job of {@link #publicizeIdentifier(DatasetVersion)}).
+     *
+     * @param datasetVersion The version to be registered at the provider
+     * @return Some response or nothing at all (null). Up to the provider.
+     * @throws IOException If creation fails. May contain wrapped root causes.
+     * @throws NotImplementedException If version registration is not supported by the provider
+     */
+    default String createIdentifier(DatasetVersion datasetVersion) throws IOException {
+        throw new NotImplementedException("This provider does not (yet) support creating identifiers for versions");
+    }
+    
     Map<String,String> getIdentifierMetadata(DvObject dvo);
 
     String modifyIdentifierTargetURL(DvObject dvo) throws Exception;
@@ -43,8 +72,60 @@ public interface GlobalIdServiceBean {
     
     boolean publicizeIdentifier(DvObject studyIn);
     
+    /**
+     * Publish a PID for a given {@link DatasetVersion} and make it findable and resolvable.
+     *
+     * @apiNote This method is meant to be called when a new version identifier is about to be published which is
+     *          already created - either by calling {@link #createIdentifier(DatasetVersion)} before or knowing this
+     *          will be an update of an existing one.
+     *
+     * @param datasetVersion The version to publish
+     * @return true if successful, false otherwise (or when datasetVersion is null)
+     * @throws IOException In case the communication with the provider failed for some reason.
+     * @throws NotImplementedException When a provider does not support PIDs for versions
+     */
+    default boolean publicizeIdentifier(final DatasetVersion datasetVersion) throws IOException {
+        throw new NotImplementedException("This provider does not (yet) support publishing versions.");
+    }
+    
     String generateDatasetIdentifier(Dataset dataset);
     String generateDataFileIdentifier(DataFile datafile);
+    
+    /**
+     * Generate a PID for a {@link DatasetVersion}.
+     * Note that the generation of this identifier depends on configuration by a sysadmin and concrete
+     * implementation for a given PID provider (it might be limited by its capabilities).
+     * The provider may return an existing PID of a former version, e.g. to reuse an existing identifier
+     * in case of minor version updates.
+     *
+     * @implNote This method is meant to be implemented free of side effects (not manipulating the version).
+     *           Take care not to throw other exception than those documented here to avoid EJB exception handling
+     *           kicking in.
+     *
+     * @param datasetVersion The version of a dataset to create a PID for
+     * @return An "identifier", meant to be used for {@link GlobalId}, retrievable via {@link GlobalId#getIdentifier()}.
+     *         Must not be null.
+     * @throws NotImplementedException When a provider does not support generating PIDs for version.
+     * @throws IllegalArgumentException When a provider does not allow their generation due to configuration or doesn't
+     *                                  like the current look of the version (i.e. not being a new major version).
+     *                                  Note: this is made a checked exception to make it a business exception,
+     *                                  avoiding EJB exception handling and handling inside command engine.
+     */
+    default String generateDatasetVersionIdentifier(final DatasetVersion datasetVersion) throws IllegalArgumentException {
+        throw new NotImplementedException("This provider does not (yet) support publishing versions.");
+    }
+    
+    /**
+     * Retrieve the character that is inserted as a delimiter between the dataset identifier
+     * and the version number. Defaults to a dot ".", but in case a PID system does not support
+     * this character, the provider can override it.
+     *
+     * @return The delimiter character, defaulting to '.'
+     */
+    default char getVersionSuffixDelimiter() {
+        return '.';
+    }
+    
     boolean isGlobalIdUnique(GlobalId globalId);
     
     String getUrlPrefix();

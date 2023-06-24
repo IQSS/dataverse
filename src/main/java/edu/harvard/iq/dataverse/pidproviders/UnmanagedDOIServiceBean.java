@@ -48,7 +48,7 @@ public class UnmanagedDOIServiceBean extends DOIServiceBean {
     }
 
     @Override
-    public String createIdentifier(DvObject dvObject) throws Exception {
+    public String createIdentifier(DvObject dvObject) throws IOException {
         throw new NotImplementedException();
     }
 

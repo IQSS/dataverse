@@ -28,6 +28,8 @@ import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.VersionPidMode;
+import edu.harvard.iq.dataverse.pidproviders.VersionPidMode.CollectionConduct;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
@@ -125,6 +127,10 @@ public class JsonParser {
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
+        dv.setDatasetVersionPidConduct(
+            CollectionConduct.findBy(
+                jobj.getString("versionPidsConduct", CollectionConduct.INHERIT.toString())
+            ));
       
         if (jobj.containsKey("dataverseContacts")) {
             JsonArray dvContacts = jobj.getJsonArray("dataverseContacts");

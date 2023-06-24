@@ -129,6 +129,33 @@ public class DatasetVersion implements Serializable {
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
     
+    /**
+     * A (globally) unique persistent identifier for this version.
+     * The version PID will always be dependent on the protocol and authority of the containing dataset.
+     * This identifier may contain {@link edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key#Shoulder} if
+     * configured and some more unique characters, also depending on the admin's choice to make version PIDs dependent
+     * on the dataset PID.
+     *
+     * The PID may be null (feature disabled, old entry, etc.). It might not be unique, as minor versions by default
+     * carry the identifier of their adjacent major version.
+     */
+    @Column
+    private String persistentIdentifier;
+    
+    /**
+     * Caching the {@link GlobalId} in a transient field saves retrievals and reformatting. Its value will
+     * be based on {@link #persistentIdentifier}, and details from {@link #dataset} like protocol, authority and
+     * shoulder.
+     */
+    @Transient
+    private GlobalId globalId;
+    
+    /**
+     * Saving in the database if this identifier has been registered before to avoid
+     * re-registration (which would probably fail) and switch to modification
+     */
+    private boolean identifierRegistered = false;
+    
     /*
      * @todo versionState should never be null so when we are ready, uncomment
      * the `nullable = false` below.
@@ -233,6 +260,56 @@ public class DatasetVersion implements Serializable {
 
     public void setVersion(Long version) {
     }
+    
+    public String getPersistentIdentifier() {
+        return this.persistentIdentifier;
+    }
+    
+    public void setPersistentIdentifier(String identifier) {
+        this.persistentIdentifier = identifier;
+    }
+    
+    /**
+     * Create a {@link GlobalId} from {@link #persistentIdentifier} and the owning {@link #dataset}
+     * details of protocol and authority. This method is not free of side effects: it will cache
+     * the generated value in a transient instance variable if not yet initialized.
+     *
+     * @return The global id for this version or null if no PID, protocol or authority present.
+     */
+    public GlobalId getGlobalId() {
+        if (this.globalId == null && this.getPersistentIdentifier() != null &&
+            this.dataset.getProtocol() != null && this.dataset.getAuthority() != null) {
+            this.globalId = PidUtil.parseAsGlobalID(
+                this.dataset.getProtocol(),
+                this.dataset.getAuthority(),
+                this.getPersistentIdentifier());
+        }
+        return this.globalId;
+    }
+    
+    /**
+     * Check the status of the version identifier - has it been registered?
+     * @return True if registered, false otherwise.
+     */
+    public boolean isIdentifierRegistered() {
+        return this.identifierRegistered;
+    }
+    
+    /**
+     * Set registration as done.
+     */
+    public void setIdentifierRegistered() {
+        this.identifierRegistered = true;
+    }
+    
+    /**
+     * Overwrite the registration status with a specific value
+     * @param status The new status of the registration
+     */
+    public void setIdentifierRegistered(boolean status) {
+        this.identifierRegistered = status;
+    }
+    
 
     public String getDataverseSiteUrl() {
         return dataverseSiteUrl;

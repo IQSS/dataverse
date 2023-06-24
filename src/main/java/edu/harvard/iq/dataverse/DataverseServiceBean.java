@@ -15,9 +15,11 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.pidproviders.VersionPidMode;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
@@ -28,9 +30,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Properties;
-import java.util.concurrent.Future;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -927,6 +930,57 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         return em.createNativeQuery(cqString).getResultList();
     }
-
     
+    /**
+     * Check if a given Dataverse Collection has been configured to generate PIDs for a new version of a dataset
+     * contained in it. Will also respect the global version PID settings by an admin via
+     * {@link JvmSettings#PID_VERSIONS_MODE}.
+     *
+     * @param collection The collection to check. May not be null (will throw NPE).
+     * @param willBeMinorVersion Will the {@link DatasetVersion} to receive the PID be a minor version?
+     *
+     * @return true if enabled, false if disabled
+     * @throws java.util.NoSuchElementException When no or invalid configuration for version PID mode is given
+     */
+    public boolean wantsDatasetVersionPids(final Dataverse collection, boolean willBeMinorVersion) {
+        Objects.requireNonNull(collection, "Collection parameter must not be null");
+        
+        // Deactivated by admin globally or no PID for minor version allowed?
+        VersionPidMode vpm = JvmSettings.PID_VERSIONS_MODE.lookup(VersionPidMode.class);
+        if (VersionPidMode.OFF.equals(vpm) || ( willBeMinorVersion && VersionPidMode.ALLOW_MAJOR.equals(vpm) )) {
+            return false;
+        }
+        
+        // Check the collection itself; and potentially it's ancestors
+        Dataverse c = collection;
+        while (c != null) {
+            // Note: the default behavior is INHERIT for the model class
+            switch (c.getDatasetVersionPidConduct()) {
+                case SKIP:
+                    logger.log(Level.FINE, "Collection {0} makes {1} skip version PIDs", new String[]{c.getAlias(), collection.getAlias()});
+                    return false;
+                case MAJOR:
+                    logger.log(Level.FINE, "Collection {0} allows its sub {1} PIDs for major versions", new String[]{c.getAlias(), collection.getAlias()});
+                    return !willBeMinorVersion;
+                case MINOR:
+                    if (vpm.equals(VersionPidMode.ALLOW_MINOR)) {
+                        logger.log(Level.FINE, "Collection {0} allows its sub {1} PIDs for minor versions", new String[]{c.getAlias(), collection.getAlias()});
+                        return true;
+                    } else {
+                        // In some cases, an admin might have switched the setting after someone already activated it.
+                        // The collection's conduct mode should be updated - we will still cap it as admin says no.
+                        logger.log(Level.INFO, "Collection {0} allows its sub {1} PIDs for minor versions, which is disabled globally. Please update conduct mode of {0}.", new String[]{c.getAlias(), collection.getAlias()});
+                        return !willBeMinorVersion;
+                    }
+                case INHERIT:
+                    // Note: root dataverse has no owner, which will break the loop condition
+                    c = c.getOwner();
+            }
+        }
+        
+        // If the root dataverse did also not have a policy set, use what the admin configured.
+        // Note: one could argue we should just return true here, as the below boolean expression is just the
+        //       negation of the one at the top and the collections didn't intervene. But better safe than sorry...
+        return VersionPidMode.ALLOW_MINOR.equals(vpm) || (!willBeMinorVersion && VersionPidMode.ALLOW_MAJOR.equals(vpm));
+    }
 }

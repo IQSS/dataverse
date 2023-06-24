@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.AlternativePersistentIdentifier;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -83,6 +84,15 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 }
                 if (target.isReleased()) {
+                    // If this is a dataset, release a new dataset version first before, to be included in the dataset
+                    if (target.isInstanceofDataset() &&
+                        ctxt.dataverses().wantsDatasetVersionPids(
+                            (Dataverse) target.getOwner(),
+                            ((Dataset) target).getLatestVersion().getMinorVersionNumber() > 0)) {
+                        // TODO: publicize dataset version as well
+                    }
+                    
+                    // Now publicize the actual object
                     idServiceBean.publicizeIdentifier(target);
                 }
                 if (idServiceBean.registerWhenPublished() && target.isReleased()) {
