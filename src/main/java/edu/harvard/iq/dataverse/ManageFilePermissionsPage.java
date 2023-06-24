@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.FileAccessRequest.RequestState;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -187,7 +188,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                         AuthenticatedUser withProvider = authenticationService.getAuthenticatedUserWithProvider(fileAccessRequest.getRequester().getUserIdentifier());
                         fileAccessRequestMap.put(withProvider, requestedFiles);
                     }
-                    requestedFiles.add(fileAccessRequest);
+                    if(fileAccessRequest.getState() == RequestState.CREATED){
+                        requestedFiles.add(fileAccessRequest);
+                    }
                 }
             }
         }
