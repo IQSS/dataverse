@@ -743,7 +743,7 @@ Change Collection Attributes
 
 .. code-block:: 
 
-  curl -X PUT -H "X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/attribute/$ATTRIBUTE?value=$VALUE"
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/attribute/$ATTRIBUTE?value=$VALUE"
 
 The following attributes are supported:
 
