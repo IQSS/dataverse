@@ -306,6 +306,9 @@ public class JsonPrinter {
         if(dv.getStorageDriverId() != null) {
         	bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
         }
+        if (dv.getFilePIDsEnabled() != null) {
+            bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
+        }
 
         return bld;
     }
