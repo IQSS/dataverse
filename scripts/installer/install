@@ -463,7 +463,7 @@ for my $ENTRY (@CONFIG_VARIABLES)
 		if (!(-w ($g_dir . $test_dir))) 
 		{
 		    print "\n";
-		    die("ERROR: " . $g_dir . $test_dir . " not writable to the user running the installer! Check permissions on Payara5 hierarchy.\n");
+		    die("ERROR: " . $g_dir . $test_dir . " not writable to the user running the installer! Check permissions on Payara6 hierarchy.\n");
 		}
 	    }
 
@@ -685,7 +685,7 @@ print "can publish datasets. Once you receive the account name and password, add
 print "as the following two JVM options:\n";
 print "\t<jvm-options>-Ddoi.username=...</jvm-options>\n";
 print "\t<jvm-options>-Ddoi.password=...</jvm-options>\n";
-print "and restart payara5\n";
+print "and restart payara6\n";
 print "If this is a production Dataverse and you are planning to register datasets as \n";
 print "\"real\", non-test DOIs or Handles, consult the \"Persistent Identifiers and Publishing Datasets\"\n";
 print "section of the Installataion guide, on how to configure your Dataverse with the proper registration\n";
@@ -749,7 +749,7 @@ sub setup_appserver {
 
     my $glassfish_dir = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'};
 
-    print "\nProceeding with the app. server (Payara5) setup.\n";
+    print "\nProceeding with the app. server (Payara6) setup.\n";
 
 # 5a. DETERMINE HOW MUCH MEMORY TO GIVE TO GLASSFISH AS HEAP:
 
@@ -816,7 +816,7 @@ sub setup_appserver {
 	# amount of memory:
 	$gf_heap_default = ( int( $sys_mem_total / ( 8 / 3 * 1024 ) ) );
 
-	print "\nSetting the heap limit for Payara5 to " . $gf_heap_default . "MB. \n";
+	print "\nSetting the heap limit for Payara6 to " . $gf_heap_default . "MB. \n";
 	print "You may need to adjust this setting to better suit \n";
 	print "your system.\n\n";
 
@@ -826,7 +826,7 @@ sub setup_appserver {
     else 
     {
 	print "\nCould not determine the amount of memory on your system.\n";
-	print "Setting the heap limit for Payara5 to 2GB. You may need \n";
+	print "Setting the heap limit for Payara6 to 2GB. You may need \n";
 	print "to  adjust the value to better suit your system.\n\n";
     }
 
@@ -834,7 +834,7 @@ sub setup_appserver {
     $CONFIG_DEFAULTS{"DEF_MEM_SIZE"} = $gf_heap_default;
 
 # TODO:
-# is the below still the case with Payara5? 
+# is the below still the case with Payara6?
 # if the system has more than 4GB of memory (I believe), glassfish must
 # be run with the 64 bit flag set explicitly (at least that was the case
 # with the MacOS glassfish build...). Verify, and if still the case,
@@ -905,7 +905,7 @@ sub setup_appserver {
 # CHECK EXIT STATUS, BARF IF SETUP SCRIPT FAILED:
 
     unless ($success) {
-	print "\nERROR! Failed to configure Payara5 domain!\n";
+	print "\nERROR! Failed to configure Payara6 domain!\n";
 	print "(see the error messages above - if any)\n";
 	print "Aborting...\n";
 	
@@ -954,9 +954,9 @@ sub setup_appserver {
 # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
 # - so it may need to be readjusted here: 
 
-    if ( $glassfish_dir ne "/usr/local/payara5" )
+    if ( $glassfish_dir ne "/usr/local/payara6" )
     {
-	system( "sed 's:/usr/local/payara5:$glassfish_dir:g' < " . $JHOVE_CONFIG_DIST . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
+	system( "sed 's:/usr/local/payara6:$glassfish_dir:g' < " . $JHOVE_CONFIG_DIST . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
     }
     else 
     {

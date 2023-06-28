@@ -72,7 +72,7 @@ Enable or Disable Display of Make Data Count Metrics
 
 By default, when MDC logging is enabled (when ``:MDCLogPath`` is set), your Dataverse installation will display MDC metrics instead of it's internal (legacy) metrics. You can avoid this (e.g. to collect MDC metrics for some period of time before starting to display them) by setting ``:DisplayMDCMetrics`` to false.
 
-The following discussion assumes ``:MDCLogPath`` has been set to ``/usr/local/payara5/glassfish/domains/domain1/logs/mdc``
+The following discussion assumes ``:MDCLogPath`` has been set to ``/usr/local/payara6/glassfish/domains/domain1/logs/mdc``
 
 Configure Counter Processor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -102,7 +102,7 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * If you are running Counter Processor for the first time in the middle of a month, you will need create blank log files for the previous days. e.g.:
 
-  * ``cd /usr/local/payara5/glassfish/domains/domain1/logs/mdc``
+  * ``cd /usr/local/payara6/glassfish/domains/domain1/logs/mdc``
 
   * ``touch counter_2019-02-01.log``
   

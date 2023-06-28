@@ -44,7 +44,7 @@ On RHEL/derivative you can make Java 11 the default with the ``alternatives`` co
 Payara
 ------
 
-Payara 5.2022.3 is recommended. Newer versions might work fine, regular updates are recommended.
+Payara 6.2023.6 is recommended. Newer versions might work fine. Regular updates are recommended.
 
 Installing Payara
 =================
@@ -53,11 +53,11 @@ Installing Payara
 
 	# useradd dataverse
 
-- Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
+- Download and install Payara (installed in ``/usr/local/payara6`` in the example commands below)::
 
-	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/5.2022.3/payara-5.2022.3.zip
-	# unzip payara-5.2022.3.zip
-	# mv payara5 /usr/local
+	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2023.6/payara-6.2023.6.zip
+	# unzip payara-6.2023.6.zip
+	# mv payara6 /usr/local
 
 If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/
 
@@ -65,15 +65,15 @@ If you intend to install and run Payara under a service account (and we hope you
 
 - Set service account permissions::
 
-	# chown -R root:root /usr/local/payara5
-	# chown dataverse /usr/local/payara5/glassfish/lib
-	# chown -R dataverse:dataverse /usr/local/payara5/glassfish/domains/domain1
+	# chown -R root:root /usr/local/payara6
+	# chown dataverse /usr/local/payara6/glassfish/lib
+	# chown -R dataverse:dataverse /usr/local/payara6/glassfish/domains/domain1
 
 After installation, you may chown the lib/ directory back to root; the installer only needs write access to copy the JDBC driver into that directory.
 
 - Change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
 
-	# vim /usr/local/payara5/glassfish/domains/domain1/config/domain.xml
+	# vim /usr/local/payara6/glassfish/domains/domain1/config/domain.xml
 
 This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4-performance-tuning-monitoring-and-troubleshooting.php among other places.
 
