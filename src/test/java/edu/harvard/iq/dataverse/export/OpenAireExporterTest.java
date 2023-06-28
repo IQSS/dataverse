@@ -1,9 +1,6 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.jayway.restassured.path.xml.XmlPath;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
-import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.XMLExporter;
@@ -17,9 +14,9 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.Test;

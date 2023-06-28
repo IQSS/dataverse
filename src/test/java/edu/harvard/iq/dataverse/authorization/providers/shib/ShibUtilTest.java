@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;

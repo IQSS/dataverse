@@ -37,7 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 
-import javax.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.BatchStatus;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;

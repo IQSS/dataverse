@@ -10,27 +10,25 @@ import org.junit.BeforeClass;
 import com.jayway.restassured.path.json.JsonPath;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
-import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
 
 import static java.lang.Thread.sleep;
-import java.math.BigDecimal;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
-import java.util.ResourceBundle;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
 
-import static javax.ws.rs.core.Response.Status.*;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+
+import static jakarta.ws.rs.core.Response.Status.*;
 import static junit.framework.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;

@@ -19,10 +19,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.junit.Test;

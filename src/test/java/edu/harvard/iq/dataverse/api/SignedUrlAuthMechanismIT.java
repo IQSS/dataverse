@@ -6,8 +6,8 @@ import org.junit.BeforeClass;
 import org.junit.jupiter.api.Test;
 
 import static com.jayway.restassured.RestAssured.get;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SignedUrlAuthMechanismIT {

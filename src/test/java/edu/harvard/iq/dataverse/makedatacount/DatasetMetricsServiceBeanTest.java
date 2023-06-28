@@ -5,9 +5,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Matchers;
 
-import javax.ejb.EJBException;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import jakarta.ejb.EJBException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
