@@ -306,6 +306,9 @@ public class JsonPrinter {
         if(dv.getStorageDriverId() != null) {
         	bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
         }
+        if (dv.getFilePIDsEnabled() != null) {
+            bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
+        }
 
         return bld;
     }
@@ -373,17 +376,21 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList) {
+        Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
-                .add("id", dsv.getId()).add("datasetId", dsv.getDataset().getId())
-                .add("datasetPersistentId", dsv.getDataset().getGlobalId().asString())
-                .add("storageIdentifier", dsv.getDataset().getStorageIdentifier())
+                .add("id", dsv.getId()).add("datasetId", dataset.getId())
+                .add("datasetPersistentId", dataset.getGlobalId().asString())
+                .add("storageIdentifier", dataset.getStorageIdentifier())
                 .add("versionNumber", dsv.getVersionNumber()).add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name()).add("versionNote", dsv.getVersionNote())
                 .add("archiveNote", dsv.getArchiveNote()).add("deaccessionLink", dsv.getDeaccessionLink())
                 .add("distributionDate", dsv.getDistributionDate()).add("productionDate", dsv.getProductionDate())
                 .add("UNF", dsv.getUNF()).add("archiveTime", format(dsv.getArchiveTime()))
                 .add("lastUpdateTime", format(dsv.getLastUpdateTime())).add("releaseTime", format(dsv.getReleaseTime()))
-                .add("createTime", format(dsv.getCreateTime()));
+                .add("createTime", format(dsv.getCreateTime()))
+                .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
+                .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
+                .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD());
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
             bld.add("license", jsonLicense(dsv));

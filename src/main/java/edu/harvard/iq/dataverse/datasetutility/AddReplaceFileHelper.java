@@ -645,7 +645,7 @@ public class AddReplaceFileHelper{
                 df.setRootDataFileId(fileToReplace.getRootDataFileId());
             }
             // Reuse any file PID during a replace operation (if File PIDs are in use)
-            if (systemConfig.isFilePIDsEnabled()) {
+            if (systemConfig.isFilePIDsEnabledForCollection(owner.getOwner())) {
                 df.setGlobalId(fileToReplace.getGlobalId());
                 df.setGlobalIdCreateTime(fileToReplace.getGlobalIdCreateTime());
                 // Should be true or fileToReplace wouldn't have an identifier (since it's not
