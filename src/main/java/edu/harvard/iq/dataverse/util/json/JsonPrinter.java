@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseTheme;
-import edu.harvard.iq.dataverse.api.Datasets;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -55,12 +54,10 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
 import java.util.*;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-
-import org.apache.commons.collections4.CollectionUtils;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -71,10 +68,10 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 
 /**
  * Convert objects to Json.

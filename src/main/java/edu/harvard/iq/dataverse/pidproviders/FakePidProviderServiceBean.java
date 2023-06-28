@@ -3,13 +3,13 @@ package edu.harvard.iq.dataverse.pidproviders;
 import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
-import java.util.ArrayList;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class FakePidProviderServiceBean extends DOIServiceBean {

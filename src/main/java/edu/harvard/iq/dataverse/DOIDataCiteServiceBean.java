@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -11,8 +10,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.httpclient.HttpException;

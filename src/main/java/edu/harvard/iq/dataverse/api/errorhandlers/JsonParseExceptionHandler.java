@@ -2,17 +2,14 @@ package edu.harvard.iq.dataverse.api.errorhandlers;
 
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 
-import javax.json.Json;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
-import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import jakarta.json.Json;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  * Make a failing JSON parsing request appear to be a BadRequest (error code 400)

@@ -18,17 +18,17 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
-import javax.json.JsonValue.ValueType;
-import javax.json.stream.JsonGenerator;
-import javax.ws.rs.BadRequestException;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.json.stream.JsonGenerator;
+import jakarta.ws.rs.BadRequestException;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;

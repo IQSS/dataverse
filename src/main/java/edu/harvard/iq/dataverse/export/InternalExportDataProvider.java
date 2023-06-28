@@ -3,11 +3,11 @@ package edu.harvard.iq.dataverse.export;
 import java.io.InputStream;
 import java.util.Optional;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.DataCitation;

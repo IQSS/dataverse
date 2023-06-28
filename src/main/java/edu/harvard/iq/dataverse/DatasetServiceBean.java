@@ -30,21 +30,20 @@ import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.StoredProcedureQuery;
-import javax.persistence.TypedQuery;
-import org.apache.commons.lang3.RandomStringUtils;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.StoredProcedureQuery;
+import jakarta.persistence.TypedQuery;
 import org.ocpsoft.common.util.Strings;
 
 /**
@@ -328,7 +327,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * in the dataset components, a ConstraintViolationException will be thrown,
      * which can be further parsed to detect the specific offending values.
      * @param id the id of the dataset
-     * @throws javax.validation.ConstraintViolationException
+     * @throws jakarta.validation.ConstraintViolationException
      */
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -396,7 +395,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         query.setParameter("userId", au.getId());
         try {
             return query.getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (jakarta.persistence.NoResultException e) {
             return null;
         }
     }
@@ -511,7 +510,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         try {
             return query.getResultList();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (jakarta.persistence.NoResultException e) {
             return null;
         }
     }

@@ -4,10 +4,10 @@ import edu.harvard.iq.dataverse.DataverseHeaderFragment;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.settings.FeatureFlags;
 
-import javax.inject.Inject;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response;
 
 @Path("logout")
 public class Logout extends AbstractApiBean {

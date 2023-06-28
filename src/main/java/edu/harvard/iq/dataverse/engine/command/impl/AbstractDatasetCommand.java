@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
-import javax.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolation;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
