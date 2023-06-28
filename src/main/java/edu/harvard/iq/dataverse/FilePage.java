@@ -80,6 +80,7 @@ public class FilePage implements java.io.Serializable {
     private FileMetadata fileMetadata;
     private Long fileId;  
     private String version;
+    private String toolType;
     private DataFile file;   
     private GuestbookResponse guestbookResponse;
     private int selectedTabIndex;
@@ -91,6 +92,7 @@ public class FilePage implements java.io.Serializable {
     private List<ExternalTool> configureTools;
     private List<ExternalTool> exploreTools;
     private List<ExternalTool> toolsWithPreviews;
+    private List<ExternalTool> queryTools;
     private Long datasetVersionId;
     /**
      * Have the terms been met so that the Preview tab can show the preview?
@@ -152,7 +154,7 @@ public class FilePage implements java.io.Serializable {
      
         
         if (fileId != null || persistentId != null) {
-
+                            System.out.print(fileId);
             // ---------------------------------------
             // Set the file and datasetVersion 
             // ---------------------------------------           
@@ -242,11 +244,24 @@ public class FilePage implements java.io.Serializable {
             }
             configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
+            queryTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.QUERY, contentType);
             Collections.sort(exploreTools, CompareExternalToolName);
             toolsWithPreviews  = sortExternalTools();
-            if(!toolsWithPreviews.isEmpty()){
-                setSelectedTool(toolsWithPreviews.get(0));                
+
+            if (toolType != null) {
+                System.out.print(toolType);
+                if (toolType.equals("PREVIEW")) {
+                    if (!toolsWithPreviews.isEmpty()) {
+                        setSelectedTool(toolsWithPreviews.get(0));
+                    }
+                }
+                if (toolType.equals("QUERY")) {
+                    if (!queryTools.isEmpty()) {
+                        setSelectedTool(queryTools.get(0));
+                    }
+                }
             }
+
         } else {
 
             return permissionsWrapper.notFound();
@@ -990,6 +1005,19 @@ public class FilePage implements java.io.Serializable {
     
     public List<ExternalTool> getToolsWithPreviews() {
         return toolsWithPreviews;
+    }
+    
+    public List<ExternalTool> getQueryTools() {
+        return queryTools;
+    }
+    
+    
+    public String getToolType() {
+        return toolType;
+    }
+
+    public void setToolType(String toolType) {
+        this.toolType = toolType;
     }
     
     private ExternalTool selectedTool;
