@@ -1212,7 +1212,19 @@ public class FilePage implements java.io.Serializable {
             return BundleUtil.getStringFromBundle("embargoed.willbeuntil");
         }
     }
-
+    
+    public String getToolTabTitle(){
+        if( getSelectedTool() != null ){
+           if(getSelectedTool().isPreviewTool()){
+               return BundleUtil.getStringFromBundle("file.previewTab.header");
+           } 
+           if(getSelectedTool().isQueryTool()){
+               return BundleUtil.getStringFromBundle("file.queryTab.header");
+           }          
+        }
+        return "";
+    }
+    
     public String getIngestMessage() {
         return BundleUtil.getStringFromBundle("file.ingestFailed.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()));
     }

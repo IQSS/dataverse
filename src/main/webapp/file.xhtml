@@ -359,7 +359,7 @@
                                     <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                                 </ui:include>
                             </p:tab>
-                            <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" 
+                            <p:tab id="previewTab" title="#{FilePage.toolTabTitle}" 
                                    rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                 <!-- PREVIEW TERMS/GUESTBOOK FORM -->
                                 <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.termsMet and (FilePage.getSelectedTool().previewTool or FilePage.getSelectedTool().queryTool)}">
