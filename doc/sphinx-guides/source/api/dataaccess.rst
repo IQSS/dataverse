@@ -83,8 +83,7 @@ Basic access URI:
 
 ``/api/access/datafile/$id``
 
-.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``. However, this file access method is only effective when the FilePIDsEnabled option is enabled, which can be authorized by the admin.  
-For further information, refer to https://guides.dataverse.org/en/5.13/installation/config.html?highlight=filepidsenabled#id255
+.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``. However, this file access method is only effective when the FilePIDsEnabled option is enabled, which can be authorized by the admin. For further information, refer to https://guides.dataverse.org/en/latest/installation/config.html?highlight=pidsenabled
   Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
 
     GET http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB
