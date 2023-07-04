@@ -3243,12 +3243,20 @@ public class UtilIT {
         return response;
     }
 
-    static Response getVersionFiles(Integer datasetId, String version, int limit, int offset, String orderCriteria, String apiToken) {
-        Response response = given()
+    static Response getVersionFiles(Integer datasetId, String version, Integer limit, Integer offset, String orderCriteria, String apiToken) {
+        RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/json")
-                .get("/api/datasets/" + datasetId + "/versions/" + version + "/files?limit=" + limit + "&offset=" + offset + "&orderCriteria=" + orderCriteria);
-        return response;
+                .contentType("application/json");
+        if (limit != null) {
+            requestSpecification = requestSpecification.queryParam("limit", limit);
+        }
+        if (offset != null) {
+            requestSpecification = requestSpecification.queryParam("offset", offset);
+        }
+        if (orderCriteria != null) {
+            requestSpecification = requestSpecification.queryParam("orderCriteria", orderCriteria);
+        }
+        return requestSpecification.get("/api/datasets/" + datasetId + "/versions/" + version + "/files");
     }
 
     static Response createAndUploadTestFile(String persistentId, String testFileName, byte[] testFileContentInBytes, String apiToken) throws IOException {
