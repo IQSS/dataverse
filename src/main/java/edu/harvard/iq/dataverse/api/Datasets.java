@@ -493,9 +493,15 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/files")
-    public Response getVersionFiles(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return response( req -> ok( jsonFileMetadatas(
-                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas())), getRequestUser(crc));
+    public Response getVersionFiles(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset, @QueryParam("orderCriteria") String orderCriteria, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return response( req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            try {
+                return ok(jsonFileMetadatas(datasetversionService.getFileMetadatas(datasetVersion, limit, offset, orderCriteria != null ? DatasetVersionServiceBean.FileMetadatasOrderCriteria.valueOf(orderCriteria) : DatasetVersionServiceBean.FileMetadatasOrderCriteria.NameAZ)));
+            } catch (IllegalArgumentException e) {
+                return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
+            }
+        }, getRequestUser(crc));
     }
     
     @GET
