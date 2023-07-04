@@ -495,7 +495,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/versions/{versionId}/files")
     public Response getVersionFiles(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> ok( jsonFileMetadatas(
-                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas())), getRequestUser(crc));
+                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId, true), uriInfo, headers).getFileMetadatas())), getRequestUser(crc));
     }
     
     @GET
