@@ -4,6 +4,8 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+
+import java.io.*;
 import java.util.UUID;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -12,8 +14,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -30,7 +30,6 @@ import java.util.List;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
-import java.io.InputStream;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.util.Base64;
 import org.apache.commons.io.IOUtils;
@@ -49,8 +48,11 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import java.io.StringReader;
+
 import java.util.Collections;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -3239,5 +3241,26 @@ public class UtilIT {
                 .contentType("application/json")
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation");
         return response;
+    }
+
+    static Response getVersionFiles(Integer datasetId, String version, int limit, int offset, String orderCriteria, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/files?limit=" + limit + "&offset=" + offset + "&orderCriteria=" + orderCriteria);
+        return response;
+    }
+
+    static Response createAndUploadTestFile(String persistentId, String testFileName, byte[] testFileContentInBytes, String apiToken) throws IOException {
+        Path pathToTempDir = Paths.get(Files.createTempDirectory(null).toString());
+        String pathToTestFile = pathToTempDir + File.separator + testFileName;
+        File testFile = new File(pathToTestFile);
+        FileOutputStream fileOutputStream = new FileOutputStream(testFile);
+
+        fileOutputStream.write(testFileContentInBytes);
+        fileOutputStream.flush();
+        fileOutputStream.close();
+
+        return uploadZipFileViaSword(persistentId, pathToTestFile, apiToken);
     }
 }

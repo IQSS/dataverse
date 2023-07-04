@@ -166,7 +166,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     } // end RetrieveDatasetVersionResponse
 
     /**
-     *  Different criteria to sort the results of FileMetadata queries used in {@link DatasetVersionServiceBean#getFileMetadatas(DatasetVersion, Integer, Integer, FileMetadatasOrderCriteria)}
+     *  Different criteria to sort the results of FileMetadata queries used in {@link DatasetVersionServiceBean#getFileMetadatas}
      */
     public enum FileMetadatasOrderCriteria {
         NameAZ,

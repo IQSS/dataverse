@@ -9,6 +9,7 @@ import com.jayway.restassured.response.Response;
 
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -3201,5 +3202,36 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 // We check that the returned message contains information expected for the citation string
                 .body("data.message", containsString("DRAFT VERSION"));
+    }
+
+    @Test
+    public void getVersionFiles() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        String testFileName1 = "test_1.txt";
+        String testFileName2 = "test_2.txt";
+        String testFileName3 = "test_3.txt";
+        String testFileName4 = "test_4.txt";
+
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName1, new byte[50], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName2, new byte[100], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName3, new byte[200], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName4, new byte[300], apiToken);
+
+        Response getVersionFilesResponseOrderNameAZ = UtilIT.getVersionFiles(datasetId, ":latest", 2, 0, DatasetVersionServiceBean.FileMetadatasOrderCriteria.NameAZ.toString(), apiToken);
+        getVersionFilesResponseOrderNameAZ.prettyPrint();
+
+        // TODO
     }
 }
