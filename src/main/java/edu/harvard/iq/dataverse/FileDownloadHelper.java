@@ -290,7 +290,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         
         if (FileUtil.isRequestAccessPopupRequired(fmd.getDatasetVersion())){
             addFileForRequestAccess(fmd.getDataFile());
-            PrimeFaces.current().executeScript("PF('requestAccessPopup').show()");
+            PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show()");
         } else {
             requestAccess(fmd.getDataFile());
         }
