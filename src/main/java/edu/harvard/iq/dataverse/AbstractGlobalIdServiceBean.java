@@ -115,7 +115,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     @Override
     public boolean alreadyRegistered(DvObject dvo) throws Exception {
         if(dvo==null) {
-            logger.severe("Null DvObject sent to alreadyExists().");
+            logger.severe("Null DvObject sent to alreadyRegistered().");
             return false;
         }
         GlobalId globalId = dvo.getGlobalId();

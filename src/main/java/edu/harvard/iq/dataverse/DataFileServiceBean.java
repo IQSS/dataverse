@@ -1084,38 +1084,6 @@ public class DataFileServiceBean implements java.io.Serializable {
      * @param idServiceBean
      * @return  {@code true} iff the global identifier is unique.
      */
-/*    public boolean isGlobalIdUnique(String userIdentifier, DataFile datafile, GlobalIdServiceBean idServiceBean) {
-        String testProtocol = "";
-        String testAuthority = "";
-        if (datafile.getAuthority() != null){
-            testAuthority = datafile.getAuthority();
-        } else {
-            testAuthority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority);
-        }
-        if (datafile.getProtocol() != null){
-            testProtocol = datafile.getProtocol();
-        } else {
-            testProtocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
-        }
-        
-        boolean u = em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
-            .setParameter("protocol", testProtocol)
-            .setParameter("authority", testAuthority)
-            .setParameter("identifier",userIdentifier)
-            .getResultList().isEmpty();
-            
-        try{
-            if (idServiceBean.alreadyExists(new GlobalId(testProtocol, testAuthority, userIdentifier))) {
-                u = false;
-            }
-        } catch (Exception e){
-            //we can live with failure - means identifier not found remotely
-        }
-
-       
-        return u;
-    }
-*/    
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
         // Verify that the DataFile no longer exists: 
         if (find(dataFileId) != null) {

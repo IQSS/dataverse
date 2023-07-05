@@ -64,7 +64,7 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
 
     @Override
     public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) throws Exception {
-        logger.log(Level.FINE,"alreadyExists");
+        logger.log(Level.FINE,"alreadyRegistered");
         try {
             HashMap<String, String> result = ezidService.getMetadata(pid.asString());
             return result != null && !result.isEmpty();
@@ -78,7 +78,7 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
             if (e.getLocalizedMessage().contains("no such identifier")){
                 return false;
             }
-            logger.log(Level.WARNING, "alreadyExists failed");
+            logger.log(Level.WARNING, "alreadyRegistered failed");
             logger.log(Level.WARNING, "getIdentifier(dvObject) {0}", pid.asString());
             logger.log(Level.WARNING, "String {0}", e.toString());
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
