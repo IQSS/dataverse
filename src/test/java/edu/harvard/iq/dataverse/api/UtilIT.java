@@ -2106,6 +2106,12 @@ public class UtilIT {
                 .multiPart("file", new File(pathToImageFile))
                 .put("/api/dataverses/" + dataverseAlias + "/logo");
     }
+    
+    static Response setCollectionAttribute(String dataverseAlias, String attribute, String value, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/dataverses/" + dataverseAlias + "/attribute/" + attribute + "?value=" + value);
+    }
 
     /**
      * Deprecated as the apiToken is not used by the call.
