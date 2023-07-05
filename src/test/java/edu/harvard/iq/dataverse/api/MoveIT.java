@@ -301,6 +301,7 @@ public class MoveIT {
                 .statusCode(OK.getStatusCode())
                 .body("feed.entry[0].id", CoreMatchers.endsWith(datasetPid));
 
+        UtilIT.sleepForReindex(datasetPid, superuserApiToken, 5);
         Response getLinksAfter = UtilIT.getDatasetLinks(datasetPid, superuserApiToken);
         getLinksAfter.prettyPrint();
         getLinksAfter.then().assertThat()
