@@ -579,4 +579,47 @@ public class DataversesIT {
         assertEquals(200, deleteUserResponse.getStatusCode());
     }
     
+    @Test
+    public void testAttributesApi() throws Exception {
+
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        if (createDataverseResponse.getStatusCode() != 201) {
+            System.out.println("A workspace for testing (a dataverse) couldn't be created in the root dataverse. The output was:\n\n" + createDataverseResponse.body().asString());
+            System.out.println("\nPlease ensure that users can created dataverses in the root in order for this test to run.");
+        } else {
+            createDataverseResponse.prettyPrint();
+        }
+        assertEquals(201, createDataverseResponse.getStatusCode());
+
+        String collectionAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        String newCollectionAlias = collectionAlias + "RENAMED";
+        
+        // Change the alias of the collection: 
+        
+        Response changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "alias", newCollectionAlias, apiToken);
+        changeAttributeResp.prettyPrint();
+        
+        changeAttributeResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("message.message", equalTo("Update successful"));
+        
+        // Check on the collection, under the new alias: 
+        
+        Response collectionInfoResponse = UtilIT.exportDataverse(newCollectionAlias, apiToken);
+        collectionInfoResponse.prettyPrint();
+        
+        collectionInfoResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.alias", equalTo(newCollectionAlias));
+        
+        // Delete the collection (again, using its new alias):
+        
+        Response deleteCollectionResponse = UtilIT.deleteDataverse(newCollectionAlias, apiToken);
+        deleteCollectionResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), deleteCollectionResponse.getStatusCode());
+    }
+    
 }
