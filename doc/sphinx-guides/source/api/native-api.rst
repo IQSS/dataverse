@@ -229,6 +229,8 @@ The fully expanded example above (without environment variables) looks like this
 
 Where :download:`dataverse-facets.json <../_static/api/dataverse-facets.json>` contains a JSON encoded list of metadata keys (e.g. ``["authorName","authorAffiliation"]``).
 
+.. _metadata-block-facet-api:
+
 List Metadata Block Facets Configured for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -735,6 +737,24 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/guestbookResponses?guestbookId=1 -o myResponses.csv
+
+.. _collection-attributes-api:
+  
+Change Collection Attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: 
+
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/attribute/$ATTRIBUTE?value=$VALUE"
+
+The following attributes are supported:
+
+* ``alias``  Collection alias
+* ``name`` Name
+* ``description`` Description
+* ``affiliation`` Affiliation
+* ``filePIDsEnabled`` ("true" or "false") Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
+
 
 Datasets
 --------

@@ -394,7 +394,7 @@ public class WorkflowServiceBean {
                 String dataFilePIDFormat = settings.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
                 boolean registerGlobalIdsForFiles = 
                         (currentGlobalIdProtocol.equals(ctxt.getDataset().getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT")) 
-                        && systemConfig.isFilePIDsEnabled();
+                        && systemConfig.isFilePIDsEnabledForCollection(ctxt.getDataset().getOwner());
                 if ( registerGlobalIdsForFiles ){
                     registerGlobalIdsForFiles = currentGlobalAuthority.equals( ctxt.getDataset().getAuthority() );
                 }

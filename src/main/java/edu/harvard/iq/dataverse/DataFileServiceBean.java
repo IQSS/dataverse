@@ -220,6 +220,18 @@ public class DataFileServiceBean implements java.io.Serializable {
                 .setParameter("studyId", studyId).getResultList();
     }
     
+    /**
+     * 
+     * @param collectionId numeric id of the parent collection ("dataverse")
+     * @return list of files in the datasets that are *direct* children of the collection specified
+     * (i.e., no datafiles in sub-collections of this collection will be included)
+     */
+    public List<DataFile> findByDirectCollectionOwner(Long collectionId) {
+        String queryString = "select f from DataFile f, Dataset d where f.owner.id = d.id and d.owner.id = :collectionId order by f.id";
+        return em.createQuery(queryString, DataFile.class)
+                .setParameter("collectionId", collectionId).getResultList();
+    }
+    
     public List<DataFile> findAllRelatedByRootDatafileId(Long datafileId) {
         /* 
          Get all files with the same root datafile id

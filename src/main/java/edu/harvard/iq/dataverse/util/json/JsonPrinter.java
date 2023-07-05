@@ -306,6 +306,9 @@ public class JsonPrinter {
         if(dv.getStorageDriverId() != null) {
         	bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
         }
+        if (dv.getFilePIDsEnabled() != null) {
+            bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
+        }
 
         return bld;
     }
@@ -373,17 +376,21 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList) {
+        Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
-                .add("id", dsv.getId()).add("datasetId", dsv.getDataset().getId())
-                .add("datasetPersistentId", dsv.getDataset().getGlobalId().asString())
-                .add("storageIdentifier", dsv.getDataset().getStorageIdentifier())
+                .add("id", dsv.getId()).add("datasetId", dataset.getId())
+                .add("datasetPersistentId", dataset.getGlobalId().asString())
+                .add("storageIdentifier", dataset.getStorageIdentifier())
                 .add("versionNumber", dsv.getVersionNumber()).add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name()).add("versionNote", dsv.getVersionNote())
                 .add("archiveNote", dsv.getArchiveNote()).add("deaccessionLink", dsv.getDeaccessionLink())
                 .add("distributionDate", dsv.getDistributionDate()).add("productionDate", dsv.getProductionDate())
                 .add("UNF", dsv.getUNF()).add("archiveTime", format(dsv.getArchiveTime()))
                 .add("lastUpdateTime", format(dsv.getLastUpdateTime())).add("releaseTime", format(dsv.getReleaseTime()))
-                .add("createTime", format(dsv.getCreateTime()));
+                .add("createTime", format(dsv.getCreateTime()))
+                .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
+                .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
+                .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD());
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
             bld.add("license", jsonLicense(dsv));
@@ -665,7 +672,7 @@ public class JsonPrinter {
                 .add("categories", getFileCategories(fileMetadata))
                 .add("embargo", embargo)
                 //.add("released", df.isReleased())
-                .add("restricted", df.isRestricted())
+                //.add("restricted", df.isRestricted())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
@@ -684,20 +691,15 @@ public class JsonPrinter {
                 //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
-                .add("fileMetadataId", fileMetadata.getId())
                 .add("tabularTags", getTabularFileTags(df))
-                .add("creationDate",  df.getCreateDateFormattedYYYYMMDD())
-                .add("dataTables", df.getDataTables().isEmpty() ? null : JsonPrinter.jsonDT(df.getDataTables()))
-                .add("varGroups", fileMetadata.getVarGroups().isEmpty()
-                        ? JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups())
-                        : null);
+                .add("creationDate",  df.getCreateDateFormattedYYYYMMDD());
     }
     
     //Started from https://github.com/RENCI-NRIG/dataverse/, i.e. https://github.com/RENCI-NRIG/dataverse/commit/2b5a1225b42cf1caba85e18abfeb952171c6754a
     public static JsonArrayBuilder jsonDT(List<DataTable> ldt) {
         JsonArrayBuilder ldtArr = Json.createArrayBuilder();
         for(DataTable dt: ldt){
-            ldtArr.add(jsonObjectBuilder().add("dataTable", JsonPrinter.json(dt)));
+            ldtArr.add(JsonPrinter.json(dt));
         }
         return ldtArr;
     }
@@ -725,6 +727,7 @@ public class JsonPrinter {
     // TODO: add sumstat and variable categories, check formats
     public static JsonObjectBuilder json(DataVariable dv) {
     return jsonObjectBuilder()
+            .add("id", dv.getId())
             .add("name", dv.getName())
             .add("label", dv.getLabel())
             .add("weighted", dv.isWeighted())
@@ -740,9 +743,9 @@ public class JsonPrinter {
             .add("recordSegmentNumber", dv.getRecordSegmentNumber())
             .add("numberOfDecimalPoints",dv.getNumberOfDecimalPoints())
             .add("variableMetadata",jsonVarMetadata(dv.getVariableMetadatas()))
-            .add("invalidRanges", dv.getInvalidRanges().isEmpty() ? JsonPrinter.jsonInvalidRanges(dv.getInvalidRanges()) : null)
-            .add("summaryStatistics", dv.getSummaryStatistics().isEmpty() ? JsonPrinter.jsonSumStat(dv.getSummaryStatistics()) : null)
-            .add("variableCategories", dv.getCategories().isEmpty() ? JsonPrinter.jsonCatStat(dv.getCategories()) : null) 
+            .add("invalidRanges", dv.getInvalidRanges().isEmpty() ? null : JsonPrinter.jsonInvalidRanges(dv.getInvalidRanges()))
+            .add("summaryStatistics", dv.getSummaryStatistics().isEmpty() ? null : JsonPrinter.jsonSumStat(dv.getSummaryStatistics()))
+            .add("variableCategories", dv.getCategories().isEmpty() ? null : JsonPrinter.jsonCatStat(dv.getCategories())) 
             ;
     }
 

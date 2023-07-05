@@ -590,8 +590,34 @@ public class Dataverse extends DvObjectContainer {
         this.citationDatasetFieldTypes = citationDatasetFieldTypes;
     }
     
-    
+    /**
+     * @Note: this setting is Nullable, with {@code null} indicating that the 
+     * desired behavior is not explicitly configured for this specific collection. 
+     * See the comment below. 
+     */
+    @Column(nullable = true)
+    private Boolean filePIDsEnabled;
 
+    /**
+     * Specifies whether the PIDs for Datafiles should be registered when publishing 
+     * datasets in this Collection, if the behavior is explicitly configured.
+     * @return {@code Boolean.TRUE} if explicitly enabled, {@code Boolean.FALSE} if explicitly disabled. 
+     * {@code null} indicates that the behavior is not explicitly defined, in which 
+     * case the behavior should follow the explicit configuration of the first 
+     * direct ancestor collection, or the instance-wide configuration, if none 
+     * present. 
+     * @Note: If present, this configuration therefore by default applies to all 
+     * the sub-collections, unless explicitly overwritten there.
+     * @author landreev
+     */
+    public Boolean getFilePIDsEnabled() {
+        return filePIDsEnabled;
+    }
+    
+    public void setFilePIDsEnabled(boolean filePIDsEnabled) {
+        this.filePIDsEnabled = filePIDsEnabled;
+    }
+    
     public List<DataverseFacet> getDataverseFacets() {
         return getDataverseFacets(false);
     }
