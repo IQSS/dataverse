@@ -672,7 +672,7 @@ public class JsonPrinter {
                 .add("categories", getFileCategories(fileMetadata))
                 .add("embargo", embargo)
                 //.add("released", df.isReleased())
-                //.add("restricted", df.isRestricted())
+                .add("restricted", df.isRestricted())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
@@ -691,8 +691,12 @@ public class JsonPrinter {
                 //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
+                .add("fileMetadataId", fileMetadata.getId())
                 .add("tabularTags", getTabularFileTags(df))
-                .add("creationDate",  df.getCreateDateFormattedYYYYMMDD());
+                .add("creationDate",  df.getCreateDateFormattedYYYYMMDD())
+                .add("dataTables", df.getDataTables().isEmpty() ? null : JsonPrinter.jsonDT(df.getDataTables()))
+                .add("varGroups", fileMetadata.getVarGroups().isEmpty()
+                        ? null: JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups()));
     }
     
     //Started from https://github.com/RENCI-NRIG/dataverse/, i.e. https://github.com/RENCI-NRIG/dataverse/commit/2b5a1225b42cf1caba85e18abfeb952171c6754a
