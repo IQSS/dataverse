@@ -687,6 +687,7 @@ public class JsonPrinter {
                 .add("fileMetadataId", fileMetadata.getId())
                 .add("tabularTags", getTabularFileTags(df))
                 .add("creationDate",  df.getCreateDateFormattedYYYYMMDD())
+                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD())
                 .add("dataTables", df.getDataTables().isEmpty() ? null : JsonPrinter.jsonDT(df.getDataTables()))
                 .add("varGroups", fileMetadata.getVarGroups().isEmpty()
                         ? JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups())
