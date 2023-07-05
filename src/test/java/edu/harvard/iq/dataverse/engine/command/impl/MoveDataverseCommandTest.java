@@ -221,8 +221,7 @@ public class MoveDataverseCommandTest {
                     }
 
                     @Override
-                    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp){
-                        return null;
+                    public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp){
                     }
                     @Override
                     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse){
@@ -230,8 +229,7 @@ public class MoveDataverseCommandTest {
                     }
 
                     @Override
-                    public Future<String> indexDatasetInNewTransaction(Long id){
-                        return null;
+                    public void indexDatasetInNewTransaction(Long id){
                     }                    
                 };
 

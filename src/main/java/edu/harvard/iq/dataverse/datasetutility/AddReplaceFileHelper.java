@@ -47,6 +47,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.ejb.Asynchronous;
 import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -643,7 +645,7 @@ public class AddReplaceFileHelper{
                 df.setRootDataFileId(fileToReplace.getRootDataFileId());
             }
             // Reuse any file PID during a replace operation (if File PIDs are in use)
-            if (systemConfig.isFilePIDsEnabled()) {
+            if (systemConfig.isFilePIDsEnabledForCollection(owner.getOwner())) {
                 df.setGlobalId(fileToReplace.getGlobalId());
                 df.setGlobalIdCreateTime(fileToReplace.getGlobalIdCreateTime());
                 // Should be true or fileToReplace wouldn't have an identifier (since it's not
@@ -1928,11 +1930,6 @@ public class AddReplaceFileHelper{
         //
         finalFileList.clear();
 
-        // TODO: Need to run ingwest async......
-        //if (true){
-            //return true;
-        //}
-
         if (!multifile) {
             msg("pre ingest start");
             // start the ingest!
@@ -1941,7 +1938,6 @@ public class AddReplaceFileHelper{
         }
         return true;
     }
-
     
     private void msg(String m){
         logger.fine(m);
