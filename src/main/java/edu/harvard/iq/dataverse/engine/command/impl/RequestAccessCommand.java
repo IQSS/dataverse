@@ -88,9 +88,8 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         file.addFileAccessRequester(requester);
         requester.getFileAccessRequests().add(fileAccessRequest);
         if (sendNotification) {
-            //QDRADA
             logger.info("ctxt.fileDownload().sendRequestFileAccessNotification(this.file, requester);"); 
-            //ctxt.fileDownload().sendRequestFileAccessNotification(this.file, requester);
+            ctxt.fileDownload().sendRequestFileAccessNotification(this.file.getOwner(), this.file.getId(), requester);
         }
         return ctxt.files().save(file);
     }
