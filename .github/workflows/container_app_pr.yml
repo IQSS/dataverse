@@ -1,0 +1,96 @@
+---
+name: Preview Application Container Image
+
+on:
+    # We only run the push commands if we are asked to by an issue comment with the correct command.
+    # This workflow is always taken from the default branch and runs in repo context with access to secrets.
+    repository_dispatch:
+        types: [ push-image-command ]
+
+env:
+    IMAGE_TAG: unstable
+    BASE_IMAGE_TAG: unstable
+    PLATFORMS: "linux/amd64,linux/arm64"
+
+jobs:
+    deploy:
+        name: "Package & Push"
+        runs-on: ubuntu-latest
+        # Only run in upstream repo - avoid unnecessary runs in forks
+        if: ${{ github.repository_owner == 'IQSS' }}
+        steps:
+            # Checkout the pull request code as when merged
+            - uses: actions/checkout@v3
+              with:
+                  ref: 'refs/pull/${{ github.event.client_payload.pull_request.number }}/merge'
+            - uses: actions/setup-java@v3
+              with:
+                  java-version: "11"
+                  distribution: 'adopt'
+            - uses: actions/cache@v3
+              with:
+                  path: ~/.m2
+                  key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                  restore-keys: ${{ runner.os }}-m2
+
+            # Note: Accessing, pushing tags etc. to GHCR will only succeed in upstream because secrets.
+            - name: Login to Github Container Registry
+              uses: docker/login-action@v2
+              with:
+                  registry: ghcr.io
+                  username: ${{ secrets.GHCR_USERNAME }}
+                  password: ${{ secrets.GHCR_TOKEN }}
+
+            - name: Set up QEMU for multi-arch builds
+              uses: docker/setup-qemu-action@v2
+
+            # Get the image tag from either the command or default to branch name (Not used for now)
+            #-   name: Get the target tag name
+            #    id: vars
+            #    run: |
+            #        tag=${{ github.event.client_payload.slash_command.args.named.tag }}
+            #        if [[ -z "$tag" ]]; then tag=$(echo "${{ github.event.client_payload.pull_request.head.ref }}" | tr '\\/_:&+,;#*' '-'); fi
+            #        echo "IMAGE_TAG=$tag" >> $GITHUB_ENV
+
+            # Set image tag to branch name of the PR
+            - name: Set image tag to branch name
+              run: |
+                  echo "IMAGE_TAG=$(echo "${{ github.event.client_payload.pull_request.head.ref }}" | tr '\\/_:&+,;#*' '-')" >> $GITHUB_ENV
+
+            # Necessary to split as otherwise the submodules are not available (deploy skips install)
+            - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
+              run: >
+                  mvn -B -f modules/dataverse-parent
+                  -P ct -pl edu.harvard.iq:dataverse -am
+                  install
+            - name: Deploy multi-arch application and configbaker container image
+              run: >
+                  mvn 
+                  -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }}
+                  -Ddocker.registry=ghcr.io -Ddocker.platforms=${{ env.PLATFORMS }}
+                  -Pct deploy
+
+            - uses: marocchino/sticky-pull-request-comment@v2
+              with:
+                  header: registry-push
+                  hide_and_recreate: true
+                  hide_classify: "OUTDATED"
+                  number: ${{ github.event.client_payload.pull_request.number }}
+                  message: |
+                      :package: Pushed preview images as
+                      ```
+                      ghcr.io/gdcc/dataverse:${{ env.IMAGE_TAG }}
+                      ```
+                      ```
+                      ghcr.io/gdcc/configbaker:${{ env.IMAGE_TAG }}
+                      ```
+                      :ship: [See on GHCR](https://github.com/orgs/gdcc/packages/container). Use by referencing with full name as printed above, mind the registry name.
+
+            # Leave a note when things have gone sideways
+            - uses: peter-evans/create-or-update-comment@v3
+              if: ${{ failure() }}
+              with:
+                  issue-number: ${{ github.event.client_payload.pull_request.number }}
+                  body: >
+                      :package: Could not push preview images :disappointed:.
+                      See [log](https://github.com/IQSS/dataverse/actions/runs/${{ github.run_id }}) for details.

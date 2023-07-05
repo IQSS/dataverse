@@ -60,8 +60,7 @@ public class SubmitDatasetForReviewCommandTest {
             public IndexServiceBean index() {
                 return new IndexServiceBean() {
                     @Override
-                    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
-                        return null;
+                    public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
                     }
                 };
             }

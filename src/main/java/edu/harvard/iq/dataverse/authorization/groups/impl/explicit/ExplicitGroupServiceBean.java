@@ -169,7 +169,7 @@ public class ExplicitGroupServiceBean {
         } else {
             return provider.updateProvider(
                     new HashSet<>(
-                            em.createNamedQuery("ExplicitGroup.findByRoleAssgineeIdentifier", ExplicitGroup.class)
+                            em.createNamedQuery("ExplicitGroup.findByRoleAssigneeIdentifier", ExplicitGroup.class)
                               .setParameter("roleAssigneeIdentifier", ra.getIdentifier())
                               .getResultList()
                   ));
@@ -198,7 +198,7 @@ public class ExplicitGroupServiceBean {
                 .filter( g -> g.owner.isAncestorOf(o) )
                 .collect( Collectors.toSet() );
     }
-    
+        
     /**
      * Finds all the groups {@code ra} directly belongs to in the context of {@code o}. In effect,
      * collects all the groups {@code ra} belongs to and that are defined at {@code o}
@@ -252,7 +252,7 @@ public class ExplicitGroupServiceBean {
      * @param seed the initial set of groups.
      * @return Transitive closure (based on group  containment) of the groups in {@code seed}.
      */
-    protected Set<ExplicitGroup> findClosure( Set<ExplicitGroup> seed ) {
+    public Set<ExplicitGroup> findClosure( Set<ExplicitGroup> seed ) {
         
         if ( seed.isEmpty() ) return Collections.emptySet();
         

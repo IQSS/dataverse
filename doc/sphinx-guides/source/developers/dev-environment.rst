@@ -7,12 +7,20 @@ These instructions are purposefully opinionated and terse to help you get your d
 .. contents:: |toctitle|
 	:local:
 
-Quick Start
------------
+Quick Start (Docker)
+--------------------
 
-The quickest way to get the Dataverse Software running is to use Vagrant as described in the :doc:`tools` section, or use Docker containers as described the :doc:`../container/dev-usage` section of the Container Guide.
+The quickest way to get Dataverse running is in Docker as explained in :doc:`../container/dev-usage` section of the Container Guide.
 
-For day to day development work, we recommended the following setup.
+
+Classic Dev Environment
+-----------------------
+
+Since before Docker existed, we have encouraged installing Dataverse and all its dependencies directly on your development machine, as described below. This can be thought of as the "classic" development environment for Dataverse.
+
+However, in 2023 we decided that we'd like to encourage all developers to start using Docker instead and opened https://github.com/IQSS/dataverse/issues/9616 to indicate that we plan to rewrite this page to recommend the use of Docker.
+
+There's nothing wrong with the classic instructions below and we don't plan to simply delete them. They are a valid alternative to running Dataverse in Docker. We will likely move them to another page.
 
 Set Up Dependencies
 -------------------
@@ -22,7 +30,7 @@ Supported Operating Systems
 
 Mac OS X or Linux is required because the setup scripts assume the presence of standard Unix utilities.
 
-Windows is not well supported, unfortunately, but Vagrant and Minishift environments are described in the :doc:`windows` section.
+Windows is gaining support through Docker as described in the :doc:`windows` section.
 
 Install Java
 ~~~~~~~~~~~~
@@ -87,11 +95,13 @@ To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2022.3/payara-5.2022.3.zip``
+``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/5.2022.3/payara-5.2022.3.zip``
 
 ``sudo unzip payara-5.2022.3.zip``
 
 ``sudo chown -R $USER /usr/local/payara5``
+
+If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/
 
 Install Service Dependencies Directly on localhost
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -183,6 +193,10 @@ If you want to stop the containers, then run (for detached mode only, otherwise 
 If you want to remove the containers, then run:
 
 ``docker-compose -f docker-compose-dev.yml down``
+
+If you want to run a single container (the mail server, for example) then run:
+
+``docker-compose -f docker-compose-dev.yml up dev_smtp``
 
 For a fresh installation, and before running the Software Installer Script, it is recommended to delete the docker-dev-env folder to avoid installation problems due to existing data in the containers.
 

@@ -376,9 +376,13 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .when().get("/api/dataverses/" + alias + "/contents");
     }
-
+    
     static Response createRandomDatasetViaNativeApi(String dataverseAlias, String apiToken) {
-        String jsonIn = getDatasetJson();
+        return createRandomDatasetViaNativeApi(dataverseAlias, apiToken, false);
+    }
+
+    static Response createRandomDatasetViaNativeApi(String dataverseAlias, String apiToken, boolean withNoLicense) {
+        String jsonIn = getDatasetJson(withNoLicense);
         Response createDatasetResponse = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
@@ -388,7 +392,16 @@ public class UtilIT {
     }
 
     private static String getDatasetJson() {
-        File datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1.json");
+        return getDatasetJson(false); 
+    }
+     
+    private static String getDatasetJson(boolean nolicense) {
+        File datasetVersionJson; 
+        if (nolicense) {
+            datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1-nolicense.json");
+        } else {
+            datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1.json");
+        }
         try {
             String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
             return datasetVersionAsJson;
@@ -1680,9 +1693,10 @@ public class UtilIT {
         return response;
     }
 
-    static Response privateUrlCreate(Integer datasetId, String apiToken) {
+    static Response privateUrlCreate(Integer datasetId, String apiToken, boolean anonymizedAccess) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("anonymizedAccess", anonymizedAccess)
                 .post("/api/datasets/" + datasetId + "/privateUrl");
         return response;
     }
@@ -1898,6 +1912,7 @@ public class UtilIT {
     }
     
     static Response search(String query, String apiToken, String parameterString) {
+        sleepForDatasetIndex(query, apiToken);
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
@@ -1906,11 +1921,24 @@ public class UtilIT {
         return requestSpecification.get("/api/search?q=" + query + parameterString);
     }
 
+    private static void sleepForDatasetIndex(String query, String apiToken) {
+        if (query.contains("id:dataset") || query.contains("id:datafile")) {
+            String[] splitted = query.split("_");
+            if (splitted.length >= 2) {
+                boolean ok = UtilIT.sleepForReindex(String.valueOf(splitted[1]), apiToken, 5);
+                if (!ok) {
+                    logger.info("Still indexing after 5 seconds");
+                }
+            }
+        }
+    }
+
     static Response search(String query, String apiToken) {
         return search(query, apiToken, "");
     }
 
     static Response searchAndShowFacets(String query, String apiToken) {
+        sleepForDatasetIndex(query, apiToken);
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
@@ -2077,6 +2105,12 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToImageFile))
                 .put("/api/dataverses/" + dataverseAlias + "/logo");
+    }
+    
+    static Response setCollectionAttribute(String dataverseAlias, String attribute, String value, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/dataverses/" + dataverseAlias + "/attribute/" + attribute + "?value=" + value);
     }
 
     /**
@@ -2487,10 +2521,14 @@ public class UtilIT {
         do {
             timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
             System.out.println(timestampResponse.body().asString());
-            String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
-            System.out.println(hasStaleIndex);
-            stale = Boolean.parseBoolean(hasStaleIndex);
-            
+            try {
+                String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
+                System.out.println(hasStaleIndex);
+                stale = Boolean.parseBoolean(hasStaleIndex);
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.INFO, "no stale index property found", ex);
+                stale = false;
+            }
             try {
                 Thread.sleep(sleepStep);
                 i++;
@@ -2635,10 +2673,12 @@ public class UtilIT {
             queryParams = "?persistentId=" + idOrPersistentId;
         }
         
-        Response response = given()
-            .header(API_TOKEN_HTTP_HEADER, apiToken)
-            .get("api/datasets/" + idInPath + "/timestamps" + queryParams);
-        return response;
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("api/datasets/" + idInPath + "/timestamps" + queryParams);
     }
     
     static Response exportOaiSet(String setName) {
@@ -3169,5 +3209,41 @@ public class UtilIT {
         JsonPath jsonPath = JsonPath.from(createSignedUrlResponse.body().asString());
         String signedUrl = jsonPath.getString("data.signedUrl");
         return signedUrl;
+    }
+
+    static Response logout() {
+        Response response = given()
+                .contentType("application/json")
+                .post("/api/logout");
+        return response;
+    }
+
+    static Response getDatasetSummaryFieldNames() {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/summaryFieldNames");
+        return response;
+    }
+
+    static Response getPrivateUrlDatasetVersion(String privateUrlToken) {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/privateUrlDatasetVersion/" + privateUrlToken);
+        return response;
+    }
+
+    static Response getPrivateUrlDatasetVersionCitation(String privateUrlToken) {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/privateUrlDatasetVersion/" + privateUrlToken + "/citation");
+        return response;
+    }
+
+    static Response getDatasetVersionCitation(Integer datasetId, String version, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation");
+        return response;
     }
 }

@@ -6,11 +6,15 @@ on:
             - "**.java"
             - "pom.xml"
             - "modules/**/pom.xml"
+            - "!modules/container-base/**"
+            - "!modules/dataverse-spi/**"
     pull_request:
         paths:
             - "**.java"
             - "pom.xml"
             - "modules/**/pom.xml"
+            - "!modules/container-base/**"
+            - "!modules/dataverse-spi/**"
 
 jobs:
     unittest:
@@ -33,22 +37,43 @@ jobs:
         continue-on-error: ${{ matrix.experimental }}
         runs-on: ubuntu-latest
         steps:
-          - uses: actions/checkout@v2
+          - uses: actions/checkout@v3
           - name: Set up JDK ${{ matrix.jdk }}
-            uses: actions/setup-java@v2
+            uses: actions/setup-java@v3
             with:
                 java-version: ${{ matrix.jdk }}
-                distribution: 'adopt'
-          - name: Cache Maven packages
-            uses: actions/cache@v2
-            with:
-                path: ~/.m2
-                key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                restore-keys: ${{ runner.os }}-m2
+                distribution: temurin
+                cache: maven
+
+          # The reason why we use "install" here is that we want the submodules to be available in the next step.
+          # Also, we can cache them this way for jobs triggered by this one.
           - name: Build with Maven
-            run: mvn -DcompilerArgument=-Xlint:unchecked -Dtarget.java.version=${{ matrix.jdk }} -P all-unit-tests clean test
+            run: > 
+                mvn -B -f modules/dataverse-parent
+                -Dtarget.java.version=${{ matrix.jdk }}
+                -DcompilerArgument=-Xlint:unchecked -P all-unit-tests
+                -pl edu.harvard.iq:dataverse -am
+                install
+
           - name: Maven Code Coverage
             env:
                 CI_NAME: github
                 COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
-            run: mvn -V -B jacoco:report coveralls:report -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
+            # The coverage commit is sometimes flaky. Don't bail out just because this optional step failed.
+            continue-on-error: true
+            run: >
+                mvn -B
+                -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}
+                jacoco:report coveralls:report
+
+          # We don't want to cache the WAR file, so delete it
+          - run: rm -rf ~/.m2/repository/edu/harvard/iq/dataverse
+    push-app-img:
+        name: Publish App Image
+        permissions:
+            contents: read
+            packages: write
+            pull-requests: write
+        needs: unittest
+        uses: ./.github/workflows/container_app_push.yml
+        secrets: inherit
