@@ -1712,7 +1712,7 @@ public class DdiExportUtil {
         // we're not writing the opening <dataDscr> tag until we find an actual 
         // tabular datafile.
         for (int i=0;i<fileDetails.size();i++) {
-            JsonObject fileJson = fileDetails.getJsonObject(0);
+            JsonObject fileJson = fileDetails.getJsonObject(i);
 
             /**
              * Previously (in Dataverse 5.3 and below) the dataDscr section was
@@ -1721,7 +1721,7 @@ public class DdiExportUtil {
              * should instead use the "Data Variable Metadata Access" endpoint.)
              * These days we skip restricted files to avoid this exposure.
              */
-            if (fileJson.getBoolean("restricted")) {
+            if (fileJson.containsKey("restricted") && fileJson.getBoolean("restricted")) {
                 continue;
             }
             if(fileJson.containsKey("embargo")) {
