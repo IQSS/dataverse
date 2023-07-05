@@ -137,15 +137,8 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //Only continue if you can successfully migrate the handle
             boolean doNormalSolrDocCleanUp = true;
             Dataset dataset = (Dataset) target;
-            try {
-                ctxt.index().indexDataset(dataset, doNormalSolrDocCleanUp);
-                ctxt.solrIndex().indexPermissionsForOneDvObject( dataset);
-            } catch (IOException | SolrServerException e) {
-                String failureLogText = "Post migrate handle dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
-                failureLogText += "\r\n" + e.getLocalizedMessage();
-                LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
-
-            }
+            ctxt.index().asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
+            ctxt.solrIndex().indexPermissionsForOneDvObject( dataset);
         }
     }
     

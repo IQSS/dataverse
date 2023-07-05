@@ -27,11 +27,17 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
     
     final DatasetVersion newVersion;
     final Dataset dataset;
+    final boolean validate;
     
     public CreateDatasetVersionCommand(DataverseRequest aRequest, Dataset theDataset, DatasetVersion aVersion) {
+        this(aRequest, theDataset, aVersion, true);
+    }
+
+    public CreateDatasetVersionCommand(DataverseRequest aRequest, Dataset theDataset, DatasetVersion aVersion, boolean validate) {
         super(aRequest, theDataset);
         dataset = theDataset;
         newVersion = aVersion;
+        this.validate = validate;
     }
     
     @Override
@@ -59,10 +65,11 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         //good wrapped response if the TOA/Request Access not in compliance
         prepareDatasetAndVersion();
         
-        // TODO make async
-        // ctxt.index().indexDataset(dataset);
-        return ctxt.datasets().storeVersion(newVersion);
-        
+        DatasetVersion version = ctxt.datasets().storeVersion(newVersion);
+        if (ctxt.index() != null) {
+            ctxt.index().asyncIndexDataset(dataset, true);
+        }
+        return version;
     }
     
     /**
@@ -81,7 +88,9 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         //originally missing/empty required fields were not
         //throwing constraint violations because they
         //had been stripped from the dataset fields prior to validation 
-        validateOrDie(newVersion, false);
+        if (this.validate) {
+            validateOrDie(newVersion, false);
+        }
         DatasetFieldUtil.tidyUpFields(newVersion.getDatasetFields(), true);
         
         final List<DatasetVersion> currentVersions = dataset.getVersions();

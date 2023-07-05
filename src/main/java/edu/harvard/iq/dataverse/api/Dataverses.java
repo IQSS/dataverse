@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetAuthor;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -20,6 +22,9 @@ import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -31,6 +36,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -67,6 +73,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContri
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
@@ -75,6 +82,7 @@ import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
 import java.util.Collections;
@@ -122,6 +130,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.StreamingOutput;
@@ -159,7 +168,7 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     SwordServiceBean swordService;
-
+    
     @POST
     @AuthRequired
     public Response addRoot(@Context ContainerRequestContext crc, String body) {
@@ -232,13 +241,16 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/datasets")
     @Consumes("application/json")
-    public Response createDataset(@Context ContainerRequestContext crc, String jsonBody, @PathParam("identifier") String parentIdtf) {
+    public Response createDataset(@Context ContainerRequestContext crc, String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("doNotValidate") String doNotValidateParam) {
         try {
             logger.fine("Json is: " + jsonBody);
             User u = getRequestUser(crc);
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
             ds.setOwner(owner);
+            // Will make validation happen always except for the (rare) occasion of all three conditions are true
+            boolean validate = ! ( u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) &&
+                JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false) );
 
             if (ds.getVersions().isEmpty()) {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeVersion"));
@@ -253,6 +265,11 @@ public class Dataverses extends AbstractApiBean {
 
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
+
+            if (!validate && (version.getDatasetAuthors().isEmpty() || version.getDatasetAuthors().stream().anyMatch(a -> a.getName() == null || a.getName().isEmpty()))) {
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeAuthorName"));
+            }
+
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -265,7 +282,7 @@ public class Dataverses extends AbstractApiBean {
             ds.setGlobalIdCreateTime(null);
             Dataset managedDs = null;
             try {
-                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u), false, null, validate));
             } catch (WrappedResponse ww) {
                 Throwable cause = ww.getCause();
                 StringBuilder sb = new StringBuilder();
@@ -573,6 +590,69 @@ public class Dataverses extends AbstractApiBean {
             execCommand(new DeleteDataverseCommand(req, findDataverseOrDie(idtf)));
             return ok("Dataverse " + idtf + " deleted");
         }, getRequestUser(crc));
+    }
+
+    /**
+     * Endpoint to change attributes of a Dataverse collection.
+     *
+     * @apiNote Example curl command:
+     *          <code>curl -X PUT -d "test" http://localhost:8080/api/dataverses/$ALIAS/attribute/alias</code>
+     *          to change the alias of the collection named $ALIAS to "test".
+     */
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/attribute/{attribute}")
+    public Response updateAttribute(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier,
+                                    @PathParam("attribute") String attribute, @QueryParam("value") String value) {
+        try {
+            Dataverse collection = findDataverseOrDie(identifier);
+            User user = getRequestUser(crc);
+            DataverseRequest dvRequest = createDataverseRequest(user);
+    
+            // TODO: The cases below use hard coded strings, because we have no place for definitions of those!
+            //       They are taken from util.json.JsonParser / util.json.JsonPrinter. This shall be changed.
+            //       This also should be extended to more attributes, like the type, theme, contacts, some booleans, etc.
+            switch (attribute) {
+                case "alias":
+                    collection.setAlias(value);
+                    break;
+                case "name":
+                    collection.setName(value);
+                    break;
+                case "description":
+                    collection.setDescription(value);
+                    break;
+                case "affiliation":
+                    collection.setAffiliation(value);
+                    break;
+                /* commenting out the code from the draft pr #9462:
+                case "versionPidsConduct":
+                    CollectionConduct conduct = CollectionConduct.findBy(value);
+                    if (conduct == null) {
+                        return badRequest("'" + value + "' is not one of [" +
+                            String.join(",", CollectionConduct.asList()) + "]");
+                    }
+                    collection.setDatasetVersionPidConduct(conduct);
+                    break;
+                 */
+                case "filePIDsEnabled":
+                    collection.setFilePIDsEnabled(parseBooleanOrDie(value));
+                    break;
+                default:
+                    return badRequest("'" + attribute + "' is not a supported attribute");
+            }
+            
+            // Off to persistence layer
+            execCommand(new UpdateDataverseCommand(collection, null, null, dvRequest, null));
+    
+            // Also return modified collection to user
+            return ok("Update successful", JsonPrinter.json(collection));
+        
+        // TODO: This is an anti-pattern, necessary due to this bean being an EJB, causing very noisy and unnecessary
+        //       logging by the EJB container for bubbling exceptions. (It would be handled by the error handlers.)
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
     }
 
     @DELETE

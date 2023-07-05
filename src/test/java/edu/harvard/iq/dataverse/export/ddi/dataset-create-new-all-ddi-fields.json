@@ -653,22 +653,38 @@
           },
           {
             "typeName": "series",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "compound",
-            "value": {
-              "seriesName": {
-                "typeName": "seriesName",
-                "multiple": false,
-                "typeClass": "primitive",
-                "value": "SeriesName"
+            "value": [ 
+              {
+		"seriesName": {
+                  "typeName": "seriesName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "SeriesName1"
+                },
+                "seriesInformation": {
+                  "typeName": "seriesInformation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "SeriesInformation1"
+                }
               },
-              "seriesInformation": {
-                "typeName": "seriesInformation",
-                "multiple": false,
-                "typeClass": "primitive",
-                "value": "SeriesInformation"
-              }
-            }
+              {
+                "seriesName": {
+                  "typeName": "seriesName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "SeriesName2"
+                },
+                "seriesInformation": {
+                  "typeName": "seriesInformation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "SeriesInformation2"
+		}
+	      }
+            ]
           },
           {
             "typeName": "software",

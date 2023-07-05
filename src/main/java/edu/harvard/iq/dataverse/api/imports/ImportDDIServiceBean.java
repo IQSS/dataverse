@@ -1266,24 +1266,26 @@ public class ImportDDIServiceBean {
 
     }
    
-   private void processSerStmt(XMLStreamReader xmlr, MetadataBlockDTO citation) throws XMLStreamException {
-          FieldDTO seriesName=null;
-          FieldDTO seriesInformation=null;
-          for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+    private void processSerStmt(XMLStreamReader xmlr, MetadataBlockDTO citation) throws XMLStreamException {
+        FieldDTO seriesInformation = null;
+        FieldDTO seriesName = null;
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {            
             if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("serInfo")) {
+                     seriesInformation = FieldDTO.createPrimitiveFieldDTO("seriesInformation", parseText(xmlr));
+                }
                 if (xmlr.getLocalName().equals("serName")) {
-                   seriesName = FieldDTO.createPrimitiveFieldDTO("seriesName", parseText(xmlr));
-                  
-                } else if (xmlr.getLocalName().equals("serInfo")) {
-                    seriesInformation=FieldDTO.createPrimitiveFieldDTO("seriesInformation", parseText(xmlr) );
+                     seriesName = FieldDTO.createPrimitiveFieldDTO("seriesName", parseText(xmlr));
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("serStmt")) {
-                    citation.getFields().add(FieldDTO.createCompoundFieldDTO("series",seriesName,seriesInformation ));
+                    if (seriesInformation != null || seriesName != null) {
+                        citation.addField(FieldDTO.createMultipleCompoundFieldDTO("series", seriesName, seriesInformation ));
+                    }
                     return;
                 }
             }
-        }
+        }     
     }
 
     private void processDistStmt(XMLStreamReader xmlr, MetadataBlockDTO citation) throws XMLStreamException {
