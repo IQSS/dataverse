@@ -26,3 +26,4 @@ develop and extend them further are provided.
   dev-usage
   base-image
   app-image
+  configbaker-image

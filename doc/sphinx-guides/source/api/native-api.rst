@@ -229,6 +229,8 @@ The fully expanded example above (without environment variables) looks like this
 
 Where :download:`dataverse-facets.json <../_static/api/dataverse-facets.json>` contains a JSON encoded list of metadata keys (e.g. ``["authorName","authorAffiliation"]``).
 
+.. _metadata-block-facet-api:
+
 List Metadata Block Facets Configured for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -526,6 +528,60 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 - Description Text
 - Subject
 
+Submit Incomplete Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Note:** This feature requires :ref:`dataverse.api.allow-incomplete-metadata` to be enabled and your Solr
+Schema to be up-to-date with the ``datasetValid`` field.
+
+Providing a ``.../datasets?doNotValidate=true`` query parameter turns off the validation of metadata.
+In this case, only the "Author Name" is required. For example, a minimal JSON file would look like this:
+
+.. code-block:: json
+  :name: dataset-incomplete.json
+
+  {
+    "datasetVersion": {
+      "metadataBlocks": {
+        "citation": {
+          "fields": [
+            {
+              "value": [
+                {
+                  "authorName": {
+                    "value": "Finch, Fiona",
+                    "typeClass": "primitive",
+                    "multiple": false,
+                    "typeName": "authorName"
+                  }
+                }
+              ],
+              "typeClass": "compound",
+              "multiple": true,
+              "typeName": "author"
+            }
+          ],
+          "displayName": "Citation Metadata"
+        }
+      }
+    }
+  }
+
+The following is an example HTTP call with deactivated validation:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export PARENT=root
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/dataverses/$PARENT/datasets?doNotValidate=true" --upload-file dataset-incomplete.json -H 'Content-type:application/json'
+
+**Note:** You may learn about an instance's support for deposition of incomplete datasets via :ref:`info-incomplete-metadata`.
+
+Submit Dataset
+^^^^^^^^^^^^^^
+
 As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-finch1_fr.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
 
 The curl command below assumes you have kept the name "dataset-finch1.json" and that this file is in your current working directory.
@@ -681,6 +737,24 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/guestbookResponses?guestbookId=1 -o myResponses.csv
+
+.. _collection-attributes-api:
+  
+Change Collection Attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: 
+
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/attribute/$ATTRIBUTE?value=$VALUE"
+
+The following attributes are supported:
+
+* ``alias``  Collection alias
+* ``name`` Name
+* ``description`` Description
+* ``affiliation`` Affiliation
+* ``filePIDsEnabled`` ("true" or "false") Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
+
 
 Datasets
 --------
@@ -1049,7 +1123,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/BCCP9Z --upload-file dataset-update-metadata.json
 
-Note that in the example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``datasetVersion``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this:
+Note that in the example JSON file above, there are only two JSON objects with the ``license`` and ``metadataBlocks`` keys respectively. When you download a representation of your latest dataset version in JSON format, these objects will be nested inside another object called ``data`` in the API response. Note that there may be more objects in there, in addition to the ``license`` and ``metadataBlocks`` that you may need to preserve and re-import as well. Basically, you need everything in there except for the ``files``. This can be achived by downloading the metadata and selecting the sections you need with a JSON tool such as ``jq``, like this:
 
 .. code-block:: bash
 
@@ -1057,15 +1131,18 @@ Note that in the example JSON file above, there is a single JSON object with ``m
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
 
-  curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PERSISTENT_IDENTIFIER | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
-
+  curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PERSISTENT_IDENTIFIER | jq '.data | del(.files)' > dataset-update-metadata.json
+  
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/datasets/:persistentId/versions/:latest?persistentId=doi:10.5072/FK2/BCCP9Z | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
 
-Now that the resulting JSON file only contains the ``metadataBlocks`` key, you can edit the JSON such as with ``vi`` in the example below::
+
+Now you can edit the JSON produced by the command above with a text editor of your choice. For example, with ``vi`` in the example below.
+
+Note that you don't need to edit the top-level fields such as ``versionNumber``, ``minorVersonNumber``, ``versionState`` or any of the time stamps - these will be automatically updated as needed by the API::
 
     vi dataset-update-metadata.json
 
@@ -1618,6 +1695,8 @@ The fully expanded example above (without environment variables) looks like this
 
 The people who need to review the dataset (often curators or journal editors) can check their notifications periodically via API to see if any new datasets have been submitted for review and need their attention. See the :ref:`Notifications` section for details. Alternatively, these curators can simply check their email or notifications to know when datasets have been submitted (or resubmitted) for review.
 
+.. _return-a-dataset:
+
 Return a Dataset to Author
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1644,6 +1723,8 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/:persistentId/returnToAuthor?persistentId=doi:10.5072/FK2/J8SJZB" -H "Content-type: application/json" -d @reason-for-return.json
 
 The review process can sometimes resemble a tennis match, with the authors submitting and resubmitting the dataset over and over until the curators are satisfied. Each time the curators send a "reason for return" via API, that reason is persisted into the database, stored at the dataset version level.
+
+The :ref:`send-feedback` API call may be useful as a way to move the conversation to email. However, note that these emails go to contacts (versus authors) and there is no database record of the email contents. (:ref:`dataverse.mail.cc-support-on-contact-email` will send a copy of these emails to the support email address which would provide a record.)
 
 Link a Dataset
 ~~~~~~~~~~~~~~
@@ -2111,6 +2192,50 @@ Signposting is not supported for draft dataset versions.
   export VERSION=1.0
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
+
+Get Dataset By Private URL Token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PRIVATE_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+
+  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN"
+
+Get Citation
+~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+  export VERSION=1.0
+
+  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER"
+
+Get Citation by Private URL Token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PRIVATE_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+
+  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN/citation"
+
+.. _get-dataset-summary-field-names:
+
+Get Summary Field Names
+~~~~~~~~~~~~~~~~~~~~~~~
+
+See :ref:`:CustomDatasetSummaryFields` in the Installation Guide for how the list of dataset fields that summarize a dataset can be customized. Here's how to list them:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/datasets/summaryFieldNames"
 
 Files
 -----
@@ -2902,6 +3027,22 @@ The response is a JSON object described in the :doc:`/api/external-tools` sectio
 
   curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/files/$FILE_ID/metadata/$FILEMETADATA_ID/toolparams/$TOOL_ID
 
+.. _get-fixity-algorithm:
+
+Get Fixity Algorithm
+~~~~~~~~~~~~~~~~~~~~~~
+
+This API call can be used to discover the configured fixity/checksum algorithm being used by a Dataverse installation (as configured by - :ref:`:FileFixityChecksumAlgorithm`).
+Currently, the possible values are MD5, SHA-1, SHA-256, and SHA-512.
+This algorithm will be used when the Dataverse software manages a file upload and should be used by external clients uploading files to a Dataverse instance. (Existing files may or may not have checksums with this algorithm.) 
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/files/fixityAlgorithm
+
+
 Users Token Management
 ----------------------
 
@@ -3183,6 +3324,27 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl https://demo.dataverse.org/api/info/apiTermsOfUse
+
+.. _info-incomplete-metadata:
+
+Show Support Of Incomplete Metadata Deposition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Learn if an instance has been configured to allow deposition of incomplete datasets via the API.
+See also :ref:`create-dataset-command` and :ref:`dataverse.api.allow-incomplete-metadata`
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/info/settings/incompleteMetadataViaApi
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/info/settings/incompleteMetadataViaApi
+
 
 .. _metadata-blocks-api:
 
@@ -4269,6 +4431,26 @@ It will report the specific files that have failed the validation. For example::
   
 These are only available to super users.
 
+.. _UpdateChecksums:
+
+Update Checksums To Use New Algorithm
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The fixity algorithm used on existing files can be changed by a superuser using this API call. An optional query parameter (num) can be used to limit the number of updates attempted (i.e. to do processing in batches).
+The API call will only update the algorithm and checksum for a file if the existing checksum can be validated against the file.
+Statistics concerning the updates are returned in the response to the API call with details in the log.
+The primary use for this API call is to update existing files after the algorithm used when uploading new files is changes - see - :ref:`:FileFixityChecksumAlgorithm`.
+Allowed values are MD5, SHA-1, SHA-256, and SHA-512
+
+.. code-block:: bash
+
+  export ALG=SHA-256
+  export BATCHSIZE=1
+
+  curl http://localhost:8080/api/admin/updateHashValues/$ALG
+  curl http://localhost:8080/api/admin/updateHashValues/$ALG?num=$BATCHSIZE
+
+
 .. _dataset-validation-api:
 
 Dataset Validation
@@ -4497,3 +4679,29 @@ A curl example using allowing access to a dataset's metadata
 
 Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
 security.
+
+.. _send-feedback:
+
+Send Feedback To Contact(s)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call allows sending an email to the contacts for a collection, dataset, or datafile or to the support email address when no object is specified.
+The call is protected by the normal /admin API protections (limited to localhost or requiring a separate key), but does not otherwise limit the sending of emails.
+Administrators should be sure only trusted applications have access to avoid the potential for spam.
+
+The call is a POST with a JSON object as input with four keys:
+- "targetId" - the id of the collection, dataset, or datafile. Persistent ids and collection aliases are not supported. (Optional)
+- "subject" - the email subject line
+- "body" - the email body to send
+- "fromEmail" - the email to list in the reply-to field. (Dataverse always sends mail from the system email, but does it "on behalf of" and with a reply-to for the specified user.)
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost
+  export JSON='{"targetId":24, "subject":"Data Question", "body":"Please help me understand your data. Thank you!", "fromEmail":"dataverseSupport@mailinator.com"}'
+
+  curl -X POST -H 'Content-Type:application/json' -d "$JSON" $SERVER_URL/api/admin/feedback
+
+Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.

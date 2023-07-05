@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
@@ -1393,6 +1395,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
         } else {
             return false;
         }
+    }
+    
+    public boolean isValid(SolrSearchResult result) {
+        return result.isValid();
     }
     
     public enum SortOrder {

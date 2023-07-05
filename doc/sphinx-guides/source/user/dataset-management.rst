@@ -208,7 +208,7 @@ Previewers are available for the following file types:
 - Zip (preview and extract/download)
 - HTML
 - GeoJSON
-- NetCDF/HDF5 (NcML format)
+- NetCDF/HDF5
 - Hypothes.is
 
 Additional file types will be added to the `dataverse-previewers <https://github.com/gdcc/dataverse-previewers>`_ repo before they are listed above so please check there for the latest information or to request (or contribute!) an additional file previewer.
@@ -346,9 +346,42 @@ A map will be shown as a preview of GeoJSON files when the previewer has been en
 NetCDF and HDF5
 ---------------
 
+H5Web Previewer
+~~~~~~~~~~~~~~~
+
+NetCDF and HDF5 files can be explored and visualized with H5Web_, which has been adapted into a file previewer tool (see :ref:`file-previews`) that can be enabled in your Dataverse installation.
+
+.. _H5Web: https://h5web.panosc.eu
+
+|h5web|
+
+NcML
+~~~~
+
 For NetCDF and HDF5 files, an attempt will be made to extract metadata in NcML_ (XML) format and save it as an auxiliary file. (See also :doc:`/developers/aux-file-support` in the Developer Guide.) A previewer for these NcML files is available (see :ref:`file-previews`).
 
 .. _NcML: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
+
+Geospatial Bounding Box
+~~~~~~~~~~~~~~~~~~~~~~~
+
+An attempt will be made to extract a geospatial bounding box (west, south, east, north) from NetCDF and HDF5 files and then insert these values into the geospatial metadata block, if enabled.
+
+This is the mapping that is used:
+
+- geospatial_lon_min: West Longitude
+- geospatial_lon_max: East Longitude
+- geospatial_lat_max: North Latitude
+- geospatial_lat_min: South Latitude
+
+Please note the following rules regarding these fields:
+
+- West Longitude and East Longitude are expected to be in the range of -180 and 180. (When using :ref:`geospatial-search`, you should use this range for longitude.)
+- If West Longitude and East Longitude are both over 180 (outside the expected -180:180 range), 360 will be subtracted to shift the values from the 0:360 range to the expected -180:180 range.
+- If either West Longitude or East Longitude are less than zero but the other longitude is greater than 180 (which would imply an indeterminate domain, a lack of clarity of if the domain is -180:180 or 0:360), metadata will be not be extracted.
+- If the bounding box was successfully populated, the subsequent removal of the NetCDF or HDF5 file from the dataset does not automatically remove the bounding box from the dataset metadata. You must remove the bounding box manually, if desired.
+
+If the bounding box was successfully populated, :ref:`geospatial-search` should be able to find it.
 
 Compressed Files
 ----------------
@@ -769,6 +802,8 @@ If you deaccession the most recently published version of the dataset but not al
 .. |cw-image6| image:: ./img/file-tags-facets.png
    :class: img-responsive
 .. |bagit-image1| image:: ./img/bagit-handler-errors.png
+   :class: img-responsive
+.. |h5web| image:: ./img/h5web.png
    :class: img-responsive
    
 .. _Make Data Count: https://makedatacount.org

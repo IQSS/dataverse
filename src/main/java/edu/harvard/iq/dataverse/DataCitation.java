@@ -57,7 +57,7 @@ public class DataCitation {
     private String publisher;
     private boolean direct;
     private List<String> funders;
-    private String seriesTitle;
+    private List<String> seriesTitles;
     private String description;
     private List<String> datesOfCollection;
     private List<String> keywords;
@@ -135,7 +135,7 @@ public class DataCitation {
 
         datesOfCollection = dsv.getDatesOfCollection();
         title = dsv.getTitle();
-        seriesTitle = dsv.getSeriesTitle();
+        seriesTitles = dsv.getSeriesTitles();
         keywords = dsv.getKeywords();
         languages = dsv.getLanguages();
         spatialCoverages = dsv.getSpatialCoverages();
@@ -330,8 +330,10 @@ public class DataCitation {
             out.write("TY  - DATA" + "\r\n");
             out.write("T1  - " + getTitle() + "\r\n");
         }
-        if (seriesTitle != null) {
-            out.write("T3  - " + seriesTitle + "\r\n");
+        if (seriesTitles != null) {
+            for (String seriesTitle : seriesTitles) {
+                out.write("T3  - " + seriesTitle + "\r\n");
+            }
         }
         /* Removing abstract/description per Request from G. King in #3759
         if(description!=null) {
@@ -505,12 +507,22 @@ public class DataCitation {
         xmlw.writeCharacters(title);
         xmlw.writeEndElement(); // title
         }
-        
-        if (seriesTitle != null) {
-            xmlw.writeStartElement("tertiary-title");
-            xmlw.writeCharacters(seriesTitle);
+
+        /*
+        If I say just !"isEmpty" for series titles I get a failure 
+        on testToEndNoteString_withoutTitleAndAuthor
+        with a null pointer on build -SEK 3/31/23
+        */
+        if (seriesTitles != null && !seriesTitles.isEmpty() ) {
+            xmlw.writeStartElement("tertiary-titles");
+            for (String seriesTitle : seriesTitles){
+                xmlw.writeStartElement("tertiary-title");
+                xmlw.writeCharacters(seriesTitle);
+                xmlw.writeEndElement(); // tertiary-title
+            }
             xmlw.writeEndElement(); // tertiary-title
         }
+        
         xmlw.writeEndElement(); // titles
 
         xmlw.writeStartElement("section");

@@ -59,4 +59,10 @@ public class Info extends AbstractApiBean {
     public Response getTermsOfUse(@Context ContainerRequestContext crc) {
         return response( req -> ok(systemConfig.getApiTermsOfUse()), getRequestUser(crc));
     }
+    
+    @GET
+    @Path("settings/incompleteMetadataViaApi")
+    public Response getAllowsIncompleteMetadata() {
+        return ok(JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false));
+    }
 }

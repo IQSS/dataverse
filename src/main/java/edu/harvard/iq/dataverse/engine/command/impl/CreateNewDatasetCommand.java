@@ -58,6 +58,12 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         dv = theDataset.getOwner();
     }
     
+    public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, Template template, boolean validate) {
+        super(theDataset, aRequest, validate);
+        this.template = template;
+        dv = theDataset.getOwner();
+    }
+    
     /**
      * A new dataset must have a new identifier.
      * @param ctxt

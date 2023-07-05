@@ -31,6 +31,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
     private static final Logger logger = Logger.getLogger(AbstractCreateDatasetCommand.class.getCanonicalName());
     
     final protected boolean harvested;
+    final protected boolean validate;
     
     public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         this(theDataset, aRequest, false);
@@ -39,6 +40,13 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
     public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isHarvested) {
         super(aRequest, theDataset);
         harvested=isHarvested;
+        this.validate = true;
+    }
+
+    public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isHarvested, boolean validate) {
+        super(aRequest, theDataset);
+        harvested=isHarvested;
+        this.validate = validate;
     }
    
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
@@ -81,7 +89,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         DatasetVersion dsv = getVersionToPersist(theDataset);
         // This re-uses the state setup logic of CreateDatasetVersionCommand, but
         // without persisting the new version, or altering its files. 
-        new CreateDatasetVersionCommand(getRequest(), theDataset, dsv).prepareDatasetAndVersion();
+        new CreateDatasetVersionCommand(getRequest(), theDataset, dsv, validate).prepareDatasetAndVersion();
         
         if(!harvested) {
             checkSystemMetadataKeyIfNeeded(dsv, null);
@@ -131,16 +139,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         //Use for code that requires database ids
         postDBFlush(theDataset, ctxt);
         
-        // TODO: this needs to be moved in to an onSuccess method; not adding to this PR as its out of scope
-        // TODO: switch to asynchronous version when JPA sync works
-        // ctxt.index().asyncIndexDataset(theDataset.getId(), true); 
-        try{
-              ctxt.index().indexDataset(theDataset, true);
-        } catch (IOException | SolrServerException e) {
-            String failureLogText = "Post create dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + theDataset.getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, theDataset);
-        }
+        ctxt.index().asyncIndexDataset(theDataset, true);
                  
         return theDataset;
     }

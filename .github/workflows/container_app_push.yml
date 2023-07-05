@@ -1,0 +1,167 @@
+---
+name: Application Container Image
+
+on:
+    # We are deliberately *not* running on push events here to avoid double runs.
+    # Instead, push events will trigger from the base image and maven unit tests via workflow_call.
+    workflow_call:
+    pull_request:
+        branches:
+            - develop
+            - master
+        paths:
+            - 'src/main/docker/**'
+            - 'modules/container-configbaker/**'
+            - '.github/workflows/container_app_push.yml'
+
+env:
+    IMAGE_TAG: unstable
+    BASE_IMAGE_TAG: unstable
+    REGISTRY: "" # Empty means default to Docker Hub
+    PLATFORMS: "linux/amd64,linux/arm64"
+    MASTER_BRANCH_TAG: alpha
+
+jobs:
+    build:
+        name: "Build & Test"
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+            pull-requests: write
+        # Only run in upstream repo - avoid unnecessary runs in forks
+        if: ${{ github.repository_owner == 'IQSS' }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Set up JDK 11
+              uses: actions/setup-java@v3
+              with:
+                  java-version: "11"
+                  distribution: temurin
+                  cache: maven
+
+            - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
+              run: >
+                  mvn -B -f modules/dataverse-parent
+                  -P ct -pl edu.harvard.iq:dataverse -am
+                  install
+
+            # TODO: add smoke / integration testing here (add "-Pct -DskipIntegrationTests=false")
+
+    hub-description:
+        needs: build
+        name: Push image descriptions to Docker Hub
+        # Run this when triggered via push or schedule as reused workflow from base / maven unit tests.
+        # Excluding PRs here means we will have no trouble with secrets access. Also avoid runs in forks.
+        if: ${{ github.event_name != 'pull_request' && github.ref_name == 'develop' && github.repository_owner == 'IQSS' }}
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: peter-evans/dockerhub-description@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+                  repository: gdcc/dataverse
+                  short-description: "Dataverse Application Container Image providing the executable"
+                  readme-filepath: ./src/main/docker/README.md
+            - uses: peter-evans/dockerhub-description@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+                  repository: gdcc/configbaker
+                  short-description: "Dataverse Config Baker Container Image providing setup tooling and more"
+                  readme-filepath: ./modules/container-configbaker/README.md
+
+    # Note: Accessing, pushing tags etc. to DockerHub or GHCR will only succeed in upstream because secrets.
+    # We check for them here and subsequent jobs can rely on this to decide if they shall run.
+    check-secrets:
+        needs: build
+        name: Check for Secrets Availability
+        runs-on: ubuntu-latest
+        outputs:
+            available: ${{ steps.secret-check.outputs.available }}
+        steps:
+            - id: secret-check
+              # perform secret check & put boolean result as an output
+              shell: bash
+              run: |
+                  if [ "${{ secrets.DOCKERHUB_TOKEN }}" != '' ]; then
+                      echo "available=true" >> $GITHUB_OUTPUT;
+                  else
+                      echo "available=false" >> $GITHUB_OUTPUT;
+                  fi
+
+    deploy:
+        needs: check-secrets
+        name: "Package & Publish"
+        runs-on: ubuntu-latest
+        # Only run this job if we have access to secrets. This is true for events like push/schedule which run in
+        # context of main repo, but for PRs only true if coming from the main repo! Forks have no secret access.
+        if: needs.check-secrets.outputs.available == 'true'
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-java@v3
+              with:
+                  java-version: "11"
+                  distribution: temurin
+
+            # Depending on context, we push to different targets. Login accordingly.
+            - if: ${{ github.event_name != 'pull_request' }}
+              name: Log in to Docker Hub registry
+              uses: docker/login-action@v2
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - if: ${{ github.event_name == 'pull_request' }}
+              name: Login to Github Container Registry
+              uses: docker/login-action@v2
+              with:
+                  registry: ghcr.io
+                  username: ${{ secrets.GHCR_USERNAME }}
+                  password: ${{ secrets.GHCR_TOKEN }}
+
+            - name: Set up QEMU for multi-arch builds
+              uses: docker/setup-qemu-action@v2
+
+            - name: Re-set image tag based on branch (if master)
+              if: ${{ github.ref_name == 'master' }}
+              run: |
+                  echo "IMAGE_TAG=${{ env.MASTER_BRANCH_TAG }}" >> $GITHUB_ENV
+                  echo "BASE_IMAGE_TAG=${{ env.MASTER_BRANCH_TAG }}" >> $GITHUB_ENV
+            - name: Re-set image tag and container registry when on PR
+              if: ${{ github.event_name == 'pull_request' }}
+              run: |
+                  echo "IMAGE_TAG=$(echo "$GITHUB_HEAD_REF" | tr '\\/_:&+,;#*' '-')" >> $GITHUB_ENV
+                  echo "REGISTRY='-Ddocker.registry=ghcr.io'" >> $GITHUB_ENV
+
+            # Necessary to split as otherwise the submodules are not available (deploy skips install)
+            - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
+              run: >
+                  mvn -B -f modules/dataverse-parent
+                  -P ct -pl edu.harvard.iq:dataverse -am
+                  install
+            - name: Deploy multi-arch application and configbaker container image
+              run: >
+                  mvn 
+                  -Dapp.image.tag=${{ env.IMAGE_TAG }} -Dbase.image.tag=${{ env.BASE_IMAGE_TAG }}
+                  ${{ env.REGISTRY }} -Ddocker.platforms=${{ env.PLATFORMS }}
+                  -P ct deploy
+
+            - uses: marocchino/sticky-pull-request-comment@v2
+              if: ${{ github.event_name == 'pull_request' }}
+              with:
+                  header: registry-push
+                  hide_and_recreate: true
+                  hide_classify: "OUTDATED"
+                  message: |
+                      :package: Pushed preview images as
+                      ```
+                      ghcr.io/gdcc/dataverse:${{ env.IMAGE_TAG }}
+                      ```
+                      ```
+                      ghcr.io/gdcc/configbaker:${{ env.IMAGE_TAG }}
+                      ```
+                      :ship: [See on GHCR](https://github.com/orgs/gdcc/packages/container). Use by referencing with full name as printed above, mind the registry name.

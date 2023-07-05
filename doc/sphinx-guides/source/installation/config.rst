@@ -330,6 +330,19 @@ As for the "Remote only" authentication mode, it means that:
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
+.. _bearer-token-auth:
+
+Bearer Token Authentication
+---------------------------
+
+Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to API tokens. This is an experimental feature hidden behind a feature flag.
+
+.. _RFC 6750: https://tools.ietf.org/html/rfc6750
+
+To enable bearer tokens, you must install and configure Keycloak (for now, see :ref:`oidc-dev` in the Developer Guide) and enable ``api-bearer-auth`` under :ref:`feature-flags`.
+
+You can test that bearer tokens are working by following the example under :ref:`bearer-tokens` in the API Guide.
+
 .. _database-persistence:
 
 Database Persistence
@@ -2331,6 +2344,19 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 **WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
 production context! Rely on password alias, secrets directory or cloud based sources instead!
 
+.. _dataverse.api.allow-incomplete-metadata:
+
+dataverse.api.allow-incomplete-metadata
++++++++++++++++++++++++++++++++++++++++
+
+When enabled, dataset with incomplete metadata can be submitted via API for later corrections.
+See :ref:`create-dataset-command` for details.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
 .. _dataverse.signposting.level1-author-limit:
 
 dataverse.signposting.level1-author-limit
@@ -2349,6 +2375,63 @@ See :ref:`discovery-sign-posting` for details.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_ITEM_LIMIT``.
 
+dataverse.mail.support-email
+++++++++++++++++++++++++++++
+
+This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address for Contact Forms and Feedback API. This address is used as the To address when the Contact form is launched from the Support entry in the top navigation bar and, if configured via :ref:`dataverse.mail.cc-support-on-contact-email`, as a CC address when the form is launched from a Dataverse/Dataset Contact button.
+This allows configuration of a no-reply email address for :ref:`systemEmail` while allowing feedback to go to/be cc'd to the support email address, which would normally accept replies. If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
+
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
+
+.. _dataverse.mail.cc-support-on-contact-email:
+
+dataverse.mail.cc-support-on-contact-email
+++++++++++++++++++++++++++++++++++++++++++
+
+If this setting is true, the contact forms and feedback API will cc the system (:SupportEmail if set, :SystemEmail if not) when sending email to the collection, dataset, or datafile contacts.
+A CC line is added to the contact form when this setting is true so that users are aware that the cc will occur.
+The default is false.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAIL``.
+
+dataverse.ui.allow-review-for-incomplete
+++++++++++++++++++++++++++++++++++++++++
+
+Determines if dataset submitted via API with incomplete metadata (for later corrections) can be submitted for review
+from the UI.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_UI_ALLOW_REVIEW_FOR_INCOMPLETE``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+dataverse.ui.show-validity-filter
++++++++++++++++++++++++++++++++++
+
+When enabled, the filter for validity of metadata is shown in "My Data" page.
+**Note:** When you wish to use this filter, you must reindex the datasets first, otherwise datasets with valid metadata
+will not be shown in the results.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_UI_SHOW_VALIDITY_FILTER``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+.. _dataverse.spi.exporters.directory:
+
+dataverse.spi.exporters.directory
++++++++++++++++++++++++++++++++++
+
+This JVM option is used to configure the file system path where external Exporter JARs can be placed. See :ref:`external-exporters` for more information.
+
+``./asadmin create-jvm-options '-Ddataverse.spi.exporters.directory=PATH_LOCATION_HERE'``
+
+If this value is set, Dataverse will examine all JARs in the specified directory and will use them to add, or replace existing, metadata export formats.
+If this value is not set (the default), Dataverse will not use external Exporters.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SPI_EXPORTERS_DIRECTORY``.
 
 .. _feature-flags:
 
@@ -2683,13 +2766,14 @@ timestamps.
 :FilePIDsEnabled
 ++++++++++++++++
 
-Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be true. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
+Toggles publishing of file-level PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be true. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
 
 If you don't want to register file-based PIDs for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
-Note: File-level PID registration was added in Dataverse Software 4.9; it could not be disabled until Dataverse Software 4.9.3.
+
+It is possible to override the installation-wide setting for specific collections. For example, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
 
 .. _:IndependentHandleService:
 
@@ -3029,6 +3113,8 @@ This curl command...
 
 See also :doc:`oauth2`.
 
+.. _:FileFixityChecksumAlgorithm:
+
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
 
@@ -3038,12 +3124,9 @@ The default checksum algorithm used is MD5 and should be sufficient for establis
 
 ``curl -X PUT -d 'SHA-512' http://localhost:8080/api/admin/settings/:FileFixityChecksumAlgorithm``
 
-The fixity algorithm used on existing files can be changed by a superuser using the API. An optional query parameter (num) can be used to limit the number of updates attempted.
-The API call will only update the algorithm and checksum for a file if the existing checksum can be validated against the file.
-Statistics concerning the updates are returned in the response to the API call with details in the log.
+To update the algorithm used for existing files, see :ref:`UpdateChecksums`
 
-``curl http://localhost:8080/api/admin/updateHashValues/{alg}``
-``curl http://localhost:8080/api/admin/updateHashValues/{alg}?num=1``
+The fixity checksum algorithm in use can be discovered via API. See :ref:`get-fixity-algorithm` in the API Guide.
 
 .. _:PVMinLength:
 
@@ -3323,6 +3406,8 @@ Limit on how many guestbook entries to display on the guestbook-responses page. 
 
 ``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit``
 
+.. _:CustomDatasetSummaryFields:
+
 :CustomDatasetSummaryFields
 +++++++++++++++++++++++++++
 
@@ -3331,6 +3416,10 @@ You can replace the default dataset metadata fields that are displayed above fil
 ``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
 
 You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work.
+
+The default fields are ``dsDescription,subject,keyword,publication,notesText``.
+
+This setting can be retrieved via API. See :ref:`get-dataset-summary-field-names` in the API Guide.
 
 :AllowApiTokenLookupViaApi
 ++++++++++++++++++++++++++
@@ -3710,6 +3799,8 @@ For example:
 
 When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 
 
+.. _:FileCategories:
+
 :FileCategories
 +++++++++++++++
 
@@ -3811,4 +3902,22 @@ To use the current GDCC version directly:
 
 ``curl -X PUT -d 'https://gdcc.github.io/dvwebloader/src/dvwebloader.html' http://localhost:8080/api/admin/settings/:WebloaderUrl``
 
+:CategoryOrder
+++++++++++++++
+
+A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. 
+The setting can include custom tag names along with the pre-defined tags(Documentation, Data, and Code are the defaults but the :ref:`:FileCategories` setting can be used to use a different set of tags).
+The default is category ordering disabled.
+
+:OrderByFolder
+++++++++++++++
+
+A true(default)/false option determining whether datafiles listed on the dataset page should be grouped by folder.
+
+:AllowUserManagementOfOrder
++++++++++++++++++++++++++++
+
+A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically. 
+
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
+
