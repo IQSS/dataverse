@@ -1733,8 +1733,8 @@ public class DdiExportUtil {
              }
             }
         
-
-            if (fileJson.containsKey("dataTables")) {
+            // originalFileFormat is one of several keys that only exist for tabular data
+            if (fileJson.containsKey("originalFileFormat")) {
                 if (!tabularData) {
                     xmlw.writeStartElement("dataDscr");
                     tabularData = true;
@@ -1745,12 +1745,14 @@ public class DdiExportUtil {
                         createVarGroupDDI(xmlw, varGroups.getJsonObject(j));
                     }
                 }
-                JsonObject dataTable = fileJson.getJsonArray("dataTables").getJsonObject(0);
-                JsonArray vars = dataTable.getJsonArray("dataVariables");
-                if (vars != null) {
-                    for (int j = 0; j < vars.size(); j++) {
-                        createVarDDI(xmlw, vars.getJsonObject(j), fileJson.getJsonNumber("id").toString(),
-                                fileJson.getJsonNumber("fileMetadataId").toString());
+                if (fileJson.containsKey("dataTables")) {
+                    JsonObject dataTable = fileJson.getJsonArray("dataTables").getJsonObject(0);
+                    JsonArray vars = dataTable.getJsonArray("dataVariables");
+                    if (vars != null) {
+                        for (int j = 0; j < vars.size(); j++) {
+                            createVarDDI(xmlw, vars.getJsonObject(j), fileJson.getJsonNumber("id").toString(),
+                                    fileJson.getJsonNumber("fileMetadataId").toString());
+                        }
                     }
                 }
             }
