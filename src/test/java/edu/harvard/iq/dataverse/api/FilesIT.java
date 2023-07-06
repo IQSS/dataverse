@@ -2018,4 +2018,40 @@ public class FilesIT {
                 .body("data.files[0]", equalTo(null))
                 .statusCode(OK.getStatusCode());
     }
+
+    @Test
+    public void testGetCountGuestbookResponsesByDataFileId() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload test file
+        String pathToTestFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Publish collection and dataset
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Download test file
+        Integer testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        Response downloadResponse = UtilIT.downloadFile(testFileId, apiToken);
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get count guestbook responses and assert it is 1
+        Response getGuestbookResponsesByDataFileIdResponse = UtilIT.getCountGuestbookResponsesByDataFileId(testFileId, apiToken);
+        getGuestbookResponsesByDataFileIdResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("1"));
+    }
 }

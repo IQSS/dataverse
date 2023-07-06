@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
@@ -102,7 +103,9 @@ public class Files extends AbstractApiBean {
     SettingsServiceBean settingsService;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
-    
+    @Inject
+    GuestbookResponseServiceBean guestbookResponseService;
+
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
     
@@ -817,5 +820,15 @@ public class Files extends AbstractApiBean {
     @Path("fixityAlgorithm")
     public Response getFixityAlgorithm() {
         return ok(systemConfig.getFileFixityChecksumAlgorithm().toString());
+    }
+
+    @GET
+    @Path("{id}/guestbookResponses/count")
+    public Response getCountGuestbookResponsesByDataFileId(@PathParam("id") String dataFileId) {
+        try {
+            return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(Long.parseLong(dataFileId)).toString());
+        } catch (NumberFormatException nfe) {
+            return badRequest("File identifier has to be numeric.");
+        }
     }
 }

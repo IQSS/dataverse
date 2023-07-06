@@ -3269,4 +3269,10 @@ public class UtilIT {
 
         return uploadZipFileViaSword(persistentId, pathToTestFile, apiToken);
     }
+
+    static Response getCountGuestbookResponsesByDataFileId(Integer dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + dataFileId + "/guestbookResponses/count");
+    }
 }
