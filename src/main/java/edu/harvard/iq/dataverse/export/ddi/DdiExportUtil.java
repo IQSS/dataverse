@@ -2074,7 +2074,7 @@ public class DdiExportUtil {
                 // various notes:
                 // this specially formatted note section is used to store the UNF
                 // (Universal Numeric Fingerprint) signature:
-                if (dt.containsKey("UNF") && !dt.getString("UNF").isBlank()) {
+                if ((dt!=null) && (dt.containsKey("UNF") && !dt.getString("UNF").isBlank())) {
                     xmlw.writeStartElement("notes");
                     writeAttribute(xmlw, "level", LEVEL_FILE);
                     writeAttribute(xmlw, "type", NOTE_TYPE_UNF);
