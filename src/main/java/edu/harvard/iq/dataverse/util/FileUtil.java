@@ -1599,6 +1599,7 @@ public class FileUtil implements java.io.Serializable  {
         if (answer != null) {
             return answer;
         }
+        //ToDo - also check for guestbook when guestbook at request is true?
         logger.fine("Request access popup is not required.");
         return false;
     }
