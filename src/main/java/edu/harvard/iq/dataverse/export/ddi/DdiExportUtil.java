@@ -1733,8 +1733,7 @@ public class DdiExportUtil {
              }
             }
         
-            // originalFileFormat is one of several keys that only exist for tabular data
-            if (fileJson.containsKey("originalFileFormat")) {
+            if (fileJson.containsKey("dataTables")) {
                 if (!tabularData) {
                     xmlw.writeStartElement("dataDscr");
                     tabularData = true;
@@ -1745,14 +1744,12 @@ public class DdiExportUtil {
                         createVarGroupDDI(xmlw, varGroups.getJsonObject(j));
                     }
                 }
-                if (fileJson.containsKey("dataTables")) {
-                    JsonObject dataTable = fileJson.getJsonArray("dataTables").getJsonObject(0);
-                    JsonArray vars = dataTable.getJsonArray("dataVariables");
-                    if (vars != null) {
-                        for (int j = 0; j < vars.size(); j++) {
-                            createVarDDI(xmlw, vars.getJsonObject(j), fileJson.getJsonNumber("id").toString(),
-                                    fileJson.getJsonNumber("fileMetadataId").toString());
-                        }
+                JsonObject dataTable = fileJson.getJsonArray("dataTables").getJsonObject(0);
+                JsonArray vars = dataTable.getJsonArray("dataVariables");
+                if (vars != null) {
+                    for (int j = 0; j < vars.size(); j++) {
+                        createVarDDI(xmlw, vars.getJsonObject(j), fileJson.getJsonNumber("id").toString(),
+                                fileJson.getJsonNumber("fileMetadataId").toString());
                     }
                 }
             }
@@ -2027,9 +2024,12 @@ public class DdiExportUtil {
         String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         for (int i =0;i<fileDetails.size();i++) {
             JsonObject fileJson = fileDetails.getJsonObject(i);
-
-            if (fileJson.containsKey("dataTables")) {
-                JsonObject dt = fileJson.getJsonArray("dataTables").getJsonObject(0);
+            //originalFileFormat is one of several keys that only exist for tabular data
+            if (fileJson.containsKey("originalFileFormat")) {
+                JsonObject dt = null;
+                if (fileJson.containsKey("dataTables")) {
+                    dt = fileJson.getJsonArray("dataTables").getJsonObject(0);
+                }
                 xmlw.writeStartElement("fileDscr");
                 String fileId = fileJson.getJsonNumber("id").toString();
                 writeAttribute(xmlw, "ID", "f" + fileId);
@@ -2040,7 +2040,8 @@ public class DdiExportUtil {
                 xmlw.writeCharacters(fileJson.getString("filename"));
                 xmlw.writeEndElement(); // fileName
 
-                if (dt.containsKey("caseQuantity") || dt.containsKey("varQuantity") || dt.containsKey("recordsPerCase")) {
+                if (dt != null && (dt.containsKey("caseQuantity") || dt.containsKey("varQuantity")
+                        || dt.containsKey("recordsPerCase"))) {
                     xmlw.writeStartElement("dimensns");
 
                     if (dt.containsKey("caseQuantity")) {
