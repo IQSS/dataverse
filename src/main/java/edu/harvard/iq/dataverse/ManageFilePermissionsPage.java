@@ -458,14 +458,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
         for (DataFile file : files) {
             if (assignRole(au, file, fileDownloaderRole)) {
-                //TODO - why remove requests just to set them again?
-                if (file.removeFileAccessRequester(au)) {
-                    List<FileAccessRequest> fileAccessRequests = fileAccessRequestService.findAll(au.getId(), file.getId(), FileAccessRequest.RequestState.CREATED);
-                    for(FileAccessRequest far : fileAccessRequests){
-                        far.setStateGranted();
-                        fileAccessRequestService.save(far);
-                    }
-                    file.setFileAccessRequests(fileAccessRequests); 
+                FileAccessRequest far = file.getAccessRequestForAssignee(au);
+                if (far!=null) {
+                    far.setStateGranted();
                     datafileService.save(file);
                 }
                 actionPerformed = true;
@@ -497,9 +492,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     private void rejectAccessToRequests(AuthenticatedUser au, List<DataFile> files) {
         boolean actionPerformed = false;
         for (DataFile file : files) {
-            if(file.removeFileAccessRequester(au)) {
-            
-                // TODO - set FileAccessRequest.RequestState to REJECTED
+            FileAccessRequest far = file.getAccessRequestForAssignee(au);
+            if(far!=null) {
+                far.setStateRejected();
+                fileAccessRequestService.save(far);
+                file.removeFileAccessRequest(far);
                 datafileService.save(file);
                 actionPerformed = true;
             }

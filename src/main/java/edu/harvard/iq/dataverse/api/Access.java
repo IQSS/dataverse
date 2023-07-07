@@ -1535,7 +1535,9 @@ public class Access extends AbstractApiBean {
 
         try {
             engineSvc.submit(new AssignRoleCommand(ra, fileDownloaderRole, dataFile, dataverseRequest, null));
-            if (dataFile.removeFileAccessRequester(ra)) {
+            FileAccessRequest far = dataFile.getAccessRequestForAssignee(ra);
+            if(far!=null) {
+                far.setStateGranted();
                 dataFileService.save(dataFile);
             }
 
@@ -1660,20 +1662,21 @@ public class Access extends AbstractApiBean {
         if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
-
-        if (dataFile.removeFileAccessRequester(ra)) {
+        FileAccessRequest far = dataFile.getAccessRequestForAssignee(ra);
+        if (far != null) {
+            far.setStateRejected();
             dataFileService.save(dataFile);
 
             try {
                 AuthenticatedUser au = (AuthenticatedUser) ra;
-                userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REJECTFILEACCESS, dataFile.getOwner().getId());
+                userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()),
+                        UserNotification.Type.REJECTFILEACCESS, dataFile.getOwner().getId());
             } catch (ClassCastException e) {
-                //nothing to do here - can only send a notification to an authenticated user
+                // nothing to do here - can only send a notification to an authenticated user
             }
 
             List<String> args = Arrays.asList(dataFile.getDisplayName());
             return ok(BundleUtil.getStringFromBundle("access.api.rejectAccess.success.for.single.file", args));
-
         } else {
             List<String> args = Arrays.asList(dataFile.getDisplayName(), ra.getDisplayInfo().getTitle());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.rejectFailure.noRequest", args));

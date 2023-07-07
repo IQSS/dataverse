@@ -794,15 +794,20 @@ public class DataFile extends DvObject implements Comparable {
         this.fileAccessRequests.add(request);
     }
 
-    public boolean removeFileAccessRequester(RoleAssignee roleAssignee) {
+    public FileAccessRequest getAccessRequestForAssignee(RoleAssignee roleAssignee) {
+        if (this.fileAccessRequests == null) {
+            return null;
+        }
+
+        return this.fileAccessRequests.stream()
+                .filter(fileAccessRequest -> fileAccessRequest.getRequester().equals(roleAssignee)).findFirst()
+                .orElse(null);
+    }
+
+    public boolean removeFileAccessRequest(FileAccessRequest request) {
         if (this.fileAccessRequests == null) {
             return false;
         }
-
-        FileAccessRequest request = this.fileAccessRequests.stream()
-            .filter(fileAccessRequest -> fileAccessRequest.getRequester().equals(roleAssignee))
-            .findFirst()
-            .orElse(null);
 
         if (request != null) {
             this.fileAccessRequests.remove(request);
