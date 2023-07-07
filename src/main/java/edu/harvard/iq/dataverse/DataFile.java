@@ -209,6 +209,10 @@ public class DataFile extends DvObject implements Comparable {
     public List<FileAccessRequest> getFileAccessRequests(){
         return fileAccessRequests;
     }
+    
+    public List<FileAccessRequest> getFileAccessRequests(FileAccessRequest.RequestState state){
+        return fileAccessRequests.stream().filter(far -> far.getState() == state).collect(Collectors.toList());
+    }
 
     public void setFileAccessRequests(List<FileAccessRequest> fARs){
         this.fileAccessRequests = fARs;
