@@ -1428,7 +1428,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.invalidRequest"));
         }
 
-        if (dataFile.containsFileAccessRequestFromUser(requestor)) {
+        if (dataFile.containsActiveFileAccessRequestFromUser(requestor)) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.requestExists"));
         }
 

@@ -5151,7 +5151,7 @@ public class DatasetPage implements java.io.Serializable {
         for (FileMetadata fmd : workingVersion.getFileMetadatas()){
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) session.getUser();
             //Change here so that if all restricted files have pending requests there's no Request Button
-            if ((!this.fileDownloadHelper.canDownloadFile(fmd) && !fmd.getDataFile().containsFileAccessRequestFromUser(authenticatedUser))) {
+            if ((!this.fileDownloadHelper.canDownloadFile(fmd) && !fmd.getDataFile().containsActiveFileAccessRequestFromUser(authenticatedUser))) {
                 return true;
             }
         }

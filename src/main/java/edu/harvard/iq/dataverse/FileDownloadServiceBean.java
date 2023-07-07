@@ -535,7 +535,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             return false;
         }
         DataFile file = datafileService.find(fileId);
-        if (!file.containsFileAccessRequestFromUser(session.getUser())) {
+        if (!file.containsActiveFileAccessRequestFromUser(session.getUser())) {
             try {
                 commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));                        
                 return true;
@@ -553,9 +553,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             return accessRequested;
         }
 
-        List<AuthenticatedUser> fARs = dataFile.getFileAccessRequesters();
-
-        if(fARs.isEmpty() || (!fARs.isEmpty() && !fARs.contains((AuthenticatedUser)session.getUser()))){
+        if(!dataFile.containsActiveFileAccessRequestFromUser(session.getUser())) {
             try {
                 commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), dataFile, gbr));
                 accessRequested = true;

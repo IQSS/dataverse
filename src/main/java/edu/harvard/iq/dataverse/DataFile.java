@@ -821,12 +821,12 @@ public class DataFile extends DvObject implements Comparable {
         return false;
     }
 
-    public boolean containsFileAccessRequestFromUser(RoleAssignee roleAssignee) {
+    public boolean containsActiveFileAccessRequestFromUser(RoleAssignee roleAssignee) {
         if (this.fileAccessRequests == null) {
             return false;
         }
 
-        Set<AuthenticatedUser> existingUsers = this.fileAccessRequests.stream()
+        Set<AuthenticatedUser> existingUsers = getFileAccessRequests(FileAccessRequest.RequestState.CREATED).stream()
             .map(FileAccessRequest::getRequester)
             .collect(Collectors.toSet());
 
