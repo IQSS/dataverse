@@ -310,7 +310,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          DataFile notificationFile = null;
          for (DataFile file : files) {
              //Not sending notification via request method so that
-             // we can bundle them up into one nofication at dataset level
+             // we can bundle them up into one notification at dataset level
              test = processRequestAccess(file, false);
              succeeded |= test;
              if (notificationFile == null) {
