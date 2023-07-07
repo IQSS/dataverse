@@ -27,9 +27,7 @@ import javax.persistence.NamedQuery;
  */
 
 @Entity
-@Table(name = "fileaccessrequests", //having added the guestbookresponse_id column to fileaccessrequests
-    uniqueConstraints=@UniqueConstraint(columnNames={"datafile_id", "authenticated_user_id","request_state"}) //this may not make sense at some future point
-)
+@Table(name = "fileaccessrequests")
 
 @NamedQueries({
         @NamedQuery(name = "FileAccessRequest.findByAuthenticatedUserId",
