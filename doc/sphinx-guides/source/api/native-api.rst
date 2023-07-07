@@ -4549,11 +4549,9 @@ A curl example listing objects
   export PUBLISHED_STATES=Unpublished
   export PER_PAGE=10
 
-  curl "$SERVER_URL/api/mydata/retrieve?key=$API_TOKEN&role_ids=$ROLE_IDS&dvobject_types=$DVOBJECT_TYPES&published_states=$PUBLISHED_STATES&per_page=$PER_PAGE"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve?role_ids=$ROLE_IDS&dvobject_types=$DVOBJECT_TYPES&published_states=$PUBLISHED_STATES&per_page=$PER_PAGE"
 
 Parameters:
-
-``key`` Is the user token, for this API is must not be passed in the header.
 
 ``role_id`` Roles are customizable. Standard roles include:
 
