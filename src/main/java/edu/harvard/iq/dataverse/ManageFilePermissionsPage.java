@@ -421,18 +421,12 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                     if (file.isReleased()) {
                         sendNotification = true;
                     }
-                    // remove request, if it exist
+                    // set request(s) granted, if they exist
                     for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
-                            if (file.getFileAccessRequesters().remove(au)) {
-                                List<FileAccessRequest> fileAccessRequests = fileAccessRequestService.findAllByAuthenticatedUserIdAndRequestState(au.getId(), FileAccessRequest.RequestState.CREATED);
-                                for(FileAccessRequest far : fileAccessRequests){
-                                    far.setStateGranted();
-                                    fileAccessRequestService.save(far);
-                                }
-                                file.setFileAccessRequests(fileAccessRequests); 
-                                datafileService.save(file);
-                            }       
+                        FileAccessRequest far = file.getAccessRequestForAssignee(au);
+                        far.setStateGranted();
                     }
+                    datafileService.save(file);
                 }
 
             }

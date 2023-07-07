@@ -804,7 +804,7 @@ public class DataFile extends DvObject implements Comparable {
         }
 
         return this.fileAccessRequests.stream()
-                .filter(fileAccessRequest -> fileAccessRequest.getRequester().equals(roleAssignee)).findFirst()
+                .filter(fileAccessRequest -> fileAccessRequest.getRequester().equals(roleAssignee) && fileAccessRequest.isStateCreated()).findFirst()
                 .orElse(null);
     }
 
