@@ -29,6 +29,8 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.event.ActionEvent;
@@ -88,6 +90,15 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     public TreeMap<AuthenticatedUser, List<FileAccessRequest>> getFileAccessRequestMap() {
         return fileAccessRequestMap;
+    }
+    
+    public List<DataFile> getDataFilesForRequestor() {
+        List<FileAccessRequest> fars = fileAccessRequestMap.get(getFileRequester());
+        if (fars == null) {
+            return new ArrayList<>();
+        } else {
+            return fars.stream().map(FileAccessRequest::getDataFile).collect(Collectors.toList());
+        }
     }
 
     private final TreeMap<AuthenticatedUser,List<FileAccessRequest>> fileAccessRequestMap = new TreeMap<>();
@@ -182,13 +193,13 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
                 // populate the file access requests map
                 for (FileAccessRequest fileAccessRequest : file.getFileAccessRequests(FileAccessRequest.RequestState.CREATED)) {
-                    List<FileAccessRequest> requestedFiles = fileAccessRequestMap.get(fileAccessRequest.getRequester());
-                    if (requestedFiles == null) {
-                        requestedFiles = new ArrayList<>();
+                    List<FileAccessRequest> fileAccessRequestList = fileAccessRequestMap.get(fileAccessRequest.getRequester());
+                    if (fileAccessRequestList == null) {
+                        fileAccessRequestList = new ArrayList<>();
                         AuthenticatedUser withProvider = authenticationService.getAuthenticatedUserWithProvider(fileAccessRequest.getRequester().getUserIdentifier());
-                        fileAccessRequestMap.put(withProvider, requestedFiles);
+                        fileAccessRequestMap.put(withProvider, fileAccessRequestList);
                     }
-                    requestedFiles.add(fileAccessRequest);
+                    fileAccessRequestList.add(fileAccessRequest);
                 }
             }
         }
