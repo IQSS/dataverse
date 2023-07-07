@@ -67,7 +67,7 @@ public class FileAccessRequest implements Serializable{
     @JoinColumn(nullable=true)
     private GuestbookResponse guestbookResponse;
     
-    public enum RequestState {CREATED,EDITED,GRANTED,REJECTED,RESUBMIT,INVALIDATED,CLOSED};
+    public enum RequestState {CREATED, GRANTED, REJECTED};
     //private RequestState state;
     @Enumerated(EnumType.STRING)
     @Column(name="request_state", nullable=false )
@@ -138,33 +138,17 @@ public class FileAccessRequest implements Serializable{
         if(isStateCreated()){
             return "created";
         }
-        if(isStateEdited()) {
-            return "edited";
-        }
         if(isStateGranted()) {
             return "granted";
         }
         if(isStateRejected()) {
             return "rejected";
         }
-        if(isStateResubmit()) {
-            return "resubmit";
-        }
-        if(isStateInvalidated()) {
-            return "invalidated";
-        }
-        if(isStateClosed()) {
-            return "closed";
-        }
         return null; 
     }
     
     public void setStateCreated() {
         this.requestState = RequestState.CREATED;
-    }
-    
-    public void setStateEdited() {
-        this.requestState = RequestState.EDITED;
     }
     
     public void setStateGranted() {
@@ -175,45 +159,16 @@ public class FileAccessRequest implements Serializable{
         this.requestState = RequestState.REJECTED;
     }
 
-    public void setStateResubmit() {
-        this.requestState = RequestState.RESUBMIT;
-    }
-    
-    public void setStateInvalidated() {
-        this.requestState = RequestState.INVALIDATED;
-    }
-
-    public void setStateClosed() {
-        this.requestState = RequestState.CLOSED;
-    }
-
-    
     public boolean isStateCreated() {
         return this.requestState == RequestState.CREATED;
     }
    
-    public boolean isStateEdited() {
-        return this.requestState == RequestState.EDITED;
-    }
-    
     public boolean isStateGranted() {
         return this.requestState == RequestState.GRANTED;
     }
 
     public boolean isStateRejected() {
         return this.requestState == RequestState.REJECTED;
-    }
-
-    public boolean isStateResubmit() {
-        return this.requestState == RequestState.RESUBMIT;
-    }
-    
-    public boolean isStateInvalidated() {
-        return this.requestState == RequestState.INVALIDATED;
-    }
-
-    public boolean isStateClosed() {
-        return this.requestState == RequestState.CLOSED;
     }
     
     @Override
