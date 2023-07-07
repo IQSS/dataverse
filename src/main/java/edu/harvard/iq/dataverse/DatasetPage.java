@@ -2849,10 +2849,15 @@ public class DatasetPage implements java.io.Serializable {
 
         if (persistentId != null) {
             setIdByPersistentId();
-        }
-        if (dataset.getId() != null) {
-            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
-            dataset = datasetService.findDeep(dataset.getId());
+            if (this.getId() == null) {
+                logger.warning("No such dataset: "+persistentId);
+                return permissionsWrapper.notFound();
+            }
+            dataset = datasetService.findDeep(this.getId());
+            if (dataset == null) {
+                logger.warning("No such dataset: "+persistentId);
+                return permissionsWrapper.notFound();
+            }
             retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
         } else if (versionId != null) {
             retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
