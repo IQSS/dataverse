@@ -222,7 +222,9 @@ public class AuthenticatedUser implements User, Serializable {
         List<DataFile> requestedDataFiles = new ArrayList<>();
 
         for(FileAccessRequest far : getFileAccessRequests()){
-            requestedDataFiles.add(far.getDataFile());
+            if(far.isStateCreated()) {
+                requestedDataFiles.add(far.getDataFile());
+            }
         }
         return requestedDataFiles;
     }
