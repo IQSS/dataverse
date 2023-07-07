@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
@@ -105,6 +106,9 @@ public class Files extends AbstractApiBean {
     MakeDataCountLoggingServiceBean mdcLogService;
     @Inject
     GuestbookResponseServiceBean guestbookResponseService;
+
+    @Inject
+    FileDownloadServiceBean fileDownloadServiceBean;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -824,11 +828,18 @@ public class Files extends AbstractApiBean {
 
     @GET
     @Path("{id}/guestbookResponses/count")
-    public Response getCountGuestbookResponsesByDataFileId(@PathParam("id") String dataFileId) {
+    public Response getCountGuestbookResponsesByDataFileId(@PathParam("id") long dataFileId) {
         try {
-            return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(Long.parseLong(dataFileId)).toString());
+            return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFileId).toString());
         } catch (NumberFormatException nfe) {
             return badRequest("File identifier has to be numeric.");
         }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/canBeDownloaded")
+    public Response canDataFileBeDownloaded(@Context ContainerRequestContext crc, @PathParam("id") long dataFileId) {
+        return ok(fileDownloadServiceBean.canDownloadFile(getRequestUser(crc), fileSvc.find(dataFileId).getFileMetadata()));
     }
 }

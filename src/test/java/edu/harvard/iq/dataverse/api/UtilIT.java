@@ -3275,4 +3275,10 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/files/" + dataFileId + "/guestbookResponses/count");
     }
+
+    static Response canDataFileBeDownloaded(Integer dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + dataFileId + "/canBeDownloaded");
+    }
 }
