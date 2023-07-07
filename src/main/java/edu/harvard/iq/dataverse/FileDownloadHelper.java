@@ -143,10 +143,15 @@ public class FileDownloadHelper implements java.io.Serializable {
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
     }
 
+    
     public void writeGuestbookResponseAndRequestAccess(GuestbookResponse guestbookResponse) {
-            //requestContext.execute("PF('guestbookAndTermsPopup').hide()");
-            PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
-            fileDownloadService.writeGuestbookResponseAndRequestAccess(guestbookResponse);
+
+        if(!filesForRequestAccess.isEmpty()) {
+            /* Only for single file requests (i.e. from kebab menu) */
+            guestbookResponse.setDataFile(filesForRequestAccess.get(0));
+        }
+        PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+        fileDownloadService.writeGuestbookResponseAndRequestAccess(guestbookResponse);
     }
     
      /**
@@ -290,7 +295,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         
         if (FileUtil.isRequestAccessPopupRequired(fmd.getDatasetVersion())){
             addFileForRequestAccess(fmd.getDataFile());
-            PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show()");
+            PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
         } else {
             requestAccess(fmd.getDataFile());
         }
