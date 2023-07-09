@@ -574,7 +574,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     /**
-     *
      * Checks if a user can download a file based on the file metadata and the permissions of the user
      *
      * This method is based on {@link edu.harvard.iq.dataverse.FileDownloadHelper#canDownloadFile(FileMetadata),

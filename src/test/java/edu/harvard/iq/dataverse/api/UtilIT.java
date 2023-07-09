@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
@@ -12,8 +11,6 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -44,7 +41,6 @@ import static com.jayway.restassured.RestAssured.put;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -3270,13 +3266,13 @@ public class UtilIT {
         return uploadZipFileViaSword(persistentId, pathToTestFile, apiToken);
     }
 
-    static Response getCountGuestbookResponsesByDataFileId(Integer dataFileId, String apiToken) {
+    static Response getCountGuestbookResponses(int dataFileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/files/" + dataFileId + "/guestbookResponses/count");
     }
 
-    static Response canDataFileBeDownloaded(Integer dataFileId, String apiToken) {
+    static Response canFileBeDownloaded(int dataFileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/files/" + dataFileId + "/canBeDownloaded");

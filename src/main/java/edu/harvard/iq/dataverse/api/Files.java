@@ -106,7 +106,6 @@ public class Files extends AbstractApiBean {
     MakeDataCountLoggingServiceBean mdcLogService;
     @Inject
     GuestbookResponseServiceBean guestbookResponseService;
-
     @Inject
     FileDownloadServiceBean fileDownloadServiceBean;
 
@@ -828,18 +827,26 @@ public class Files extends AbstractApiBean {
 
     @GET
     @Path("{id}/guestbookResponses/count")
-    public Response getCountGuestbookResponsesByDataFileId(@PathParam("id") long dataFileId) {
+    public Response getCountGuestbookResponses(@PathParam("id") String dataFileId) {
+        DataFile dataFile;
         try {
-            return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFileId).toString());
-        } catch (NumberFormatException nfe) {
-            return badRequest("File identifier has to be numeric.");
+            dataFile = findDataFileOrDie(dataFileId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
+        return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFile.getId()).toString());
     }
 
     @GET
     @AuthRequired
     @Path("{id}/canBeDownloaded")
-    public Response canDataFileBeDownloaded(@Context ContainerRequestContext crc, @PathParam("id") long dataFileId) {
-        return ok(fileDownloadServiceBean.canDownloadFile(getRequestUser(crc), fileSvc.find(dataFileId).getFileMetadata()));
+    public Response canFileBeDownloaded(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        return ok(fileDownloadServiceBean.canDownloadFile(getRequestUser(crc), dataFile.getFileMetadata()));
     }
 }

@@ -2020,7 +2020,7 @@ public class FilesIT {
     }
 
     @Test
-    public void testGetCountGuestbookResponsesByDataFileId() {
+    public void testGetCountGuestbookResponses() {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -2043,20 +2043,20 @@ public class FilesIT {
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
         // Download test file
-        Integer testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        int testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
 
         Response downloadResponse = UtilIT.downloadFile(testFileId, apiToken);
         downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Get count guestbook responses and assert it is 1
-        Response getGuestbookResponsesByDataFileIdResponse = UtilIT.getCountGuestbookResponsesByDataFileId(testFileId, apiToken);
-        getGuestbookResponsesByDataFileIdResponse.then().assertThat()
+        Response getCountGuestbookResponsesResponse = UtilIT.getCountGuestbookResponses(testFileId, apiToken);
+        getCountGuestbookResponsesResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("1"));
     }
 
     @Test
-    public void testCanDataFileBeDownloaded() {
+    public void testCanFileBeDownloaded() {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -2079,11 +2079,11 @@ public class FilesIT {
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
         // Assert user can download test file
-        Integer testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        Response canDataFileBeDownloadedResponse = UtilIT.canDataFileBeDownloaded(testFileId, apiToken);
+        int testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Response canFileBeDownloadedResponse = UtilIT.canFileBeDownloaded(testFileId, apiToken);
 
-        canDataFileBeDownloadedResponse.then().assertThat().statusCode(OK.getStatusCode());
-        boolean canDownloadTestFile = JsonPath.from(canDataFileBeDownloadedResponse.body().asString()).getBoolean("data");
-        assertTrue(canDownloadTestFile);
+        canFileBeDownloadedResponse.then().assertThat().statusCode(OK.getStatusCode());
+        boolean canFileBeDownloaded = JsonPath.from(canFileBeDownloadedResponse.body().asString()).getBoolean("data");
+        assertTrue(canFileBeDownloaded);
     }
 }
