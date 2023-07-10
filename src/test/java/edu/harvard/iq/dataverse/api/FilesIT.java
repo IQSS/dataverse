@@ -2020,7 +2020,7 @@ public class FilesIT {
     }
 
     @Test
-    public void testGetCountGuestbookResponses() {
+    public void testGetCountGuestbookResponses() throws InterruptedException {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -2048,6 +2048,9 @@ public class FilesIT {
         Response downloadResponse = UtilIT.downloadFile(testFileId, apiToken);
         downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
+        // Ensure guestbook is updated
+        sleep(2000);
+
         // Get count guestbook responses and assert it is 1
         Response getCountGuestbookResponsesResponse = UtilIT.getCountGuestbookResponses(testFileId, apiToken);
         getCountGuestbookResponsesResponse.then().assertThat()
@@ -2067,23 +2070,55 @@ public class FilesIT {
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
         // Upload test file
         String pathToTestFile = "src/main/webapp/resources/images/dataverseproject.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
-
-        // Publish collection and dataset
-        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
-        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
         // Assert user can download test file
         int testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        Response canFileBeDownloadedResponse = UtilIT.canFileBeDownloaded(testFileId, apiToken);
+        Response canFileBeDownloadedResponse = UtilIT.canFileBeDownloaded(Integer.toString(testFileId), apiToken);
 
         canFileBeDownloadedResponse.then().assertThat().statusCode(OK.getStatusCode());
         boolean canFileBeDownloaded = JsonPath.from(canFileBeDownloadedResponse.body().asString()).getBoolean("data");
         assertTrue(canFileBeDownloaded);
+
+        // Call with invalid file id
+        Response canFileBeDownloadedInvalidIdResponse = UtilIT.canFileBeDownloaded("testInvalidId", apiToken);
+        canFileBeDownloadedInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testGetFileThumbnailClass() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload test file
+        String pathToTestFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get file thumbnail class and assert is image
+        int testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Response getFileThumbnailClassResponse = UtilIT.getFileThumbnailClass(Integer.toString(testFileId), apiToken);
+
+        getFileThumbnailClassResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String fileThumbnailClass = JsonPath.from(getFileThumbnailClassResponse.body().asString()).getString("data.message");
+        assertEquals("image", fileThumbnailClass);
+
+        // Call with invalid file id
+        Response getFileThumbnailClassInvalidIdResponse = UtilIT.getFileThumbnailClass("testInvalidId", apiToken);
+        getFileThumbnailClassInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 }

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -108,6 +109,8 @@ public class Files extends AbstractApiBean {
     GuestbookResponseServiceBean guestbookResponseService;
     @Inject
     FileDownloadServiceBean fileDownloadServiceBean;
+    @Inject
+    DataFileServiceBean dataFileServiceBean;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -842,5 +845,17 @@ public class Files extends AbstractApiBean {
             return wr.getResponse();
         }
         return ok(fileDownloadServiceBean.canDownloadFile(getRequestUser(crc), dataFile.getFileMetadata()));
+    }
+
+    @GET
+    @Path("{id}/thumbnailClass")
+    public Response getFileThumbnailClass(@PathParam("id") String dataFileId) {
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        return ok(dataFileServiceBean.getFileThumbnailClass(dataFile));
     }
 }
