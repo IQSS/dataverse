@@ -830,8 +830,14 @@ public class Files extends AbstractApiBean {
 
     @GET
     @Path("{id}/guestbookResponses/count")
-    public Response getCountGuestbookResponses(@PathParam("id") long dataFileId) {
-        return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFileId).toString());
+    public Response getCountGuestbookResponses(@PathParam("id") String dataFileId) {
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFile.getId()).toString());
     }
 
     @GET

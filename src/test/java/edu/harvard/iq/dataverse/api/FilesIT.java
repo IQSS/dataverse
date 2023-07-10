@@ -2052,10 +2052,14 @@ public class FilesIT {
         sleep(2000);
 
         // Get count guestbook responses and assert it is 1
-        Response getCountGuestbookResponsesResponse = UtilIT.getCountGuestbookResponses(testFileId, apiToken);
+        Response getCountGuestbookResponsesResponse = UtilIT.getCountGuestbookResponses(Integer.toString(testFileId), apiToken);
         getCountGuestbookResponsesResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("1"));
+
+        // Call with invalid file id
+        Response getCountGuestbookResponsesInvalidIdResponse = UtilIT.getCountGuestbookResponses("testInvalidId", apiToken);
+        getCountGuestbookResponsesInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
     @Test
