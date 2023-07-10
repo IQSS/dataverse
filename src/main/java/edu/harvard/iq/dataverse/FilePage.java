@@ -1199,5 +1199,14 @@ public class FilePage implements java.io.Serializable {
     public boolean isHasPublicStore() {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier())));
     }
+    
+    //Allows use of fileDownloadHelper in file.xhtml
+    public FileDownloadHelper getFileDownloadHelper() {
+        return fileDownloadHelper;
+    }
+
+    public void setFileDownloadHelper(FileDownloadHelper fileDownloadHelper) {
+        this.fileDownloadHelper = fileDownloadHelper;
+    }
 
 }
