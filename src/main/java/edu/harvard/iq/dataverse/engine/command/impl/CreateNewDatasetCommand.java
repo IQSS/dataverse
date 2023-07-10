@@ -59,7 +59,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     }
     
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, Template template, boolean validate) {
-        super(theDataset, aRequest, validate);
+        super(theDataset, aRequest, false, validate);
         this.template = template;
         dv = theDataset.getOwner();
     }
