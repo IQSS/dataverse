@@ -264,7 +264,7 @@ public class Template implements Serializable {
         }
     }
 
-    public void setMetadataValueBlocks() {
+    public void setMetadataValueBlocks(List<MetadataBlock> systemMDBlocks) {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
@@ -306,14 +306,16 @@ public class Template implements Serializable {
         }
         
         for (MetadataBlock mdb : editMDB) {
-            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
-            this.setDatasetFields(initDatasetFields());
-            for (DatasetField dsf : this.getDatasetFields() ) {
-                if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) { 
-                    datasetFieldsForEdit.add(dsf);
+            if (!systemMDBlocks.contains(mdb)) {
+                List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
+                this.setDatasetFields(initDatasetFields());
+                for (DatasetField dsf : this.getDatasetFields()) {
+                    if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
+                        datasetFieldsForEdit.add(dsf);
+                    }
                 }
+                metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
             }
-            metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
         }
         
     }

@@ -54,6 +54,9 @@ public class TemplatePage implements java.io.Serializable {
     @Inject
     LicenseServiceBean licenseServiceBean;
     
+    @Inject
+    SettingsWrapper settingsWrapper;
+    
     private static final Logger logger = Logger.getLogger(TemplatePage.class.getCanonicalName());
 
     public enum EditMode {
@@ -130,7 +133,7 @@ public class TemplatePage implements java.io.Serializable {
 
             template = templateService.find(templateId);
             template.setDataverse(dataverse);
-            template.setMetadataValueBlocks();
+            template.setMetadataValueBlocks(settingsWrapper.getSystemMetadataBlocks());
 
             if (template.getTermsOfUseAndAccess() != null) {
                 TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
