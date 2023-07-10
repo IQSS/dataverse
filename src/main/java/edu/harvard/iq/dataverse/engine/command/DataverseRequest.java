@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -200,8 +201,10 @@ public class DataverseRequest {
         String key = null;
         if (httpServletRequest != null) {
             key = httpServletRequest.getHeader(MDKEY_PREFIX + blockName);
+            logger.log(Level.FINE, ((key==null)? "Didn't find": "Found") + "system metadata block key for " + blockName + " in header");
             if (key == null) {
                 key = httpServletRequest.getParameter(MDKEY_PREFIX + blockName);
+                logger.log(Level.FINE, ((key==null)? "Didn't find": "Found") + "system metadata block key for " + blockName + " in query parameter");
             }
         }
         return key;
