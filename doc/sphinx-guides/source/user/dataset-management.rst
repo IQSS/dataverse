@@ -208,7 +208,7 @@ Previewers are available for the following file types:
 - Zip (preview and extract/download)
 - HTML
 - GeoJSON
-- NetCDF/HDF5 (NcML format)
+- NetCDF/HDF5
 - Hypothes.is
 
 Additional file types will be added to the `dataverse-previewers <https://github.com/gdcc/dataverse-previewers>`_ repo before they are listed above so please check there for the latest information or to request (or contribute!) an additional file previewer.
@@ -347,6 +347,15 @@ A map will be shown as a preview of GeoJSON files when the previewer has been en
 
 NetCDF and HDF5
 ---------------
+
+H5Web Previewer
+~~~~~~~~~~~~~~~
+
+NetCDF and HDF5 files can be explored and visualized with H5Web_, which has been adapted into a file previewer tool (see :ref:`file-previews`) that can be enabled in your Dataverse installation.
+
+.. _H5Web: https://h5web.panosc.eu
+
+|h5web|
 
 NcML
 ~~~~
@@ -800,6 +809,8 @@ If you deaccession the most recently published version of the dataset but not al
 .. |cw-image6| image:: ./img/file-tags-facets.png
    :class: img-responsive
 .. |bagit-image1| image:: ./img/bagit-handler-errors.png
+   :class: img-responsive
+.. |h5web| image:: ./img/h5web.png
    :class: img-responsive
    
 .. _Make Data Count: https://makedatacount.org

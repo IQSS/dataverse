@@ -404,7 +404,7 @@ public class UsersIT {
         createDatasetResponse.prettyPrint();
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         
-        Response createPrivateUrl = UtilIT.privateUrlCreate(datasetId, apiToken);
+        Response createPrivateUrl = UtilIT.privateUrlCreate(datasetId, apiToken, false);
         createPrivateUrl.prettyPrint();
         assertEquals(OK.getStatusCode(), createPrivateUrl.getStatusCode());
 

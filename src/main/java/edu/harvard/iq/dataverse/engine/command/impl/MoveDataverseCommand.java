@@ -302,14 +302,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         if (moved.getDatasetLinkingDataverses() != null && !moved.getDatasetLinkingDataverses().isEmpty()) {
             for (DatasetLinkingDataverse dld : moved.getDatasetLinkingDataverses()) {
                 Dataset linkedDS = ctxt.datasets().find(dld.getDataset().getId());
-                try {
-                    ctxt.index().indexDataset(linkedDS, true);
-                } catch (IOException | SolrServerException e) {
-                    String failureLogText = "Post move dataverse dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + linkedDS.getId().toString();
-                    failureLogText += "\r\n" + e.getLocalizedMessage();
-                    LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, linkedDS);
-
-                }
+                ctxt.index().asyncIndexDataset(linkedDS, true);
 
             }
         }

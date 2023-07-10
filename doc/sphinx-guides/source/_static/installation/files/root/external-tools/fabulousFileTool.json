@@ -21,14 +21,14 @@
       {
         "locale":"{localeCode}"
       }
-    ],
-    "allowedApiCalls": [
-      {
-        "name":"retrieveDataFile",
-        "httpMethod":"GET",
-        "urlTemplate":"/api/v1/access/datafile/{fileId}",
-        "timeOut":270
-      }
     ]
-  }
+  },
+  "allowedApiCalls": [
+    {
+      "name":"retrieveDataFile",
+      "httpMethod":"GET",
+      "urlTemplate":"/api/v1/access/datafile/{fileId}",
+      "timeOut":270
+    }
+  ]
 }
