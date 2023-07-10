@@ -240,6 +240,7 @@ public class JSONLDUtil {
             }
         }
         dsv.setTermsOfUseAndAccess(terms);
+        terms.setDatasetVersion(dsv);
         dsv.setDatasetFields(dsfl);
 
         return dsv;

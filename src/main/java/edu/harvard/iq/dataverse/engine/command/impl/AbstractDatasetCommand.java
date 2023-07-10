@@ -159,11 +159,8 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         if (!theDataset.isIdentifierRegistered()) {
             GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
             if ( globalIdServiceBean != null ) {
-                if (globalIdServiceBean instanceof FakePidProviderServiceBean) {
-                    retry=false; //No reason to allow a retry with the FakeProvider, so set false for efficiency
-                }
                 try {
-                    if (globalIdServiceBean.alreadyExists(theDataset)) {
+                    if (globalIdServiceBean.alreadyRegistered(theDataset)) {
                         int attempts = 0;
                         if(retry) {
                             do  {
@@ -171,7 +168,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                                 logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
                                     new Object[]{theDataset.getId(), theDataset.getIdentifier()});
                                 attempts++;
-                            } while (globalIdServiceBean.alreadyExists(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
+                            } while (globalIdServiceBean.alreadyRegistered(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
                         }
                         if(!retry) {
                             logger.warning("Reserving PID for: "  + getDataset().getId() + " during publication failed.");
