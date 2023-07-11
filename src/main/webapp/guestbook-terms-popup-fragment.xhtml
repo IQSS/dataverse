@@ -141,7 +141,7 @@
                 value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}"
                 escape="false" />
         </div>
-            <p:fragment rendered="#{guestbookAndTermsPopupRequired and ((DatasetPage.termsGuestbookPopupAction != bundle.download) or DatasetPage.guestbookPopupRequiredAtDownload)}" id="guestbookUIFragment">
+            <p:fragment rendered="#{guestbookAndTermsPopupRequired and ((DatasetPage.termsGuestbookPopupAction != bundle.download) != DatasetPage.guestbookPopupRequiredAtDownload)}" id="guestbookUIFragment">
                 <!--
                 Only validate the active context. For example, the user might be filling out
                 the guestbook on the Preview tab rather than after clicking the "download file"
