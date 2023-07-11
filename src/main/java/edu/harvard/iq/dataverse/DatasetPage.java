@@ -5261,7 +5261,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isGuestbookPopupRequiredAtDownload(){
-        return isGuestbookPopupRequired() && !workingVersion.getDataset().isFileAccessRequest(); //only show guestbookAtDwonload if there is no possible request access
+        return isGuestbookPopupRequired() && !workingVersion.getDataset().isFileAccessRequest(); //only show guestbookAtDownload if there is no possible request access
     }
     
     public String requestAccessMultipleFiles() {
