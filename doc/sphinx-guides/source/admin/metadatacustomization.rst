@@ -635,7 +635,7 @@ For example, following the :ref:`Add Dataset Metadata <add-semantic-metadata>` e
 
 .. code-block:: bash
 
-  curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -H 'mdkey.codeMeta20=1234ChangeMeToSomethingLong' -d '{"codemeta:codeVersion": "1.0.0", "@context":{"codemeta": "https://codemeta.github.io/terms/"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata"
+  curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -H 'mdkey.codeMeta20:1234ChangeMeToSomethingLong' -d '{"codemeta:codeVersion": "1.0.0", "@context":{"codemeta": "https://codemeta.github.io/terms/"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata"
   
   curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"codemeta:codeVersion": "1.0.1", "@context":{"codemeta": "https://codemeta.github.io/terms/"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata?mdkey.codeMeta20=1234ChangeMeToSomethingLong&replace=true"
     
