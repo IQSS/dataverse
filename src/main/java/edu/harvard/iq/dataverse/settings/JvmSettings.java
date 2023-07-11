@@ -123,6 +123,10 @@ public enum JvmSettings {
     SCOPE_UI(PREFIX, "ui"),
     UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
     UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
+
+    // NetCDF SETTINGS
+    SCOPE_NETCDF(PREFIX, "netcdf"),
+    GEO_EXTRACT_S3_DIRECT_UPLOAD(SCOPE_NETCDF, "geo-extract-s3-direct-upload"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
