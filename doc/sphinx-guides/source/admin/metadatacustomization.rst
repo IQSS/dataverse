@@ -621,7 +621,7 @@ A Payara restart is required after these example commands.
 
 When protected via a key, a metadata block will not be shown in the user interface when a dataset is being created or when metadata is being edited. Entries in such a system metadata block will be shown to users, consistent with Dataverse's design in which all metadata in published datasets is publicly visible.
 
-Note that protecting a block with required fields will make it impossible to create a new dataset via the user interface. Also note that for this reason protecting the citation metadatablock is not recommended. (Creating a dataset also automatically sets the date of deposit field in the citation block, which would be prohibited if the citation block is protected.) 
+Note that protecting a block with required fields, or using a template with an entry in a protected block, will make it impossible to create a new dataset via the user interface. Also note that for this reason protecting the citation metadatablock is not recommended. (Creating a dataset also automatically sets the date of deposit field in the citation block, which would be prohibited if the citation block is protected.) 
 
 To remove proted status and return a block to working normally, remove the associated key.
 
