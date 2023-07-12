@@ -110,6 +110,8 @@ public abstract class DvObjectContainer extends DvObject {
                 gbAtRequest = opt.get();
                 }
             }
+        } else {
+            gbAtRequest = Boolean.parseBoolean(guestbookAtRequest);
         }
         return gbAtRequest;
     }
