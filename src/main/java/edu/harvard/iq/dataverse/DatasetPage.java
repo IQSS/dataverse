@@ -5264,7 +5264,7 @@ public class DatasetPage implements java.io.Serializable {
         // Only show guestbookAtDownload if fileAccessRequest is turned off for the
         // dataset or guestbook at request is disabled (legacy behavior)
         return isGuestbookPopupRequired() && (!workingVersion.getDataset().isFileAccessRequest()
-                || !(JvmSettings.GUESTBOOK_AT_REQUEST.lookupOptional(Boolean.class).orElse(false)));
+                || !workingVersion.getDataset().getEffectiveGuestbookEntryAtRequest());
     }
     
     public String requestAccessMultipleFiles() {
