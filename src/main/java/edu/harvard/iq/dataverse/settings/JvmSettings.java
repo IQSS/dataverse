@@ -82,6 +82,11 @@ public enum JvmSettings {
     // Avoids adding flag entries twice.
     FEATURE_FLAG(SCOPE_FLAGS),
     
+    // METADATA SETTINGS
+    SCOPE_METADATA(PREFIX, "metadata"),
+    MDB_SYSTEM_METADATA_KEYS(SCOPE_METADATA, "block-system-metadata-keys"),
+    MDB_SYSTEM_KEY_FOR(MDB_SYSTEM_METADATA_KEYS),
+
     // PERSISTENT IDENTIFIER SETTINGS
     SCOPE_PID(PREFIX, "pid"),
     
