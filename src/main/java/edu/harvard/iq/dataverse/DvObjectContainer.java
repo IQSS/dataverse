@@ -121,7 +121,7 @@ public abstract class DvObjectContainer extends DvObject {
         return guestbookAtRequest;
     }
 
-    public void setGuestbookAtRequest(String gbAtRequest) {
+    public void setGuestbookEntryAtRequest(String gbAtRequest) {
         if (gbAtRequest != null && gbAtRequest.equals(UNDEFINED_CODE)) {
             this.guestbookAtRequest = null;
         } else {
