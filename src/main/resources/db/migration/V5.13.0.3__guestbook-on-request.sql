@@ -7,3 +7,6 @@ ALTER TABLE fileaccessrequests DROP CONSTRAINT IF EXISTS fk_fileaccessrequests_g
 ALTER TABLE fileaccessrequests ADD CONSTRAINT fk_fileaccessrequests_guestbookresponse FOREIGN KEY (guestbookresponse_id) REFERENCES guestbookresponse(id);
 DROP INDEX IF EXISTS created_requests;
 CREATE UNIQUE INDEX created_requests ON fileaccessrequests (datafile_id, authenticated_user_id) WHERE request_state='CREATED';
+
+ALTER TABLE dataverse ADD COLUMN IF NOT EXISTS guestbookatrequest bool;
+ALTER TABLE dataset ADD COLUMN IF NOT EXISTS guestbookatrequest bool;
