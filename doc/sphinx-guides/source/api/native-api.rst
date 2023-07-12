@@ -4706,6 +4706,46 @@ A curl example using an ``ID``
 
 Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.
 
+
+
+MyData
+------
+
+The MyData API is used to get a list of just the datasets, dataverses or datafiles an authenticated user can edit.
+
+A curl example listing objects
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ROLE_IDS=6
+  export DVOBJECT_TYPES=Dataset
+  export PUBLISHED_STATES=Unpublished
+  export PER_PAGE=10
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve?role_ids=$ROLE_IDS&dvobject_types=$DVOBJECT_TYPES&published_states=$PUBLISHED_STATES&per_page=$PER_PAGE"
+
+Parameters:
+
+``role_id`` Roles are customizable. Standard roles include:
+
+- ``1`` = Admin
+- ``2`` = File Downloader
+- ``3`` = Dataverse + Dataset Creator
+- ``4`` = Dataverse Creator
+- ``5`` = Dataset Creator
+- ``6`` = Contributor
+- ``7`` = Curator
+- ``8`` = Member
+
+``dvobject_types`` Type of object, several possible values among: ``DataFile`` , ``Dataset`` & ``Dataverse`` .
+
+``published_states`` State of the object, several possible values among:``Published`` , ``Unpublished`` , ``Draft`` , ``Deaccessioned`` & ``In+Review`` .
+
+``per_page`` Number of results returned per page.
+
+
 .. _thumbnail_reset:
 
 Reset Thumbnail Failure Flags

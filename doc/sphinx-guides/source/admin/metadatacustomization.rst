@@ -588,6 +588,58 @@ The scripts required can be hosted locally or retrieved dynamically from https:/
 
 Please note that in addition to the :ref:`:CVocConf` described above, an alternative is the :ref:`:ControlledVocabularyCustomJavaScript` setting.
 
+Protecting MetadataBlocks
+-------------------------
+
+Dataverse can be configured to only allow entries for a metadata block to be changed (created, edited, deleted) by entities that know a defined secret key. 
+Metadata blocks protected by such a key are referred to as "System" metadata blocks. 
+A primary use case for system metadata blocks is to handle metadata created by third-party tools interacting with Dataverse where unintended changes to the metadata could cause a failure. Examples might include archiving systems or workflow engines.
+To protect an existing metadatablock, one must set a key (recommended to be long and un-guessable) for that block:
+
+dataverse.metadata.block-system-metadata-keys.<block name>=<key value>
+
+This can be done using system properties (see :ref:`jvm-options`), environment variables or other MicroProfile Config mechanisms supported by the app server.
+   `See Payara docs for supported sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html#config-sources>`_. Note that a Payara restart may be required to enable the new option.
+
+For these secret keys, Payara password aliases are recommended.
+
+   Alias creation example using the codemeta metadata block (actual name: codeMeta20):
+
+   .. code-block:: shell
+
+      echo "AS_ADMIN_ALIASPASSWORD=1234ChangeMeToSomethingLong" > /tmp/key.txt
+      asadmin create-password-alias --passwordfile /tmp/key.txt dataverse.metadata.block-system-metadata-keys.codeMeta20
+      rm /tmp/key.txt
+      
+   Alias deletion example for the codemeta metadata block (removes protected status)
+   
+   .. code-block:: shell
+
+      asadmin delete-password-alias dataverse.metadata.block-system-metadata-keys.codeMeta20
+
+A Payara restart is required after these example commands.
+
+When protected via a key, a metadata block will not be shown in the user interface when a dataset is being created or when metadata is being edited. Entries in such a system metadata block will be shown to users, consistent with Dataverse's design in which all metadata in published datasets is publicly visible.
+
+Note that protecting a block with required fields, or using a template with an entry in a protected block, will make it impossible to create a new dataset via the user interface. Also note that for this reason protecting the citation metadatablock is not recommended. (Creating a dataset also automatically sets the date of deposit field in the citation block, which would be prohibited if the citation block is protected.) 
+
+To remove proted status and return a block to working normally, remove the associated key.
+
+To add metadata to a system metadata block via API, one must include an additional key of the form 
+
+mdkey.<blockName>=<key value>
+
+as an HTTP Header or query parameter (case sensitive) for each system metadata block to any API call in which metadata values are changed in that block. Multiple keys are allowed if more than one system metadatablock is being changed in a given API call.
+
+For example, following the :ref:`Add Dataset Metadata <add-semantic-metadata>` example from the :doc:`/developers/dataset-semantic-metadata-api`:
+
+.. code-block:: bash
+
+  curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -H 'mdkey.codeMeta20:1234ChangeMeToSomethingLong' -d '{"codeVersion": "1.0.0", "@context":{"codeVersion": "https://schema.org/softwareVersion"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata"
+  
+  curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"codeVersion": "1.0.1", "@context":{"codeVersion": "https://schema.org/softwareVersion"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata?mdkey.codeMeta20=1234ChangeMeToSomethingLong&replace=true"
+    
+
 Tips from the Dataverse Community
 ---------------------------------
 

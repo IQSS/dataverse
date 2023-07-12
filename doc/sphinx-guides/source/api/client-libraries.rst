@@ -15,6 +15,10 @@ https://github.com/aeonSolutions/OpenScience-Dataverse-API-C-library is the offi
 
 This C/C++ library was created and is currently maintained by `Miguel T. <https://www.linkedin.com/in/migueltomas/>`_ To learn how to install and use it, see the project's `wiki page <https://github.com/aeonSolutions/OpenScience-Dataverse-API-C-library/wiki>`_.
 
+Go
+--
+https://github.com/libis/rdm-dataverse-go-api is Go API library that can be used in your project by simply adding ``github.com/libis/rdm-dataverse-go-api`` as a dependency in your ``go.mod`` file. See the GitHub page for more details and usage examples.
+
 Java
 ----
 
