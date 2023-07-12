@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObjectContainer;
+import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
@@ -193,6 +194,17 @@ public class OREMap {
                 }
                 addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fileName); 
                 addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
+                Embargo embargo=df.getEmbargo(); 
+                if(embargo!=null) {
+                    String date = embargo.getFormattedDateAvailable();
+                    String reason= embargo.getReason();
+                    JsonObjectBuilder embargoObject = Json.createObjectBuilder();
+                    embargoObject.add(JsonLDTerm.DVCore("dateAvailable").getLabel(), date);
+                    if(reason!=null) {
+                        embargoObject.add(JsonLDTerm.DVCore("reason").getLabel(), reason);
+                    }
+                    aggRes.add(JsonLDTerm.DVCore("embargoed").getLabel(), embargoObject);
+                }
                 addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
                 addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
                 addIfNotNull(aggRes, JsonLDTerm.datasetVersionId, fmd.getDatasetVersion().getId());
