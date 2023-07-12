@@ -3922,7 +3922,10 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
-        
+        Optional<Boolean> gbAtRequestOpt = JvmSettings.GUESTBOOK_AT_REQUEST.lookupOptional(Boolean.class);
+        if (!gbAtRequestOpt.isPresent()) {
+            return error(Response.Status.FORBIDDEN, "Guestbook Entry At Request cannot be set. This server is not configured to allow it.");
+        }
         String choice = Boolean.valueOf(gbAtRequest).toString();
         dataset.setGuestbookEntryAtRequest(choice);
         datasetService.merge(dataset);
