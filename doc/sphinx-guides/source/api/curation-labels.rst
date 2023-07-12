@@ -111,4 +111,4 @@ This API call is restricted to superusers.
  
     curl -H X-Dataverse-key:$API_TOKEN "$SERVER_URL/api/datasets/listCurationStates"
 
-You should expect a 200 ("OK") response with a 'datasets.status.csv' file download.
+You should expect a 200 ("OK") response with a CSV formatted response.
