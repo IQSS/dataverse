@@ -17,7 +17,7 @@ This C/C++ library was created and is currently maintained by `Miguel T. <https:
 
 Go
 --
-https://github.com/libis/rdm-dataverse-go-api is go API library that can be used in your project by simply adding it in the `go.mod` file as `github.com/libis/rdm-dataverse-go-api` dependency. See also the GitHub page for more detail and usage examples.
+https://github.com/libis/rdm-dataverse-go-api is Go API library that can be used in your project by simply adding ``github.com/libis/rdm-dataverse-go-api`` as a dependency in your ``go.mod`` file. See the GitHub page for more details and usage examples.
 
 Java
 ----
