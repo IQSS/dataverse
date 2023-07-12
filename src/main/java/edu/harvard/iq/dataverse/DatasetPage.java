@@ -5899,7 +5899,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     public String getEffectiveMetadataLanguage(boolean ofParent) {
         String mdLang = ofParent ? dataset.getOwner().getEffectiveMetadataLanguage() : dataset.getEffectiveMetadataLanguage();
-        if (mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+        if (mdLang.equals(DvObjectContainer.UNDEFINED_CODE)) {
             mdLang = settingsWrapper.getDefaultMetadataLanguage();
         }
         return mdLang;
@@ -5907,7 +5907,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getLocaleDisplayName(String code) {
         String displayName = settingsWrapper.getBaseMetadataLanguageMap(false).get(code);
-        if(displayName==null && !code.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+        if(displayName==null && !code.equals(DvObjectContainer.UNDEFINED_CODE)) {
             //Default (for cases such as :when a Dataset has a metadatalanguage code but :MetadataLanguages is no longer defined).
             displayName = new Locale(code).getDisplayName();
         }
