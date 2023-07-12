@@ -60,14 +60,13 @@ public class Template implements Serializable {
     private Long id;
 
     public Template() {
-
     }
 
     //Constructor for create
-    public Template(Dataverse dataverseIn) {
+    public Template(Dataverse dataverseIn, List<MetadataBlock> systemMDBlocks) {
         dataverse = dataverseIn;
         datasetFields = initDatasetFields();
-        initMetadataBlocksForCreate();
+        initMetadataBlocksForCreate(systemMDBlocks);
     }
 
     public Long getId() {
@@ -247,24 +246,26 @@ public class Template implements Serializable {
         return dsfList;
     }
 
-    private void initMetadataBlocksForCreate() {
+    private void initMetadataBlocksForCreate(List<MetadataBlock> systemMDBlocks) {
         metadataBlocksForEdit.clear();
         for (MetadataBlock mdb : this.getDataverse().getMetadataBlocks()) {
-            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
-            for (DatasetField dsf : this.getDatasetFields()) {
+            if (!systemMDBlocks.contains(mdb)) {
+                List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
+                for (DatasetField dsf : this.getDatasetFields()) {
 
-                if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
-                    datasetFieldsForEdit.add(dsf);
+                    if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
+                        datasetFieldsForEdit.add(dsf);
+                    }
                 }
-            }
 
-            if (!datasetFieldsForEdit.isEmpty()) {
-                metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
+                if (!datasetFieldsForEdit.isEmpty()) {
+                    metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
+                }
             }
         }
     }
 
-    public void setMetadataValueBlocks() {
+    public void setMetadataValueBlocks(List<MetadataBlock> systemMDBlocks) {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
@@ -306,14 +307,16 @@ public class Template implements Serializable {
         }
         
         for (MetadataBlock mdb : editMDB) {
-            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
-            this.setDatasetFields(initDatasetFields());
-            for (DatasetField dsf : this.getDatasetFields() ) {
-                if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) { 
-                    datasetFieldsForEdit.add(dsf);
+            if (!systemMDBlocks.contains(mdb)) {
+                List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
+                this.setDatasetFields(initDatasetFields());
+                for (DatasetField dsf : this.getDatasetFields()) {
+                    if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
+                        datasetFieldsForEdit.add(dsf);
+                    }
                 }
+                metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
             }
-            metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
         }
         
     }
