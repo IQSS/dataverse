@@ -36,6 +36,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.json.Json;
 import javax.json.JsonObject;
 import javax.mail.internet.InternetAddress;
 
@@ -60,6 +61,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     @EJB
     DatasetFieldServiceBean fieldService;
+    
+    @EJB
+    MetadataBlockServiceBean mdbService;
 
     private Map<String, String> settingsMap;
     
@@ -116,6 +120,8 @@ public class SettingsWrapper implements java.io.Serializable {
     private Boolean dataFilePIDSequentialDependent = null;
     
     private Boolean customLicenseAllowed = null;
+    
+    private List<MetadataBlock> systemMetadataBlocks;
     
     private Set<Type> alwaysMuted = null;
 
@@ -750,4 +756,19 @@ public class SettingsWrapper implements java.io.Serializable {
         return customLicenseAllowed;
     }
 
+    public List<MetadataBlock> getSystemMetadataBlocks() {
+
+        if (systemMetadataBlocks == null) {
+            systemMetadataBlocks = new ArrayList<MetadataBlock>();
+        }
+        List<MetadataBlock> blocks = mdbService.listMetadataBlocks();
+        for (MetadataBlock mdb : blocks) {
+            String smdbString = JvmSettings.MDB_SYSTEM_KEY_FOR.lookupOptional(mdb.getName()).orElse(null);
+            if (smdbString != null) {
+                systemMetadataBlocks.add(mdb);
+            }
+        }
+
+        return systemMetadataBlocks;
+    }
 }
