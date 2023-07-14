@@ -155,17 +155,17 @@
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                         <li>
-                                                            <a jsf:id="endNoteLink" jsf:action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}" >
+                                                            <a jsf:id="endNoteLink" jsf:action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion)}" >
                                                                 #{bundle['dataset.cite.downloadBtn.xml']}
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="risLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}">
+                                                            <a jsf:id="risLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion)}">
                                                                 #{bundle['dataset.cite.downloadBtn.ris']}
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="bibLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}" target="_blank">
+                                                            <a jsf:id="bibLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion)}" target="_blank">
                                                                 #{bundle['dataset.cite.downloadBtn.bib']}
                                                             </a>
                                                         </li>
