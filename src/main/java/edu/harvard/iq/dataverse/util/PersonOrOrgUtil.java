@@ -118,6 +118,15 @@ public class PersonOrOrgUtil {
                 }
             }
         }
+        if(!isOrganization && givenName == null && name.contains(",")) {
+            //If we still think this is a person and there's only one comma, assume we can extract the given name and family name
+            if (!name.replaceFirst(",", "").contains(",")) {
+                // contributorName=<FamilyName>, <FirstName>
+                String[] fullName = name.split(", ");
+                givenName = fullName[1];
+                familyName = fullName[0];
+            }
+        }
         JsonObjectBuilder job = new NullSafeJsonBuilder();
         job.add("fullName", name);
         job.add("givenName", givenName);

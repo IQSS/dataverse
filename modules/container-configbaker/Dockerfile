@@ -18,7 +18,7 @@ ENV SCRIPT_DIR="/scripts" \
 ENV PATH="${PATH}:${SCRIPT_DIR}" \
     BOOTSTRAP_DIR="${SCRIPT_DIR}/bootstrap"
 
-ARG APK_PACKAGES="curl bind-tools netcat-openbsd jq bash dumb-init wait4x"
+ARG APK_PACKAGES="curl bind-tools netcat-openbsd jq bash dumb-init wait4x ed"
 
 RUN true && \
   # Install necessary software and tools
