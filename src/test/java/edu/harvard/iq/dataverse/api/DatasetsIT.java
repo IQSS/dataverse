@@ -2277,6 +2277,71 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     /**
+     * This tests the "DDI export" and verifies that variable metadata is included for an unrestricted file.
+     */
+    @Test
+    public void testUnrestrictedFileExportDdi() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String authorUsername = UtilIT.getUsernameFromResponse(createUser);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(authorApiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        Path pathToFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species\n"
+                + "Marshall,40,dog\n"
+                + "Tiger,17,cat\n"
+                + "Panther,21,cat\n";
+        java.nio.file.Files.write(pathToFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile.toString(), authorApiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, authorApiToken);
+        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", authorApiToken);
+        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+        // We're testing export here, which is at dataset level.
+        // Guest/public version
+        Response exportByGuest = UtilIT.exportDataset(datasetPid, "ddi");
+        exportByGuest.prettyPrint();
+        exportByGuest.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("data.tab"))
+                .body("codeBook.fileDscr.dimensns.caseQnty", equalTo("3"))
+                .body("codeBook.fileDscr.dimensns.varQnty", equalTo("3"))
+                .body("codeBook.dataDscr", CoreMatchers.not(equalTo(null)))
+                .body("codeBook.dataDscr.var[0].@name", equalTo("name"))
+                .body("codeBook.dataDscr.var[1].@name", equalTo("pounds"))
+                // This is an example of a summary stat (max) that should be visible.
+                .body("codeBook.dataDscr.var[1].sumStat.find { it.@type == 'max' }", equalTo("40.0"))
+                .body("codeBook.dataDscr.var[2].@name", equalTo("species"));
+    }
+        
+    /**
      * In this test we are restricting a file and testing "export DDI" at the
      * dataset level as well as getting the DDI at the file level.
      *
