@@ -240,6 +240,7 @@ public class JSONLDUtil {
             }
         }
         dsv.setTermsOfUseAndAccess(terms);
+        terms.setDatasetVersion(dsv);
         dsv.setDatasetFields(dsfl);
 
         return dsv;
@@ -349,7 +350,9 @@ public class JSONLDUtil {
      * @return null if exact match, otherwise return a field without the value to be deleted
      */
     private static DatasetField getReplacementField(DatasetField dsf, JsonArray valArray) {
-        // TODO Auto-generated method stub
+        // TODO Parse valArray and remove any matching entries in the dsf
+        // Until then, delete removes all values of a multivalued field
+        // Doing this on a required field will fail.
         return null;
     }
 

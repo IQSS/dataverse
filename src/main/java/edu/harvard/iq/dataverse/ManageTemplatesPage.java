@@ -60,6 +60,9 @@ public class ManageTemplatesPage implements java.io.Serializable {
     
     @Inject
     LicenseServiceBean licenseServiceBean;
+    
+    @Inject
+    SettingsWrapper settingsWrapper;
 
     private List<Template> templates;
     private Dataverse dataverse;
@@ -230,7 +233,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
     public void viewSelectedTemplate(Template selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
-        this.selectedTemplate.setMetadataValueBlocks();
+        this.selectedTemplate.setMetadataValueBlocks(settingsWrapper.getSystemMetadataBlocks());
         tempPage.setTemplate(selectedTemplate);
     }
 
