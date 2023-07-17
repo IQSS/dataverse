@@ -10,7 +10,7 @@
 
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <p:focus context="guestbookUIFragment"/>
-        <ui:fragment rendered="#{DatasetPage.termsGuestbookPopupAction != bundle.download}">
+        <ui:fragment rendered="#{termsGuestbookPopupAction != bundle.download}">
             <p class="help-block">
                 #{someActivelyEmbargoedFiles ? bundle['file.requestAccessTermsDialog.embargoed.tip'] : bundle['file.requestAccessTermsDialog.tip']}
             </p>
@@ -18,7 +18,7 @@
                 #{bundle['file.requestAccessTermsDialog.embargoed']}
             </p>
         </ui:fragment>
-        <ui:fragment rendered="#{DatasetPage.termsGuestbookPopupAction != bundle.download}">
+        <ui:fragment rendered="#{termsGuestbookPopupAction != bundle.download}">
             <p class="help-block">
                 #{bundle['file.downloadDialog.tip']}
             </p>
@@ -141,7 +141,7 @@
                 value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}"
                 escape="false" />
         </div>
-            <p:fragment rendered="#{guestbookAndTermsPopupRequired and ((DatasetPage.termsGuestbookPopupAction != bundle.download) != DatasetPage.guestbookPopupRequiredAtDownload)}" id="guestbookUIFragment">
+            <p:fragment rendered="#{guestbookAndTermsPopupRequired and ((termsGuestbookPopupAction != bundle.download) != guestbookPopupRequiredAtDownload)}" id="guestbookUIFragment">
                 <!--
                 Only validate the active context. For example, the user might be filling out
                 the guestbook on the Preview tab rather than after clicking the "download file"
@@ -247,7 +247,7 @@
                 </div>
             </p:fragment>
         </div>
-        <div class="button-block" jsf:rendered="#{DatasetPage.termsGuestbookPopupAction == bundle.download}">
+        <div class="button-block" jsf:rendered="#{termsGuestbookPopupAction == bundle.download}">
         <!--
             The "process" directive below is very important. Without it, the
             setters on the GuestbookResponse object can be called twice leading
@@ -300,7 +300,7 @@
                 #{bundle.cancel}
             </button>
         </div>
-        <div class="button-block" jsf:rendered="#{DatasetPage.termsGuestbookPopupAction == bundle['file.requestAccess']}">
+        <div class="button-block" jsf:rendered="#{termsGuestbookPopupAction == bundle['file.requestAccess']}">
         <!--TODO - add "Accept and" if ToA exist?-->
             <p:commandLink type="button" styleClass="btn btn-default" rendered="#{workingVersion.dataset.hasEnabledGuestbook()}" value="#{bundle['file.requestAccess']}"
                     actionListener="#{fileDownloadHelper.writeGuestbookResponseAndRequestAccess(guestbookResponse)}"                          

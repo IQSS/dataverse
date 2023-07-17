@@ -312,6 +312,20 @@ public class FilePage implements java.io.Serializable {
         Collections.sort(retList, CompareExternalToolName);
         return retList;
     }
+    
+    private String termsGuestbookPopupAction = "";
+
+    public void setTermsGuestbookPopupAction(String popupAction){
+        if(popupAction != null && popupAction.length() > 0){
+            logger.info("TGPA set to " + popupAction);
+            this.termsGuestbookPopupAction = popupAction;
+        }
+
+    }
+
+    public String getTermsGuestbookPopupAction(){
+        return termsGuestbookPopupAction;
+    }
 
     public boolean isDownloadPopupRequired() {  
         if(fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null ){
@@ -332,6 +346,14 @@ public class FilePage implements java.io.Serializable {
             return false;
         }
         return FileUtil.isGuestbookAndTermsPopupRequired(fileMetadata.getDatasetVersion());
+    }
+    
+    public boolean isGuestbookPopupRequiredAtDownload(){
+        // Only show guestbookAtDownload if fileAccessRequest is turned off for the
+        // dataset or guestbook at request is disabled (legacy behavior)
+        DatasetVersion workingVersion = fileMetadata.getDatasetVersion();
+        return FileUtil.isGuestbookPopupRequired(workingVersion) && (!workingVersion.getDataset().isFileAccessRequest()
+                || !workingVersion.getDataset().getEffectiveGuestbookEntryAtRequest());
     }
 
     public void setFileMetadata(FileMetadata fileMetadata) {
