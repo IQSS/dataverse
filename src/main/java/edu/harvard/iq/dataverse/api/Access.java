@@ -1479,11 +1479,11 @@ public class Access extends AbstractApiBean {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
-        List<FileAccessRequest> requests = dataFile.getFileAccessRequests();
+        List<FileAccessRequest> requests = dataFile.getFileAccessRequests(FileAccessRequest.RequestState.CREATED);
 
         if (requests == null || requests.isEmpty()) {
             List<String> args = Arrays.asList(dataFile.getDisplayName());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
+            return error(Response.Status.NOT_FOUND, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
         }
 
         JsonArrayBuilder userArray = Json.createArrayBuilder();
