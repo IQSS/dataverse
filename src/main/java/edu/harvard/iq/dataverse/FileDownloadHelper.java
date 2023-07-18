@@ -336,20 +336,13 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
              AuthenticatedUser user = (AuthenticatedUser) session.getUser();
+             //This seems to be required because we don't get the updated file object back from the command called in the fileDownloadService.requestAccess call above
              file.addFileAccessRequester(user);
 
              // create notification if necessary
              if (sendNotification) {
                  fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());
              }
-             //ToDO QDRADA - where to write the response?
-             /*
-             //write the guestbookResponse if there is an enabled guestbook
-             GuestbookResponse gbr = this.getGuestbookResponse(); //can we be sure this is the correct guestbookResponse?? - can it get out of sync??
-             if( gbr != null && gbr.getGuestbook().isEnabled() ){
-                 fileDownloadService.writeGuestbookResponseRecordForRequestAccess(gbr); 
-             }
-             */
              JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
              return true;
          }
