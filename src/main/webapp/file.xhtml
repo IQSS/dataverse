@@ -360,7 +360,7 @@
                                 </ui:include>
                             </p:tab>
                             <p:tab id="previewTab" title="#{FilePage.toolTabTitle}" 
-                                   rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                   rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) and FilePage.selectedTool != null}">
                                 <!-- PREVIEW TERMS/GUESTBOOK FORM -->
                                 <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.termsMet and (FilePage.getSelectedTool().previewTool or FilePage.getSelectedTool().queryTool)}">
                                     <ui:include id="previewGB" src="file-download-popup-fragment.xhtml">
