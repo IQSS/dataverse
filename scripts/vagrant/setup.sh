@@ -51,7 +51,7 @@ SOLR_USER=solr
 echo "Ensuring Unix user '$SOLR_USER' exists"
 useradd $SOLR_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
-PAYARA_ZIP="$DOWNLOAD_DIR/payara-6.2023.6.zip"
+PAYARA_ZIP="$DOWNLOAD_DIR/payara-6.2023.7.zip"
 SOLR_TGZ="$DOWNLOAD_DIR/solr-8.11.1.tgz"
 if [ ! -f $PAYARA_ZIP ] || [ ! -f $SOLR_TGZ ]; then
     echo "Couldn't find $PAYARA_ZIP or $SOLR_TGZ! Running download script...."
