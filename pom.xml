@@ -197,6 +197,9 @@
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
             <scope>provided</scope>
+            <!-- Note: The version was provided by Payara BOM till 6.2023.7, when they removed the Core BOM from it as
+                       meant for internal use only. Simply referencing the version property here solves the problem. -->
+            <version>${payara.version}</version>
         </dependency>
         
         <!-- JSON-P -->
