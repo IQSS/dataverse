@@ -31,7 +31,7 @@
                         update="@([id$=requestAccessConsolidated]), @([id$=requestPanel]),  @([id$=filesTable]), @([id$=messagePanel]), @([id$=guestbookAndTermsPopup])"
                         id="requestAccessConsolidated"
                         disabled="#{fileMetadata.dataFile.containsActiveFileAccessRequestFromUser(dataverseSession.user)}">
-                 <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle['file.requestAccess'])}"/>
+                 <f:actionListener binding="#{bean.setTermsGuestbookPopupAction(bundle['file.requestAccess'])}"/>
                 #{fileMetadata.dataFile.containsActiveFileAccessRequestFromUser(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
             </p:commandLink>
         </p:outputPanel>
@@ -77,7 +77,7 @@
                          disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
                          action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'GlobusTransfer')}"
                          update="@widgetVar(guestbookAndTermsPopup)" oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
-                         <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                         <f:actionListener binding="#{bean.setTermsGuestbookPopupAction(bundle.download)}"/>
                 <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                 GT: #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
@@ -105,7 +105,7 @@
                          disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
                          action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'package')}"
                          update="@widgetVar(guestbookAndTermsPopup)" oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
-                         <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                         <f:actionListener binding="#{bean.setTermsGuestbookPopupAction(bundle.download)}"/>
                 <f:actionListener binding="#{packagePopupFragmentBean.setFileMetadata(fileMetadata)}" /> 
                 <!-- package data file: -->
                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
@@ -129,7 +129,7 @@
                          action="#{guestbookResponseService.modifyDatafile(guestbookResponse, fileMetadata)}"
                          update="@widgetVar(guestbookAndTermsPopup)" oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
                 <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
-                <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                <f:actionListener binding="#{bean.setTermsGuestbookPopupAction(bundle.download)}"/>
                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                 #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
             </p:commandLink>
@@ -148,7 +148,7 @@
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'bundle' )}"
                                update="@widgetVar(guestbookAndTermsPopup)"
                                oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
-                               <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                               <f:actionListener binding="#{bean.setTermsGuestbookPopupAction(bundle.download)}"/>
                     #{bundle['file.downloadBtn.format.all']}
                 </p:commandLink>
             </li>
@@ -169,7 +169,7 @@
                                action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'original' )}"
                                update="@widgetVar(guestbookAndTermsPopup)"
                                oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
-                    <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                    <f:actionListener binding="#{bean.setTermsGuestbookPopupAction(bundle.download)}"/>
                     <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                     <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
                         <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
@@ -188,7 +188,7 @@
                                disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
                                update="@widgetVar(guestbookAndTermsPopup)"
                                oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
-                    <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                    <f:actionListener binding="#{bean.setTermsGuestbookPopupAction(bundle.download)}"/>
                     <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                     #{bundle['file.downloadBtn.format.tab']}
                 </p:commandLink>
@@ -207,7 +207,7 @@
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'RData' )}"
                                    update="@widgetVar(guestbookAndTermsPopup)"
                                    oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
-                        <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                        <f:actionListener binding="#{bean.setTermsGuestbookPopupAction(bundle.download)}"/>
                         <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                         #{bundle['file.downloadBtn.format.rdata']}
                     </p:commandLink>
@@ -235,7 +235,7 @@
                            action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'var' )}"
                            update="@widgetVar(guestbookAndTermsPopup)"
                            oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
-                           <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                           <f:actionListener binding="#{bean.setTermsGuestbookPopupAction(bundle.download)}"/>
                 #{bundle['file.downloadBtn.format.var']}
             </p:commandLink>
         </li>
@@ -326,7 +326,7 @@
                                process="@this"
                                update="@widgetVar(guestbookAndTermsPopup)"
                                oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
-                               <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                               <f:actionListener binding="#{bean.setTermsGuestbookPopupAction(bundle.download)}"/>
                     #{tool.getDisplayNameLang()}
                 </p:commandLink>
             </li>
