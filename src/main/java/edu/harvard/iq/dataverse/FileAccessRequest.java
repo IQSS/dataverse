@@ -77,21 +77,16 @@ public class FileAccessRequest implements Serializable{
     @Column(name = "creation_time")
     private Date creationTime;
     
-    public FileAccessRequest(){
-        
-    }
-    
     public FileAccessRequest(DataFile df, AuthenticatedUser au){
         setDataFile(df);
         setRequester(au);
         setState(RequestState.CREATED);
+        setCreationTime(new Date());
     }
     
     public FileAccessRequest(DataFile df, AuthenticatedUser au, GuestbookResponse gbr){
-        setDataFile(df);
-        setRequester(au);
+        this(df, au);
         setGuestbookResponse(gbr);
-        setState(RequestState.CREATED);
     }
      
     public Long getId() {

@@ -783,6 +783,7 @@ public class DataFile extends DvObject implements Comparable {
         }
 
         Set<AuthenticatedUser> existingUsers = this.fileAccessRequests.stream()
+            .filter(far -> far.isStateCreated())
             .map(FileAccessRequest::getRequester)
             .collect(Collectors.toSet());
 
@@ -790,10 +791,7 @@ public class DataFile extends DvObject implements Comparable {
             return;
         }
 
-        FileAccessRequest request = new FileAccessRequest();
-        request.setCreationTime(new Date());
-        request.setDataFile(this);
-        request.setRequester(authenticatedUser);
+        FileAccessRequest request = new FileAccessRequest(this, authenticatedUser);
 
         this.fileAccessRequests.add(request);
     }
