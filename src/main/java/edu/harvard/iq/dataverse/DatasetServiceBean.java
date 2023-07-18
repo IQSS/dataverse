@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -231,8 +232,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     //Used in datasets listcurationstatus API
-    public List<Dataset> findAllUnpublished() {
-        return em.createQuery("SELECT object(o) FROM Dataset o, DvObject d WHERE d.id=o.id and d.publicationDate IS null ORDER BY o.id ASC", Dataset.class).getResultList();
+    public List<Dataset> findAllWithDraftVersion() {
+        TypedQuery<Dataset> query = em.createQuery("SELECT object(d) FROM Dataset d, DatasetVersion v WHERE d.id=v.dataset.id and v.versionState=:state ORDER BY d.id ASC", Dataset.class);
+        query.setParameter("state", VersionState.DRAFT);
+        return query.getResultList();
     }
 
     /**

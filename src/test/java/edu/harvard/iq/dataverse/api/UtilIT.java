@@ -2409,6 +2409,12 @@ public class UtilIT {
         RequestSpecification requestSpecification = given();
         return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
+    
+    static Response clearMetricCache(String name) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.delete("/api/admin/clearMetricsCache/" + name);
+    }
+
 
     static Response sitemapUpdate() {
         return given()

@@ -56,7 +56,7 @@ public class NetcdfFileMetadataExtractor extends FileMetadataExtractor {
         String northLatitudeFinal = geoFields.get(NORTH_LATITUDE);
         String southLatitudeFinal = geoFields.get(SOUTH_LATITUDE);
 
-        logger.info(getLineStringsUrl(westLongitudeFinal, southLatitudeFinal, eastLongitudeFinal, northLatitudeFinal));
+        logger.fine(getLineStringsUrl(westLongitudeFinal, southLatitudeFinal, eastLongitudeFinal, northLatitudeFinal));
 
         Map<String, Set<String>> metadataMap = new HashMap<>();
         metadataMap.put(WEST_LONGITUDE, new HashSet<>());
@@ -102,7 +102,7 @@ public class NetcdfFileMetadataExtractor extends FileMetadataExtractor {
         geoFields.put(DatasetFieldConstant.northLatitude, getValue(northLatitude));
         geoFields.put(DatasetFieldConstant.southLatitude, getValue(southLatitude));
 
-        logger.info(getLineStringsUrl(
+        logger.fine(getLineStringsUrl(
                 geoFields.get(DatasetFieldConstant.westLongitude),
                 geoFields.get(DatasetFieldConstant.southLatitude),
                 geoFields.get(DatasetFieldConstant.eastLongitude),

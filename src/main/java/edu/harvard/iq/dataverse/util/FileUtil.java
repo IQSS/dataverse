@@ -180,6 +180,10 @@ public class FileUtil implements java.io.Serializable  {
     //Todo - this is the same as MIME_TYPE_TSV_ALT
     public static final String MIME_TYPE_INGESTED_FILE = "text/tab-separated-values";
 
+    public static final String MIME_TYPE_NETCDF = "application/netcdf";
+    public static final String MIME_TYPE_XNETCDF = "application/x-netcdf";
+    public static final String MIME_TYPE_HDF5 = "application/x-hdf5";
+
     // File type "thumbnail classes" tags:
     
     public static final String FILE_THUMBNAIL_CLASS_AUDIO = "audio";

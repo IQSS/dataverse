@@ -43,23 +43,22 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
 
 
     @Override
-    public boolean alreadyExists(GlobalId pid) {
-        logger.log(Level.FINE,"alreadyExists");
+    public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) {
+        logger.log(Level.FINE,"alreadyRegistered");
         if(pid==null || pid.asString().isEmpty()) {
             logger.fine("No identifier sent.");
             return false;
         }
-        boolean alreadyExists;
+        boolean alreadyRegistered;
         String identifier = pid.asString();
         try{
-            alreadyExists = doiDataCiteRegisterService.testDOIExists(identifier); 
+            alreadyRegistered = doiDataCiteRegisterService.testDOIExists(identifier); 
         } catch (Exception e){
-            logger.log(Level.WARNING, "alreadyExists failed");
+            logger.log(Level.WARNING, "alreadyRegistered failed");
             return false;
         }
-        return  alreadyExists;
+        return  alreadyRegistered;
     }
-    
 
     @Override
     public String createIdentifier(DvObject dvObject) throws Exception {

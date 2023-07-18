@@ -314,13 +314,13 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     @Override
-    public boolean alreadyExists(DvObject dvObject) throws Exception {
+    public boolean alreadyRegistered(DvObject dvObject) throws Exception {
         String handle = getDvObjectHandle(dvObject);
         return isHandleRegistered(handle);
     }
     
     @Override
-    public boolean alreadyExists(GlobalId pid) throws Exception {
+    public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) throws Exception {
         String handle = pid.getAuthority() + "/" + pid.getIdentifier();
         return isHandleRegistered(handle);
     }

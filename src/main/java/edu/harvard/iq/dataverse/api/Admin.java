@@ -2062,21 +2062,21 @@ public class Admin extends AbstractApiBean {
         }
     }
     
-	@DELETE
-	@Path("/clearMetricsCache")
-	public Response clearMetricsCache() {
-		em.createNativeQuery("DELETE FROM metric").executeUpdate();
-		return ok("all metric caches cleared.");
-	}
+    @DELETE
+    @Path("/clearMetricsCache")
+    public Response clearMetricsCache() {
+        em.createNativeQuery("DELETE FROM metric").executeUpdate();
+        return ok("all metric caches cleared.");
+    }
 
-	@DELETE
-	@Path("/clearMetricsCache/{name}")
-	public Response clearMetricsCacheByName(@PathParam("name") String name) {
-		Query deleteQuery = em.createNativeQuery("DELETE FROM metric where metricname = ?");
-		deleteQuery.setParameter(1, name);
-		deleteQuery.executeUpdate();
-		return ok("metric cache " + name + " cleared.");
-	}
+    @DELETE
+    @Path("/clearMetricsCache/{name}")
+    public Response clearMetricsCacheByName(@PathParam("name") String name) {
+        Query deleteQuery = em.createNativeQuery("DELETE FROM metric where name = ?");
+        deleteQuery.setParameter(1, name);
+        deleteQuery.executeUpdate();
+        return ok("metric cache " + name + " cleared.");
+    }
 
     @GET
 	@AuthRequired

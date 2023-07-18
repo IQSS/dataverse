@@ -708,9 +708,6 @@ public class Datasets extends AbstractApiBean {
                 }
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
             }
-//            DatasetVersion managedVersion = execCommand( updateDraft
-//                                                             ? new UpdateDatasetVersionCommand(req, incomingVersion)
-//                                                             : new CreateDatasetVersionCommand(req, ds, incomingVersion));
             return ok( json(managedVersion) );
                     
         } catch (JsonParseException ex) {
@@ -762,8 +759,11 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset ds = findDatasetOrDie(id);
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            DatasetVersion dsv = ds.getOrCreateEditVersion();
+            //Get draft state as of now
+
             boolean updateDraft = ds.getLatestVersion().isDraft();
+            //Get the current draft or create a new version to update
+            DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false, licenseSvc);
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(dsv.getTermsOfUseAndAccess(), null);
@@ -771,12 +771,8 @@ public class Datasets extends AbstractApiBean {
                 return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
             }
             DatasetVersion managedVersion;
-            if (updateDraft) {
-                Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
-                managedVersion = managedDataset.getOrCreateEditVersion();
-            } else {
-                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
-            }
+            Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+            managedVersion = managedDataset.getLatestVersion();
             String info = updateDraft ? "Version Updated" : "Version Created";
             return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
 
@@ -796,17 +792,16 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset ds = findDatasetOrDie(id);
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            DatasetVersion dsv = ds.getOrCreateEditVersion();
+            //Get draft state as of now
+
             boolean updateDraft = ds.getLatestVersion().isDraft();
+            //Get the current draft or create a new version to update
+            DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, licenseSvc);
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             DatasetVersion managedVersion;
-            if (updateDraft) {
-                Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
-                managedVersion = managedDataset.getOrCreateEditVersion();
-            } else {
-                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
-            }
+            Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+            managedVersion = managedDataset.getLatestVersion();
             String info = updateDraft ? "Version Updated" : "Version Created";
             return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
 
@@ -835,6 +830,7 @@ public class Datasets extends AbstractApiBean {
 
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
+            //Get the current draft or create a new version to update
             DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             List<DatasetField> fields = new LinkedList<>();
@@ -946,10 +942,7 @@ public class Datasets extends AbstractApiBean {
             }
 
 
-            boolean updateDraft = ds.getLatestVersion().isDraft();
-            DatasetVersion managedVersion = updateDraft
-                    ? execCommand(new UpdateDatasetVersionCommand(ds, req)).getOrCreateEditVersion()
-                    : execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
+            DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getLatestVersion();
             return ok(json(managedVersion));
 
         } catch (JsonParseException ex) {
@@ -994,6 +987,7 @@ public class Datasets extends AbstractApiBean {
            
             Dataset ds = findDatasetOrDie(id);
             JsonObject json = Json.createReader(rdr).readObject();
+            //Get the current draft or create a new version to update
             DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
             List<DatasetField> fields = new LinkedList<>();
@@ -1096,14 +1090,7 @@ public class Datasets extends AbstractApiBean {
                     dsv.getDatasetFields().add(updateField);
                 }
             }
-            boolean updateDraft = ds.getLatestVersion().isDraft();
-            DatasetVersion managedVersion;
-
-            if (updateDraft) {
-                managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getOrCreateEditVersion();
-            } else {
-                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
-            }
+            DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getLatestVersion();
 
             return ok(json(managedVersion));
 
@@ -3625,7 +3612,7 @@ public class Datasets extends AbstractApiBean {
                 BundleUtil.getStringFromBundle("datasets.api.modificationdate"),
                 BundleUtil.getStringFromBundle("datasets.api.curationstatus"),
                 String.join(",", assignees.keySet())));
-        for (Dataset dataset : datasetSvc.findAllUnpublished()) {
+        for (Dataset dataset : datasetSvc.findAllWithDraftVersion()) {
             List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
             curationRoles.forEach(r -> {
                 assignees.put(r.getAlias(), new HashSet<String>());
@@ -3635,11 +3622,12 @@ public class Datasets extends AbstractApiBean {
                     assignees.get(ra.getRole().getAlias()).add(ra.getAssigneeIdentifier());
                 }
             }
+            DatasetVersion dsv = dataset.getLatestVersion();
             String name = "\"" + dataset.getCurrentName().replace("\"", "\"\"") + "\"";
-            String status = dataset.getLatestVersion().getExternalStatusLabel();
+            String status = dsv.getExternalStatusLabel();
             String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
-            String date = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getCreateDate());
-            String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getModificationTime());
+            String date = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getCreateTime());
+            String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getLastUpdateTime());
             String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
             List<String> sList = new ArrayList<String>();
             assignees.entrySet().forEach(e -> sList.add(e.getValue().size() == 0 ? "" : String.join(";", e.getValue())));

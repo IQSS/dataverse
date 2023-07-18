@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
@@ -58,6 +59,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     @EJB
     DatasetFieldServiceBean fieldService;
+    
+    @EJB
+    MetadataBlockServiceBean mdbService;
 
     private Map<String, String> settingsMap;
     
@@ -114,6 +118,8 @@ public class SettingsWrapper implements java.io.Serializable {
     private Boolean dataFilePIDSequentialDependent = null;
     
     private Boolean customLicenseAllowed = null;
+    
+    private List<MetadataBlock> systemMetadataBlocks;
     
     private Set<Type> alwaysMuted = null;
 
@@ -722,4 +728,19 @@ public class SettingsWrapper implements java.io.Serializable {
         return customLicenseAllowed;
     }
 
+    public List<MetadataBlock> getSystemMetadataBlocks() {
+
+        if (systemMetadataBlocks == null) {
+            systemMetadataBlocks = new ArrayList<MetadataBlock>();
+        }
+        List<MetadataBlock> blocks = mdbService.listMetadataBlocks();
+        for (MetadataBlock mdb : blocks) {
+            String smdbString = JvmSettings.MDB_SYSTEM_KEY_FOR.lookupOptional(mdb.getName()).orElse(null);
+            if (smdbString != null) {
+                systemMetadataBlocks.add(mdb);
+            }
+        }
+
+        return systemMetadataBlocks;
+    }
 }

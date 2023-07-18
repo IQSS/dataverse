@@ -1212,12 +1212,15 @@ public class IndexServiceBean {
                                 logger.warning(String.format("Full-text indexing for %s failed",
                                         fileMetadata.getDataFile().getDisplayName()));
                                 e.printStackTrace();
-                                continue;
                             } catch (OutOfMemoryError e) {
                                 textHandler = null;
                                 logger.warning(String.format("Full-text indexing for %s failed due to OutOfMemoryError",
                                         fileMetadata.getDataFile().getDisplayName()));
-                                continue;
+                            } catch(Error e) {
+                                //Catch everything - full-text indexing is complex enough (and using enough 3rd party components) that it can fail
+                                // and we don't want problems here to break other Dataverse functionality (e.g. edits)
+                                logger.severe(String.format("Full-text indexing for %s failed due to Error: %s : %s",
+                                        fileMetadata.getDataFile().getDisplayName(),e.getClass().getCanonicalName(), e.getLocalizedMessage()));
                             } finally {
                                 IOUtils.closeQuietly(instream);
                             }

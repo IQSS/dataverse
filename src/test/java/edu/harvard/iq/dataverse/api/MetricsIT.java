@@ -255,6 +255,12 @@ public class MetricsIT {
         response = UtilIT.metricsDataversesBySubject("dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
+        
+        // Test cache delete for single metric - just tests that the call succeeds since
+        // the client can't really tell whether it gets a new/cached value
+
+        response = UtilIT.clearMetricCache("dataversesBySubject");
+        response.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     @Test

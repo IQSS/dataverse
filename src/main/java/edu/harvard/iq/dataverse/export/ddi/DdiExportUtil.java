@@ -1690,7 +1690,7 @@ public class DdiExportUtil {
         // we're not writing the opening <dataDscr> tag until we find an actual 
         // tabular datafile.
         for (int i=0;i<fileDetails.size();i++) {
-            JsonObject fileJson = fileDetails.getJsonObject(0);
+            JsonObject fileJson = fileDetails.getJsonObject(i);
 
             /**
              * Previously (in Dataverse 5.3 and below) the dataDscr section was
@@ -1699,7 +1699,7 @@ public class DdiExportUtil {
              * should instead use the "Data Variable Metadata Access" endpoint.)
              * These days we skip restricted files to avoid this exposure.
              */
-            if (fileJson.getBoolean("restricted")) {
+            if (fileJson.containsKey("restricted") && fileJson.getBoolean("restricted")) {
                 continue;
             }
             if(fileJson.containsKey("embargo")) {
@@ -1711,7 +1711,6 @@ public class DdiExportUtil {
              }
             }
         
-
             if (fileJson.containsKey("dataTables")) {
                 if (!tabularData) {
                     xmlw.writeStartElement("dataDscr");
@@ -2003,9 +2002,12 @@ public class DdiExportUtil {
         String dataverseUrl = SystemConfig.getDataverseSiteUrlStatic();
         for (int i =0;i<fileDetails.size();i++) {
             JsonObject fileJson = fileDetails.getJsonObject(i);
-
-            if (fileJson.containsKey("dataTables")) {
-                JsonObject dt = fileJson.getJsonArray("dataTables").getJsonObject(0);
+            //originalFileFormat is one of several keys that only exist for tabular data
+            if (fileJson.containsKey("originalFileFormat")) {
+                JsonObject dt = null;
+                if (fileJson.containsKey("dataTables")) {
+                    dt = fileJson.getJsonArray("dataTables").getJsonObject(0);
+                }
                 xmlw.writeStartElement("fileDscr");
                 String fileId = fileJson.getJsonNumber("id").toString();
                 writeAttribute(xmlw, "ID", "f" + fileId);
@@ -2016,7 +2018,8 @@ public class DdiExportUtil {
                 xmlw.writeCharacters(fileJson.getString("filename"));
                 xmlw.writeEndElement(); // fileName
 
-                if (dt.containsKey("caseQuantity") || dt.containsKey("varQuantity") || dt.containsKey("recordsPerCase")) {
+                if (dt != null && (dt.containsKey("caseQuantity") || dt.containsKey("varQuantity")
+                        || dt.containsKey("recordsPerCase"))) {
                     xmlw.writeStartElement("dimensns");
 
                     if (dt.containsKey("caseQuantity")) {
@@ -2049,7 +2052,7 @@ public class DdiExportUtil {
                 // various notes:
                 // this specially formatted note section is used to store the UNF
                 // (Universal Numeric Fingerprint) signature:
-                if (dt.containsKey("UNF") && !dt.getString("UNF").isBlank()) {
+                if ((dt!=null) && (dt.containsKey("UNF") && !dt.getString("UNF").isBlank())) {
                     xmlw.writeStartElement("notes");
                     writeAttribute(xmlw, "level", LEVEL_FILE);
                     writeAttribute(xmlw, "type", NOTE_TYPE_UNF);
