@@ -76,6 +76,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonDT;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.UriInfo;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -829,15 +831,13 @@ public class Files extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/guestbookResponses/count")
-    public Response getCountGuestbookResponses(@PathParam("id") String dataFileId) {
-        DataFile dataFile;
-        try {
-            dataFile = findDataFileOrDie(dataFileId);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFile.getId()).toString());
+    public Response getCountGuestbookResponses(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFile.getId()).toString());
+        }, getRequestUser(crc));
     }
 
     @GET
@@ -854,14 +854,25 @@ public class Files extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{id}/thumbnailClass")
-    public Response getFileThumbnailClass(@PathParam("id") String dataFileId) {
-        DataFile dataFile;
-        try {
-            dataFile = findDataFileOrDie(dataFileId);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        return ok(dataFileServiceBean.getFileThumbnailClass(dataFile));
+    public Response getFileThumbnailClass(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            return ok(dataFileServiceBean.getFileThumbnailClass(dataFile));
+        }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/dataTables")
+    public Response getFileDataTables(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            if (!dataFile.isTabularData()) {
+                return error(BAD_REQUEST, "This operation is only available for tabular files.");
+            }
+            return ok(jsonDT(dataFile.getDataTables()));
+        }, getRequestUser(crc));
     }
 }

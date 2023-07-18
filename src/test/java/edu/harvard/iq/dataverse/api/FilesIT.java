@@ -2107,7 +2107,7 @@ public class FilesIT {
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
         // Upload test file
-        String pathToTestFile = "src/main/webapp/resources/images/dataverseproject.png";
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
         Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -2150,7 +2150,7 @@ public class FilesIT {
         int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
         // Upload test file
-        String pathToTestFile = "src/main/webapp/resources/images/dataverseproject.png";
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
         Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -2182,7 +2182,7 @@ public class FilesIT {
         int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
         // Upload test file
-        String pathToTestFile = "src/main/webapp/resources/images/dataverseproject.png";
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
         Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -2197,5 +2197,45 @@ public class FilesIT {
         // Call with invalid file id
         Response getFileThumbnailClassInvalidIdResponse = UtilIT.getFileThumbnailClass("testInvalidId", apiToken);
         getFileThumbnailClassInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testGetFileDataTables() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload non-tabular file
+        String pathToNonTabularTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadNonTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToNonTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadNonTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that getting data tables for non-tabular file fails
+        int testNonTabularFileId = JsonPath.from(uploadNonTabularFileResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Response getFileDataTablesForNonTabularFileResponse = UtilIT.getFileDataTables(Integer.toString(testNonTabularFileId), apiToken);
+        getFileDataTablesForNonTabularFileResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Upload tabular file
+        String pathToTabularTestFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Ensure tabular file is ingested
+        sleep(2000);
+
+        // Get file data tables for the tabular file and assert data is obtained
+        int testTabularFileId = JsonPath.from(uploadTabularFileResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Response getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(Integer.toString(testTabularFileId), apiToken);
+        getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        int dataTablesNumber = JsonPath.from(getFileDataTablesForTabularFileResponse.body().asString()).getList("data").size();
+        assertTrue(dataTablesNumber > 0);
     }
 }
