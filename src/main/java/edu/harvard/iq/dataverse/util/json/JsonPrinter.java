@@ -1192,6 +1192,7 @@ public class JsonPrinter {
 
     public static JsonObject json(GuestbookResponse gbr) {
         JsonObjectBuilder gbrJsonObjectBuilder = jsonObjectBuilder()
+                .add("responseDate", gbr.getResponseDate())
                 .add("name", gbr.getName())
                 .add("email", gbr.getEmail())
                 .add("institution", gbr.getInstitution())
