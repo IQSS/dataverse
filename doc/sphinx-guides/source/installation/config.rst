@@ -248,7 +248,7 @@ this provider.
 - :ref:`:Shoulder <:Shoulder>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
-- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
+- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to false)
 
 .. _pids-handle-configuration:
 
@@ -297,7 +297,7 @@ Here are the configuration options for PermaLinks:
 - :ref:`:Shoulder <:Shoulder>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
-- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
+- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to false)
 
 .. _auth-modes:
 
@@ -2775,14 +2775,20 @@ timestamps.
 :FilePIDsEnabled
 ++++++++++++++++
 
-Toggles publishing of file-level PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be true. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
+Toggles publishing of file-level PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be false. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
 
-If you don't want to register file-based PIDs for your installation, set:
+It is possible to override the installation-wide setting for specific collections, but only if it is set to true or false (and not left undefined). For example, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
+
+To enable file-level PIDs for the entire installation::
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
+
+
+If you don't want to register file-based PIDs for your entire installation, but do want to allow them to be enabled for a given collection set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
 
-It is possible to override the installation-wide setting for specific collections. For example, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
 
 .. _:IndependentHandleService:
 
