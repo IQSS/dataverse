@@ -358,8 +358,9 @@ public class FileRecordWriter extends AbstractItemWriter {
         dataset.getLatestVersion().getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
         
-    if (commandEngine.getContext().systemConfig().isFilePIDsEnabledForCollection(dataset.getOwner())) {
-
+	String isFilePIDsEnabled = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.FilePIDsEnabled, "true"); //default value for file PIDs is 'true'
+	if ("true".contentEquals( isFilePIDsEnabled )) {
+	
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
             packageFile.setIdentifier(idServiceBean.generateDataFileIdentifier(packageFile));

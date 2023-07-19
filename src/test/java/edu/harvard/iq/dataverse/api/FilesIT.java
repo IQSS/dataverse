@@ -2025,14 +2025,7 @@ public class FilesIT {
     @Test
     public void testFilePIDsBehavior() {
         // Create user
-        Response createUser = UtilIT.createRandomUser();
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        String username = UtilIT.getUsernameFromResponse(createUser);
-        Response toggleSuperuser = UtilIT.makeSuperUser(username);
-        toggleSuperuser.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        try {
-        UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
+        String apiToken = createUserGetToken();
 
         // Create Dataverse
         String collectionAlias = createDataverseGetAlias(apiToken);
@@ -2071,14 +2064,14 @@ public class FilesIT {
         assertNotNull("The file did not get a persistent identifier assigned (check that file PIDs are enabled instance-wide!)", origFilePersistentId);
 
         // Now change the file PIDs registration configuration for the collection:
-        UtilIT.enableSetting(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection);
+        
         Response changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "filePIDsEnabled", "false", apiToken);
         
         // ... And do the whole thing with creating another dataset with a file:
         
         datasetId = createDatasetGetId(collectionAlias, apiToken);
         addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
-        addResponse.then().assertThat().statusCode(OK.getStatusCode());
+        addResponse.then().assertThat().statusCode(OK.getStatusCode());                
         Long newFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
         
         // And publish this dataset:
@@ -2096,9 +2089,6 @@ public class FilesIT {
         msg(fileInfoResponseString);
         
         org.junit.Assert.assertEquals("The file was NOT supposed to be issued a PID", "", JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId"));
-        } finally {
-            UtilIT.deleteSetting(SettingsServiceBean.Key.FilePIDsEnabled);
-            UtilIT.deleteSetting(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection);
-        }
+      
     }
 }

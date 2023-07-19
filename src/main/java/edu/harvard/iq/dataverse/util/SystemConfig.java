@@ -1011,7 +1011,7 @@ public class SystemConfig {
                 // hasn't been explicitly enabled, therefore we presume that it is
                 // subject to how the registration is configured for the 
                 // entire instance:
-                return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, false); 
+                return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, true); 
             }
             thisCollection = thisCollection.getOwner();
         }
