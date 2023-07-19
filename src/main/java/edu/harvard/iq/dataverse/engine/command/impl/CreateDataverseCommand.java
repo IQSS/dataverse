@@ -97,6 +97,10 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         if (ctxt.dataverses().findByAlias(created.getAlias()) != null) {
             throw new IllegalCommandException("A dataverse with alias " + created.getAlias() + " already exists", this);
         }
+        
+        if(created.getFilePIDsEnabled()!=null && !ctxt.settings().isTrueForKey(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection, false)) {
+            throw new IllegalCommandException("File PIDs cannot be enabled per collection", this);
+        }
 
         // Save the dataverse
         Dataverse managedDv = ctxt.dataverses().save(created);
