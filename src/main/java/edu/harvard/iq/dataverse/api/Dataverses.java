@@ -636,6 +636,12 @@ public class Dataverses extends AbstractApiBean {
                     break;
                  */
                 case "filePIDsEnabled":
+                    if(!user.isSuperuser()) {
+                        return forbidden("You must be a superuser to change this setting");
+                    }
+                    if(settingsService.isTrueForKey(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection, false)) {
+                        return forbidden("File PIDs are not enabled on this server");
+                    }
                     collection.setFilePIDsEnabled(parseBooleanOrDie(value));
                     break;
                 default:
