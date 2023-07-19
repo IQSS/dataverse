@@ -175,6 +175,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         
         ctxt.em().createNativeQuery("Delete from OAuth2TokenData where user_id ="+consumedAU.getId()).executeUpdate();
         
+        ctxt.em().createNativeQuery("DELETE FROM explicitgroup_authenticateduser consumed USING explicitgroup_authenticateduser ongoing WHERE consumed.containedauthenticatedusers_id="+ongoingAU.getId()+" AND ongoing.containedauthenticatedusers_id="+consumedAU.getId()).executeUpdate();
         ctxt.em().createNativeQuery("UPDATE explicitgroup_authenticateduser SET containedauthenticatedusers_id="+ongoingAU.getId()+" WHERE containedauthenticatedusers_id="+consumedAU.getId()).executeUpdate();
         
         ctxt.actionLog().changeUserIdentifierInHistory(consumedAU.getIdentifier(), ongoingAU.getIdentifier());

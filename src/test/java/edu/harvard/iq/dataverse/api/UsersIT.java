@@ -8,6 +8,7 @@ import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import javax.json.Json;
@@ -206,15 +207,15 @@ public class UsersIT {
         String aliasInOwner = "groupFor" + dataverseAlias;
         String displayName = "Group for " + dataverseAlias;
         String user2identifier = "@" + usernameConsumed;
+        String target2identifier = "@" + targetname;
         Response createGroup = UtilIT.createGroup(dataverseAlias, aliasInOwner, displayName, superuserApiToken);
         createGroup.prettyPrint();
         createGroup.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
 
-        String groupIdentifier = JsonPath.from(createGroup.asString()).getString("data.identifier");
+        // String groupIdentifier = JsonPath.from(createGroup.asString()).getString("data.identifier");
 
-        List<String> roleAssigneesToAdd = new ArrayList<>();
-        roleAssigneesToAdd.add(user2identifier);
+        List<String> roleAssigneesToAdd = Arrays.asList(user2identifier, target2identifier);
         Response addToGroup = UtilIT.addToGroup(dataverseAlias, aliasInOwner, roleAssigneesToAdd, superuserApiToken);
         addToGroup.prettyPrint();
         addToGroup.then().assertThat()
