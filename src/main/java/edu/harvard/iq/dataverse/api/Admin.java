@@ -1645,11 +1645,6 @@ public class Admin extends AbstractApiBean {
                         if (countSuccesses % 100 == 0) {
                             logger.info(countSuccesses + " out of " + count + " files registered successfully. " + new Date());
                         }
-                        try {
-                            Thread.sleep(sleepInterval * 1000);
-                        } catch (InterruptedException ie) {
-                            logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
-                        }
                     } else {
                         countDrafts++;
                         logger.fine(countDrafts + " out of " + count + " files not yet published");
@@ -1664,6 +1659,12 @@ public class Admin extends AbstractApiBean {
                 Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception e) {
                 logger.info("Unexpected Exception: " + e.getMessage());
+            }
+            
+            try {
+                Thread.sleep(sleepInterval * 1000);
+            } catch (InterruptedException ie) {
+                logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
             }
         }
         
