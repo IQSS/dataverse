@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.DataFile;
@@ -36,11 +38,7 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
 
     public RequestAccessCommand(DataverseRequest dvRequest, DataFile file) {
         // for data file check permission on owning dataset
-        super(dvRequest, file);
-        this.file = file;
-        this.requester = (AuthenticatedUser) dvRequest.getUser();
-        this.fileAccessRequest = new FileAccessRequest(file, requester);
-        this.sendNotification = false;
+        this(dvRequest, file, false);
     }
 
     public RequestAccessCommand(DataverseRequest dvRequest, DataFile file, Boolean sendNotification) {
@@ -89,8 +87,13 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         if (FileUtil.isActivelyEmbargoed(file)) {
             throw new CommandException(BundleUtil.getStringFromBundle("file.requestAccess.notAllowed.embargoed"), this);
         }
-        file.getFileAccessRequests().add(fileAccessRequest);
-        requester.getFileAccessRequests().add(fileAccessRequest);
+        file.addFileAccessRequest(fileAccessRequest);
+        List<FileAccessRequest> fars = requester.getFileAccessRequests();
+        if(fars!=null) {
+            fars.add(fileAccessRequest);
+        } else {
+            requester.setFileAccessRequests(Arrays.asList(fileAccessRequest));
+        }
         if (sendNotification) {
             logger.fine("ctxt.fileDownload().sendRequestFileAccessNotification(this.file, requester);");
             ctxt.fileDownload().sendRequestFileAccessNotification(this.file.getOwner(), this.file.getId(), requester);

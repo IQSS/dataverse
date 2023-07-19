@@ -777,21 +777,10 @@ public class DataFile extends DvObject implements Comparable {
     }
 
 
-    public void addFileAccessRequester(AuthenticatedUser authenticatedUser) {
+    public void addFileAccessRequest(FileAccessRequest request) {
         if (this.fileAccessRequests == null) {
             this.fileAccessRequests = new ArrayList<>();
         }
-
-        Set<AuthenticatedUser> existingUsers = this.fileAccessRequests.stream()
-            .filter(far -> far.isStateCreated())
-            .map(FileAccessRequest::getRequester)
-            .collect(Collectors.toSet());
-
-        if (existingUsers.contains(authenticatedUser)) {
-            return;
-        }
-
-        FileAccessRequest request = new FileAccessRequest(this, authenticatedUser);
 
         this.fileAccessRequests.add(request);
     }

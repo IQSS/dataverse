@@ -337,7 +337,8 @@ public class FileDownloadHelper implements java.io.Serializable {
              // update the local file object so that the page properly updates
              AuthenticatedUser user = (AuthenticatedUser) session.getUser();
              //This seems to be required because we don't get the updated file object back from the command called in the fileDownloadService.requestAccess call above
-             file.addFileAccessRequester(user);
+             FileAccessRequest request = new FileAccessRequest(file, user);
+             file.addFileAccessRequest(request);
 
              // create notification if necessary
              if (sendNotification) {
