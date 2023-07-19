@@ -2788,21 +2788,6 @@ If you don't want to register file-based PIDs for your entire installation, but 
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
-.. _:AllowEnablingFilePIDsPerCollection:
-
-:AllowEnablingFilePIDsPerCollection
-+++++++++++++++++++++++++++++++++++
-
-Toggles whether superusers can change the File PIDs policy per collection. publishing of file-level PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be false. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
-
-For example, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
-
-To enable setting file-level PIDs per collection::
-
-``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:AllowEnablingFilePIDsPerCollection``
-
-
-When :AllowEnablingFilePIDsPerCollection is true, setting File PIDs to be enabled/disabled for a given collection can be done via the Native API - see :ref:`collection-attributes-api` in the Native API Guide.
 
 
 .. _:IndependentHandleService:
