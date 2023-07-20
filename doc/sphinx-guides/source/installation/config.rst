@@ -2433,6 +2433,15 @@ If this value is not set (the default), Dataverse will not use external Exporter
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SPI_EXPORTERS_DIRECTORY``.
 
+.. _dataverse.netcdf.geo-extract-s3-direct-upload:
+
+dataverse.netcdf.geo-extract-s3-direct-upload
++++++++++++++++++++++++++++++++++++++++++++++
+
+This setting was added to keep S3 direct upload lightweight. When that feature is enabled and you still want NetCDF and HDF5 files to go through metadata extraction of a Geospatial Bounding Box (see :ref:`netcdf-and-hdf5`), which requires the file to be downloaded from S3 in this scenario, make this setting true.
+
+See also :ref:`s3-direct-upload-features-disabled`.
+
 .. _feature-flags:
 
 Feature Flags
@@ -2451,7 +2460,7 @@ please find all known feature flags below. Any of these flags can be activated u
       - Description
       - Default status
     * - api-session-auth
-      - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and removed once support for bearer tokens has been implemented (see `#9229 <https://github.com/IQSS/dataverse/issues/9229>`_).
+      - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
@@ -2766,13 +2775,14 @@ timestamps.
 :FilePIDsEnabled
 ++++++++++++++++
 
-Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be true. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
+Toggles publishing of file-level PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be true. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
 
 If you don't want to register file-based PIDs for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
-Note: File-level PID registration was added in Dataverse Software 4.9; it could not be disabled until Dataverse Software 4.9.3.
+
+It is possible to override the installation-wide setting for specific collections. For example, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
 
 .. _:IndependentHandleService:
 
@@ -3112,6 +3122,8 @@ This curl command...
 
 See also :doc:`oauth2`.
 
+.. _:FileFixityChecksumAlgorithm:
+
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
 
@@ -3121,12 +3133,9 @@ The default checksum algorithm used is MD5 and should be sufficient for establis
 
 ``curl -X PUT -d 'SHA-512' http://localhost:8080/api/admin/settings/:FileFixityChecksumAlgorithm``
 
-The fixity algorithm used on existing files can be changed by a superuser using the API. An optional query parameter (num) can be used to limit the number of updates attempted.
-The API call will only update the algorithm and checksum for a file if the existing checksum can be validated against the file.
-Statistics concerning the updates are returned in the response to the API call with details in the log.
+To update the algorithm used for existing files, see :ref:`UpdateChecksums`
 
-``curl http://localhost:8080/api/admin/updateHashValues/{alg}``
-``curl http://localhost:8080/api/admin/updateHashValues/{alg}?num=1``
+The fixity checksum algorithm in use can be discovered via API. See :ref:`get-fixity-algorithm` in the API Guide.
 
 .. _:PVMinLength:
 
@@ -3406,6 +3415,8 @@ Limit on how many guestbook entries to display on the guestbook-responses page. 
 
 ``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit``
 
+.. _:CustomDatasetSummaryFields:
+
 :CustomDatasetSummaryFields
 +++++++++++++++++++++++++++
 
@@ -3414,6 +3425,10 @@ You can replace the default dataset metadata fields that are displayed above fil
 ``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
 
 You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work.
+
+The default fields are ``dsDescription,subject,keyword,publication,notesText``.
+
+This setting can be retrieved via API. See :ref:`get-dataset-summary-field-names` in the API Guide.
 
 :AllowApiTokenLookupViaApi
 ++++++++++++++++++++++++++

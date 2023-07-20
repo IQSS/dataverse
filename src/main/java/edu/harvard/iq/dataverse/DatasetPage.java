@@ -684,12 +684,14 @@ public class DatasetPage implements java.io.Serializable {
 
     private List<FileMetadata> selectFileMetadatasForDisplay() {
         final Set<Long> searchResultsIdSet;
-        if (StringUtil.isEmpty(fileLabelSearchTerm) && StringUtil.isEmpty(fileTypeFacet) && StringUtil.isEmpty(fileAccessFacet) && StringUtil.isEmpty(fileTagsFacet)) {
-            // But, if no search terms were specified, we return the full
-            // list of the files in the version:
+        if (isIndexedVersion() && StringUtil.isEmpty(fileLabelSearchTerm) && StringUtil.isEmpty(fileTypeFacet) && StringUtil.isEmpty(fileAccessFacet) && StringUtil.isEmpty(fileTagsFacet)) {
+            // Indexed version: we need facets, they are set as a side effect of getFileIdsInVersionFromSolr method.
+            // But, no search terms were specified, we will return the full
+            // list of the files in the version: we discard the result from getFileIdsInVersionFromSolr.
+            getFileIdsInVersionFromSolr(workingVersion.getId(), this.fileLabelSearchTerm);
             // Since the search results should include the full set of fmds if all the
             // terms/facets are empty, setting them to null should just be
-            // an optimization for the loop below
+            // an optimization to skip the loop below
             searchResultsIdSet = null;
         } else if (isIndexedVersion()) {
             // We run the search even if no search term and/or facets are
@@ -1889,7 +1891,7 @@ public class DatasetPage implements java.io.Serializable {
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
             } else if (versionId != null) {
                 // TODO: 4.2.1 - this method is broken as of now!
@@ -2844,10 +2846,15 @@ public class DatasetPage implements java.io.Serializable {
 
         if (persistentId != null) {
             setIdByPersistentId();
-        }
-        if (dataset.getId() != null) {
-            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
-            dataset = datasetService.findDeep(dataset.getId());
+            if (this.getId() == null) {
+                logger.warning("No such dataset: "+persistentId);
+                return permissionsWrapper.notFound();
+            }
+            dataset = datasetService.findDeep(this.getId());
+            if (dataset == null) {
+                logger.warning("No such dataset: "+persistentId);
+                return permissionsWrapper.notFound();
+            }
             retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
         } else if (versionId != null) {
             retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
@@ -3619,7 +3626,7 @@ public class DatasetPage implements java.io.Serializable {
                 //ToDo - could drop use of selectedTemplate and just use the persistent dataset.getTemplate() 
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
-                        cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, selectedTemplate);
+                        cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), selectedTemplate);
                     } else {
                         JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.create.authenticatedUsersOnly"));
                         return null;

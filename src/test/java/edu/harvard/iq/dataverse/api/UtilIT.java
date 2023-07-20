@@ -1693,9 +1693,10 @@ public class UtilIT {
         return response;
     }
 
-    static Response privateUrlCreate(Integer datasetId, String apiToken) {
+    static Response privateUrlCreate(Integer datasetId, String apiToken, boolean anonymizedAccess) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("anonymizedAccess", anonymizedAccess)
                 .post("/api/datasets/" + datasetId + "/privateUrl");
         return response;
     }
@@ -2105,6 +2106,12 @@ public class UtilIT {
                 .multiPart("file", new File(pathToImageFile))
                 .put("/api/dataverses/" + dataverseAlias + "/logo");
     }
+    
+    static Response setCollectionAttribute(String dataverseAlias, String attribute, String value, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/dataverses/" + dataverseAlias + "/attribute/" + attribute + "?value=" + value);
+    }
 
     /**
      * Deprecated as the apiToken is not used by the call.
@@ -2397,6 +2404,12 @@ public class UtilIT {
         RequestSpecification requestSpecification = given();
         return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
+    
+    static Response clearMetricCache(String name) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.delete("/api/admin/clearMetricsCache/" + name);
+    }
+
 
     static Response sitemapUpdate() {
         return given()
@@ -3208,6 +3221,35 @@ public class UtilIT {
         Response response = given()
                 .contentType("application/json")
                 .post("/api/logout");
+        return response;
+    }
+
+    static Response getDatasetSummaryFieldNames() {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/summaryFieldNames");
+        return response;
+    }
+
+    static Response getPrivateUrlDatasetVersion(String privateUrlToken) {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/privateUrlDatasetVersion/" + privateUrlToken);
+        return response;
+    }
+
+    static Response getPrivateUrlDatasetVersionCitation(String privateUrlToken) {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/privateUrlDatasetVersion/" + privateUrlToken + "/citation");
+        return response;
+    }
+
+    static Response getDatasetVersionCitation(Integer datasetId, String version, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation");
         return response;
     }
 }
