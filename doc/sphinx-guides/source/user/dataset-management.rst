@@ -357,7 +357,7 @@ A map is also displayed as a preview of GeoTiFF image files, whose previewer mus
 Shapefile
 -------
 
-Another previewer can be enabled for shapefiles (see :ref:`file-previews`). This previewer only works with zipped shapefiles (see :doc:`developers/geospatial`). A file size limit of 20 MB is set for this previewer (also because of performance reasons).
+Another previewer can be enabled for shapefiles (see :ref:`file-previews`). This previewer only works with zipped shapefiles (see :doc:`/developers/geospatial`). A file size limit of 20 MB is set for this previewer (also because of performance reasons).
 
 .. _netcdf-and-hdf5:
 
