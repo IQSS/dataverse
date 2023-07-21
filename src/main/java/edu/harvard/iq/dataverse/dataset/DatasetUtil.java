@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -37,6 +38,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.math.BigDecimal;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.EnumUtils;
@@ -497,18 +499,34 @@ public class DatasetUtil {
     
     public static boolean validateDatasetMetadataExternally(Dataset ds, String executable, DataverseRequest request) {
         String sourceAddressLabel = "0.0.0.0"; 
+        String userIdentifier = "guest";
         
         if (request != null) {
             IpAddress sourceAddress = request.getSourceAddress();
             if (sourceAddress != null) {
                 sourceAddressLabel = sourceAddress.toString();
             }
+            
+            AuthenticatedUser user = request.getAuthenticatedUser();
+            
+            if (user != null) {
+                userIdentifier = user.getUserIdentifier();
+            }
         }
         
         String jsonMetadata; 
         
+        // We are sending the dataset metadata encoded in our standard json 
+        // format, with a couple of extra elements added, such as the ids of 
+        // the home collection and the user, in order to make it easier 
+        // for the filter to whitelist by these attributes. 
+        
         try {
-            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion())).add("sourceAddress", sourceAddressLabel).build().toString();
+            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion()))
+                    .add("sourceAddress", sourceAddressLabel)
+                    .add("userIdentifier", userIdentifier)
+                    .add("colAlias", ds.getOwner().getAlias())
+                    .build().toString();
         } catch (Exception ex) {
             logger.warning("Failed to export dataset metadata as json; "+ex.getMessage() == null ? "" : ex.getMessage());
             return false; 
@@ -524,7 +542,7 @@ public class DatasetUtil {
         try {
             File tempFile = File.createTempFile("datasetMetadataCheck", ".tmp");
             FileUtils.writeStringToFile(tempFile, jsonMetadata);
-                                    
+            
             // run the external executable: 
             String[] params = { executable, tempFile.getAbsolutePath() };
             Process p = Runtime.getRuntime().exec(params);
