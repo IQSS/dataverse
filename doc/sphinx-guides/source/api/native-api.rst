@@ -296,6 +296,8 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/metadatablockfacets/isRoot -d 'true'
 
+.. _create-role-in-collection:
+
 Create a New Role in a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -315,7 +317,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
 
-``roles.json`` see :ref:`json-representation-of-a-role`
+For ``roles.json`` see :ref:`json-representation-of-a-role`
 
 .. note:: Only a Dataverse installation account with superuser permissions is allowed to create roles in a Dataverse Collection.
 
@@ -3005,6 +3007,8 @@ Optionally, you may use a third query parameter "sendEmailNotification=false" to
 Roles
 -----
 
+A role is a set of permissions.
+
 .. _json-representation-of-a-role:
 
 JSON Representation of a Role
@@ -3026,7 +3030,7 @@ The JSON representation of a role (``roles.json``) looks like this::
 Create Role
 ~~~~~~~~~~~
 
-Roles can be created globally or for individual Dataverse Collections (see the corresponding sections in this document).
+Roles can be created globally (:ref:`create-global-role`) or for individual Dataverse collections (:ref:`create-role-in-collection`).
 
 Show Role
 ~~~~~~~~~
@@ -3886,6 +3890,8 @@ List Global Roles
 List all global roles in the system. ::
 
     GET http://$SERVER/api/admin/roles
+
+.. _create-global-role:
 
 Create Global Role
 ~~~~~~~~~~~~~~~~~~
