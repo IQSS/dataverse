@@ -524,7 +524,7 @@ public class DatasetUtil {
             jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion()))
                     .add("sourceAddress", sourceAddressLabel)
                     .add("userIdentifier", userIdentifier)
-                    .add("colAlias", ds.getOwner().getAlias())
+                    .add("parentAlias", ds.getOwner().getAlias())
                     .build().toString();
         } catch (Exception ex) {
             logger.warning("Failed to export dataset metadata as json; "+ex.getMessage() == null ? "" : ex.getMessage());
