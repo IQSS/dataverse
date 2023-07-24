@@ -154,6 +154,26 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     public DatasetVersion find(Object pk) {
         return em.find(DatasetVersion.class, pk);
     }
+    
+    public DatasetVersion findDeep(Object pk) {
+        return (DatasetVersion) em.createNamedQuery("DatasetVersion.findById")
+            .setParameter("id", pk)
+            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files 
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.file.ingestRequest")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.file.thumbnailForDataset")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.file.dataTables")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.file.auxiliaryFiles")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.file.ingestReports")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.file.dataFileTags")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.fileCategories")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.file.embargo")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.file.fileAccessRequests")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.datasetVersion")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.file.releaseUser")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.file.creator")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.file.roleAssignments")
+            .getSingleResult();
+    }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
         Long majorVersionNumber = null;

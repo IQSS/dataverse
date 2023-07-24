@@ -1897,6 +1897,7 @@ public class DatasetPage implements java.io.Serializable {
                 // TODO: 4.2.1 - this method is broken as of now!
                 // Set Working Version and Dataset by DatasaetVersion Id
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
+                //this.workingVersion = datasetVersionService.findDeep(versionId);
 
             }
             this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
