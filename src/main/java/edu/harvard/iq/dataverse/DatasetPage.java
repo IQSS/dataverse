@@ -2171,14 +2171,19 @@ public class DatasetPage implements java.io.Serializable {
         }               
     }
 
+    Boolean valid = null;
+
     public boolean isValid() {
-        DatasetVersion version = dataset.getLatestVersion();
-        if (!version.isDraft()) {
-            return true;
+        if (valid == null) {
+            DatasetVersion version = dataset.getLatestVersion();
+            if (!version.isDraft()) {
+                valid = true;
+            }
+            DatasetVersion newVersion = version.cloneDatasetVersion();
+            newVersion.setDatasetFields(newVersion.initDatasetFields());
+            valid = newVersion.isValid();
         }
-        DatasetVersion newVersion = version.cloneDatasetVersion();
-        newVersion.setDatasetFields(newVersion.initDatasetFields());
-        return newVersion.isValid();
+        return valid;
     }
 
     public boolean isValidOrCanReviewIncomplete() {
@@ -6114,16 +6119,23 @@ public class DatasetPage implements java.io.Serializable {
     
     /**
      * Add Signposting
+     * 
      * @return String
      */
+
+    String signpostingLinkHeader = null;
+
     public String getSignpostingLinkHeader() {
         if (!workingVersion.isReleased()) {
             return null;
         }
-        SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion,
-                JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
-                JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""));
-        return sr.getLinks();
+        if (signpostingLinkHeader == null) {
+            SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion,
+                    JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
+                    JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""));
+            signpostingLinkHeader = sr.getLinks();
+        }
+        return signpostingLinkHeader;
     }
 
 }
