@@ -208,6 +208,8 @@ Previewers are available for the following file types:
 - Zip (preview and extract/download)
 - HTML
 - GeoJSON
+- GeoTIFF
+- Shapefile
 - NetCDF/HDF5
 - Hypothes.is
 
@@ -342,6 +344,20 @@ GeoJSON
 -------
 
 A map will be shown as a preview of GeoJSON files when the previewer has been enabled (see :ref:`file-previews`). See also a `video demo <https://www.youtube.com/watch?v=EACJJaV3O1c&t=588s>`_ of the GeoJSON previewer by its author, Kaitlin Newson.
+
+.. _geotiff:
+
+GeoTIFF
+-------
+
+A map is also displayed as a preview of GeoTiFF image files, whose previewer must be enabled (see :ref:`file-previews`). Since GeoTIFFs do not have their own mimetype, it is advisable to use this previewer only when GeoTIFFs are used (and not "normal" TIFs). For performance reasons, this previewer has a file size limit of 15 MB and a row/column limit of 50,000 so that larger files are not loaded.
+
+.. _shapefile:
+
+Shapefile
+---------
+
+Another previewer can be enabled for shapefiles (see :ref:`file-previews`). This previewer only works with zipped shapefiles (see :doc:`/developers/geospatial`). A file size limit of 20 MB is set for this previewer (also because of performance reasons).
 
 .. _netcdf-and-hdf5:
 
