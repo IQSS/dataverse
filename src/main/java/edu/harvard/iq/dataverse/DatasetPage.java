@@ -1881,31 +1881,45 @@ public class DatasetPage implements java.io.Serializable {
             if (persistentId != null) {
                 setIdByPersistentId();
             }
+            
             if (this.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
-                dataset = datasetService.findDeep(this.getId());
+                //dataset = datasetService.findDeep(this.getId());
+                dataset = datasetService.find(this.getId());
+                
                 if (dataset == null) {
                     logger.warning("No such dataset: "+dataset);
                     return permissionsWrapper.notFound();
                 }
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
+                if (retrieveDatasetVersionResponse == null) {
+                    return permissionsWrapper.notFound();
+                }
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
                 logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                
+                versionId = workingVersion.getId();
+                
+                this.workingVersion = null; 
+                this.dataset = null; 
 
-            } else if (versionId != null) {
+            } 
+            
+            // ... And now the "real" working version lookup: 
+            
+            if (versionId != null) {
                 // TODO: 4.2.1 - this method is broken as of now!
                 // Set Working Version and Dataset by DatasaetVersion Id
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
-                //this.workingVersion = datasetVersionService.findDeep(versionId);
+                this.workingVersion = datasetVersionService.findDeep(versionId);
+                dataset = workingVersion.getDataset();
 
             }
             this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
 
 
-            if (retrieveDatasetVersionResponse == null) {
-                return permissionsWrapper.notFound();
-            }
+            
 
             switch (selectTab){
                 case "dataFilesTab":
@@ -1959,7 +1973,7 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notAuthorized();
             }
 
-            if (!retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()) {
+            if (retrieveDatasetVersionResponse != null && !retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()) {
                 //msg("checkit " + retrieveDatasetVersionResponse.getDifferentVersionMessage());
                 JsfHelper.addWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
             }
@@ -2862,18 +2876,21 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
             retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
+            if (retrieveDatasetVersionResponse == null) {
+                // TODO:
+                // should probably redirect to the 404 page, if we can't find
+                // this version anymore.
+                // -- L.A. 4.2.3
+                return "";
+            }
+            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
         } else if (versionId != null) {
-            retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
+            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
+            this.workingVersion = datasetVersionService.findDeep(versionId);
+            dataset = workingVersion.getDataset();
         }
 
-        if (retrieveDatasetVersionResponse == null) {
-            // TODO:
-            // should probably redirect to the 404 page, if we can't find
-            // this version anymore.
-            // -- L.A. 4.2.3
-            return "";
-        }
-        this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
+        
 
         if (this.workingVersion == null) {
             // TODO:
