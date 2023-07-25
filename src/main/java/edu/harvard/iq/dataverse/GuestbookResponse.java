@@ -324,12 +324,12 @@ public class GuestbookResponse implements Serializable {
         sb.append(
                 "  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "\n");
         sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "\n");
-        sb.append("  " + BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.additionalQuestions")
+        sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.additionalQuestions")
                 + ":\n");
 
         for (CustomQuestionResponse cqr : getCustomQuestionResponses()) {
-            sb.append("    " + BundleUtil.getStringFromBundle("dataset.guestbookResponse.question") + ": "
-                    + cqr.getCustomQuestion().getQuestionString() + "\n    "
+            sb.append("  " + BundleUtil.getStringFromBundle("dataset.guestbookResponse.question") + ": "
+                    + cqr.getCustomQuestion().getQuestionString() + "\n  "
                     + BundleUtil.getStringFromBundle("dataset.guestbookResponse.answer") + ": "
                     + wrapNullAnswer(cqr.getResponse()) + "\n\n");
         }
@@ -339,7 +339,7 @@ public class GuestbookResponse implements Serializable {
     private String wrapNullAnswer(String answer) {
         //This assumes we don't have to distinguish null from when the user actually answers "(No Reponse)". The db still has the real value
         if (answer == null) {
-            return "(No Reponse)";
+            return BundleUtil.getStringFromBundle("dataset.guestbookResponse.noResponse");
         }
         return answer;
     }
