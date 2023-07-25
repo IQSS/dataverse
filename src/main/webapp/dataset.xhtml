@@ -183,6 +183,7 @@
                                                                         <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
                                                                             <f:param value="#{DatasetPage.sizeOfDataset}" />
                                                                         </h:outputFormat>
+                                                                        <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                                                     </p:commandLink>
                                                                 </li>
 
@@ -197,6 +198,7 @@
                                                                             <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
                                                                                 <f:param value="#{DatasetPage.sizeOfDatasetOrig}" />
                                                                             </h:outputFormat>
+                                                                            <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                                                         </p:commandLink>
                                                                     </li>
                                                                     <!-- Original Format too big -->
