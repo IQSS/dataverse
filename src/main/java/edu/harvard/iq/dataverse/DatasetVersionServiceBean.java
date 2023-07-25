@@ -50,7 +50,9 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
-    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL = "SELECT fm FROM FileMetadata fm WHERE fm.datasetVersion.id=:datasetVersionId ORDER BY fm.label";
+    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL = "SELECT fm FROM FileMetadata fm"
+            + " WHERE fm.datasetVersion.id=:datasetVersionId"
+            + " ORDER BY fm.label";
     private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE = "SELECT fm FROM FileMetadata fm, DvObject dvo"
             + " WHERE fm.datasetVersion.id = :datasetVersionId"
             + " AND fm.dataFile.id = dvo.id"
