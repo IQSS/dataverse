@@ -375,7 +375,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setTermsGuestbookPopupAction(String popupAction){
         if(popupAction != null && popupAction.length() > 0){
-            logger.info("TGPA set to " + popupAction);
             this.termsGuestbookPopupAction = popupAction;
         }
 
@@ -3246,8 +3245,6 @@ public class DatasetPage implements java.io.Serializable {
         setSelectedNonDownloadableFiles(new ArrayList<>());
         setSelectedRestrictedFiles(new ArrayList<>());
         setSelectedUnrestrictedFiles(new ArrayList<>());
-
-        logger.info("Filter: " + this.selectedFiles.size());
 
         boolean someFiles = false;
         for (FileMetadata fmd : this.selectedFiles){
