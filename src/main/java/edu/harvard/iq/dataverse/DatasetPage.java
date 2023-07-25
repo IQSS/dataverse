@@ -5263,10 +5263,8 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isGuestbookPopupRequiredAtDownload(){
-        // Only show guestbookAtDownload if fileAccessRequest is turned off for the
-        // dataset or guestbook at request is disabled (legacy behavior)
-        return isGuestbookPopupRequired() && (!workingVersion.getDataset().isFileAccessRequest()
-                || !workingVersion.getDataset().getEffectiveGuestbookEntryAtRequest());
+        // Only show guestbookAtDownload if guestbook at request is disabled (legacy behavior)
+        return isGuestbookPopupRequired() && !workingVersion.getDataset().getEffectiveGuestbookEntryAtRequest();
     }
     
     public String requestAccessMultipleFiles() {

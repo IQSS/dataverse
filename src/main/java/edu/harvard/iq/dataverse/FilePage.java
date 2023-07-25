@@ -349,11 +349,9 @@ public class FilePage implements java.io.Serializable {
     }
     
     public boolean isGuestbookPopupRequiredAtDownload(){
-        // Only show guestbookAtDownload if fileAccessRequest is turned off for the
-        // dataset or guestbook at request is disabled (legacy behavior)
+        // Only show guestbookAtDownload if guestbook at request is disabled (legacy behavior)
         DatasetVersion workingVersion = fileMetadata.getDatasetVersion();
-        return FileUtil.isGuestbookPopupRequired(workingVersion) && (!workingVersion.getDataset().isFileAccessRequest()
-                || !workingVersion.getDataset().getEffectiveGuestbookEntryAtRequest());
+        return FileUtil.isGuestbookPopupRequired(workingVersion) && !workingVersion.getDataset().getEffectiveGuestbookEntryAtRequest();
     }
 
     public void setFileMetadata(FileMetadata fileMetadata) {
