@@ -1884,7 +1884,11 @@ public class DatasetPage implements java.io.Serializable {
             
             if (this.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
-                //dataset = datasetService.findDeep(this.getId());
+                
+                // We are only performing these lookups to obtain the database id
+                // of the version that we are displaying, and then we will use it
+                // to perform a .findFind(versionId); see below. 
+                
                 dataset = datasetService.find(this.getId());
                 
                 if (dataset == null) {
@@ -1909,13 +1913,16 @@ public class DatasetPage implements java.io.Serializable {
             // ... And now the "real" working version lookup: 
             
             if (versionId != null) {
-                // TODO: 4.2.1 - this method is broken as of now!
-                // Set Working Version and Dataset by DatasaetVersion Id
-                //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
                 this.workingVersion = datasetVersionService.findDeep(versionId);
                 dataset = workingVersion.getDataset();
 
             }
+            
+            if (workingVersion == null) {
+                logger.warning("Failed to retrieve version");
+                return permissionsWrapper.notFound();
+            }
+            
             this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
 
 
@@ -2859,50 +2866,28 @@ public class DatasetPage implements java.io.Serializable {
 
         //dataset = datasetService.find(dataset.getId());
         dataset = null;
+        workingVersion = null; 
 
         logger.fine("refreshing working version");
 
         DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
 
-        if (persistentId != null) {
-            setIdByPersistentId();
-            if (this.getId() == null) {
-                logger.warning("No such dataset: "+persistentId);
-                return permissionsWrapper.notFound();
-            }
-            dataset = datasetService.findDeep(this.getId());
-            if (dataset == null) {
-                logger.warning("No such dataset: "+persistentId);
-                return permissionsWrapper.notFound();
-            }
-            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
-            if (retrieveDatasetVersionResponse == null) {
-                // TODO:
-                // should probably redirect to the 404 page, if we can't find
-                // this version anymore.
-                // -- L.A. 4.2.3
-                return "";
-            }
-            this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-        } else if (versionId != null) {
-            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
+        if (versionId != null) {
+            // versionId must have been set by now, in the init() method, 
+            // regardless of how the page was originally called - by the dataset
+            // database id, by the persistent identifier, or by the db id of
+            // the version. 
             this.workingVersion = datasetVersionService.findDeep(versionId);
             dataset = workingVersion.getDataset();
-        }
-
+        } 
         
 
         if (this.workingVersion == null) {
             // TODO:
-            // same as the above
-
+            // should probably redirect to the 404 page, if we can't find
+            // this version anymore.
+            // -- L.A. 4.2.3
             return "";
-        }
-
-        if (dataset == null) {
-            // this would be the case if we were retrieving the version by
-            // the versionId, above.
-            this.dataset = this.workingVersion.getDataset();
         }
 
         fileMetadatasSearch = selectFileMetadatasForDisplay();
