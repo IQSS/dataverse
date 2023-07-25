@@ -3469,7 +3469,7 @@ Sets the path where the raw Make Data Count logs are stored before being process
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:DisplayMDCMetrics``
 
-.. _:DisplayMDCMetrics:
+.. _:MDCStartDate:
 
 :MDCStartDate
 +++++++++++++
