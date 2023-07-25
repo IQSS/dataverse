@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -314,17 +316,22 @@ public class GuestbookResponse implements Serializable {
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append("\nGuestbook Response ID: " + getId() + "\n");
-        sb.append("Response Date: " + getResponseDate() + "\n");
-        sb.append("Requestor\n  Name: " + getName() + "\n");
-        sb.append("  Email: " + getEmail() + "\n");
-        sb.append("  Institution: " + wrapNullAnswer(getInstitution()) + "\n");
-        sb.append("  Position: " + wrapNullAnswer(getPosition()) + "\n");
-        sb.append("  Custom Question Responses:\n");
+        sb.append("\n" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.id") + ": " + getId() + "\n");
+        sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.date") + ": " + getResponseDate() + "\n");
+        sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.respondent") + "\n  "
+                + BundleUtil.getStringFromBundle("name") + ": " + getName() + "\n");
+        sb.append("  " + BundleUtil.getStringFromBundle("email") + ": " + getEmail() + "\n");
+        sb.append(
+                "  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "\n");
+        sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "\n");
+        sb.append("  " + BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.additionalQuestions")
+                + ":\n");
 
         for (CustomQuestionResponse cqr : getCustomQuestionResponses()) {
-            sb.append("    Q: " + cqr.getCustomQuestion().getQuestionString() + "\n    A: " + wrapNullAnswer(cqr.getResponse())
-                    + "\n\n");
+            sb.append("    " + BundleUtil.getStringFromBundle("dataset.guestbookResponse.question") + ": "
+                    + cqr.getCustomQuestion().getQuestionString() + "\n    "
+                    + BundleUtil.getStringFromBundle("dataset.guestbookResponse.answer") + ": "
+                    + wrapNullAnswer(cqr.getResponse()) + "\n\n");
         }
         return sb.toString();
     }
