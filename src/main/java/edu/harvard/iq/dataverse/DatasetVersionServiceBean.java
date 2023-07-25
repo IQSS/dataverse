@@ -1249,7 +1249,7 @@ w
      * @return a FileMetadata list of the specified DatasetVersion
      */
     public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, FileMetadatasOrderCriteria orderCriteria) {
-        Query query = em.createQuery(getQueryStringFromFileMetadatasOrderCriteria(orderCriteria))
+        TypedQuery<FileMetadata> query = em.createQuery(getQueryStringFromFileMetadatasOrderCriteria(orderCriteria), FileMetadata.class)
                 .setParameter("datasetVersionId", datasetVersion.getId());
         if (limit != null) {
             query.setMaxResults(limit);
