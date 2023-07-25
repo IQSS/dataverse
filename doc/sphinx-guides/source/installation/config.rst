@@ -3475,7 +3475,7 @@ Sets the path where the raw Make Data Count logs are stored before being process
 +++++++++++++
 
 It is possible to display MDC metrics (as of the start date of MDC logging) along with legacy download counts, generated before MDC was enabled.
-This is enabled via the new setting `:MDCStartDate` that specifies the cut-over date. If a dataset has any legacy access counts collected prior to that date, those numbers will be displayed in addition to the any MDC numbers recorded since then.
+This is enabled via the new setting `:MDCStartDate` that specifies the cut-over date. If a dataset has any legacy access counts collected prior to that date, those numbers will be displayed in addition to the MDC views and downloads recorded since then.
 (Nominally, this date should be when your installation started logging MDC metrics but it can be any date after that if desired.)
 
 
