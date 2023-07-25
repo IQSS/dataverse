@@ -310,6 +310,33 @@ public class GuestbookResponse implements Serializable {
         this.fileDownload.setSessionId(sessionId);
     }
     
+    public String toFormattedResponse() {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("\nGuestbook Response ID: " + getId() + "\n");
+        sb.append("Response Date: " + getResponseDate() + "\n");
+        sb.append("Requestor\n  Name: " + getName() + "\n");
+        sb.append("  Email: " + getEmail() + "\n");
+        sb.append("  Institution: " + wrapNullAnswer(getInstitution()) + "\n");
+        sb.append("  Position: " + wrapNullAnswer(getPosition()) + "\n");
+        sb.append("  Custom Question Responses:\n");
+
+        for (CustomQuestionResponse cqr : getCustomQuestionResponses()) {
+            sb.append("    Q: " + cqr.getCustomQuestion().getQuestionString() + "\n    A: " + wrapNullAnswer(cqr.getResponse())
+                    + "\n\n");
+        }
+        return sb.toString();
+    }
+    
+    private String wrapNullAnswer(String answer) {
+        //This assumes we don't have to distinguish null from when the user actually answers "(No Reponse)". The db still has the real value
+        if (answer == null) {
+            return "(No Reponse)";
+        }
+        return answer;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;

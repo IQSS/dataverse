@@ -1195,16 +1195,4 @@ public class JsonPrinter {
         return licenseJsonObjectBuilder;
     }
 
-    public static JsonObject json(GuestbookResponse gbr) {
-        JsonObjectBuilder gbrJsonObjectBuilder = jsonObjectBuilder()
-                .add("responseDate", gbr.getResponseDate())
-                .add("name", gbr.getName())
-                .add("email", gbr.getEmail())
-                .add("institution", gbr.getInstitution())
-                .add("position", gbr.getPosition());
-        for(CustomQuestionResponse cqr : gbr.getCustomQuestionResponses()) {
-            gbrJsonObjectBuilder.add(cqr.getCustomQuestion().getQuestionString(), cqr.getResponse());
-        }
-        return gbrJsonObjectBuilder.build();
-    }
 }
