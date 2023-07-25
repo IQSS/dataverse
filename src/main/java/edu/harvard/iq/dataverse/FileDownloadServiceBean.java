@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -217,14 +218,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             writeGuestbookResponseRecordForRequestAccess(guestbookResponse);
             if(requestAccess(dataFile,guestbookResponse)){
                 countRequestAccessSuccess++;
+            } else {
+                JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("file.accessRequested.alreadyRequested", Arrays.asList(dataFile.getDisplayName())));
             }
         }
 
         if(countRequestAccessSuccess > 0){
             DataFile firstDataFile = selectedDataFiles.get(0);
             sendRequestFileAccessNotification(firstDataFile.getOwner(), firstDataFile.getId(), (AuthenticatedUser) session.getUser());
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
         }
-
     }
 
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
@@ -566,39 +569,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
+        Timestamp ts = new Timestamp(new Date().getTime());
         permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, false);
+            userNotificationService.sendNotification(au, ts, UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, false);
         });
+        //send the user that requested access a notification that they requested the access
+        userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), ts, UserNotification.Type.REQUESTEDFILEACCESS, fileId, null, requestor, false);
 
     } 
-    
-    public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, GuestbookResponse gb){
-        Timestamp ts = new Timestamp(new Date().getTime()); 
-        UserNotification un = null;
-
-        //String appendMsgText = (gb == null)?("") : this.getGuestbookAppendEmailDetails(gb);
-        String appendMsgText = "";
-
-        //first send a notification for all the Users that have ManageDatasetPermissions a notification that a user has requested accedd    
-        List<AuthenticatedUser> mngDsPermUsers = permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset);
-
-        for (AuthenticatedUser au : mngDsPermUsers){
-            un = userNotificationService.sendUserNotification(au, ts, UserNotification.Type.REQUESTFILEACCESS, fileId);
-
-            if(un != null){
-
-               boolean mailed = mailService.sendNotificationEmail(un, appendMsgText, (AuthenticatedUser)session.getUser(),false);
-               if(mailed){
-                   un.setEmailed(true);
-                   userNotificationService.save(un);
-               }    
-            }
-        }
-
-        //send the user that requested access a notification that they requested the access
-        userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), ts, UserNotification.Type.REQUESTEDFILEACCESS, fileId);
-    }
- 
     
     public String generateServiceKey() {
         UUID uid = UUID.randomUUID();

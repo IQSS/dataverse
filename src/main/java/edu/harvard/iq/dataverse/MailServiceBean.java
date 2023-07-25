@@ -387,6 +387,7 @@ public class MailServiceBean implements java.io.Serializable {
                 logger.fine(dataverseCreatedMessage);
                 return messageText += dataverseCreatedMessage;
             case REQUESTFILEACCESS:
+                //Notification to those who can grant file access requests on a dataset when a user makes a request
                 DataFile datafile = (DataFile) targetObject;
                 
                 pattern = BundleUtil.getStringFromBundle("notification.email.requestFileAccess");
@@ -397,10 +398,8 @@ public class MailServiceBean implements java.io.Serializable {
                 FileAccessRequest far = datafile.getAccessRequestForAssignee(requestor);
                 GuestbookResponse gbr = far.getGuestbookResponse();
                 if (gbr != null) {
-                    JsonObject gbJson = JsonPrinter.json(gbr);
                     messageText += MessageFormat.format(
-                            BundleUtil.getStringFromBundle("notification.email.requestFileAccess.guestbookResponse"),
-                            JsonUtil.prettyPrint(gbJson));
+                            BundleUtil.getStringFromBundle("notification.email.requestFileAccess.guestbookResponse"), gbr.toFormattedResponse());
                 }
                 return messageText;
             case GRANTFILEACCESS:
@@ -644,6 +643,19 @@ public class MailServiceBean implements java.io.Serializable {
                         dataset.getDisplayName()};
                 messageText = MessageFormat.format(pattern, paramArrayDatasetMentioned);
                 return messageText;
+            case REQUESTEDFILEACCESS:
+                //Notification to requestor when they make a request
+                datafile = (DataFile) targetObject;
+                
+                pattern = BundleUtil.getStringFromBundle("notification.email.requestedFileAccess");
+                messageText += MessageFormat.format(pattern, getDvObjectLink(datafile), datafile.getOwner().getDisplayName());
+                far = datafile.getAccessRequestForAssignee(requestor);
+                gbr = far.getGuestbookResponse();
+                if (gbr != null) {
+                    messageText += MessageFormat.format(
+                            BundleUtil.getStringFromBundle("notification.email.requestFileAccess.guestbookResponse"), gbr.toFormattedResponse());
+                }
+                return messageText;
         }
 
         return "";
@@ -664,6 +676,7 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEDV:
                 return dataverseService.find(userNotification.getObjectId());
             case REQUESTFILEACCESS:
+            case REQUESTEDFILEACCESS:
                 return dataFileService.find(userNotification.getObjectId());
             case GRANTFILEACCESS:
             case REJECTFILEACCESS:

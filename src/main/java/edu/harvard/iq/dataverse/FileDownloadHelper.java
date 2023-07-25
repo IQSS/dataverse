@@ -318,7 +318,9 @@ public class FileDownloadHelper implements java.io.Serializable {
              }
          }
          if (notificationFile != null && succeeded) {
-             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser());
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(),
+                     notificationFile.getId(), (AuthenticatedUser) session.getUser());
+             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
          }
      }
     
@@ -343,8 +345,8 @@ public class FileDownloadHelper implements java.io.Serializable {
              // create notification if necessary
              if (sendNotification) {
                  fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());
+                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
              }
-             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
              return true;
          }
          JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("file.accessRequested.alreadyRequested", Arrays.asList(file.getDisplayName())));
