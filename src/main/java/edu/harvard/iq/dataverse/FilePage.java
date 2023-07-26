@@ -322,12 +322,10 @@ public class FilePage implements java.io.Serializable {
         List<ExternalTool> previewTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
         for (ExternalTool previewTool : previewTools) {
             if (externalToolService.meetsRequirements(previewTool, file)) {
-                System.out.print(previewTool.getDisplayName());
                 retList.add(previewTool);
             }
         }
         Collections.sort(retList, CompareExternalToolName);
-        System.out.print("sortExternalTools(): " + retList.size());
         return retList;
     }
 
