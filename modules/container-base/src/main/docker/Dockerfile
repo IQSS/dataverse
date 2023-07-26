@@ -75,6 +75,8 @@ WORKDIR /
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 # Mark these directories as mutuable data containers to avoid cluttering the images overlayfs at runtime.
 VOLUME ${STORAGE_DIR} ${SECRETS_DIR} ${DUMPS_DIR}
+# Workaround for https://github.com/payara/Payara/issues/6344
+ENV JAVA_TOOL_OPTIONS="-Djdk.util.zip.disableZip64ExtraFieldValidation=true --add-opens=java.base/java.io=ALL-UNNAMED"
 RUN <<EOF
     # Create pathes
     mkdir -p "${HOME_DIR}" "${PAYARA_DIR}" "${DEPLOY_DIR}" "${CONFIG_DIR}" "${SCRIPT_DIR}"
