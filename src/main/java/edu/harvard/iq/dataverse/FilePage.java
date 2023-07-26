@@ -1015,8 +1015,12 @@ public class FilePage implements java.io.Serializable {
     
     public List<ExternalTool> getAllAvailableTools(){
         List<ExternalTool> externalTools = new ArrayList<>();
-        externalTools.addAll(toolsWithPreviews);
         externalTools.addAll(queryTools);
+        for (ExternalTool pt : toolsWithPreviews){
+            if (!externalTools.contains(pt)){
+                externalTools.add(pt);
+            }
+        }        
         return externalTools;
     }
     
