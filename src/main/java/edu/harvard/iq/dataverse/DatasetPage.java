@@ -1887,7 +1887,7 @@ public class DatasetPage implements java.io.Serializable {
                 
                 // We are only performing these lookups to obtain the database id
                 // of the version that we are displaying, and then we will use it
-                // to perform a .findFind(versionId); see below. 
+                // to perform a .findDeep(versionId); see below. 
                 
                 dataset = datasetService.find(this.getId());
                 
@@ -1905,14 +1905,23 @@ public class DatasetPage implements java.io.Serializable {
                 
                 versionId = workingVersion.getId();
                 
-                this.workingVersion = null; 
-                this.dataset = null; 
+                // For deaccessioned versions, we only show the files to the 
+                // authors/contributors/admins - those who have the write 
+                // permission on the dataset. So if this one is deaccessioned, 
+                // and this user is not supposed to be shown the files, we 
+                // can stop here and use the dataset and verison we have just 
+                // initialized. Otherwise, we need to initialize the files, and
+                // we will do that with the findDeep() method below. 
+                if (!workingVersion.isDeaccessioned() || canUpdateDataset()) {
+                    this.workingVersion = null; 
+                    this.dataset = null;
+                }
 
             } 
             
             // ... And now the "real" working version lookup: 
             
-            if (versionId != null) {
+            if (workingVersion == null && versionId != null) {
                 this.workingVersion = datasetVersionService.findDeep(versionId);
                 dataset = workingVersion.getDataset();
 
