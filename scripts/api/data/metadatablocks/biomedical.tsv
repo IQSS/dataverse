@@ -45,6 +45,7 @@
 	studyFactorType	Treatment Compound	EFO_0000369	17											
 	studyFactorType	Treatment Type	EFO_0000727	18											
 	studyFactorType	Other	OTHER_FACTOR	19											
+	studyAssayMeasurementType	cell counting	ERO_0001899	0											
 	studyAssayMeasurementType	cell sorting	CHMO_0001085	1											
 	studyAssayMeasurementType	clinical chemistry analysis	OBI_0000520	2											
 	studyAssayMeasurementType	copy number variation profiling	OBI_0000537	3											
