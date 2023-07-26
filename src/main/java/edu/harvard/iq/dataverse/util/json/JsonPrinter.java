@@ -696,7 +696,12 @@ public class JsonPrinter {
          * InternalExportDataProvider fileDetails.
          */
         if (forExportDataProvider) {
-            builder.add("restricted", df.isRestricted());
+            builder.add("restricted", df.isRestricted())
+            .add("fileMetadataId", fileMetadata.getId())
+            .add("dataTables", df.getDataTables().isEmpty() ? null : JsonPrinter.jsonDT(df.getDataTables()))
+            .add("varGroups", fileMetadata.getVarGroups().isEmpty()
+                    ? JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups())
+                    : null);
         }
         return builder;
     }

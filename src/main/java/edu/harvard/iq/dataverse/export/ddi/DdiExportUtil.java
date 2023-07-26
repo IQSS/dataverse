@@ -39,6 +39,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -1895,7 +1896,7 @@ public class DdiExportUtil {
             for (Entry<String, JsonValue> sumStat : dvar.getJsonObject("summaryStatistics").entrySet()) {
                 xmlw.writeStartElement("sumStat");
                 writeAttribute(xmlw, "type", sumStat.getKey());
-                xmlw.writeCharacters(sumStat.getValue().toString());
+                xmlw.writeCharacters(((JsonString)sumStat.getValue()).getString());
                 xmlw.writeEndElement(); // sumStat
             }
         }
