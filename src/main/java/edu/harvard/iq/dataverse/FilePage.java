@@ -1226,6 +1226,9 @@ public class FilePage implements java.io.Serializable {
     }
     
     public String getToolTabTitle(){
+        if (getAllAvailableTools().size() > 1) {
+            return BundleUtil.getStringFromBundle("file.toolTab.header");
+        }
         if( getSelectedTool() != null ){
            if(getSelectedTool().isPreviewTool()){
                return BundleUtil.getStringFromBundle("file.previewTab.header");
