@@ -1905,23 +1905,14 @@ public class DatasetPage implements java.io.Serializable {
                 
                 versionId = workingVersion.getId();
                 
-                // For deaccessioned versions, we only show the files to the 
-                // authors/contributors/admins - those who have the write 
-                // permission on the dataset. So if this one is deaccessioned, 
-                // and this user is not supposed to be shown the files, we 
-                // can stop here and use the dataset and verison we have just 
-                // initialized. Otherwise, we need to initialize the files, and
-                // we will do that with the findDeep() method below. 
-                if (!workingVersion.isDeaccessioned() || canUpdateDataset()) {
                     this.workingVersion = null; 
                     this.dataset = null;
-                }
 
             } 
             
             // ... And now the "real" working version lookup: 
             
-            if (workingVersion == null && versionId != null) {
+            if (versionId != null) {
                 this.workingVersion = datasetVersionService.findDeep(versionId);
                 dataset = workingVersion.getDataset();
 
@@ -1950,16 +1941,6 @@ public class DatasetPage implements java.io.Serializable {
                 case "versionsTab":
                     selectedTabIndex = 3;
                     break;
-            }
-
-            //this.dataset = this.workingVersion.getDataset();
-
-            // end: Set the workingVersion and Dataset
-            // ---------------------------------------
-            // Is the DatasetVersion or Dataset null?
-            //
-            if (workingVersion == null || this.dataset == null) {
-                return permissionsWrapper.notFound();
             }
 
             // Is the Dataset harvested?
