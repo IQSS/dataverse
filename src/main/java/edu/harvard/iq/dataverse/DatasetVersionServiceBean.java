@@ -161,7 +161,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files 
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.ingestRequest")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.thumbnailForDataset")
-            //.setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataTables")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataTables")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.auxiliaryFiles")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.ingestReports")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataFileTags")
@@ -171,7 +171,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.datasetVersion")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.releaseUser")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.creator")
-            //.setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.roleAssignments")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.roleAssignments")
             .getSingleResult();
     }
 
