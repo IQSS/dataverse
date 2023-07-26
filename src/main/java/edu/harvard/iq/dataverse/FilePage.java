@@ -154,7 +154,6 @@ public class FilePage implements java.io.Serializable {
      
         
         if (fileId != null || persistentId != null) {
-                            System.out.print(fileId);
             // ---------------------------------------
             // Set the file and datasetVersion 
             // ---------------------------------------           
@@ -249,7 +248,6 @@ public class FilePage implements java.io.Serializable {
             toolsWithPreviews  = sortExternalTools();
 
             if (toolType != null) {
-                System.out.print(toolType);
                 if (toolType.equals("PREVIEW")) {
                     if (!toolsWithPreviews.isEmpty()) {
                         setSelectedTool(toolsWithPreviews.get(0));
@@ -260,10 +258,13 @@ public class FilePage implements java.io.Serializable {
                         setSelectedTool(queryTools.get(0));
                     }
                 }
+            } else {
+                if (!getAllAvailableTools().isEmpty()){
+                    setSelectedTool(getAllAvailableTools().get(0));
+                }
             }
 
         } else {
-
             return permissionsWrapper.notFound();
         }
         
@@ -321,10 +322,12 @@ public class FilePage implements java.io.Serializable {
         List<ExternalTool> previewTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
         for (ExternalTool previewTool : previewTools) {
             if (externalToolService.meetsRequirements(previewTool, file)) {
+                System.out.print(previewTool.getDisplayName());
                 retList.add(previewTool);
             }
         }
         Collections.sort(retList, CompareExternalToolName);
+        System.out.print("sortExternalTools(): " + retList.size());
         return retList;
     }
 
@@ -1012,6 +1015,13 @@ public class FilePage implements java.io.Serializable {
     }
     
     
+    public List<ExternalTool> getAllAvailableTools(){
+        List<ExternalTool> externalTools = new ArrayList<>();
+        externalTools.addAll(toolsWithPreviews);
+        externalTools.addAll(queryTools);
+        return externalTools;
+    }
+    
     public String getToolType() {
         return toolType;
     }
@@ -1221,8 +1231,8 @@ public class FilePage implements java.io.Serializable {
            if(getSelectedTool().isQueryTool()){
                return BundleUtil.getStringFromBundle("file.queryTab.header");
            }          
-        }
-        return "";
+        } 
+        return BundleUtil.getStringFromBundle("file.toolTab.header");
     }
     
     public String getIngestMessage() {

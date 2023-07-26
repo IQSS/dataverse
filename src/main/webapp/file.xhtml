@@ -344,7 +344,7 @@
                                 </ui:include>
                             </p:tab>
                             <p:tab id="previewTab" title="#{FilePage.toolTabTitle}" 
-                                   rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) and FilePage.selectedTool != null}">
+                                   rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                 <!-- PREVIEW TERMS/GUESTBOOK FORM -->
                                 <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.termsMet and (FilePage.getSelectedTool().previewTool or FilePage.getSelectedTool().queryTool)}">
                                     <ui:include id="previewGB" src="file-download-popup-fragment.xhtml">
@@ -362,13 +362,14 @@
                                 <ui:fragment rendered="#{(!FilePage.downloadPopupRequired) or (FilePage.downloadPopupRequired and FilePage.termsMet)}">
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
-                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() +  FilePage.queryTools.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                    <div class="btn-group" jsf:rendered="#{FilePage.allAvailableTools.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                         <button type="button" id="selectTool" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
+                                             #{bundle['file.toolsTab.button.label']} <span class="caret"></span>
                                         </button>
-                                        <ui:fragment rendered="#{FilePage.toolType=='PREVIEW' and FilePage.toolsWithPreviews.size() > 1}">
+                                        
+                                        <ui:fragment rendered="#{FilePage.allAvailableTools.size() > 1}">
                                         <ul class="dropdown-menu">
-                                            <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool">
+                                            <ui:repeat value="#{FilePage.allAvailableTools}" var="tool">
                                                 <li>
                                                     <h:commandLink action="#{FilePage.setSelectedTool(tool)}">
                                                         <h:outputText value="#{tool.getDisplayNameLang()}"/>
@@ -376,18 +377,7 @@
                                                 </li>
                                             </ui:repeat>
                                         </ul>
-                                        </ui:fragment>   
-                                        <ui:fragment rendered="#{FilePage.toolType=='QUERY' and FilePage.queryTools.size() > 1}">
-                                        <ul class="dropdown-menu">
-                                            <ui:repeat value="#{FilePage.queryTools }" var="tool">
-                                                <li>
-                                                    <h:commandLink action="#{FilePage.setSelectedTool(tool)}">
-                                                        <h:outputText value="#{tool.getDisplayNameLang()}"/>
-                                                    </h:commandLink>
-                                                </li>
-                                            </ui:repeat>
-                                        </ul>
-                                            </ui:fragment> 
+                                        </ui:fragment>                                        
                                     </div>
                                     <!-- END: Preview Button Group -->
                                     <div class="btn-group" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
