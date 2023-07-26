@@ -56,13 +56,13 @@ Next you need to figure out the alias or database id of the "parent" Dataverse c
   export SERVER_URL=https://demo.dataverse.org
   export PARENT=root
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/$PARENT --upload-file dataverse-complete.json"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/$PARENT" --upload-file dataverse-complete.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root --upload-file dataverse-complete.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root" --upload-file dataverse-complete.json
 
 You should expect an HTTP 200 response and JSON beginning with "status":"OK" followed by a representation of the newly-created Dataverse collection.
 
@@ -219,13 +219,13 @@ Assign search facets for a given Dataverse collection identified by ``id``:
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/$ID/facets --upload-file dataverse-facets.json"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/$ID/facets" --upload-file dataverse-facets.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root/facets --upload-file dataverse-facets.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root/facets" --upload-file dataverse-facets.json
 
 Where :download:`dataverse-facets.json <../_static/api/dataverse-facets.json>` contains a JSON encoded list of metadata keys (e.g. ``["authorName","authorAffiliation"]``).
 
@@ -265,13 +265,13 @@ To clear the metadata blocks set by a parent collection, submit an empty array (
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" "$SERVER_URL/api/dataverses/$ID/metadatablockfacets --upload-file metadata-block-facets.json"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" "$SERVER_URL/api/dataverses/$ID/metadatablockfacets" --upload-file metadata-block-facets.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-type:application/json" "https://demo.dataverse.org/api/dataverses/root/metadatablockfacets --upload-file metadata-block-facets.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-type:application/json" "https://demo.dataverse.org/api/dataverses/root/metadatablockfacets" --upload-file metadata-block-facets.json
 
 Where :download:`metadata-block-facets.json <../_static/api/metadata-block-facets.json>` contains a JSON encoded list of metadata block names (e.g. ``["socialscience","geospatial"]``). This endpoint supports an empty list (e.g. ``[]``)
 
@@ -290,13 +290,13 @@ When updating the root to false, it will clear any metadata block facets from th
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" "$SERVER_URL/api/dataverses/$ID/metadatablockfacets/isRoot -d 'true'"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" "$SERVER_URL/api/dataverses/$ID/metadatablockfacets/isRoot" -d 'true'
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-type:application/json" "https://demo.dataverse.org/api/dataverses/root/metadatablockfacets/isRoot -d 'true'"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-type:application/json" "https://demo.dataverse.org/api/dataverses/root/metadatablockfacets/isRoot" -d 'true'
 
 Create a New Role in a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -309,13 +309,13 @@ Creates a new role under Dataverse collection ``id``. Needs a json file with the
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/$ID/roles --upload-file roles.json"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/$ID/roles" --upload-file roles.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-type:application/json" "https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-type:application/json" "https://demo.dataverse.org/api/dataverses/root/roles" --upload-file roles.json
 
 Where ``roles.json`` looks like this::
 
@@ -386,13 +386,13 @@ Assigns a new role, based on the POSTed JSON:
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-Type: application/json" "$SERVER_URL/api/dataverses/$ID/assignments --upload-file role.json"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-Type: application/json" "$SERVER_URL/api/dataverses/$ID/assignments" --upload-file role.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-Type: application/json" "https://demo.dataverse.org/api/dataverses/root/assignments --upload-file role.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -H "Content-Type: application/json" "https://demo.dataverse.org/api/dataverses/root/assignments" --upload-file role.json
 
 POSTed JSON example (the content of ``role.json`` file)::
 
@@ -1744,7 +1744,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/24/link/test""
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/24/link/test"
 
 Dataset Locks
 ~~~~~~~~~~~~~
@@ -1759,7 +1759,7 @@ To check if a dataset is locked:
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl $SERVER_URL/api/datasets/$ID/locks
+  curl "$SERVER_URL/api/datasets/$ID/locks"
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -3025,7 +3025,7 @@ The response is a JSON object described in the :doc:`/api/external-tools` sectio
   export FILEMETADATA_ID=1
   export TOOL_ID=1
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/files/$FILE_ID/metadata/$FILEMETADATA_ID/toolparams/$TOOL_ID
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/files/$FILE_ID/metadata/$FILEMETADATA_ID/toolparams/$TOOL_ID"
 
 .. _get-fixity-algorithm:
 
@@ -3040,7 +3040,7 @@ This algorithm will be used when the Dataverse software manages a file upload an
 
   export SERVER_URL=https://demo.dataverse.org
 
-  curl "$SERVER_URL/api/files/fixityAlgorithm
+  curl "$SERVER_URL/api/files/fixityAlgorithm"
 
 
 Users Token Management
@@ -4204,7 +4204,7 @@ If a user has created multiple accounts and has been performed actions under bot
 
     POST https://$SERVER/api/users/$toMergeIdentifier/mergeIntoUser/$continuingIdentifier
 
-Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://demo.dataverse.org/api/users/jsmith2/mergeIntoUser/jsmith``
+Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST "http://demo.dataverse.org/api/users/jsmith2/mergeIntoUser/jsmith"``
 
 This action moves account data from jsmith2 into the account jsmith and deletes the account of jsmith2.
 
@@ -4219,7 +4219,7 @@ Changes identifier for user in ``AuthenticatedUser``, ``BuiltinUser``, ``Authent
 
     POST http://$SERVER/api/users/$oldIdentifier/changeIdentifier/$newIdentifier
 
-Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST  https://demo.dataverse.org/api/users/johnsmith/changeIdentifier/jsmith``
+Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST  "https://demo.dataverse.org/api/users/johnsmith/changeIdentifier/jsmith"``
 
 This action changes the identifier of user johnsmith to jsmith.
 
