@@ -1551,8 +1551,7 @@ public class Admin extends AbstractApiBean {
                         if (skipped % 100 == 0) {
                             logger.info(skipped + " of  " + count + " files not in collections that allow file PIDs. " + new Date());
                         }
-                    }
-                    if (df.isReleased()) {
+                    } else if (df.isReleased()) {
                         released++;
                         User u = getRequestAuthenticatedUserOrDie(crc);
                         DataverseRequest r = createDataverseRequest(u);
@@ -1575,7 +1574,6 @@ public class Admin extends AbstractApiBean {
                     logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
                 }
             } catch (WrappedResponse ex) {
-                released++;
                 logger.info("Failed to register file id: " + df.getId());
                 Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception e) {
