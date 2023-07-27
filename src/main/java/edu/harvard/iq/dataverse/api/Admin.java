@@ -1543,6 +1543,13 @@ public class Admin extends AbstractApiBean {
         Integer skipped = 0;
         logger.info("Starting to register: analyzing " + count + " files. " + new Date());
         logger.info("Only unregistered, published files will be registered.");
+        User u = null;
+        try {
+            u = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+        DataverseRequest r = createDataverseRequest(u);
         for (DataFile df : fileService.findAll()) {
             try {
                 if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
@@ -1553,8 +1560,6 @@ public class Admin extends AbstractApiBean {
                         }
                     } else if (df.isReleased()) {
                         released++;
-                        User u = getRequestAuthenticatedUserOrDie(crc);
-                        DataverseRequest r = createDataverseRequest(u);
                         execCommand(new RegisterDvObjectCommand(r, df));
                         successes++;
                         if (successes % 100 == 0) {
