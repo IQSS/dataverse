@@ -3386,5 +3386,12 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[2].label", equalTo(testFileName2))
                 .body("data[3].label", equalTo(testFileName3))
                 .body("data[4].label", equalTo(testFileName4));
+
+        // Test invalid order criteria
+        String invalidOrderCriteria = "invalidOrderCriteria";
+        Response getVersionFilesResponseInvalidOrderCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, invalidOrderCriteria, apiToken);
+        getVersionFilesResponseInvalidOrderCriteria.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Invalid order criteria: " + invalidOrderCriteria));
     }
 }
