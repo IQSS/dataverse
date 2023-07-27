@@ -162,16 +162,11 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.ingestRequest")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.thumbnailForDataset")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataTables")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.auxiliaryFiles")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.ingestReports")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataFileTags")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.fileCategories")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.embargo")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.fileAccessRequests")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.datasetVersion")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.releaseUser")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.creator")
-            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.roleAssignments")
             .getSingleResult();
     }
 

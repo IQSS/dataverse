@@ -346,7 +346,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private Boolean hasRsyncScript = false;
 
-    private Boolean hasTabular = false;
+    /*private Boolean hasTabular = false;*/
 
 
     /**
@@ -354,6 +354,12 @@ public class DatasetPage implements java.io.Serializable {
      * boolean is for the dataset level ("has ever had a tabular file") but
      * sometimes you want to know about the current version ("no tabular files
      * currently"). Like all files, tabular files can be deleted.
+     */
+    /**
+     * There doesn't seem to be an actual real life case where we need to know 
+     * if this dataset "has ever had a tabular file" - for all practical purposes
+     * only the versionHasTabular appears to be in use. I'm going to remove the  
+     * other boolean. 
      */
     private boolean versionHasTabular = false;
 
@@ -1904,9 +1910,9 @@ public class DatasetPage implements java.io.Serializable {
                 logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
                 
                 versionId = workingVersion.getId();
-                
-                    this.workingVersion = null; 
-                    this.dataset = null;
+
+                this.workingVersion = null;
+                this.dataset = null;
 
             } 
             
@@ -1915,7 +1921,6 @@ public class DatasetPage implements java.io.Serializable {
             if (versionId != null) {
                 this.workingVersion = datasetVersionService.findDeep(versionId);
                 dataset = workingVersion.getDataset();
-
             }
             
             if (workingVersion == null) {
@@ -2117,23 +2122,18 @@ public class DatasetPage implements java.io.Serializable {
         displayLockInfo(dataset);
         displayPublishMessage();
 
+        // TODO: replace this loop, and the loop in the method that calculates 
+        // the total "originals" size of the dataset with direct custom queries; 
+        // then we'll be able to drop the lookup hint for DataTable from the 
+        // findDeep() method for the version and further speed up the lookup 
+        // a little bit. 
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (fmd.getDataFile().isTabularData()) {
                 versionHasTabular = true;
                 break;
             }
         }
-        for(DataFile f : dataset.getFiles()) {
-            // TODO: Consider uncommenting this optimization.
-//            if (versionHasTabular) {
-//                hasTabular = true;
-//                break;
-//            }
-            if(f.isTabularData()) {
-                hasTabular = true;
-                break;
-            }
-        }
+        
         //Show ingest success message if refresh forces a page reload after ingest success
         //This is needed to display the explore buttons (the fileDownloadHelper needs to be reloaded via page
         if (showIngestSuccess) {
@@ -2417,9 +2417,9 @@ public class DatasetPage implements java.io.Serializable {
         return fileNode;
     }
 
-    public boolean isHasTabular() {
+    /*public boolean isHasTabular() {
         return hasTabular;
-    }
+    }*/
 
     public boolean isVersionHasTabular() {
         return versionHasTabular;
@@ -3057,19 +3057,32 @@ public class DatasetPage implements java.io.Serializable {
         this.tooLargeToDownload = tooLargeToDownload;
     }
 
+    private Long sizeOfDatasetArchival = null; 
+    private Long sizeOfDatasetOriginal = null; 
+    
+    
     public Long getSizeOfDatasetNumeric() {
-        if (this.hasTabular){
+        if (this.versionHasTabular){
             return Math.min(getSizeOfDatasetOrigNumeric(), getSizeOfDatasetArchivalNumeric());
         }
         return getSizeOfDatasetOrigNumeric();
     }
 
     public Long getSizeOfDatasetOrigNumeric() {
-        return DatasetUtil.getDownloadSizeNumeric(workingVersion, true);
+        if (versionHasTabular) {
+            if (sizeOfDatasetOriginal == null) {
+                sizeOfDatasetOriginal = DatasetUtil.getDownloadSizeNumeric(workingVersion, true);
+            }
+            return sizeOfDatasetOriginal;
+        }
+        return getSizeOfDatasetArchivalNumeric();
     }
 
     public Long getSizeOfDatasetArchivalNumeric() {
-        return DatasetUtil.getDownloadSizeNumeric(workingVersion, false);
+        if (sizeOfDatasetArchival == null) {
+            sizeOfDatasetArchival = DatasetUtil.getDownloadSizeNumeric(workingVersion, false);
+        }
+        return sizeOfDatasetArchival; 
     }
 
     public String getSizeOfSelectedAsString(){
