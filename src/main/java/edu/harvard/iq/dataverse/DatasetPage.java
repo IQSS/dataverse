@@ -1895,6 +1895,13 @@ public class DatasetPage implements java.io.Serializable {
                 // of the version that we are displaying, and then we will use it
                 // to perform a .findDeep(versionId); see below. 
                 
+                // TODO: replace the code block below, the combination of 
+                // datasetService.find(id) and datasetVersionService.selectRequestedVersion()
+                // with some optimized, direct query-based way of obtaining 
+                // the numeric id of the requested DatasetVersion (and that's 
+                // all we need, we are not using any of the entities produced 
+                // below. 
+                
                 dataset = datasetService.find(this.getId());
                 
                 if (dataset == null) {
