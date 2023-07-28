@@ -94,11 +94,12 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         } else {
             requester.setFileAccessRequests(Arrays.asList(fileAccessRequest));
         }
+        DataFile savedFile = ctxt.files().save(file);
         if (sendNotification) {
-            logger.fine("ctxt.fileDownload().sendRequestFileAccessNotification(this.file, requester);");
-            ctxt.fileDownload().sendRequestFileAccessNotification(this.file.getOwner(), this.file.getId(), requester);
+            logger.fine("ctxt.fileDownload().sendRequestFileAccessNotification(savedFile, requester);");
+            ctxt.fileDownload().sendRequestFileAccessNotification(savedFile.getOwner(), savedFile.getId(), requester);
         }
-        return ctxt.files().save(file);
+        return savedFile;
     }
 
 }
