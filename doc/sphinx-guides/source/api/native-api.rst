@@ -3986,7 +3986,7 @@ Creates a global role in the Dataverse installation. The data POSTed are assumed
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/admin/roles --upload-file roles.json
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/admin/roles" --upload-file roles.json
 
 ``roles.json`` see :ref:`json-representation-of-a-role`
 
