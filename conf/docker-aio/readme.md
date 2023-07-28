@@ -1,7 +1,7 @@
 # Docker All-In-One
 
 > :information_source:  **NOTE: Sunsetting of this module is imminent.** There is no schedule yet, but expect it to go away.
-> Please let the [Dataverse Containerization Working Group](https://dc.wgs.gdcc.io) know if you are a user and
+> Please let the [Dataverse Containerization Working Group](https://ct.gdcc.io) know if you are a user and
 > what should be preserved.
 
 First pass docker all-in-one image, intended for running integration tests against.

@@ -56,6 +56,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -1917,7 +1918,7 @@ public class DdiExportUtil {
             for (Entry<String, JsonValue> sumStat : dvar.getJsonObject("summaryStatistics").entrySet()) {
                 xmlw.writeStartElement("sumStat");
                 writeAttribute(xmlw, "type", sumStat.getKey());
-                xmlw.writeCharacters(sumStat.getValue().toString());
+                xmlw.writeCharacters(((JsonString)sumStat.getValue()).getString());
                 xmlw.writeEndElement(); // sumStat
             }
         }
