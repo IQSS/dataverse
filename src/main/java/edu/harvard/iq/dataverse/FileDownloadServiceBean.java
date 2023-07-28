@@ -574,7 +574,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             userNotificationService.sendNotification(au, ts, UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, false);
         });
         //send the user that requested access a notification that they requested the access
-        userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), ts, UserNotification.Type.REQUESTEDFILEACCESS, fileId, null, requestor, false);
+        userNotificationService.sendNotification(requestor, ts, UserNotification.Type.REQUESTEDFILEACCESS, fileId, null, requestor, false);
 
     } 
     
