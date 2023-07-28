@@ -1578,7 +1578,9 @@ public class Admin extends AbstractApiBean {
                     }
                 } else {
                     alreadyRegistered++;
-                    logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
+                    if(alreadyRegistered % 100 == 0) {
+                      logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
+                    }
                 }
             } catch (WrappedResponse ex) {
                 logger.info("Failed to register file id: " + df.getId());
