@@ -268,5 +268,13 @@
         <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2ContainerServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/edit/*</url-pattern>
     </servlet-mapping>
+    <filter>
+        <filter-name>edu.harvard.iq.dataverse.api.datadeposit.SwordFilter</filter-name>
+        <filter-class>edu.harvard.iq.dataverse.api.datadeposit.SwordFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>edu.harvard.iq.dataverse.api.datadeposit.SwordFilter</filter-name>
+        <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/edit-media/*</url-pattern>
+    </filter-mapping>
     <!-- END Data Deposit API (SWORD v2) -->
 </web-app>
