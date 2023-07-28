@@ -1572,7 +1572,9 @@ public class Admin extends AbstractApiBean {
                         }
                     } else {
                         draft++;
-                        logger.info(draft + " of  " + count + " files not yet published");
+                        if (draft % 100 == 0) {
+                          logger.info(draft + " of  " + count + " files not yet published");
+                        }
                     }
                 } else {
                     alreadyRegistered++;
