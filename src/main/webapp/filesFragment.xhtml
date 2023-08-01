@@ -437,7 +437,7 @@
                 <div jsf:id="downloadButtonBlockNormal" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                      and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
-                                     and !DatasetPage.isHasTabular()}">
+                                     and !DatasetPage.isVersionHasTabular()}">
                     <p:commandLink 
                                    styleClass="btn btn-default btn-download"
                                    disabled="#{false and DatasetPage.lockedFromDownload}"
@@ -452,7 +452,7 @@
                 <div jsf:id="downloadButtonBlockTabular" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                      and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
-                                     and DatasetPage.isHasTabular()}">
+                                     and DatasetPage.isVersionHasTabular()}">
                     <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown">  
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
                     </button>

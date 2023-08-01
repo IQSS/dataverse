@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -37,16 +38,32 @@ public class DataverseUtil {
         String jsonMetadata;
 
         String sourceAddressLabel = "0.0.0.0";
+        String userIdentifier = "guest";
+        String parentAlias = dv.getOwner() == null ? "" : dv.getOwner().getAlias();
 
         if (request != null) {
             IpAddress sourceAddress = request.getSourceAddress();
             if (sourceAddress != null) {
                 sourceAddressLabel = sourceAddress.toString();
             }
+            AuthenticatedUser user = request.getAuthenticatedUser();
+            
+            if (user != null) {
+                userIdentifier = user.getUserIdentifier();
+            }
         }
-
+        
+        // We are sending the collection metadata encoded in our standard json 
+        // format, with a couple of extra elements added, such as the id of 
+        // the user sending the request and the alias of the parent collection, 
+        // in order to make it easier for the filter to manage whitelisting. 
+        
         try {
-            jsonMetadata = json(dv).add("sourceAddress", sourceAddressLabel).build().toString();
+            jsonMetadata = json(dv)
+                    .add("sourceAddress", sourceAddressLabel)
+                    .add("userIdentifier", userIdentifier)
+                    .add("parentAlias", parentAlias)
+                    .build().toString();
         } catch (Exception ex) {
             logger.warning(
                     "Failed to export dataverse metadata as json; " + ex.getMessage() == null ? "" : ex.getMessage());
