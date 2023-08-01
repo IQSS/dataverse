@@ -412,7 +412,7 @@ public class Metrics extends AbstractApiBean {
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
-        String metricName = "filesByType";
+        String metricName = "filesByTypeMonthly";
 
         JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
 

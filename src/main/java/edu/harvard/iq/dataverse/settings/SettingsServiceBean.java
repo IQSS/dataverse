@@ -406,9 +406,10 @@ public class SettingsServiceBean {
          */
         InheritParentRoleAssignments,
         
-        /** Make Data Count Logging and Display */
+        /** Make Data Count Logging, Display, and Start Date */
         MDCLogPath, 
         DisplayMDCMetrics,
+        MDCStartDate,
 
         /**
          * Allow CORS flag (true or false). It is true by default
@@ -565,6 +566,7 @@ public class SettingsServiceBean {
          * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
          */
         LDNMessageHosts,
+
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */
@@ -593,7 +595,11 @@ public class SettingsServiceBean {
          * True/false(default) option deciding whether the dataset file table display should include checkboxes
          * allowing users to dynamically turn folder and category ordering on/off.
          */
-        AllowUserManagementOfOrder
+        AllowUserManagementOfOrder,
+        /*
+         * True/false(default) option deciding whether file PIDs can be enabled per collection - using the Dataverse/collection set attribute API call.
+         */
+        AllowEnablingFilePIDsPerCollection
         ;
 
         @Override

@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.validation.URLValidator;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +60,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             boolean valid = value.getValue().matches(value.getDatasetField().getDatasetFieldType().getValidationFormat());
             if (!valid) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid entry.").addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidEntry")).addConstraintViolation();
                 } catch (NullPointerException e) {
                     return false;
                 }
@@ -128,7 +129,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
             if (!valid) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid date. \"" + YYYYformat + "\" is a supported format.").addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() +  "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidDate")  ).addConstraintViolation();
                 } catch (NullPointerException npe) {
 
                 }
@@ -143,7 +144,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             } catch (Exception e) {
                 logger.fine("Float value failed validation: " + value.getValue() + " (" + dsfType.getDisplayName() + ")");
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid number.").addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() +  "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidNumber") ).addConstraintViolation();
                 } catch (NullPointerException npe) {
 
                 }
@@ -157,7 +158,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
                 Integer.parseInt(value.getValue());
             } catch (Exception e) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid integer.").addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() +  "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidInteger")  ).addConstraintViolation();
                 } catch (NullPointerException npe) {
 
                 }
@@ -170,7 +171,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         if (fieldType.equals(FieldType.URL) && !lengthOnly) {
             boolean isValidUrl = URLValidator.isURLValid(value.getValue());
             if (!isValidUrl) {
-                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  {url.invalid}").addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() +  "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidURL")).addConstraintViolation();
                 return false;
             }
         }
@@ -178,7 +179,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         if (fieldType.equals(FieldType.EMAIL) && !lengthOnly) {
             boolean isValidMail = EMailValidator.isEmailValid(value.getValue());
             if (!isValidMail) {
-                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + " {email.invalid}").addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() +  "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidEmail")).addConstraintViolation();
                 return false;
             }
         }

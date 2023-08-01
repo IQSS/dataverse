@@ -116,6 +116,16 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return runFindByGlobalId(query, globalId, dtype);
     }
 
+    public Long findIdByGlobalId(GlobalId globalId, DvObject.DType dtype) {
+        Query query = em.createNamedQuery("DvObject.findIdByGlobalId");
+        return runFindIdByGlobalId(query, globalId, dtype);
+    }
+
+    public Long findIdByAltGlobalId(GlobalId globalId, DvObject.DType dtype) {
+        Query query = em.createNamedQuery("DvObject.findIdByAlternativeGlobalId");
+        return runFindIdByGlobalId(query, globalId, dtype);
+    }
+
     private DvObject runFindByGlobalId(Query query, GlobalId gid, DvObject.DType dtype) {
         DvObject foundDvObject = null;
         try {
@@ -136,12 +146,37 @@ public class DvObjectServiceBean implements java.io.Serializable {
         }
         return foundDvObject;
     }
+
+    private Long runFindIdByGlobalId(Query query, GlobalId gid, DvObject.DType dtype) {
+        Long foundDvObject = null;
+        try {
+            query.setParameter("identifier", gid.getIdentifier());
+            query.setParameter("protocol", gid.getProtocol());
+            query.setParameter("authority", gid.getAuthority());
+            query.setParameter("dtype", dtype.getDType());
+            foundDvObject = (Long) query.getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            // (set to .info, this can fill the log file with thousands of
+            // these messages during a large harvest run)
+            logger.fine("no dvObject found: " + gid.asString());
+            // DO nothing, just return null.
+            return null;
+        } catch (Exception ex) {
+            logger.info("Exception caught in findByGlobalId: " + ex.getLocalizedMessage());
+            return null;
+        }
+        return foundDvObject;
+    }
     
     public DvObject findByGlobalId(GlobalId globalId) {
-        return (DvObject) em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
-            .setParameter("identifier", globalId.getIdentifier())
-            .setParameter("authority", globalId.getAuthority())
-            .setParameter("protocol", globalId.getProtocol()).getSingleResult();
+        try {
+            return (DvObject) em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
+                    .setParameter("identifier", globalId.getIdentifier())
+                    .setParameter("authority", globalId.getAuthority()).setParameter("protocol", globalId.getProtocol())
+                    .getSingleResult();
+        } catch (NoResultException nre) {
+            return null;
+        }
     }
     
     public boolean isGlobalIdLocallyUnique(GlobalId globalId) {

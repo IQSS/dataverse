@@ -229,6 +229,8 @@ The fully expanded example above (without environment variables) looks like this
 
 Where :download:`dataverse-facets.json <../_static/api/dataverse-facets.json>` contains a JSON encoded list of metadata keys (e.g. ``["authorName","authorAffiliation"]``).
 
+.. _metadata-block-facet-api:
+
 List Metadata Block Facets Configured for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -296,6 +298,8 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/metadatablockfacets/isRoot -d 'true'
 
+.. _create-role-in-collection:
+
 Create a New Role in a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -315,16 +319,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
 
-Where ``roles.json`` looks like this::
-
-  {
-    "alias": "sys1",
-    "name": “Restricted System Role”,
-    "description": “A person who may only add datasets.”,
-    "permissions": [
-      "AddDataset"
-    ]
-  } 
+For ``roles.json`` see :ref:`json-representation-of-a-role`
 
 .. note:: Only a Dataverse installation account with superuser permissions is allowed to create roles in a Dataverse Collection.
 
@@ -526,6 +521,60 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 - Description Text
 - Subject
 
+Submit Incomplete Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Note:** This feature requires :ref:`dataverse.api.allow-incomplete-metadata` to be enabled and your Solr
+Schema to be up-to-date with the ``datasetValid`` field.
+
+Providing a ``.../datasets?doNotValidate=true`` query parameter turns off the validation of metadata.
+In this case, only the "Author Name" is required. For example, a minimal JSON file would look like this:
+
+.. code-block:: json
+  :name: dataset-incomplete.json
+
+  {
+    "datasetVersion": {
+      "metadataBlocks": {
+        "citation": {
+          "fields": [
+            {
+              "value": [
+                {
+                  "authorName": {
+                    "value": "Finch, Fiona",
+                    "typeClass": "primitive",
+                    "multiple": false,
+                    "typeName": "authorName"
+                  }
+                }
+              ],
+              "typeClass": "compound",
+              "multiple": true,
+              "typeName": "author"
+            }
+          ],
+          "displayName": "Citation Metadata"
+        }
+      }
+    }
+  }
+
+The following is an example HTTP call with deactivated validation:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export PARENT=root
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/dataverses/$PARENT/datasets?doNotValidate=true" --upload-file dataset-incomplete.json -H 'Content-type:application/json'
+
+**Note:** You may learn about an instance's support for deposition of incomplete datasets via :ref:`info-incomplete-metadata`.
+
+Submit Dataset
+^^^^^^^^^^^^^^
+
 As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (:download:`dataset-finch1_fr.json <../../../../scripts/api/data/dataset-finch1_fr.json>` is a variant of this file that includes setting the metadata language (see :ref:`:MetadataLanguages`) to French (fr). In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
 
 The curl command below assumes you have kept the name "dataset-finch1.json" and that this file is in your current working directory.
@@ -681,6 +730,24 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/guestbookResponses?guestbookId=1 -o myResponses.csv
+
+.. _collection-attributes-api:
+  
+Change Collection Attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: 
+
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/attribute/$ATTRIBUTE?value=$VALUE"
+
+The following attributes are supported:
+
+* ``alias``  Collection alias
+* ``name`` Name
+* ``description`` Description
+* ``affiliation`` Affiliation
+* ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
+
 
 Datasets
 --------
@@ -2119,6 +2186,50 @@ Signposting is not supported for draft dataset versions.
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/linkset?persistentId=$PERSISTENT_IDENTIFIER"
 
+Get Dataset By Private URL Token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PRIVATE_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+
+  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN"
+
+Get Citation
+~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+  export VERSION=1.0
+
+  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER"
+
+Get Citation by Private URL Token
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PRIVATE_URL_TOKEN=a56444bc-7697-4711-8964-e0577f055fd2
+
+  curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN/citation"
+
+.. _get-dataset-summary-field-names:
+
+Get Summary Field Names
+~~~~~~~~~~~~~~~~~~~~~~~
+
+See :ref:`:CustomDatasetSummaryFields` in the Installation Guide for how the list of dataset fields that summarize a dataset can be customized. Here's how to list them:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/datasets/summaryFieldNames"
+
 Files
 -----
 
@@ -2909,6 +3020,22 @@ The response is a JSON object described in the :doc:`/api/external-tools` sectio
 
   curl -H "X-Dataverse-key: $API_TOKEN" -H "Accept:application/json" "$SERVER_URL/api/files/$FILE_ID/metadata/$FILEMETADATA_ID/toolparams/$TOOL_ID
 
+.. _get-fixity-algorithm:
+
+Get Fixity Algorithm
+~~~~~~~~~~~~~~~~~~~~~~
+
+This API call can be used to discover the configured fixity/checksum algorithm being used by a Dataverse installation (as configured by - :ref:`:FileFixityChecksumAlgorithm`).
+Currently, the possible values are MD5, SHA-1, SHA-256, and SHA-512.
+This algorithm will be used when the Dataverse software manages a file upload and should be used by external clients uploading files to a Dataverse instance. (Existing files may or may not have checksums with this algorithm.) 
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/files/fixityAlgorithm
+
+
 Users Token Management
 ----------------------
 
@@ -2960,26 +3087,14 @@ Optionally, you may use a third query parameter "sendEmailNotification=false" to
 Roles
 -----
 
-Create a New Role in a Dataverse Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+A role is a set of permissions.
 
-Creates a new role under Dataverse collection ``id``. Needs a json file with the role description:
+.. _json-representation-of-a-role:
 
-.. code-block:: bash
+JSON Representation of a Role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export SERVER_URL=https://demo.dataverse.org
-  export ID=root
-
-  curl -H X-Dataverse-key:$API_TOKEN -X POST -H "Content-type:application/json" $SERVER_URL/api/dataverses/$ID/roles --upload-file roles.json
-
-The fully expanded example above (without environment variables) looks like this:
-
-.. code-block:: bash
-
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
-
-Where ``roles.json`` looks like this::
+The JSON representation of a role (``roles.json``) looks like this::
 
   {
     "alias": "sys1",
@@ -2990,8 +3105,12 @@ Where ``roles.json`` looks like this::
     ]
   } 
 
-.. note:: Only a Dataverse installation account with superuser permissions is allowed to create roles in a Dataverse Collection.
+.. note:: alias is constrained to a length of 16 characters
 
+Create Role
+~~~~~~~~~~~
+
+Roles can be created globally (:ref:`create-global-role`) or for individual Dataverse collections (:ref:`create-role-in-collection`).
 
 Show Role
 ~~~~~~~~~
@@ -3190,6 +3309,27 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl https://demo.dataverse.org/api/info/apiTermsOfUse
+
+.. _info-incomplete-metadata:
+
+Show Support Of Incomplete Metadata Deposition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Learn if an instance has been configured to allow deposition of incomplete datasets via the API.
+See also :ref:`create-dataset-command` and :ref:`dataverse.api.allow-incomplete-metadata`
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl $SERVER_URL/api/info/settings/incompleteMetadataViaApi
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/info/settings/incompleteMetadataViaApi
+
 
 .. _metadata-blocks-api:
 
@@ -3831,12 +3971,24 @@ List all global roles in the system. ::
 
     GET http://$SERVER/api/admin/roles
 
+.. _create-global-role:
+
 Create Global Role
 ~~~~~~~~~~~~~~~~~~
 
 Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON. ::
 
     POST http://$SERVER/api/admin/roles
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/admin/roles --upload-file roles.json
+
+``roles.json`` see :ref:`json-representation-of-a-role`
     
 Delete Global Role
 ~~~~~~~~~~~~~~~~~~
@@ -4276,6 +4428,26 @@ It will report the specific files that have failed the validation. For example::
   
 These are only available to super users.
 
+.. _UpdateChecksums:
+
+Update Checksums To Use New Algorithm
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The fixity algorithm used on existing files can be changed by a superuser using this API call. An optional query parameter (num) can be used to limit the number of updates attempted (i.e. to do processing in batches).
+The API call will only update the algorithm and checksum for a file if the existing checksum can be validated against the file.
+Statistics concerning the updates are returned in the response to the API call with details in the log.
+The primary use for this API call is to update existing files after the algorithm used when uploading new files is changes - see - :ref:`:FileFixityChecksumAlgorithm`.
+Allowed values are MD5, SHA-1, SHA-256, and SHA-512
+
+.. code-block:: bash
+
+  export ALG=SHA-256
+  export BATCHSIZE=1
+
+  curl http://localhost:8080/api/admin/updateHashValues/$ALG
+  curl http://localhost:8080/api/admin/updateHashValues/$ALG?num=$BATCHSIZE
+
+
 .. _dataset-validation-api:
 
 Dataset Validation
@@ -4505,6 +4677,7 @@ A curl example using allowing access to a dataset's metadata
 Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
 security.
 
+
 .. _send-feedback:
 
 Send Feedback To Contact(s)
@@ -4530,3 +4703,42 @@ A curl example using an ``ID``
   curl -X POST -H 'Content-Type:application/json' -d "$JSON" $SERVER_URL/api/admin/feedback
 
 Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.
+
+
+MyData
+------
+
+The MyData API is used to get a list of just the datasets, dataverses or datafiles an authenticated user can edit.
+
+A curl example listing objects
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ROLE_IDS=6
+  export DVOBJECT_TYPES=Dataset
+  export PUBLISHED_STATES=Unpublished
+  export PER_PAGE=10
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/mydata/retrieve?role_ids=$ROLE_IDS&dvobject_types=$DVOBJECT_TYPES&published_states=$PUBLISHED_STATES&per_page=$PER_PAGE"
+
+Parameters:
+
+``role_id`` Roles are customizable. Standard roles include:
+
+- ``1`` = Admin
+- ``2`` = File Downloader
+- ``3`` = Dataverse + Dataset Creator
+- ``4`` = Dataverse Creator
+- ``5`` = Dataset Creator
+- ``6`` = Contributor
+- ``7`` = Curator
+- ``8`` = Member
+
+``dvobject_types`` Type of object, several possible values among: ``DataFile`` , ``Dataset`` & ``Dataverse`` .
+
+``published_states`` State of the object, several possible values among:``Published`` , ``Unpublished`` , ``Draft`` , ``Deaccessioned`` & ``In+Review`` .
+
+``per_page`` Number of results returned per page.
+

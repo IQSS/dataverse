@@ -55,7 +55,6 @@ import javax.persistence.Version;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import javax.validation.constraints.Size;
 import org.apache.commons.lang3.StringUtils;
 
@@ -67,7 +66,9 @@ import org.apache.commons.lang3.StringUtils;
 @NamedQueries({
     @NamedQuery(name = "DatasetVersion.findUnarchivedReleasedVersion",
                query = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.dataset.harvestedFrom IS NULL and o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL"
-    )})
+    ), 
+    @NamedQuery(name = "DatasetVersion.findById", 
+                query = "SELECT o FROM DatasetVersion o LEFT JOIN FETCH o.fileMetadatas WHERE o.id=:id")})
     
     
 @Entity
@@ -77,6 +78,7 @@ import org.apache.commons.lang3.StringUtils;
 public class DatasetVersion implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
+    private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     /**
      * Convenience comparator to compare dataset versions by their version number.
@@ -1706,8 +1708,6 @@ public class DatasetVersion implements Serializable {
 
     public List<ConstraintViolation<DatasetField>> validateRequired() {
         List<ConstraintViolation<DatasetField>> returnListreturnList = new ArrayList<>();
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
         for (DatasetField dsf : this.getFlatDatasetFields()) {
             dsf.setValidationMessage(null); // clear out any existing validation message
             Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
@@ -1721,11 +1721,13 @@ public class DatasetVersion implements Serializable {
         return returnListreturnList;
     }
     
+    public boolean isValid() {
+        return validate().isEmpty();
+    }
+
     public Set<ConstraintViolation> validate() {
         Set<ConstraintViolation> returnSet = new HashSet<>();
 
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
 
         for (DatasetField dsf : this.getFlatDatasetFields()) {
             dsf.setValidationMessage(null); // clear out any existing validation message

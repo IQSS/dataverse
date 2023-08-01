@@ -154,6 +154,21 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     public DatasetVersion find(Object pk) {
         return em.find(DatasetVersion.class, pk);
     }
+    
+    public DatasetVersion findDeep(Object pk) {
+        return (DatasetVersion) em.createNamedQuery("DatasetVersion.findById")
+            .setParameter("id", pk)
+            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files 
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.ingestRequest")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.thumbnailForDataset")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataTables")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.fileCategories")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.embargo")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.datasetVersion")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.releaseUser")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.creator")
+            .getSingleResult();
+    }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
         Long majorVersionNumber = null;
@@ -1118,13 +1133,7 @@ w
 
         // reindexing the dataset, to make sure the new UNF is in SOLR:
         boolean doNormalSolrDocCleanUp = true;
-        try {
-            Future<String> indexingResult = indexService.indexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
-        } catch (IOException | SolrServerException e) {    
-            String failureLogText = "Post UNF update indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + datasetVersion.getDataset().getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText,  datasetVersion.getDataset());
-        }
+        indexService.asyncIndexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
         return info;
     }
     

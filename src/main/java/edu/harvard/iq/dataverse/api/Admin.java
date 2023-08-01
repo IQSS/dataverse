@@ -1376,7 +1376,7 @@ public class Admin extends AbstractApiBean {
 					"All the tabular files in the database already have the original types set correctly; exiting.");
 		} else {
 			for (Long fileid : affectedFileIds) {
-				logger.info("found file id: " + fileid);
+				logger.fine("found file id: " + fileid);
 			}
 			info.add("message", "Found " + affectedFileIds.size()
 					+ " tabular files with missing original types. Kicking off an async job that will repair the files in the background.");
@@ -1514,6 +1514,9 @@ public class Admin extends AbstractApiBean {
             User u = getRequestUser(crc);
             DataverseRequest r = createDataverseRequest(u);
             DataFile df = findDataFileOrDie(id);
+            if(!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
+                return forbidden("PIDs are not enabled for this file's collection.");
+            }
             if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
                 execCommand(new RegisterDvObjectCommand(r, df));
             } else {
@@ -1537,35 +1540,56 @@ public class Admin extends AbstractApiBean {
         Integer alreadyRegistered = 0;
         Integer released = 0;
         Integer draft = 0;
+        Integer skipped = 0;
         logger.info("Starting to register: analyzing " + count + " files. " + new Date());
         logger.info("Only unregistered, published files will be registered.");
+        User u = null;
+        try {
+            u = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+        DataverseRequest r = createDataverseRequest(u);
         for (DataFile df : fileService.findAll()) {
             try {
                 if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
-                    if (df.isReleased()) {
+                    if(!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
+                        skipped++;
+                        if (skipped % 100 == 0) {
+                            logger.info(skipped + " of  " + count + " files not in collections that allow file PIDs. " + new Date());
+                        }
+                    } else if (df.isReleased()) {
                         released++;
-                        User u = getRequestAuthenticatedUserOrDie(crc);
-                        DataverseRequest r = createDataverseRequest(u);
                         execCommand(new RegisterDvObjectCommand(r, df));
                         successes++;
                         if (successes % 100 == 0) {
                             logger.info(successes + " of  " + count + " files registered successfully. " + new Date());
                         }
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ie) {
+                            logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
+                        }
                     } else {
                         draft++;
-                        logger.info(draft + " of  " + count + " files not yet published");
+                        if (draft % 100 == 0) {
+                          logger.info(draft + " of  " + count + " files not yet published");
+                        }
                     }
                 } else {
                     alreadyRegistered++;
-                    logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
+                    if(alreadyRegistered % 100 == 0) {
+                      logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
+                    }
                 }
             } catch (WrappedResponse ex) {
-                released++;
                 logger.info("Failed to register file id: " + df.getId());
                 Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception e) {
                 logger.info("Unexpected Exception: " + e.getMessage());
             }
+            
+
         }
         logger.info("Final Results:");
         logger.info(alreadyRegistered + " of  " + count + " files were already registered. " + new Date());
@@ -1573,8 +1597,90 @@ public class Admin extends AbstractApiBean {
         logger.info(released + " of  " + count + " unregistered, published files to register. " + new Date());
         logger.info(successes + " of  " + released + " unregistered, published files registered successfully. "
                 + new Date());
+        logger.info(skipped + " of  " + count + " files not in collections that allow file PIDs. " + new Date());
 
         return ok("Datafile registration complete." + successes + " of  " + released
+                + " unregistered, published files registered successfully.");
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("/registerDataFiles/{alias}")
+    public Response registerDataFilesInCollection(@Context ContainerRequestContext crc, @PathParam("alias") String alias, @QueryParam("sleep") Integer sleepInterval) {
+        Dataverse collection;
+        try {
+            collection = findDataverseOrDie(alias);
+        } catch (WrappedResponse r) {
+            return r.getResponse();
+        }
+        
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        if (superuser == null) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find the superuser to execute /admin/registerDataFiles.");
+        }
+        
+        if (!systemConfig.isFilePIDsEnabledForCollection(collection)) {
+            return ok("Registration of file-level pid is disabled in collection "+alias+"; nothing to do");
+        }
+        
+        List<DataFile> dataFiles = fileService.findByDirectCollectionOwner(collection.getId());
+        Integer count = dataFiles.size();
+        Integer countSuccesses = 0;
+        Integer countAlreadyRegistered = 0;
+        Integer countReleased = 0;
+        Integer countDrafts = 0;
+        
+        if (sleepInterval == null) {
+            sleepInterval = 1; 
+        } else if (sleepInterval.intValue() < 1) {
+            return error(Response.Status.BAD_REQUEST, "Invalid sleep interval: "+sleepInterval);
+        }
+        
+        logger.info("Starting to register: analyzing " + count + " files. " + new Date());
+        logger.info("Only unregistered, published files will be registered.");
+        
+        
+        
+        for (DataFile df : dataFiles) {
+            try {
+                if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
+                    if (df.isReleased()) {
+                        countReleased++;
+                        DataverseRequest r = createDataverseRequest(superuser);
+                        execCommand(new RegisterDvObjectCommand(r, df));
+                        countSuccesses++;
+                        if (countSuccesses % 100 == 0) {
+                            logger.info(countSuccesses + " out of " + count + " files registered successfully. " + new Date());
+                        }
+                        try {
+                            Thread.sleep(sleepInterval * 1000);
+                        } catch (InterruptedException ie) {
+                            logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
+                        }
+                    } else {
+                        countDrafts++;
+                        logger.fine(countDrafts + " out of " + count + " files not yet published");
+                    }
+                } else {
+                    countAlreadyRegistered++;
+                    logger.fine(countAlreadyRegistered + " out of " + count + " files are already registered. " + new Date());
+                }
+            } catch (WrappedResponse ex) {
+                countReleased++;
+                logger.info("Failed to register file id: " + df.getId());
+                Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception e) {
+                logger.info("Unexpected Exception: " + e.getMessage());
+            }
+        }
+        
+        logger.info(countAlreadyRegistered + " out of " + count + " files were already registered. " + new Date());
+        logger.info(countDrafts + " out of " + count + " files are not yet published. " + new Date());
+        logger.info(countReleased + " out of " + count + " unregistered, published files to register. " + new Date());
+        logger.info(countSuccesses + " out of " + countReleased + " unregistered, published files registered successfully. "
+                + new Date());
+
+        return ok("Datafile registration complete. " + countSuccesses + " out of " + countReleased
                 + " unregistered, published files registered successfully.");
     }
 
@@ -1975,21 +2081,21 @@ public class Admin extends AbstractApiBean {
         }
     }
     
-	@DELETE
-	@Path("/clearMetricsCache")
-	public Response clearMetricsCache() {
-		em.createNativeQuery("DELETE FROM metric").executeUpdate();
-		return ok("all metric caches cleared.");
-	}
+    @DELETE
+    @Path("/clearMetricsCache")
+    public Response clearMetricsCache() {
+        em.createNativeQuery("DELETE FROM metric").executeUpdate();
+        return ok("all metric caches cleared.");
+    }
 
-	@DELETE
-	@Path("/clearMetricsCache/{name}")
-	public Response clearMetricsCacheByName(@PathParam("name") String name) {
-		Query deleteQuery = em.createNativeQuery("DELETE FROM metric where metricname = ?");
-		deleteQuery.setParameter(1, name);
-		deleteQuery.executeUpdate();
-		return ok("metric cache " + name + " cleared.");
-	}
+    @DELETE
+    @Path("/clearMetricsCache/{name}")
+    public Response clearMetricsCacheByName(@PathParam("name") String name) {
+        Query deleteQuery = em.createNativeQuery("DELETE FROM metric where name = ?");
+        deleteQuery.setParameter(1, name);
+        deleteQuery.executeUpdate();
+        return ok("metric cache " + name + " cleared.");
+    }
 
     @GET
 	@AuthRequired
