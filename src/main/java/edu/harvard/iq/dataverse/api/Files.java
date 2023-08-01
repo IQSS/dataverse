@@ -110,8 +110,6 @@ public class Files extends AbstractApiBean {
     @Inject
     GuestbookResponseServiceBean guestbookResponseService;
     @Inject
-    FileDownloadServiceBean fileDownloadServiceBean;
-    @Inject
     DataFileServiceBean dataFileServiceBean;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
@@ -838,19 +836,6 @@ public class Files extends AbstractApiBean {
             DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
             return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFile.getId()).toString());
         }, getRequestUser(crc));
-    }
-
-    @GET
-    @AuthRequired
-    @Path("{id}/canBeDownloaded")
-    public Response canFileBeDownloaded(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
-        DataFile dataFile;
-        try {
-            dataFile = findDataFileOrDie(dataFileId);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        return ok(fileDownloadServiceBean.canDownloadFile(getRequestUser(crc), dataFile.getFileMetadata()));
     }
 
     @GET

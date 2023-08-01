@@ -572,48 +572,4 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             
         return null; 
     }
-
-    /**
-     * Checks if a user can download a file based on the file metadata and the permissions of the user
-     *
-     * This method is based on {@link edu.harvard.iq.dataverse.FileDownloadHelper#canDownloadFile(FileMetadata),
-     * and has been adapted to make it callable from the API instead of a view
-     *
-     * @param user requesting the download
-     * @param fileMetadata of the particular file to download
-     * @return boolean
-     */
-    public boolean canDownloadFile(User user, FileMetadata fileMetadata){
-        if (fileMetadata == null){
-            return false;
-        }
-        if ((fileMetadata.getId() == null) || (fileMetadata.getDataFile().getId() == null)){
-            return false;
-        }
-        if (user == null) {
-            return false;
-        }
-        if (user instanceof PrivateUrlUser) {
-            // Always allow download for PrivateUrlUser
-            return true;
-        }
-
-        if (fileMetadata.getDatasetVersion().isDeaccessioned()) {
-            return this.permissionService.userOn(user, fileMetadata.getDatasetVersion().getDataset()).has(Permission.EditDataset);
-        }
-
-        // Note that `isRestricted` at the FileMetadata level is for expressing intent by version. Enforcement is done with `isRestricted` at the DataFile level.
-        boolean isRestrictedFile = fileMetadata.isRestricted() || fileMetadata.getDataFile().isRestricted();
-        if (!isRestrictedFile && !FileUtil.isActivelyEmbargoed(fileMetadata)){
-            return true;
-        }
-
-        // See if the DataverseRequest, which contains IP Groups, has permission to download the file.
-        if (permissionService.requestOn(dvRequestService.getDataverseRequest(), fileMetadata.getDataFile()).has(Permission.DownloadFile)) {
-            logger.fine("The DataverseRequest (User plus IP address) has access to download the file.");
-            return true;
-        }
-
-        return false;
-    }
 }

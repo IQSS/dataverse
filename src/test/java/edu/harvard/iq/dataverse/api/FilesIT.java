@@ -2146,38 +2146,6 @@ public class FilesIT {
     }
 
     @Test
-    public void testCanFileBeDownloaded() {
-        Response createUser = UtilIT.createRandomUser();
-        createUser.then().assertThat().statusCode(OK.getStatusCode());
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-
-        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-
-        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
-        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-
-        // Upload test file
-        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
-        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
-
-        // Assert user can download test file
-        int testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        Response canFileBeDownloadedResponse = UtilIT.canFileBeDownloaded(Integer.toString(testFileId), apiToken);
-
-        canFileBeDownloadedResponse.then().assertThat().statusCode(OK.getStatusCode());
-        boolean canFileBeDownloaded = JsonPath.from(canFileBeDownloadedResponse.body().asString()).getBoolean("data");
-        assertTrue(canFileBeDownloaded);
-
-        // Call with invalid file id
-        Response canFileBeDownloadedInvalidIdResponse = UtilIT.canFileBeDownloaded("testInvalidId", apiToken);
-        canFileBeDownloadedInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
-    }
-
-    @Test
     public void testGetFileThumbnailClass() {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
