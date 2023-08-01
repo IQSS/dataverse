@@ -148,12 +148,12 @@ public class HarvesterServiceBean {
                 
         String logTimestamp = logFormatter.format(new Date());
         Logger hdLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean." + harvestingClientConfig.getName() + logTimestamp);
-        String logFileName = "../logs" + File.separator + "harvest_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".log";
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "harvest_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".log";
         FileHandler fileHandler = new FileHandler(logFileName);
         hdLogger.setUseParentHandlers(false);
         hdLogger.addHandler(fileHandler);
         
-        PrintWriter importCleanupLog = new PrintWriter(new FileWriter( "../logs/harvest_cleanup_" + harvestingClientConfig.getName() + "_" + logTimestamp+".txt"));
+        PrintWriter importCleanupLog = new PrintWriter(new FileWriter(System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs/harvest_cleanup_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".txt"));
         
         
         List<Long> harvestedDatasetIds = new ArrayList<>();
