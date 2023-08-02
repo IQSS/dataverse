@@ -691,7 +691,7 @@ logger.info("endpointWithBasePath: " + endpointWithBasePath);
         }
         System.setProperty("dataverse.files.globus.base-uri", "2791b83e-b989-47c5-a7fa-ce65fd949522");
         System.out.println("Valid: " + isValidIdentifier("globus", "globus://localid//../of/the/hill"));
-        System.setProperty("dataverse.files.globus.globus-token","Mjc5MWI4M2UtYjk4OS00N2M1LWE3ZmEtY2U2NWZkOTQ5NTIyOlprRmxGejNTWDlkTVpUNk92ZmVJaFQyTWY0SDd4cXBoTDNSS29vUmRGVlE9");
+        System.setProperty("dataverse.files.globus.globus-token","Mjc5MWI4M2UtYjk4OS00N2M1LWE3ZmEtY2U2NWZkOTQ5NTIyOmtsa1RZc242bU1oRXNuUFFwQy9oSzQxSi9EMDV6SjRtUDd1c0ZiN011MEk9");
         System.setProperty("dataverse.files.globus.base-store","file");
         System.setProperty("dataverse.files.file.type",
                 DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
