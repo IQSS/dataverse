@@ -312,27 +312,28 @@ public class GuestbookResponse implements Serializable {
         this.fileDownload.setSessionId(sessionId);
     }
     
-    public String toFormattedResponse() {
+    public String toHtmlFormattedResponse() {
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append("\n" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.id") + ": " + getId() + "\n");
-        sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.date") + ": " + getResponseDate() + "\n");
-        sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.respondent") + "\n  "
-                + BundleUtil.getStringFromBundle("name") + ": " + getName() + "\n");
-        sb.append("  " + BundleUtil.getStringFromBundle("email") + ": " + getEmail() + "\n");
+        sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.id") + ": " + getId() + "<br>\n");
+        sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.date") + ": " + getResponseDate() + "<br>\n");
+        sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.respondent") + "<br><ul style=\"list-style-type:none;\">\n<li>"
+                + BundleUtil.getStringFromBundle("name") + ": " + getName() + "</li>\n<li>");
+        sb.append("  " + BundleUtil.getStringFromBundle("email") + ": " + getEmail() + "</li>\n<li>");
         sb.append(
-                "  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "\n");
-        sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "\n");
+                "  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "</li>\n<li>");
+        sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "</li></ul>\n");
         sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.additionalQuestions")
-                + ":\n");
+                + ":<ul style=\"list-style-type:none;\">\n");
 
         for (CustomQuestionResponse cqr : getCustomQuestionResponses()) {
-            sb.append("  " + BundleUtil.getStringFromBundle("dataset.guestbookResponse.question") + ": "
-                    + cqr.getCustomQuestion().getQuestionString() + "\n  "
+            sb.append("<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.question") + ": "
+                    + cqr.getCustomQuestion().getQuestionString() + "<br>"
                     + BundleUtil.getStringFromBundle("dataset.guestbookResponse.answer") + ": "
-                    + wrapNullAnswer(cqr.getResponse()) + "\n\n");
+                    + wrapNullAnswer(cqr.getResponse()) + "</li>\n");
         }
+        sb.append("</ul>");
         return sb.toString();
     }
     
