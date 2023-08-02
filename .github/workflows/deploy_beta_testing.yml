@@ -1,0 +1,80 @@
+name: 'Deploy to Beta Testing'
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: beta-testing
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Build application war
+        run: mvn package
+
+      - name: Get war file name
+        working-directory: target
+        run: echo "war_file=$(ls *.war | head -1)">> $GITHUB_ENV
+
+      - name: Upload war artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: built-app
+          path: ./target/${{ env.war_file }}
+
+  deploy-to-payara:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: beta-testing
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download war artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: built-app
+          path: ./
+
+      - name: Get war file name
+        run: echo "war_file=$(ls *.war | head -1)">> $GITHUB_ENV
+
+      - name: Copy war file to remote instance
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.PAYARA_INSTANCE_HOST }}
+          username: ${{ secrets.PAYARA_INSTANCE_USERNAME }}
+          key: ${{ secrets.PAYARA_INSTANCE_SSH_PRIVATE_KEY }}
+          source: './${{ env.war_file }}'
+          target: '/home/${{ secrets.PAYARA_INSTANCE_USERNAME }}'
+          overwrite: true
+
+      - name: Execute payara war deployment remotely
+        uses: appleboy/ssh-action@v1.0.0
+        env:
+          INPUT_WAR_FILE: ${{ env.war_file }}
+        with:
+          host: ${{ secrets.PAYARA_INSTANCE_HOST }}
+          username: ${{ secrets.PAYARA_INSTANCE_USERNAME }}
+          key: ${{ secrets.PAYARA_INSTANCE_SSH_PRIVATE_KEY }}
+          envs: INPUT_WAR_FILE
+          script: |
+            APPLICATION_NAME=dataverse-backend
+            ASADMIN='/usr/local/payara5/bin/asadmin --user admin'
+            $ASADMIN undeploy $APPLICATION_NAME
+            $ASADMIN stop-domain
+            rm -rf /usr/local/payara5/glassfish/domains/domain1/generated
+            rm -rf /usr/local/payara5/glassfish/domains/domain1/osgi-cache
+            $ASADMIN start-domain
+            $ASADMIN deploy --name $APPLICATION_NAME $INPUT_WAR_FILE
+            $ASADMIN stop-domain
+            $ASADMIN start-domain
