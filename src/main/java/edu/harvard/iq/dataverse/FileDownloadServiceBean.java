@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
@@ -18,7 +19,6 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.Ma
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
@@ -36,7 +36,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -571,5 +570,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
             
         return null; 
+    }
+
+    /**
+     *  Checks if the DataverseRequest, which contains IP Groups, has permission to download the file
+     *
+     * @param dataverseRequest the DataverseRequest
+     * @param dataFile the DataFile to check permissions
+     * @return boolean
+     */
+    public boolean canDownloadFile(DataverseRequest dataverseRequest, DataFile dataFile) {
+        return permissionService.requestOn(dataverseRequest, dataFile).has(Permission.DownloadFile);
     }
 }

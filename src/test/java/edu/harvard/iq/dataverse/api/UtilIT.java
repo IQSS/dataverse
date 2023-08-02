@@ -3295,4 +3295,10 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/files/" + dataFileId + "/dataTables");
     }
+
+    static Response getUserPermissionsOnFile(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + dataFileId + "/userPermissions");
+    }
 }

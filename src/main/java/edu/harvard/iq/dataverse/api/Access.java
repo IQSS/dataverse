@@ -31,7 +31,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
@@ -121,8 +121,6 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.StreamingOutput;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.net.URISyntaxException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.ServerErrorException;
@@ -1946,5 +1944,22 @@ public class Access extends AbstractApiBean {
             throw new BadRequestException(); 
         }
         return redirectUri;
-    }   
+    }
+
+    @GET
+    @AuthRequired
+    @Path("/datafile/{id}/userPermissions")
+    public Response getUserPermissionsOnFile(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        User requestUser = getRequestUser(crc);
+        jsonObjectBuilder.add("canDownloadFile", fileDownloadService.canDownloadFile(createDataverseRequest(requestUser), dataFile));
+        jsonObjectBuilder.add("canEditOwnerDataset", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
+        return ok(jsonObjectBuilder);
+    }
 }

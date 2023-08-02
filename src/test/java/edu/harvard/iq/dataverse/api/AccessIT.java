@@ -23,8 +23,12 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.HashMap;
-import static javax.ws.rs.core.Response.Status.OK;
+
 import org.hamcrest.collection.IsMapContaining;
+
+import javax.json.Json;
+
+import static javax.ws.rs.core.Response.Status.*;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -629,7 +633,39 @@ public class AccessIT {
         System.out.println("MD5 checksums of the unzipped file streams are correct.");
         
         System.out.println("Zip upload-and-download round trip test: success!");
-        
     }
 
+    @Test
+    public void testGetUserPermissionsOnFile() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload test file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert user permissions on file
+        int testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Response getUserPermissionsOnFileResponse = UtilIT.getUserPermissionsOnFile(Integer.toString(testFileId), apiToken);
+
+        getUserPermissionsOnFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        boolean canDownloadFile = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canDownloadFile");
+        assertTrue(canDownloadFile);
+        boolean canEditOwnerDataset = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canEditOwnerDataset");
+        assertTrue(canEditOwnerDataset);
+
+        // Call with invalid file id
+        Response getUserPermissionsOnFileInvalidIdResponse = UtilIT.getUserPermissionsOnFile("testInvalidId", apiToken);
+        getUserPermissionsOnFileInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
 }
