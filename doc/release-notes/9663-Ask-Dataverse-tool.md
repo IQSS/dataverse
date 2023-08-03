@@ -1,1 +1,0 @@
-With this release a new experimental external tool type has been added to the Dataverse Software. The tool type is "query" and its first implementation is an experimental tool named "Ask the Data" which allows users to ask natural language queries of tabular files in Dataverse. More information is available in the External Tools section of the guides.
