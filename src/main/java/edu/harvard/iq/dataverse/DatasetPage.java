@@ -5513,7 +5513,7 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isShowQueryButton(Long fileId) { 
         DataFile dataFile = datafileService.find(fileId);
 
-        if(dataFile.isRestricted() || !dataFile.isReleased()){
+        if(dataFile.isRestricted() || !dataFile.isReleased()  || FileUtil.isActivelyEmbargoed(dataFile)){
             return false;
         }
         
