@@ -484,7 +484,7 @@ Future Work on Unit Tests
 
 - Review pull requests from @bencomp for ideas for approaches to testing: https://github.com/IQSS/dataverse/pulls?q=is%3Apr+author%3Abencomp
 - Come up with a way to test commands: http://irclog.iq.harvard.edu/dataverse/2015-11-04#i_26750
-- Test EJBs using Arquillian, embedded app servers, or similar. @bmckinney kicked the tires on Arquillian at https://github.com/bmckinney/bio-dataverse/commit/2f243b1db1ca704a42cd0a6de329083763b7c37a
+- Test EJBs using Arquillian, embedded app servers, or similar. @bmckinney kicked the tires on Arquillian at https://github.com/bmckinney/bio-dataverse/commit/2f243b1db1ca704a42cd0a5de329083763b7c37a
 
 Future Work on Integration Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
