@@ -123,7 +123,7 @@ public class MailServiceBean implements java.io.Serializable {
                     sent = true;
                 } catch (MessagingException ssfe) {
                     logger.warning("Failed to send mail to: " + to);
-                    logger.warning("SMTPSendFailedException Message: " + ssfe);
+                    logger.warning("MessagingException Message: " + ssfe);
                 }
             } else {
                 logger.fine("Skipping sending mail to " + to + ", because the \"no-reply\" address not set (" + Key.SystemEmail + " setting).");
