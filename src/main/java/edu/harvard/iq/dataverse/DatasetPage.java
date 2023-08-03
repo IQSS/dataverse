@@ -5510,7 +5510,13 @@ public class DatasetPage implements java.io.Serializable {
         return previewTools.size() > 0;
     }
     
-    public boolean isShowQueryButton(Long fileId) {
+    public boolean isShowQueryButton(Long fileId) { 
+        DataFile dataFile = datafileService.find(fileId);
+
+        if(dataFile.isRestricted() || !dataFile.isReleased()){
+            return false;
+        }
+        
         List<ExternalTool> fileQueryTools = getQueryToolsForDataFile(fileId);
         return fileQueryTools.size() > 0;
     }
