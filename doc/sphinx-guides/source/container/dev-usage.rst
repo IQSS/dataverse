@@ -6,6 +6,8 @@ Please note! This Docker setup is not for production!
 .. contents:: |toctitle|
         :local:
 
+.. _container-dev-quickstart:
+
 Quickstart
 ----------
 
@@ -183,3 +185,8 @@ There are a lot of tutorials how to connect your IDE's debugger to a remote endp
 as the endpoint. Here are links to the most common IDEs docs on remote debugging:
 `Eclipse <https://help.eclipse.org/latest/topic/org.eclipse.jdt.doc.user/concepts/cremdbug.htm?cp=1_2_12>`_,
 `IntelliJ <https://www.jetbrains.com/help/idea/tutorial-remote-debug.html#debugger_rc>`_
+
+Building Your Own Base Image
+----------------------------
+
+If you find yourself tasked with upgrading Payara, you will need to create your own base image before running the :ref:`container-dev-quickstart`. For instructions, see :doc:`base-image`.
