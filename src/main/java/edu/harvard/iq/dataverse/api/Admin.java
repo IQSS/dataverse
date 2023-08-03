@@ -1513,6 +1513,9 @@ public class Admin extends AbstractApiBean {
             User u = getRequestUser(crc);
             DataverseRequest r = createDataverseRequest(u);
             DataFile df = findDataFileOrDie(id);
+            if(!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
+                return forbidden("PIDs are not enabled for this file's collection.");
+            }
             if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
                 execCommand(new RegisterDvObjectCommand(r, df));
             } else {
@@ -1536,41 +1539,56 @@ public class Admin extends AbstractApiBean {
         Integer alreadyRegistered = 0;
         Integer released = 0;
         Integer draft = 0;
+        Integer skipped = 0;
         logger.info("Starting to register: analyzing " + count + " files. " + new Date());
         logger.info("Only unregistered, published files will be registered.");
+        User u = null;
+        try {
+            u = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+        DataverseRequest r = createDataverseRequest(u);
         for (DataFile df : fileService.findAll()) {
             try {
                 if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
-                    if (df.isReleased()) {
+                    if(!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
+                        skipped++;
+                        if (skipped % 100 == 0) {
+                            logger.info(skipped + " of  " + count + " files not in collections that allow file PIDs. " + new Date());
+                        }
+                    } else if (df.isReleased()) {
                         released++;
-                        User u = getRequestAuthenticatedUserOrDie(crc);
-                        DataverseRequest r = createDataverseRequest(u);
                         execCommand(new RegisterDvObjectCommand(r, df));
                         successes++;
                         if (successes % 100 == 0) {
                             logger.info(successes + " of  " + count + " files registered successfully. " + new Date());
                         }
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ie) {
+                            logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
+                        }
                     } else {
                         draft++;
-                        logger.info(draft + " of  " + count + " files not yet published");
+                        if (draft % 100 == 0) {
+                          logger.info(draft + " of  " + count + " files not yet published");
+                        }
                     }
                 } else {
                     alreadyRegistered++;
-                    logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
+                    if(alreadyRegistered % 100 == 0) {
+                      logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
+                    }
                 }
             } catch (WrappedResponse ex) {
-                released++;
                 logger.info("Failed to register file id: " + df.getId());
                 Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception e) {
                 logger.info("Unexpected Exception: " + e.getMessage());
             }
             
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ie) {
-                logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
-            }
+
         }
         logger.info("Final Results:");
         logger.info(alreadyRegistered + " of  " + count + " files were already registered. " + new Date());
@@ -1578,6 +1596,7 @@ public class Admin extends AbstractApiBean {
         logger.info(released + " of  " + count + " unregistered, published files to register. " + new Date());
         logger.info(successes + " of  " + released + " unregistered, published files registered successfully. "
                 + new Date());
+        logger.info(skipped + " of  " + count + " files not in collections that allow file PIDs. " + new Date());
 
         return ok("Datafile registration complete." + successes + " of  " + released
                 + " unregistered, published files registered successfully.");
@@ -1632,6 +1651,11 @@ public class Admin extends AbstractApiBean {
                         if (countSuccesses % 100 == 0) {
                             logger.info(countSuccesses + " out of " + count + " files registered successfully. " + new Date());
                         }
+                        try {
+                            Thread.sleep(sleepInterval * 1000);
+                        } catch (InterruptedException ie) {
+                            logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
+                        }
                     } else {
                         countDrafts++;
                         logger.fine(countDrafts + " out of " + count + " files not yet published");
@@ -1646,12 +1670,6 @@ public class Admin extends AbstractApiBean {
                 Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception e) {
                 logger.info("Unexpected Exception: " + e.getMessage());
-            }
-            
-            try {
-                Thread.sleep(sleepInterval * 1000);
-            } catch (InterruptedException ie) {
-                logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
             }
         }
         

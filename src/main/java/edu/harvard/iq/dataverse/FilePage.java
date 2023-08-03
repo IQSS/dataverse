@@ -77,6 +77,7 @@ public class FilePage implements java.io.Serializable {
     private FileMetadata fileMetadata;
     private Long fileId;  
     private String version;
+    private String toolType;
     private DataFile file;   
     private GuestbookResponse guestbookResponse;
     private int selectedTabIndex;
@@ -88,6 +89,7 @@ public class FilePage implements java.io.Serializable {
     private List<ExternalTool> configureTools;
     private List<ExternalTool> exploreTools;
     private List<ExternalTool> toolsWithPreviews;
+    private List<ExternalTool> queryTools;
     private Long datasetVersionId;
     /**
      * Have the terms been met so that the Preview tab can show the preview?
@@ -149,7 +151,6 @@ public class FilePage implements java.io.Serializable {
      
         
         if (fileId != null || persistentId != null) {
-
             // ---------------------------------------
             // Set the file and datasetVersion 
             // ---------------------------------------           
@@ -239,13 +240,28 @@ public class FilePage implements java.io.Serializable {
             }
             configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
+            queryTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.QUERY, contentType);
             Collections.sort(exploreTools, CompareExternalToolName);
             toolsWithPreviews  = sortExternalTools();
-            if(!toolsWithPreviews.isEmpty()){
-                setSelectedTool(toolsWithPreviews.get(0));                
-            }
-        } else {
 
+            if (toolType != null) {
+                if (toolType.equals("PREVIEW")) {
+                    if (!toolsWithPreviews.isEmpty()) {
+                        setSelectedTool(toolsWithPreviews.get(0));
+                    }
+                }
+                if (toolType.equals("QUERY")) {
+                    if (!queryTools.isEmpty()) {
+                        setSelectedTool(queryTools.get(0));
+                    }
+                }
+            } else {
+                if (!getAllAvailableTools().isEmpty()){
+                    setSelectedTool(getAllAvailableTools().get(0));
+                }
+            }
+
+        } else {
             return permissionsWrapper.notFound();
         }
         
@@ -989,6 +1005,30 @@ public class FilePage implements java.io.Serializable {
         return toolsWithPreviews;
     }
     
+    public List<ExternalTool> getQueryTools() {
+        return queryTools;
+    }
+    
+    
+    public List<ExternalTool> getAllAvailableTools(){
+        List<ExternalTool> externalTools = new ArrayList<>();
+        externalTools.addAll(queryTools);
+        for (ExternalTool pt : toolsWithPreviews){
+            if (!externalTools.contains(pt)){
+                externalTools.add(pt);
+            }
+        }        
+        return externalTools;
+    }
+    
+    public String getToolType() {
+        return toolType;
+    }
+
+    public void setToolType(String toolType) {
+        this.toolType = toolType;
+    }
+    
     private ExternalTool selectedTool;
 
     public ExternalTool getSelectedTool() {
@@ -1181,7 +1221,22 @@ public class FilePage implements java.io.Serializable {
             return BundleUtil.getStringFromBundle("embargoed.willbeuntil");
         }
     }
-
+    
+    public String getToolTabTitle(){
+        if (getAllAvailableTools().size() > 1) {
+            return BundleUtil.getStringFromBundle("file.toolTab.header");
+        }
+        if( getSelectedTool() != null ){
+           if(getSelectedTool().isPreviewTool()){
+               return BundleUtil.getStringFromBundle("file.previewTab.header");
+           } 
+           if(getSelectedTool().isQueryTool()){
+               return BundleUtil.getStringFromBundle("file.queryTab.header");
+           }          
+        } 
+        return BundleUtil.getStringFromBundle("file.toolTab.header");
+    }
+    
     public String getIngestMessage() {
         return BundleUtil.getStringFromBundle("file.ingestFailed.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()));
     }

@@ -2023,70 +2023,80 @@ public class FilesIT {
     @Test
     public void testFilePIDsBehavior() {
         // Create user
-        String apiToken = createUserGetToken();
-
-        // Create Dataverse
-        String collectionAlias = createDataverseGetAlias(apiToken);
-
-        // Create Initial Dataset with 1 file:
-        Integer datasetId = createDatasetGetId(collectionAlias, apiToken);
-        String pathToFile = "scripts/search/data/replace_test/003.txt";
-        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
-
-        addResponse.then().assertThat()
-                .body("data.files[0].dataFile.contentType", equalTo("text/plain"))
-                .body("data.files[0].label", equalTo("003.txt"))
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(username);
+        toggleSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
-        
-        // -------------------------
-        // Publish dataverse and dataset
-        // -------------------------
-        msg("Publish dataverse and dataset");
-        Response publishCollectionResp = UtilIT.publishDataverseViaSword(collectionAlias, apiToken);
-        publishCollectionResp.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        
-        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
-        publishDatasetResp.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        
-        // The file in this dataset should have been assigned a PID when it was published:
-        Response fileInfoResponse = UtilIT.getFileData(origFileId.toString(), apiToken);
-        fileInfoResponse.then().assertThat().statusCode(OK.getStatusCode());
-        String fileInfoResponseString = fileInfoResponse.body().asString();
-        msg(fileInfoResponseString);
-        
-        String origFilePersistentId = JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId");
-        assertNotNull("The file did not get a persistent identifier assigned (check that file PIDs are enabled instance-wide!)", origFilePersistentId);
+        try {
+            UtilIT.enableSetting(SettingsServiceBean.Key.FilePIDsEnabled);
 
-        // Now change the file PIDs registration configuration for the collection:
-        
-        Response changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "filePIDsEnabled", "false", apiToken);
-        
-        // ... And do the whole thing with creating another dataset with a file:
-        
-        datasetId = createDatasetGetId(collectionAlias, apiToken);
-        addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
-        addResponse.then().assertThat().statusCode(OK.getStatusCode());                
-        Long newFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
-        
-        // And publish this dataset:
-        msg("Publish second dataset");
-        
-        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
-        publishDatasetResp.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        
-        // And confirm that the file didn't get a PID:
-        
-        fileInfoResponse = UtilIT.getFileData(newFileId.toString(), apiToken);
-        fileInfoResponse.then().assertThat().statusCode(OK.getStatusCode());
-        fileInfoResponseString = fileInfoResponse.body().asString();
-        msg(fileInfoResponseString);
-        
-        org.junit.Assert.assertEquals("The file was NOT supposed to be issued a PID", "", JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId"));
-      
+            // Create Dataverse
+            String collectionAlias = createDataverseGetAlias(apiToken);
+
+            // Create Initial Dataset with 1 file:
+            Integer datasetId = createDatasetGetId(collectionAlias, apiToken);
+            String pathToFile = "scripts/search/data/replace_test/003.txt";
+            Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+            addResponse.then().assertThat().body("data.files[0].dataFile.contentType", equalTo("text/plain"))
+                    .body("data.files[0].label", equalTo("003.txt")).statusCode(OK.getStatusCode());
+
+            Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+
+            // -------------------------
+            // Publish dataverse and dataset
+            // -------------------------
+            msg("Publish dataverse and dataset");
+            Response publishCollectionResp = UtilIT.publishDataverseViaSword(collectionAlias, apiToken);
+            publishCollectionResp.then().assertThat().statusCode(OK.getStatusCode());
+
+            Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+            publishDatasetResp.then().assertThat().statusCode(OK.getStatusCode());
+
+            // The file in this dataset should have been assigned a PID when it was
+            // published:
+            Response fileInfoResponse = UtilIT.getFileData(origFileId.toString(), apiToken);
+            fileInfoResponse.then().assertThat().statusCode(OK.getStatusCode());
+            String fileInfoResponseString = fileInfoResponse.body().asString();
+            msg(fileInfoResponseString);
+
+            String origFilePersistentId = JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId");
+            assertNotNull(
+                    "The file did not get a persistent identifier assigned (check that file PIDs are enabled instance-wide!)",
+                    origFilePersistentId);
+
+            // Now change the file PIDs registration configuration for the collection:
+            UtilIT.enableSetting(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection);
+            Response changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "filePIDsEnabled", "false",
+                    apiToken);
+
+            // ... And do the whole thing with creating another dataset with a file:
+
+            datasetId = createDatasetGetId(collectionAlias, apiToken);
+            addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+            addResponse.then().assertThat().statusCode(OK.getStatusCode());
+            Long newFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+
+            // And publish this dataset:
+            msg("Publish second dataset");
+
+            publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+            publishDatasetResp.then().assertThat().statusCode(OK.getStatusCode());
+
+            // And confirm that the file didn't get a PID:
+
+            fileInfoResponse = UtilIT.getFileData(newFileId.toString(), apiToken);
+            fileInfoResponse.then().assertThat().statusCode(OK.getStatusCode());
+            fileInfoResponseString = fileInfoResponse.body().asString();
+            msg(fileInfoResponseString);
+
+            org.junit.Assert.assertEquals("The file was NOT supposed to be issued a PID", "",
+                    JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId"));
+        } finally {
+            UtilIT.deleteSetting(SettingsServiceBean.Key.FilePIDsEnabled);
+            UtilIT.deleteSetting(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection);
+        }
     }
 }

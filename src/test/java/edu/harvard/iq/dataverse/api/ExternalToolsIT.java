@@ -127,7 +127,7 @@ public class ExternalToolsIT {
         getExternalToolsForFileInvalidType.prettyPrint();
         getExternalToolsForFileInvalidType.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview]."));
+                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview, query]."));
 
         Response getExternalToolsForTabularFiles = UtilIT.getExternalToolsForFile(tabularFileId.toString(), "explore", apiToken);
         getExternalToolsForTabularFiles.prettyPrint();
@@ -223,7 +223,7 @@ public class ExternalToolsIT {
         getExternalToolsByDatasetIdInvalidType.prettyPrint();
         getExternalToolsByDatasetIdInvalidType.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview]."));
+                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview, query]."));
 
         Response getExternalToolsByDatasetId = UtilIT.getExternalToolsForDataset(datasetId.toString(), "explore", apiToken);
         getExternalToolsByDatasetId.prettyPrint();

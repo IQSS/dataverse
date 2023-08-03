@@ -595,7 +595,11 @@ public class SettingsServiceBean {
          * True/false(default) option deciding whether the dataset file table display should include checkboxes
          * allowing users to dynamically turn folder and category ordering on/off.
          */
-        AllowUserManagementOfOrder
+        AllowUserManagementOfOrder,
+        /*
+         * True/false(default) option deciding whether file PIDs can be enabled per collection - using the Dataverse/collection set attribute API call.
+         */
+        AllowEnablingFilePIDsPerCollection
         ;
 
         @Override
