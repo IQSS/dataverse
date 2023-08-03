@@ -14,7 +14,9 @@ import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.AbortProcessingException;
 import jakarta.faces.event.ActionEvent;
+import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -325,7 +327,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         this.displayDownloadAll = displayDownloadAll;
     }
 
-    public String updateGuestbooksRoot(jakarta.faces.event.AjaxBehaviorEvent event) throws jakarta.faces.event.AbortProcessingException {
+    public String updateGuestbooksRoot(AjaxBehaviorEvent event) throws AbortProcessingException {
         try {
             dataverse = engineService.submit(
                     new UpdateDataverseGuestbookRootCommand(!isInheritGuestbooksValue(),

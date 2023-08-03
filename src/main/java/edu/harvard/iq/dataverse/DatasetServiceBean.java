@@ -330,7 +330,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * in the dataset components, a ConstraintViolationException will be thrown,
      * which can be further parsed to detect the specific offending values.
      * @param id the id of the dataset
-     * @throws jakarta.validation.ConstraintViolationException
+     * @throws ConstraintViolationException
      */
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -398,7 +398,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         query.setParameter("userId", au.getId());
         try {
             return query.getSingleResult();
-        } catch (jakarta.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             return null;
         }
     }
@@ -513,7 +513,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         try {
             return query.getResultList();
-        } catch (jakarta.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             return null;
         }
     }

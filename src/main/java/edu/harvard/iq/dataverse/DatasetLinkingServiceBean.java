@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -63,7 +64,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
                 .setParameter("datasetId", datasetId)
                 .setParameter("linkingDataverseId", linkingDataverseId)
                 .getSingleResult();            
-        } catch (jakarta.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             logger.fine("no datasetLinkingDataverse found for datasetId " + datasetId + " and linkingDataverseId " + linkingDataverseId);        
             return null;
         }

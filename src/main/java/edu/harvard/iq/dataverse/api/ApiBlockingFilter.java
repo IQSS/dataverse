@@ -11,6 +11,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
+import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
@@ -24,7 +25,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * A web filter to block API administration calls.
  * @author michael
  */
-public class ApiBlockingFilter implements jakarta.servlet.Filter {
+public class ApiBlockingFilter implements Filter {
     public static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
             
     interface BlockPolicy {

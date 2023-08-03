@@ -133,7 +133,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
             query.setParameter("authority", gid.getAuthority());
             query.setParameter("dtype", dtype.getDType());
             foundDvObject = (DvObject) query.getSingleResult();
-        } catch (jakarta.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             // (set to .info, this can fill the log file with thousands of
             // these messages during a large harvest run)
             logger.fine("no dvObject found: " + gid.asString());
@@ -154,7 +154,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
             query.setParameter("authority", gid.getAuthority());
             query.setParameter("dtype", dtype.getDType());
             foundDvObject = (Long) query.getSingleResult();
-        } catch (jakarta.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             // (set to .info, this can fill the log file with thousands of
             // these messages during a large harvest run)
             logger.fine("no dvObject found: " + gid.asString());

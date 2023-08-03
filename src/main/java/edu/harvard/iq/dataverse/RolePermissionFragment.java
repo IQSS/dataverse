@@ -36,6 +36,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import jakarta.faces.event.AbortProcessingException;
+import jakarta.faces.event.AjaxBehaviorEvent;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -92,7 +94,7 @@ public class RolePermissionFragment implements java.io.Serializable {
         this.inheritAssignments = inheritAssignments;
     }
 
-    public void updatePermissionRoot(jakarta.faces.event.AjaxBehaviorEvent event) throws jakarta.faces.event.AbortProcessingException {
+    public void updatePermissionRoot(AjaxBehaviorEvent event) throws AbortProcessingException {
         try {
             dvObject = commandEngine.submit(
                     new UpdatePermissionRootCommand(!inheritAssignments, 

@@ -39,6 +39,7 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
 import edu.harvard.iq.dataverse.validation.EMailValidator;
+import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -612,7 +613,7 @@ public class MailServiceBean implements java.io.Serializable {
             case DATASETMENTIONED:
                 String additionalInfo = userNotification.getAdditionalInfo();
                 dataset = (Dataset) targetObject;
-                jakarta.json.JsonObject citingResource = null;
+                JsonObject citingResource = null;
                 citingResource = JsonUtil.getJsonObject(additionalInfo);
                 
 

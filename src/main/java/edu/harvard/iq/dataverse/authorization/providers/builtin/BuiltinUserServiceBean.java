@@ -88,7 +88,7 @@ public class BuiltinUserServiceBean {
             return em.createNamedQuery("BuiltinUser.findByUserName", BuiltinUser.class)
                     .setParameter("userName", userName)
                     .getSingleResult();
-        } catch (jakarta.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             return null;
         } catch (NonUniqueResultException ex) {
             logger.log(Level.WARNING, "multiple accounts found for username {0}", userName);

@@ -382,7 +382,7 @@ public class MetricsServiceBean implements Serializable {
                 jab.add(stats);
             }
 
-        } catch (jakarta.persistence.NoResultException nr) {
+        } catch (NoResultException nr) {
             // do nothing
         }
         return jab.build();
@@ -518,7 +518,7 @@ public class MetricsServiceBean implements Serializable {
                 job.add(MetricsUtil.COUNT, (long) result[2]);
                 jab.add(job);
             }
-        } catch (jakarta.persistence.NoResultException nr) {
+        } catch (NoResultException nr) {
             // do nothing
         }
         return jab.build();
@@ -557,7 +557,7 @@ public class MetricsServiceBean implements Serializable {
                 jab.add(job);
             }
 
-        } catch (jakarta.persistence.NoResultException nr) {
+        } catch (NoResultException nr) {
             // do nothing
         }
         return jab.build();
@@ -717,7 +717,7 @@ public class MetricsServiceBean implements Serializable {
         Metric metric = null;
         try {
             metric = (Metric) query.getSingleResult();
-        } catch (jakarta.persistence.NoResultException nr) {
+        } catch (NoResultException nr) {
             // do nothing
             logger.fine("No result");
         } catch (NonUniqueResultException nur) {

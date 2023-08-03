@@ -23,6 +23,8 @@ import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import jakarta.faces.event.AbortProcessingException;
+import jakarta.faces.event.AjaxBehaviorEvent;
 /**
  *
  * @author skraffmiller
@@ -237,7 +239,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
         tempPage.setTemplate(selectedTemplate);
     }
 
-    public String updateTemplatesRoot(jakarta.faces.event.AjaxBehaviorEvent event) throws jakarta.faces.event.AbortProcessingException {
+    public String updateTemplatesRoot(AjaxBehaviorEvent event) throws AbortProcessingException {
         try {
             if (dataverse.getOwner() != null) {
                 if (isInheritTemplatesValue() && dataverse.getDefaultTemplate() == null && dataverse.getOwner().getDefaultTemplate() != null) {

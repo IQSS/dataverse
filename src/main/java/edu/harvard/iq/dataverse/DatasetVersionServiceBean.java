@@ -31,6 +31,7 @@ import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -179,7 +180,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 query.setParameter("majorVersionNumber", majorVersionNumber);
                 query.setParameter("minorVersionNumber", minorVersionNumber);
                 foundDatasetVersion = (DatasetVersion) query.getSingleResult();
-            } catch (jakarta.persistence.NoResultException e) {
+            } catch (NoResultException e) {
                 logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
                 // DO nothing, just return null.
             }
@@ -207,7 +208,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                     }
                 }
                 return retVal;
-            } catch (jakarta.persistence.NoResultException e) {
+            } catch (NoResultException e) {
                 logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
                 // DO nothing, just return null.
             }
@@ -434,7 +435,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             msg("Found: " + ds);
             return ds;
             
-        } catch (jakarta.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             msg("DatasetVersion not found: " + queryString);
             logger.log(Level.FINE, "DatasetVersion not found: {0}", queryString);
             return null;
@@ -1200,7 +1201,7 @@ w
         try {
             List<DatasetVersion> dsl = em.createNamedQuery("DatasetVersion.findUnarchivedReleasedVersion", DatasetVersion.class).getResultList();
             return dsl;
-        } catch (jakarta.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}");
             return null;
         } catch (EJBException e) {

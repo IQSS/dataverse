@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import jakarta.servlet.Filter;
 import java.io.IOException;
 import java.util.logging.Logger;
 import jakarta.servlet.FilterChain;
@@ -15,7 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * 
  * @author michael
  */
-public class ApiRouter implements jakarta.servlet.Filter {
+public class ApiRouter implements Filter {
     private static final Logger logger = Logger.getLogger(ApiRouter.class.getName());
     
     @Override
