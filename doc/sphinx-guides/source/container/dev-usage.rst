@@ -174,7 +174,7 @@ restart the application container:
 
 Using ``docker container inspect dev_dataverse | grep Image`` you can verify the changed checksums.
 
-Using A Debugger
+Using a Debugger
 ----------------
 
 The :doc:`base-image` enables usage of the `Java Debugging Wire Protocol <https://dzone.com/articles/remote-debugging-java-applications-with-jdwp>`_
