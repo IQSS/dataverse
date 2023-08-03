@@ -61,7 +61,7 @@ function preliminary_setup()
   #./asadmin $ASADMIN_OPTS delete-jvm-options "-XX\:MaxPermSize=192m"
   #./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxPermSize=512m"
   #./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:PermSize=256m"
-  # payara6 ships with the "-server" option already in domain.xml, so no need:
+  # Payara ships with the "-server" option already in domain.xml, so no need:
   #./asadmin $ASADMIN_OPTS delete-jvm-options -client
 
   # new Payara options: (thanks to donsizemore@unc.edu)
