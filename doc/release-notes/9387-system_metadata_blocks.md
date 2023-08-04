@@ -1,1 +1,0 @@
-Dataverse supports requiring a secret key to add or edit metadata in specified 'system' metadata blocks. Changing the metadata in such system metadata blocks is not allowed without the key and is currently only allowed via API.

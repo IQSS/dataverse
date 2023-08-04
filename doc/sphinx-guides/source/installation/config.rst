@@ -34,6 +34,12 @@ It is very important to keep the block in place for the "admin" endpoint, and to
 
 It's also possible to prevent file uploads via API by adjusting the :ref:`:UploadMethods` database setting.
 
+If you are using a load balancer or a reverse proxy, there are some additional considerations. If no additional configurations are made and the upstream is configured to redirect to localhost, the API will be accessible from the outside, as your installation will register as origin the localhost for any requests to the endpoints "admin" and "builtin-users". To prevent this, you have two options:
+
+- If your upstream is configured to redirect to localhost, you will need to set the :ref:`JVM option <useripaddresssourceheader>` to one of the following values ``%client.name% %datetime% %request% %status% %response.length% %header.referer% %header.x-forwarded-for%`` and configure from the load balancer side the chosen header to populate with the client IP address.
+
+- Another solution is to set the upstream to the client IP address. In this case no further configuration is needed.
+
 Forcing HTTPS
 +++++++++++++
 
@@ -248,7 +254,7 @@ this provider.
 - :ref:`:Shoulder <:Shoulder>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
-- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
+- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to false)
 
 .. _pids-handle-configuration:
 
@@ -297,7 +303,7 @@ Here are the configuration options for PermaLinks:
 - :ref:`:Shoulder <:Shoulder>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
-- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
+- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to false)
 
 .. _auth-modes:
 
@@ -2460,7 +2466,7 @@ please find all known feature flags below. Any of these flags can be activated u
       - Description
       - Default status
     * - api-session-auth
-      - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and removed once support for bearer tokens has been implemented (see `#9229 <https://github.com/IQSS/dataverse/issues/9229>`_).
+      - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
@@ -2775,14 +2781,35 @@ timestamps.
 :FilePIDsEnabled
 ++++++++++++++++
 
-Toggles publishing of file-level PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be true. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
+Toggles publishing of file-level PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be false. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
 
-If you don't want to register file-based PIDs for your installation, set:
+It is possible to override the installation-wide setting for specific collections, see :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>`. For example, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
+
+To enable file-level PIDs for the entire installation::
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
+
+
+If you don't want to register file-based PIDs for your entire installation::
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
+.. _:AllowEnablingFilePIDsPerCollection:
 
-It is possible to override the installation-wide setting for specific collections. For example, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
+:AllowEnablingFilePIDsPerCollection
++++++++++++++++++++++++++++++++++++
+
+Toggles whether superusers can change the File PIDs policy per collection. By default this setting is absent and Dataverse Software assumes it to be false.
+
+For example, if this setting is true, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
+
+To enable setting file-level PIDs per collection::
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:AllowEnablingFilePIDsPerCollection``
+
+
+When :AllowEnablingFilePIDsPerCollection is true, setting File PIDs to be enabled/disabled for a given collection can be done via the Native API - see :ref:`collection-attributes-api` in the Native API Guide.
+
 
 .. _:IndependentHandleService:
 
@@ -3468,6 +3495,20 @@ Sets the path where the raw Make Data Count logs are stored before being process
 ``:DisplayMDCMetrics`` can be set to false to disable display of MDC metrics (e.g. to enable collection of MDC metrics for some period prior to completing the set-up of Counter and performing the other steps described in the :doc:`/admin/make-data-count` section of the Admin Guide).
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:DisplayMDCMetrics``
+
+.. _:MDCStartDate:
+
+:MDCStartDate
++++++++++++++
+
+It is possible to display MDC metrics (as of the start date of MDC logging) along with legacy download counts, generated before MDC was enabled.
+This is enabled via the new setting `:MDCStartDate` that specifies the cut-over date. If a dataset has any legacy access counts collected prior to that date, those numbers will be displayed in addition to the MDC views and downloads recorded since then.
+(Nominally, this date should be when your installation started logging MDC metrics but it can be any date after that if desired.)
+
+
+``curl -X PUT -d '2019-10-01' http://localhost:8080/api/admin/settings/:MDCStartDate``
+
+
 
 .. _:Languages:
 
