@@ -2725,6 +2725,44 @@ The fully expanded example above (without environment variables) looks like this
 
 Note: The ``id`` returned in the json response is the id of the file metadata version.
 
+Getting File Data Tables
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+This endpoint is oriented to tabular files, and provides a json representation of the file data tables for an existing tabular file. ``ID`` is the database id of the file to get the data tables from or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file.
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl $SERVER_URL/api/files/$ID/dataTables
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/files/24/dataTables
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl "$SERVER_URL/api/files/:persistentId/dataTables?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/files/:persistentId/dataTables?persistentId=doi:10.5072/FK2/AAA000"
+
+Note that if the requested file is not tabular, the endpoint will return an error.
 
 Updating File Metadata
 ~~~~~~~~~~~~~~~~~~~~~~
