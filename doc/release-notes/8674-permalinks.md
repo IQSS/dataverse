@@ -1,1 +1,0 @@
-Dataverse now optionally supports PermaLinks, a type of persistent identifier that does not involve a global registry service. PermaLinks are appropriate for Intranet deployment and catalog use cases.
