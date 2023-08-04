@@ -22,12 +22,14 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -343,33 +345,33 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     public void registerExternalVocabValues(DatasetField df) {
         DatasetFieldType dft =df.getDatasetFieldType(); 
         logger.fine("Registering for field: " + dft.getName());
-        JsonObject cvocEntry = getCVocConf(false).get(dft.getId());
-        if(dft.isPrimitive()) {
-            for(DatasetFieldValue dfv: df.getDatasetFieldValues()) {
+        JsonObject cvocEntry = getCVocConf(true).get(dft.getId());
+        if (dft.isPrimitive()) {
+            for (DatasetFieldValue dfv : df.getDatasetFieldValues()) {
                 registerExternalTerm(cvocEntry, dfv.getValue());
             }
-            } else {
-                if (df.getDatasetFieldType().isCompound()) {
-                    DatasetFieldType termdft = findByNameOpt(cvocEntry.getString("term-uri-field"));
-                    for (DatasetFieldCompoundValue cv : df.getDatasetFieldCompoundValues()) {
-                        for (DatasetField cdf : cv.getChildDatasetFields()) {
-                            logger.fine("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
-                            if(cdf.getDatasetFieldType().equals(termdft)) {
-                                registerExternalTerm(cvocEntry, cdf.getValue());
-                            }
+        } else {
+            if (df.getDatasetFieldType().isCompound()) {
+                DatasetFieldType termdft = findByNameOpt(cvocEntry.getString("term-uri-field"));
+                for (DatasetFieldCompoundValue cv : df.getDatasetFieldCompoundValues()) {
+                    for (DatasetField cdf : cv.getChildDatasetFields()) {
+                        logger.fine("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
+                        if (cdf.getDatasetFieldType().equals(termdft)) {
+                            registerExternalTerm(cvocEntry, cdf.getValue());
                         }
                     }
                 }
             }
+        }
     }
     
     /**
      * Retrieves indexable strings from a cached externalvocabularyvalue entry.
      * 
      * This method assumes externalvocabularyvalue entries have been filtered and
-     * the externalvocabularyvalue entry contain a single JsonObject whose values
-     * are either Strings or an array of objects with "lang" and "value" keys. The
-     * string, or the "value"s for each language are added to the set.
+     * the externalvocabularyvalue entry contain a single JsonObject whose "personName" or "termName" values
+     * are either Strings or an array of objects with "lang" and ("value" or "content") keys. The
+     * string, or the "value/content"s for each language are added to the set.
      * 
      * Any parsing error results in no entries (there can be unfiltered entries with
      * unknown structure - getting some strings from such an entry could give fairly
@@ -385,16 +387,25 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         if (jo != null) {
             try {
                 for (String key : jo.keySet()) {
-                    JsonValue jv = jo.get(key);
-                    if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
-                        logger.fine("adding " + jo.getString(key) + " for " + termUri);
-                        strings.add(jo.getString(key));
-                    } else {
-                        if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
-                            JsonArray jarr = jv.asJsonArray();
-                            for (int i = 0; i < jarr.size(); i++) {
-                                logger.fine("adding " + jarr.getJsonObject(i).getString("value") + " for " + termUri);
-                                strings.add(jarr.getJsonObject(i).getString("value"));
+                    if (key.equals("termName") || key.equals("personName")) {
+                        JsonValue jv = jo.get(key);
+                        if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
+                            logger.fine("adding " + jo.getString(key) + " for " + termUri);
+                            strings.add(jo.getString(key));
+                        } else {
+                            if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
+                                JsonArray jarr = jv.asJsonArray();
+                                for (int i = 0; i < jarr.size(); i++) {
+                                    JsonObject entry = jarr.getJsonObject(i);
+                                    if (entry.containsKey("value")) {
+                                        logger.fine("adding " + entry.getString("value") + " for " + termUri);
+                                        strings.add(entry.getString("value"));
+                                    } else if (entry.containsKey("content")) {
+                                        logger.fine("adding " + entry.getString("content") + " for " + termUri);
+                                        strings.add(entry.getString("content"));
+
+                                    }
+                                }
                             }
                         }
                     }
@@ -410,7 +421,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }    
 
     /**
-     * Perform a query to retrieve a cached valie from the externalvocabularvalue table
+     * Perform a query to retrieve a cached value from the externalvocabularvalue table
      * @param termUri
      * @return - the entry's value as a JsonObject
      */
@@ -444,9 +455,25 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             logger.fine("Ingoring blank term");
             return;
         }
+        boolean isExternal = false;
+        JsonObject vocabs = cvocEntry.getJsonObject("vocabs");
+        for (String key: vocabs.keySet()) {
+            JsonObject vocab = vocabs.getJsonObject(key);
+            if (vocab.containsKey("uriSpace")) {
+                if (term.startsWith(vocab.getString("uriSpace"))) {
+                    isExternal = true;
+                    break;
+                }
+            }
+        }
+        if (!isExternal) {
+            logger.fine("Ignoring free text entry: " + term);
+            return;
+        }
         logger.fine("Registering term: " + term);
         try {
-            URI uri = new URI(term);
+            //Assure the term is in URI form - should be if the uriSpace entry was correct
+            new URI(term);
             ExternalVocabularyValue evv = null;
             try {
                 evv = em.createQuery("select object(o) from ExternalVocabularyValue as o where o.uri=:uri",
@@ -542,37 +569,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             String[] pathParts = param.split("/");
                             logger.fine("PP: " + String.join(", ", pathParts));
                             JsonValue curPath = readObject;
-                            for (int j = 0; j < pathParts.length - 1; j++) {
-                                if (pathParts[j].contains("=")) {
-                                    JsonArray arr = ((JsonArray) curPath);
-                                    for (int k = 0; k < arr.size(); k++) {
-                                        String[] keyVal = pathParts[j].split("=");
-                                        logger.fine("Looking for object where " + keyVal[0] + " is " + keyVal[1]);
-                                        JsonObject jo = arr.getJsonObject(k);
-                                        String val = jo.getString(keyVal[0]);
-                                        String expected = keyVal[1];
-                                        if (expected.equals("@id")) {
-                                            expected = termUri;
-                                        }
-                                        if (val.equals(expected)) {
-                                            logger.fine("Found: " + jo.toString());
-                                            curPath = jo;
-                                            break;
-                                        }
-                                    }
-                                } else {
-                                    curPath = ((JsonObject) curPath).get(pathParts[j]);
-                                    logger.fine("Found next Path object " + curPath.toString());
-                                }
-                            }
-                            JsonValue jv = ((JsonObject) curPath).get(pathParts[pathParts.length - 1]);
-                            if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
-                                vals.add(i, ((JsonString) jv).getString());
-                            } else if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
-                                vals.add(i, jv);
-                            } else if (jv.getValueType().equals(JsonValue.ValueType.OBJECT)) {
-                                vals.add(i, jv);
-                            }
+                            vals.add(i, processPathSegment(0, pathParts, curPath, termUri));
                             logger.fine("Added param value: " + i + ": " + vals.get(i));
                         } else {
                             logger.fine("Param is: " + param);
@@ -615,6 +612,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 } catch (Exception e) {
                     logger.warning("External Vocabulary: " + termUri + " - Failed to find value for " + filterKey + ": "
                             + e.getMessage());
+                    e.printStackTrace();
                 }
             }
         }
@@ -628,6 +626,66 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         }
     }
 
+    Object processPathSegment(int index, String[] pathParts, JsonValue curPath, String termUri) {
+        if (index < pathParts.length - 1) {
+            if (pathParts[index].contains("=")) {
+                JsonArray arr = ((JsonArray) curPath);
+                String[] keyVal = pathParts[index].split("=");
+                logger.fine("Looking for object where " + keyVal[0] + " is " + keyVal[1]);
+                String expected = keyVal[1];
+        
+                if (!expected.equals("*")) {
+                    if (expected.equals("@id")) {
+                        expected = termUri;
+                    }
+                    for (int k = 0; k < arr.size(); k++) {
+                        JsonObject jo = arr.getJsonObject(k);
+                        String val = jo.getString(keyVal[0]);
+                        if (val.equals(expected)) {
+                            logger.fine("Found: " + jo.toString());
+                            curPath = jo;
+                            return processPathSegment(index + 1, pathParts, curPath, termUri);
+                        }
+                    }
+                } else {
+                    JsonArrayBuilder parts = Json.createArrayBuilder();
+                    for (JsonValue subPath : arr) {
+                        if (subPath instanceof JsonObject) {
+                            JsonValue nextValue = ((JsonObject) subPath).get(keyVal[0]);
+                            Object obj = processPathSegment(index + 1, pathParts, nextValue, termUri);
+                            if (obj instanceof String) {
+                                parts.add((String) obj);
+                            } else {
+                                parts.add((JsonValue) obj);
+                            }
+                        }
+                    }
+                    return parts.build();
+                }
+                
+            } else {
+                curPath = ((JsonObject) curPath).get(pathParts[index]);
+                logger.fine("Found next Path object " + curPath.toString());
+                return processPathSegment(index + 1, pathParts, curPath, termUri);
+            }
+        } else {
+            logger.fine("Last segment: " + curPath.toString());
+            logger.fine("Looking for : " + pathParts[index]);
+            JsonValue jv = ((JsonObject) curPath).get(pathParts[index]);
+            ValueType type =jv.getValueType(); 
+            if (type.equals(JsonValue.ValueType.STRING)) {
+                return ((JsonString) jv).getString();
+            } else if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
+                return jv;
+            } else if (jv.getValueType().equals(JsonValue.ValueType.OBJECT)) {
+                return jv;
+            }
+        }
+
+        return null;
+
+    }
+   
     /**
      * Supports validation of externally controlled values. If the value is a URI it
      * must be in the namespace (start with) one of the uriSpace values of an
@@ -669,8 +727,20 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     public List<String> getVocabScripts( Map<Long, JsonObject> cvocConf) {
         //ToDo - only return scripts that are needed (those fields are set on display pages, those blocks/fields are allowed in the Dataverse collection for create/edit)?
         Set<String> scripts = new HashSet<String>();
-        for(JsonObject jo: cvocConf.values()) {
-            scripts.add(jo.getString("js-url"));
+        for (JsonObject jo : cvocConf.values()) {
+            // Allow either a single script (a string) or an array of scripts (used, for
+            // example, to allow use of the common cvocutils.js script along with a main
+            // script for the field.)
+            JsonValue scriptValue = jo.get("js-url");
+            ValueType scriptType = scriptValue.getValueType();
+            if (scriptType.equals(ValueType.STRING)) {
+                scripts.add(((JsonString) scriptValue).getString());
+            } else if (scriptType.equals(ValueType.ARRAY)) {
+                JsonArray scriptArray = ((JsonArray) scriptValue);
+                for (int i = 0; i < scriptArray.size(); i++) {
+                    scripts.add(scriptArray.getString(i));
+                }
+            }
         }
         String customScript = settingsService.getValueForKey(SettingsServiceBean.Key.ControlledVocabularyCustomJavaScript);
         if (customScript != null && !customScript.isEmpty()) {

@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetAuthor;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -9,15 +11,20 @@ import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseMetadataBlockFacet;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -29,6 +36,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -65,6 +73,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContri
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
@@ -73,6 +82,7 @@ import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
 import java.util.Collections;
@@ -104,6 +114,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -119,6 +130,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.StreamingOutput;
@@ -156,16 +168,18 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     SwordServiceBean swordService;
-
+    
     @POST
-    public Response addRoot(String body) {
+    @AuthRequired
+    public Response addRoot(@Context ContainerRequestContext crc, String body) {
         logger.info("Creating root dataverse");
-        return addDataverse(body, "");
+        return addDataverse(crc, body, "");
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}")
-    public Response addDataverse(String body, @PathParam("identifier") String parentIdtf) {
+    public Response addDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String parentIdtf) {
 
         Dataverse d;
         JsonObject dvJson;
@@ -192,7 +206,7 @@ public class Dataverses extends AbstractApiBean {
                 dc.setDataverse(d);
             }
 
-            AuthenticatedUser u = findAuthenticatedUserOrDie();
+            AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
             d = execCommand(new CreateDataverseCommand(d, createDataverseRequest(u), null, null));
             return created("/dataverses/" + d.getAlias(), json(d));
         } catch (WrappedResponse ww) {
@@ -224,15 +238,19 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/datasets")
     @Consumes("application/json")
-    public Response createDataset(String jsonBody, @PathParam("identifier") String parentIdtf) {
+    public Response createDataset(@Context ContainerRequestContext crc, String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("doNotValidate") String doNotValidateParam) {
         try {
             logger.fine("Json is: " + jsonBody);
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
             ds.setOwner(owner);
+            // Will make validation happen always except for the (rare) occasion of all three conditions are true
+            boolean validate = ! ( u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) &&
+                JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false) );
 
             if (ds.getVersions().isEmpty()) {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeVersion"));
@@ -247,6 +265,11 @@ public class Dataverses extends AbstractApiBean {
 
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
+
+            if (!validate && (version.getDatasetAuthors().isEmpty() || version.getDatasetAuthors().stream().anyMatch(a -> a.getName() == null || a.getName().isEmpty()))) {
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeAuthorName"));
+            }
+
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -259,7 +282,7 @@ public class Dataverses extends AbstractApiBean {
             ds.setGlobalIdCreateTime(null);
             Dataset managedDs = null;
             try {
-                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u), null, validate));
             } catch (WrappedResponse ww) {
                 Throwable cause = ww.getCause();
                 StringBuilder sb = new StringBuilder();
@@ -283,7 +306,7 @@ public class Dataverses extends AbstractApiBean {
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalIdString())
+                            .add("persistentId", managedDs.getGlobalId().asString())
             );
 
         } catch (WrappedResponse ex) {
@@ -292,11 +315,12 @@ public class Dataverses extends AbstractApiBean {
     }
     
     @POST
+    @AuthRequired
     @Path("{identifier}/datasets")
     @Consumes("application/ld+json, application/json-ld")
-    public Response createDatasetFromJsonLd(String jsonLDBody, @PathParam("identifier") String parentIdtf) {
+    public Response createDatasetFromJsonLd(@Context ContainerRequestContext crc, String jsonLDBody, @PathParam("identifier") String parentIdtf) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = new Dataset();
 
@@ -325,7 +349,7 @@ public class Dataverses extends AbstractApiBean {
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalIdString())
+                            .add("persistentId", managedDs.getGlobalId().asString())
             );
 
         } catch (WrappedResponse ex) {
@@ -334,10 +358,11 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/datasets/:import")
-    public Response importDataset(String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) {
+    public Response importDataset(@Context ContainerRequestContext crc, String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
                 return error(Status.FORBIDDEN, "Not a superuser");
             }
@@ -361,7 +386,7 @@ public class Dataverses extends AbstractApiBean {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
                     return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
                 }
-                Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
+                Optional<GlobalId> maybePid = GlobalIdServiceBean.parse(pidParam);
                 if (maybePid.isPresent()) {
                     ds.setGlobalId(maybePid.get());
                 } else {
@@ -392,7 +417,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                     .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalIdString());
+                    .add("persistentId", managedDs.getGlobalId().asString());
 
             if (shouldRelease) {
                 PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
@@ -408,10 +433,11 @@ public class Dataverses extends AbstractApiBean {
 
     // TODO decide if I merge importddi with import just below (xml and json on same api, instead of 2 api)
     @POST
+    @AuthRequired
     @Path("{identifier}/datasets/:importddi")
-    public Response importDatasetDdi(String xml, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) {
+    public Response importDatasetDdi(@Context ContainerRequestContext crc, String xml, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
                 return error(Status.FORBIDDEN, "Not a superuser");
             }
@@ -435,7 +461,7 @@ public class Dataverses extends AbstractApiBean {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
                     return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
                 }
-                Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
+                Optional<GlobalId> maybePid = GlobalIdServiceBean.parse(pidParam);
                 if (maybePid.isPresent()) {
                     ds.setGlobalId(maybePid.get());
                 } else {
@@ -457,7 +483,7 @@ public class Dataverses extends AbstractApiBean {
 
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                     .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalIdString());
+                    .add("persistentId", managedDs.getGlobalId().toString());
 
             if (shouldRelease) {
                 DatasetVersion latestVersion = ds.getLatestVersion();
@@ -482,11 +508,12 @@ public class Dataverses extends AbstractApiBean {
     }
     
     @POST
+    @AuthRequired
     @Path("{identifier}/datasets/:startmigration")
     @Consumes("application/ld+json, application/json-ld")
-    public Response recreateDataset(String jsonLDBody, @PathParam("identifier") String parentIdtf) {
+    public Response recreateDataset(@Context ContainerRequestContext crc, String jsonLDBody, @PathParam("identifier") String parentIdtf) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
                 return error(Status.FORBIDDEN, "Not a superuser");
             }
@@ -503,7 +530,7 @@ public class Dataverses extends AbstractApiBean {
             ds.getIdentifier().startsWith(settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder)))) {
                 throw new BadRequestException("Cannot recreate a dataset that has a PID that doesn't match the server's settings");
             }
-            if(!datasetSvc.isIdentifierLocallyUnique(ds)) {
+            if(!dvObjectSvc.isGlobalIdLocallyUnique(ds.getGlobalId())) {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
             
@@ -546,39 +573,112 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}")
-    public Response viewDataverse(@PathParam("identifier") String idtf) {
+    public Response viewDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
         return response(req -> ok(
             json(execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf))),
                 settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false)
-            )));
+            )), getRequestUser(crc));
     }
 
     @DELETE
+    @AuthRequired
     @Path("{identifier}")
-    public Response deleteDataverse(@PathParam("identifier") String idtf) {
+    public Response deleteDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
         return response(req -> {
             execCommand(new DeleteDataverseCommand(req, findDataverseOrDie(idtf)));
             return ok("Dataverse " + idtf + " deleted");
-        });
+        }, getRequestUser(crc));
+    }
+
+    /**
+     * Endpoint to change attributes of a Dataverse collection.
+     *
+     * @apiNote Example curl command:
+     *          <code>curl -X PUT -d "test" http://localhost:8080/api/dataverses/$ALIAS/attribute/alias</code>
+     *          to change the alias of the collection named $ALIAS to "test".
+     */
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/attribute/{attribute}")
+    public Response updateAttribute(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier,
+                                    @PathParam("attribute") String attribute, @QueryParam("value") String value) {
+        try {
+            Dataverse collection = findDataverseOrDie(identifier);
+            User user = getRequestUser(crc);
+            DataverseRequest dvRequest = createDataverseRequest(user);
+    
+            // TODO: The cases below use hard coded strings, because we have no place for definitions of those!
+            //       They are taken from util.json.JsonParser / util.json.JsonPrinter. This shall be changed.
+            //       This also should be extended to more attributes, like the type, theme, contacts, some booleans, etc.
+            switch (attribute) {
+                case "alias":
+                    collection.setAlias(value);
+                    break;
+                case "name":
+                    collection.setName(value);
+                    break;
+                case "description":
+                    collection.setDescription(value);
+                    break;
+                case "affiliation":
+                    collection.setAffiliation(value);
+                    break;
+                /* commenting out the code from the draft pr #9462:
+                case "versionPidsConduct":
+                    CollectionConduct conduct = CollectionConduct.findBy(value);
+                    if (conduct == null) {
+                        return badRequest("'" + value + "' is not one of [" +
+                            String.join(",", CollectionConduct.asList()) + "]");
+                    }
+                    collection.setDatasetVersionPidConduct(conduct);
+                    break;
+                 */
+                case "filePIDsEnabled":
+                    if(!user.isSuperuser()) {
+                        return forbidden("You must be a superuser to change this setting");
+                    }
+                    if(!settingsService.isTrueForKey(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection, false)) {
+                        return forbidden("Changing File PID policy per collection is not enabled on this server");
+                    }
+                    collection.setFilePIDsEnabled(parseBooleanOrDie(value));
+                    break;
+                default:
+                    return badRequest("'" + attribute + "' is not a supported attribute");
+            }
+            
+            // Off to persistence layer
+            execCommand(new UpdateDataverseCommand(collection, null, null, dvRequest, null));
+    
+            // Also return modified collection to user
+            return ok("Update successful", JsonPrinter.json(collection));
+        
+        // TODO: This is an anti-pattern, necessary due to this bean being an EJB, causing very noisy and unnecessary
+        //       logging by the EJB container for bubbling exceptions. (It would be handled by the error handlers.)
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
     }
 
     @DELETE
+    @AuthRequired
     @Path("{linkingDataverseId}/deleteLink/{linkedDataverseId}")
-    public Response deleteDataverseLinkingDataverse(@PathParam("linkingDataverseId") String linkingDataverseId, @PathParam("linkedDataverseId") String linkedDataverseId) {
+    public Response deleteDataverseLinkingDataverse(@Context ContainerRequestContext crc, @PathParam("linkingDataverseId") String linkingDataverseId, @PathParam("linkedDataverseId") String linkedDataverseId) {
         boolean index = true;
         return response(req -> {
             execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(linkingDataverseId), findDataverseLinkingDataverseOrDie(linkingDataverseId, linkedDataverseId), index));
             return ok("Link from Dataverse " + linkingDataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
-        });
+        }, getRequestUser(crc));
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/metadatablocks")
-    public Response listMetadataBlocks(@PathParam("identifier") String dvIdtf) {
+    public Response listMetadataBlocks(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         try {
             JsonArrayBuilder arr = Json.createArrayBuilder();
-            final List<MetadataBlock> blocks = execCommand(new ListMetadataBlocksCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf)));
+            final List<MetadataBlock> blocks = execCommand(new ListMetadataBlocksCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
             for (MetadataBlock mdb : blocks) {
                 arr.add(brief.json(mdb));
             }
@@ -589,9 +689,10 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/metadatablocks")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setMetadataBlocks(@PathParam("identifier") String dvIdtf, String blockIds) {
+    public Response setMetadataBlocks(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String blockIds) {
 
         List<MetadataBlock> blocks = new LinkedList<>();
         try {
@@ -609,7 +710,7 @@ public class Dataverses extends AbstractApiBean {
         }
 
         try {
-            execCommand(new UpdateDataverseMetadataBlocksCommand.SetBlocks(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf), blocks));
+            execCommand(new UpdateDataverseMetadataBlocksCommand.SetBlocks(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), blocks));
             return ok("Metadata blocks of dataverse " + dvIdtf + " updated.");
 
         } catch (WrappedResponse ex) {
@@ -618,15 +719,17 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/metadatablocks/:isRoot")
-    public Response getMetadataRoot_legacy(@PathParam("identifier") String dvIdtf) {
-        return getMetadataRoot(dvIdtf);
+    public Response getMetadataRoot_legacy(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        return getMetadataRoot(crc, dvIdtf);
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/metadatablocks/isRoot")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getMetadataRoot(@PathParam("identifier") String dvIdtf) {
+    public Response getMetadataRoot(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         return response(req -> {
             final Dataverse dataverse = findDataverseOrDie(dvIdtf);
             if (permissionSvc.request(req)
@@ -636,38 +739,41 @@ public class Dataverses extends AbstractApiBean {
             } else {
                 return error(Status.FORBIDDEN, "Not authorized");
             }
-        });
+        }, getRequestUser(crc));
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/metadatablocks/:isRoot")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.WILDCARD)
-    public Response setMetadataRoot_legacy(@PathParam("identifier") String dvIdtf, String body) {
-        return setMetadataRoot(dvIdtf, body);
+    public Response setMetadataRoot_legacy(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String body) {
+        return setMetadataRoot(crc, dvIdtf, body);
     }
 
     @PUT
+    @AuthRequired
     @Path("{identifier}/metadatablocks/isRoot")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.WILDCARD)
-    public Response setMetadataRoot(@PathParam("identifier") String dvIdtf, String body) {
+    public Response setMetadataRoot(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String body) {
         return response(req -> {
             final boolean root = parseBooleanOrDie(body);
             final Dataverse dataverse = findDataverseOrDie(dvIdtf);
             execCommand(new UpdateDataverseMetadataBlocksCommand.SetRoot(req, dataverse, root));
             return ok("Dataverse " + dataverse.getName() + " is now a metadata  " + (root ? "" : "non-") + "root");
-        });
+        }, getRequestUser(crc));
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/facets/")
     /**
      * return list of facets for the dataverse with alias `dvIdtf`
      */
-    public Response listFacets(@PathParam("identifier") String dvIdtf) {
+    public Response listFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             DataverseRequest r = createDataverseRequest(u);
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             JsonArrayBuilder fs = Json.createArrayBuilder();
@@ -681,6 +787,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/facets")
     @Produces(MediaType.APPLICATION_JSON)
     /**
@@ -690,7 +797,7 @@ public class Dataverses extends AbstractApiBean {
      * where foo.json contains a list of datasetField names, works as expected
      * (judging by the UI). This triggers a 500 when '-d @foo.json' is used.
      */
-    public Response setFacets(@PathParam("identifier") String dvIdtf, String facetIds) {
+    public Response setFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String facetIds) {
 
         List<DatasetFieldType> facets = new LinkedList<>();
         for (JsonString facetId : Util.asJsonArray(facetIds).getValuesAs(JsonString.class)) {
@@ -706,7 +813,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             // by passing null for Featured Dataverses and DataverseFieldTypeInputLevel, those are not changed
-            execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(findUserOrDie()), null));
+            execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(getRequestUser(crc)), null));
             return ok("Facets of dataverse " + dvIdtf + " updated.");
 
         } catch (WrappedResponse ex) {
@@ -715,11 +822,12 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/metadatablockfacets")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listMetadataBlockFacets(@PathParam("identifier") String dvIdtf) {
+    public Response listMetadataBlockFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             DataverseRequest request = createDataverseRequest(u);
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             List<DataverseMetadataBlockFacet> metadataBlockFacets = Optional.ofNullable(execCommand(new ListMetadataBlockFacetsCommand(request, dataverse))).orElse(Collections.emptyList());
@@ -734,10 +842,11 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/metadatablockfacets")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setMetadataBlockFacets(@PathParam("identifier") String dvIdtf, List<String> metadataBlockNames) {
+    public Response setMetadataBlockFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, List<String> metadataBlockNames) {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
 
@@ -758,7 +867,7 @@ public class Dataverses extends AbstractApiBean {
                 metadataBlockFacets.add(metadataBlockFacet);
             }
 
-            execCommand(new UpdateMetadataBlockFacetsCommand(createDataverseRequest(findUserOrDie()), dataverse, metadataBlockFacets));
+            execCommand(new UpdateMetadataBlockFacetsCommand(createDataverseRequest(getRequestUser(crc)), dataverse, metadataBlockFacets));
             return ok(String.format("Metadata block facets updated. DataverseId: %s blocks: %s", dvIdtf, metadataBlockNames));
 
         } catch (WrappedResponse ex) {
@@ -767,10 +876,11 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/metadatablockfacets/isRoot")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateMetadataBlockFacetsRoot(@PathParam("identifier") String dvIdtf, String body) {
+    public Response updateMetadataBlockFacetsRoot(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String body) {
         try {
             final boolean blockFacetsRoot = parseBooleanOrDie(body);
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
@@ -778,7 +888,7 @@ public class Dataverses extends AbstractApiBean {
                 return ok(String.format("No update needed, dataverse already consistent with new value. DataverseId: %s blockFacetsRoot: %s", dvIdtf, blockFacetsRoot));
             }
 
-            execCommand(new UpdateMetadataBlockFacetRootCommand(createDataverseRequest(findUserOrDie()), dataverse, blockFacetsRoot));
+            execCommand(new UpdateMetadataBlockFacetRootCommand(createDataverseRequest(getRequestUser(crc)), dataverse, blockFacetsRoot));
             return ok(String.format("Metadata block facets root updated. DataverseId: %s blockFacetsRoot: %s", dvIdtf, blockFacetsRoot));
 
         } catch (WrappedResponse ex) {
@@ -791,8 +901,9 @@ public class Dataverses extends AbstractApiBean {
     // (2438-4295-dois-for-files branch) such that a contributor API token no longer allows this method
     // to be called without a PermissionException being thrown.
     @GET
+    @AuthRequired
     @Path("{identifier}/contents")
-    public Response listContent(@PathParam("identifier") String dvIdtf) throws WrappedResponse {
+    public Response listContent(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
 
         DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
             @Override
@@ -818,43 +929,47 @@ public class Dataverses extends AbstractApiBean {
                         .stream()
                         .map(dvo -> (JsonObjectBuilder) dvo.accept(ser))
                         .collect(toJsonArray())
-        ));
+        ), getRequestUser(crc));
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/storagesize")
-    public Response getStorageSize(@PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached) throws WrappedResponse {
+    public Response getStorageSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached) throws WrappedResponse {
                 
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.datasize"),
-                execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf), includeCached)))));
+                execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf), includeCached)))), getRequestUser(crc));
     }
     
     
     @GET
+    @AuthRequired
     @Path("{identifier}/roles")
-    public Response listRoles(@PathParam("identifier") String dvIdtf) {
+    public Response listRoles(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         return response(req -> ok(
                 execCommand(new ListRolesCommand(req, findDataverseOrDie(dvIdtf)))
                         .stream().map(r -> json(r))
                         .collect(toJsonArray())
-        ));
+        ), getRequestUser(crc));
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/roles")
-    public Response createRole(RoleDTO roleDto, @PathParam("identifier") String dvIdtf) {
-        return response(req -> ok(json(execCommand(new CreateRoleCommand(roleDto.asRole(), req, findDataverseOrDie(dvIdtf))))));
+    public Response createRole(@Context ContainerRequestContext crc, RoleDTO roleDto, @PathParam("identifier") String dvIdtf) {
+        return response(req -> ok(json(execCommand(new CreateRoleCommand(roleDto.asRole(), req, findDataverseOrDie(dvIdtf))))), getRequestUser(crc));
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/assignments")
-    public Response listAssignments(@PathParam("identifier") String dvIdtf) {
+    public Response listAssignments(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         return response(req -> ok(
                 execCommand(new ListRoleAssignments(req, findDataverseOrDie(dvIdtf)))
                         .stream()
                         .map(a -> json(a))
                         .collect(toJsonArray())
-        ));
+        ), getRequestUser(crc));
     }
 
     /**
@@ -947,11 +1062,12 @@ public class Dataverses extends AbstractApiBean {
 //        }
 //    }
     @POST
+    @AuthRequired
     @Path("{identifier}/assignments")
-    public Response createAssignment(RoleAssignmentDTO ra, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey) {
+    public Response createAssignment(@Context ContainerRequestContext crc, RoleAssignmentDTO ra, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey) {
 
         try {
-            final DataverseRequest req = createDataverseRequest(findUserOrDie());
+            final DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             final Dataverse dataverse = findDataverseOrDie(dvIdtf);
 
             RoleAssignee assignee = findAssignee(ra.getAssignee());
@@ -985,13 +1101,14 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("{identifier}/assignments/{id}")
-    public Response deleteAssignment(@PathParam("id") long assignmentId, @PathParam("identifier") String dvIdtf) {
+    public Response deleteAssignment(@Context ContainerRequestContext crc, @PathParam("id") long assignmentId, @PathParam("identifier") String dvIdtf) {
         RoleAssignment ra = em.find(RoleAssignment.class, assignmentId);
         if (ra != null) {
             try {
                 findDataverseOrDie(dvIdtf);
-                execCommand(new RevokeRoleCommand(ra, createDataverseRequest(findUserOrDie())));
+                execCommand(new RevokeRoleCommand(ra, createDataverseRequest(getRequestUser(crc))));
                 return ok("Role " + ra.getRole().getName()
                         + " revoked for assignee " + ra.getAssigneeIdentifier()
                         + " in " + ra.getDefinitionPoint().accept(DvObject.NamePrinter));
@@ -1004,11 +1121,12 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/actions/:publish")
-    public Response publishDataverse(@PathParam("identifier") String dvIdtf) {
+    public Response publishDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
-            return ok(json(execCommand(new PublishDataverseCommand(createDataverseRequest(findAuthenticatedUserOrDie()), dv))));
+            return ok(json(execCommand(new PublishDataverseCommand(createDataverseRequest(getRequestAuthenticatedUserOrDie(crc)), dv))));
 
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -1016,8 +1134,9 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/groups/")
-    public Response createExplicitGroup(ExplicitGroupDTO dto, @PathParam("identifier") String dvIdtf) {
+    public Response createExplicitGroup(@Context ContainerRequestContext crc, ExplicitGroupDTO dto, @PathParam("identifier") String dvIdtf) {
         return response(req -> {
             ExplicitGroupProvider prv = explicitGroupSvc.getProvider();
             ExplicitGroup newGroup = dto.apply(prv.makeGroup());
@@ -1026,36 +1145,40 @@ public class Dataverses extends AbstractApiBean {
 
             String groupUri = String.format("%s/groups/%s", dvIdtf, newGroup.getGroupAliasInOwner());
             return created(groupUri, json(newGroup));
-        });
+        }, getRequestUser(crc));
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/groups/")
-    public Response listGroups(@PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey) {
+    public Response listGroups(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey) {
         return response(req -> ok(
                 execCommand(new ListExplicitGroupsCommand(req, findDataverseOrDie(dvIdtf)))
                         .stream().map(eg -> json(eg))
                         .collect(toJsonArray())
-        ));
+        ), getRequestUser(crc));
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}")
-    public Response getGroupByOwnerAndAliasInOwner(@PathParam("identifier") String dvIdtf,
-            @PathParam("aliasInOwner") String grpAliasInOwner) {
+    public Response getGroupByOwnerAndAliasInOwner(@Context ContainerRequestContext crc,
+                                                   @PathParam("identifier") String dvIdtf,
+                                                   @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> ok(json(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
                 req,
-                grpAliasInOwner))));
+                grpAliasInOwner))), getRequestUser(crc));
     }
     
     @GET
+    @AuthRequired
     @Path("{identifier}/guestbookResponses/")
-    public Response getGuestbookResponsesByDataverse(@PathParam("identifier") String dvIdtf,
+    public Response getGuestbookResponsesByDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
 
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(u);
             if (permissionSvc.request(req)
                     .on(dv)
@@ -1091,18 +1214,21 @@ public class Dataverses extends AbstractApiBean {
     }
     
     @PUT
+    @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}")
-    public Response updateGroup(ExplicitGroupDTO groupDto,
+    public Response updateGroup(@Context ContainerRequestContext crc, ExplicitGroupDTO groupDto,
             @PathParam("identifier") String dvIdtf,
             @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> ok(json(execCommand(
                 new UpdateExplicitGroupCommand(req,
-                        groupDto.apply(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)))))));
+                        groupDto.apply(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)))))), getRequestUser(crc));
     }
     
     @PUT
+    @AuthRequired
     @Path("{identifier}/defaultContributorRole/{roleAlias}")
     public Response updateDefaultContributorRole(
+            @Context ContainerRequestContext crc,
             @PathParam("identifier") String dvIdtf,
             @PathParam("roleAlias") String roleAlias) {
 
@@ -1138,7 +1264,7 @@ public class Dataverses extends AbstractApiBean {
                 List<String> args = Arrays.asList(dv.getDisplayName(), defaultRoleName);
                 String retString = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.success", args);
                 return ok(retString);
-            });
+            }, getRequestUser(crc));
 
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -1147,47 +1273,55 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}")
-    public Response deleteGroup(@PathParam("identifier") String dvIdtf,
-            @PathParam("aliasInOwner") String grpAliasInOwner) {
+    public Response deleteGroup(@Context ContainerRequestContext crc,
+                                @PathParam("identifier") String dvIdtf,
+                                @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> {
             execCommand(new DeleteExplicitGroupCommand(req,
                     findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)));
             return ok("Group " + dvIdtf + "/" + grpAliasInOwner + " deleted");
-        });
+        }, getRequestUser(crc));
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees")
     @Consumes("application/json")
-    public Response addRoleAssingees(List<String> roleAssingeeIdentifiers,
-            @PathParam("identifier") String dvIdtf,
-            @PathParam("aliasInOwner") String grpAliasInOwner) {
+    public Response addRoleAssingees(@Context ContainerRequestContext crc,
+                                     List<String> roleAssingeeIdentifiers,
+                                     @PathParam("identifier") String dvIdtf,
+                                     @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> ok(
                 json(
                     execCommand(
                                 new AddRoleAssigneesToExplicitGroupCommand(req,
                                         findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
-                                        new TreeSet<>(roleAssingeeIdentifiers))))));
+                                        new TreeSet<>(roleAssingeeIdentifiers))))), getRequestUser(crc));
     }
 
     @PUT
+    @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}")
-    public Response addRoleAssingee(@PathParam("identifier") String dvIdtf,
-            @PathParam("aliasInOwner") String grpAliasInOwner,
-            @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
-        return addRoleAssingees(Collections.singletonList(roleAssigneeIdentifier), dvIdtf, grpAliasInOwner);
+    public Response addRoleAssingee(@Context ContainerRequestContext crc,
+                                    @PathParam("identifier") String dvIdtf,
+                                    @PathParam("aliasInOwner") String grpAliasInOwner,
+                                    @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+        return addRoleAssingees(crc, Collections.singletonList(roleAssigneeIdentifier), dvIdtf, grpAliasInOwner);
     }
 
     @DELETE
+    @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}")
-    public Response deleteRoleAssingee(@PathParam("identifier") String dvIdtf,
-            @PathParam("aliasInOwner") String grpAliasInOwner,
-            @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
+    public Response deleteRoleAssingee(@Context ContainerRequestContext crc,
+                                       @PathParam("identifier") String dvIdtf,
+                                       @PathParam("aliasInOwner") String grpAliasInOwner,
+                                       @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
         return response(req -> ok(json(execCommand(
                 new RemoveRoleAssigneesFromExplicitGroupCommand(req,
                         findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
-                        Collections.singleton(roleAssigneeIdentifier))))));
+                        Collections.singleton(roleAssigneeIdentifier))))), getRequestUser(crc));
     }
 
     private ExplicitGroup findExplicitGroupOrDie(DvObject dv, DataverseRequest req, String groupIdtf) throws WrappedResponse {
@@ -1199,10 +1333,11 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/links")
-    public Response listLinks(@PathParam("identifier") String dvIdtf) {
+    public Response listLinks(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             Dataverse dv = findDataverseOrDie(dvIdtf);
             if (!u.isSuperuser()) {
                 return error(Status.FORBIDDEN, "Not a superuser");
@@ -1238,10 +1373,11 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{id}/move/{targetDataverseAlias}")
-    public Response moveDataverse(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
+    public Response moveDataverse(@Context ContainerRequestContext crc, @PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             Dataverse dv = findDataverseOrDie(id);
             Dataverse target = findDataverseOrDie(targetDataverseAlias);
             if (target == null) {
@@ -1257,10 +1393,11 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @PUT
+    @AuthRequired
     @Path("{linkedDataverseAlias}/link/{linkingDataverseAlias}")
-    public Response linkDataverse(@PathParam("linkedDataverseAlias") String linkedDataverseAlias, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
+    public Response linkDataverse(@Context ContainerRequestContext crc, @PathParam("linkedDataverseAlias") String linkedDataverseAlias, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
         try {
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             Dataverse linked = findDataverseOrDie(linkedDataverseAlias);
             Dataverse linking = findDataverseOrDie(linkingDataverseAlias);
             if (linked == null) {

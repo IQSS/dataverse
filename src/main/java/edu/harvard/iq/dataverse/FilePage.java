@@ -22,9 +22,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
@@ -80,6 +80,7 @@ public class FilePage implements java.io.Serializable {
     private FileMetadata fileMetadata;
     private Long fileId;  
     private String version;
+    private String toolType;
     private DataFile file;   
     private GuestbookResponse guestbookResponse;
     private int selectedTabIndex;
@@ -91,6 +92,7 @@ public class FilePage implements java.io.Serializable {
     private List<ExternalTool> configureTools;
     private List<ExternalTool> exploreTools;
     private List<ExternalTool> toolsWithPreviews;
+    private List<ExternalTool> queryTools;
     private Long datasetVersionId;
     /**
      * Have the terms been met so that the Preview tab can show the preview?
@@ -152,7 +154,6 @@ public class FilePage implements java.io.Serializable {
      
         
         if (fileId != null || persistentId != null) {
-
             // ---------------------------------------
             // Set the file and datasetVersion 
             // ---------------------------------------           
@@ -242,13 +243,28 @@ public class FilePage implements java.io.Serializable {
             }
             configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
+            queryTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.QUERY, contentType);
             Collections.sort(exploreTools, CompareExternalToolName);
             toolsWithPreviews  = sortExternalTools();
-            if(!toolsWithPreviews.isEmpty()){
-                setSelectedTool(toolsWithPreviews.get(0));                
-            }
-        } else {
 
+            if (toolType != null) {
+                if (toolType.equals("PREVIEW")) {
+                    if (!toolsWithPreviews.isEmpty()) {
+                        setSelectedTool(toolsWithPreviews.get(0));
+                    }
+                }
+                if (toolType.equals("QUERY")) {
+                    if (!queryTools.isEmpty()) {
+                        setSelectedTool(queryTools.get(0));
+                    }
+                }
+            } else {
+                if (!getAllAvailableTools().isEmpty()){
+                    setSelectedTool(getAllAvailableTools().get(0));
+                }
+            }
+
+        } else {
             return permissionsWrapper.notFound();
         }
         
@@ -266,10 +282,19 @@ public class FilePage implements java.io.Serializable {
     private void displayPublishMessage(){
         if (fileMetadata.getDatasetVersion().isDraft()  && canUpdateDataset()
                 &&   (canPublishDataset() || !fileMetadata.getDatasetVersion().getDataset().isLockedFor(DatasetLock.Reason.InReview))){
-            JsfHelper.addWarningMessage(datasetService.getReminderString(fileMetadata.getDatasetVersion().getDataset(), canPublishDataset(), true));
+            JsfHelper.addWarningMessage(datasetService.getReminderString(fileMetadata.getDatasetVersion().getDataset(), canPublishDataset(), true, isValid()));
         }               
     }
     
+    public boolean isValid() {
+        if (!fileMetadata.getDatasetVersion().isDraft()) {
+            return true;
+        }
+        DatasetVersion newVersion = fileMetadata.getDatasetVersion().cloneDatasetVersion();
+        newVersion.setDatasetFields(newVersion.initDatasetFields());
+        return newVersion.isValid();
+    }
+
     private boolean canViewUnpublishedDataset() {
         return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), fileMetadata.getDatasetVersion().getDataset());
     }
@@ -364,9 +389,9 @@ public class FilePage implements java.io.Serializable {
                 // Not all metadata exports should be presented to the web users!
                 // Some are only for harvesting clients.
                 
-                String[] temp = new String[2];            
+                String[] temp = new String[2];
                 temp[0] = formatDisplayName;
-                temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + fileMetadata.getDatasetVersion().getDataset().getGlobalIdString();
+                temp[1] = myHostURL + "/api/datasets/export?exporter=" + formatName + "&persistentId=" + fileMetadata.getDatasetVersion().getDataset().getGlobalId().asString();
                 retList.add(temp);
             }
         }
@@ -726,7 +751,7 @@ public class FilePage implements java.io.Serializable {
     
     private String returnToDatasetOnly(){
         
-         return "/dataset.xhtml?persistentId=" + editDataset.getGlobalIdString()  + "&version=DRAFT" + "&faces-redirect=true";   
+         return "/dataset.xhtml?persistentId=" + editDataset.getGlobalId().asString()  + "&version=DRAFT" + "&faces-redirect=true";   
     }
     
     private String returnToDraftVersion(){ 
@@ -858,9 +883,9 @@ public class FilePage implements java.io.Serializable {
             swiftObject.open();
             //generate a temp url for a file
             if (isHasPublicStore()) {
-                return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalIdString() + "=" + swiftObject.getSwiftFileName();
+                return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalId().asString() + "=" + swiftObject.getSwiftFileName();
             }
-            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalIdString() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
+            return settingsService.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl) + "?" + this.getFile().getOwner().getGlobalId().asString() + "=" + swiftObject.getSwiftFileName() + "&temp_url_sig=" + swiftObject.getTempUrlSignature() + "&temp_url_expires=" + swiftObject.getTempUrlExpiry();
         }
         return "";
     }
@@ -983,6 +1008,30 @@ public class FilePage implements java.io.Serializable {
         return toolsWithPreviews;
     }
     
+    public List<ExternalTool> getQueryTools() {
+        return queryTools;
+    }
+    
+    
+    public List<ExternalTool> getAllAvailableTools(){
+        List<ExternalTool> externalTools = new ArrayList<>();
+        externalTools.addAll(queryTools);
+        for (ExternalTool pt : toolsWithPreviews){
+            if (!externalTools.contains(pt)){
+                externalTools.add(pt);
+            }
+        }        
+        return externalTools;
+    }
+    
+    public String getToolType() {
+        return toolType;
+    }
+
+    public void setToolType(String toolType) {
+        this.toolType = toolType;
+    }
+    
     private ExternalTool selectedTool;
 
     public ExternalTool getSelectedTool() {
@@ -996,7 +1045,7 @@ public class FilePage implements java.io.Serializable {
     public String preview(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
-        if (fileMetadata.getDatasetVersion().isDraft() || (fileMetadata.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fileMetadata))) {
+        if (fileMetadata.getDatasetVersion().isDraft() || fileMetadata.getDatasetVersion().isDeaccessioned() || (fileMetadata.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fileMetadata))) {
             apiToken=fileDownloadService.getApiToken(user);
         }
         if(externalTool == null){
@@ -1175,7 +1224,22 @@ public class FilePage implements java.io.Serializable {
             return BundleUtil.getStringFromBundle("embargoed.willbeuntil");
         }
     }
-
+    
+    public String getToolTabTitle(){
+        if (getAllAvailableTools().size() > 1) {
+            return BundleUtil.getStringFromBundle("file.toolTab.header");
+        }
+        if( getSelectedTool() != null ){
+           if(getSelectedTool().isPreviewTool()){
+               return BundleUtil.getStringFromBundle("file.previewTab.header");
+           } 
+           if(getSelectedTool().isQueryTool()){
+               return BundleUtil.getStringFromBundle("file.queryTab.header");
+           }          
+        } 
+        return BundleUtil.getStringFromBundle("file.toolTab.header");
+    }
+    
     public String getIngestMessage() {
         return BundleUtil.getStringFromBundle("file.ingestFailed.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()));
     }

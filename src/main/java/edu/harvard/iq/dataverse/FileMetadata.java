@@ -13,10 +13,13 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -203,6 +206,25 @@ public class FileMetadata implements Serializable {
     private List<DataFileCategory> fileCategories;
     
     public List<DataFileCategory> getCategories() {
+        if (fileCategories != null) {
+            /*
+             * fileCategories can sometimes be an
+             * org.eclipse.persistence.indirection.IndirectList When that happens, the
+             * comparator in the Collections.sort below is not called, possibly due to
+             * https://bugs.eclipse.org/bugs/show_bug.cgi?id=446236 which is Java 1.8+
+             * specific Converting to an ArrayList solves the problem, but the longer term
+             * solution may be in avoiding the IndirectList or moving to a new version of
+             * the jar it is in.
+             */
+            if (!(fileCategories instanceof ArrayList)) {
+                List<DataFileCategory> newDFCs = new ArrayList<DataFileCategory>();
+                for (DataFileCategory fdc : fileCategories) {
+                    newDFCs.add(fdc);
+                }
+                setCategories(newDFCs);
+            }
+            Collections.sort(fileCategories, FileMetadata.compareByNameWithSortCategories);
+        }
         return fileCategories;
     }
     
@@ -228,7 +250,7 @@ public class FileMetadata implements Serializable {
             return ret;
         }
         
-        for (DataFileCategory fileCategory : fileCategories) {
+        for (DataFileCategory fileCategory : getCategories()) {
             ret.add(fileCategory.getName());
         }
         // fileCategories.stream()
@@ -536,7 +558,7 @@ public class FileMetadata implements Serializable {
     
     @Override
     public String toString() {
-        return "edu.harvard.iq.dvn.core.study.FileMetadata[id=" + id + "]";
+        return "edu.harvard.iq.dataverse.FileMetadata[id=" + id + "]";
     }
     
     public static final Comparator<FileMetadata> compareByLabel = new Comparator<FileMetadata>() {
@@ -546,28 +568,37 @@ public class FileMetadata implements Serializable {
         }
     };
     
-    public static final Comparator<FileMetadata> compareByLabelAndFolder = new Comparator<FileMetadata>() {
+    static Map<String,Long> categoryMap=null;
+    
+    public static void setCategorySortOrder(String categories) {
+       categoryMap=new HashMap<String, Long>();
+       long i=1;
+       for(String cat: categories.split(",\\s*")) {
+           categoryMap.put(cat.toUpperCase(), i);
+           i++;
+       }
+    }
+    
+    public static Map<String,Long> getCategorySortOrder() {
+        return categoryMap;
+    }
+    
+    
+    public static final Comparator<DataFileCategory> compareByNameWithSortCategories = new Comparator<DataFileCategory>() {
         @Override
-        public int compare(FileMetadata o1, FileMetadata o2) {
-            String folder1 = o1.getDirectoryLabel() == null ? "" : o1.getDirectoryLabel().toUpperCase();
-            String folder2 = o2.getDirectoryLabel() == null ? "" : o2.getDirectoryLabel().toUpperCase();
-            
-            
-            // We want to the files w/ no folders appear *after* all the folders
-            // on the sorted list:
-            if ("".equals(folder1) && !"".equals(folder2)) {
-                return 1;
+        public int compare(DataFileCategory o1, DataFileCategory o2) {
+            if (categoryMap != null) {
+                //If one is in the map and one is not, the former is first, otherwise sort by name
+                boolean o1InMap = categoryMap.containsKey(o1.getName().toUpperCase()); 
+                boolean o2InMap = categoryMap.containsKey(o2.getName().toUpperCase());
+                if(o1InMap && !o2InMap) {
+                    return (-1);
+                }
+                if(!o1InMap && o2InMap) {
+                    return 1;
+                }
             }
-            
-            if ("".equals(folder2) && !"".equals(folder1)) {
-                return -1;
-            }
-            
-            int comp = folder1.compareTo(folder2); 
-            if (comp != 0) {
-                return comp;
-            }
-            return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
+            return(o1.getName().toUpperCase().compareTo(o2.getName().toUpperCase()));
         }
     };
     

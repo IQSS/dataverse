@@ -205,15 +205,9 @@ public class IndexBatchServiceBean {
         int datasetFailureCount = 0;
         List<Long> datasetIds = datasetService.findAllOrSubsetOrderByFilesOwned(skipIndexed);
         for (Long id : datasetIds) {
-            try {
-                datasetIndexCount++;
-                logger.info("indexing dataset " + datasetIndexCount + " of " + datasetIds.size() + " (id=" + id + ")");
-                Future<String> result = indexService.indexDatasetInNewTransaction(id);
-            } catch (Exception e) {
-                //We want to keep running even after an exception so throw some more info into the log
-                datasetFailureCount++;
-                logger.info("FAILURE indexing dataset " + datasetIndexCount + " of " + datasetIds.size() + " (id=" + id + ") Exception info: " + e.getMessage());
-            }
+            datasetIndexCount++;
+            logger.info("indexing dataset " + datasetIndexCount + " of " + datasetIds.size() + " (id=" + id + ")");
+            indexService.indexDatasetInNewTransaction(id);
         }
         logger.info("done iterating through all datasets");
 
@@ -269,15 +263,9 @@ public class IndexBatchServiceBean {
         
         // index the Dataset children
         for (Long childId : datasetChildren) {
-            try {
-                datasetIndexCount++;
-                logger.info("indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ")");
-                indexService.indexDatasetInNewTransaction(childId);
-            } catch (Exception e) {
-                //We want to keep running even after an exception so throw some more info into the log
-                datasetFailureCount++;
-                logger.info("FAILURE indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ") Exception info: " + e.getMessage());
-            }
+            datasetIndexCount++;
+            logger.info("indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ")");
+            indexService.indexDatasetInNewTransaction(childId);
         }
         long end = System.currentTimeMillis();
         if (datasetFailureCount + dataverseFailureCount > 0){

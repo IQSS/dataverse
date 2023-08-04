@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.w3.org/1999/xhtml"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="http://www.w3.org/1999/xhtml">
+
+  <xs:annotation>
+    <xs:documentation>
+      This is the XML Schema Inline Presentation element module for XHTML
+      $Id$
+    </xs:documentation>
+    <xs:documentation source="xhtml-copyright-1.xsd"/>
+  </xs:annotation>
+
+  <xs:annotation>
+    <xs:documentation>
+      Inline Presentational Elements
+    
+        * b, big, i, small, sub, sup, tt
+    
+      This module declares the elements and their attributes used to
+      support inline-level presentational markup.
+    </xs:documentation>
+    <xs:documentation 
+         source="http://www.w3.org/TR/2001/REC-xhtml-modularization-20010410/abstract_modules.html#s_presentationmodule"/>
+  </xs:annotation>
+
+  <xs:attributeGroup name="InlPres.attlist">
+    <xs:attributeGroup ref="Common.attrib"/>
+  </xs:attributeGroup>
+
+  <xs:group name="InlPres.content">
+    <xs:sequence>
+       <xs:group ref="Inline.mix" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:group>  
+    
+  <xs:complexType name="InlPres.type" mixed="true">
+    <xs:group ref="InlPres.content"/>
+    <xs:attributeGroup ref="InlPres.attlist"/>
+  </xs:complexType>
+    
+  <xs:element name="b" type="InlPres.type"/>
+
+  <xs:element name="big" type="InlPres.type"/>
+
+  <xs:element name="i" type="InlPres.type"/>
+
+  <xs:element name="small" type="InlPres.type"/>
+
+  <xs:element name="sub" type="InlPres.type"/>
+
+  <xs:element name="sup" type="InlPres.type"/>
+
+  <xs:element name="tt" type="InlPres.type"/>
+
+</xs:schema>

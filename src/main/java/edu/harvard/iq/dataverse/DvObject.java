@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -8,6 +10,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Logger;
+
 import javax.persistence.*;
 
 /**
@@ -26,9 +30,13 @@ import javax.persistence.*;
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",
             query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
+    @NamedQuery(name = "DvObject.findIdByGlobalId",
+            query = "SELECT o.id FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByAlternativeGlobalId",
             query = "SELECT o FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
+    @NamedQuery(name = "DvObject.findIdByAlternativeGlobalId",
+            query = "SELECT o.id FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByProtocolIdentifierAuthority",
             query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol"),
@@ -51,10 +59,19 @@ import javax.persistence.*;
 		uniqueConstraints = {@UniqueConstraint(columnNames = {"authority,protocol,identifier"}),@UniqueConstraint(columnNames = {"owner_id,storageidentifier"})})
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
     
-    public static final String DATAVERSE_DTYPE_STRING = "Dataverse";
-    public static final String DATASET_DTYPE_STRING = "Dataset";
-    public static final String DATAFILE_DTYPE_STRING = "DataFile";
-    public static final List<String> DTYPE_LIST = Arrays.asList(DATAVERSE_DTYPE_STRING, DATASET_DTYPE_STRING, DATAFILE_DTYPE_STRING);
+    private static final Logger logger = Logger.getLogger(DvObject.class.getCanonicalName());
+    
+    public enum DType {
+        Dataverse("Dataverse"), Dataset("Dataset"),DataFile("DataFile");
+       
+        String dtype;
+        DType(String dt) {
+           dtype = dt;
+        }
+        public String getDType() {
+           return dtype;
+        } 
+     }
     
     public static final Visitor<String> NamePrinter = new Visitor<String>(){
 
@@ -139,6 +156,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     private String identifier;
     
     private boolean identifierRegistered;
+    
+    private transient GlobalId globalId = null;
     
     @OneToMany(mappedBy = "dvObject", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AlternativePersistentIdentifier> alternativePersistentIndentifiers;
@@ -272,6 +291,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+        //Remove cached value
+        globalId=null;
     }
 
     public String getAuthority() {
@@ -280,6 +301,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
     public void setAuthority(String authority) {
         this.authority = authority;
+        //Remove cached value
+        globalId=null;
     }
 
     public Date getGlobalIdCreateTime() {
@@ -296,6 +319,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
+        //Remove cached value
+        globalId=null;
     }
 
     public boolean isIdentifierRegistered() {
@@ -306,22 +331,13 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.identifierRegistered = identifierRegistered;
     }  
     
-    /**
-     * 
-     * @return This object's global id in a string form.
-     * @deprecated use {@code dvobj.getGlobalId().asString()}.
-     */
-    public String getGlobalIdString() {       
-        final GlobalId globalId = getGlobalId();
-        return globalId != null ? globalId.asString() : null;
-    }
-    
     public void setGlobalId( GlobalId pid ) {
         if ( pid == null ) {
             setProtocol(null);
             setAuthority(null);
             setIdentifier(null);
         } else {
+            //These reset globalId=null
             setProtocol(pid.getProtocol());
             setAuthority(pid.getAuthority());
             setIdentifier(pid.getIdentifier());
@@ -329,10 +345,11 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     }
     
     public GlobalId getGlobalId() {
-        // FIXME should return NULL when the fields are null. Currenntly, 
-        //       a lot of code depends call this method, so this fix can't be 
-        //       a part of the current PR.
-        return new GlobalId(getProtocol(), getAuthority(), getIdentifier());
+        // Cache this
+        if ((globalId == null) && !(getProtocol() == null || getAuthority() == null || getIdentifier() == null)) {
+            globalId = PidUtil.parseAsGlobalID(getProtocol(), getAuthority(), getIdentifier());
+        }
+        return globalId;
     }
     
     public abstract <T> T accept(Visitor<T> v);
@@ -420,17 +437,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     }
     
     public String getTargetUrl(){
-        if (this instanceof Dataverse){
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        if (this instanceof Dataset){
-            return Dataset.TARGET_URL;
-        }
-        if (this instanceof DataFile){
-            return DataFile.TARGET_URL;
-        }
         throw new UnsupportedOperationException("Not supported yet. New DVObject Instance?");
-        
     }
     
     public String getYearPublishedCreated(){

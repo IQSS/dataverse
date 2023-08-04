@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -33,6 +35,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
@@ -50,11 +53,12 @@ public class Users extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Users.class.getName());
     
     @POST
+    @AuthRequired
     @Path("{consumedIdentifier}/mergeIntoUser/{baseIdentifier}")
-    public Response mergeInAuthenticatedUser(@PathParam("consumedIdentifier") String consumedIdentifier, @PathParam("baseIdentifier") String baseIdentifier) {
+    public Response mergeInAuthenticatedUser(@Context ContainerRequestContext crc, @PathParam("consumedIdentifier") String consumedIdentifier, @PathParam("baseIdentifier") String baseIdentifier) {
         User u;
         try {
-            u = findUserOrDie();
+            u = getRequestUser(crc);
             if(!u.isSuperuser()) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can merge users"));
             }
@@ -88,11 +92,12 @@ public class Users extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/changeIdentifier/{newIdentifier}")
-    public Response changeAuthenticatedUserIdentifier(@PathParam("identifier") String oldIdentifier, @PathParam("newIdentifier")  String newIdentifier) {
+    public Response changeAuthenticatedUserIdentifier(@Context ContainerRequestContext crc, @PathParam("identifier") String oldIdentifier, @PathParam("newIdentifier")  String newIdentifier) {
         User u;
         try {
-            u = findUserOrDie();
+            u = getRequestUser(crc);
             if(!u.isSuperuser()) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can change userIdentifiers"));
             }
@@ -121,16 +126,11 @@ public class Users extends AbstractApiBean {
     }
     
     @Path("token")
+    @AuthRequired
     @DELETE
-    public Response deleteToken() {
-        User u;
-
-        try {
-            u = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }
-        AuthenticatedUser au;        
+    public Response deleteToken(@Context ContainerRequestContext crc) {
+        User u = getRequestUser(crc);
+        AuthenticatedUser au;
        
         try{
              au = (AuthenticatedUser) u; 
@@ -145,16 +145,9 @@ public class Users extends AbstractApiBean {
     }
     
     @Path("token")
+    @AuthRequired
     @GET
     public Response getTokenExpirationDate() {
-        User u;
-        
-        try {
-            u = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }      
-        
         ApiToken token = authSvc.findApiToken(getRequestApiKey());
         
         if (token == null) {
@@ -166,16 +159,11 @@ public class Users extends AbstractApiBean {
     }
     
     @Path("token/recreate")
+    @AuthRequired
     @POST
-    public Response recreateToken() {
-        User u;
+    public Response recreateToken(@Context ContainerRequestContext crc) {
+        User u = getRequestUser(crc);
 
-        try {
-            u = findUserOrDie();
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
-        }
-        
         AuthenticatedUser au;        
         try{
              au = (AuthenticatedUser) u; 
@@ -195,8 +183,9 @@ public class Users extends AbstractApiBean {
     }
     
     @GET
+    @AuthRequired
     @Path(":me")
-    public Response getAuthenticatedUserByToken() {
+    public Response getAuthenticatedUserByToken(@Context ContainerRequestContext crc) {
 
         String tokenFromRequestAPI = getRequestApiKey();
 
@@ -205,7 +194,7 @@ public class Users extends AbstractApiBean {
         // this is a good idea
         if (authenticatedUser == null) {
             try {
-                authenticatedUser = findAuthenticatedUserOrDie();
+                authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             } catch (WrappedResponse ex) {
                 Logger.getLogger(Users.class.getName()).log(Level.SEVERE, null, ex);
                 return error(Response.Status.BAD_REQUEST, "User with token " + tokenFromRequestAPI + " not found.");
@@ -215,14 +204,15 @@ public class Users extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Path("{identifier}/removeRoles")
-    public Response removeUserRoles(@PathParam("identifier") String identifier) {
+    public Response removeUserRoles(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
         try {
             AuthenticatedUser userToModify = authSvc.getAuthenticatedUser(identifier);
             if (userToModify == null) {
                 return error(Response.Status.BAD_REQUEST, "Cannot find user based on " + identifier + ".");
             }
-            execCommand(new RevokeAllRolesCommand(userToModify, createDataverseRequest(findUserOrDie())));
+            execCommand(new RevokeAllRolesCommand(userToModify, createDataverseRequest(getRequestUser(crc))));
             return ok("Roles removed for user " + identifier + ".");
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -230,11 +220,12 @@ public class Users extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("{identifier}/traces")
-    public Response getTraces(@PathParam("identifier") String identifier) {
+    public Response getTraces(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
-            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(findUserOrDie()), userToQuery, null));
+            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, null));
             return ok(jsonObj);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -244,15 +235,16 @@ public class Users extends AbstractApiBean {
     private List<String> elements = Arrays.asList("roleAssignments","dataverseCreator", "dataversePublisher","datasetCreator", "datasetPublisher","dataFileCreator","dataFilePublisher","datasetVersionUsers","explicitGroups","guestbookEntries", "savedSearches");
     
     @GET
+    @AuthRequired
     @Path("{identifier}/traces/{element}")
     @Produces("text/csv, application/json")
-    public Response getTraces(@Context Request req, @PathParam("identifier") String identifier, @PathParam("element") String element) {
+    public Response getTraces(@Context ContainerRequestContext crc, @Context Request req, @PathParam("identifier") String identifier, @PathParam("element") String element) {
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
             if(!elements.contains(element)) {
                 throw new BadRequestException("Not a valid element");
             }
-            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(findUserOrDie()), userToQuery, element));
+            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, element));
             
             List<Variant> vars = Variant
                     .mediaTypes(MediaType.valueOf(FileUtil.MIME_TYPE_CSV), MediaType.APPLICATION_JSON_TYPE)

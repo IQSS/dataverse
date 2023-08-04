@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
@@ -62,6 +63,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -240,12 +243,7 @@ public class Index extends AbstractApiBean {
                 Dataset dataset = datasetService.find(id);
                 if (dataset != null) {
                     boolean doNormalSolrDocCleanUp = true;
-                    try {
-                        Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
-                    } catch (IOException | SolrServerException e) {
-                        //
-                        return error(Status.BAD_REQUEST, writeFailureToLog(e.getLocalizedMessage(), dataset));
-                    }
+                    indexService.asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
 
                     return ok("starting reindex of dataset " + id);
                 } else {
@@ -263,11 +261,7 @@ public class Index extends AbstractApiBean {
                  * @todo How can we display the result to the user?
                  */
                 boolean doNormalSolrDocCleanUp = true;
-                try {
-                    Future<String> indexDatasetFuture = indexService.indexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
-                } catch (IOException | SolrServerException e) {
-                    writeFailureToLog(e.getLocalizedMessage(), datasetThatOwnsTheFile);
-                }
+                indexService.asyncIndexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
                 
                 return ok("started reindexing " + type + "/" + id);
             } else {
@@ -315,15 +309,11 @@ public class Index extends AbstractApiBean {
         }
         if (dataset != null) {
             boolean doNormalSolrDocCleanUp = true;
-            try {
-                Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
-            } catch (IOException | SolrServerException e) {
-                writeFailureToLog(e.getLocalizedMessage(), dataset);               
-            }
+            indexService.asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
             JsonObjectBuilder data = Json.createObjectBuilder();
             data.add("message", "Reindexed dataset " + persistentId);
             data.add("id", dataset.getId());
-            data.add("persistentId", dataset.getGlobalIdString());
+            data.add("persistentId", dataset.getGlobalId().asString());
             JsonArrayBuilder versions = Json.createArrayBuilder();
             for (DatasetVersion version : dataset.getVersions()) {
                 JsonObjectBuilder versionObject = Json.createObjectBuilder();
@@ -636,15 +626,16 @@ public class Index extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("filesearch")
-    public Response filesearch(@QueryParam("persistentId") String persistentId, @QueryParam("semanticVersion") String semanticVersion, @QueryParam("q") String userSuppliedQuery) {
+    public Response filesearch(@Context ContainerRequestContext crc, @QueryParam("persistentId") String persistentId, @QueryParam("semanticVersion") String semanticVersion, @QueryParam("q") String userSuppliedQuery) {
         Dataset dataset = datasetService.findByGlobalId(persistentId);
         if (dataset == null) {
             return error(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
         }
         User user = GuestUser.get();
         try {
-            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (authenticatedUser != null) {
                 user = authenticatedUser;
             }

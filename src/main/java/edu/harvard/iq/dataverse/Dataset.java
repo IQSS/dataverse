@@ -43,6 +43,10 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
  * @author skraffmiller
  */
 @NamedQueries({
+    // Dataset.findById should only be used if you're going to iterate over files (otherwise, lazy loading in DatasetService.find() is better).
+    // If you are going to iterate over files, preferably call the DatasetService.findDeep() method i.s.o. using this query directly.
+    @NamedQuery(name = "Dataset.findById", 
+                query = "SELECT o FROM Dataset o LEFT JOIN FETCH o.files WHERE o.id=:id"),
     @NamedQuery(name = "Dataset.findIdStale",
                query = "SELECT d.id FROM Dataset d WHERE d.indexTime is NULL OR d.indexTime < d.modificationTime"),
     @NamedQuery(name = "Dataset.findIdStalePermission",
@@ -258,7 +262,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getPersistentURL() {
-        return new GlobalId(this).toURL().toString();
+        return this.getGlobalId().asURL();
     }
     
     public List<DataFile> getFiles() {
@@ -765,13 +769,13 @@ public class Dataset extends DvObjectContainer {
     public String getRemoteArchiveURL() {
         if (isHarvested()) {
             if (HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalIdString();
+                return this.getHarvestedFrom().getArchiveUrl() + "/dataset.xhtml?persistentId=" + getGlobalId().asString();
             } else if (HarvestingClient.HARVEST_STYLE_VDC.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 String rootArchiveUrl = this.getHarvestedFrom().getHarvestingUrl();
                 int c = rootArchiveUrl.indexOf("/OAIHandler");
                 if (c > 0) {
                     rootArchiveUrl = rootArchiveUrl.substring(0, c);
-                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalIdString();
+                    return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalId().asString();
                 }
             } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 // For the ICPSR, it turns out that the best thing to do is to 
@@ -881,7 +885,12 @@ public class Dataset extends DvObjectContainer {
     @Override
     public String getDisplayName() {
         DatasetVersion dsv = getReleasedVersion();
-        return dsv != null ? dsv.getTitle() : getLatestVersion().getTitle();
+        String result = dsv != null ? dsv.getTitle() : getLatestVersion().getTitle();
+        boolean resultIsEmpty = result == null || "".equals(result);
+        if (resultIsEmpty && getGlobalId() != null) {
+            return getGlobalId().asString();
+        }
+        return result;
     }
     
     @Override
@@ -915,4 +924,8 @@ public class Dataset extends DvObjectContainer {
         return DatasetUtil.getThumbnail(this, datasetVersion, size);
     }
 
+    @Override
+    public String getTargetUrl() {
+        return Dataset.TARGET_URL;
+    }
 }

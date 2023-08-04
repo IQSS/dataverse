@@ -5,12 +5,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -19,17 +18,17 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.*;
@@ -47,9 +46,9 @@ import org.hibernate.validator.constraints.NotBlank;
                 query = "SELECT o FROM DataFile o WHERE o.creator.id=:creatorId"),
         @NamedQuery(name = "DataFile.findByReleaseUserId",
                 query = "SELECT o FROM DataFile o WHERE o.releaseUser.id=:releaseUserId"),
-        @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth", 
+        @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth",
                 query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority"),
-        @NamedQuery(name="DataFile.findDataFileThatReplacedId", 
+        @NamedQuery(name="DataFile.findDataFileThatReplacedId",
                 query="SELECT s.id FROM DataFile s WHERE s.previousDataFileId=:identifier")
 })
 @Entity
@@ -73,7 +72,10 @@ public class DataFile extends DvObject implements Comparable {
     @Column( nullable = false )
     @Pattern(regexp = "^.*/.*$", message = "{contenttype.slash}")
     private String contentType;
-    
+
+    public void setFileAccessRequests(List<FileAccessRequest> fileAccessRequests) {
+        this.fileAccessRequests = fileAccessRequests;
+    }
 
 //    @Expose    
 //    @SerializedName("storageIdentifier")
@@ -416,7 +418,7 @@ public class DataFile extends DvObject implements Comparable {
                 return ingestReports.get(0).getReport();
             }
         }
-        return "Ingest failed. No further information is available.";
+        return BundleUtil.getStringFromBundle("file.ingestFailed");
     }
     
     public boolean isTabularData() {
@@ -747,22 +749,71 @@ public class DataFile extends DvObject implements Comparable {
         }
         return null; 
     }
-    
 
-    @ManyToMany
-    @JoinTable(name = "fileaccessrequests",
-    joinColumns = @JoinColumn(name = "datafile_id"),
-    inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
-    private List<AuthenticatedUser> fileAccessRequesters;
+    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
+    private List<FileAccessRequest> fileAccessRequests;
 
-    public List<AuthenticatedUser> getFileAccessRequesters() {
-        return fileAccessRequesters;
+    public List<FileAccessRequest> getFileAccessRequests() {
+        return fileAccessRequests;
     }
 
-    public void setFileAccessRequesters(List<AuthenticatedUser> fileAccessRequesters) {
-        this.fileAccessRequesters = fileAccessRequesters;
+    public void addFileAccessRequester(AuthenticatedUser authenticatedUser) {
+        if (this.fileAccessRequests == null) {
+            this.fileAccessRequests = new ArrayList<>();
+        }
+
+        Set<AuthenticatedUser> existingUsers = this.fileAccessRequests.stream()
+            .map(FileAccessRequest::getAuthenticatedUser)
+            .collect(Collectors.toSet());
+
+        if (existingUsers.contains(authenticatedUser)) {
+            return;
+        }
+
+        FileAccessRequest request = new FileAccessRequest();
+        request.setCreationTime(new Date());
+        request.setDataFile(this);
+        request.setAuthenticatedUser(authenticatedUser);
+
+        FileAccessRequest.FileAccessRequestKey key = new FileAccessRequest.FileAccessRequestKey();
+        key.setAuthenticatedUser(authenticatedUser.getId());
+        key.setDataFile(this.getId());
+
+        request.setId(key);
+
+        this.fileAccessRequests.add(request);
     }
-    
+
+    public boolean removeFileAccessRequester(RoleAssignee roleAssignee) {
+        if (this.fileAccessRequests == null) {
+            return false;
+        }
+
+        FileAccessRequest request = this.fileAccessRequests.stream()
+            .filter(fileAccessRequest -> fileAccessRequest.getAuthenticatedUser().equals(roleAssignee))
+            .findFirst()
+            .orElse(null);
+
+        if (request != null) {
+            this.fileAccessRequests.remove(request);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean containsFileAccessRequestFromUser(RoleAssignee roleAssignee) {
+        if (this.fileAccessRequests == null) {
+            return false;
+        }
+
+        Set<AuthenticatedUser> existingUsers = this.fileAccessRequests.stream()
+            .map(FileAccessRequest::getAuthenticatedUser)
+            .collect(Collectors.toSet());
+
+        return existingUsers.contains(roleAssignee);
+    }
+
     public boolean isHarvested() {
         
         Dataset ownerDataset = this.getOwner();
@@ -956,7 +1007,7 @@ public class DataFile extends DvObject implements Comparable {
         // https://github.com/IQSS/dataverse/issues/761, https://github.com/IQSS/dataverse/issues/2110, https://github.com/IQSS/dataverse/issues/3191
         //
         datasetMap.put("title", thisFileMetadata.getDatasetVersion().getTitle());
-        datasetMap.put("persistentId", getOwner().getGlobalIdString());
+        datasetMap.put("persistentId", getOwner().getGlobalId().asString());
         datasetMap.put("url", getOwner().getPersistentURL());
         datasetMap.put("version", thisFileMetadata.getDatasetVersion().getSemanticVersion());
         datasetMap.put("id", getOwner().getId());
@@ -1034,6 +1085,10 @@ public class DataFile extends DvObject implements Comparable {
         return null;
     }
     
+    @Override
+    public String getTargetUrl() {
+        return DataFile.TARGET_URL;
+    }
 
 } // end of class
     

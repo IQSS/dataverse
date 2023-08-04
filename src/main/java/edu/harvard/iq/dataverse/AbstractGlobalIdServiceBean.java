@@ -3,11 +3,13 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
-
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -17,26 +19,20 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
     private static final Logger logger = Logger.getLogger(AbstractGlobalIdServiceBean.class.getCanonicalName());
 
-    @EJB
+    @Inject
     DataverseServiceBean dataverseService;
     @EJB
+    protected
     SettingsServiceBean settingsService;
-    @EJB
-    EjbDataverseEngine commandEngine;
-    @EJB
-    DatasetServiceBean datasetService;
-    @EJB
-    DataFileServiceBean datafileService;
-    @EJB
+    @Inject
+    protected
+    DvObjectServiceBean dvObjectService;
+    @Inject
     SystemConfig systemConfig;
+
+    protected Boolean configured = null;
     
     public static String UNAVAILABLE = ":unav";
-
-    @Override
-    public String getIdentifierForLookup(String protocol, String authority, String identifier) {
-        logger.log(Level.FINE,"getIdentifierForLookup");
-        return protocol + ":" + authority + "/" + identifier;
-    }
 
     @Override
     public Map<String, String> getMetadataForCreateIndicator(DvObject dvObjectIn) {
@@ -101,14 +97,10 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     
     @Override
     public String getIdentifier(DvObject dvObject) {
-        return dvObject.getGlobalId().asString();
+        GlobalId gid = dvObject.getGlobalId();
+        return gid != null ? gid.asString() : null;
     }
 
-    protected String getTargetUrl(Dataset datasetIn) {
-        logger.log(Level.FINE,"getTargetUrl");
-        return systemConfig.getDataverseSiteUrl() + Dataset.TARGET_URL + datasetIn.getGlobalIdString();
-    }
-    
     protected String generateYear (DvObject dvObjectIn){
         return dvObjectIn.getYearPublishedCreated(); 
     }
@@ -121,15 +113,40 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     }
     
     @Override
+    public boolean alreadyRegistered(DvObject dvo) throws Exception {
+        if(dvo==null) {
+            logger.severe("Null DvObject sent to alreadyRegistered().");
+            return false;
+        }
+        GlobalId globalId = dvo.getGlobalId();
+        if(globalId == null) {
+            return false;
+        }
+        return alreadyRegistered(globalId, false);
+    }
+
+    public abstract boolean alreadyRegistered(GlobalId globalId, boolean noProviderDefault) throws Exception;
+
+    /*
+     * ToDo: the DvObject being sent in provides partial support for the case where
+     * it has a different authority/protocol than what is configured (i.e. a legacy
+     * Pid that can actually be updated by the Pid account being used.) Removing
+     * this now would potentially break/make it harder to handle that case prior to
+     * support for configuring multiple Pid providers. Once that exists, it would be
+     * cleaner to always find the PidProvider associated with the
+     * protocol/authority/shoulder of the current dataset and then not pass the
+     * DvObject as a param. (This would also remove calls to get the settings since
+     * that would be done at construction.)
+     */
+    @Override
     public DvObject generateIdentifier(DvObject dvObject) {
 
         String protocol = dvObject.getProtocol() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : dvObject.getProtocol();
         String authority = dvObject.getAuthority() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : dvObject.getAuthority();
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, commandEngine.getContext());
         if (dvObject.isInstanceofDataset()) {
-            dvObject.setIdentifier(datasetService.generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
+            dvObject.setIdentifier(generateDatasetIdentifier((Dataset) dvObject));
         } else {
-            dvObject.setIdentifier(datafileService.generateDataFileIdentifier((DataFile) dvObject, idServiceBean));
+            dvObject.setIdentifier(generateDataFileIdentifier((DataFile) dvObject));
         }
         if (dvObject.getProtocol() == null) {
             dvObject.setProtocol(protocol);
@@ -139,6 +156,227 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         }
         return dvObject;
     }
+    
+    //ToDo just send the DvObject.DType
+    public String generateDatasetIdentifier(Dataset dataset) {
+        //ToDo - track these in the bean
+        String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
+
+        switch (identifierType) {
+            case "randomString":
+                return generateIdentifierAsRandomString(dataset, shoulder);
+            case "storedProcGenerated":
+                return generateIdentifierFromStoredProcedureIndependent(dataset, shoulder);
+            default:
+                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
+                return generateIdentifierAsRandomString(dataset, shoulder);
+        }
+    }
+
+
+    /**
+     * Check that a identifier entered by the user is unique (not currently used
+     * for any other study in this Dataverse Network) also check for duplicate
+     * in EZID if needed
+     * @param userIdentifier
+     * @param dataset
+     * @return {@code true} if the identifier is unique, {@code false} otherwise.
+     */
+    public boolean isGlobalIdUnique(GlobalId globalId) {
+        if ( ! dvObjectService.isGlobalIdLocallyUnique(globalId)  ) {
+            return false; // duplication found in local database
+        }
+
+        // not in local DB, look in the persistent identifier service
+        try {
+            return ! alreadyRegistered(globalId, false);
+        } catch (Exception e){
+            //we can live with failure - means identifier not found remotely
+        }
+
+        return true;
+    }
+
+    /** 
+     *   Parse a Persistent Id and set the protocol, authority, and identifier
+     * 
+     *   Example 1: doi:10.5072/FK2/BYM3IW
+     *       protocol: doi
+     *       authority: 10.5072
+     *       identifier: FK2/BYM3IW
+     * 
+     *   Example 2: hdl:1902.1/111012
+     *       protocol: hdl
+     *       authority: 1902.1
+     *       identifier: 111012
+     *
+     * @param identifierString
+     * @param separator the string that separates the authority from the identifier.
+     * @param destination the global id that will contain the parsed data.
+     * @return {@code destination}, after its fields have been updated, or
+     *         {@code null} if parsing failed.
+     */
+    @Override
+    public GlobalId parsePersistentId(String fullIdentifierString) {
+        if(!isConfigured()) {
+            return null;
+        }
+        int index1 = fullIdentifierString.indexOf(':');
+        if (index1 > 0) { // ':' found with one or more characters before it
+            String protocol = fullIdentifierString.substring(0, index1);
+            GlobalId globalId = parsePersistentId(protocol, fullIdentifierString.substring(index1+1));
+            return globalId;
+        }
+        logger.log(Level.INFO, "Error parsing identifier: {0}: ''<protocol>:'' not found in string", fullIdentifierString);
+        return null;
+    }
+
+    protected GlobalId parsePersistentId(String protocol, String identifierString) {
+        if(!isConfigured()) {
+            return null;
+        }
+        String authority;
+        String identifier;
+        if (identifierString == null) {
+            return null;
+        }
+        int index = identifierString.indexOf('/');
+        if (index > 0 && (index + 1) < identifierString.length()) {
+            // '/' found with one or more characters
+            // before and after it
+            // Strip any whitespace, ; and ' from authority (should finding them cause a
+            // failure instead?)
+            authority = GlobalIdServiceBean.formatIdentifierString(identifierString.substring(0, index));
+            if (GlobalIdServiceBean.testforNullTerminator(authority)) {
+                return null;
+            }
+            identifier = GlobalIdServiceBean.formatIdentifierString(identifierString.substring(index + 1));
+            if (GlobalIdServiceBean.testforNullTerminator(identifier)) {
+                return null;
+            }
+        } else {
+            logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string",
+                    identifierString);
+            return null;
+        }
+        return parsePersistentId(protocol, authority, identifier);
+    }
+    
+    public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
+        if(!isConfigured()) {
+            return null;
+        }
+        logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getProviderInformation().get(0));
+        if(!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
+            return null;
+        }
+        return new GlobalId(protocol, authority, identifier, getSeparator(), getUrlPrefix(),
+                getProviderInformation().get(0));
+    }
+
+    
+    public String getSeparator() {
+        //The standard default
+        return "/";
+    }
+
+    @Override
+    public String generateDataFileIdentifier(DataFile datafile) {
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
+        
+        String prepend = "";
+        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
+            //If format is dependent then pre-pend the dataset identifier 
+            prepend = datafile.getOwner().getIdentifier() + "/";
+            datafile.setProtocol(datafile.getOwner().getProtocol());
+            datafile.setAuthority(datafile.getOwner().getAuthority());
+        } else {
+            //If there's a shoulder prepend independent identifiers with it
+            prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
+            datafile.setProtocol(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol));
+            datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority));
+        }
+ 
+        switch (doiIdentifierType) {
+            case "randomString":
+                return generateIdentifierAsRandomString(datafile, prepend);
+            case "storedProcGenerated":
+                if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
+                    return generateIdentifierFromStoredProcedureIndependent(datafile, prepend);
+                } else {
+                    return generateIdentifierFromStoredProcedureDependent(datafile, prepend);
+                }
+            default:
+                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
+                return generateIdentifierAsRandomString(datafile, prepend);
+        }
+    }
+    
+
+    /*
+     * This method checks locally for a DvObject with the same PID and if that is OK, checks with the PID service.
+     * @param dvo - the object to check (ToDo - get protocol/authority from this PidProvider object)
+     * @param prepend - for Datasets, this is always the shoulder, for DataFiles, it could be the shoulder or the parent Dataset identifier
+     */
+    private String generateIdentifierAsRandomString(DvObject dvo, String prepend) {
+        String identifier = null;
+        do {
+            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();
+        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0))));
+
+        return identifier;
+    }
+
+    /*
+     * This method checks locally for a DvObject with the same PID and if that is OK, checks with the PID service.
+     * @param dvo - the object to check (ToDo - get protocol/authority from this PidProvider object)
+     * @param prepend - for Datasets, this is always the shoulder, for DataFiles, it could be the shoulder or the parent Dataset identifier
+     */
+
+    private String generateIdentifierFromStoredProcedureIndependent(DvObject dvo, String prepend) {
+        String identifier; 
+        do {
+            String identifierFromStoredProcedure = dvObjectService.generateNewIdentifierByStoredProcedure();
+            // some diagnostics here maybe - is it possible to determine that it's failing 
+            // because the stored procedure hasn't been created in the database?
+            if (identifierFromStoredProcedure == null) {
+                return null; 
+            }
+            identifier = prepend + identifierFromStoredProcedure;
+        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0))));
+        
+        return identifier;
+    }
+    
+    /*This method is only used for DataFiles with DEPENDENT Pids. It is not for Datasets
+     * 
+     */
+    private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, String prepend) {
+        String identifier;
+        Long retVal;
+        retVal = Long.valueOf(0L);
+      //ToDo - replace loops with one lookup for largest entry? (the do loop runs ~n**2/2 calls). The check for existingIdentifiers means this is mostly a local loop now, versus involving db or PidProvider calls, but still...)
+        
+        // This will catch identifiers already assigned in the current transaction (e.g.
+        // in FinalizeDatasetPublicationCommand) that haven't been committed to the db
+        // without having to make a call to the PIDProvider
+        Set<String> existingIdentifiers = new HashSet<String>();
+        List<DataFile> files = datafile.getOwner().getFiles();
+        for(DataFile f:files) {
+            existingIdentifiers.add(f.getIdentifier());
+        }
+        
+        do {
+            retVal++;
+            identifier = prepend + retVal.toString();
+
+        } while (existingIdentifiers.contains(identifier) || !isGlobalIdUnique(new GlobalId(datafile.getProtocol(), datafile.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0))));
+
+        return identifier;
+    }
+
     
     class GlobalIdMetadataTemplate {
 
@@ -159,7 +397,6 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
     private String xmlMetadata;
     private String identifier;
-    private String datasetIdentifier;
     private List<String> datafileIdentifiers;
     private List<String> creators;
     private String title;
@@ -245,7 +482,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             // Added to prevent a NullPointerException when trying to destroy datasets when using DataCite rather than EZID.
             publisherYearFinal = this.publisherYear;
         }
-        xmlMetadata = template.replace("${identifier}", this.identifier.trim())
+        xmlMetadata = template.replace("${identifier}", getIdentifier().trim())
                 .replace("${title}", this.title)
                 .replace("${publisher}", this.publisher)
                 .replace("${publisherYear}", publisherYearFinal)
@@ -371,10 +608,6 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         this.identifier = identifier;
     }
 
-    public void setDatasetIdentifier(String datasetIdentifier) {
-        this.datasetIdentifier = datasetIdentifier;
-    }
-
     public List<String> getCreators() {
         return creators;
     }
@@ -428,10 +661,6 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             DataFile df = (DataFile) dvObject;
             String fileDescription = df.getDescription();
             metadataTemplate.setDescription(fileDescription == null ? "" : fileDescription);
-            String datasetPid = df.getOwner().getGlobalId().asString();
-            metadataTemplate.setDatasetIdentifier(datasetPid);
-        } else {
-            metadataTemplate.setDatasetIdentifier("");
         }
 
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
@@ -448,5 +677,19 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
+
+    @Override
+    public boolean canManagePID() {
+        //The default expectation is that PID providers are configured to manage some set (i.e. based on protocol/authority/shoulder) of PIDs
+        return true;
+    }
     
+    @Override
+    public boolean isConfigured() {
+        if(configured==null) {
+            return false;
+        } else {
+            return configured.booleanValue();
+        }
+    }
 }

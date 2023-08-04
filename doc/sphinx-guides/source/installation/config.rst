@@ -34,6 +34,12 @@ It is very important to keep the block in place for the "admin" endpoint, and to
 
 It's also possible to prevent file uploads via API by adjusting the :ref:`:UploadMethods` database setting.
 
+If you are using a load balancer or a reverse proxy, there are some additional considerations. If no additional configurations are made and the upstream is configured to redirect to localhost, the API will be accessible from the outside, as your installation will register as origin the localhost for any requests to the endpoints "admin" and "builtin-users". To prevent this, you have two options:
+
+- If your upstream is configured to redirect to localhost, you will need to set the :ref:`JVM option <useripaddresssourceheader>` to one of the following values ``%client.name% %datetime% %request% %status% %response.length% %header.referer% %header.x-forwarded-for%`` and configure from the load balancer side the chosen header to populate with the client IP address.
+
+- Another solution is to set the upstream to the client IP address. In this case no further configuration is needed.
+
 Forcing HTTPS
 +++++++++++++
 
@@ -166,39 +172,79 @@ In order for non-superusers to start creating Dataverse collections or datasets,
 
 As the person installing the Dataverse Software, you may or may not be a local metadata expert. You may want to have others sign up for accounts and grant them the "Admin" role at the root Dataverse collection to configure metadata fields, templates, browse/search facets, guestbooks, etc. For more on these topics, consult the :doc:`/user/dataverse-management` section of the User Guide.
 
+.. _pids-configuration:
+
 Persistent Identifiers and Publishing Datasets
 ----------------------------------------------
 
-Persistent identifiers are a required and integral part of the Dataverse Software. They provide a URL that is guaranteed to resolve to the datasets or files they represent. The Dataverse Software currently supports creating identifiers using DOI and Handle.
+Persistent identifiers (PIDs) are a required and integral part of the Dataverse Software. They provide a URL that is
+guaranteed to resolve to the datasets or files they represent. The Dataverse Software currently supports creating
+identifiers using one of several PID providers. The most appropriate PIDs for public data are DOIs (provided by
+DataCite or EZID) and Handles. Dataverse also supports PermaLinks which could be useful for intranet or catalog use
+cases. A DOI provider called "FAKE" is recommended only for testing and development purposes.
 
-By default, the installer configures a default DOI namespace (10.5072) with DataCite as the registration provider. Please note that as of the release 4.9.3, we can no longer use EZID as the provider. Unlike EZID, DataCite requires that you register for a test account, configured with your own prefix (please contact support@datacite.org). Once you receive the login name, password, and prefix for the account, configure the credentials in your domain.xml, as the following two JVM options::
+Testing PID Providers
++++++++++++++++++++++
 
-      <jvm-options>-Ddoi.username=...</jvm-options>
-      <jvm-options>-Ddoi.password=...</jvm-options>
+By default, the installer configures the DataCite test service as the registration provider. DataCite requires that you
+register for a test account, configured with your own prefix (please contact support@datacite.org).
 
-and restart Payara. The prefix can be configured via the API (where it is referred to as "Authority"):
+Once you receive the login name, password, and prefix for the account,
+configure the credentials via :ref:`dataverse.pid.datacite.username` and
+:ref:`dataverse.pid.datacite.password`, then restart Payara.
+
+Configure the prefix via the API (where it is referred to as :ref:`:Authority`):
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
-Once this is done, you will be able to publish datasets and files, but the persistent identifiers will not be citable, and they will only resolve from the DataCite test environment (and then only if the Dataverse installation from which you published them is accessible - DOIs minted from your laptop will not resolve). Note that any datasets or files created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI namespace is configured.
+.. TIP::
+  This testing section is oriented around DataCite but other PID Providers can be tested as well.
+  
+  - EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite.
+   
+  - The PermaLink and FAKE DOI providers do not involve an external account. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
 
-To properly configure persistent identifiers for a production installation, an account and associated namespace must be acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider (see https://dataversecommunity.global for more on joining DataCite) but **EZID** (http://ezid.cdlib.org) is an option for the University of California according to https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ . **Handle.Net** (https://www.handle.net) is the HDL provider.
+Once all is configured, you will be able to publish datasets and files, but **the persistent identifiers will not be citable**,
+and they will only resolve from the DataCite test environment (and then only if the Dataverse installation from which
+you published them is accessible - DOIs minted from your laptop will not resolve). Note that any datasets or files
+created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI
+namespace is configured.
 
-Once you have your DOI or Handle account credentials and a namespace, configure your Dataverse installation to use them using the JVM options and database settings below.
+One you are done testing, to properly configure persistent identifiers for a production installation, an account and associated namespace must be
+acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider
+(see https://dataversecommunity.global for more on joining DataCite through the Global Dataverse Community Consortium) but **EZID**
+(http://ezid.cdlib.org) is an option for the University of California according to
+https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ .
+**Handle.Net** (https://www.handle.net) is the HDL provider.
+
+Once you have your DOI or Handle account credentials and a namespace, configure your Dataverse installation
+using the JVM options and database settings below.
+
+.. _pids-doi-configuration:
 
 Configuring Your Dataverse Installation for DOIs
 ++++++++++++++++++++++++++++++++++++++++++++++++
 
-By default, your Dataverse installation attempts to register DOIs for each dataset and file under a test authority, though you must apply for your own credentials as explained above.
+As explained above, by default your Dataverse installation attempts to register DOIs for each
+dataset and file under a test authority. You must apply for your own credentials.
 
 Here are the configuration options for DOIs:
 
-**JVM Options:**
+**JVM Options for DataCite:**
 
-- :ref:`doi.baseurlstring`
-- :ref:`doi.username`
-- :ref:`doi.password`
-- :ref:`doi.dataciterestapiurlstring`
+- :ref:`dataverse.pid.datacite.mds-api-url`
+- :ref:`dataverse.pid.datacite.rest-api-url`
+- :ref:`dataverse.pid.datacite.username`
+- :ref:`dataverse.pid.datacite.password`
+
+**JVM Options for EZID:**
+
+As stated above, with very few exceptions (e.g. University of California), you will not be able to use
+this provider.
+
+- :ref:`dataverse.pid.ezid.api-url`
+- :ref:`dataverse.pid.ezid.username`
+- :ref:`dataverse.pid.ezid.password`
 
 **Database Settings:**
 
@@ -208,18 +254,21 @@ Here are the configuration options for DOIs:
 - :ref:`:Shoulder <:Shoulder>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
-- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
+- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to false)
+
+.. _pids-handle-configuration:
 
 Configuring Your Dataverse Installation for Handles
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Here are the configuration options for handles:
+Here are the configuration options for handles. Most notably, you need to
+change the ``:Protocol`` setting, as it defaults to DOI usage.
 
 **JVM Options:**
 
-- :ref:`dataverse.handlenet.admcredfile`
-- :ref:`dataverse.handlenet.admprivphrase`
-- :ref:`dataverse.handlenet.index`
+- :ref:`dataverse.pid.handlenet.key.path`
+- :ref:`dataverse.pid.handlenet.key.passphrase`
+- :ref:`dataverse.pid.handlenet.index`
 
 **Database Settings:**
 
@@ -231,6 +280,30 @@ Here are the configuration options for handles:
 - :ref:`:HandleAuthHandle <:HandleAuthHandle>` (optional)
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
+
+.. _permalinks:
+
+Configuring Your Dataverse Installation for PermaLinks
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+PermaLinks are a simple mechanism to provide persistent URLs for datasets and datafiles (if configured) that does not involve an external service providing metadata-based search services.
+They are potentially appropriate for Intranet use cases as well as in cases where Dataverse is being used as a catalog or holding duplicate copies of datasets where the authoritative copy already has a DOI or Handle.
+PermaLinks use the protocol "perma" (versus "doi" or "handle") and do not use a "/" character as a separator between the authority and shoulder. It is recommended to choose an alphanumeric value for authority that does not resemble that of DOIs (which are primarily numeric and start with "10." as in "10.5072") to avoid PermaLinks being mistaken for DOIs.
+
+Here are the configuration options for PermaLinks:
+
+**JVM Options:**
+
+- :ref:`dataverse.pid.permalink.base-url`
+
+**Database Settings:**
+
+- :ref:`:Protocol <:Protocol>`
+- :ref:`:Authority <:Authority>`
+- :ref:`:Shoulder <:Shoulder>`
+- :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
+- :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
+- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to false)
 
 .. _auth-modes:
 
@@ -262,6 +335,19 @@ As for the "Remote only" authentication mode, it means that:
 - ``:AllowSignUp`` is set to "false" to prevent users from creating local accounts via the web interface.
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
+
+.. _bearer-token-auth:
+
+Bearer Token Authentication
+---------------------------
+
+Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to API tokens. This is an experimental feature hidden behind a feature flag.
+
+.. _RFC 6750: https://tools.ietf.org/html/rfc6750
+
+To enable bearer tokens, you must install and configure Keycloak (for now, see :ref:`oidc-dev` in the Developer Guide) and enable ``api-bearer-auth`` under :ref:`feature-flags`.
+
+You can test that bearer tokens are working by following the example under :ref:`bearer-tokens` in the API Guide.
 
 .. _database-persistence:
 
@@ -579,14 +665,14 @@ To **create a user** with full S3 access and nothing more for security reasons, 
 (Identity and Access Management). See `IAM User Guide <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html>`_
 for more info on this process.
 
-**Generate the user keys** needed for a Dataverse installation afterwards by clicking on the created user.
+To use programmatic access, **Generate the user keys** needed for a Dataverse installation afterwards by clicking on the created user.
 (You can skip this step when running on EC2, see below.)
 
 .. TIP::
   If you are hosting your Dataverse installation on an AWS EC2 instance alongside storage in S3, it is possible to use IAM Roles instead
   of the credentials file (the file at ``~/.aws/credentials`` mentioned below). Please note that you will still need the
   ``~/.aws/config`` file to specify the region. For more information on this option, see
-  http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+  https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
 
 Preparation When Using Custom S3-Compatible Service
 ###################################################
@@ -1687,7 +1773,9 @@ of purposes:
    under certain conditions. This directory may also be used by file stores for :ref:`permanent file storage <storage-files-dir>`,
    but this is controlled by other, store-specific settings.
 
-Defaults to ``/tmp/dataverse``. Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_DIRECTORY``.
+Defaults to ``/tmp/dataverse``. Can also be set via *MicroProfile Config API* sources, e.g. the environment variable
+``DATAVERSE_FILES_DIRECTORY``. Defaults to ``${STORAGE_DIR}`` for profile ``ct``, important for the
+:ref:`Dataverse Application Image <app-locations>`.
 
 .. _dataverse.files.uploads:
 
@@ -1702,6 +1790,7 @@ Defaults to ``./uploads``, which resolves to ``/usr/local/payara5/glassfish/doma
 installation.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
+Defaults to ``${STORAGE_DIR}/uploads`` for profile ``ct``, important for the :ref:`Dataverse Application Image <app-locations>`.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1900,92 +1989,255 @@ dataverse.dataAccess.thumbnail.pdf.limit
 
 For limiting the size (in bytes) of thumbnail images generated from files. The default is 1000000 bytes (1 MB).
 
-.. _doi.baseurlstring:
 
-doi.baseurlstring
-+++++++++++++++++
+.. _dataverse.pid.datacite.mds-api-url:
 
-As of this writing, "https://mds.datacite.org" (DataCite) and "https://ezid.cdlib.org" (EZID) are the main valid values.
+dataverse.pid.datacite.mds-api-url
+++++++++++++++++++++++++++++++++++
 
-Out of the box, the Dataverse Software is configured to use a test MDS DataCite base URL string. You can delete it like this:
+Configure the base URL of the `DataCite MDS API <https://support.datacite.org/reference/overview>`_,
+used to mint and manage DOIs. Valid values are "https://mds.datacite.org" and "https://mds.test.datacite.org"
+(see also note below).
 
-``./asadmin delete-jvm-options '-Ddoi.baseurlstring=https\://mds.test.datacite.org'``
+Out of the box, the installer configures your installation to use a DataCite REST Test API base URL (see DataCite's `testing guide <https://support.datacite.org/docs/testing-guide>`_). You can delete it like this:
 
-Then, to switch to production DataCite, you can issue the following command:
+``./asadmin delete-jvm-options '-Ddataverse.pid.datacite.mds-api-url=https\://mds.test.datacite.org'``
 
-``./asadmin create-jvm-options '-Ddoi.baseurlstring=https\://mds.datacite.org'``
+Then, to switch to the production DataCite base URL (see the `DataCite MDS API Guide <https://support.datacite.org/docs/mds-api-guide>`_), you can issue the following command:
 
-See also these related database settings below:
+``./asadmin create-jvm-options '-Ddataverse.pid.datacite.mds-api-url=https\://mds.datacite.org'``
 
-- :ref:`:DoiProvider`
+Without setting an option, always defaults to testing API endpoint.
+
+**Notes:**
+
+- See also these related database settings below: :ref:`:DoiProvider`, 
+  :ref:`:Protocol`, :ref:`:Authority`, :ref:`:Shoulder`.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment
+  variable ``DATAVERSE_PID_DATACITE_MDS_API_URL``.
+- This setting was formerly known as ``doi.baseurlstring`` and has been renamed.
+  You should delete and re-add it.
+- While using DataCite directly is recommended because it is tested by the Dataverse
+  Project Team plus field tested with most installations, it is also possible
+  to use a DataCite Client API as a proxy to DataCite. `Since the launch of DataCite Fabrica in
+  2019, the only example by Australian National Data Services (ANDS) has been decommissioned
+  <https://intranet.ands.org.au/display/DOC/DOI+Technical+Changes%3A+Transition+to+DataCite+DOI+services>`_.
+
+
+.. _dataverse.pid.datacite.rest-api-url:
+
+dataverse.pid.datacite.rest-api-url
++++++++++++++++++++++++++++++++++++
+
+Configure the base URL endpoint of the `DataCite REST API <https://support.datacite.org/reference/introduction>`_, used for
+:ref:`PIDs API <pids-api>` information retrieval and :doc:`/admin/make-data-count`.
+
+Valid values are "https://api.datacite.org" and "https://api.test.datacite.org". When unset, the default is the testing API endpoint.
+
+Out of the box, the installer configures your installation to use a DataCite REST test base URL (see DataCite's `testing guide <https://support.datacite.org/docs/testing-guide>`_). You can delete it like this:
+
+``./asadmin delete-jvm-options '-Ddataverse.pid.datacite.rest-api-url=https\://api.test.datacite.org'``
+
+Then, to switch to the production DataCite base URL (see the `DataCite REST API Guide <https://support.datacite.org/docs/api>`_),
+you can issue the following command:
+
+``./asadmin create-jvm-options '-Ddataverse.pid.datacite.rest-api-url=https\://api.datacite.org'``
+
+**Notes:**
+
+- See also these related database settings below: :ref:`:MDCLogPath`,
+  :ref:`:DisplayMDCMetrics`.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment
+  variable ``DATAVERSE_PID_DATACITE_REST_API_URL``.
+- This setting was formerly known as ``doi.dataciterestapiurlstring`` or
+  ``doi.mdcbaseurlstring`` and has been renamed. You should delete these and re-add it (once) under the new name.
+
+.. _dataverse.pid.datacite.username:
+
+dataverse.pid.datacite.username
++++++++++++++++++++++++++++++++
+
+DataCite uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
+for `Fabrica <https://doi.datacite.org/>`_ and their APIs. You need to provide
+the same credentials to Dataverse software to mint and manage DOIs for you.
+
+Once you have a username from DataCite, you can enter it like this:
+
+``./asadmin create-jvm-options '-Ddataverse.pid.datacite.username=YOUR_USERNAME_HERE'``
+
+**Notes:**
+
+- Used in conjuction with :ref:`dataverse.pid.datacite.mds-api-url`, 
+  :ref:`dataverse.pid.datacite.rest-api-url` and :ref:`dataverse.pid.datacite.password`.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment
+  variable ``DATAVERSE_PID_DATACITE_USERNAME``.
+- This setting was formerly known as ``doi.username`` and has been renamed.
+  You should delete and re-add it.
+
+.. _dataverse.pid.datacite.password:
+
+dataverse.pid.datacite.password
++++++++++++++++++++++++++++++++
+
+Once you have a password from your provider, you should create a password alias.
+This avoids storing it in clear text, although you could use a JVM option `to reference
+a different place <https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Variable%20Substitution/Types%20of%20Variables.html>`__.
+
+``./asadmin create-password-alias dataverse.pid.datacite.password``
+
+It will allow you to enter the password while not echoing the characters.
+To manage these, read up on `Payara docs about password aliases <https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Password%20Aliases.html#asadmin-commands-password-aliases>`__.
+
+**Notes:**
+
+- Used in conjuction with :ref:`dataverse.pid.datacite.mds-api-url`, 
+  :ref:`dataverse.pid.datacite.rest-api-url` and :ref:`dataverse.pid.datacite.username`.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment
+  variable ``DATAVERSE_PID_DATACITE_PASSWORD`` (although you shouldn't use
+  environment variables for passwords).
+- This setting was formerly known as ``doi.password`` and has been renamed.
+  You should delete the old JVM option and the wrapped password alias, then recreate
+  with new alias name as above.
+
+
+
+.. _dataverse.pid.handlenet.key.path:
+
+dataverse.pid.handlenet.key.path
+++++++++++++++++++++++++++++++++
+
+Related to :ref:`Handle.Net PID provider usage <pids-handle-configuration>`.
+
+Provide an absolute path to a private key file authenticating requests to your
+Handle.Net server.
+
+Handle.Net servers use a public key authentication method where the public key
+is stored in a handle itself and the matching private key is provided from this
+file. Typically, the absolute path ends like ``handle/svr_1/admpriv.bin``. See
+also chapter 1.4 "Authentication" of the `Handle.Net Technical Documentation
+<http://www.handle.net/tech_manual/HN_Tech_Manual_8.pdf>`__
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_HANDLENET_KEY_PATH``. This setting was formerly known
+as ``dataverse.handlenet.admcredfile`` and has been renamed. You should delete
+and re-add it.
+
+
+.. _dataverse.pid.handlenet.key.passphrase:
+
+dataverse.pid.handlenet.key.passphrase
+++++++++++++++++++++++++++++++++++++++
+
+Related to :ref:`Handle.Net PID provider usage <pids-handle-configuration>`.
+
+Provide a passphrase to decrypt the :ref:`private key file <dataverse.pid.handlenet.key.path>`.
+
+The key file may (and should) be encrypted with a passphrase (used for
+encryption with AES-128). See also chapter 1.4 "Authentication" of the
+`Handle.Net Technical Documentation <http://www.handle.net/tech_manual/HN_Tech_Manual_8.pdf>`__
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_HANDLENET_KEY_PASSPHRASE`` (although you shouldn't use
+environment variables for passwords). This setting was formerly known as
+``dataverse.handlenet.admprivphrase`` and has been renamed. You should delete
+the old JVM option and the wrapped password alias, then recreate as shown for
+:ref:`dataverse.pid.datacite.password` but with this option as alias name.
+
+
+.. _dataverse.pid.handlenet.index:
+
+dataverse.pid.handlenet.index
++++++++++++++++++++++++++++++
+
+Related to :ref:`Handle.Net PID provider usage <pids-handle-configuration>`.
+
+Configure your *Handle.Net Index* to be used registering new persistent
+identifiers. Defaults to ``300``. 
+
+Indices are used to separate concerns within the Handle system. To add data to
+an index, authentication is mandatory. See also chapter 1.4 "Authentication" of
+the `Handle.Net Technical Documentation <http://www.handle.net/tech_manual/HN_Tech_Manual_8.pdf>`__
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_HANDLENET_INDEX``. This setting was formerly known as
+``dataverse.handlenet.index`` and has been renamed. You should delete and
+re-add it.
+
+.. _dataverse.pid.permalink.base-url:
+
+dataverse.pid.permalink.base-url
+++++++++++++++++++++++++++++++++
+
+When using :ref:`PermaLinks <permalinks>`, this setting can be used to configure an external resolver. Dataverse will associate a PermaLink PID with the URL:
+``<dataverse.pid.permalink.base-url>/citation?persistentId=perma:<permalink>``. The default value is your Dataverse site URL, which will result in PermaLinks correctly resolving to the appropriate dataset page.
+
+To set this option, issue a command such as:
+
+``./asadmin create-jvm-options '-Ddataverse.pid.permalink.base-url=https\://localresolver.yourdataverse.org'``
+
+See also these related database settings:
+
 - :ref:`:Protocol`
 - :ref:`:Authority`
 - :ref:`:Shoulder`
 
-.. _doi.dataciterestapiurlstring:
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_PERMALINK_BASE_URL``. This setting was formerly known as
+``perma.baseurlstring`` and has been renamed. You should delete and re-add it.
 
-doi.dataciterestapiurlstring
-++++++++++++++++++++++++++++
+.. _dataverse.pid.ezid.api-url:
 
-This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide as well as the /pids/* API.
+dataverse.pid.ezid.api-url
+++++++++++++++++++++++++++
 
-As of this writing, "https://api.datacite.org" (DataCite) and "https://api.test.datacite.org" (DataCite Testing) are the main valid values.
+The EZID DOI provider is likely not an option if you are `not associated with
+California Digital Library (CDL) or Purdue University 
+<https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/>`_.
 
-Out of the box, the Dataverse Software is configured to use a test DataCite REST API base URL string. You can delete it like this:
+Defaults to ``https://ezid.cdlib.org``.
 
-``./asadmin delete-jvm-options '-Ddoi.dataciterestapiurlstring=https\://api.test.datacite.org'``
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_EZID_API_URL``. This setting was formerly known as
+``doi.baseurlstring`` and has been renamed. You should delete and re-add it.
 
-Then, to switch to production DataCite, you can issue the following command:
+.. _dataverse.pid.ezid.username:
 
-``./asadmin create-jvm-options '-Ddoi.dataciterestapiurlstring=https\://api.datacite.org'``
+dataverse.pid.ezid.username
++++++++++++++++++++++++++++
 
-For backward compatibility, if this option is not defined, the value of '-Ddoi.mdcbaseurlstring' is used if set. If not the default used is "https\://api.datacite.org:.
+The EZID DOI provider is likely not an option if you are `not associated with
+California Digital Library (CDL) or Purdue University 
+<https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/>`_.
 
-See also these related database settings below:
+Works the same way as :ref:`dataverse.pid.datacite.username`, but for the EZID DOI
+provider.
 
-- :ref:`:MDCLogPath`
-- :ref:`:DisplayMDCMetrics`
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_EZID_USERNAME``.
 
-.. _doi.username:
+This setting was formerly known as ``doi.username`` and has been renamed. You
+should delete and re-add it.
 
-doi.username
-++++++++++++
+.. _dataverse.pid.ezid.password:
 
-Used in conjuction with ``doi.baseurlstring``.
+dataverse.pid.ezid.password
++++++++++++++++++++++++++++
 
-Once you have a username from your provider, you can enter it like this:
+The EZID DOI provider is likely not an option if you are `not associated with
+California Digital Library (CDL) or Purdue University 
+<https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/>`_.
 
-``./asadmin create-jvm-options '-Ddoi.username=YOUR_USERNAME_HERE'``
+Works the same way as :ref:`dataverse.pid.datacite.password`, but for the EZID DOI
+provider.
 
-.. _doi.password:
+Can also be set via *MicroProfile Config API* sources, e.g. the environment
+variable ``DATAVERSE_PID_EZID_PASSWORD`` (although you shouldn't use
+environment variables for passwords). 
 
-doi.password
-++++++++++++
-
-Used in conjuction with ``doi.baseurlstring``.
-
-Once you have a password from your provider, you can enter it like this:
-
-``./asadmin create-jvm-options '-Ddoi.password=YOUR_PASSWORD_HERE'``
-
-.. _dataverse.handlenet.admcredfile:
-
-dataverse.handlenet.admcredfile
-+++++++++++++++++++++++++++++++
-
-If you're using **handles**, this JVM setting configures access credentials so your Dataverse installation can talk to your Handle.Net server. This is the private key generated during Handle.Net server installation. Typically the full path is set to ``handle/svr_1/admpriv.bin``. Please refer to `Handle.Net's documentation <http://handle.net/hnr_documentation.html>`_ for more info.
-
-.. _dataverse.handlenet.admprivphrase:
-
-dataverse.handlenet.admprivphrase
-+++++++++++++++++++++++++++++++++
-This JVM setting is also part of **handles** configuration. The Handle.Net installer lets you choose whether to encrypt the admcredfile private key or not. If you do encrypt it, this is the pass phrase that it's encrypted with.
-
-.. _dataverse.handlenet.index:
-
-dataverse.handlenet.index
-+++++++++++++++++++++++++
-If you want to use different index than the default 300
+This setting was formerly known as ``doi.password`` and has been renamed. You
+should delete the old JVM option and the wrapped password alias, then recreate
+as shown for :ref:`dataverse.pid.datacite.password` but with the EZID alias
+name.
 
 .. _dataverse.timerServer:
 
@@ -2098,7 +2350,127 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 **WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
 production context! Rely on password alias, secrets directory or cloud based sources instead!
 
+.. _dataverse.api.allow-incomplete-metadata:
 
+dataverse.api.allow-incomplete-metadata
++++++++++++++++++++++++++++++++++++++++
+
+When enabled, dataset with incomplete metadata can be submitted via API for later corrections.
+See :ref:`create-dataset-command` for details.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+.. _dataverse.signposting.level1-author-limit:
+
+dataverse.signposting.level1-author-limit
++++++++++++++++++++++++++++++++++++++++++
+
+See :ref:`discovery-sign-posting` for details.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_AUTHOR_LIMIT``.
+
+.. _dataverse.signposting.level1-item-limit:
+
+dataverse.signposting.level1-item-limit
++++++++++++++++++++++++++++++++++++++++
+
+See :ref:`discovery-sign-posting` for details.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_ITEM_LIMIT``.
+
+dataverse.mail.support-email
+++++++++++++++++++++++++++++
+
+This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address for Contact Forms and Feedback API. This address is used as the To address when the Contact form is launched from the Support entry in the top navigation bar and, if configured via :ref:`dataverse.mail.cc-support-on-contact-email`, as a CC address when the form is launched from a Dataverse/Dataset Contact button.
+This allows configuration of a no-reply email address for :ref:`systemEmail` while allowing feedback to go to/be cc'd to the support email address, which would normally accept replies. If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
+
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
+
+.. _dataverse.mail.cc-support-on-contact-email:
+
+dataverse.mail.cc-support-on-contact-email
+++++++++++++++++++++++++++++++++++++++++++
+
+If this setting is true, the contact forms and feedback API will cc the system (:SupportEmail if set, :SystemEmail if not) when sending email to the collection, dataset, or datafile contacts.
+A CC line is added to the contact form when this setting is true so that users are aware that the cc will occur.
+The default is false.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAIL``.
+
+dataverse.ui.allow-review-for-incomplete
+++++++++++++++++++++++++++++++++++++++++
+
+Determines if dataset submitted via API with incomplete metadata (for later corrections) can be submitted for review
+from the UI.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_UI_ALLOW_REVIEW_FOR_INCOMPLETE``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+dataverse.ui.show-validity-filter
++++++++++++++++++++++++++++++++++
+
+When enabled, the filter for validity of metadata is shown in "My Data" page.
+**Note:** When you wish to use this filter, you must reindex the datasets first, otherwise datasets with valid metadata
+will not be shown in the results.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_UI_SHOW_VALIDITY_FILTER``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+.. _dataverse.spi.exporters.directory:
+
+dataverse.spi.exporters.directory
++++++++++++++++++++++++++++++++++
+
+This JVM option is used to configure the file system path where external Exporter JARs can be placed. See :ref:`external-exporters` for more information.
+
+``./asadmin create-jvm-options '-Ddataverse.spi.exporters.directory=PATH_LOCATION_HERE'``
+
+If this value is set, Dataverse will examine all JARs in the specified directory and will use them to add, or replace existing, metadata export formats.
+If this value is not set (the default), Dataverse will not use external Exporters.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SPI_EXPORTERS_DIRECTORY``.
+
+.. _dataverse.netcdf.geo-extract-s3-direct-upload:
+
+dataverse.netcdf.geo-extract-s3-direct-upload
++++++++++++++++++++++++++++++++++++++++++++++
+
+This setting was added to keep S3 direct upload lightweight. When that feature is enabled and you still want NetCDF and HDF5 files to go through metadata extraction of a Geospatial Bounding Box (see :ref:`netcdf-and-hdf5`), which requires the file to be downloaded from S3 in this scenario, make this setting true.
+
+See also :ref:`s3-direct-upload-features-disabled`.
+
+.. _feature-flags:
+
+Feature Flags
+-------------
+
+Certain features might be deactivated because they are experimental and/or opt-in previews. If you want to enable these,
+please find all known feature flags below. Any of these flags can be activated using a boolean value
+(case-insensitive, one of "true", "1", "YES", "Y", "ON") for the setting.
+
+.. list-table::
+    :widths: 35 50 15
+    :header-rows: 1
+    :align: left
+
+    * - Flag Name
+      - Description
+      - Default status
+    * - api-session-auth
+      - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
+      - ``Off``
+
+**Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
 
 .. _:ApplicationServerSettings:
 
@@ -2125,6 +2497,8 @@ As per the spec, you will need to set the configuration value ``mp.config.profil
 This is best done with a system property:
 
 ``./asadmin create-system-properties 'mp.config.profile=ct'``
+
+*Note: the* :doc:`../container/app-image` *uses an (overrideable) environment variable to activate this.*
 
 You might also create your own profiles and use these, please refer to the upstream documentation linked above.
 
@@ -2261,22 +2635,28 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 :DoiProvider
 ++++++++++++
 
-As of this writing "DataCite" and "EZID" are the only valid options for production installations. Developers using Dataverse Software 4.10+ are welcome to use the keyword "FAKE" to configure a non-production installation with an non-resolving, in-code provider, which will basically short-circuit the DOI publishing process. ``:DoiProvider`` is only needed if you are using DOI.
+As of this writing "DataCite" and "EZID" are the only valid options for production installations. Developers using
+Dataverse Software 4.10+ are welcome to use the keyword "FAKE" to configure a non-production installation with an
+non-resolving, in-code provider, which will basically short-circuit the DOI publishing process. ``:DoiProvider``
+is only needed if you are using DOI.
 
 ``curl -X PUT -d DataCite http://localhost:8080/api/admin/settings/:DoiProvider``
 
-This setting relates to the ``:Protocol``, ``:Authority``, ``:Shoulder``, and ``:IdentifierGenerationStyle`` database settings below as well as the following JVM options:
+This setting relates to the ``:Protocol``, ``:Authority``, ``:Shoulder``, and
+``:IdentifierGenerationStyle`` database settings below as well as the following
+JVM options:
 
-- :ref:`doi.baseurlstring`
-- :ref:`doi.username`
-- :ref:`doi.password`
+- :ref:`dataverse.pid.datacite.mds-api-url`
+- :ref:`dataverse.pid.datacite.rest-api-url`
+- :ref:`dataverse.pid.datacite.username`
+- :ref:`dataverse.pid.datacite.password`
 
 .. _:Protocol:
 
 :Protocol
 +++++++++
 
-As of this writing "doi" and "hdl" are the only valid option for the protocol for a persistent ID.
+As of this writing "doi","hdl", and "perma" are the only valid option for the protocol for a persistent ID.
 
 ``curl -X PUT -d doi http://localhost:8080/api/admin/settings/:Protocol``
 
@@ -2285,9 +2665,9 @@ As of this writing "doi" and "hdl" are the only valid option for the protocol fo
 :Authority
 ++++++++++
 
-Use the authority assigned to you by your DoiProvider or HandleProvider.
+Use the authority assigned to you by your DoiProvider or HandleProvider, or your choice if using PermaLinks.
 
-Please note that the authority cannot have a slash ("/") in it.
+Please note that a DOI or Handle authority cannot have a slash ("/") in it (slash is also not recommended for PermaLink authorities).
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
@@ -2296,7 +2676,7 @@ Please note that the authority cannot have a slash ("/") in it.
 :Shoulder
 +++++++++
 
-Out of the box, the DOI shoulder is set to "FK2/" but this is for testing only! When you apply for your DOI namespace, you may have requested a shoulder. The following is only an example and a trailing slash is optional.
+The shoulder is used with DOIs and PermaLinks. Out of the box, the shoulder is set to "FK2/" but this is for testing only! When you apply for your DOI authority/namespace, you may have been assigned a shoulder. The following is only an example and a trailing slash is optional.
 
 ``curl -X PUT -d "MyShoulder/" http://localhost:8080/api/admin/settings/:Shoulder``
 
@@ -2401,13 +2781,35 @@ timestamps.
 :FilePIDsEnabled
 ++++++++++++++++
 
-Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be true. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
+Toggles publishing of file-level PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be false. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
 
-If you don't want to register file-based PIDs for your installation, set:
+It is possible to override the installation-wide setting for specific collections, see :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>`. For example, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
+
+To enable file-level PIDs for the entire installation::
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
+
+
+If you don't want to register file-based PIDs for your entire installation::
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
-Note: File-level PID registration was added in Dataverse Software 4.9; it could not be disabled until Dataverse Software 4.9.3.
+.. _:AllowEnablingFilePIDsPerCollection:
+
+:AllowEnablingFilePIDsPerCollection
++++++++++++++++++++++++++++++++++++
+
+Toggles whether superusers can change the File PIDs policy per collection. By default this setting is absent and Dataverse Software assumes it to be false.
+
+For example, if this setting is true, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
+
+To enable setting file-level PIDs per collection::
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:AllowEnablingFilePIDsPerCollection``
+
+
+When :AllowEnablingFilePIDsPerCollection is true, setting File PIDs to be enabled/disabled for a given collection can be done via the Native API - see :ref:`collection-attributes-api` in the Native API Guide.
+
 
 .. _:IndependentHandleService:
 
@@ -2747,6 +3149,8 @@ This curl command...
 
 See also :doc:`oauth2`.
 
+.. _:FileFixityChecksumAlgorithm:
+
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
 
@@ -2756,12 +3160,9 @@ The default checksum algorithm used is MD5 and should be sufficient for establis
 
 ``curl -X PUT -d 'SHA-512' http://localhost:8080/api/admin/settings/:FileFixityChecksumAlgorithm``
 
-The fixity algorithm used on existing files can be changed by a superuser using the API. An optional query parameter (num) can be used to limit the number of updates attempted.
-The API call will only update the algorithm and checksum for a file if the existing checksum can be validated against the file.
-Statistics concerning the updates are returned in the response to the API call with details in the log.
+To update the algorithm used for existing files, see :ref:`UpdateChecksums`
 
-``curl http://localhost:8080/api/admin/updateHashValues/{alg}``
-``curl http://localhost:8080/api/admin/updateHashValues/{alg}?num=1``
+The fixity checksum algorithm in use can be discovered via API. See :ref:`get-fixity-algorithm` in the API Guide.
 
 .. _:PVMinLength:
 
@@ -3041,6 +3442,8 @@ Limit on how many guestbook entries to display on the guestbook-responses page. 
 
 ``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit``
 
+.. _:CustomDatasetSummaryFields:
+
 :CustomDatasetSummaryFields
 +++++++++++++++++++++++++++
 
@@ -3049,6 +3452,10 @@ You can replace the default dataset metadata fields that are displayed above fil
 ``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
 
 You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work.
+
+The default fields are ``dsDescription,subject,keyword,publication,notesText``.
+
+This setting can be retrieved via API. See :ref:`get-dataset-summary-field-names` in the API Guide.
 
 :AllowApiTokenLookupViaApi
 ++++++++++++++++++++++++++
@@ -3088,6 +3495,20 @@ Sets the path where the raw Make Data Count logs are stored before being process
 ``:DisplayMDCMetrics`` can be set to false to disable display of MDC metrics (e.g. to enable collection of MDC metrics for some period prior to completing the set-up of Counter and performing the other steps described in the :doc:`/admin/make-data-count` section of the Admin Guide).
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:DisplayMDCMetrics``
+
+.. _:MDCStartDate:
+
+:MDCStartDate
++++++++++++++
+
+It is possible to display MDC metrics (as of the start date of MDC logging) along with legacy download counts, generated before MDC was enabled.
+This is enabled via the new setting `:MDCStartDate` that specifies the cut-over date. If a dataset has any legacy access counts collected prior to that date, those numbers will be displayed in addition to the MDC views and downloads recorded since then.
+(Nominally, this date should be when your installation started logging MDC metrics but it can be any date after that if desired.)
+
+
+``curl -X PUT -d '2019-10-01' http://localhost:8080/api/admin/settings/:MDCStartDate``
+
+
 
 .. _:Languages:
 
@@ -3428,6 +3849,8 @@ For example:
 
 When set to ``true``, this setting allows a superuser to publish and/or update Dataverse collections and datasets bypassing the external validation checks (specified by the settings above). In an event where an external script is reporting validation failures that appear to be in error, this option gives an admin with superuser privileges a quick way to publish the dataset or update a collection for the user. 
 
+.. _:FileCategories:
+
 :FileCategories
 +++++++++++++++
 
@@ -3523,6 +3946,28 @@ A true/false option to add a Globus transfer option to the file download menu wh
 :WebloaderUrl
 +++++++++++++
 
-The URL for main HTML file in https://github.com/gdcc/dvwebloader when that app is deployed. See also :ref:`:UploadMethods` for another required settings.
+The URL of `dvuploader <https://github.com/gdcc/dvwebloader>`'s HTML file when dvuploader is enabled in :ref:`:UploadMethods`.
+
+To use the current GDCC version directly:
+
+``curl -X PUT -d 'https://gdcc.github.io/dvwebloader/src/dvwebloader.html' http://localhost:8080/api/admin/settings/:WebloaderUrl``
+
+:CategoryOrder
+++++++++++++++
+
+A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. 
+The setting can include custom tag names along with the pre-defined tags(Documentation, Data, and Code are the defaults but the :ref:`:FileCategories` setting can be used to use a different set of tags).
+The default is category ordering disabled.
+
+:OrderByFolder
+++++++++++++++
+
+A true(default)/false option determining whether datafiles listed on the dataset page should be grouped by folder.
+
+:AllowUserManagementOfOrder
++++++++++++++++++++++++++++
+
+A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically. 
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
+
