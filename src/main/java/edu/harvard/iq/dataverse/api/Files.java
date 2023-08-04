@@ -109,8 +109,6 @@ public class Files extends AbstractApiBean {
     MakeDataCountLoggingServiceBean mdcLogService;
     @Inject
     GuestbookResponseServiceBean guestbookResponseService;
-    @Inject
-    DataFileServiceBean dataFileServiceBean;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -835,16 +833,6 @@ public class Files extends AbstractApiBean {
         return response(req -> {
             DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
             return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFile.getId()).toString());
-        }, getRequestUser(crc));
-    }
-
-    @GET
-    @AuthRequired
-    @Path("{id}/thumbnailClass")
-    public Response getFileThumbnailClass(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
-        return response(req -> {
-            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
-            return ok(dataFileServiceBean.getFileThumbnailClass(dataFile));
         }, getRequestUser(crc));
     }
 

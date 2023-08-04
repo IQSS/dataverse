@@ -3284,12 +3284,6 @@ public class UtilIT {
                 .get("/api/files/" + dataFileId + "/guestbookResponses/count");
     }
 
-    static Response getFileThumbnailClass(String dataFileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + dataFileId + "/thumbnailClass");
-    }
-
     static Response getFileDataTables(String dataFileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
