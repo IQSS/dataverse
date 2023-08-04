@@ -62,7 +62,7 @@ public class ExternalToolServiceBean {
     }
 
     /**
-     * @param type explore, configure or preview
+     * @param type explore, configure or preview, query
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findFileToolsByType(Type type) {
@@ -71,7 +71,7 @@ public class ExternalToolServiceBean {
     }
 
     /**
-     * @param type explore, configure or preview
+     * @param type explore, configure or preview, query
      * @param contentType file content type (MIME type)
      * @return A list of tools or an empty list.
      */
