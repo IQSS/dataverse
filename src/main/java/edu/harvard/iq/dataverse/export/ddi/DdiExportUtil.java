@@ -2064,7 +2064,7 @@ public class DdiExportUtil {
 
                 if (fileJson.containsKey("tabularTags")) {
                     JsonArray tags = fileJson.getJsonArray("tabularTags");
-                    for (int j = 0; j < tags.size(); i++) {
+                    for (int j = 0; j < tags.size(); j++) {
                         xmlw.writeStartElement("notes");
                         writeAttribute(xmlw, "level", LEVEL_FILE);
                         writeAttribute(xmlw, "type", NOTE_TYPE_TAG);
