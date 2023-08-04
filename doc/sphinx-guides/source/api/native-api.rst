@@ -964,7 +964,7 @@ This endpoint supports optional pagination, through the ``limit`` and ``offset``
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?limit=10&offset=20"
 
-Ordering criteria for sorting the results, like in the Dataverse UI, is also optionally supported. In particular, by the following possible values:
+Ordering criteria for sorting the results is also optionally supported. In particular, by the following possible values:
 
 * ``NameAZ`` (Default)
 * ``NameZA``
