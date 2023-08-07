@@ -33,7 +33,6 @@ jobs:
                   # Exclude old scripts
                   exclude: |
                       */.git/*
-                      conf/docker-aio/*
                       doc/*
                       downloads/*
                       scripts/database/*
