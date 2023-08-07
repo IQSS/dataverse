@@ -670,9 +670,7 @@ public class DatasetsIT {
         exportDatasetAsDdi.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // This is now returning [] instead of sammi@sample.com. Not sure why.
-        // :ExcludeEmailFromExport is absent so the email should be shown.
-        assertEquals("[]", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+        assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
         Response reexportAllFormats = UtilIT.reexportDatasetAllFormats(datasetPersistentId);
