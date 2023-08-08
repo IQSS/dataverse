@@ -142,6 +142,9 @@
                 escape="false" />
         </div>
             <p:fragment rendered="#{guestbookAndTermsPopupRequired and ((termsGuestbookPopupAction != bundle.download) != guestbookPopupRequiredAtDownload)}" id="guestbookUIFragment">
+                <div class="container messagePanel">
+                    <iqbs:messages collapsible="true" />
+                </div>
                 <!--
                 Only validate the active context. For example, the user might be filling out
                 the guestbook on the Preview tab rather than after clicking the "download file"
@@ -304,16 +307,16 @@
         <!--TODO - add "Accept and" if ToA exist?-->
             <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!guestbookPopupRequiredAtDownload}" value="#{bundle['file.requestAccess']}"
                     actionListener="#{fileDownloadHelper.writeGuestbookResponseAndRequestAccess(guestbookResponse)}"
-                    update="@([id$=messagePanel])"
+                    update="guestbookUIFragment"
                     oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
-                    <f:param name="DO_GB_VALIDATION" value="true"/>
+                    <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandLink>
 
             <p:commandLink type="button" styleClass="btn btn-default" rendered="#{guestbookPopupRequiredAtDownload}" value="#{bundle['file.requestAccess']}"
                     actionListener="#{fileDownloadHelper.requestAccessIndirect()}"
-                    update="@([id$=messagePanel])"
+                    update="guestbookUIFragment"
                     oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
-                    <f:param name="DO_GB_VALIDATION" value="true"/>
+                    <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandLink>
 
             <button type="button" class="btn btn-default" onclick="PF('guestbookAndTermsPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
