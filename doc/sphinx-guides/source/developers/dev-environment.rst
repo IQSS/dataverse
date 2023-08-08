@@ -41,10 +41,12 @@ Install Maven
 
 Follow instructions at https://maven.apache.org
 
-Install Docker
-~~~~~~~~~~~~~~
+Install and Start Docker
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Follow instructions at https://www.docker.com
+
+Be sure to start Docker.
 
 Git Clone Repo
 ~~~~~~~~~~~~~~
