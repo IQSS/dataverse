@@ -17,10 +17,13 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -36,10 +39,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-
 import org.primefaces.PrimeFaces;
 //import org.primefaces.context.RequestContext;
 
@@ -167,7 +168,17 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             redirectToCustomZipDownloadService(customZipDownloadUrl, zipServiceKey);
         } else {
             // Use the "normal" /api/access/datafiles/ API:
-            redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(),original);
+            DatasetVersion dsv = guestbookResponse.getDatasetVersion();
+            if(dsv == null) {
+                try {
+                    throw new Exception("No version!");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //A temporary default - hopefully not needed after the fix for multifile downloads
+                dsv=guestbookResponse.getDataset().getReleasedVersion();
+            }
+            redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(),original, dsv, guestbookResponse.getAuthenticatedUser());
         }
     }
     
@@ -237,7 +248,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     // But note that this may change - there may be some future situations where it will 
     // become necessary again, to pass the job of creating the access record 
     // to the API.
-    private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal){
+    private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal, DatasetVersion dsv, AuthenticatedUser au){
 
         String fileDownloadUrl = "/api/access/datafiles";
         if (guestbookRecordsAlreadyWritten && !downloadOriginal){
@@ -248,8 +259,22 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             fileDownloadUrl += "?format=original";
         }
         
-        PrimeFaces.current().executeScript("downloadFiles('"+fileDownloadUrl + "','"+ multiFileString+"');");
-
+        String versionString = dsv.isDraft() ? ":draft" : dsv.getFriendlyVersionNumber();
+        // Having /v1 in the URL is needed for the signed case below 
+        String fileMetadataUrl = SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/datasets/" + dsv.getDataset().getId() + "/versions/" + versionString + "/files";
+        if (dsv.isDraft() && au != null) {
+            String key = null;
+            ApiToken apiToken = authService.findApiTokenByUser(au);
+            if (apiToken != null && !apiToken.isExpired() && !apiToken.isDisabled()) {
+                key = apiToken.getTokenString();
+            }
+            if (key != null) {
+                key = JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + key;
+                fileMetadataUrl = UrlSignerUtil.signUrl(fileMetadataUrl, 5, au.getUserIdentifier(), "GET", key);
+            }
+        }
+        //ToDo - send download zip filename, e.g. based on dataset PID + version
+        PrimeFaces.current().executeScript("downloadFiles('"+fileDownloadUrl + "','"+ multiFileString+"','" + fileMetadataUrl + "');");
     }
     
     private void redirectToCustomZipDownloadService(String customZipServiceUrl, String jobKey) {
@@ -277,8 +302,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         redirectToDownloadAPI(downloadType, fileId, true, null);
     }
     
-    private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal){
-        redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal);
+    private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal, DatasetVersion dsv, AuthenticatedUser au){
+        redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal, dsv, au);
     }
 
     public void redirectToAuxFileDownloadAPI(Long fileId, String formatTag, String formatVersion) {
