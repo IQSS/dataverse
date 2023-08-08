@@ -1603,7 +1603,11 @@ public class FileUtil implements java.io.Serializable  {
         if (answer != null) {
             return answer;
         }
-        //ToDo - also check for guestbook when guestbook at request is true?
+     // 3. Guest Book:
+        if (datasetVersion.getDataset() != null && datasetVersion.getDataset().getGuestbook() != null && datasetVersion.getDataset().getGuestbook().isEnabled() && datasetVersion.getDataset().getGuestbook().getDataverse() != null) {
+            logger.fine("Request access popup required because of guestbook.");
+            return true;
+        }
         logger.fine("Request access popup is not required.");
         return false;
     }
