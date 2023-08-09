@@ -2728,7 +2728,7 @@ Note: The ``id`` returned in the json response is the id of the file metadata ve
 Getting File Data Tables
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-This endpoint is oriented to tabular files, and provides a json representation of the file data tables for an existing tabular file. ``ID`` is the database id of the file to get the data tables from or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file.
+This endpoint is oriented toward tabular files and provides a JSON representation of the file data tables for an existing tabular file. ``ID`` is the database id of the file to get the data tables from or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file.
 
 A curl example using an ``ID``
 
