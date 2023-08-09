@@ -403,3 +403,19 @@ This method returns a list of Authenticated Users who have requested access to t
 A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X GET http://$SERVER/api/access/datafile/{id}/listRequests
+
+Get user permissions on a file:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``/api/access/datafile/{id}/userPermissions``
+
+This method returns the permissions that the calling user has on a particular file.
+
+In particular, the user permissions that this method checks, returned as booleans, are the following:
+
+* Can download the file
+* Can edit the file owner dataset
+
+A curl example using an ``id``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET http://$SERVER/api/access/datafile/{id}/userPermissions
