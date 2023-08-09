@@ -3278,10 +3278,10 @@ public class UtilIT {
         return uploadZipFileViaSword(persistentId, pathToTestFile, apiToken);
     }
 
-    static Response getCountGuestbookResponses(String dataFileId, String apiToken) {
+    static Response getFileDownloadCount(String dataFileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + dataFileId + "/guestbookResponses/count");
+                .get("/api/files/" + dataFileId + "/downloadCount");
     }
 
     static Response getFileDataTables(String dataFileId, String apiToken) {

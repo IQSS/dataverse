@@ -1,6 +1,6 @@
 The following API endpoints have been added:
 
-- /api/files/{id}/guestbookResponses/count
+- /api/files/{id}/downloadCount
 - /api/files/{id}/dataTables
 - /access/datafile/{id}/userPermissions
 

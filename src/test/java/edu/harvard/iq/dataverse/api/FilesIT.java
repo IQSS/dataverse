@@ -2103,7 +2103,7 @@ public class FilesIT {
     }
 
     @Test
-    public void testGetCountGuestbookResponses() throws InterruptedException {
+    public void testGetFileDownloadCount() throws InterruptedException {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -2131,18 +2131,18 @@ public class FilesIT {
         Response downloadResponse = UtilIT.downloadFile(testFileId, apiToken);
         downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Ensure guestbook is updated
+        // Ensure download count is updated
         sleep(2000);
 
-        // Get count guestbook responses and assert it is 1
-        Response getCountGuestbookResponsesResponse = UtilIT.getCountGuestbookResponses(Integer.toString(testFileId), apiToken);
-        getCountGuestbookResponsesResponse.then().assertThat()
+        // Get download count and assert it is 1
+        Response getFileDownloadCountResponse = UtilIT.getFileDownloadCount(Integer.toString(testFileId), apiToken);
+        getFileDownloadCountResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("1"));
 
         // Call with invalid file id
-        Response getCountGuestbookResponsesInvalidIdResponse = UtilIT.getCountGuestbookResponses("testInvalidId", apiToken);
-        getCountGuestbookResponsesInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        Response getFileDownloadCountInvalidIdResponse = UtilIT.getFileDownloadCount("testInvalidId", apiToken);
+        getFileDownloadCountInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
     @Test

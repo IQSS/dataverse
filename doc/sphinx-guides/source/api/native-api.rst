@@ -2764,10 +2764,10 @@ The fully expanded example above (without environment variables) looks like this
 
 Note that if the requested file is not tabular, the endpoint will return an error.
 
-Getting File Guestbook Response Count
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Getting File Download Count
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Provides the guestbook response count for a particular file, where ``ID`` is the database id of the file to get the count from or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file.
+Provides the download count for a particular file, where ``ID`` is the database id of the file to get the download count from or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file.
 
 A curl example using an ``ID``
 
@@ -2777,13 +2777,13 @@ A curl example using an ``ID``
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl $SERVER_URL/api/files/$ID/guestbookResponses/count
+  curl $SERVER_URL/api/files/$ID/downloadCount
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl https://demo.dataverse.org/api/files/24/guestbookResponses/count
+  curl https://demo.dataverse.org/api/files/24/downloadCount
 
 A curl example using a ``PERSISTENT_ID``
 
@@ -2793,13 +2793,13 @@ A curl example using a ``PERSISTENT_ID``
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_ID=doi:10.5072/FK2/AAA000
 
-  curl "$SERVER_URL/api/files/:persistentId/guestbookResponses/count?persistentId=$PERSISTENT_ID"
+  curl "$SERVER_URL/api/files/:persistentId/downloadCount?persistentId=$PERSISTENT_ID"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/files/:persistentId/guestbookResponses/count?persistentId=doi:10.5072/FK2/AAA000"
+  curl "https://demo.dataverse.org/api/files/:persistentId/downloadCount?persistentId=doi:10.5072/FK2/AAA000"
 
 Updating File Metadata
 ~~~~~~~~~~~~~~~~~~~~~~
