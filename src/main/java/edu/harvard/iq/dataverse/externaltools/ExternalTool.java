@@ -148,7 +148,8 @@ public class ExternalTool implements Serializable {
 
         EXPLORE("explore"),
         CONFIGURE("configure"),
-        PREVIEW("preview");
+        PREVIEW("preview"),
+        QUERY("query");
 
         private final String text;
 
@@ -238,14 +239,30 @@ public class ExternalTool implements Serializable {
     }
 
     public boolean isExploreTool() {
-        boolean isExploreTool = false;
         for (ExternalToolType externalToolType : externalToolTypes) {
             if (externalToolType.getType().equals(Type.EXPLORE)) {
-                isExploreTool = true;
-                break;
+                return true;
             }
         }
-        return isExploreTool;
+        return false;
+    }
+    
+    public boolean isQueryTool() {
+        for (ExternalToolType externalToolType : externalToolTypes) {
+            if (externalToolType.getType().equals(Type.QUERY)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isPreviewTool() {
+        for (ExternalToolType externalToolType : externalToolTypes) {
+            if (externalToolType.getType().equals(Type.PREVIEW)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Scope getScope() {

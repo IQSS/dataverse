@@ -92,7 +92,15 @@ File Level Preview Tools
 
 File level preview tools allow the user to see a preview of the file contents without having to download it.
 
-When a file has a preview available, a preview icon will appear next to that file in the file listing on the dataset page. On the file page itself, the preview will appear in a Preview tab either immediately or once a guestbook has been filled in or terms, if any, have been agreed to.
+When a file has a preview available, a preview icon will appear next to that file in the file listing on the dataset page. On the file page itself, the preview will appear in a Preview tab (renamed File Tools, if multiple tools are available) either immediately or once a guestbook has been filled in or terms, if any, have been agreed to.
+
+File Level Query Tools
+++++++++++++++++++++++++
+
+File level query tools allow the user to ask questions (e.g. natural language queries) of a data table's contents without having to download it.
+
+When a file has a query tool available, a query icon will appear next to that file in the file listing on the dataset page. On the file page itself, the query tool will appear in a Query tab (renamed File Tools, if multiple tools are available) either immediately or once a guestbook has been filled in or terms, if any, have been agreed to.
+
 
 File Level Configure Tools
 ++++++++++++++++++++++++++
