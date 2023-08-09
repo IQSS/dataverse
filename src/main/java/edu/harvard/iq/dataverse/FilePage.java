@@ -1246,4 +1246,13 @@ public class FilePage implements java.io.Serializable {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier())));
     }
 
+    /**
+     * This method only exists because in file-edit-button-fragment.xhtml we
+     * call bean.editFileMetadata() and we need both FilePage (this bean) and
+     * DatasetPage to have the method defined to prevent errors in server.log.
+     */
+    public String editFileMetadata(){
+        return "";
+    }
+
 }
