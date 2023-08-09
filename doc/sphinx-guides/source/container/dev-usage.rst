@@ -141,17 +141,29 @@ Alternatives:
   Options are the same.
 
 
-Re-Deploying
-------------
+Redeploying
+-----------
 
-Currently, the only safe and tested way to re-deploy the Dataverse application after you applied code changes is
-by recreating the container(s). In the future, more options may be added here.
+Currently, the only safe and tested way to redeploy the Dataverse application after changing the code is to recreate the containers. In the future, more options may be added here.
 
-If you started your containers in foreground, just stop them and follow the steps for building and running again.
-The same goes for using Maven to start the containers in the background.
+Redeploying from Quickstart
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In case of using Docker Compose and starting the containers in the background, you can use a workaround to only
-restart the application container:
+If you are following the :ref:`container-dev-quickstart`, which runs containers in the foreground, simply stop the containers with Ctrl-c and then start them again with the same Maven command:
+
+.. code-block::
+
+  # Ctrl-c to stop containers (can take a moment!)
+  # Wait for "Container dev_dataverse Stopped", etc
+  # Rebuild app and start contaienrs up again
+  mvn -Pct clean package docker:run
+
+Redeploying Just Dataverse with Docker Compose
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Please note: We're not 100% sure this works. Please let us know either way.
+
+If you used Docker Compose to start containers in the background (with ``-d`` for "detached" as shown above), you can rebuild and restart just the application (Dataverse) container like this:
 
 .. code-block::
 
