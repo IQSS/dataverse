@@ -109,12 +109,14 @@ jobs:
                   distribution: temurin
 
             # Depending on context, we push to different targets. Login accordingly.
-            - if: ${{ github.event_name != 'pull_request' }}
+            - if: github.event_name != 'pull_request' && contains(fromJSON('["develop", "master"]'), github.ref_name)
               name: Log in to Docker Hub registry
               uses: docker/login-action@v2
               with:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
+            # Note: The team's decision was to not auto-push an image on any git push where no PR exists (yet).
+            #       Also avoids double pushes from push and PR event.
             - if: ${{ github.event_name == 'pull_request' }}
               name: Login to Github Container Registry
               uses: docker/login-action@v2
