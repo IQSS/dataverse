@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.ws.rs.BadRequestException;
+import jakarta.ws.rs.BadRequestException;
 
 import opennlp.tools.util.StringUtil;
 import org.apache.commons.io.FileUtils;

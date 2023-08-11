@@ -110,7 +110,7 @@ public class BagGenerator {
 
     private String apiKey = null;
 
-    private javax.json.JsonObject oremapObject;
+    private jakarta.json.JsonObject oremapObject;
     private JsonObject aggregation;
 
     private String dataciteXml;
