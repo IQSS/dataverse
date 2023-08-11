@@ -6,22 +6,10 @@ Please note! This Docker setup is not for production!
 .. contents:: |toctitle|
         :local:
 
-.. _container-dev-quickstart:
-
 Quickstart
 ----------
 
-First, install Java 11 and Maven.
-
-After cloning the repo, try this:
-
-``mvn -Pct clean package docker:run``
-
-After some time you should be able to log in:
-
-- url: http://localhost:8080
-- username: dataverseAdmin
-- password: admin1
+See :ref:`container-dev-quickstart`.
 
 Intro
 -----

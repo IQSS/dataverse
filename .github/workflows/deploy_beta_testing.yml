@@ -18,6 +18,10 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      - name: Enable API Session Auth feature flag
+        working-directory: src/main/resources/META-INF
+        run: echo -e "dataverse.feature.api-session-auth=true" >> microprofile-config.properties
+
       - name: Build application war
         run: mvn package
 
