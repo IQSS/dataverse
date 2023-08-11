@@ -51,7 +51,7 @@ these secrets. Accordingly, the deployment job needs to look closely when to run
             label="Job: Build & Test"
             rank=same
 
-            build [label="Build app and app image\nw/ local architecture"]
+            build [label="Build app and app image\nw/ runner architecture"]
             testing [label="Testing (future)", style="dashed"]
         }
 
@@ -95,7 +95,7 @@ these secrets. Accordingly, the deployment job needs to look closely when to run
             setTagsMaster -> decidePR
             decidePR -> setForPR [taillabel="yes"]
 
-            buildLocal [label="Build app and app image with local architecture"]
+            buildLocal [label="Build app and app image with runner architecture"]
             buildPush [label="Build and push multiarch images to registry"]
             comment [label="If PR, leave comment on whereabouts"]
             end2 [label="End", shape=circle, margin=0]
