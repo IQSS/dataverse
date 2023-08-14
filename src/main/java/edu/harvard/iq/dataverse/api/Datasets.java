@@ -501,7 +501,7 @@ public class Datasets extends AbstractApiBean {
                                     @PathParam("versionId") String versionId,
                                     @QueryParam("limit") Integer limit,
                                     @QueryParam("offset") Integer offset,
-                                    @QueryParam("fileType") String fileType,
+                                    @QueryParam("contentType") String contentType,
                                     @QueryParam("fileAccess") String fileAccess,
                                     @QueryParam("fileTag") String fileTag,
                                     @QueryParam("orderCriteria") String orderCriteria,
@@ -515,7 +515,7 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException e) {
                 return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
             }
-            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, fileType, fileAccess, fileTag, fileMetadatasOrderCriteria)));
+            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, contentType, fileAccess, fileTag, fileMetadatasOrderCriteria)));
         }, getRequestUser(crc));
     }
     

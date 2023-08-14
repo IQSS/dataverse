@@ -43,11 +43,15 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * @param datasetVersion the DatasetVersion to access
      * @param limit          for pagination, can be null
      * @param offset         for pagination, can be null
+     * @param contentType    for retrieving only files with this content type
      * @param orderCriteria  a FileMetadatasOrderCriteria to order the results
      * @return a FileMetadata list of the specified DatasetVersion
      */
-    public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, String fileType, String fileAccess, String fileTag, FileMetadatasOrderCriteria orderCriteria) {
+    public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, String contentType, String fileAccess, String fileTag, FileMetadatasOrderCriteria orderCriteria) {
         JPAQuery<FileMetadata> query = createQueryFromOrderCriteria(datasetVersion, orderCriteria);
+        if (contentType != null) {
+            query.where(fileMetadata.dataFile.contentType.eq(contentType));
+        }
         if (limit != null) {
             query.limit(limit);
         }
