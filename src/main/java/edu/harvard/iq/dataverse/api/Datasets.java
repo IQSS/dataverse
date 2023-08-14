@@ -241,6 +241,9 @@ public class Datasets extends AbstractApiBean {
     @Inject
     PrivateUrlServiceBean privateUrlService;
 
+    @Inject
+    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
+
     /**
      * Used to consolidate the way we parse and handle dataset versions.
      * @param <T> 
@@ -506,13 +509,13 @@ public class Datasets extends AbstractApiBean {
                                     @Context HttpHeaders headers) {
         return response( req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            DatasetVersionServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
+            DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
             try {
-                fileMetadatasOrderCriteria = orderCriteria != null ? DatasetVersionServiceBean.FileMetadatasOrderCriteria.valueOf(orderCriteria) : DatasetVersionServiceBean.FileMetadatasOrderCriteria.NameAZ;
+                fileMetadatasOrderCriteria = orderCriteria != null ? DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.valueOf(orderCriteria) : DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.NameAZ;
             } catch (IllegalArgumentException e) {
                 return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
             }
-            return ok(jsonFileMetadatas(datasetversionService.getFileMetadatas(datasetVersion, limit, offset, fileType, fileAccess, fileTag, fileMetadatasOrderCriteria)));
+            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, fileType, fileAccess, fileTag, fileMetadatasOrderCriteria)));
         }, getRequestUser(crc));
     }
     
