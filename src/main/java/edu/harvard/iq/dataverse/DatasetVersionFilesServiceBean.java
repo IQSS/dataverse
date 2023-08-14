@@ -46,38 +46,39 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * @param limit          for pagination, can be null
      * @param offset         for pagination, can be null
      * @param contentType    for retrieving only files with this content type
+     * @param categoryName   for retrieving only files categorized with this category name
      * @param orderCriteria  a FileMetadatasOrderCriteria to order the results
-     * @return a FileMetadata list of the specified DatasetVersion
+     * @return a FileMetadata list from the specified DatasetVersion
      */
     public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, String contentType, String fileAccess, String categoryName, FileMetadatasOrderCriteria orderCriteria) {
-        JPAQuery<FileMetadata> query = createBaseQuery(datasetVersion, orderCriteria);
+        JPAQuery<FileMetadata> baseQuery = createBaseQuery(datasetVersion, orderCriteria);
 
         if (contentType != null) {
-            query.where(fileMetadata.dataFile.contentType.eq(contentType));
+            baseQuery.where(fileMetadata.dataFile.contentType.eq(contentType));
         }
-//        TODO
-//        if (categoryName != null) {
-//            query.from(dataFileCategory).where(dataFileCategory.name.eq(categoryName).and(fileMetadata.fileCategories.contains(dataFileCategory)));
-//        }
+        if (categoryName != null) {
+            baseQuery.from(dataFileCategory).where(dataFileCategory.name.eq(categoryName).and(fileMetadata.fileCategories.contains(dataFileCategory)));
+        }
 
-        applyOrderCriteriaToQuery(query, orderCriteria);
+        applyOrderCriteriaToQuery(baseQuery, orderCriteria);
 
         if (limit != null) {
-            query.limit(limit);
+            baseQuery.limit(limit);
         }
         if (offset != null) {
-            query.offset(offset);
+            baseQuery.offset(offset);
         }
 
-        return query.fetch();
+        return baseQuery.fetch();
     }
 
     private JPAQuery<FileMetadata> createBaseQuery(DatasetVersion datasetVersion, FileMetadatasOrderCriteria orderCriteria) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        JPAQuery<FileMetadata> baseQuery = queryFactory.selectFrom(fileMetadata).where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()));
         if (orderCriteria == FileMetadatasOrderCriteria.Newest || orderCriteria == FileMetadatasOrderCriteria.Oldest) {
-            return queryFactory.select(fileMetadata).from(fileMetadata, dvObject).where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId())).where(dvObject.id.eq(fileMetadata.dataFile.id));
+            baseQuery.from(dvObject).where(dvObject.id.eq(fileMetadata.dataFile.id));
         }
-        return queryFactory.selectFrom(fileMetadata).where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()));
+        return baseQuery;
     }
 
     private void applyOrderCriteriaToQuery(JPAQuery<FileMetadata> query, FileMetadatasOrderCriteria orderCriteria) {
