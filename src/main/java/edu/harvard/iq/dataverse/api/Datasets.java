@@ -493,7 +493,17 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/files")
-    public Response getVersionFiles(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset, @QueryParam("orderCriteria") String orderCriteria, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersionFiles(@Context ContainerRequestContext crc,
+                                    @PathParam("id") String datasetId,
+                                    @PathParam("versionId") String versionId,
+                                    @QueryParam("limit") Integer limit,
+                                    @QueryParam("offset") Integer offset,
+                                    @QueryParam("fileType") String fileType,
+                                    @QueryParam("fileAccess") String fileAccess,
+                                    @QueryParam("fileTag") String fileTag,
+                                    @QueryParam("orderCriteria") String orderCriteria,
+                                    @Context UriInfo uriInfo,
+                                    @Context HttpHeaders headers) {
         return response( req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             DatasetVersionServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
@@ -502,7 +512,7 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException e) {
                 return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
             }
-            return ok(jsonFileMetadatas(datasetversionService.getFileMetadatas(datasetVersion, limit, offset, fileMetadatasOrderCriteria)));
+            return ok(jsonFileMetadatas(datasetversionService.getFileMetadatas(datasetVersion, limit, offset, fileType, fileAccess, fileTag, fileMetadatasOrderCriteria)));
         }, getRequestUser(crc));
     }
     

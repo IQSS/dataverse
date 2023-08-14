@@ -200,6 +200,9 @@
         
         <!-- Container related -->
         <fabric8-dmp.version>0.43.0</fabric8-dmp.version>
+
+        <!-- Persistence -->
+        <querydsl.version>5.0.0</querydsl.version>
     </properties>
     
     <pluginRepositories>

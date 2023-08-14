@@ -1,5 +1,9 @@
 package edu.harvard.iq.dataverse;
 
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.DateTimeExpression;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
@@ -8,12 +12,15 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordJobListener.SEP;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import edu.harvard.iq.dataverse.QDvObject;
+import edu.harvard.iq.dataverse.QFileMetadata;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +44,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
-    
+
 /**
  *
  * @author skraffmiller
@@ -49,22 +56,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetVersionServiceBean.class.getCanonicalName());
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-
-    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL = "SELECT fm FROM FileMetadata fm"
-            + " WHERE fm.datasetVersion.id=:datasetVersionId"
-            + " ORDER BY fm.label";
-    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE = "SELECT fm FROM FileMetadata fm, DvObject dvo"
-            + " WHERE fm.datasetVersion.id = :datasetVersionId"
-            + " AND fm.dataFile.id = dvo.id"
-            + " ORDER BY CASE WHEN dvo.publicationDate IS NOT NULL THEN dvo.publicationDate ELSE dvo.createDate END";
-    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_SIZE = "SELECT fm FROM FileMetadata fm, DataFile df"
-            + " WHERE fm.datasetVersion.id = :datasetVersionId"
-            + " AND fm.dataFile.id = df.id"
-            + " ORDER BY df.filesize";
-    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_TYPE = "SELECT fm FROM FileMetadata fm, DataFile df"
-            + " WHERE fm.datasetVersion.id = :datasetVersionId"
-            + " AND fm.dataFile.id = df.id"
-            + " ORDER BY df.contentType";
 
     @EJB
     DatasetServiceBean datasetService;
@@ -1258,45 +1249,69 @@ w
      * Returns a FileMetadata list of files in the specified DatasetVersion
      *
      * @param datasetVersion the DatasetVersion to access
-     * @param limit for pagination, can be null
-     * @param offset for pagination, can be null
-     * @param orderCriteria a FileMetadatasOrderCriteria to order the results
+     * @param limit          for pagination, can be null
+     * @param offset         for pagination, can be null
+     * @param orderCriteria  a FileMetadatasOrderCriteria to order the results
      * @return a FileMetadata list of the specified DatasetVersion
      */
-    public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, FileMetadatasOrderCriteria orderCriteria) {
-        TypedQuery<FileMetadata> query = em.createQuery(getQueryStringFromFileMetadatasOrderCriteria(orderCriteria), FileMetadata.class)
-                .setParameter("datasetVersionId", datasetVersion.getId());
+    public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion,
+                                               Integer limit,
+                                               Integer offset,
+                                               String fileType,
+                                               String fileAccess,
+                                               String fileTag,
+                                               FileMetadatasOrderCriteria orderCriteria) {
+        JPAQuery<FileMetadata> query = createQueryFromCriteria(datasetVersion, orderCriteria);
         if (limit != null) {
-            query.setMaxResults(limit);
+            query.limit(limit);
         }
         if (offset != null) {
-            query.setFirstResult(offset);
+            query.offset(offset);
         }
-        return query.getResultList();
+        return query.fetch();
     }
 
-    private String getQueryStringFromFileMetadatasOrderCriteria(FileMetadatasOrderCriteria orderCriteria) {
-        String queryString;
+    // TODO: Refactor
+    private JPAQuery<FileMetadata> createQueryFromCriteria(DatasetVersion datasetVersion, FileMetadatasOrderCriteria orderCriteria) {
+        QFileMetadata fileMetadata = QFileMetadata.fileMetadata;
+        QDvObject dvObject = QDvObject.dvObject;
+        DateTimeExpression<Timestamp> orderByLifetimeExpression = new CaseBuilder().when(dvObject.publicationDate.isNotNull()).then(dvObject.publicationDate).otherwise(dvObject.createDate);
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        JPAQuery<FileMetadata> query;
         switch (orderCriteria) {
             case NameZA:
-                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL + " DESC";
+                query = queryFactory.selectFrom(fileMetadata)
+                        .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
+                        .orderBy(fileMetadata.label.desc());
                 break;
             case Newest:
-                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE + " DESC";
+                query = queryFactory.select(fileMetadata).from(fileMetadata, dvObject)
+                        .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
+                        .where(dvObject.id.eq(fileMetadata.dataFile.id))
+                        .orderBy(orderByLifetimeExpression.desc());
                 break;
             case Oldest:
-                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE;
+                query = queryFactory.select(fileMetadata).from(fileMetadata, dvObject)
+                        .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
+                        .where(dvObject.id.eq(fileMetadata.dataFile.id))
+                        .orderBy(orderByLifetimeExpression.asc());
                 break;
             case Size:
-                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_SIZE;
+                query = queryFactory.selectFrom(fileMetadata)
+                        .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
+                        .orderBy(fileMetadata.dataFile.filesize.asc());
                 break;
             case Type:
-                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_TYPE;
+                query = queryFactory.selectFrom(fileMetadata)
+                        .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
+                        .orderBy(fileMetadata.dataFile.contentType.asc());
                 break;
             default:
-                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL;
+                query = queryFactory.selectFrom(fileMetadata)
+                        .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
+                        .orderBy(fileMetadata.label.asc());
                 break;
         }
-        return queryString;
+        return query;
     }
 } // end class
