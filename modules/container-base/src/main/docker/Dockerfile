@@ -75,6 +75,8 @@ WORKDIR /
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 # Mark these directories as mutuable data containers to avoid cluttering the images overlayfs at runtime.
 VOLUME ${STORAGE_DIR} ${SECRETS_DIR} ${DUMPS_DIR}
+# Workaround for https://github.com/payara/Payara/issues/6344
+ENV JAVA_TOOL_OPTIONS="-Djdk.util.zip.disableZip64ExtraFieldValidation=true --add-opens=java.base/java.io=ALL-UNNAMED"
 RUN <<EOF
     # Create pathes
     mkdir -p "${HOME_DIR}" "${PAYARA_DIR}" "${DEPLOY_DIR}" "${CONFIG_DIR}" "${SCRIPT_DIR}"
@@ -206,7 +208,7 @@ RUN <<EOF
     # Stop domain
     ${ASADMIN} stop-domain "${DOMAIN_NAME}"
     # Disable JSP servlet dynamic reloads
-    sed -i 's#<servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>#<servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>\n    <init-param>\n      <param-name>development</param-name>\n      <param-value>false</param-value>\n    </init-param>\n    <init-param>\n      <param-name>genStrAsCharArray</param-name>\n      <param-value>true</param-value>\n    </init-param>#' "${DOMAIN_DIR}/config/default-web.xml"
+    sed -i 's#<servlet-class>org.glassfish.wasp.servlet.JspServlet</servlet-class>#<servlet-class>org.glassfish.wasp.servlet.JspServlet</servlet-class>\n    <init-param>\n      <param-name>development</param-name>\n      <param-value>false</param-value>\n    </init-param>\n    <init-param>\n      <param-name>genStrAsCharArray</param-name>\n      <param-value>true</param-value>\n    </init-param>#' "${DOMAIN_DIR}/config/default-web.xml"
     # Cleanup old CA certificates to avoid unnecessary log clutter during startup
     ${SCRIPT_DIR}/removeExpiredCaCerts.sh
     # Delete generated files

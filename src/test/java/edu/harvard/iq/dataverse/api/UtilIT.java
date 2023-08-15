@@ -1,17 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import java.util.UUID;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -45,7 +44,6 @@ import static com.jayway.restassured.RestAssured.put;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -67,6 +65,7 @@ public class UtilIT {
     private static final String EMPTY_STRING = "";
     public static final int MAXIMUM_INGEST_LOCK_DURATION = 15;
     public static final int MAXIMUM_PUBLISH_LOCK_DURATION = 15;
+    public static final int MAXIMUM_IMPORT_DURATION = 1;
     
     private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
     
@@ -1247,6 +1246,12 @@ public class UtilIT {
                 .delete("/api/datasets/" + datasetId + "/destroy");
     }
 
+    static Response destroyDataset(String pid, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/:persistentId/destroy?persistentId=" + pid);
+    }
+
     static Response deleteFile(Integer fileId, String apiToken) {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
@@ -1693,9 +1698,10 @@ public class UtilIT {
         return response;
     }
 
-    static Response privateUrlCreate(Integer datasetId, String apiToken) {
+    static Response privateUrlCreate(Integer datasetId, String apiToken, boolean anonymizedAccess) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("anonymizedAccess", anonymizedAccess)
                 .post("/api/datasets/" + datasetId + "/privateUrl");
         return response;
     }
@@ -1911,6 +1917,7 @@ public class UtilIT {
     }
     
     static Response search(String query, String apiToken, String parameterString) {
+        sleepForDatasetIndex(query, apiToken);
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
@@ -1919,11 +1926,24 @@ public class UtilIT {
         return requestSpecification.get("/api/search?q=" + query + parameterString);
     }
 
+    private static void sleepForDatasetIndex(String query, String apiToken) {
+        if (query.contains("id:dataset") || query.contains("id:datafile")) {
+            String[] splitted = query.split("_");
+            if (splitted.length >= 2) {
+                boolean ok = UtilIT.sleepForReindex(String.valueOf(splitted[1]), apiToken, 5);
+                if (!ok) {
+                    logger.info("Still indexing after 5 seconds");
+                }
+            }
+        }
+    }
+
     static Response search(String query, String apiToken) {
         return search(query, apiToken, "");
     }
 
     static Response searchAndShowFacets(String query, String apiToken) {
+        sleepForDatasetIndex(query, apiToken);
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
@@ -2090,6 +2110,12 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToImageFile))
                 .put("/api/dataverses/" + dataverseAlias + "/logo");
+    }
+    
+    static Response setCollectionAttribute(String dataverseAlias, String attribute, String value, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/dataverses/" + dataverseAlias + "/attribute/" + attribute + "?value=" + value);
     }
 
     /**
@@ -2383,6 +2409,12 @@ public class UtilIT {
         RequestSpecification requestSpecification = given();
         return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
+    
+    static Response clearMetricCache(String name) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.delete("/api/admin/clearMetricsCache/" + name);
+    }
+
 
     static Response sitemapUpdate() {
         return given()
@@ -2500,10 +2532,14 @@ public class UtilIT {
         do {
             timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
             System.out.println(timestampResponse.body().asString());
-            String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
-            System.out.println(hasStaleIndex);
-            stale = Boolean.parseBoolean(hasStaleIndex);
-            
+            try {
+                String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
+                System.out.println(hasStaleIndex);
+                stale = Boolean.parseBoolean(hasStaleIndex);
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.INFO, "no stale index property found", ex);
+                stale = false;
+            }
             try {
                 Thread.sleep(sleepStep);
                 i++;
@@ -2546,9 +2582,24 @@ public class UtilIT {
         return i <= repeats;
 
     }
-    
-    
-    
+
+    // Modeled after sleepForLock but the dataset isn't locked.
+    // We have to sleep or we can't perform the next operation.
+    static Boolean sleepForDeadlock(int duration) {
+        int i = 0;
+        do {
+            try {
+                Thread.sleep(1000);
+                i++;
+                if (i > duration) {
+                    break;
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } while (true);
+        return i <= duration;
+    }
     
     //Helper function that returns true if a given search returns a non-zero response within a fixed time limit
     // a given duration returns false if still zero results after given duration
@@ -2648,10 +2699,12 @@ public class UtilIT {
             queryParams = "?persistentId=" + idOrPersistentId;
         }
         
-        Response response = given()
-            .header(API_TOKEN_HTTP_HEADER, apiToken)
-            .get("api/datasets/" + idInPath + "/timestamps" + queryParams);
-        return response;
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("api/datasets/" + idInPath + "/timestamps" + queryParams);
     }
     
     static Response exportOaiSet(String setName) {
@@ -3188,6 +3241,35 @@ public class UtilIT {
         Response response = given()
                 .contentType("application/json")
                 .post("/api/logout");
+        return response;
+    }
+
+    static Response getDatasetSummaryFieldNames() {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/summaryFieldNames");
+        return response;
+    }
+
+    static Response getPrivateUrlDatasetVersion(String privateUrlToken) {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/privateUrlDatasetVersion/" + privateUrlToken);
+        return response;
+    }
+
+    static Response getPrivateUrlDatasetVersionCitation(String privateUrlToken) {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/privateUrlDatasetVersion/" + privateUrlToken + "/citation");
+        return response;
+    }
+
+    static Response getDatasetVersionCitation(Integer datasetId, String version, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation");
         return response;
     }
 }

@@ -30,22 +30,22 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
     
     private static final Logger logger = Logger.getLogger(AbstractCreateDatasetCommand.class.getCanonicalName());
     
-    final protected boolean registrationRequired;
+    final protected boolean harvested;
     final protected boolean validate;
     
     public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         this(theDataset, aRequest, false);
     }
 
-    public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isRegistrationRequired) {
+    public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isHarvested) {
         super(aRequest, theDataset);
-        registrationRequired = isRegistrationRequired;
+        harvested=isHarvested;
         this.validate = true;
     }
 
-    public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isRegistrationRequired, boolean validate) {
+    public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isHarvested, boolean validate) {
         super(aRequest, theDataset);
-        registrationRequired = isRegistrationRequired;
+        harvested=isHarvested;
         this.validate = validate;
     }
    
@@ -91,6 +91,10 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // without persisting the new version, or altering its files. 
         new CreateDatasetVersionCommand(getRequest(), theDataset, dsv, validate).prepareDatasetAndVersion();
         
+        if(!harvested) {
+            checkSystemMetadataKeyIfNeeded(dsv, null);
+        }
+        
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
         theDataset.setCreateDate(getTimestamp());
@@ -118,10 +122,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)
         handlePid(theDataset, ctxt);
-                
-        if (registrationRequired && (theDataset.getGlobalIdCreateTime() == null)) {
-            throw new CommandExecutionException("Dataset could not be created.  Registration failed", this);
-        }
         
         ctxt.em().persist(theDataset);
         
@@ -139,16 +139,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         //Use for code that requires database ids
         postDBFlush(theDataset, ctxt);
         
-        // TODO: this needs to be moved in to an onSuccess method; not adding to this PR as its out of scope
-        // TODO: switch to asynchronous version when JPA sync works
-        // ctxt.index().asyncIndexDataset(theDataset.getId(), true); 
-        try{
-              ctxt.index().indexDataset(theDataset, true);
-        } catch (IOException | SolrServerException e) {
-            String failureLogText = "Post create dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + theDataset.getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, theDataset);
-        }
+        ctxt.index().asyncIndexDataset(theDataset, true);
                  
         return theDataset;
     }

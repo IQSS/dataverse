@@ -25,8 +25,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
-import javax.persistence.EntityManager;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.persistence.EntityManager;
+import jakarta.servlet.http.HttpServletRequest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -221,8 +221,7 @@ public class MoveDataverseCommandTest {
                     }
 
                     @Override
-                    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp){
-                        return null;
+                    public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp){
                     }
                     @Override
                     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse){
@@ -230,8 +229,7 @@ public class MoveDataverseCommandTest {
                     }
 
                     @Override
-                    public Future<String> indexDatasetInNewTransaction(Long id){
-                        return null;
+                    public void indexDatasetInNewTransaction(Long id){
                     }                    
                 };
 

@@ -3,12 +3,11 @@ package edu.harvard.iq.dataverse.export;
 import java.io.OutputStream;
 import java.util.Locale;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 
 import com.google.auto.service.AutoService;
 
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;

@@ -12,7 +12,7 @@ import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Optional;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 
 /**

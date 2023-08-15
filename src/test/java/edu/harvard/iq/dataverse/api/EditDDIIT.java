@@ -3,8 +3,6 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
-import static edu.harvard.iq.dataverse.api.AccessIT.datasetId;
 
 
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
@@ -28,7 +26,7 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamException;
 
 
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 
 import static org.junit.Assert.assertNotEquals;
@@ -150,6 +148,7 @@ public class EditDDIIT {
         assertEquals(200, publishDataset.getStatusCode());
 
         Response editDDIResponseNewDraft = UtilIT.editDDI(stringOrigXml, origFileId, apiToken);
+        editDDIResponseNewDraft.prettyPrint();
         assertEquals(200, editDDIResponseNewDraft.getStatusCode());
 
         //not authorized

@@ -24,9 +24,9 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Future;
-import javax.persistence.EntityManager;
-import javax.servlet.http.HttpServletRequest;
+
+import jakarta.persistence.EntityManager;
+import jakarta.servlet.http.HttpServletRequest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -61,8 +61,7 @@ public class ReturnDatasetToAuthorCommandTest {
             public IndexServiceBean index() {
                 return new IndexServiceBean() {
                     @Override
-                    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
-                        return null;
+                    public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
                     }
                 };
             }

@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
@@ -255,6 +255,12 @@ public class MetricsIT {
         response = UtilIT.metricsDataversesBySubject("dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
+        
+        // Test cache delete for single metric - just tests that the call succeeds since
+        // the client can't really tell whether it gets a new/cached value
+
+        response = UtilIT.clearMetricCache("dataversesBySubject");
+        response.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     @Test

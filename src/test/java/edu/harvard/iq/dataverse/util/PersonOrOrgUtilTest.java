@@ -6,7 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class PersonOrOrgUtilTest {
 
@@ -86,7 +86,7 @@ public class PersonOrOrgUtilTest {
             // test only family name
             verifyIsPerson("Cadili", null, null);
             
-            verifyIsPerson("kcjim11, kcjim11", null, null);
+            verifyIsPerson("kcjim11, kcjim11", "kcjim11", "kcjim11");
             
             verifyIsPerson("Bartholomew 3, James", "James", "Bartholomew 3");
         }

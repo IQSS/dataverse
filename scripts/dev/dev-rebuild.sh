@@ -1,8 +1,9 @@
 #!/bin/sh
-PAYARA_DIR=/usr/local/payara5
+PAYARA_DIR=/usr/local/payara6
 ASADMIN=$PAYARA_DIR/glassfish/bin/asadmin
 DB_NAME=dvndb
 DB_USER=dvnapp
+export PGPASSWORD=secret
 
 echo "Checking if there is a war file to undeploy..."
 LIST_APP=$($ASADMIN list-applications -t)
@@ -23,7 +24,7 @@ echo "Deleting ALL DATA FILES uploaded to Dataverse..."
 rm -rf $PAYARA_DIR/glassfish/domains/domain1/files
 
 echo "Terminating database sessions so we can drop the database..."
-psql -U postgres -c "
+psql -h localhost -U postgres -c "
 SELECT pg_terminate_backend(pg_stat_activity.pid)
 FROM pg_stat_activity
 WHERE pg_stat_activity.datname = '$DB_NAME'
@@ -31,14 +32,14 @@ WHERE pg_stat_activity.datname = '$DB_NAME'
 " template1
 
 echo "Dropping the database..."
-psql -U $DB_USER -c "DROP DATABASE \"$DB_NAME\"" template1
+psql -h localhost -U $DB_USER -c "DROP DATABASE \"$DB_NAME\"" template1
 echo $?
 
 echo "Clearing out data from Solr..."
-curl http://localhost:8983/solr/collection1/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"
+curl "http://localhost:8983/solr/collection1/update/json?commit=true" -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"
 
 echo "Creating a new database..."
-psql -U $DB_USER -c "CREATE DATABASE \"$DB_NAME\" WITH OWNER = \"$DB_USER\"" template1
+psql -h localhost -U $DB_USER -c "CREATE DATABASE \"$DB_NAME\" WITH OWNER = \"$DB_USER\"" template1
 echo $?
 
 echo "Starting app server..."
@@ -53,7 +54,7 @@ cd scripts/api
 cd ../..
 
 echo "Creating SQL sequence..."
-psql -U $DB_USER $DB_NAME -f doc/sphinx-guides/source/_static/util/createsequence.sql
+psql -h localhost -U $DB_USER $DB_NAME -f doc/sphinx-guides/source/_static/util/createsequence.sql
 
 echo "Setting DOI provider to \"FAKE\"..." 
 curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d FAKE

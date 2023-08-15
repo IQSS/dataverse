@@ -22,8 +22,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
 
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;

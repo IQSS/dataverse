@@ -39,7 +39,7 @@ How External Tools Are Presented to Users
 
 An external tool can appear in your Dataverse installation in a variety of ways:
 
-- as an explore, preview, or configure option for a file
+- as an explore, preview, query or configure option for a file
 - as an explore option for a dataset
 - as an embedded preview on the file landing page
 
@@ -92,7 +92,7 @@ Terminology
 
     scope                        Whether the external tool appears and operates at the **file** level or the **dataset** level. Note that a file level tool much also specify the type of file it operates on (see "contentType" below).
 
-    types                        Whether the external tool is an **explore** tool, a **preview** tool, a **configure** tool or any combination of these (multiple types are supported for a single tool). Configure tools require an API token because they make changes to data files (files within datasets). Configure tools are currently not supported at the dataset level. The older "type" keyword that allows you to pass a single type as a string is deprecated but still supported.
+    types                        Whether the external tool is an **explore** tool, a **preview** tool, a **query** tool, a **configure** tool or any combination of these (multiple types are supported for a single tool). Configure tools require an API token because they make changes to data files (files within datasets). Configure tools are currently not supported at the dataset level. The older "type" keyword that allows you to pass a single type as a string is deprecated but still supported.
 
     toolUrl                      The **base URL** of the tool before query parameters are added.
     

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -30,21 +31,21 @@ import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.StoredProcedureQuery;
-import javax.persistence.TypedQuery;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.ocpsoft.common.util.Strings;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.StoredProcedureQuery;
+import jakarta.persistence.TypedQuery;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -103,6 +104,38 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public Dataset find(Object pk) {
         return em.find(Dataset.class, pk);
+    }
+
+    /**
+     * Retrieve a dataset with the deep underlying structure in one query execution.
+     * This is a more optimal choice when accessing files of a dataset.
+     * In a contrast, the find() method does not pre-fetch the file objects and results in point queries when accessing these objects.
+     * Since the files have a deep structure, many queries can be prevented by using the findDeep() method, especially for large datasets
+     * containing many files, and when iterating over all the files.
+     * When you are not going to access the file objects, the default find() method is better because of the lazy loading.
+     * @return a dataset with pre-fetched file objects
+     */
+    public Dataset findDeep(Object pk) {
+        return (Dataset) em.createNamedQuery("Dataset.findById")
+            .setParameter("id", pk)
+            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files
+            .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
+            .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
+            .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
+            .setHint("eclipselink.left-join-fetch", "o.files.auxiliaryFiles")
+            .setHint("eclipselink.left-join-fetch", "o.files.ingestReports")
+            .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
+            .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
+            .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
+            //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses")
+            .setHint("eclipselink.left-join-fetch", "o.files.embargo")
+            .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
+            .setHint("eclipselink.left-join-fetch", "o.files.owner")
+            .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
+            .setHint("eclipselink.left-join-fetch", "o.files.creator")
+            .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
+            .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
+            .getSingleResult();
     }
 
     public List<Dataset> findByOwnerId(Long ownerId) {
@@ -199,8 +232,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     //Used in datasets listcurationstatus API
-    public List<Dataset> findAllUnpublished() {
-        return em.createQuery("SELECT object(o) FROM Dataset o, DvObject d WHERE d.id=o.id and d.publicationDate IS null ORDER BY o.id ASC", Dataset.class).getResultList();
+    public List<Dataset> findAllWithDraftVersion() {
+        TypedQuery<Dataset> query = em.createQuery("SELECT object(d) FROM Dataset d, DatasetVersion v WHERE d.id=v.dataset.id and v.versionState=:state ORDER BY d.id ASC", Dataset.class);
+        query.setParameter("state", VersionState.DRAFT);
+        return query.getResultList();
     }
 
     /**
@@ -295,7 +330,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * in the dataset components, a ConstraintViolationException will be thrown,
      * which can be further parsed to detect the specific offending values.
      * @param id the id of the dataset
-     * @throws javax.validation.ConstraintViolationException
+     * @throws ConstraintViolationException
      */
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -363,7 +398,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         query.setParameter("userId", au.getId());
         try {
             return query.getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             return null;
         }
     }
@@ -478,7 +513,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         try {
             return query.getResultList();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             return null;
         }
     }
@@ -559,7 +594,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             return null;
         }
 
-        String datasetIdStr = Strings.join(datasetIds, ", ");
+        String datasetIdStr = StringUtils.join(datasetIds, ", ");
 
         String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, dataset d WHERE d.harvestingClient_id = h.id AND d.id IN (" + datasetIdStr + ")";
         List<Object[]> searchResults;
@@ -735,11 +770,11 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     public void exportDataset(Dataset dataset, boolean forceReExport) {
         if (dataset != null) {
-            // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets, 
+            // Note that the logic for handling a dataset is similar to what is implemented in exportAllDatasets,
             // but when only one dataset is exported we do not log in a separate export logging file
             if (dataset.isReleased() && dataset.getReleasedVersion() != null && !dataset.isDeaccessioned()) {
 
-                // can't trust dataset.getPublicationDate(), no. 
+                // can't trust dataset.getPublicationDate(), no.
                 Date publicationDate = dataset.getReleasedVersion().getReleaseTime(); // we know this dataset has a non-null released version! Maybe not - SEK 8/19 (We do now! :)
                 if (forceReExport || (publicationDate != null
                         && (dataset.getLastExportTime() == null
