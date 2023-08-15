@@ -48,7 +48,7 @@
    <system-property name="dataverse.db.password" value="dvnsecret"></system-property>
    ```
 
-   Note: if you used the Dataverse installer, you won't have a `dataverse.db.password` property. See "Create Password Aliases" below.
+   Note: if you used the Dataverse installer, you won't have a `dataverse.db.password` property. See "Create password aliases" below.
 
    Section 3: JVM options (under `<java-config classpath-suffix="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="">`)
 
@@ -72,6 +72,8 @@
    <jvm-options>-Ddoi.dataciterestapiurlstring=https://api.test.datacite.org</jvm-options>
    ```
 
+1. Check the `Xmx` setting in `/usr/local/payara6/glassfish/domains/domain1/config/domain.xml`. Note that there are two such settings, and you want to adjust the one in the stanza with Dataverse options. This sets the JVM heap size; a good rule of thumb is half of your system's total RAM. You may specify the value in MB (`4096m`) or GB (`4g`).
+
 1. Copy jhove.conf and jhoveConfig.xsd from Payara 5, edit and change payara5 to payara6
 
    `sudo cp /usr/local/payara5/glassfish/domains/domain1/config/jhove* /usr/local/payara6/glassfish/domains/domain1/config/`
@@ -80,13 +82,13 @@
 
    `sudo -u dataverse vi /usr/local/payara6/glassfish/domains/domain1/config/jhove.conf`
 
-1. Update systemd unit file (or other init system) to from `/usr/local/payara5` to `/usr/local/payara6`, if applicable.
+1. Update systemd unit file (or other init system) from `/usr/local/payara5` to `/usr/local/payara6`, if applicable.
 
 1. Start Payara:
 
    `sudo -u dataverse /usr/local/payara6/bin/asadmin start-domain`
 
-1. If you're using password aliases for your database, rserve and datacite jvm-options, recreate them here:
+1. Create password aliases for your database, rserve and datacite jvm-options, if you're using them:
 
    ```
    $ echo "AS_ADMIN_ALIASPASSWORD=yourDBpassword" > /tmp/dataverse.db.password.txt
@@ -95,7 +97,7 @@
    Command create-password-alias executed successfully.
    ```
 
-   You'll want to perform simalar commands for `rserve_password_alias` and `doi_password_alias` if you're using Rserve and/or Datacite.
+   You'll want to perform similar commands for `rserve_password_alias` and `doi_password_alias` if you're using Rserve and/or Datacite.
 
 1. Deploy the Dataverse 6.0 warfile:
 
@@ -109,7 +111,7 @@
 
    `sudo -u dataverse /usr/local/payara6/bin/asadmin create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector`
 
-1. Perform one final Payara restart to ensure that timers are initialized properly. This example stops Payara manually, then starts Payara using systemd:
+1. Perform one final Payara restart to ensure that timers are initialized properly:
 
    `sudo -u dataverse /usr/local/payara6/bin/asadmin stop-domain`
-   `sudo systemctl start payara`
+   `sudo -u dataverse /usr/local/payara6/bin/asadmin start-domain`
