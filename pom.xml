@@ -413,13 +413,13 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>10.9.1</version>
+            <version>10.13.2</version>
         </dependency>
         <!-- Caching library, current main use case is for OIDC authentication -->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>3.1.6</version>
+            <version>3.1.8</version>
         </dependency>
         
         <!-- New and Improved GDCC XOAI library! -->
