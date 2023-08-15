@@ -2,12 +2,12 @@ name: Dataverse SPI
 
 on:
     push:
-        branch:
+        branches:
             - "develop"
         paths:
             - "modules/dataverse-spi/**"
     pull_request:
-        branch:
+        branches:
             - "develop"
         paths:
             - "modules/dataverse-spi/**"
