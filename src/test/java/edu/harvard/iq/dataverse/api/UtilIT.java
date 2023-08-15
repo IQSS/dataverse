@@ -3249,7 +3249,7 @@ public class UtilIT {
         return response;
     }
 
-    static Response getVersionFiles(Integer datasetId, String version, Integer limit, Integer offset, String contentType, String categoryName, String orderCriteria, String apiToken) {
+    static Response getVersionFiles(Integer datasetId, String version, Integer limit, Integer offset, String contentType, String accessStatus, String categoryName, String orderCriteria, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json");
@@ -3261,6 +3261,9 @@ public class UtilIT {
         }
         if (contentType != null) {
             requestSpecification = requestSpecification.queryParam("contentType", contentType);
+        }
+        if (accessStatus != null) {
+            requestSpecification = requestSpecification.queryParam("accessStatus", accessStatus);
         }
         if (categoryName != null) {
             requestSpecification = requestSpecification.queryParam("categoryName", categoryName);

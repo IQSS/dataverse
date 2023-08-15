@@ -492,7 +492,7 @@ public class Datasets extends AbstractApiBean {
                     : ok(json(dsv));
         }, getRequestUser(crc));
     }
-    
+
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/files")
@@ -502,12 +502,12 @@ public class Datasets extends AbstractApiBean {
                                     @QueryParam("limit") Integer limit,
                                     @QueryParam("offset") Integer offset,
                                     @QueryParam("contentType") String contentType,
-                                    @QueryParam("fileAccess") String fileAccess,
+                                    @QueryParam("accessStatus") String accessStatus,
                                     @QueryParam("categoryName") String categoryName,
                                     @QueryParam("orderCriteria") String orderCriteria,
                                     @Context UriInfo uriInfo,
                                     @Context HttpHeaders headers) {
-        return response( req -> {
+        return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
             try {
@@ -515,7 +515,13 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException e) {
                 return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
             }
-            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, contentType, fileAccess, categoryName, fileMetadatasOrderCriteria)));
+            DatasetVersionFilesServiceBean.DataFileAccessStatus dataFileAccessStatus;
+            try {
+                dataFileAccessStatus = accessStatus != null ? DatasetVersionFilesServiceBean.DataFileAccessStatus.valueOf(accessStatus) : null;
+            } catch (IllegalArgumentException e) {
+                return error(Response.Status.BAD_REQUEST, "Invalid access status: " + accessStatus);
+            }
+            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, contentType, dataFileAccessStatus, categoryName, fileMetadatasOrderCriteria)));
         }, getRequestUser(crc));
     }
     
