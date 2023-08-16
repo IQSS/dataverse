@@ -78,6 +78,8 @@ services:
     depends_on:
       - dev_solr_initializer
     restart: on-failure
+    environment:
+     - SOLR_MODULES=scripting
     ports:
       - "8983:8983"
     networks:
