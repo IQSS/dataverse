@@ -41,4 +41,5 @@ Developer Guide
    dataset-migration-api 
    workflows
    fontcustom
+   classic-dev-env
    

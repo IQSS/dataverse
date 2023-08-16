@@ -17,17 +17,17 @@ import com.jayway.restassured.path.json.JsonPath;
 
 import java.util.List;
 import java.util.Map;
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.Status.CONFLICT;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static jakarta.ws.rs.core.Response.Status.CONFLICT;
+import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
 
 import edu.harvard.iq.dataverse.DataFile;
 
@@ -67,10 +67,10 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response.Status;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.core.Response.Status;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;

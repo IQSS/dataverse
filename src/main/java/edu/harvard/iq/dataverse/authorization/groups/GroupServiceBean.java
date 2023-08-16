@@ -26,11 +26,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.toSet;
 import java.util.stream.Stream;
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  *
