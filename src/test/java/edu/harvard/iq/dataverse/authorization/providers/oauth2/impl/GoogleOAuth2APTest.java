@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
-import javax.json.Json;
+import jakarta.json.Json;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 

@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse;
 
-import javax.ejb.Stateless;
-import javax.json.JsonObject;
+import jakarta.ejb.Stateless;
+import jakarta.json.JsonObject;
 
 /**
  *

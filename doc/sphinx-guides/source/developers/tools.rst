@@ -38,7 +38,7 @@ From the root of the git repo (where the ``Vagrantfile`` is), run ``vagrant up``
 
 Please note that running ``vagrant up`` for the first time should run the ``downloads/download.sh`` script for you to download required software such as an app server, Solr, etc. However, these dependencies change over time so it's a place to look if ``vagrant up`` was working but later fails.
 
-On Windows if you see an error like ``/usr/bin/perl^M: bad interpreter`` you might need to run ``dos2unix`` on the installation scripts. 
+On Windows if you see an error like ``/usr/bin/python^M: bad interpreter`` you might need to run ``dos2unix`` on the installation scripts. 
 
 PlantUML
 ++++++++
