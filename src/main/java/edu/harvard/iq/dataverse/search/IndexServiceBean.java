@@ -880,6 +880,8 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
             solrInputDocument.addField(SearchFields.DATASET_CITATION_HTML, datasetVersion.getCitation(true));
 
+            solrInputDocument.addField(SearchFields.FILE_COUNT, datasetVersion.getFileMetadatas().size());
+
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
             }
