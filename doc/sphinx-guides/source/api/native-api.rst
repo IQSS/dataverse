@@ -964,7 +964,23 @@ This endpoint supports optional pagination, through the ``limit`` and ``offset``
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?limit=10&offset=20"
 
-File filtering is optionally supported. In particular, by the following possible values:
+Category name filtering is also optionally supported. To return files to which the requested category has been added.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?categoryName=Data"
+
+Content type filtering is also optionally supported. To return files matching the requested content type.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?contentType=image/png"
+
+File access filtering is also optionally supported. In particular, by the following possible values:
 
 * ``Public``
 * ``Restricted``
@@ -995,6 +1011,8 @@ Usage example:
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?orderCriteria=Newest"
 
 Please note that both filtering and ordering criteria values are case sensitive and must be correctly typed for the endpoint to recognize them.
+
+Keep in mind that you can combine all of the above query params depending on the results you are looking for.
 
 View Dataset Files and Folders as a Directory Index
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
