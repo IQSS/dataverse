@@ -7,6 +7,8 @@ import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
@@ -120,6 +122,8 @@ public class DatasetsIT {
         Response removeAnonymizedFieldTypeNames = UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
         removeAnonymizedFieldTypeNames.then().assertThat()
                 .statusCode(200);
+
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
         
         /* With Dual mode, we can no longer mess with upload methods since native is now required for anything to work
                
@@ -147,7 +151,9 @@ public class DatasetsIT {
         Response removeAnonymizedFieldTypeNames = UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
         removeAnonymizedFieldTypeNames.then().assertThat()
                 .statusCode(200);
-        
+
+        UtilIT.deleteSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
+
         /* See above
         Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
         removeDcmUrl.then().assertThat()
@@ -3270,7 +3276,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void getVersionFiles() throws IOException, InterruptedException {
+    public void getVersionFiles() throws IOException {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -3313,6 +3319,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(testPageSize, fileMetadatasCount);
 
         String testFileId1 = JsonPath.from(getVersionFilesResponsePaginated.body().asString()).getString("data[0].dataFile.id");
+        String testFileId2 = JsonPath.from(getVersionFilesResponsePaginated.body().asString()).getString("data[1].dataFile.id");
 
         // Test page 2
         getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, testDatasetVersion, testPageSize, testPageSize, null, null, null, null, apiToken);
@@ -3324,6 +3331,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         fileMetadatasCount = getVersionFilesResponsePaginated.jsonPath().getList("data").size();
         assertEquals(testPageSize, fileMetadatasCount);
+
+        String testFileId3 = JsonPath.from(getVersionFilesResponsePaginated.body().asString()).getString("data[0].dataFile.id");
 
         // Test page 3 (last)
         getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, testDatasetVersion, testPageSize, testPageSize * 2, null, null, null, null, apiToken);
@@ -3429,5 +3438,51 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         fileMetadatasCount = getVersionFilesResponseRestricted.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
+
+        // Test Access Status Embargoed Then Public
+        UtilIT.setSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths, "12");
+        String activeEmbargoDate = LocalDate.now().plusMonths(6).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        // Create embargo for test file 1 (Embargo and Restricted)
+        Response createExpiredFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(testFileId1), activeEmbargoDate, apiToken);
+
+        createExpiredFileEmbargoResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Create embargo for test file 2 (Embargo and Public)
+        Response createActiveFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(testFileId2), activeEmbargoDate, apiToken);
+
+        createActiveFileEmbargoResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response getVersionFilesResponseEmbargoedThenPublic = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.EmbargoedThenPublic.toString(), null, null, apiToken);
+
+        getVersionFilesResponseEmbargoedThenPublic.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName2));
+
+        fileMetadatasCount = getVersionFilesResponseEmbargoedThenPublic.jsonPath().getList("data").size();
+        assertEquals(1, fileMetadatasCount);
+
+        Response getVersionFilesResponseEmbargoedThenRestricted = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.EmbargoedThenRestricted.toString(), null, null, apiToken);
+
+        getVersionFilesResponseEmbargoedThenRestricted.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName1));
+
+        fileMetadatasCount = getVersionFilesResponseEmbargoedThenRestricted.jsonPath().getList("data").size();
+        assertEquals(1, fileMetadatasCount);
+
+        // Test Access Status Public
+        Response getVersionFilesResponsePublic = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.Public.toString(), null, null, apiToken);
+
+        getVersionFilesResponsePublic.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName3))
+                .body("data[1].label", equalTo(testFileName4))
+                .body("data[2].label", equalTo(testFileName5));
+
+        fileMetadatasCount = getVersionFilesResponsePublic.jsonPath().getList("data").size();
+        assertEquals(3, fileMetadatasCount);
     }
 }

@@ -3304,4 +3304,18 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + dataFileId + "/userPermissions");
     }
+
+    static Response createFileEmbargo(Integer datasetId, Integer fileId, String dateAvailable, String apiToken) {
+        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("dateAvailable", dateAvailable);
+        jsonBuilder.add("reason", "This is a test embargo");
+        jsonBuilder.add("fileIds", Json.createArrayBuilder().add(fileId));
+        String jsonString = jsonBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .contentType("application/json")
+                .urlEncodingEnabled(false)
+                .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
+    }
 }

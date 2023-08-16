@@ -1,10 +1,14 @@
 package edu.harvard.iq.dataverse;
 
-import com.querydsl.core.types.dsl.*;
 import edu.harvard.iq.dataverse.QDataFileCategory;
 import edu.harvard.iq.dataverse.QDvObject;
 import edu.harvard.iq.dataverse.QEmbargo;
 import edu.harvard.iq.dataverse.QFileMetadata;
+
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.DateExpression;
+import com.querydsl.core.types.dsl.DateTimeExpression;
 
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -96,7 +100,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
     private BooleanExpression createAccessStatusExpression(DataFileAccessStatus accessStatus) {
         QEmbargo embargo = fileMetadata.dataFile.embargo;
         BooleanExpression activelyEmbargoedExpression = embargo.dateAvailable.goe(DateExpression.currentDate(LocalDate.class));
-        BooleanExpression inactivelyEmbargoedExpression = embargo.dateAvailable.isNull().or(embargo.dateAvailable.loe(DateExpression.currentDate(LocalDate.class)));
+        BooleanExpression inactivelyEmbargoedExpression = embargo.isNull();
         BooleanExpression accessStatusExpression;
         switch (accessStatus) {
             case EmbargoedThenRestricted:
