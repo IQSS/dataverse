@@ -23,10 +23,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * @author Guillermo Portas
- * TODO
- */
 @Stateless
 @Named
 public class DatasetVersionFilesServiceBean implements Serializable {
