@@ -76,6 +76,8 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonDT;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import jakarta.ws.rs.core.UriInfo;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
