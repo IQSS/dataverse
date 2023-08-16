@@ -7,8 +7,8 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 
-import javax.inject.Inject;
-import javax.ws.rs.container.ContainerRequestContext;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.container.ContainerRequestContext;
 import java.util.logging.Logger;
 
 /**

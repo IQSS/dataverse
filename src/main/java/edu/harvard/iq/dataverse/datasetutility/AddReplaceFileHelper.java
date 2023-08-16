@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.api.Util;
-import edu.harvard.iq.dataverse.api.Files;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -48,23 +47,22 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ejb.Asynchronous;
-import javax.ejb.EJBException;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.json.JsonArray;
-import javax.json.JsonObjectBuilder;
-import javax.validation.ConstraintViolation;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJBException;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.validation.ConstraintViolation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import org.apache.commons.io.IOUtils;
-import org.ocpsoft.common.util.Strings;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
 /**
  *  Methods to add or replace a single file.
@@ -1217,7 +1215,7 @@ public class AddReplaceFileHelper{
             initialFileList = result.getDataFiles();
 
         } catch (IOException ex) {
-            if (!Strings.isNullOrEmpty(ex.getMessage())) {
+            if (ex.getMessage() != null && !ex.getMessage().isEmpty()) {
                 this.addErrorSevere(getBundleErr("ingest_create_file_err") + " " + ex.getMessage());
             } else {
                 this.addErrorSevere(getBundleErr("ingest_create_file_err"));
@@ -2152,7 +2150,7 @@ public class AddReplaceFileHelper{
 
             }
         }
-        catch ( javax.json.stream.JsonParsingException ex) {
+        catch ( jakarta.json.stream.JsonParsingException ex) {
             ex.printStackTrace();
             return error(BAD_REQUEST, "Json Parsing Exception :" + ex.getMessage());
         }
@@ -2321,7 +2319,7 @@ public class AddReplaceFileHelper{
 
             }
         }
-        catch ( javax.json.stream.JsonParsingException ex) {
+        catch ( jakarta.json.stream.JsonParsingException ex) {
             ex.printStackTrace();
             return error(BAD_REQUEST, "Json Parsing Exception :" + ex.getMessage());
         }

@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 

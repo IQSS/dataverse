@@ -29,10 +29,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.persistence.*;
-import javax.validation.constraints.Pattern;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**

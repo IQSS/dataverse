@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.DOIServiceBean;
-import edu.harvard.iq.dataverse.DataFileCategoryServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -10,8 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.NotFoundException;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.NotFoundException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;

@@ -1,23 +1,18 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.MediaType;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.MediaType;
 import javax.xml.stream.XMLStreamException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Optional;
 

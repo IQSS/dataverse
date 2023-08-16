@@ -173,12 +173,7 @@ Finally, run the script:
 Running the full API test suite using Docker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note::
-    Sunsetting of this module is imminent.** There is no schedule yet, but expect it to go away.
-    Please let the `Dataverse Containerization Working Group <https://ct.gdcc.io>`_ know if you are a user and
-    what should be preserved.
-
-To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.md`` in the root of the repo.
+To run the full suite of integration tests on your laptop, running Dataverse and its dependencies in Docker, as explained in the :doc:`/container/dev-usage` section of the Container Guide.
 
 Alternatively, you can run tests against the app server running on your laptop by following the "getting set up" steps below.
 
@@ -308,9 +303,9 @@ To run these tests, simply call out to Maven:
 Measuring Coverage of Integration Tests
 ---------------------------------------
 
-Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara5" as the Payara directory and "dataverse" as the Payara Unix user.
+Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara6" as the Payara directory and "dataverse" as the Payara Unix user.
 
-Please note that this was tested under Glassfish 4 but it is hoped that the same steps will work with Payara 5.
+Please note that this was tested under Glassfish 4 but it is hoped that the same steps will work with Payara.
 
 Add jacocoagent.jar to Payara
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -329,9 +324,9 @@ Note that we are running the following commands as the user "dataverse". In shor
   cd local/jacoco-0.8.1
   wget https://github.com/jacoco/jacoco/releases/download/v0.8.1/jacoco-0.8.1.zip
   unzip jacoco-0.8.1.zip
-  /usr/local/payara5/bin/asadmin stop-domain
-  cp /home/dataverse/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/payara5/glassfish/lib
-  /usr/local/payara5/bin/asadmin start-domain
+  /usr/local/payara6/bin/asadmin stop-domain
+  cp /home/dataverse/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/payara6/glassfish/lib
+  /usr/local/payara6/bin/asadmin start-domain
 
 Add jacococli.jar to the WAR File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -354,21 +349,21 @@ Run this as the "dataverse" user.
 
 .. code-block:: bash
 
-  /usr/local/payara5/bin/asadmin deploy dataverse-jacoco.war
+  /usr/local/payara6/bin/asadmin deploy dataverse-jacoco.war
 
-Note that after deployment the file "/usr/local/payara5/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
+Note that after deployment the file "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
 
 Run Integration Tests
 ~~~~~~~~~~~~~~~~~~~~~
 
 Note that even though you see "docker-aio" in the command below, we assume you are not necessarily running the test suite within Docker. (Some day we'll probably move this script to another directory.) For this reason, we pass the URL with the normal port (8080) that app servers run on to the ``run-test-suite.sh`` script.
 
-Note that "/usr/local/payara5/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Payara. You must stop and start Payara before every run of the integration test suite.
+Note that "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Payara. You must stop and start Payara before every run of the integration test suite.
 
 .. code-block:: bash
 
-  /usr/local/payara5/bin/asadmin stop-domain
-  /usr/local/payara5/bin/asadmin start-domain
+  /usr/local/payara6/bin/asadmin stop-domain
+  /usr/local/payara6/bin/asadmin start-domain
   git clone https://github.com/IQSS/dataverse.git
   cd dataverse
   conf/docker-aio/run-test-suite.sh http://localhost:8080
@@ -383,7 +378,7 @@ Run these commands as the "dataverse" user. The ``cd dataverse`` means that you 
 .. code-block:: bash
 
   cd dataverse
-  java -jar /home/dataverse/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/payara5/glassfish/domains/domain1/config/jacoco.exec
+  java -jar /home/dataverse/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec
 
 Read Code Coverage Report
 ~~~~~~~~~~~~~~~~~~~~~~~~~

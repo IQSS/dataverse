@@ -10,25 +10,22 @@ import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.DataFile;
-import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.util.zip.ZipInputStream;
+
+import jakarta.json.Json;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import java.util.zip.ZipEntry;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.HashMap;
 
 import org.hamcrest.collection.IsMapContaining;
 
-import javax.json.Json;
-
-import static javax.ws.rs.core.Response.Status.*;
+import static jakarta.ws.rs.core.Response.Status.*;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
