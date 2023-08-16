@@ -404,7 +404,7 @@ A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X GET http://$SERVER/api/access/datafile/{id}/listRequests
 
-Get user permissions on a file:
+Get User Permissions on a File:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``/api/access/datafile/{id}/userPermissions``
@@ -418,4 +418,4 @@ In particular, the user permissions that this method checks, returned as boolean
 
 A curl example using an ``id``::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X GET http://$SERVER/api/access/datafile/{id}/userPermissions
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "http://$SERVER/api/access/datafile/{id}/userPermissions"

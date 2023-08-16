@@ -2764,6 +2764,8 @@ The fully expanded example above (without environment variables) looks like this
 
 Note that if the requested file is not tabular, the endpoint will return an error.
 
+.. _file-download-count:
+
 Getting File Download Count
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2777,13 +2779,13 @@ A curl example using an ``ID``
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl $SERVER_URL/api/files/$ID/downloadCount
+  curl "$SERVER_URL/api/files/$ID/downloadCount"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl https://demo.dataverse.org/api/files/24/downloadCount
+  curl "https://demo.dataverse.org/api/files/24/downloadCount"
 
 A curl example using a ``PERSISTENT_ID``
 
@@ -2800,6 +2802,8 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/files/:persistentId/downloadCount?persistentId=doi:10.5072/FK2/AAA000"
+
+If you are interested in download counts for multiple files, see :doc:`/api/metrics`.
 
 Updating File Metadata
 ~~~~~~~~~~~~~~~~~~~~~~
