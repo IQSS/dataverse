@@ -1814,7 +1814,7 @@ public class DatasetVersion implements Serializable {
     // So something will need to be modified to accommodate this. -- L.A.  
     /**
      * We call the export format "Schema.org JSON-LD" and extensive Javadoc can
-     * be found in {@link SchemaDotOrgExporter}.
+     * be found in {@link edu.harvard.iq.dataverse.export.SchemaDotOrgExporter}.
      */
     public String getJsonLd() {
         // We show published datasets only for "datePublished" field below.

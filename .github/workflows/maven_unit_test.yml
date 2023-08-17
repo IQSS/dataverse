@@ -59,6 +59,14 @@ jobs:
 
           # We don't want to cache the WAR file, so delete it
           - run: rm -rf ~/.m2/repository/edu/harvard/iq/dataverse
+
+          # Upload the built war file. For download, it will be wrapped in a ZIP by GitHub.
+          # See also https://github.com/actions/upload-artifact#zipped-artifact-downloads
+          - uses: actions/upload-artifact@v3
+            with:
+                name: dataverse-java${{ matrix.jdk }}.war
+                path: target/dataverse*.war
+                retention-days: 7
     push-app-img:
         name: Publish App Image
         permissions:
