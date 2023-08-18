@@ -34,7 +34,7 @@ public class ProvInvestigatorTest {
         jsonParser = new JsonParser();
     }
     
-    @Category(NonEssentialTests.class)
+    @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @Test
     public void testProvValidator() {   
         String validJsonString = "{\n" +
@@ -106,7 +106,7 @@ public class ProvInvestigatorTest {
 
     }
     
-    @Category(NonEssentialTests.class)
+    @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @Test
     public void testProvNamesNotInsideEntity() throws IOException {
         //name and type on their own
@@ -121,7 +121,7 @@ public class ProvInvestigatorTest {
         assertFalse(entities.size() > 0); 
     }
     
-    @Category(NonEssentialTests.class)
+    @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @Test
     public void testProvNameJsonParserEmptyEntities() throws IOException {
         String jsonString = "{\n" +
@@ -160,8 +160,8 @@ public class ProvInvestigatorTest {
     
     //Note: this test has entity tags in multiple places, all with unique names
     //Only one entity is added to our list per unique name.
-
-    @Category(NonEssentialTests.class)
+    
+    @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @Test
     public void testProvJsonWithEntitiesInMultiplePlaces() throws IOException {
         String jsonString = "{\n" +
@@ -234,7 +234,7 @@ public class ProvInvestigatorTest {
         assertTrue(entities.size() == 7);
     }
     
-    @Category(NonEssentialTests.class)
+    @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @Test
     public void testProvJsonWithEntitiesInMultiplePlacesWithSameNames() throws IOException {
         String jsonString = "{\n" +
@@ -272,8 +272,8 @@ public class ProvInvestigatorTest {
         assertTrue(entities.get("ex:report2").fileType.equals("not report"));
         assertTrue(entities.size() == 3); //ex:report2 & ex:report1 are repeated
     }
-   
-    @Category(NonEssentialTests.class)
+    
+    @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @Test
     public void testProvLongJsonWithEntities() throws IOException {
         String jsonString = "{\n" +

@@ -781,7 +781,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <testsToExclude>edu.harvard.iq.dataverse.NonEssentialTests</testsToExclude>
+                <testsToExclude>not-essential-unittests</testsToExclude>
             </properties>
         </profile>
         <profile>

@@ -20,8 +20,8 @@ public class XmlValidatorTest {
 
     //Ignored as this relies on an external resource that has been down occasionally. 
     //May be a good test for our full vs. everytime test classifications (#4896) -MAD 4.9.1
-    @Ignore
-    @Category(NonEssentialTests.class)
+    @Disabled
+    @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @Test
     public void testValidateXml() throws IOException, SAXException, ParserConfigurationException {
         assertTrue(XmlValidator.validateXmlSchema("src/test/java/edu/harvard/iq/dataverse/util/xml/sendToDataCite.xml", new URL("https://schema.datacite.org/meta/kernel-3/metadata.xsd")));
