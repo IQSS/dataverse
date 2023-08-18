@@ -93,70 +93,51 @@ class StringUtilTest {
         assertEquals( expectedString, StringUtil.substringIncludingLast(str, separator) );
     }
 
-        @Parameters
-        public static Collection<Object[]> parameters() {
-            return Arrays.asList(
-                    new Object[][] { 
-                        {null, Optional.empty()},
-                        {"", Optional.empty()},
-                        {"    leadingWhitespace", Optional.of("leadingWhitespace")},
-                        {"trailingWhiteSpace    ", Optional.of("trailingWhiteSpace")},
-                        {"someString", Optional.of("someString")},
-                        {"some string with spaces", Optional.of("some string with spaces")}
-                    }
-            );
-        }
-
-        @Test
-        public void testToOption() {
-            assertEquals(expected, StringUtil.toOption(inputString));
-        }
+    static Stream<Arguments> toOptionData() {
+        return Stream.of(
+            Arguments.of(Optional.empty(), null),
+            Arguments.of(Optional.empty(), ""),
+            Arguments.of(Optional.of("leadingWhitespace"), "    leadingWhitespace"),
+            Arguments.of(Optional.of("trailingWhiteSpace"), "trailingWhiteSpace    "),
+            Arguments.of(Optional.of("someString"), "someString"),
+            Arguments.of(Optional.of("some string with spaces"), "some string with spaces")
+        );
     }
-
-    @RunWith(Parameterized.class)
-    public static class TestSanitizeFileDirectory {
-
-        public String inputString;
-        public String expected;
-        public boolean aggressively;
-
-        public TestSanitizeFileDirectory(String inputString, String expected, boolean aggressively) {
-            this.inputString = inputString;
-            this.expected = expected;
-            this.aggressively = aggressively;
-        }
-
-        @Parameters
-        public static Collection<Object[]> parameters() {
-            return Arrays.asList(
-                    new Object[][] { 
-                        {"some\\path\\to\\a\\directory", "some/path/to/a/directory", false},
-                        {"some\\//path\\//to\\//a\\//directory", "some/path/to/a/directory", false},
-                        // starts with / or - or . or whitepsace
-                        {"/some/path/to/a/directory", "some/path/to/a/directory", false},
-                        {"-some/path/to/a/directory", "some/path/to/a/directory", false},
-                        {".some/path/to/a/directory", "some/path/to/a/directory", false},
-                        {" some/path/to/a/directory", "some/path/to/a/directory", false},
-                        // ends with / or - or . or whitepsace
-                        {"some/path/to/a/directory/", "some/path/to/a/directory", false},
-                        {"some/path/to/a/directory-", "some/path/to/a/directory", false},
-                        {"some/path/to/a/directory.", "some/path/to/a/directory", false},
-                        {"some/path/to/a/directory ", "some/path/to/a/directory", false},
-
-                        {"", null, false},
-                        {"/", null, false},
-
-                        // aggressively
-                        {"some/path/to/a/dire{`~}ctory", "some/path/to/a/dire.ctory", true},
-                        {"some/path/to/a/directory\\.\\.", "some/path/to/a/directory", true},
-                    }
-            );
-        }
-
-        @Test
-        public void testSanitizeFileDirectory() {
-            assertEquals(expected, StringUtil.sanitizeFileDirectory(inputString, aggressively));
-        }
+    
+    @ParameterizedTest
+    @MethodSource("toOptionData")
+    void testToOption(Optional<String> expected, String inputString) {
+        assertEquals(expected, StringUtil.toOption(inputString));
+    }
+    
+    static Stream<Arguments> sanitizeData() {
+        return Stream.of(
+            Arguments.of("some\\path\\to\\a\\directory", "some/path/to/a/directory", false),
+            Arguments.of("some\\//path\\//to\\//a\\//directory", "some/path/to/a/directory", false),
+            // starts with / or - or . or whitepsace
+            Arguments.of("/some/path/to/a/directory", "some/path/to/a/directory", false),
+            Arguments.of("-some/path/to/a/directory", "some/path/to/a/directory", false),
+            Arguments.of(".some/path/to/a/directory", "some/path/to/a/directory", false),
+            Arguments.of(" some/path/to/a/directory", "some/path/to/a/directory", false),
+            // ends with / or - or . or whitepsace
+            Arguments.of("some/path/to/a/directory/", "some/path/to/a/directory", false),
+            Arguments.of("some/path/to/a/directory-", "some/path/to/a/directory", false),
+            Arguments.of("some/path/to/a/directory.", "some/path/to/a/directory", false),
+            Arguments.of("some/path/to/a/directory ", "some/path/to/a/directory", false),
+            
+            Arguments.of("", null, false),
+            Arguments.of("/", null, false),
+            
+            // aggressively
+            Arguments.of("some/path/to/a/dire{`~}ctory", "some/path/to/a/dire.ctory", true),
+            Arguments.of("some/path/to/a/directory\\.\\.", "some/path/to/a/directory", true)
+        );
+    }
+    
+    @ParameterizedTest
+    @MethodSource("sanitizeData")
+    void testSanitizeFileDirectory(String inputString, String expected, boolean aggressively) {
+        assertEquals(expected, StringUtil.sanitizeFileDirectory(inputString, aggressively));
     }
 
     public static class StringUtilNoParamTest{

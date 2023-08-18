@@ -35,34 +35,22 @@ public class JsfHelperTest {
 	@AfterEach
 	public void tearDown() {
 	}
-
-	public TestEnum inputEnum;
-	public String inputString;
-	public TestEnum defaultEnumValue;
 	
-	public JsfHelperTest(TestEnum inputEnum, String inputString, TestEnum defaultEnumValue) {
-		this.inputEnum = inputEnum;
-		this.inputString = inputString;
-		this.defaultEnumValue = defaultEnumValue;
-	}
-
-	@Parameters
-	public static Collection<Object[]> parameters() {
-		return Arrays.asList (
-			new Object[][] {
-				{ TestEnum.Lorem, "Lorem", TestEnum.Dolor },
-				{ TestEnum.Lorem, "Lorem   ", TestEnum.Dolor },
-				{ TestEnum.Dolor, null, TestEnum.Dolor },
-				{ TestEnum.Dolor, "THIS IS A BAD VALUE", TestEnum.Dolor },
-			}
+	static Stream<Arguments> parameters() {
+		return Stream.of(
+			Arguments.of(TestEnum.Lorem, "Lorem", TestEnum.Dolor),
+			Arguments.of(TestEnum.Lorem, "Lorem   ", TestEnum.Dolor),
+			Arguments.of(TestEnum.Dolor, null, TestEnum.Dolor),
+			Arguments.of(TestEnum.Dolor, "THIS IS A BAD VALUE", TestEnum.Dolor )
 		);
 	}
 
 	/**
 	 * Test of enumValue method, of class JsfHelper.
 	 */
-	@Test
-	public void testEnumValue() {
+	@ParameterizedTest
+	@MethodSource("parameters")
+	public void testEnumValue(TestEnum inputEnum, String inputString, TestEnum defaultEnumValue) {
 		System.out.println("enumValue");
 		JsfHelper instance = new JsfHelper();
 

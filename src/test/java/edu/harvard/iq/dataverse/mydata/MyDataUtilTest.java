@@ -13,64 +13,70 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class MyDataUtilTest {
 
-    @DataPoints
-    public static String[] userIdentifier = { 
-        "@nzaugg", "nzaugg@", "nzaugg", "123nzaugg", "", " ", null, "@",  "n" };
-
-    @Theory
-    public void testFormatUserIdentifierAsAssigneeIdentifierNull(String userIdentifier) {
-        assumeTrue(userIdentifier == null);
-        String formattedUserIdentifier = MyDataUtil.formatUserIdentifierAsAssigneeIdentifier(userIdentifier);
-        assertTrue(formattedUserIdentifier ==  null);
+    static List<String> userIdentifier() {
+        return List.of("@nzaugg", "nzaugg@", "nzaugg", "123nzaugg", " ", "@", "n");
     }
 
-    @Theory
-    public void testFormatUserIdentifierAsAssigneeIdentifierOneCharString(String userIdentifier) {
-        assumeTrue(userIdentifier != null);
+    @ParameterizedTest
+    @NullSource
+    void testFormatUserIdentifierAsAssigneeIdentifierNull(String userIdentifier) {
+        String formattedUserIdentifier = MyDataUtil.formatUserIdentifierAsAssigneeIdentifier(userIdentifier);
+        assertNull(formattedUserIdentifier);
+    }
+    
+    @ParameterizedTest
+    @MethodSource("userIdentifier")
+    void testFormatUserIdentifierAsAssigneeIdentifierOneCharString(String userIdentifier) {
         assumeTrue(userIdentifier.startsWith("@"));
+        
         String formattedUserIdentifier = MyDataUtil.formatUserIdentifierAsAssigneeIdentifier(userIdentifier);
-        assertTrue(formattedUserIdentifier.equals(userIdentifier));
+        assertEquals(formattedUserIdentifier, userIdentifier);
     }
-
-    @Theory
-    public void testFormatUserIdentifierAsAssigneeIdentifier(String userIdentifier) {
-        assumeTrue(userIdentifier != null);
+    
+    @ParameterizedTest
+    @MethodSource("userIdentifier")
+    void testFormatUserIdentifierAsAssigneeIdentifier(String userIdentifier) {
         assumeTrue(!userIdentifier.startsWith("@"));
+        
         String formattedUserIdentifier = MyDataUtil.formatUserIdentifierAsAssigneeIdentifier(userIdentifier);
-        assertTrue(formattedUserIdentifier.equals("@" + userIdentifier));
+        assertEquals(formattedUserIdentifier, "@" + userIdentifier);
     }
-
-    @Theory
-    public void testFormatUserIdentifierForMyDataFormNull(String userIdentifier) {
-        assumeTrue(userIdentifier == null);
+    
+    @ParameterizedTest
+    @NullSource
+    void testFormatUserIdentifierForMyDataFormNull(String userIdentifier) {
         String formattedUserIdentifier = MyDataUtil.formatUserIdentifierForMyDataForm(userIdentifier);
-        assertTrue(formattedUserIdentifier ==  null);
+        assertNull(formattedUserIdentifier);
     }
-
-    @Theory
-    public void testFormatUserIdentifierForMyDataFormOneCharString(String userIdentifier) {
-        assumeTrue(userIdentifier != null);
+    
+    @ParameterizedTest
+    @MethodSource("userIdentifier")
+    void testFormatUserIdentifierForMyDataFormOneCharString(String userIdentifier) {
         assumeTrue(userIdentifier.startsWith("@"));
         assumeTrue(userIdentifier.length() == 1);
+        
         String formattedUserIdentifier = MyDataUtil.formatUserIdentifierForMyDataForm(userIdentifier);
-        assertTrue(formattedUserIdentifier ==  null);
+        assertNull(formattedUserIdentifier);
     }
-
-    @Theory
-    public void testFormatUserIdentifierForMyDataFormLongerString(String userIdentifier) {
-        assumeTrue(userIdentifier != null);
+    
+    @ParameterizedTest
+    @MethodSource("userIdentifier")
+    void testFormatUserIdentifierForMyDataFormLongerString(String userIdentifier) {
         assumeTrue(userIdentifier.startsWith("@"));
         assumeTrue(userIdentifier.length() > 1);
+        
         String formattedUserIdentifier = MyDataUtil.formatUserIdentifierForMyDataForm(userIdentifier);
-        assertTrue(formattedUserIdentifier.equals(userIdentifier.substring(1)));
+        assertEquals(formattedUserIdentifier, userIdentifier.substring(1));
     }
-
-    @Theory
-    public void testFormatUserIdentifierForMyDataForm(String userIdentifier) {
-        assumeTrue(userIdentifier != null);
+    
+    @ParameterizedTest
+    @MethodSource("userIdentifier")
+    @EmptySource
+    void testFormatUserIdentifierForMyDataForm(String userIdentifier) {
         assumeTrue(!userIdentifier.startsWith("@"));
+        
         String formattedUserIdentifier = MyDataUtil.formatUserIdentifierForMyDataForm(userIdentifier);
-        assertTrue(formattedUserIdentifier.equals(userIdentifier));
+        assertEquals(formattedUserIdentifier, userIdentifier);
     }
 
 }

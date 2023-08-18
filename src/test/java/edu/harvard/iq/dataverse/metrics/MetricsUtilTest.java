@@ -205,42 +205,20 @@ public class MetricsUtilTest {
         }
 
     }
-
-    @RunWith(Parameterized.class)
-    public static class ValidateDataLocationStringTypeTest {
-        @Parameter
-        public String dataLocation;
-
-        @Parameter(1)
-        public boolean isExceptionExpected;
-
-        @Parameter(2)
-        public String expectedOutput;
-
-        @Parameters
-        public static Collection<Object[]> parameters() {
-            return Arrays.asList(new Object[][] { 
-                { "local", false, "local" }, 
-                { "remote", false, "remote" },
-                { "all", false, "all" }, 
-                { null, false, "local" }, 
-                { "", false, "local" },
-                { "abcd", true, null } 
-            });
-        }
-
-        @Test
-        public void testValidateDataLocationStringType() {
-            try {
-                assertEquals(expectedOutput, MetricsUtil.validateDataLocationStringType(dataLocation));
-            } catch (Exception e) {
-                if (isExceptionExpected) {
-                    return;
-                } else {
-                    fail("should not throw an exception!");
-                }
-            }
-        }
-
+    
+    @ParameterizedTest
+    @CsvSource(value = {
+        "local,false,local",
+        "remote,false,remote",
+        "all,false,all",
+        "NULL,false,local",
+        "'',false,local",
+        "abcd,true,NULL"
+    }, nullValues = "NULL")
+    void testValidateDataLocationStringType(String dataLocation, boolean isExceptionExpected, String expectedOutput) {
+        if (isExceptionExpected)
+            assertThrows(Exception.class, () -> MetricsUtil.validateDataLocationStringType(dataLocation));
+        else
+            assertEquals(expectedOutput, MetricsUtil.validateDataLocationStringType(dataLocation));
     }
 }

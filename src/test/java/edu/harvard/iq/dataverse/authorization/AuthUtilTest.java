@@ -17,68 +17,45 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AuthUtilTest {
-
-    @RunWith(Parameterized.class)
-    public static class AuthUtilParamTests {
-
-        @Parameters
-        public static Collection<String[]> data() {
-            return Arrays.asList(
-                    new String[][] {
-                        { null, null, null },
-                        { "Homer", "Homer", null },
-                        { "Simpson", null, "Simpson" },
-                        { "Homer Simpson", "Homer", "Simpson" },
-                        { "Homer Simpson", " Homer", "Simpson" }
-                    }
-                );
-        }
-
-        @Parameter
-        public String expectedDisplayName;
-
-        @Parameter(1)
-        public String displayFirst;
-
-        @Parameter(2)
-        public String displayLast;
-
-        @Test
-        public void testGetDisplayName() {
-            assertEquals(expectedDisplayName, AuthUtil.getDisplayName(displayFirst, displayLast));
-        }
+    
+    @ParameterizedTest
+    @CsvSource(value = {
+        "NULL,NULL,NULL",
+        "Homer,Homer,NULL",
+        "Simpson,NULL,Simpson",
+        "Homer Simpson,Homer,Simpson",
+        "Homer Simpson,Homer,Simpson"
+    }, nullValues = "NULL")
+    void testGetDisplayName(String expectedDisplayName, String displayFirst, String displayLast) {
+        assertEquals(expectedDisplayName, AuthUtil.getDisplayName(displayFirst, displayLast));
     }
-
-    public static class AuthUtilNoParamTests {
-
-        /**
-         * Test of isNonLocalLoginEnabled method, of class AuthUtil.
-         */
-        @Test
-        public void testIsNonLocalLoginEnabled() {
-            System.out.println("isNonLocalLoginEnabled");
-
-            AuthUtil authUtil = new AuthUtil();
-
-            assertEquals(false, AuthUtil.isNonLocalLoginEnabled(null));
-
-            Collection<AuthenticationProvider> shibOnly = new HashSet<>();
-            shibOnly.add(new ShibAuthenticationProvider());
-            assertEquals(true, AuthUtil.isNonLocalLoginEnabled(shibOnly));
-
-            Collection<AuthenticationProvider> manyNonLocal = new HashSet<>();
-            manyNonLocal.add(new ShibAuthenticationProvider());
-            manyNonLocal.add(new GitHubOAuth2AP(null, null));
-            manyNonLocal.add(new GoogleOAuth2AP(null, null));
-            manyNonLocal.add(new OrcidOAuth2AP(null, null, null));
-            assertEquals(true, AuthUtil.isNonLocalLoginEnabled(manyNonLocal));
-
-            Collection<AuthenticationProvider> onlyBuiltin = new HashSet<>();
-            onlyBuiltin.add(new BuiltinAuthenticationProvider(null, null, null));
-            // only builtin provider
-            assertEquals(false, AuthUtil.isNonLocalLoginEnabled(onlyBuiltin));
-
-        }
+    
+    /**
+     * Test of isNonLocalLoginEnabled method, of class AuthUtil.
+     */
+    @Test
+    public void testIsNonLocalLoginEnabled() {
+        System.out.println("isNonLocalLoginEnabled");
+        
+        AuthUtil authUtil = new AuthUtil();
+        
+        assertFalse(AuthUtil.isNonLocalLoginEnabled(null));
+        
+        Collection<AuthenticationProvider> shibOnly = new HashSet<>();
+        shibOnly.add(new ShibAuthenticationProvider());
+        assertTrue(AuthUtil.isNonLocalLoginEnabled(shibOnly));
+        
+        Collection<AuthenticationProvider> manyNonLocal = new HashSet<>();
+        manyNonLocal.add(new ShibAuthenticationProvider());
+        manyNonLocal.add(new GitHubOAuth2AP(null, null));
+        manyNonLocal.add(new GoogleOAuth2AP(null, null));
+        manyNonLocal.add(new OrcidOAuth2AP(null, null, null));
+        assertTrue(AuthUtil.isNonLocalLoginEnabled(manyNonLocal));
+        
+        Collection<AuthenticationProvider> onlyBuiltin = new HashSet<>();
+        onlyBuiltin.add(new BuiltinAuthenticationProvider(null, null, null));
+        // only builtin provider
+        assertFalse(AuthUtil.isNonLocalLoginEnabled(onlyBuiltin));
     }
 
 }
