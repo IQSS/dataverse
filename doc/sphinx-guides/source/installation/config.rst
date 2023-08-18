@@ -3926,7 +3926,7 @@ GlobusEndpoint is Globus endpoint id used with Globus integration. See :ref:`glo
 
 A comma-separated list of the S3 stores that are configured to support Globus integration. See :ref:`globus-support` for details.
 
-:GlobusAppURL
+:GlobusAppUrl
 +++++++++++++
 
 The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been deployed to support Globus integration. See :ref:`globus-support` for details.
