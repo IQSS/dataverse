@@ -45,6 +45,7 @@ public class DatasetFieldValidatorTest {
 
     /**
      * Test of isValid method, of class DatasetFieldValidator.
+     * TODO: this should be converted into one or two ParameterizedTest methods, potentially including a DisplayNameGenerator
      */
     @Test
     public void testIsValid() {
@@ -85,7 +86,7 @@ public class DatasetFieldValidatorTest {
         testDatasetField.setSingleValue(value);
         
         DatasetFieldValidator datasetFieldValidator = new DatasetFieldValidator();
-        assertEquals( test, expectedOutcome, datasetFieldValidator.isValid(testDatasetField, constraintValidatorContext));
+        assertEquals(expectedOutcome, datasetFieldValidator.isValid(testDatasetField, constraintValidatorContext), test);
        
     }
       
@@ -121,7 +122,7 @@ public class DatasetFieldValidatorTest {
         
 
         DatasetFieldValidator datasetFieldValidator = new DatasetFieldValidator();
-        assertEquals( test, expectedOutcome, datasetFieldValidator.isValid(child1DatasetField, constraintValidatorContext));
+        assertEquals(expectedOutcome, datasetFieldValidator.isValid(child1DatasetField, constraintValidatorContext), test);
     }
     
     @Test

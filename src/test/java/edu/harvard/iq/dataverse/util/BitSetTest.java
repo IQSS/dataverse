@@ -117,9 +117,9 @@ public class BitSetTest {
 		sut = sut1.copy().intersect(sut2);
 		for ( short i : BitSet.allIndices() ) {
 			if ( sut.isSet(i) ) {
-				assertTrue( "expected true at idx " + i, sut1.isSet(i) && sut2.isSet(i) );
+				assertTrue(sut1.isSet(i) && sut2.isSet(i), "expected true at idx " + i);
 			} else {
-				assertFalse( "expected false at idx " + i, sut1.isSet(i) && sut2.isSet(i) );
+				assertFalse(sut1.isSet(i) && sut2.isSet(i), "expected false at idx " + i);
 			}
 		}
 	}
@@ -134,9 +134,9 @@ public class BitSetTest {
 		sut = sut1.copy().xor(sut2);
 		for ( short i : BitSet.allIndices() ) {
 			if ( sut.isSet(i) ) {
-				assertTrue( "expected true at idx " + i, sut1.isSet(i) ^ sut2.isSet(i) );
+				assertTrue(sut1.isSet(i) ^ sut2.isSet(i), "expected true at idx " + i);
 			} else {
-				assertFalse( "expected false at idx " + i, sut1.isSet(i) ^ sut2.isSet(i) );
+				assertFalse(sut1.isSet(i) ^ sut2.isSet(i), "expected false at idx " + i);
 			}
 		}
 	}

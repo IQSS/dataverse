@@ -364,14 +364,14 @@ public class AuthenticatedUserTest {
         JsonObject jObject = testUser.toJson().build();
 
         Set<String> mutedEmails = new HashSet<>(jObject.getJsonArray("mutedEmails").getValuesAs(JsonString::getString));
-        assertTrue("Set contains two elements", mutedEmails.size() == 2);
-        assertTrue("Set contains REVOKEROLE", mutedEmails.contains("REVOKEROLE"));
-        assertTrue("Set contains ASSIGNROLE", mutedEmails.contains("ASSIGNROLE"));
+        assertTrue(mutedEmails.size() == 2, "Set contains two elements");
+        assertTrue(mutedEmails.contains("REVOKEROLE"), "Set contains REVOKEROLE");
+        assertTrue(mutedEmails.contains("ASSIGNROLE"), "Set contains ASSIGNROLE");
 
         Set<String> mutedNotifications = new HashSet<>(jObject.getJsonArray("mutedNotifications").getValuesAs(JsonString::getString));
-        assertTrue("Set contains two elements", mutedNotifications.size() == 2);
-        assertTrue("Set contains REVOKEROLE", mutedNotifications.contains("REVOKEROLE"));
-        assertTrue("Set contains ASSIGNROLE", mutedNotifications.contains("ASSIGNROLE"));
+        assertTrue(mutedNotifications.size() == 2, "Set contains two elements");
+        assertTrue(mutedNotifications.contains("REVOKEROLE"), "Set contains REVOKEROLE");
+        assertTrue(mutedNotifications.contains("ASSIGNROLE"), "Set contains ASSIGNROLE");
     }
 
     @Test
@@ -401,10 +401,10 @@ public class AuthenticatedUserTest {
                 Type.tokenizeToSet(" ASSIGNROLE , CREATEDV,REVOKEROLE  ")
             )
         );
-        assertTrue("typeSet contains 3 elements", typeSet.size() == 3);
-        assertTrue("typeSet contains ASSIGNROLE", typeSet.contains(Type.ASSIGNROLE));
-        assertTrue("typeSet contains CREATEDV", typeSet.contains(Type.CREATEDV));
-        assertTrue("typeSet contains REVOKEROLE", typeSet.contains(Type.REVOKEROLE));
+        assertTrue(typeSet.size() == 3, "typeSet contains 3 elements");
+        assertTrue(typeSet.contains(Type.ASSIGNROLE), "typeSet contains ASSIGNROLE");
+        assertTrue(typeSet.contains(Type.CREATEDV), "typeSet contains CREATEDV");
+        assertTrue(typeSet.contains(Type.REVOKEROLE), "typeSet contains REVOKEROLE");
     }
 
     @Test

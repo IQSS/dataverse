@@ -711,8 +711,8 @@ public class JsonParserTest {
             arr.add(entry.name());
         }
         Set<Type> typesSet = new HashSet<>(JsonParser.parseEnumsFromArray(arr.build(), Type.class));
-        assertTrue("Set contains two elements", typesSet.size() == 2);
-        assertTrue("Set contains REVOKEROLE", typesSet.contains(Type.REVOKEROLE));
-        assertTrue("Set contains ASSIGNROLE", typesSet.contains(Type.ASSIGNROLE));
+        assertEquals(2, typesSet.size(), "Set contains two elements");
+        assertTrue(typesSet.contains(Type.REVOKEROLE), "Set contains REVOKEROLE");
+        assertTrue(typesSet.contains(Type.ASSIGNROLE), "Set contains ASSIGNROLE");
     }
 }

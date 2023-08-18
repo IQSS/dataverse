@@ -605,7 +605,7 @@ public class AdminIT {
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
         UtilIT.makeSuperUser(superuserUsername);
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + origFileId, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", superuserApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", superuserApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + origFileId);
 
         //Bad file id         
         Response computeDataFileHashResponse = UtilIT.computeDataFileHashValue("BadFileId", DataFile.ChecksumType.MD5.toString(), superuserApiToken);

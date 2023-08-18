@@ -61,7 +61,7 @@ public class TabularIT {
 
         // Give file time to ingest
         
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest);
       //  Thread.sleep(10000);
 
         Response fileMetadataNoFormat = UtilIT.getFileMetadata(fileIdAsString, null, apiToken);

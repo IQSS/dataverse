@@ -237,7 +237,7 @@ public class InReviewWorkflowIT {
                 // because the dataset is still locked when we try to edit it, 
                 // a few lines down. -- L.A. Oct. 2018  
                 // Changes to test for ingest lock and 3 seconds duration SEK 09/2019 #6128
-                assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest , UtilIT.sleepForLock(datasetId, "Ingest", curatorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+                assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", curatorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest);
                // Thread.sleep(10000);
             }
         }

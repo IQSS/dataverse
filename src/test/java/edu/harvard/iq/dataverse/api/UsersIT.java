@@ -162,7 +162,7 @@ public class UsersIT {
         Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
         
         //Sleep while dataset locked for ingest
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + tabFile3NameRestrictedNew , UtilIT.sleepForLock(datasetIdNew.longValue(), "Ingest", superuserApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetIdNew.longValue(), "Ingest", superuserApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + tabFile3NameRestrictedNew);
 
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, superuserApiToken);
         restrictResponse.prettyPrint();

@@ -1970,7 +1970,7 @@ public class DatasetsIT {
                 break;
             } 
         }
-        assertTrue("Lock missing from the output of /api/datasets/locks", lockListedCorrectly);        
+        assertTrue(lockListedCorrectly, "Lock missing from the output of /api/datasets/locks");
         
         // Try the same, but with an api token of a random, non-super user 
         // (this should get rejected):
@@ -2000,7 +2000,7 @@ public class DatasetsIT {
                 break;
             } 
         }
-        assertTrue("Lock missing from the output of /api/datasets/locks?type=Ingest", lockListedCorrectly);        
+        assertTrue(lockListedCorrectly, "Lock missing from the output of /api/datasets/locks?type=Ingest");
 
         
         // Try to list locks of an invalid type:
@@ -2314,7 +2314,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, authorApiToken);
         publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
@@ -2386,7 +2386,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Response restrictFile = UtilIT.restrictFile(fileId, true, authorApiToken);
         restrictFile.prettyPrint();
@@ -2804,7 +2804,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Give file time to ingest
         
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest);
         
         Response origXml = UtilIT.getFileMetadata(origFileId, null, apiToken);
         assertEquals(200, origXml.getStatusCode());
@@ -2944,7 +2944,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Response restrictFile = UtilIT.restrictFile(fileId, true, authorApiToken);
         restrictFile.prettyPrint();
@@ -3014,7 +3014,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Response restrictFile = UtilIT.restrictFile(fileId, true, authorApiToken);
         restrictFile.prettyPrint();

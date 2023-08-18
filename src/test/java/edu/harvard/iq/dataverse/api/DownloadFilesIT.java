@@ -356,7 +356,7 @@ public class DownloadFilesIT {
                 .body("data.files[0].label", equalTo("50by1000.dta"));
 
         // UtilIT.MAXIMUM_INGEST_LOCK_DURATION is 3 but not long enough.
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION + 3));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION + 3), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Response downloadFiles1 = UtilIT.downloadFiles(datasetPid, apiToken);
         downloadFiles1.then().assertThat()

@@ -62,7 +62,7 @@ public class AuxiliaryFilesIT {
 
         Long fileId = JsonPath.from(uploadFile.body().asString()).getLong("data.files[0].dataFile.id");
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToDataFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToDataFile);
 
         Response restrictFile = UtilIT.restrictFile(fileId.toString(), true, apiToken);
         restrictFile.prettyPrint();

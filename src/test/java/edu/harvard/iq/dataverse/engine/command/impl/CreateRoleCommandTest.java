@@ -89,7 +89,7 @@ public class CreateRoleCommandTest {
         
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(normalUser,IpAddress.valueOf("89.17.33.33")), dv);
         engine.submit(sut);
-        assertTrue( "CreateRoleCommand did not call save on the created role.", saveCalled );
+        assertTrue(saveCalled, "CreateRoleCommand did not call save on the created role.");
     
     }
     

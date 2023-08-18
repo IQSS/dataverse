@@ -214,7 +214,7 @@ public class HarvestingClientsIT {
         
             assertEquals(OK.getStatusCode(), getClientResponse.getStatusCode());
             JsonPath responseJsonPath = getClientResponse.body().jsonPath();
-            assertNotNull("Invalid JSON in GET client response", responseJsonPath);
+            assertNotNull(responseJsonPath, "Invalid JSON in GET client response");
             assertEquals(ApiConstants.STATUS_OK, responseJsonPath.getString("status"));
             
             String clientStatus = responseJsonPath.getString("data.status");

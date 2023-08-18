@@ -233,8 +233,8 @@ public class CreateDataverseCommandTest {
         
         // The following is a pretty wierd way to test that the create date defaults to 
         // now, but it works across date changes.
-        assertTrue( "When the supplied creation date is null, date shuld default to command execution time",
-                        Math.abs(System.currentTimeMillis() - result.getCreateDate().toInstant().toEpochMilli()) < 1000 );
+        assertTrue(Math.abs(System.currentTimeMillis() - result.getCreateDate().toInstant().toEpochMilli()) < 1000,
+            "When the supplied creation date is null, date should default to command execution time");
         
         assertTrue( result.isPermissionRoot() );
         assertTrue( result.isThemeRoot() );

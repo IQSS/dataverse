@@ -73,7 +73,7 @@ public class SwordIT {
         Response checkRootDataverse = UtilIT.listDatasetsViaSword(rootDataverseAlias, apitoken);
         //checkRootDataverse.prettyPrint();
         checkRootDataverse.then().assertThat().statusCode(OK.getStatusCode());
-        assumeTrue(rootDvNotPublished,  checkRootDataverse.getBody().xmlPath().getBoolean("feed.dataverseHasBeenReleased"));
+        assumeTrue(checkRootDataverse.getBody().xmlPath().getBoolean("feed.dataverseHasBeenReleased"), rootDvNotPublished);
         
         // check that root dataverse has permissions for any user set to dataverse + dataset creator (not admin, not curator!)
         checkRootDataverse = UtilIT.getRoleAssignmentsOnDataverse(rootDataverseAlias, apiTokenSuperuser);
@@ -88,7 +88,7 @@ public class SwordIT {
                 break;
             }
         }
-        assumeTrue(rootDvLackPermissions, properPermissionsSet);
+        assumeTrue(properPermissionsSet, rootDvLackPermissions);
 
     }
 
