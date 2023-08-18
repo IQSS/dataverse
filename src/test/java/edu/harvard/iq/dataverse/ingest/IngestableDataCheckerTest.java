@@ -29,9 +29,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class IngestableDataCheckerTest {
    
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-   
     public IngestableDataCheckerTest() {
     }
     
@@ -60,14 +57,14 @@ public class IngestableDataCheckerTest {
         if (filename == null){
             return null;
         }
-        File fh = this.tempFolder.newFile(filename);
-        fh.createNewFile();
+        
+        Path tmpFile = Files.createTempFile("ingestdatachecker", "");
         
         if (fileContents != null){
-            FileUtils.writeStringToFile(fh, fileContents);
+            Files.writeString(tmpFile, fileContents, StandardCharsets.UTF_8);
         }
         
-        return fh;
+        return tmpFile.toFile();
     }
     
     private MappedByteBuffer createTempFileAndGetBuffer(String filename, String fileContents) throws IOException {

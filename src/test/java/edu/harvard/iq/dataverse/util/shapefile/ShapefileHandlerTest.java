@@ -42,10 +42,8 @@ import java.util.zip.ZipOutputStream;
  */
 public class ShapefileHandlerTest {
     
-        
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-   
+    @TempDir
+    Path tempFolder;
     
     public void msg(String s){
             System.out.println(s);
@@ -63,27 +61,8 @@ public class ShapefileHandlerTest {
         if (filename == null){
             return null;
         }
-        File aFile = this.tempFolder.newFile(filename);
-        //  FileUtils.writeStringToFile(tempFile, "hello world");
-
-        aFile.createNewFile();
-        return aFile;
+        return Files.createFile(tempFolder.resolve(filename)).toFile();
     }
-    
-
-     
-     
-    private void showFilesInFolder(String m, String folder_name) throws IOException{
-        msgt(m);
-        File folder = new File(folder_name);
-        for (File f : folder.listFiles() ){
-            this.msg("fname: " + f.getCanonicalPath());
-        }
-    } 
-         
-    private void showFilesInTempFolder(String m) throws IOException{
-        this.showFilesInFolder(m, this.tempFolder.getRoot().getAbsolutePath());
-    } 
     
     private FileInputStream createZipReturnFilestream(List<String> file_names, String zipfile_name) throws IOException{
         
@@ -118,8 +97,8 @@ public class ShapefileHandlerTest {
            //msg("File created: " + file_obj.getName());           
         }
         
-        File zip_file_obj = this.tempFolder.newFile(zipfile_name);
-        ZipOutputStream zip_stream = new ZipOutputStream(new FileOutputStream(zip_file_obj));
+        Path zip_file_obj = this.tempFolder.resolve(zipfile_name);
+        ZipOutputStream zip_stream = new ZipOutputStream(new FileOutputStream(zip_file_obj.toFile()));
 
         // Iterate through File objects and add them to the ZipOutputStream
         for (File file_obj : fileCollection) {
@@ -133,7 +112,7 @@ public class ShapefileHandlerTest {
              file_obj.delete();
         }
         
-        return zip_file_obj;
+        return zip_file_obj.toFile();
         
     } // end createAndZipFiles
     
@@ -211,7 +190,7 @@ public class ShapefileHandlerTest {
 
         
         // Rezip/Reorder the files
-        File test_unzip_folder = this.tempFolder.newFolder("test_unzip").getAbsoluteFile();
+        File test_unzip_folder = Files.createDirectory(this.tempFolder.resolve("test_unzip")).toFile();
         //File test_unzip_folder = new File("/Users/rmp553/Desktop/blah");
         shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), test_unzip_folder );
         
@@ -258,7 +237,7 @@ public class ShapefileHandlerTest {
         assertEquals("verify value of key 'README'", file_groups.get("README"), Arrays.asList("md"));
         assertEquals("verify value of key 'shape_notes'", file_groups.get("shape_notes"), Arrays.asList("txt"));
         
-        File unzip2Folder = this.tempFolder.newFolder("test_unzip2").getAbsoluteFile();
+        File unzip2Folder = Files.createDirectory(this.tempFolder.resolve("test_unzip2")).toFile();
         // Rezip/Reorder the files
         shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), unzip2Folder);
         //shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), new File("/Users/rmp553/Desktop/blah"));
