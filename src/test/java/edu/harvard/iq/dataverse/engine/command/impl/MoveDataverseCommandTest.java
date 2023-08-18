@@ -302,43 +302,39 @@ public class MoveDataverseCommandTest {
     /**
      * Moving ChildA to its child (illegal).
      */
-    @Test( expected=IllegalCommandException.class )
-    public void testInvalidMove() throws Exception {
+    @Test
+    void testInvalidMove() {
         System.out.println("testInvalidMove");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childA, grandchildAA, null));
-        fail();
+        assertThrows(IllegalCommandException.class,
+            () -> testEngine.submit(new MoveDataverseCommand(aRequest, childA, grandchildAA, null)));
     }
     
     /**
      * Calling API as a non super user (illegal).
      */
-    @Test(expected = PermissionException.class)
-    public void testNotSuperUser() throws Exception {
+    @Test
+    void testNotSuperUser() {
         System.out.println("testNotSuperUser");
         DataverseRequest aRequest = new DataverseRequest(nobody, httpRequest);
-        testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childB, childA, null));
-        fail();
+        assertThrows(PermissionException.class,
+            () -> testEngine.submit(new MoveDataverseCommand(aRequest, childB, childA, null)));
     }
     
-    @Test( expected=IllegalCommandException.class )
-    public void testMoveIntoSelf() throws Exception {
+    @Test
+    void testMoveIntoSelf() {
         System.out.println("testMoveIntoSelf");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(
-                        new MoveDataverseCommand(aRequest, childB, childB, null));
-        fail();
+        assertThrows(IllegalCommandException.class,
+            () -> testEngine.submit(new MoveDataverseCommand(aRequest, childB, childB, null)));
     }
     
-    @Test( expected=IllegalCommandException.class )
-    public void testMoveIntoParent() throws Exception {
+    @Test
+    void testMoveIntoParent() {
         System.out.println("testMoveIntoParent");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildAA, childA, null));
-        fail();
+        assertThrows(IllegalCommandException.class,
+            () -> testEngine.submit(new MoveDataverseCommand(aRequest, grandchildAA, childA, null)));
     }
     
     @Test
@@ -355,13 +351,12 @@ public class MoveDataverseCommandTest {
         assertEquals( root, childC.getOwner() );
     }
     
-    @Test(expected = IllegalCommandException.class)
-    public void testRemoveGuestbookWithoutForce() throws Exception {
+    @Test
+    void testRemoveGuestbookWithoutForce() {
         System.out.println("testRemoveGuestbookWithoutForce");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildCC, root, null));
-        fail();
+        assertThrows(IllegalCommandException.class,
+            () -> testEngine.submit(new MoveDataverseCommand(aRequest, grandchildCC, root, null)));
     }
     
     @Test
@@ -393,13 +388,12 @@ public class MoveDataverseCommandTest {
         
     }
     
-    @Test(expected = IllegalCommandException.class)
-    public void testRemoveTemplateWithoutForce() throws Exception {
+    @Test
+    void testRemoveTemplateWithoutForce() {
         System.out.println("testRemoveTemplateWithoutForce");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildDD, root, null));
-        fail();
+        assertThrows(IllegalCommandException.class,
+            () -> testEngine.submit(new MoveDataverseCommand(aRequest, grandchildDD, root, null)));
     }
     
     @Test
@@ -430,13 +424,12 @@ public class MoveDataverseCommandTest {
         assertEquals( root, childE.getOwner() );
     }
     
-    @Test(expected = IllegalCommandException.class)
-    public void testRemoveMetadataBlockWithoutForce() throws Exception {
+    @Test
+    void testRemoveMetadataBlockWithoutForce() {
         System.out.println("testRemoveMetadataBlockWithoutForce");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(
-                        new MoveDataverseCommand(aRequest, grandchildEE, root, null));
-        fail();
+        assertThrows(IllegalCommandException.class,
+            () -> testEngine.submit(new MoveDataverseCommand(aRequest, grandchildEE, root, null)));
     }
     
     @Test

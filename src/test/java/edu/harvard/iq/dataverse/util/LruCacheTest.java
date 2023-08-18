@@ -66,9 +66,9 @@ public class LruCacheTest {
         
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testSetMaxSizeWithException() {
-        sut.setMaxSize(0l);
+    @Test
+    void testSetMaxSizeWithException() {
+        assertThrows(IllegalArgumentException.class, () -> sut.setMaxSize(0l));
     }
 
     @Test

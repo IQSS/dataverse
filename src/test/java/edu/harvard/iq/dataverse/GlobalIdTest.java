@@ -16,9 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class GlobalIdTest {
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     @Test
     public void testValidDOI() {
         System.out.println("testValidDOI");
@@ -74,9 +71,9 @@ public class GlobalIdTest {
         System.out.println("testUnknownProtocol");
 
         String badProtocol = "doy:10.5072/FK2/BYM3IW";
-
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Failed to parse identifier: " + badProtocol);
+        
+        //exception.expect(IllegalArgumentException.class);
+        //exception.expectMessage("Failed to parse identifier: " + badProtocol);
         //new GlobalId(badProtocol);
     }
 
@@ -85,8 +82,8 @@ public class GlobalIdTest {
     public void testBadIdentifierOnePart() {
         System.out.println("testBadIdentifierOnePart");
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Failed to parse identifier: 1part");
+        //exception.expect(IllegalArgumentException.class);
+        //exception.expectMessage("Failed to parse identifier: 1part");
         //new GlobalId("1part");
     }
 
@@ -95,8 +92,8 @@ public class GlobalIdTest {
     public void testBadIdentifierTwoParts() {
         System.out.println("testBadIdentifierTwoParts");
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Failed to parse identifier: doi:2part/blah");
+        //exception.expect(IllegalArgumentException.class);
+        //exception.expectMessage("Failed to parse identifier: doi:2part/blah");
         //new GlobalId("doi:2part/blah");
     }
 

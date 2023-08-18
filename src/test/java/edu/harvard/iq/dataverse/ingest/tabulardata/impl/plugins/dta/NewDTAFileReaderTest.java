@@ -74,10 +74,10 @@ public class NewDTAFileReaderTest {
         assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
     }
     
-    @Test(expected = IOException.class)
-    public void testNull() throws IOException {
+    @Test
+    void testNull() {
         instance = new NewDTAFileReader(null, 117);
-        TabularDataIngest result = instance.read(null, new File(""));
+        assertThrows(IOException.class, () -> instance.read(null, new File("")));
     }
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?

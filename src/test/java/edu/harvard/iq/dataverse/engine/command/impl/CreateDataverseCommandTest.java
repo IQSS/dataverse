@@ -299,31 +299,38 @@ public class CreateDataverseCommandTest {
         }
     }
     
-    @Test( expected=IllegalCommandException.class )
-    public void testCantCreateAdditionalRoot() throws Exception {
-        engine.submit( new CreateDataverseCommand(makeDataverse(), makeRequest(), null, null) );
+    @Test
+    void testCantCreateAdditionalRoot() {
+        assertThrows(IllegalCommandException.class,
+            () -> engine.submit( new CreateDataverseCommand(makeDataverse(), makeRequest(), null, null) )
+        );
     }
     
-    @Test( expected=IllegalCommandException.class )
-    public void testGuestCantCreateDataverse() throws Exception {
+    @Test
+    void testGuestCantCreateDataverse() {
         final DataverseRequest request = new DataverseRequest( GuestUser.get(), IpAddress.valueOf("::") );
         isRootDvExists = false;
-        engine.submit(new CreateDataverseCommand(makeDataverse(), request, null, null) );
+        assertThrows(IllegalCommandException.class,
+            () -> engine.submit(new CreateDataverseCommand(makeDataverse(), request, null, null) )
+        );
     }
 
-    @Test( expected=IllegalCommandException.class )
-    public void testCantCreateAnotherWithSameAlias() throws Exception {
+    @Test
+    void testCantCreateAnotherWithSameAlias() {
         
         String alias = "alias";
         final Dataverse dvFirst = makeDataverse();
         dvFirst.setAlias(alias);
         dvFirst.setOwner( makeDataverse() );
-        engine.submit(new CreateDataverseCommand(dvFirst, makeRequest(), null, null) );
+        assertThrows(IllegalCommandException.class,
+            () -> engine.submit(new CreateDataverseCommand(dvFirst, makeRequest(), null, null) ));
         
         final Dataverse dv = makeDataverse();
         dv.setOwner( makeDataverse() );
         dv.setAlias(alias);
-        engine.submit(new CreateDataverseCommand(dv, makeRequest(), null, null) );
+        assertThrows(IllegalCommandException.class,
+            () -> engine.submit(new CreateDataverseCommand(dv, makeRequest(), null, null) )
+        );
     }
     
 }

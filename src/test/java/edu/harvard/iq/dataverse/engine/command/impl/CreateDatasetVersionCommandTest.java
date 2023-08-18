@@ -70,8 +70,8 @@ public class CreateDatasetVersionCommandTest {
         assertEquals(expected, testEngine.getReqiredPermissionsForObjects() );
     }
     
-    @Test(expected=IllegalCommandException.class)
-    public void testCantCreateTwoDraftVersions() throws Exception {
+    @Test
+    void testCantCreateTwoDraftVersions() {
         DatasetVersion dsvNew = new DatasetVersion();
         dsvNew.setVersionState(DatasetVersion.VersionState.DRAFT);
         Dataset sampleDataset = makeDataset();
@@ -89,7 +89,7 @@ public class CreateDatasetVersionCommandTest {
             
         });
         
-        testEngine.submit(sut);
+        assertThrows(IllegalCommandException.class, () -> testEngine.submit(sut));
     }
     
     

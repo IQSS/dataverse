@@ -33,14 +33,14 @@ public class UpdateMetadataBlockFacetsCommandTest {
         dataverse = Mockito.mock(Dataverse.class);
     }
 
-    @Test(expected = IllegalCommandException.class)
-    public void should_throw_IllegalCommandException_when_dataverse_is_not_metadata_facet_root() throws CommandException {
+    @Test
+    void should_throw_IllegalCommandException_when_dataverse_is_not_metadata_facet_root() {
         Mockito.when(dataverse.isMetadataBlockFacetRoot()).thenReturn(false);
 
         UpdateMetadataBlockFacetsCommand target = new UpdateMetadataBlockFacetsCommand(dataverseRequest, dataverse, Collections.emptyList());
 
         CommandContext context = Mockito.mock(CommandContext.class, Mockito.RETURNS_DEEP_STUBS);
-        target.execute(context);
+        Assertions.assertThrows(IllegalCommandException.class, () -> target.execute(context));
     }
 
     @Test

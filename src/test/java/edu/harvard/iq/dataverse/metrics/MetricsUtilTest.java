@@ -144,23 +144,23 @@ public class MetricsUtilTest {
         }
 
         @Test
-        public void testSanitizeHappyPath() throws Exception {
+        void testSanitizeHappyPath() {
             assertEquals("2018-04", MetricsUtil.sanitizeYearMonthUserInput("2018-04"));
         }
 
-        @Test(expected = Exception.class)
-        public void testSanitizeJunk() throws Exception {
-            MetricsUtil.sanitizeYearMonthUserInput("junk");
+        @Test
+        void testSanitizeJunk() {
+            assertThrows(Exception.class, () -> MetricsUtil.sanitizeYearMonthUserInput("junk"));
         }
 
-        @Test(expected = Exception.class)
-        public void testSanitizeFullIso() throws Exception {
-            MetricsUtil.sanitizeYearMonthUserInput("2018-01-01");
+        @Test
+        void testSanitizeFullIso() {
+            assertThrows(Exception.class, () -> MetricsUtil.sanitizeYearMonthUserInput("2018-01-01"));
         }
 
-        @Test(expected = Exception.class)
-        public void testSanitizeYearMonthUserInputIsAfterCurrentDate() throws Exception {
-            MetricsUtil.sanitizeYearMonthUserInput("2099-01");
+        @Test
+        void testSanitizeYearMonthUserInputIsAfterCurrentDate() {
+            assertThrows(Exception.class, () -> MetricsUtil.sanitizeYearMonthUserInput("2099-01"));
         }
 
         @Test

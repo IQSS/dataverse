@@ -141,9 +141,10 @@ public class ReturnDatasetToAuthorCommandTest {
             throw new IllegalCommandException("You must enter a reason for returning a dataset to its author.", this);
         }
      */
-    @Test(expected=IllegalArgumentException.class)
-    public void testDatasetNull() throws CommandException {
-        new ReturnDatasetToAuthorCommand(dataverseRequest, null, "");
+    @Test
+    void testDatasetNull() {
+        assertThrows(IllegalArgumentException.class,
+            () -> new ReturnDatasetToAuthorCommand(dataverseRequest, null, ""));
     }
 
     @Test

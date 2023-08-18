@@ -19,16 +19,18 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AbstractDatasetCommandTest {
     
    
-    @Test(expected=IllegalArgumentException.class)
-    @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    public void testNullDataset() {
-        new AbstractDatasetCommandImpl(makeRequest(), null);
+    @Test
+    void testNullDataset() {
+        DataverseRequest request = makeRequest();
+        assertThrows(IllegalArgumentException.class, () -> new AbstractDatasetCommandImpl(request, null));
     }
     
-    @Test(expected=IllegalArgumentException.class)
-    @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    public void testNullDatasetNonNullParent() {
-        new AbstractDatasetCommandImpl(makeRequest(), null, makeDataverse());
+    @Test
+    void testNullDatasetNonNullParent() {
+        DataverseRequest request = makeRequest();
+        Dataverse dataverse = makeDataverse();
+        assertThrows(IllegalArgumentException.class,
+            () -> new AbstractDatasetCommandImpl(request, null, dataverse));
     }
     
     /**

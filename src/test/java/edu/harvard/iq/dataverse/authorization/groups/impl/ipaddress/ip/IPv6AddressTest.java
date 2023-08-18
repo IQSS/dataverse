@@ -109,24 +109,24 @@ public class IPv6AddressTest {
         assertFalse(IPv6Address.valueOf("fff::1").isLocalhost());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testIllegalLength() {
-        IPv6Address.valueOf("0:1:2:3");
+    @Test
+    void testIllegalLength() {
+        assertThrows(IllegalArgumentException.class, () -> IPv6Address.valueOf("0:1:2:3"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testIllegalLengthPrefix() {
-        IPv6Address.valueOf(":1:2:3");
+    @Test
+    void testIllegalLengthPrefix() {
+        assertThrows(IllegalArgumentException.class, () -> IPv6Address.valueOf(":1:2:3"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testIllegalLengthSuffix() {
-        IPv6Address.valueOf("1:2:3:");
+    @Test
+    void testIllegalLengthSuffix() {
+        assertThrows(IllegalArgumentException.class, () -> IPv6Address.valueOf("1:2:3:"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testIllegalNumber() {
-        IPv6Address.valueOf("::xxx");
+    @Test
+    void testIllegalNumber() {
+        assertThrows(IllegalArgumentException.class, () -> IPv6Address.valueOf("::xxx"));
     }
 
     @Test

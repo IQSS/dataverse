@@ -44,69 +44,30 @@ public class DataverseUtilTest {
         definedFrenchD.setMetadataLanguage("fr");
         Dataset definedSpanishD = new Dataset();
         definedSpanishD.setMetadataLanguage("es");
+        
         // Not set tests:
         //Good - no mLang sent, parent doesn't have one
-        try {
-            DataverseUtil.checkMetadataLangauge(undefinedD, undefinedParent, emptyMLangSettingMap);
-        } catch (BadRequestException e) {
-            Assert.fail();
-        }
+        assertDoesNotThrow(() -> DataverseUtil.checkMetadataLangauge(undefinedD, undefinedParent, emptyMLangSettingMap));
         //Bad - one sent, parent doesn't have one
-        try {
-            DataverseUtil.checkMetadataLangauge(definedEnglishD, undefinedParent, emptyMLangSettingMap);
-            Assert.fail();
-        } catch (BadRequestException e) {
-        }
+        assertThrows(BadRequestException.class, () -> DataverseUtil.checkMetadataLangauge(definedEnglishD, undefinedParent, emptyMLangSettingMap));
         //Good - one sent, matches parent
-        try {
-            DataverseUtil.checkMetadataLangauge(definedEnglishD, definedParent, emptyMLangSettingMap);
-
-        } catch (BadRequestException e) {
-            Assert.fail();
-        }
+        assertDoesNotThrow(() -> DataverseUtil.checkMetadataLangauge(definedEnglishD, definedParent, emptyMLangSettingMap));
         //Bad - one sent, doesn't match parent
-        try {
-            DataverseUtil.checkMetadataLangauge(definedFrenchD, definedParent, emptyMLangSettingMap);
-            Assert.fail();
-        } catch (BadRequestException e) {
-        }
+        assertThrows(BadRequestException.class, () -> DataverseUtil.checkMetadataLangauge(definedFrenchD, definedParent, emptyMLangSettingMap));
+        
         //With setting tests
-      //Bad - one sent, parent doesn't have one
-        try {
-            DataverseUtil.checkMetadataLangauge(undefinedD, undefinedParent, mLangSettingMap);
-            Assert.fail();
-        } catch (BadRequestException e) {
-        }
+        //Bad - one sent, parent doesn't have one
+        assertThrows(BadRequestException.class, () -> DataverseUtil.checkMetadataLangauge(undefinedD, undefinedParent, mLangSettingMap));
         //Good - sent, parent undefined, is allowed by setting
-        try {
-            DataverseUtil.checkMetadataLangauge(definedEnglishD, undefinedParent, mLangSettingMap);
-        } catch (BadRequestException e) {
-            Assert.fail();
-        }
+        assertDoesNotThrow(() -> DataverseUtil.checkMetadataLangauge(definedEnglishD, undefinedParent, mLangSettingMap));
         //Bad  one sent, parent undefined, not allowed by setting
-        try {
-            DataverseUtil.checkMetadataLangauge(definedSpanishD, undefinedParent, mLangSettingMap);
-            Assert.fail();
-        } catch (BadRequestException e) {
-        }
+        assertThrows(BadRequestException.class, () -> DataverseUtil.checkMetadataLangauge(definedSpanishD, undefinedParent, mLangSettingMap));
         //Bad - one sent, doesn't match parent
-        try {
-            DataverseUtil.checkMetadataLangauge(definedFrenchD, definedParent, mLangSettingMap);
-            Assert.fail();
-        } catch (BadRequestException e) {
-        }
+        assertThrows(BadRequestException.class, () -> DataverseUtil.checkMetadataLangauge(definedFrenchD, definedParent, mLangSettingMap));
         //Bad - undefined sent, parent is defined
-        try {
-            DataverseUtil.checkMetadataLangauge(undefinedD, definedParent, mLangSettingMap);
-            Assert.fail();
-        } catch (BadRequestException e) {
-        }
-      //Good - sent, parent defined, they match
-        try {
-            DataverseUtil.checkMetadataLangauge(definedEnglishD, definedParent, mLangSettingMap);
-        } catch (BadRequestException e) {
-            Assert.fail();
-        }
+        assertThrows(BadRequestException.class, () -> DataverseUtil.checkMetadataLangauge(undefinedD, definedParent, mLangSettingMap));
+        //Good - sent, parent defined, they match
+        assertDoesNotThrow(() -> DataverseUtil.checkMetadataLangauge(definedEnglishD, definedParent, mLangSettingMap));
     }
 
 }

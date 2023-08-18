@@ -136,9 +136,10 @@ public class SubmitDatasetForReviewCommandTest {
         );
     }
 
-    @Test( expected=IllegalArgumentException.class )
-    public void testDatasetNull() {
-        new SubmitDatasetForReviewCommand(dataverseRequest, null);
+    @Test
+    void testDatasetNull() {
+        assertThrows(IllegalArgumentException.class,
+            () -> new SubmitDatasetForReviewCommand(dataverseRequest, null));
     }
     
     @Test

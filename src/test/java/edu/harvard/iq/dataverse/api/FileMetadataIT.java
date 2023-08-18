@@ -80,8 +80,7 @@ public class FileMetadataIT {
                     .then().assertThat().statusCode(201);
             System.out.println("DATAVERSE: " + RestAssured.baseURI + "/dataverse/" + testName);
         } catch (Exception e) {
-            System.out.println("Error setting up test dataverse: " + e.getMessage());
-            fail();
+            fail("Error setting up test dataverse: " + e.getMessage(), e);
         }
     }
 
@@ -166,9 +165,7 @@ public class FileMetadataIT {
                     .statusCode(200);
 
         } catch (Exception e) {
-            System.out.println("Error testJsonParserWithDirectoryLabels: " + e.getMessage());
-            e.printStackTrace();
-            fail();
+            fail("Error testJsonParserWithDirectoryLabels: " + e.getMessage(), e);
         }
     }
 

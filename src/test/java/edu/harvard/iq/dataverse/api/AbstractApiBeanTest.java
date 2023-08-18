@@ -38,15 +38,15 @@ public class AbstractApiBeanTest {
         assertFalse(sut.parseBooleanOrDie("0"));
         assertFalse(sut.parseBooleanOrDie("no"));
     }
-
-    @Test(expected = Exception.class)
-    public void testParseBooleanOrDie_invalid() throws Exception {
-        sut.parseBooleanOrDie("I'm not a boolean value!");
+    
+    @Test
+    void testParseBooleanOrDie_invalid() {
+        assertThrows(Exception.class, () -> sut.parseBooleanOrDie("I'm not a boolean value!"));
     }
 
     @Test
-    public void testFailIfNull_ok() throws Exception {
-        sut.failIfNull(sut, "");
+    void testFailIfNull_ok() {
+        assertDoesNotThrow(() -> sut.failIfNull(sut, ""));
     }
 
     @Test

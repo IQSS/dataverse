@@ -57,8 +57,8 @@ public class CreateRoleCommandTest {
         saveCalled = false;
     }
     
-    @Test( expected = IllegalCommandException.class )
-    public void testNonSuperUsersCantAddRoles() throws CommandException {
+    @Test
+    void testNonSuperUsersCantAddRoles() {
         DataverseRole dvr = new DataverseRole();
         dvr.setAlias("roleTest");
         dvr.setName("Tester Role");
@@ -71,8 +71,7 @@ public class CreateRoleCommandTest {
         normalUser.setSuperuser(false);
         
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(normalUser,IpAddress.valueOf("89.17.33.33")), dv);
-        engine.submit(sut);
-    
+        assertThrows(IllegalCommandException.class, () -> engine.submit(sut));
     }
    
     @Test
@@ -94,8 +93,8 @@ public class CreateRoleCommandTest {
     
     }
     
-    @Test( expected = IllegalCommandException.class )
-    public void testGuestUsersCantAddRoles() throws CommandException {
+    @Test
+    void testGuestUsersCantAddRoles() {
         DataverseRole dvr = new DataverseRole();
         dvr.setAlias("roleTest");
         dvr.setName("Tester Role");
@@ -105,7 +104,7 @@ public class CreateRoleCommandTest {
         dvr.setOwner(dv);
         
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(GuestUser.get(),IpAddress.valueOf("89.17.33.33")), dv);
-        engine.submit(sut);    
+        assertThrows(IllegalCommandException.class, () -> engine.submit(sut));
     }
     
     private class LocalTestEntityManager extends TestEntityManager {
