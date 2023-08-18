@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  *
  * @author adaybujeda
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class BagItFileHandlerFactoryTest {
 
     @Mock

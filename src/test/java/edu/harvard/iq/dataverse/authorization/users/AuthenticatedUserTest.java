@@ -35,7 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  *
  * @author bsilverstein
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AuthenticatedUserTest {
 
     @Mock

@@ -24,7 +24,6 @@ import org.passay.EnglishCharacterData;
  *
  * @author pdurbin
  */
-@RunWith(Enclosed.class)
 public class PasswordValidatorUtilTest {
 
     public static class PasswordValidatorUtilNoParamTest {

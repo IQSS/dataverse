@@ -19,7 +19,7 @@ import java.util.UUID;
  *
  * @author adaybujeda
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EditDataFilesPageHelperTest {
 
     private static final String FILENAME = UUID.randomUUID().toString();

@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(Enclosed.class)
 public class ConfirmEmailUtilTest {
 
     @RunWith(Parameterized.class)

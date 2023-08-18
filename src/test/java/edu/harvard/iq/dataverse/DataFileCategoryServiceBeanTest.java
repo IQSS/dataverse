@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * 
  * @author adaybujeda
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DataFileCategoryServiceBeanTest {
 
     @Mock

@@ -44,7 +44,7 @@ import java.util.UUID;
  *
  * @author adaybujeda
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DataversesTest {
     // From AbstractApiBean class
     @Mock

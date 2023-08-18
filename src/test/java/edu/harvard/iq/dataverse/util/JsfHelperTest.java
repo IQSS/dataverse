@@ -16,11 +16,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-/**
- *
- * @author michael
- */
-@RunWith(Parameterized.class)
 public class JsfHelperTest {
 	
 	enum TestEnum { Lorem, Ipsum, Dolor, Sit, Amet }

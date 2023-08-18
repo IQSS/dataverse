@@ -11,8 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-@RunWith(Theories.class)
-public class MyDataUtilTest {
+class MyDataUtilTest {
 
     @DataPoints
     public static String[] userIdentifier = { 

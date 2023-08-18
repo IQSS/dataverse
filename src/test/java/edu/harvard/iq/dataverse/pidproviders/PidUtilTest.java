@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Useful for testing but requires DataCite credentials, etc.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PidUtilTest {
     @Mock
     private SettingsServiceBean settingsServiceBean;
