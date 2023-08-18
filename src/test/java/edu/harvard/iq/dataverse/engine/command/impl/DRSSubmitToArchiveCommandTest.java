@@ -114,7 +114,7 @@ public class DRSSubmitToArchiveCommandTest {
             System.out.println(e.getClass() + e.getLocalizedMessage());
             e.printStackTrace();
             //Any exception is a failure, otherwise decoding worked.
-            Assert.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         }
 
     }

@@ -2092,8 +2092,8 @@ public class FilesIT {
             fileInfoResponseString = fileInfoResponse.body().asString();
             msg(fileInfoResponseString);
 
-            org.junit.Assert.assertEquals("The file was NOT supposed to be issued a PID", "",
-                    JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId"));
+            assertEquals("", JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId"),
+                "The file was NOT supposed to be issued a PID");
         } finally {
             UtilIT.deleteSetting(SettingsServiceBean.Key.FilePIDsEnabled);
             UtilIT.deleteSetting(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection);

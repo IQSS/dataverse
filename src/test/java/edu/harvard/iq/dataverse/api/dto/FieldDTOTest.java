@@ -60,7 +60,7 @@ public class FieldDTOTest {
     public void testSinglePrimitive() {
         FieldDTO affil = FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Top");
         System.out.println(affil.getSinglePrimitive());
-        Assert.assertEquals("Top", affil.getSinglePrimitive());
+        assertEquals("Top", affil.getSinglePrimitive());
         
     }
 
@@ -78,10 +78,10 @@ public class FieldDTOTest {
         value.add("EventList");
         astroType.setMultipleVocab(value);
         
-        Assert.assertEquals(value, astroType.getMultipleVocab());
+        assertEquals(value, astroType.getMultipleVocab());
         String jsonStr = gson.toJson(astroType);
         FieldDTO astroType2 = gson.fromJson(jsonStr, FieldDTO.class);
-        Assert.assertEquals(astroType, astroType2);
+        assertEquals(astroType, astroType2);
         
     }
 
@@ -116,7 +116,7 @@ public class FieldDTOTest {
         compoundField.setTypeName("author");
         compoundField.setMultipleCompound(authorList);
         
-        Assert.assertEquals(compoundField.getMultipleCompound(), authorList);
+        assertEquals(compoundField.getMultipleCompound(), authorList);
     }
 
     /**
@@ -132,8 +132,8 @@ public class FieldDTOTest {
         
         FieldDTO compoundField = new FieldDTO();
         compoundField.setSingleCompound(authorFields.toArray(new FieldDTO[]{}));
-        Set<FieldDTO>  returned = compoundField.getSingleCompound();   
-        Assert.assertTrue(returned.equals(authorFields));
+        Set<FieldDTO>  returned = compoundField.getSingleCompound();
+        assertEquals(returned, authorFields);
        
     }
 

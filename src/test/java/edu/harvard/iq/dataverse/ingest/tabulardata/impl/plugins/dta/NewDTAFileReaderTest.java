@@ -48,7 +48,7 @@ public class NewDTAFileReaderTest {
         
         String[] vars = {"make","price","mpg","rep78","trunk","gear_ratio","strls"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
-        Assert.assertArrayEquals(vars, actualVars);
+        assertArrayEquals(vars, actualVars);
         String expected = "\"Buick LeSabre\"	5788	1.1111111111111111E21	100	32767	2.73	\"a\"\n" +
                           "\"Buick Opel\"	4453	26.0		10	2.87	\"bb\"\n" +
                           "\"Buick Regal\"	5189	20.0	3	16	2.93	\"ccc\"\n";
@@ -66,7 +66,7 @@ public class NewDTAFileReaderTest {
         assertEquals(4, (long)table.getCaseQuantity());
         String[] vars = {"Clock","Daily","Weekly","Monthly","Quarterly","BiAnnually","Annually"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
-        Assert.assertArrayEquals(vars, actualVars);
+        assertArrayEquals(vars, actualVars);
         String expected = "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-01-01	2018-01-01	2018\n" +
                           "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-04-01	2018-01-01	2018\n" +
                           "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-07-01	2018-07-01	2018\n" +

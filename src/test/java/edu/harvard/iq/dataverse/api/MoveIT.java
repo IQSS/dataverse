@@ -278,8 +278,8 @@ public class MoveIT {
                 .body("message", equalTo("Use the query parameter forceMove=true to complete the move. This dataset is linked to the new host dataverse or one of its parents. This move would remove the link to this dataset. "));
 
         JsonObject linksBeforeData = Json.createReader(new StringReader(getLinksBefore.asString())).readObject();
-        Assert.assertEquals("OK", linksBeforeData.getString("status"));
-        Assert.assertEquals(dataverse2Alias + " (id " + dataverse2Id + ")", linksBeforeData.getJsonObject("data").getJsonArray("dataverses that link to dataset id " + datasetId).getString(0));
+        assertEquals("OK", linksBeforeData.getString("status"));
+        assertEquals(dataverse2Alias + " (id " + dataverse2Id + ")", linksBeforeData.getJsonObject("data").getJsonArray("dataverses that link to dataset id " + datasetId).getString(0));
 
         boolean forceMove = true;
         Response forceMoveLinkedDataset = UtilIT.moveDataset(datasetId.toString(), dataverse2Alias, forceMove, superuserApiToken);
@@ -307,8 +307,8 @@ public class MoveIT {
                 .statusCode(OK.getStatusCode());
 
         JsonObject linksAfterData = Json.createReader(new StringReader(getLinksAfter.asString())).readObject();
-        Assert.assertEquals("OK", linksAfterData.getString("status"));
-        Assert.assertEquals(0, linksAfterData.getJsonObject("data").getJsonArray("dataverses that link to dataset id " + datasetId).size());
+        assertEquals("OK", linksAfterData.getString("status"));
+        assertEquals(0, linksAfterData.getJsonObject("data").getJsonArray("dataverses that link to dataset id " + datasetId).size());
 
     }
     

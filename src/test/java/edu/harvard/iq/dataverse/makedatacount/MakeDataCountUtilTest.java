@@ -31,7 +31,7 @@ public class MakeDataCountUtilTest {
         try (FileReader reader = new FileReader("src/test/java/edu/harvard/iq/dataverse/makedatacount/citations-for-doi-10.7910-DVN-HQZOOB.json")) {
             report = Json.createReader(reader).readObject();
             List<DatasetExternalCitations> datasetExternalCitations = MakeDataCountUtil.parseCitations(report);
-            Assert.assertEquals(2, datasetExternalCitations.size());
+            assertEquals(2, datasetExternalCitations.size());
         } catch (FileNotFoundException ex) {
             System.out.print("File not found: " + ex.getMessage());
         } catch (IOException ex) {

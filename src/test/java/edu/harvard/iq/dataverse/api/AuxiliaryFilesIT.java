@@ -243,29 +243,29 @@ public class AuxiliaryFilesIT {
         // Download JSON aux file.
         Response downloadAuxFileJson = UtilIT.downloadAuxFile(fileId, formatTagJson, formatVersionJson, apiToken);
         downloadAuxFileJson.then().assertThat().statusCode(OK.getStatusCode());
-        Assert.assertEquals("attachment; filename=\"data.tab.dpJson_0.1.json\"", downloadAuxFileJson.header("Content-disposition"));
+        assertEquals("attachment; filename=\"data.tab.dpJson_0.1.json\"", downloadAuxFileJson.header("Content-disposition"));
 
         // Download XML aux file.
         Response downloadAuxFileXml = UtilIT.downloadAuxFile(fileId, formatTagXml, formatVersionXml, apiToken);
         downloadAuxFileXml.then().assertThat().statusCode(OK.getStatusCode());
-        Assert.assertEquals("attachment; filename=\"data.tab.dpXml_0.1.xml\"", downloadAuxFileXml.header("Content-disposition"));
+        assertEquals("attachment; filename=\"data.tab.dpXml_0.1.xml\"", downloadAuxFileXml.header("Content-disposition"));
 
         // Download PDF aux file.
         Response downloadAuxFilePdf = UtilIT.downloadAuxFile(fileId, formatTagPdf, formatVersionPdf, apiToken);
         downloadAuxFilePdf.then().assertThat().statusCode(OK.getStatusCode());
-        Assert.assertEquals("attachment; filename=\"data.tab.dpPdf_0.1.pdf\"", downloadAuxFilePdf.header("Content-disposition"));
+        assertEquals("attachment; filename=\"data.tab.dpPdf_0.1.pdf\"", downloadAuxFilePdf.header("Content-disposition"));
 
         // Download Markdown aux file.
         Response downloadAuxFileMd = UtilIT.downloadAuxFile(fileId, formatTagMd, formatVersionMd, apiToken);
         downloadAuxFileMd.then().assertThat().statusCode(OK.getStatusCode());
         // No file extenstion here because Tika's getDefaultMimeTypes doesn't include "text/markdown".
         // Note: browsers seem to add ".bin" ("myfile.bin") rather than no extension ("myfile").
-        Assert.assertEquals("attachment; filename=\"data.tab.README_0.1\"", downloadAuxFileMd.header("Content-disposition"));
+        assertEquals("attachment; filename=\"data.tab.README_0.1\"", downloadAuxFileMd.header("Content-disposition"));
 
         // Download Markdown aux file with no MIME type given
         Response downloadAuxFileNoMime1 = UtilIT.downloadAuxFile(fileId, formatTagNoMimeType1, formatVersionNoMimeType1, apiToken);
         downloadAuxFileNoMime1.then().assertThat().statusCode(OK.getStatusCode());
-        Assert.assertEquals("attachment; filename=\"data.tab.noMimeType1_0.1.txt\"", downloadAuxFileNoMime1.header("Content-disposition"));
+        assertEquals("attachment; filename=\"data.tab.noMimeType1_0.1.txt\"", downloadAuxFileNoMime1.header("Content-disposition"));
 
         Response createUserNoPrivs = UtilIT.createRandomUser();
         createUserNoPrivs.then().assertThat().statusCode(OK.getStatusCode());

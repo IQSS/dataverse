@@ -2407,7 +2407,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Here we are asserting that dataDscr is empty. TODO: Do this in REST Assured.
         String dataDscrForGuest = XmlPath.from(exportByGuest.asString()).getString("codeBook.dataDscr");
-        Assert.assertEquals("", dataDscrForGuest);
+        assertEquals("", dataDscrForGuest);
 
         // Author export (has access)
         Response exportByAuthor = UtilIT.exportDataset(datasetPid, "ddi", authorApiToken);
@@ -2418,7 +2418,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Here we are asserting that dataDscr is empty. TODO: Do this in REST Assured.
         String dataDscrForAuthor = XmlPath.from(exportByAuthor.asString()).getString("codeBook.dataDscr");
-        Assert.assertEquals("", dataDscrForAuthor);
+        assertEquals("", dataDscrForAuthor);
 
         // Now we are testing file-level retrieval.
         // The author has access to a restricted file and gets all the metadata.

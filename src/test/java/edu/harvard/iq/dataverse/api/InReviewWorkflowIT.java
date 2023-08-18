@@ -168,7 +168,7 @@ public class InReviewWorkflowIT {
                 .statusCode(OK.getStatusCode());
         String citation = XmlPath.from(atomEntry.body().asString()).getString("bibliographicCitation");
         System.out.println("citation: " + citation);
-        Assert.assertTrue(citation.contains("A Better Title"));
+        assertTrue(citation.contains("A Better Title"));
 
         // The author tries to update the title while the dataset is in review via native.
         String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
@@ -184,7 +184,7 @@ public class InReviewWorkflowIT {
         String citationAuthorNative = XmlPath.from(atomEntryAuthorNative.body().asString()).getString("bibliographicCitation");
         System.out.println("citation: " + citationAuthorNative);
         // The author was unable to change the title.
-        Assert.assertTrue(citationAuthorNative.contains("A Better Title"));
+        assertTrue(citationAuthorNative.contains("A Better Title"));
 
         // The author remembers she forgot to add a file and tries to upload it while
         // the dataset is in review via native API but this fails.
@@ -271,7 +271,7 @@ public class InReviewWorkflowIT {
                 .statusCode(OK.getStatusCode());
         String citationCuratorNative = XmlPath.from(atomEntryCuratorNative.body().asString()).getString("bibliographicCitation");
         System.out.println("citation: " + citationCuratorNative);
-        Assert.assertTrue(citationCuratorNative.contains("newTitle"));
+        assertTrue(citationCuratorNative.contains("newTitle"));
         // END https://github.com/IQSS/dataverse/issues/4139
 
         // TODO: test where curator neglecting to leave a comment. Should fail with "reason for return" required.
