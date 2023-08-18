@@ -23,23 +23,41 @@ import java.util.List;
  */
 // No permission needed to view published dvObjects
 @RequiredPermissions({})
-public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>>{
-    
-    private final Dataset ds;
-    
-	public ListVersionsCommand(DataverseRequest aRequest, Dataset aDataset) {
-		super(aRequest, aDataset);
-		ds = aDataset;
-	}
+public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>> {
 
-	@Override
-	public List<DatasetVersion> execute(CommandContext ctxt) throws CommandException {
-		List<DatasetVersion> outputList = new LinkedList<>();
-		for ( DatasetVersion dsv : ds.getVersions() ) {
-            if (dsv.isReleased() || ctxt.permissions().request( getRequest() ).on(ds).has(Permission.EditDataset)) {
-                outputList.add(dsv);
+    private final Dataset ds;
+    private final Integer limit; 
+    private final Integer offset;
+    
+    public ListVersionsCommand(DataverseRequest aRequest, Dataset aDataset) {
+        this(aRequest, aDataset, null, null);
+    }
+
+    public ListVersionsCommand(DataverseRequest aRequest, Dataset aDataset, Integer offset, Integer limit) {
+        super(aRequest, aDataset);
+        ds = aDataset;
+        this.offset = offset; 
+        this.limit = limit; 
+    }
+
+    @Override
+    public List<DatasetVersion> execute(CommandContext ctxt) throws CommandException {
+        
+        boolean includeUnpublished = ctxt.permissions().request(getRequest()).on(ds).has(Permission.EditDataset);
+        
+        if (offset == null && limit == null) {
+            // @todo: this fragment can be dropped, and the service-based method below 
+            // can be used for both cases. 
+            List<DatasetVersion> outputList = new LinkedList<>();
+            for (DatasetVersion dsv : ds.getVersions()) {
+                if (dsv.isReleased() || includeUnpublished) {
+                    outputList.add(dsv);
+                }
             }
-		}
-        return outputList;
-	}
+            return outputList;
+        } else {
+            // Only a partial list (one "page"-worth) of versions is being requested
+            return ctxt.datasetVersion().findVersions(ds.getId(), offset, limit, includeUnpublished);
+        }
+    }
 }

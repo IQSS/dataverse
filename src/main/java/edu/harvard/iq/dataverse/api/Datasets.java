@@ -260,7 +260,7 @@ public class Datasets extends AbstractApiBean {
                 MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
                 mdcLogService.logEntry(entry);
             }
-            return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
+            return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest, true) : null));
         }, getRequestUser(crc));
     }
     
@@ -466,31 +466,39 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions")
-    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id ) {
+    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("includeFiles") Boolean includeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
         return response( req ->
-             ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id)) )
+             ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id), offset, limit) )
                                 .stream()
-                                .map( d -> json(d) )
+                                .map( d -> json(d, includeFiles == null ? false : includeFiles) )
                                 .collect(toJsonArray())), getRequestUser(crc));
     }
     
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}")
-    public Response getVersion(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersion(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("includeFiles") Boolean includeFiles, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                    : ok(json(dsv));
+                    : ok(json(dsv, includeFiles == null ? false : includeFiles));
         }, getRequestUser(crc));
     }
     
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/files")
-    public Response getVersionFiles(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return response( req -> ok( jsonFileMetadatas(
-                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas())), getRequestUser(crc));
+    public Response getVersionFiles(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset, @QueryParam("orderCriteria") String orderCriteria, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return response( req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            DatasetVersionServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
+            try {
+                fileMetadatasOrderCriteria = orderCriteria != null ? DatasetVersionServiceBean.FileMetadatasOrderCriteria.valueOf(orderCriteria) : DatasetVersionServiceBean.FileMetadatasOrderCriteria.NameAZ;
+            } catch (IllegalArgumentException e) {
+                return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
+            }
+            return ok(jsonFileMetadatas(datasetversionService.getFileMetadatas(datasetVersion, limit, offset, fileMetadatasOrderCriteria)));
+        }, getRequestUser(crc));
     }
     
     @GET
@@ -708,7 +716,7 @@ public class Datasets extends AbstractApiBean {
                 }
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
             }
-            return ok( json(managedVersion) );
+            return ok( json(managedVersion, true) );
                     
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
@@ -943,7 +951,7 @@ public class Datasets extends AbstractApiBean {
 
 
             DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getLatestVersion();
-            return ok(json(managedVersion));
+            return ok(json(managedVersion, true));
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
@@ -1092,7 +1100,7 @@ public class Datasets extends AbstractApiBean {
             }
             DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getLatestVersion();
 
-            return ok(json(managedVersion));
+            return ok(json(managedVersion, true));
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
@@ -3848,9 +3856,9 @@ public class Datasets extends AbstractApiBean {
         JsonObjectBuilder responseJson;
         if (isAnonymizedAccess) {
             List<String> anonymizedFieldTypeNamesList = new ArrayList<>(Arrays.asList(anonymizedFieldTypeNames.split(",\\s")));
-            responseJson = json(dsv, anonymizedFieldTypeNamesList);
+            responseJson = json(dsv, anonymizedFieldTypeNamesList, true);
         } else {
-            responseJson = json(dsv);
+            responseJson = json(dsv, true);
         }
         return ok(responseJson);
     }
