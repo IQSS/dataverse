@@ -1,12 +1,12 @@
 ## Upgrade from Payara 5 to Payara 6
 
-1. Download Payara 6.2023.7 as of this writing:
+1. Download Payara 6.2023.8 as of this writing:
 
-   `curl -L -O https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2023.7/payara-6.2023.7.zip`
+   `curl -L -O https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2023.8/payara-6.2023.8.zip`
 
 1. Unzip it to /usr/local (or your preferred location):
 
-   `sudo unzip payara-6.2023.7.zip -d /usr/local/`
+   `sudo unzip payara-6.2023.8.zip -d /usr/local/`
 
 1. Change ownership of the unzipped Payara to your "service" user ("dataverse" by default):
 
