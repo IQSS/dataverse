@@ -1,10 +1,11 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import jakarta.json.JsonObject;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+
 import java.util.ArrayList;
 import java.util.List;
 

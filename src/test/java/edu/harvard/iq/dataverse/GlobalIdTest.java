@@ -1,13 +1,14 @@
 package edu.harvard.iq.dataverse;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
-
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *

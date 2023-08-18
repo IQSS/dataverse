@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,202 +10,88 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
-
-/**
- *
- * @author michael
- */
-@RunWith(Enclosed.class)
-public class StringUtilTest {
-
-    public StringUtilTest() {
+class StringUtilTest {
+    
+    /**
+     * Test of isEmpty method, of class StringUtil.
+     */
+    @ParameterizedTest
+    @CsvSource(value = {
+        "false, a",
+        "true, NULL",
+        "true, ''",
+        "true, ' '",
+        "true, \t",
+        "true, \t \t \n"
+    }, nullValues = "NULL")
+    void testIsEmpty(boolean isValid, String inputString) {
+        assertEquals( isValid, StringUtil.isEmpty(inputString) );
     }
     
-    @BeforeClass
-    public static void setUpClass() {
+    /**
+     * Test of isAlphaNumeric method, of class StringUtil.
+     */
+    @ParameterizedTest
+    @CsvSource({
+        "true,abc",
+        "true,1230",
+        "true,1230abc",
+        "true,1230abcABC",
+        "false,1230abcABC#"
+    })
+    void testIsAlphaNumeric(boolean isValid, String inputString) {
+        assertEquals(isValid, StringUtil.isAlphaNumeric(inputString) );
     }
     
-    @AfterClass
-    public static void tearDownClass() {
+    /**
+     * Test of isAlphaNumericChar method, of class StringUtil.
+     */
+    @ParameterizedTest
+    @CsvSource({
+        "true,'a'",
+        "true,'f'",
+        "true,'z'",
+        "true,'0'",
+        "true,'1'",
+        "true,'9'",
+        "true,'A'",
+        "true,'G'",
+        "true,'Z'",
+        "false,'@'"
+    })
+    void testIsAlphaNumericChar(boolean isValid, char inputChar) {
+        assertEquals(isValid, StringUtil.isAlphaNumericChar(inputChar) );
     }
     
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
-
-    @RunWith(Parameterized.class)
-    public static class TestIsEmpty {
-
-        public boolean isValid;
-        public String inputString;
+    @ParameterizedTest
+    @CsvSource(value = {
+        // interface-based partitioning
+        "NULL, NULL, NULL",
+        "NULL, '', NULL",
+        "NULL, d, NULL",
         
-        public TestIsEmpty(boolean isValid, String inputString) {
-            this.isValid = isValid;
-            this.inputString = inputString;
-        }
-
-        @Parameters
-        public static Collection<Object[]> parameters() {
-            return Arrays.asList(
-                    new Object[][] { 
-                        { true, null },
-                        { true, "" },
-                        { true, " " },
-                        { true, "\t" },
-                        { true, "\t \t \n" },
-                        { false, "a" },
-                    }
-            );
-        }
-
-        /**
-         * Test of isEmpty method, of class StringUtil.
-         */
-        @Test
-        public void testIsEmpty() {
-            assertEquals( isValid, StringUtil.isEmpty(inputString) );
-        }
-    }
-
-    @RunWith(Parameterized.class)
-    public static class TestIsAlphaNumeric {
-
-        public boolean isValid;
-        public String inputString;
+        "'', NULL, ''",
+        "'', '', ''",
+        "'', abcdfg, ''",
         
-        public TestIsAlphaNumeric(boolean isValid, String inputString) {
-            this.isValid = isValid;
-            this.inputString = inputString;
-        }
-
-        @Parameters
-        public static Collection<Object[]> parameters() {
-            return Arrays.asList(
-                    new Object[][] { 
-                        { true, "abc" },
-                        { true, "1230" },
-                        { true, "1230abc" },
-                        { true, "1230abcABC" },
-                        { false, "1230abcABC#" },
-                    }
-            );
-        }
-
-        /**
-         * Test of isAlphaNumeric method, of class StringUtil.
-         */
-        @Test
-        public void testIsAlphaNumeric() {
-            assertEquals( isValid, StringUtil.isAlphaNumeric(inputString) );
-        }
-    }
-
-    @RunWith(Parameterized.class)
-    public static class TestIsAlphaNumericChar {
-
-        public boolean isValid;
-        public char inputChar;
+        "abcdfg, NULL, ''",
+        "abcdfg, '', ''",
+        "abcdfg, d, dfg",
         
-        public TestIsAlphaNumericChar(boolean isValid, char inputChar) {
-            this.isValid = isValid;
-            this.inputChar = inputChar;
-        }
-
-        @Parameters
-        public static Collection<Object[]> parameters() {
-            return Arrays.asList(
-                    new Object[][] { 
-                        { true, 'a' },
-                        { true, 'f' },
-                        { true, 'z' },
-                        { true, '0' },
-                        { true, '1' },
-                        { true, '9' },
-                        { true, 'A' },
-                        { true, 'G' },
-                        { true, 'Z' },
-                        { false, '@' },
-                    }
-            );
-        }
-
-        /**
-         * Test of isAlphaNumericChar method, of class StringUtil.
-         */
-        @Test
-        public void testIsAlphaNumericChar() {
-            assertEquals( isValid, StringUtil.isAlphaNumericChar(inputChar) );
-        }
+        // functionality-based partitioning
+        "abcdfg, NULL, ''",
+        "abcdfg, h, ''",
+        "abcdfg, b, bcdfg"
+    }, nullValues = "NULL")
+    void testSubstringIncludingLast(String str, String separator, String expectedString) {
+        assertEquals( expectedString, StringUtil.substringIncludingLast(str, separator) );
     }
-
-    @RunWith(Parameterized.class)
-    public static class TestSubstringIncludingLast {
-
-        public String str;
-        public String separator;
-        public String expectedString;
-        
-        public TestSubstringIncludingLast(String str, String separator, String expectedString) {
-            this.str = str;
-            this.separator = separator;
-            this.expectedString = expectedString;
-        }
-
-        @Parameters
-        public static Collection<Object[]> parameters() {
-            return Arrays.asList(
-                    new Object[][] { 
-                        // interface-based partitioning
-                        {null, null, null},
-                        {null, "", null},
-                        {null, "d", null},
-
-                        {"", null, ""},
-                        {"", "", ""},
-                        {"", "abcdfg", ""},
-
-                        {"abcdfg", null, ""},
-                        {"abcdfg", "", ""},
-                        {"abcdfg", "d", "dfg"},
-
-                        // functionality-based partitioning
-                        {"abcdfg" , null, ""},
-                        {"abcdfg", "h", ""},
-                        {"abcdfg", "b", "bcdfg"},
-                    }
-            );
-        }
-
-        @Test
-        public void testSubstringIncludingLast() {
-            assertEquals( expectedString, StringUtil.substringIncludingLast(str, separator) );
-        }
-    }
-
-    @RunWith(Parameterized.class)
-    public static class TestToOption {
-
-        public String inputString;
-        public Optional<String> expected;
-
-        public TestToOption(String inputString, Optional<String> expected) {
-            this.inputString = inputString;
-            this.expected = expected;
-        }
 
         @Parameters
         public static Collection<Object[]> parameters() {

@@ -11,16 +11,18 @@ package edu.harvard.iq.dataverse.util.shapefile;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import static edu.harvard.iq.dataverse.util.ShapefileHandler.SHP_XML_EXTENSION;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.io.File;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-
-import org.junit.rules.TemporaryFolder;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

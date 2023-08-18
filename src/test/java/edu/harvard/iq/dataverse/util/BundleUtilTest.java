@@ -2,11 +2,13 @@ package edu.harvard.iq.dataverse.util;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class BundleUtilTest {
 

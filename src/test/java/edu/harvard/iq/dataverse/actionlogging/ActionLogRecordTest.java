@@ -1,13 +1,13 @@
 package edu.harvard.iq.dataverse.actionlogging;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Date;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord.ActionType;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord.Result;

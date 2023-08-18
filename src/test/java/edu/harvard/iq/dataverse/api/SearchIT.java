@@ -8,9 +8,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
 import java.io.InputStream;
@@ -21,22 +22,22 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import org.hamcrest.CoreMatchers;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
 import javax.imageio.ImageIO;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import static org.junit.Assert.assertNotEquals;
 
 import jakarta.json.JsonObjectBuilder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SearchIT {
 

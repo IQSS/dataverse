@@ -2,9 +2,9 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import jakarta.json.JsonObject;
 

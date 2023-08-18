@@ -2,9 +2,9 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import static junit.framework.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * These tests will only work if you are using "DataCite" rather than "EZID" for

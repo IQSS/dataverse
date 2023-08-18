@@ -1,13 +1,10 @@
 package edu.harvard.iq.dataverse;
 
-import java.util.Arrays;
-import java.util.Collection;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class FileDirectoryNameValidatorTest {
 
     public boolean isValid;

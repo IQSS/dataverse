@@ -13,8 +13,9 @@ import java.util.List;
 import java.util.Set;
 import static java.util.stream.Collectors.toList;
 import java.util.stream.Stream;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
 import static edu.harvard.iq.dataverse.util.CollectionLiterals.*;
 
 /**

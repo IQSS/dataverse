@@ -7,9 +7,9 @@ import edu.harvard.iq.dataverse.mocks.MockAuthenticationServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockBuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockPasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Before;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  *

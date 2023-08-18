@@ -1,15 +1,14 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Arrays;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import java.sql.Timestamp;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @RunWith(Enclosed.class)
 public class ConfirmEmailUtilTest {

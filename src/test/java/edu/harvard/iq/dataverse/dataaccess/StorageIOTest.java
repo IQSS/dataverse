@@ -21,8 +21,9 @@ import java.util.Arrays;
 import java.util.List;
 //import org.apache.commons.httpclient.Header;
 //import org.apache.commons.httpclient.methods.GetMethod;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *

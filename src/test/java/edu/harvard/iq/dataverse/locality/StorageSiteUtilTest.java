@@ -4,8 +4,11 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class StorageSiteUtilTest {
 

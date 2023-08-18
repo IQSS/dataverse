@@ -5,11 +5,12 @@ import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.OK;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.AfterAll;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //TODO: These tests are fairly flawed as they don't actually add data to compare on.
 //To improve these tests we should try adding data and see if the number DOESN'T

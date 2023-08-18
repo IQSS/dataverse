@@ -4,13 +4,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.jayway.restassured.RestAssured;
 import static com.jayway.restassured.RestAssured.given;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.path.xml.XmlPath;
 import com.jayway.restassured.path.xml.element.Node;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import static jakarta.ws.rs.core.Response.Status.OK;
@@ -18,10 +20,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests for the Harvesting Server functionality

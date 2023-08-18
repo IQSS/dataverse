@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.util.List;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MakeDataCountUtilTest {
 

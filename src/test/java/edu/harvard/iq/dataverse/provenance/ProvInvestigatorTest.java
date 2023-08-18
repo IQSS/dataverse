@@ -6,14 +6,15 @@
 package edu.harvard.iq.dataverse.provenance;
 
 import com.google.gson.JsonParser;
-import edu.harvard.iq.dataverse.NonEssentialTests;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.jupiter.api.Assertions.*;
+
+import edu.harvard.iq.dataverse.util.testing.Tags;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 /**
  *
