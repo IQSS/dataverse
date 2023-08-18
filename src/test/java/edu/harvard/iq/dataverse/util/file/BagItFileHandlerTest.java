@@ -47,7 +47,7 @@ public class BagItFileHandlerTest {
 
     private BagItFileHandler target;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         FILE_UTIL = Mockito.mock(FileUtilWrapper.class, Mockito.RETURNS_DEEP_STUBS);
         SYSTEM_CONFIG = Mockito.mock(SystemConfig.class, Mockito.RETURNS_DEEP_STUBS);

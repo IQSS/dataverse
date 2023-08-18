@@ -17,13 +17,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 //go up to show that the caching worked
 public class MetricsIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
         UtilIT.clearMetricCache();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanUpClass() {
         UtilIT.clearMetricCache();
     }

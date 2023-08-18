@@ -41,7 +41,7 @@ public class AdminIT {
 
     private final String testNonSuperuserApiToken = createTestNonSuperuserApiToken();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
@@ -670,7 +670,7 @@ public class AdminIT {
     }
     
     @Test
-    @Ignore
+    @Disabled
     public void testMigrateHDLToDOI() {
         /*
         This test is set to ignore because it requires a setup that will

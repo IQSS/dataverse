@@ -21,7 +21,7 @@ public class IpGroupsIT {
 
     private static final Logger logger = Logger.getLogger(IpGroupsIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

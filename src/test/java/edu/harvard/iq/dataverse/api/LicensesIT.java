@@ -18,7 +18,7 @@ public class LicensesIT {
 
     private static final Logger logger = Logger.getLogger(LicensesIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

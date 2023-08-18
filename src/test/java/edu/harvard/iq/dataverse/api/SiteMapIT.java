@@ -7,7 +7,7 @@ import com.jayway.restassured.response.Response;
 
 public class SiteMapIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

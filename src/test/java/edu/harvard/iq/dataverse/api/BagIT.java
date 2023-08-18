@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 public class BagIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
 
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -65,7 +65,7 @@ public class BagIT {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
 
         // Not checking if delete happened. Hopefully, it did.

@@ -36,7 +36,7 @@ public class BuiltinUsersIT {
     private static final String usernameKey = "userName";
     private static final String emailKey = "email";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 

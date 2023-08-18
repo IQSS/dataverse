@@ -28,7 +28,7 @@ public class DataFileServiceBeanTest {
     private DataFileServiceBean dataFileServiceBean;
             
     
-    @Before
+    @BeforeEach
     public void setUp() {
         fileWoContentType = createDataFile(null);
         fileWithBogusContentType = createDataFile("foo/bar");

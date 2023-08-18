@@ -82,15 +82,15 @@ public class JsonParserTest {
     public JsonParserTest() {
     }
     
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
     
-    @Before
+    @BeforeEach
     public void setUp() {
         datasetFieldTypeSvc = new MockDatasetFieldSvc();
         datasetFieldTypeSvc.setMetadataBlock("citation");

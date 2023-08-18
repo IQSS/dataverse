@@ -24,7 +24,7 @@ public class AuxiliaryFileServiceBeanTest {
     List<String> types;
     DataFile dataFile;
 
-    @Before
+    @BeforeEach
     public void setup() {
         svc = new AuxiliaryFileServiceBean();
         svc.em = mock(EntityManager.class);

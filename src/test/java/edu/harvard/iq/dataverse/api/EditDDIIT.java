@@ -40,7 +40,7 @@ public class EditDDIIT {
 
     private static final Logger logger = Logger.getLogger(EditDDIIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

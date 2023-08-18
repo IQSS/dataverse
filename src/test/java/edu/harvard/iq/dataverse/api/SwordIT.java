@@ -55,7 +55,7 @@ public class SwordIT {
     private static final String rootDvNotPublished = "Many of these SWORD tests require that the root dataverse collection has been published. Publish the root dataverse and then re-run these tests.";
     private static final String rootDvLackPermissions = "Many of these SWORD tests require you set permissions for the root dataverse collection: \"Anyone with a Dataverse account can add sub dataverses and datasets\" + curator role for new datasets. Please set and re-run these tests.";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
         boolean testAgainstDev1 = false;
@@ -968,7 +968,7 @@ public class SwordIT {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         // cleanup, allow custom terms again (delete because it defaults to true)
         UtilIT.deleteSetting(SettingsServiceBean.Key.AllowCustomTermsOfUse);

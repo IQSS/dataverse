@@ -35,14 +35,15 @@ public class PidUtilTest {
     private PermaLinkPidProviderServiceBean p = new PermaLinkPidProviderServiceBean();
     
 
-    @Before public void initMocks() {
+    @BeforeEach
+    public void initMocks() {
         MockitoAnnotations.initMocks(this);
         Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol)).thenReturn("perma");
         Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("DANSLINK");
         p.reInit();
     }
     
-    @Ignore
+    @Disabled
     @Test
     public void testGetDoi() throws IOException {
         String username = System.getenv("DataCiteUsername");

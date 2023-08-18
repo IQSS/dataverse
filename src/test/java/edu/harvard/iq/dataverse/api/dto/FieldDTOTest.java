@@ -27,15 +27,15 @@ public class FieldDTOTest {
     public FieldDTOTest() {
     }
     
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
     
-    @Before
+    @BeforeEach
     public void setUp() {
        
         Set<FieldDTO> authorFields = new HashSet<>();
@@ -49,7 +49,7 @@ public class FieldDTOTest {
         
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
 

@@ -130,7 +130,7 @@ ORDER BY R.TABLE_NAME;
  */
 public class DeleteUsersIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

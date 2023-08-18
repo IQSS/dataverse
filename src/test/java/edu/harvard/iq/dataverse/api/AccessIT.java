@@ -82,7 +82,7 @@ public class AccessIT {
     private static String testFileFromZipUploadWithFoldersChecksum3 = "00433ccb20111f9d40f0e5ab6fa8396f";
 
     
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws InterruptedException {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
         
@@ -162,7 +162,7 @@ public class AccessIT {
                         
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDown() {   
 
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);

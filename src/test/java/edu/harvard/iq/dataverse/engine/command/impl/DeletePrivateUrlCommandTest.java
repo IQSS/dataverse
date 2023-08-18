@@ -26,7 +26,7 @@ public class DeletePrivateUrlCommandTest {
     private final Long noPrivateUrlToDelete = 1l;
     private final Long hasPrivateUrlToDelete = 2l;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         testEngine = new TestDataverseEngine(new TestCommandContext() {
             @Override

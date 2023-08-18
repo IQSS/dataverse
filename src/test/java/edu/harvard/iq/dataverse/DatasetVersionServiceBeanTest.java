@@ -18,13 +18,13 @@ public class DatasetVersionServiceBeanTest {
 
   private DatasetVersionServiceBean datasetVersionServiceBean;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     this.datasetVersionServiceBean = new DatasetVersionServiceBean();
     
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     this.datasetVersionServiceBean = null;
   }

@@ -69,7 +69,7 @@ public class GlobalIdTest {
     }
 
     @Test
-    @Ignore /* Could now add a 'doy' protocol so the test would have to check against registered PIDProviders (currently Beans)*/
+    @Disabled /* Could now add a 'doy' protocol so the test would have to check against registered PIDProviders (currently Beans)*/
     public void testUnknownProtocol() {
         System.out.println("testUnknownProtocol");
 
@@ -81,7 +81,7 @@ public class GlobalIdTest {
     }
 
     @Test
-    @Ignore /* Could now change parsing rules so the test would have to check against registered PIDProviders (currently Beans)*/
+    @Disabled /* Could now change parsing rules so the test would have to check against registered PIDProviders (currently Beans)*/
     public void testBadIdentifierOnePart() {
         System.out.println("testBadIdentifierOnePart");
 
@@ -91,7 +91,7 @@ public class GlobalIdTest {
     }
 
     @Test
-    @Ignore /* Could now change parsing rules so the test would have to check against registered PIDProviders (currently Beans)*/
+    @Disabled /* Could now change parsing rules so the test would have to check against registered PIDProviders (currently Beans)*/
     public void testBadIdentifierTwoParts() {
         System.out.println("testBadIdentifierTwoParts");
 

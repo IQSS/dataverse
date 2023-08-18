@@ -58,7 +58,7 @@ public class PersonOrOrgUtilTest {
             verifyIsOrganization("Geographic Data Technology, Inc. (GDT)");
         }
 
-        @Ignore
+        @Disabled
         @Test
         public void testOrganizationES() {
             //Spanish recognition is not enabled - see export/Organization.java

@@ -99,7 +99,7 @@ public class DatasetsIT {
     
     
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         
         
@@ -129,7 +129,7 @@ public class DatasetsIT {
          */
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
 
         Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
@@ -1852,7 +1852,7 @@ public class DatasetsIT {
     }
     
     @Test
-    @Ignore
+    @Disabled
     public void testApiErrors() {
 
         /*
@@ -2061,7 +2061,7 @@ public class DatasetsIT {
      * This test requires the root dataverse to be published to pass.
      */
     @Test
-    @Ignore
+    @Disabled
     public void testUpdatePIDMetadataAPI() {
 
         Response createUser = UtilIT.createRandomUser();

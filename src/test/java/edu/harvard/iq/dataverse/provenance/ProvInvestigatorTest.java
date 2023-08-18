@@ -28,7 +28,7 @@ public class ProvInvestigatorTest {
     JsonParser jsonParser;
     private static final Logger logger = Logger.getLogger(ProvInvestigatorTest.class.getCanonicalName());
     
-    @Before
+    @BeforeEach
     public void setUp() {
         provUtilBean = ProvInvestigator.getInstance();
         jsonParser = new JsonParser();

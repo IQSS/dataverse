@@ -23,7 +23,7 @@ public class IndexIT {
 
     private static final Logger logger = Logger.getLogger(IndexIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
 
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -100,11 +100,11 @@ public class IndexIT {
       
     }
    
-    @After
+    @AfterEach
     public void tearDownDataverse() {
         }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
     }
 

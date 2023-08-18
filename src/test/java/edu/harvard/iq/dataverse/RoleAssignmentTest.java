@@ -22,7 +22,7 @@ public class RoleAssignmentTest {
     private Dataset dataset;
     private String privateUrlToken;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.dataverseRole = new DataverseRole();
         this.roleAssignee = GuestUser.get();
@@ -30,7 +30,7 @@ public class RoleAssignmentTest {
         this.privateUrlToken = "some-token";
     }
 
-    @After
+    @AfterEach
     public void after() {
         this.dataverseRole = null;
         this.roleAssignee = null;

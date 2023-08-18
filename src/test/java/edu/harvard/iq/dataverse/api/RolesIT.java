@@ -20,7 +20,7 @@ public class RolesIT {
     
     private static final Logger logger = Logger.getLogger(AdminIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

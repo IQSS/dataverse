@@ -25,7 +25,7 @@ public class MoveIT {
 
     private static final Logger logger = Logger.getLogger(MoveIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

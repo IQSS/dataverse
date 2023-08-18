@@ -27,7 +27,7 @@ public class MailUtilTest {
     @Mock
     SettingsServiceBean settingsSvc;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         userNotification = new UserNotification();
 

@@ -19,13 +19,13 @@ public class DuplicateFileCheckerTest {
     private DuplicateFileChecker duplicateFileChecker;
     private DatasetVersionServiceBean datasetVersionServiceBean;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.datasetVersionServiceBean = mock(DatasetVersionServiceBean.class);
         this.duplicateFileChecker = new DuplicateFileChecker(datasetVersionServiceBean);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         duplicateFileChecker = null;
     }

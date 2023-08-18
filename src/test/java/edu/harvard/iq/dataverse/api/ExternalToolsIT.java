@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Disabled;
 
 public class ExternalToolsIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
@@ -309,7 +309,7 @@ public class ExternalToolsIT {
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void deleteTools() {
 
@@ -330,7 +330,7 @@ public class ExternalToolsIT {
     }
 
     // preview only
-    @Ignore
+    @Disabled
     @Test
     public void createToolShellScript() {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -370,7 +370,7 @@ public class ExternalToolsIT {
     }
 
     // explore only
-    @Ignore
+    @Disabled
     @Test
     public void createToolDataExplorer() {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -403,7 +403,7 @@ public class ExternalToolsIT {
     }
 
     // both preview and explore
-    @Ignore
+    @Disabled
     @Test
     public void createToolSpreadsheetViewer() {
         JsonObjectBuilder job = Json.createObjectBuilder();

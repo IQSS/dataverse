@@ -16,11 +16,11 @@ public class IPv6AddressTest {
     public IPv6AddressTest() {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
     }
 

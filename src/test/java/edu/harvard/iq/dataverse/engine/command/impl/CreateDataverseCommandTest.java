@@ -165,7 +165,7 @@ public class CreateDataverseCommandTest {
     TestDataverseEngine engine;
     
     
-    @Before
+    @BeforeEach
     public void setUp() {
         indexCalled = false;
         dvStore.clear();

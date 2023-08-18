@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 public class NetcdfIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

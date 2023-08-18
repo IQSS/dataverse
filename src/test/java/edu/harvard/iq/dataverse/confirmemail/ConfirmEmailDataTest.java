@@ -14,13 +14,13 @@ public class ConfirmEmailDataTest {
     private ConfirmEmailData instance;
     private AuthenticatedUser user;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.user = new AuthenticatedUser();
         this.instance = new ConfirmEmailData(user, 60);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.instance = null;
         this.user = null;

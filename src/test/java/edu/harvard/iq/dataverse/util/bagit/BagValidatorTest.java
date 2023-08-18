@@ -33,7 +33,7 @@ public class BagValidatorTest {
     private ManifestReader manifestReader;
     private BagValidator target;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         manifestReader = Mockito.mock(ManifestReader.class);
         target = Mockito.spy(new BagValidator(manifestReader));

@@ -16,7 +16,7 @@ public class LinkIT {
 
     private static final Logger logger = Logger.getLogger(LinkIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
  */
 public class DuplicateFilesIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

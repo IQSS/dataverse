@@ -19,14 +19,14 @@ public class PermissionsWrapperTest {
 
     private PermissionsWrapper permissionWrapper;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.permissionWrapper = new PermissionsWrapper();
         this.permissionWrapper.permissionService = mock(PermissionServiceBean.class);
         this.permissionWrapper.dvRequestService = mock(DataverseRequestServiceBean.class);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.permissionWrapper = null;
     }

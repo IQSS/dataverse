@@ -27,15 +27,15 @@ public class UpdateDatasetThumbnailCommandTest {
     public UpdateDatasetThumbnailCommandTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataset = new Dataset();
         testEngine = new TestDataverseEngine(new TestCommandContext() {
@@ -87,7 +87,7 @@ public class UpdateDatasetThumbnailCommandTest {
         );
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
     }
 

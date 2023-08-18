@@ -33,12 +33,12 @@ public class FileMetadataIT {
     private static int dsId;
     private static int dsIdFirst;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
-    @Before
+    @BeforeEach
     public void setUpDataverse() {
         try {
             // create random test name
@@ -85,12 +85,12 @@ public class FileMetadataIT {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         RestAssured.reset();
     }
 
-    @After
+    @AfterEach
     public void tearDownDataverse() {
         try {
             // delete dataset

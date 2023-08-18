@@ -19,13 +19,13 @@ import org.junit.jupiter.api.Test;
 
 public class ProvIT {
     
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
     
-    @Test 
+    @Test
     public void testFreeformDraftActions() {
         Response createDepositor = UtilIT.createRandomUser();
         createDepositor.prettyPrint();

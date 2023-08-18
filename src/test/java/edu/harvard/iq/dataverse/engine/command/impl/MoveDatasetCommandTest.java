@@ -71,7 +71,7 @@ public class MoveDatasetCommandTest {
         @Context
         protected HttpServletRequest httpRequest;
 	
-    @Before
+    @BeforeEach
     public void setUp() {
 
         auth = makeAuthenticatedUser("Super", "User");

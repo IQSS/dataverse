@@ -24,7 +24,7 @@ public class JhoveFileTypeTest {
     static File ico;
     static File ipynb;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         System.setProperty("com.sun.aas.instanceRoot", baseDirForConfigFiles);
         jhoveFileType = new JhoveFileType();
@@ -41,7 +41,7 @@ public class JhoveFileTypeTest {
         ipynb = new File("src/test/java/edu/harvard/iq/dataverse/util/irc-metrics.ipynb");
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         // SiteMapUtilTest relies on com.sun.aas.instanceRoot being null.
         System.clearProperty("com.sun.aas.instanceRoot");

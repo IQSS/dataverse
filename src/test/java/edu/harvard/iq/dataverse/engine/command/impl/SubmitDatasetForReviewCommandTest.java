@@ -38,7 +38,7 @@ public class SubmitDatasetForReviewCommandTest {
     private DataverseRequest dataverseRequest;
     private TestDataverseEngine testEngine;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataset = new Dataset();
 

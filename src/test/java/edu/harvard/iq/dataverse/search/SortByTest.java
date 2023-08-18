@@ -14,14 +14,14 @@ public class SortByTest {
     private String order;
     private SortBy instance;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.field = "field";
         this.order = SortBy.ASCENDING;
         this.instance = new SortBy(field, order);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.field = null;
         this.order = null;

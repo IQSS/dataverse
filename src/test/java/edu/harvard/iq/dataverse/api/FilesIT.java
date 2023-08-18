@@ -44,7 +44,7 @@ public class FilesIT {
 
     private static final Logger logger = Logger.getLogger(FilesIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

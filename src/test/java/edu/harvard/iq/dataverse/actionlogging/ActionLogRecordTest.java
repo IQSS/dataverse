@@ -16,7 +16,7 @@ public class ActionLogRecordTest {
 
     private ActionLogRecord referenceRecord;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.referenceRecord = new ActionLogRecord(ActionType.Admin, "subType1");
         this.referenceRecord.setEndTime(new Date());
@@ -25,7 +25,7 @@ public class ActionLogRecordTest {
         this.referenceRecord.setInfo("info1");
     }
 
-    @After
+    @AfterEach
     public void tearDwon() {
         this.referenceRecord = null;
     }

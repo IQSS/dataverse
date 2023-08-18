@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 public class FitsIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

@@ -17,14 +17,14 @@ public class CartTest {
     private String title;
     private String persistentId;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.cart = new Cart();
         this.title = "title";
         this.persistentId = "persistentId";
     }
 
-    @After
+    @AfterEach
     public void tearDwon() {
         this.cart = null;
         this.title = null;

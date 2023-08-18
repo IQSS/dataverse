@@ -41,7 +41,7 @@ public class HarvestingClientsIT {
     private static String adminUserAPIKey;
     private static String harvestCollectionAlias; 
     
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
         

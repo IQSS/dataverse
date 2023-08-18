@@ -23,7 +23,7 @@ public class InReviewWorkflowIT {
 
     private static final Logger logger = Logger.getLogger(DatasetsIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 

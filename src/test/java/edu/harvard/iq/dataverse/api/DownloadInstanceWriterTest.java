@@ -11,7 +11,7 @@ public class DownloadInstanceWriterTest {
 
     DownloadInstanceWriter diw;
 
-    @Before
+    @BeforeEach
     public void setUpClass() {
         diw = new DownloadInstanceWriter();
     }

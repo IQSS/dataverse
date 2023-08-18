@@ -22,7 +22,7 @@ public class BuiltinAuthenticationProviderTest {
     MockBuiltinUserServiceBean bean = null;
     AuthenticationServiceBean authBean = null;
     
-    @Before
+    @BeforeEach
     public void setup() {
         bean = new MockBuiltinUserServiceBean();
         passwordValidatorService = new MockPasswordValidatorServiceBean();

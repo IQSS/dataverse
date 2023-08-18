@@ -40,12 +40,12 @@ public class DataversesIT {
 
     private static final Logger logger = Logger.getLogger(DataversesIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
     
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
     }

@@ -14,7 +14,7 @@ public class NotificationsIT {
 
     private static final Logger logger = Logger.getLogger(NotificationsIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

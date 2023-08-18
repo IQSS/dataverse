@@ -79,7 +79,7 @@ public class DatasetTest {
     private DatasetVersion draftVersion;
     private DatasetVersion releasedVersion;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.archivedVersion = new DatasetVersion();
         this.archivedVersion.setVersionState(VersionState.ARCHIVED);
@@ -94,7 +94,7 @@ public class DatasetTest {
         this.releasedVersion.setVersionState(VersionState.RELEASED);
     }
 
-    @After
+    @AfterEach
     public void after() {
         this.archivedVersion = null;
         this.deaccessionedVersion = null;

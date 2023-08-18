@@ -41,7 +41,7 @@ public class HarvestingServerIT {
     private static String singleSetDatasetPersistentId;
     private static List<String> extraDatasetsIdentifiers = new ArrayList<>();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 	// enable harvesting server
@@ -56,7 +56,7 @@ public class HarvestingServerIT {
         
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
 	// disable harvesting server (default value)
 	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled,"false");

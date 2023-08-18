@@ -35,7 +35,7 @@ public class SolrSearchResultTest {
 
     SolrSearchResult solrSearchResult;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.unpublishedFlag = IndexServiceBean.getUNPUBLISHED_STRING();
         this.publishedFlag = IndexServiceBean.getPUBLISHED_STRING();
@@ -47,7 +47,7 @@ public class SolrSearchResultTest {
         this.solrSearchResult = new SolrSearchResult("myQuery", "myName");
     }
 
-    @After
+    @AfterEach
     public void after() {
         this.unpublishedFlag = null;
         this.publishedFlag = null;

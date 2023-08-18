@@ -52,7 +52,7 @@ public class CreateRoleCommandTest {
         }
     });
     
-    @Before
+    @BeforeEach
     public void before() {
         saveCalled = false;
     }

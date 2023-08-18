@@ -51,7 +51,7 @@ public class FileAccessIOTest {
     public FileAccessIOTest() {
     }
 
-    @Before
+    @BeforeEach
     public void setUpClass() throws IOException {
         dataverse = MocksFactory.makeDataverse();
         dataset = MocksFactory.makeDataset();
@@ -77,7 +77,7 @@ public class FileAccessIOTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDownClass() throws IOException {
         FileUtils.deleteDirectory(new File("/tmp/files/"));
     }

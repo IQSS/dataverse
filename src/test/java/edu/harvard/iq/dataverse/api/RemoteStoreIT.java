@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 public class RemoteStoreIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

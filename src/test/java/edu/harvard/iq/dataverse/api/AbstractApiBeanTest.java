@@ -24,7 +24,7 @@ public class AbstractApiBeanTest {
 
     AbstractApiBeanImpl sut;
 
-    @Before
+    @BeforeEach
     public void before() {
         sut = new AbstractApiBeanImpl();
     }

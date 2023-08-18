@@ -20,15 +20,15 @@ public class GetPrivateUrlCommandTest {
     public GetPrivateUrlCommandTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         testEngine = new TestDataverseEngine(new TestCommandContext() {
 
@@ -47,7 +47,7 @@ public class GetPrivateUrlCommandTest {
         });
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
     }
 

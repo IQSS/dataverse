@@ -32,7 +32,7 @@ public class CreatePrivateUrlCommandTest {
     private final Long versionIsReleased = 4l;
     
     
-    @Before
+    @BeforeEach
     public void setUp() {
         dataset = new Dataset();
         testEngine = new TestDataverseEngine(new TestCommandContext() {

@@ -49,7 +49,7 @@ public class MoveDataverseCommandTest {
     AuthenticatedUser auth, nobody;
     protected HttpServletRequest httpRequest;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // authentication 
         auth = makeAuthenticatedUser("Super", "User");

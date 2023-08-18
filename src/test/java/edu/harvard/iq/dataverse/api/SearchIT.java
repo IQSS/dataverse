@@ -43,7 +43,7 @@ public class SearchIT {
 
     private static final Logger logger = Logger.getLogger(SearchIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
 
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -1282,7 +1282,7 @@ public class SearchIT {
 
     }
 
-    @After
+    @AfterEach
     public void tearDownDataverse() {
         File treesThumb = new File("scripts/search/data/binary/trees.png.thumb48");
         treesThumb.delete();
@@ -1292,7 +1292,7 @@ public class SearchIT {
         dataverseprojectThumb.delete();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
     }
 

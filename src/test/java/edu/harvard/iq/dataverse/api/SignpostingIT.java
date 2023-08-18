@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 
 public class SignpostingIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

@@ -79,7 +79,7 @@ public class DataversesTest {
 
     private Dataverse VALID_DATAVERSE;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         VALID_DATAVERSE = new Dataverse();
         VALID_DATAVERSE.setId(MocksFactory.nextId());

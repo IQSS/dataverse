@@ -23,7 +23,7 @@ public class UpdatePermissionRootCommandTest {
     TestCommandContext testCommandContext;
     boolean serviceBeanCalled;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         mockBean = new DataverseServiceBean() {
             @Override

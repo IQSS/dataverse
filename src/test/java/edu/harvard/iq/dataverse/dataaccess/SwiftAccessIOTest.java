@@ -33,7 +33,7 @@ public class SwiftAccessIOTest {
     public SwiftAccessIOTest() {
     }
 
-    @Before
+    @BeforeEach
     public void setUpClass() throws IOException {
         datafile = MocksFactory.makeDataFile();
         dataset = MocksFactory.makeDataset();

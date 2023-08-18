@@ -28,21 +28,21 @@ public class BitSetTest {
 	public BitSetTest() {
 	}
 	
-	@BeforeClass
+	@BeforeAll
 	public static void setUpClass() {
 	}
 	
-	@AfterClass
+	@AfterAll
 	public static void tearDownClass() {
 	}
 	
 	BitSet sut;
-	@Before
+	@BeforeEach
 	public void setUp() {
 		sut = new BitSet();
 	}
 	
-	@After
+	@AfterEach
 	public void tearDown() {
 	}
 

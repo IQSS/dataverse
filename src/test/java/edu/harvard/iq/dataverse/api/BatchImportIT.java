@@ -21,7 +21,7 @@ public class BatchImportIT {
     public BatchImportIT() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

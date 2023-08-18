@@ -27,7 +27,7 @@ public class UpdateMetadataBlockFacetsCommandTest {
     private DataverseRequest dataverseRequest;
     private Dataverse dataverse;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         dataverseRequest = Mockito.mock(DataverseRequest.class);
         dataverse = Mockito.mock(Dataverse.class);

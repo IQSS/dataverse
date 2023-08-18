@@ -14,12 +14,12 @@ public class LruCacheTest {
     
     LruCache<Long, String> sut;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         sut = new LruCache<>();
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
         sut = null;
     }

@@ -18,7 +18,7 @@ public class DataverseTest {
     private Dataverse OWNER;
     private List<DataverseMetadataBlockFacet> OWNER_METADATABLOCKFACETS;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         OWNER = new Dataverse();
         OWNER.setId(MocksFactory.nextId());

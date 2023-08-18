@@ -58,7 +58,7 @@ public class FeedbackUtilTest {
     private static final String systemEmail = "support@librascholar.edu";
     private static final boolean weKnowHowToCreateMockAuthenticatedUsers = false;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws IOException, JsonParseException, AddressException {
 
         if (weKnowHowToCreateMockAuthenticatedUsers) {

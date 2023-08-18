@@ -46,15 +46,15 @@ public class RestrictFileCommandTest {
     public RestrictFileCommandTest() {
     }
     
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
     
-    @Before
+    @BeforeEach
     public void setUp() {
         dataset = makeDataset();
         file = makeDataFile();
@@ -76,7 +76,7 @@ public class RestrictFileCommandTest {
             
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
         
@@ -249,7 +249,7 @@ public class RestrictFileCommandTest {
         
     }
 
-    @Test 
+    @Test
     public void testPublicInstall() throws CommandException {
         file.setOwner(dataset);
         String expected = "Restricting files is not permitted on a public installation.";

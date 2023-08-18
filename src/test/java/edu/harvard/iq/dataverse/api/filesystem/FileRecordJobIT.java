@@ -93,7 +93,7 @@ public class FileRecordJobIT {
     private static final String API_TOKEN_HTTP_HEADER = "X-Dataverse-key";
     private static final String BUILTIN_USER_KEY = "burrito";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
 
         // this allows for testing on dataverse staging servers via jvm setting
@@ -123,7 +123,7 @@ public class FileRecordJobIT {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUpDataverse() {
 
         try {
@@ -190,12 +190,12 @@ public class FileRecordJobIT {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         RestAssured.reset();
     }
 
-    @After
+    @AfterEach
     public void tearDownDataverse() {
         try {
 
@@ -232,7 +232,7 @@ public class FileRecordJobIT {
      * Ignores failed checksum manifest import.
      */
     @Test
-    @Ignore
+    @Disabled
     public void testSameFileInDifferentDirectories() {
 
         try {
@@ -311,7 +311,7 @@ public class FileRecordJobIT {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testNewEditor() {
 
         try {
@@ -415,7 +415,7 @@ public class FileRecordJobIT {
      * Ignores failed checksum manifest import.
      */
     @Test
-    @Ignore
+    @Disabled
     public void testSameFileInDifferentDirectoriesUnauthorizedUser() {
 
         try {
@@ -614,7 +614,7 @@ public class FileRecordJobIT {
 //    }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * Add a file in MERGE mode (default), should only need to commit the new file
      */
@@ -759,7 +759,7 @@ public class FileRecordJobIT {
     }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * The success case: all files uploaded and present in checksum manifest
      */
@@ -828,7 +828,7 @@ public class FileRecordJobIT {
     }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * No checksum manifest found
      */
@@ -882,7 +882,7 @@ public class FileRecordJobIT {
     }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * Checksum manifest is missing an uploaded file
      */
@@ -949,7 +949,7 @@ public class FileRecordJobIT {
     }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * Checksum manifest references a file that isn't present, it should return failed status and detailed 
      * message in persistentUserData
@@ -1021,7 +1021,7 @@ public class FileRecordJobIT {
     }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * Published datasets should not allow import jobs for now since it isn't in DRAFT mode
      */
@@ -1103,7 +1103,7 @@ public class FileRecordJobIT {
 //    }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * No dataset found responses (bad dataset id, etc.)
      */

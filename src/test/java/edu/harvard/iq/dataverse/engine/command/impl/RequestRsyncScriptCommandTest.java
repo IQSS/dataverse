@@ -26,15 +26,15 @@ public class RequestRsyncScriptCommandTest {
     public RequestRsyncScriptCommandTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         testEngine = new TestDataverseEngine(new TestCommandContext() {
 
@@ -66,7 +66,7 @@ public class RequestRsyncScriptCommandTest {
         });
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
     }
 

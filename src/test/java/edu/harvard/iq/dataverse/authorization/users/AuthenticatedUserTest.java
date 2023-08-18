@@ -52,7 +52,7 @@ public class AuthenticatedUserTest {
     public static final String IDENTIFIER_PREFIX = "@";
     public static final Set<Type> mutedTypes = EnumSet.of(Type.ASSIGNROLE, Type.REVOKEROLE);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         testUser = MocksFactory.makeAuthenticatedUser("Homer", "Simpson");
         expResult = testUser.getCreatedTime();

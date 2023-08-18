@@ -43,7 +43,7 @@ public class PersistentIdentifierServiceBeanTest {
     
     CommandContext ctxt;
     
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         ctxt = new TestCommandContext(){

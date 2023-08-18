@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 
 public class AuxiliaryFilesIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

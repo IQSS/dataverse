@@ -37,7 +37,7 @@ public class JsonPrinterTest {
 
     MockDatasetFieldSvc datasetFieldTypeSvc = null;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         datasetFieldTypeSvc = new MockDatasetFieldSvc();
         datasetFieldTypeSvc.setMetadataBlock("citation");

@@ -16,12 +16,12 @@ import org.junit.jupiter.api.Test;
  */
 public class PidsIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testGetPid() {
         String pid = "";
@@ -94,7 +94,7 @@ public class PidsIT {
          */
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testDeletePid() {
         String pid = "";
@@ -112,7 +112,7 @@ public class PidsIT {
         deletePid.prettyPrint();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testCannotPublishUntilReserved() {
         Response createUser = UtilIT.createRandomUser();
@@ -154,7 +154,7 @@ public class PidsIT {
                 .statusCode(FORBIDDEN.getStatusCode());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testDeleteDraftPidOnDelete() {
         Response createUser = UtilIT.createRandomUser();
