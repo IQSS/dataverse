@@ -12,7 +12,7 @@ These instructions are oriented around Docker but the "classic" instructions we 
 Quickstart
 ----------
 
-First, install Java 11, Maven, and Docker.
+First, install Java 17, Maven, and Docker.
 
 After cloning the `dataverse repo <https://github.com/IQSS/dataverse>`_, run this:
 
@@ -30,7 +30,7 @@ Detailed Steps
 Install Java
 ~~~~~~~~~~~~
 
-The Dataverse Software requires Java 11.
+The Dataverse Software requires Java 17.
 
 On Mac and Windows, we suggest downloading OpenJDK from https://adoptium.net (formerly `AdoptOpenJDK <https://adoptopenjdk.net>`_) or `SDKMAN <https://sdkman.io>`_.
 
