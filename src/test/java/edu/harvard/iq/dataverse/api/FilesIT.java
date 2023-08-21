@@ -1,15 +1,15 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
-import com.jayway.restassured.path.json.JsonPath;
-import static com.jayway.restassured.path.json.JsonPath.with;
-import com.jayway.restassured.path.xml.XmlPath;
+import io.restassured.path.json.JsonPath;
+import static io.restassured.path.json.JsonPath.with;
+import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;

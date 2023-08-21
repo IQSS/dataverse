@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
+import io.restassured.RestAssured;
 
-import static com.jayway.restassured.RestAssured.given;
+import static io.restassured.RestAssured.given;
 
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
+import io.restassured.path.json.JsonPath;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 
 import java.util.logging.Logger;
 
@@ -14,7 +15,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.jupiter.api.Disabled;
-import com.jayway.restassured.path.json.JsonPath;
 
 import java.util.List;
 import java.util.Map;
@@ -43,11 +43,11 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import com.jayway.restassured.parsing.Parser;
+import io.restassured.parsing.Parser;
 
-import static com.jayway.restassured.path.json.JsonPath.with;
+import static io.restassured.path.json.JsonPath.with;
 
-import com.jayway.restassured.path.xml.XmlPath;
+import io.restassured.path.xml.XmlPath;
 
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
 
@@ -667,9 +667,7 @@ public class DatasetsIT {
         exportDatasetAsDdi.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // This is now returning [] instead of sammi@sample.com. Not sure why.
-        // :ExcludeEmailFromExport is absent so the email should be shown.
-        assertEquals("[]", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+        assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
         Response reexportAllFormats = UtilIT.reexportDatasetAllFormats(datasetPersistentId);
@@ -759,7 +757,7 @@ public class DatasetsIT {
 
         assertEquals("Dataverse, Admin", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact"));
         // no "sammi@sample.com" to be found https://github.com/IQSS/dataverse/issues/3443
-        assertEquals("[]", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@email"));
+        assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@email"));
         assertEquals("Sample Datasets, inc.", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@affiliation"));
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 

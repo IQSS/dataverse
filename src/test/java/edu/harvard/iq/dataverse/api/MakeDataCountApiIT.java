@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import java.io.File;
 import java.io.IOException;
 import static jakarta.ws.rs.core.Response.Status.CREATED;

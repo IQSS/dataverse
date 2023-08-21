@@ -22,18 +22,9 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                jdk: [ '11' ]
+                jdk: [ '17' ]
                 experimental: [false]
                 status:  ["Stable"]
-                #
-                # JDK 17 builds disabled due to non-essential fails marking CI jobs as completely failed within
-                # Github Projects, PR lists etc. This was consensus on Slack #dv-tech. See issue #8094
-                # (This is a limitation of how Github is currently handling these things.)
-                #
-                #include:
-                #    - jdk: '17'
-                #      experimental: true
-                #      status: "Experimental"
         continue-on-error: ${{ matrix.experimental }}
         runs-on: ubuntu-latest
         steps:
@@ -68,6 +59,14 @@ jobs:
 
           # We don't want to cache the WAR file, so delete it
           - run: rm -rf ~/.m2/repository/edu/harvard/iq/dataverse
+
+          # Upload the built war file. For download, it will be wrapped in a ZIP by GitHub.
+          # See also https://github.com/actions/upload-artifact#zipped-artifact-downloads
+          - uses: actions/upload-artifact@v3
+            with:
+                name: dataverse-java${{ matrix.jdk }}.war
+                path: target/dataverse*.war
+                retention-days: 7
     push-app-img:
         name: Publish App Image
         permissions:

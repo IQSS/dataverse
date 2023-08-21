@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 
-import static com.jayway.restassured.RestAssured.given;
-import com.jayway.restassured.response.Response;
+import static io.restassured.RestAssured.given;
+import io.restassured.response.Response;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 

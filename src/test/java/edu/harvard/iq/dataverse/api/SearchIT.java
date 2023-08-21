@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -311,7 +311,7 @@ public class SearchIT {
         allFieldsFromCitation.then().assertThat()
                 .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
                 // Many fields returned, all of the citation block that has been filled in.
-                .body("data.items[0].metadataBlocks.citation.fields.typeName.size", Matchers.equalTo(5))
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.hasSize(5))
                 .statusCode(OK.getStatusCode());
 
     }

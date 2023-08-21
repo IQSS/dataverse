@@ -2,16 +2,16 @@ package edu.harvard.iq.dataverse.api;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
+import io.restassured.RestAssured;
+import static io.restassured.RestAssured.given;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.path.xml.XmlPath;
-import com.jayway.restassured.path.xml.element.Node;
+import io.restassured.response.Response;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.path.xml.element.Node;
 
 import java.util.ArrayList;
 import java.util.Collections;

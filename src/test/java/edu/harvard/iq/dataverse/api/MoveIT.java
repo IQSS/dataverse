@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import static com.jayway.restassured.path.json.JsonPath.with;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import static io.restassured.path.json.JsonPath.with;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import java.io.StringReader;
 import java.util.List;

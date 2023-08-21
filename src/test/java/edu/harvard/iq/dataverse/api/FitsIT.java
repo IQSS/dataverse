@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.path.json.JsonPath.with;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import static io.restassured.path.json.JsonPath.with;
+import io.restassured.response.Response;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
