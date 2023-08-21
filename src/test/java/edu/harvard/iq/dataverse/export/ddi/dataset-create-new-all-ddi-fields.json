@@ -53,7 +53,7 @@
             "typeName": "alternativeTitle",
             "multiple": true,
             "typeClass": "primitive",
-            "value": ["Alternative Title"]
+            "value": ["Alternative Title1", "Alternative Title2"]
           },
           {
             "typeName": "otherId",
