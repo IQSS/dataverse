@@ -20,11 +20,11 @@
 
 1. Stop Payara 5:
 
-   `sudo /usr/local/payara5/bin/asadmin stop-domain`
+   `sudo -u dataverse /usr/local/payara5/bin/asadmin stop-domain`
 
 1. Copy Dataverse-related lines from Payara 5 to Payara 6 domain.xml:
 
-   `sudo cp /usr/local/payara6/glassfish/domains/domain1/config/domain.xml /usr/local/payara6/glassfish/domains/domain1/config/domain.xml.orig`
+   `sudo -u dataverse cp /usr/local/payara6/glassfish/domains/domain1/config/domain.xml /usr/local/payara6/glassfish/domains/domain1/config/domain.xml.orig`
 
    `sudo egrep 'dataverse|doi' /usr/local/payara5/glassfish/domains/domain1/config/domain.xml > lines.txt`
 
@@ -50,7 +50,7 @@
 
    Note: if you used the Dataverse installer, you won't have a `dataverse.db.password` property. See "Create password aliases" below.
 
-   Section 3: JVM options (under `<java-config classpath-suffix="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="">`)
+   Section 3: JVM options (under `<java-config classpath-suffix="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="">`, the one under `<config name="server-config">`, not under `<config name="default-config">`)
 
    ```
    <jvm-options>-Ddataverse.files.directory=/usr/local/dvn/data</jvm-options>
@@ -72,7 +72,7 @@
    <jvm-options>-Ddoi.dataciterestapiurlstring=https://api.test.datacite.org</jvm-options>
    ```
 
-1. Check the `Xmx` setting in `/usr/local/payara6/glassfish/domains/domain1/config/domain.xml`. Note that there are two such settings, and you want to adjust the one in the stanza with Dataverse options. This sets the JVM heap size; a good rule of thumb is half of your system's total RAM. You may specify the value in MB (`4096m`) or GB (`4g`).
+1. Check the `Xmx` setting in `/usr/local/payara6/glassfish/domains/domain1/config/domain.xml`. (The one under `<config name="server-config">`, where you put the JVM options, not the one under `<config name="default-config">`.) Note that there are two such settings, and you want to adjust the one in the stanza with Dataverse options. This sets the JVM heap size; a good rule of thumb is half of your system's total RAM. You may specify the value in MB (`4096m`) or GB (`4g`).
 
 1. Copy jhove.conf and jhoveConfig.xsd from Payara 5, edit and change payara5 to payara6
 
@@ -98,6 +98,12 @@
    ```
 
    You'll want to perform similar commands for `rserve_password_alias` and `doi_password_alias` if you're using Rserve and/or Datacite.
+
+1. Enable workaround for FISH-7722:
+
+   The following workaround is for https://github.com/payara/Payara/issues/6337
+
+   `sudo -u dataverse /usr/local/payara6/bin/asadmin create-jvm-options --add-opens=java.base/java.io=ALL-UNNAMED`
 
 1. Deploy the Dataverse 6.0 warfile:
 
