@@ -479,6 +479,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/versions/{versionId}")
     public Response getVersion(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("includeFiles") Boolean includeFiles, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> {
+            // @todo: consider using DatasetVersionServiceBean.findDeep() here 
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
                     : ok(json(dsv, includeFiles == null ? false : includeFiles));

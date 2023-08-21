@@ -202,6 +202,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
      * Additionally, provides the arguments for selecting a partial list of 
      * (length-offset) versions for pagination, plus the ability to pre-select 
      * only the publicly-viewable versions. 
+     * It is recommended that individual software components utilize the 
+     * ListVersionsCommand, instead of calling this service method directly.
      * @param datasetId
      * @param offset for pagination through long lists of versions
      * @param length for pagination through long lists of versions
@@ -1297,11 +1299,24 @@ w
     public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, FileMetadatasOrderCriteria orderCriteria) {
         TypedQuery<FileMetadata> query = em.createQuery(getQueryStringFromFileMetadatasOrderCriteria(orderCriteria), FileMetadata.class)
                 .setParameter("datasetVersionId", datasetVersion.getId());
-        if (limit != null) {
-            query.setMaxResults(limit);
-        }
-        if (offset != null) {
-            query.setFirstResult(offset);
+        
+        if (limit == null && offset == null) {
+            query.setHint("eclipselink.left-join-fetch", "fm.dataFile.ingestRequest")
+                    .setHint("eclipselink.left-join-fetch", "fm.dataFile.thumbnailForDataset")
+                    .setHint("eclipselink.left-join-fetch", "fm.dataFile.dataTables")
+                    .setHint("eclipselink.left-join-fetch", "fm.fileCategories")
+                    .setHint("eclipselink.left-join-fetch", "fm.dataFile.embargo")
+                    .setHint("eclipselink.left-join-fetch", "fm.datasetVersion")
+                    .setHint("eclipselink.left-join-fetch", "fm.dataFile.releaseUser")
+                    .setHint("eclipselink.left-join-fetch", "fm.dataFile.creator");
+        } else {
+            // @todo: is there really no way to use offset-limit with left join hints?
+            if (limit != null) {
+                query.setMaxResults(limit);
+            }
+            if (offset != null) {
+                query.setFirstResult(offset);
+            }
         }
         return query.getResultList();
     }
