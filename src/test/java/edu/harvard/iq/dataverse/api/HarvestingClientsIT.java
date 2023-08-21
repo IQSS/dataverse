@@ -228,10 +228,10 @@ public class HarvestingClientsIT {
                         + getClientResponse.prettyPrint());
                 // Check the values in the response:
                 // a) Confirm that the harvest has completed: 
-                assertEquals("Unexpected client status: "+clientStatus, "inActive", clientStatus);
+                assertEquals("inActive", clientStatus, "Unexpected client status: "+clientStatus);
                 
                 // b) Confirm that it has actually succeeded:
-                assertEquals("Last harvest not reported a success (took "+i+" seconds)", "SUCCESS", responseJsonPath.getString("data.lastResult"));
+                assertEquals("SUCCESS", responseJsonPath.getString("data.lastResult"), "Last harvest not reported a success (took "+i+" seconds)");
                 String harvestTimeStamp = responseJsonPath.getString("data.lastHarvest");
                 assertNotNull(harvestTimeStamp); 
                 
