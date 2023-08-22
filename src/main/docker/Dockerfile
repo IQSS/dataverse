@@ -29,6 +29,11 @@ FROM $BASE_IMAGE
 # See also https://download.eclipse.org/microprofile/microprofile-config-3.0/microprofile-config-spec-3.0.html#configprofile
 ENV MP_CONFIG_PROFILE=ct
 
+# Workaround to configure upload directories by default to useful place until we can have variable lookups in
+# defaults for glassfish-web.xml and other places.
+ENV DATAVERSE_FILES_UPLOADS="${STORAGE_DIR}/uploads"
+ENV DATAVERSE_FILES_DOCROOT="${STORAGE_DIR}/docroot"
+
 # Copy app and deps from assembly in proper layers
 COPY --chown=payara:payara maven/deps ${DEPLOY_DIR}/dataverse/WEB-INF/lib/
 COPY --chown=payara:payara maven/app ${DEPLOY_DIR}/dataverse/
