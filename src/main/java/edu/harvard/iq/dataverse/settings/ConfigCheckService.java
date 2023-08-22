@@ -49,7 +49,7 @@ public class ConfigCheckService {
         
         boolean success = true;
         for (Path path : paths.keySet()) {
-            if (Files.notExists(path)) {
+            if (! Files.exists(path)) {
                 try {
                     Files.createDirectories(path);
                 } catch (IOException e) {
