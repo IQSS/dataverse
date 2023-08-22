@@ -133,7 +133,7 @@
         <!-- This is a special Maven property name, do not change! -->
         <revision>5.14</revision>
     
-        <target.java.version>11</target.java.version>
+        <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <additionalparam>-Xdoclint:none</additionalparam>
         <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
@@ -148,7 +148,7 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>6.2023.7</payara.version>
+        <payara.version>6.2023.8</payara.version>
         <postgresql.version>42.5.1</postgresql.version>
         <solr.version>8.11.1</solr.version>
         <aws.version>1.12.290</aws.version>
