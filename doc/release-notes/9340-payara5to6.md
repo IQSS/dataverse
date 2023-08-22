@@ -82,9 +82,9 @@
 
    `sudo -u dataverse /usr/local/payara6/bin/asadmin start-domain`
 
-1. Create a Java mail resource, pointing to your SMTP relay:
+1. Create a Java mail resource, replacing "localhost" for mailhost with your mail relay server, and replacing "localhost" for fromaddress with the FQDN of your Dataverse server:
 
-   `sudo -u dataverse /usr/local/payara6/bin/create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" mail/notifyMailSession`
+   `sudo -u dataverse /usr/local/payara6/bin/asadmin create-javamail-resource --mailhost "localhost" --mailuser "dataversenotify" --fromaddress "do-not-reply@localhost" mail/notifyMailSession`
 
 1. Create password aliases for your database, rserve and datacite jvm-options, if you're using them:
 
