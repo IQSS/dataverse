@@ -160,6 +160,6 @@ jobs:
             contents: read
             packages: write
             pull-requests: write
-        needs: unittest
+        needs: integration-test
         uses: ./.github/workflows/container_app_push.yml
         secrets: inherit
