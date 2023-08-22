@@ -46,7 +46,7 @@ public class BagValidatorTest {
         boolean result = target.hasBagItPackage(fileDataProvider);
 
         MatcherAssert.assertThat(result, Matchers.is(false));
-        Mockito.verifyZeroInteractions(manifestReader);
+        Mockito.verifyNoInteractions(manifestReader);
     }
 
     @Test
@@ -95,7 +95,7 @@ public class BagValidatorTest {
         MatcherAssert.assertThat(result.getErrorMessage().isEmpty(), Matchers.is(false));
         Mockito.verify(target).getMessage(Mockito.eq("bagit.validation.bag.file.not.found"), Mockito.any());
 
-        Mockito.verifyZeroInteractions(manifestReader);
+        Mockito.verifyNoInteractions(manifestReader);
     }
 
     @Test
@@ -119,7 +119,7 @@ public class BagValidatorTest {
 
         MatcherAssert.assertThat(result.success(), Matchers.is(false));
         MatcherAssert.assertThat(result.getErrorMessage().isEmpty(), Matchers.is(false));
-        Mockito.verify(target).getMessage(Mockito.eq("bagit.validation.manifest.not.supported"), Mockito.any());
+        Mockito.verify(target).getMessage(Mockito.eq("bagit.validation.manifest.not.supported"), Mockito.any(Object[].class));
 
         Mockito.verify(manifestReader).getManifestChecksums(fileDataProvider, expectedBagRoot);
     }
@@ -140,7 +140,7 @@ public class BagValidatorTest {
         for(Path filePath: checksums.getFileChecksums().keySet()) {
             MatcherAssert.assertThat(result.getFileResults().get(filePath).isError(), Matchers.is(true));
         }
-        Mockito.verify(target, Mockito.times(checksums.getFileChecksums().size())).getMessage(Mockito.eq("bagit.validation.file.not.found"), Mockito.any());
+        Mockito.verify(target, Mockito.times(checksums.getFileChecksums().size())).getMessage(Mockito.eq("bagit.validation.file.not.found"), Mockito.any(Object[].class));
 
         Mockito.verify(manifestReader).getManifestChecksums(fileDataProvider, expectedBagRoot);
         Mockito.verify(fileDataProvider).getFilePaths();

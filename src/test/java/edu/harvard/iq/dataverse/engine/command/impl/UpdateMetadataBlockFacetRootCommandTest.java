@@ -43,7 +43,7 @@ public class UpdateMetadataBlockFacetRootCommandTest {
 
         Mockito.verify(dataverse).isMetadataBlockFacetRoot();
         Mockito.verifyNoMoreInteractions(dataverse);
-        Mockito.verifyZeroInteractions(context.dataverses());
+        Mockito.verifyNoInteractions(context.dataverses());
     }
 
     @Test

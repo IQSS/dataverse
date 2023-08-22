@@ -21,7 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -129,7 +130,7 @@ public class CreateRoleCommandTest {
             //Mocking a query to return no results when 
             //checking for existing role in DB
             TypedQuery mockedQuery = mock(TypedQuery.class);
-            when(mockedQuery.setParameter(Matchers.anyString(), Matchers.anyObject())).thenReturn(mockedQuery);
+            when(mockedQuery.setParameter(ArgumentMatchers.anyString(), ArgumentMatchers.any())).thenReturn(mockedQuery);
             when(mockedQuery.getSingleResult()).thenReturn(null);
             return mockedQuery;
         }

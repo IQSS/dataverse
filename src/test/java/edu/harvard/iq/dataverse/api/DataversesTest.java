@@ -226,7 +226,7 @@ public class DataversesTest {
         Response result = target.updateMetadataBlockFacetsRoot(containerRequestContext, VALID_DATAVERSE.getAlias(), "true");
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(200));
-        Mockito.verifyZeroInteractions(engineSvc);
+        Mockito.verifyNoInteractions(engineSvc);
     }
 
     @Test

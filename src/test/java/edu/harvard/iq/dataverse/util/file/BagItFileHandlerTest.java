@@ -99,7 +99,7 @@ public class BagItFileHandlerTest {
         createDataFileResultAsserts(result);
 
         handleBagItPackageAsserts(fileDataProvider);
-        Mockito.verifyZeroInteractions(postProcessor);
+        Mockito.verifyNoInteractions(postProcessor);
     }
 
     @Test
@@ -231,7 +231,7 @@ public class BagItFileHandlerTest {
 
         handleBagItPackageAsserts(dataProviderSpy);
         createDataFileAsserts(Arrays.asList(Path.of(bagEntry)), 2);
-        Mockito.verifyZeroInteractions(postProcessor);
+        Mockito.verifyNoInteractions(postProcessor);
     }
 
     @Test
@@ -249,7 +249,7 @@ public class BagItFileHandlerTest {
         MatcherAssert.assertThat(result.getErrors().size(), Matchers.is(1));
 
         handleBagItPackageAsserts(dataProviderSpy);
-        Mockito.verifyZeroInteractions(postProcessor);
+        Mockito.verifyNoInteractions(postProcessor);
     }
 
     @Test
@@ -266,7 +266,7 @@ public class BagItFileHandlerTest {
 
         handleBagItPackageAsserts(dataProviderSpy);
         createDataFileAsserts(dataProviderWithDataFiles.dataProvider.getFilePaths());
-        Mockito.verifyZeroInteractions(postProcessor);
+        Mockito.verifyNoInteractions(postProcessor);
     }
 
     private void createDataFileResultAsserts(CreateDataFileResult result) {
