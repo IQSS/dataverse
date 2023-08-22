@@ -119,7 +119,6 @@
 
 1. Perform one final Payara restart to ensure that timers are initialized properly:
 
-   ```
-   sudo -u dataverse /usr/local/payara6/bin/asadmin stop-domain
-   sudo -u dataverse /usr/local/payara6/bin/asadmin start-domain
-   ```
+   `sudo -u dataverse /usr/local/payara6/bin/asadmin stop-domain`
+
+   `sudo -u dataverse /usr/local/payara6/bin/asadmin start-domain`
