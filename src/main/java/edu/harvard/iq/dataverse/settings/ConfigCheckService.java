@@ -2,10 +2,10 @@ package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.util.FileUtil;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.DependsOn;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.DependsOn;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 import java.io.IOException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
