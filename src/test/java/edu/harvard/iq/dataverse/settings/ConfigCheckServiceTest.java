@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.settings;
 
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,35 +17,32 @@ import static java.nio.file.attribute.PosixFilePermission.GROUP_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 
 class ConfigCheckServiceTest {
+    
+    @TempDir
+    static Path testDir;
+    
+    private static final String testDirProp = "test.filesDir";
+    
+    @AfterAll
+    static void tearDown() {
+        System.clearProperty(testDirProp);
+    }
 
     @Nested
     class TestDirNotWritable {
-        @TempDir
-        Path testDir;
         
-        private String oldUploadDirSetting;
+        Path notWriteableSubfolder = testDir.resolve("readonly");
         
         @BeforeEach
         void setUp() throws IOException {
-            Files.setPosixFilePermissions(this.testDir, Set.of(OWNER_READ, GROUP_READ));
-            
-            // TODO: This is a workaround until PR #9273 is merged, providing the ability to lookup values for
-            //       @JvmSetting from static methods. Should be deleted.
-            this.oldUploadDirSetting = System.getProperty(JvmSettings.UPLOADS_DIRECTORY.getScopedKey());
-            System.setProperty(JvmSettings.UPLOADS_DIRECTORY.getScopedKey(), this.testDir.toString());
-        }
-        
-        @AfterEach
-        void tearDown() {
-            // TODO: This is a workaround until PR #9273 is merged, providing the ability to lookup values for
-            //       @JvmSetting from static methods. Should be deleted.
-            if (this.oldUploadDirSetting != null)
-                System.setProperty(JvmSettings.UPLOADS_DIRECTORY.getScopedKey(), this.oldUploadDirSetting);
+            Files.createDirectory(notWriteableSubfolder);
+            Files.setPosixFilePermissions(notWriteableSubfolder, Set.of(OWNER_READ, GROUP_READ));
+            System.setProperty(testDirProp, notWriteableSubfolder.toString());
         }
         
         @Test
         void writeCheckFails() {
-            Assumptions.assumeTrue(Files.exists(this.testDir));
+            Assumptions.assumeTrue(Files.exists(notWriteableSubfolder));
             
             ConfigCheckService sut = new ConfigCheckService();
             Assertions.assertFalse(sut.checkSystemDirectories());
@@ -54,38 +51,47 @@ class ConfigCheckServiceTest {
     
     @Nested
     class TestDirNotExistent {
-        @TempDir
-        Path testDir;
-        String subFolder = "foobar";
         
-        String oldUploadDirSetting;
+        Path notExistTestfolder = testDir.resolve("parent-readonly");
+        Path notExistConfigSubfolder = notExistTestfolder.resolve("foobar");
         
         @BeforeEach
         void setUp() throws IOException {
+            Files.createDirectory(notExistTestfolder);
             // Make test dir not writeable, so the subfolder cannot be created
-            Files.setPosixFilePermissions(this.testDir, Set.of(OWNER_READ, GROUP_READ));
-            
-            // TODO: This is a workaround until PR #9273 is merged, providing the ability to lookup values for
-            //       @JvmSetting from static methods. Should be deleted.
-            oldUploadDirSetting = System.getProperty(JvmSettings.UPLOADS_DIRECTORY.getScopedKey());
-            System.setProperty(JvmSettings.UPLOADS_DIRECTORY.getScopedKey(), this.testDir.resolve(this.subFolder).toString());
-        }
-        
-        @AfterEach
-        void tearDown() {
-            // TODO: This is a workaround until PR #9273 is merged, providing the ability to lookup values for
-            //       @JvmSetting from static methods. Should be deleted.
-            if (this.oldUploadDirSetting != null)
-                System.setProperty(JvmSettings.UPLOADS_DIRECTORY.getScopedKey(), this.oldUploadDirSetting);
+            Files.setPosixFilePermissions(notExistTestfolder, Set.of(OWNER_READ, GROUP_READ));
+            System.setProperty(testDirProp, notExistConfigSubfolder.toString());
         }
         
         @Test
         void mkdirFails() {
-            Assumptions.assumeTrue(Files.exists(this.testDir));
-            Assumptions.assumeFalse(Files.exists(this.testDir.resolve(this.subFolder)));
+            Assumptions.assumeTrue(Files.exists(notExistTestfolder));
+            Assumptions.assumeFalse(Files.exists(notExistConfigSubfolder));
             
             ConfigCheckService sut = new ConfigCheckService();
             Assertions.assertFalse(sut.checkSystemDirectories());
+        }
+    }
+    
+    @Nested
+    class TestDirCreated {
+
+        Path missingToBeCreatedTestfolder = testDir.resolve("create-me");
+        Path missingToBeCreatedSubfolder = missingToBeCreatedTestfolder.resolve("foobar");
+        
+        @BeforeEach
+        void setUp() throws IOException {
+            Files.createDirectory(missingToBeCreatedTestfolder);
+            System.setProperty(testDirProp, missingToBeCreatedSubfolder.toString());
+        }
+        
+        @Test
+        void mkdirSucceeds() {
+            Assumptions.assumeTrue(Files.exists(missingToBeCreatedTestfolder));
+            Assumptions.assumeFalse(Files.exists(missingToBeCreatedSubfolder));
+            
+            ConfigCheckService sut = new ConfigCheckService();
+            Assertions.assertTrue(sut.checkSystemDirectories());
         }
     }
     
