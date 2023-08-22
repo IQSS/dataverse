@@ -30,15 +30,9 @@
 
    `sudo vi /usr/local/payara6/glassfish/domains/domain1/config/domain.xml`
 
-   The lines will be part of three sections, examples shown below (but your content will vary).
+   The lines will appear in two sections, examples shown below (but your content will vary).
    
-   Section 1: mail resource (under `<resources>`)
-
-   ```
-   <mail-resource auth="false" host="localhost" from="do-not-reply@dev1.dataverse.org" user="dataversenotify" jndi-name="mail/notifyMailSession"></mail-resource>
-   ```
-
-   Section 2: system properties (under `<server name="server" config-ref="server-config">`)
+   Section 1: system properties (under `<server name="server" config-ref="server-config">`)
     
    ```
    <system-property name="dataverse.db.user" value="dvnuser"></system-property>
@@ -50,7 +44,7 @@
 
    Note: if you used the Dataverse installer, you won't have a `dataverse.db.password` property. See "Create password aliases" below.
 
-   Section 3: JVM options (under `<java-config classpath-suffix="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="">`, the one under `<config name="server-config">`, not under `<config name="default-config">`)
+   Section 2: JVM options (under `<java-config classpath-suffix="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9009" system-classpath="">`, the one under `<config name="server-config">`, not under `<config name="default-config">`)
 
    ```
    <jvm-options>-Ddataverse.files.directory=/usr/local/dvn/data</jvm-options>
@@ -87,6 +81,10 @@
 1. Start Payara:
 
    `sudo -u dataverse /usr/local/payara6/bin/asadmin start-domain`
+
+1. Create a Java mail resource, pointing to your SMTP relay:
+
+   `sudo -u dataverse /usr/local/payara6/bin/create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" mail/notifyMailSession`
 
 1. Create password aliases for your database, rserve and datacite jvm-options, if you're using them:
 
