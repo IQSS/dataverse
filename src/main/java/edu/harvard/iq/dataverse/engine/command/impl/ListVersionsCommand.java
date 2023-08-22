@@ -47,7 +47,9 @@ public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>> {
         
         if (offset == null && limit == null) {
             // @todo: this fragment can be dropped, and the service-based method below 
-            // can be used for both cases. 
+            // can be used for both cases.
+            // @todo: on the other hand, consider using datasetservice.findDeep()
+            // when a full list of versions is requested. 
             List<DatasetVersion> outputList = new LinkedList<>();
             for (DatasetVersion dsv : ds.getVersions()) {
                 if (dsv.isReleased() || includeUnpublished) {

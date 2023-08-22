@@ -467,6 +467,9 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions")
     public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("includeFiles") Boolean includeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+        // @todo:  when full versions list - including files - is requested, consider 
+        // using datasetservice.findDeep() (needs testing on "monstrous" datasets 
+        // with a lot of versions!)
         return response( req ->
              ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id), offset, limit) )
                                 .stream()
@@ -499,6 +502,23 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
             }
             return ok(jsonFileMetadatas(datasetversionService.getFileMetadatas(datasetVersion, limit, offset, fileMetadatasOrderCriteria)));
+        }, getRequestUser(crc));
+    }
+    
+    //@todo: remember to delete this! (for experiments only!)
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/files2")
+    public Response getVersionFiles2(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") Long versionId, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset, @QueryParam("orderCriteria") String orderCriteria, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return response( req -> {
+            //DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            DatasetVersionServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
+            try {
+                fileMetadatasOrderCriteria = orderCriteria != null ? DatasetVersionServiceBean.FileMetadatasOrderCriteria.valueOf(orderCriteria) : DatasetVersionServiceBean.FileMetadatasOrderCriteria.NameAZ;
+            } catch (IllegalArgumentException e) {
+                return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
+            }
+            return ok(jsonFileMetadatas(datasetversionService.getFileMetadatasByDbId(versionId, limit, offset, fileMetadatasOrderCriteria)));
         }, getRequestUser(crc));
     }
     
