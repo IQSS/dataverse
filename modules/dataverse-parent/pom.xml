@@ -172,7 +172,7 @@
         <smallrye-mpconfig.version>2.10.1</smallrye-mpconfig.version>
         
         <junit.jupiter.version>5.10.0</junit.jupiter.version>
-        <mockito.version>2.28.2</mockito.version>
+        <mockito.version>5.4.0</mockito.version>
         
         <checkstyle.version>9.3</checkstyle.version>
         
