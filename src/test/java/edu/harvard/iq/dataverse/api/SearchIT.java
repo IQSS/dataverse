@@ -813,7 +813,7 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(4000);
         } catch (InterruptedException ex) {
             /**
              * This sleep is here because dataverseAlias2 is showing with
