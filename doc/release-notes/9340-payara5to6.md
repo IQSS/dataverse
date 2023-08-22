@@ -30,7 +30,7 @@
 
    `sudo vi /usr/local/payara6/glassfish/domains/domain1/config/domain.xml`
 
-   The lines will be part of three sections, shown below, but your content will vary.
+   The lines will be part of three sections, examples shown below (but your content will vary).
    
    Section 1: mail resource (under `<resources>`)
 
@@ -72,7 +72,7 @@
    <jvm-options>-Ddoi.dataciterestapiurlstring=https://api.test.datacite.org</jvm-options>
    ```
 
-1. Check the `Xmx` setting in `/usr/local/payara6/glassfish/domains/domain1/config/domain.xml`. (The one under `<config name="server-config">`, where you put the JVM options, not the one under `<config name="default-config">`.) Note that there are two such settings, and you want to adjust the one in the stanza with Dataverse options. This sets the JVM heap size; a good rule of thumb is half of your system's total RAM. You may specify the value in MB (`4096m`) or GB (`4g`).
+1. Check the `Xmx` setting in `/usr/local/payara6/glassfish/domains/domain1/config/domain.xml`. (The one under `<config name="server-config">`, where you put the JVM options, not the one under `<config name="default-config">`.) Note that there are two such settings, and you want to adjust the one in the stanza with Dataverse options. This sets the JVM heap size; a good rule of thumb is half of your system's total RAM. You may specify the value in MB (`8192m`) or GB (`8g`).
 
 1. Copy jhove.conf and jhoveConfig.xsd from Payara 5, edit and change payara5 to payara6
 
@@ -105,6 +105,10 @@
 
    `sudo -u dataverse /usr/local/payara6/bin/asadmin create-jvm-options --add-opens=java.base/java.io=ALL-UNNAMED`
 
+1. Create the network listener on port 8009
+
+   `sudo -u dataverse /usr/local/payara6/bin/asadmin create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector`
+
 1. Deploy the Dataverse 6.0 warfile:
 
    `sudo -u dataverse /usr/local/payara6/bin/asadmin deploy /path/to/dataverse-6.0.war`
@@ -113,11 +117,9 @@
 
    `curl http://localhost:8080/api/info/version`
 
-1. Create the network listener on port 8009
-
-   `sudo -u dataverse /usr/local/payara6/bin/asadmin create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector`
-
 1. Perform one final Payara restart to ensure that timers are initialized properly:
 
-   `sudo -u dataverse /usr/local/payara6/bin/asadmin stop-domain`
-   `sudo -u dataverse /usr/local/payara6/bin/asadmin start-domain`
+   ```
+   sudo -u dataverse /usr/local/payara6/bin/asadmin stop-domain
+   sudo -u dataverse /usr/local/payara6/bin/asadmin start-domain
+   ```
