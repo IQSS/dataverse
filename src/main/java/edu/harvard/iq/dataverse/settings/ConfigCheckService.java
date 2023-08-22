@@ -49,6 +49,13 @@ public class ConfigCheckService {
         
         boolean success = true;
         for (Path path : paths.keySet()) {
+            // Check if the configured path is absolute - avoid potential problems with relative paths this way
+            if (! path.isAbsolute()) {
+                logger.log(Level.SEVERE, () -> "Configured directory " + path + " for " + paths.get(path) + " is not absolute");
+                success = false;
+                continue;
+            }
+            
             if (! Files.exists(path)) {
                 try {
                     Files.createDirectories(path);

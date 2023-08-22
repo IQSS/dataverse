@@ -27,6 +27,16 @@ class ConfigCheckServiceTest {
     static void tearDown() {
         System.clearProperty(testDirProp);
     }
+    
+    @Nested
+    class TestDirNotAbsolute {
+        @Test
+        void nonAbsolutePathForTestDir() {
+            System.setProperty(testDirProp, "foobar");
+            ConfigCheckService sut = new ConfigCheckService();
+            Assertions.assertFalse(sut.checkSystemDirectories());
+        }
+    }
 
     @Nested
     class TestDirNotWritable {
