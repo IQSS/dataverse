@@ -2,19 +2,20 @@ package edu.harvard.iq.dataverse.privateurl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 /**
  *
@@ -59,6 +60,13 @@ public class PrivateUrlServiceBean implements Serializable {
      */
     public PrivateUrlRedirectData getPrivateUrlRedirectDataFromToken(String token) {
         return PrivateUrlUtil.getPrivateUrlRedirectData(getRoleAssignmentFromPrivateUrlToken(token));
+    }
+
+    /**
+     * @return DatasetVersion if it can be found using the token or null.
+     */
+    public DatasetVersion getDraftDatasetVersionFromToken(String token) {
+        return PrivateUrlUtil.getDraftDatasetVersionFromRoleAssignment(getRoleAssignmentFromPrivateUrlToken(token));
     }
 
     /**

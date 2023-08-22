@@ -1,21 +1,21 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.OK;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
@@ -127,7 +127,7 @@ public class ExternalToolsIT {
         getExternalToolsForFileInvalidType.prettyPrint();
         getExternalToolsForFileInvalidType.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview]."));
+                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview, query]."));
 
         Response getExternalToolsForTabularFiles = UtilIT.getExternalToolsForFile(tabularFileId.toString(), "explore", apiToken);
         getExternalToolsForTabularFiles.prettyPrint();
@@ -223,7 +223,7 @@ public class ExternalToolsIT {
         getExternalToolsByDatasetIdInvalidType.prettyPrint();
         getExternalToolsByDatasetIdInvalidType.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview]."));
+                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview, query]."));
 
         Response getExternalToolsByDatasetId = UtilIT.getExternalToolsForDataset(datasetId.toString(), "explore", apiToken);
         getExternalToolsByDatasetId.prettyPrint();

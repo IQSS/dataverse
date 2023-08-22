@@ -4,8 +4,8 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.locality.StorageSite;
 import java.util.ArrayList;
 import java.util.List;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 

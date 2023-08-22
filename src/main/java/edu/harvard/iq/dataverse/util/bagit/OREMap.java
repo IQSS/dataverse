@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObjectContainer;
+import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
@@ -29,12 +30,12 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -193,6 +194,17 @@ public class OREMap {
                 }
                 addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fileName); 
                 addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
+                Embargo embargo=df.getEmbargo(); 
+                if(embargo!=null) {
+                    String date = embargo.getFormattedDateAvailable();
+                    String reason= embargo.getReason();
+                    JsonObjectBuilder embargoObject = Json.createObjectBuilder();
+                    embargoObject.add(JsonLDTerm.DVCore("dateAvailable").getLabel(), date);
+                    if(reason!=null) {
+                        embargoObject.add(JsonLDTerm.DVCore("reason").getLabel(), reason);
+                    }
+                    aggRes.add(JsonLDTerm.DVCore("embargoed").getLabel(), embargoObject);
+                }
                 addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
                 addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
                 addIfNotNull(aggRes, JsonLDTerm.datasetVersionId, fmd.getDatasetVersion().getId());

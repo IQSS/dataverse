@@ -2,8 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.util.Locale;
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.MappedSuperclass;
 import org.apache.commons.lang3.StringUtils;
 
 /**

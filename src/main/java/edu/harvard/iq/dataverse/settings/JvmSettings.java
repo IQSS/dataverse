@@ -84,6 +84,11 @@ public enum JvmSettings {
     // Avoids adding flag entries twice.
     FEATURE_FLAG(SCOPE_FLAGS),
     
+    // METADATA SETTINGS
+    SCOPE_METADATA(PREFIX, "metadata"),
+    MDB_SYSTEM_METADATA_KEYS(SCOPE_METADATA, "block-system-metadata-keys"),
+    MDB_SYSTEM_KEY_FOR(MDB_SYSTEM_METADATA_KEYS),
+
     // PERSISTENT IDENTIFIER SETTINGS
     SCOPE_PID(PREFIX, "pid"),
     
@@ -125,6 +130,10 @@ public enum JvmSettings {
     SCOPE_UI(PREFIX, "ui"),
     UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
     UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
+
+    // NetCDF SETTINGS
+    SCOPE_NETCDF(PREFIX, "netcdf"),
+    GEO_EXTRACT_S3_DIRECT_UPLOAD(SCOPE_NETCDF, "geo-extract-s3-direct-upload"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";

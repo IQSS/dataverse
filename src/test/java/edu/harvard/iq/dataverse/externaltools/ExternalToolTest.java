@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.externaltools;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 

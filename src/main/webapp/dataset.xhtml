@@ -315,13 +315,13 @@
                                             <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
                                                 <div class="btn-group">
                                                     <!-- Publish BTN -->
-                                                    <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !DatasetPage.valid}">
+                                                    <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !valid}">
                                                         <c:if test="#{!((showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedExternalStatuses) and showPublishLink)}">
-                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !DatasetPage.valid ? 'disabled' : ''}"/>
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !valid ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
                                                         </c:if>
                                                         <c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedExternalStatuses) and showPublishLink}">
-                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess  or !DatasetPage.valid ? 'disabled' : ''}"/>
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess  or !valid ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="data-toggle" value="dropdown"/>
                                                             <f:passThroughAttribute name="aria-haspopup" value="true"/>
                                                             <f:passThroughAttribute name="aria-expanded" value="false"/>

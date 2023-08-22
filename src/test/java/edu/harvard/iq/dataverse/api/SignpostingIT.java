@@ -1,21 +1,21 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 
-import static com.jayway.restassured.RestAssured.given;
-import com.jayway.restassured.response.Response;
+import static io.restassured.RestAssured.given;
+import io.restassured.response.Response;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
