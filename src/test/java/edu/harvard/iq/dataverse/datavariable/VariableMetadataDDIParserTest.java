@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.datavariable;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class VariableMetadataDDIParserTest {
 

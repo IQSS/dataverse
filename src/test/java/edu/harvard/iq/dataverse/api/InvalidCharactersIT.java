@@ -11,12 +11,12 @@ import jakarta.json.JsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import org.hamcrest.Matchers;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class InvalidCharactersIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

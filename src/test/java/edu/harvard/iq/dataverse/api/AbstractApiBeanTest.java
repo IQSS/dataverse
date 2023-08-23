@@ -7,17 +7,16 @@ import java.util.Map;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
 import jakarta.ws.rs.core.Response;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AbstractApiBeanTest {
 
@@ -25,7 +24,7 @@ public class AbstractApiBeanTest {
 
     AbstractApiBeanImpl sut;
 
-    @Before
+    @BeforeEach
     public void before() {
         sut = new AbstractApiBeanImpl();
     }
@@ -39,15 +38,15 @@ public class AbstractApiBeanTest {
         assertFalse(sut.parseBooleanOrDie("0"));
         assertFalse(sut.parseBooleanOrDie("no"));
     }
-
-    @Test(expected = Exception.class)
-    public void testParseBooleanOrDie_invalid() throws Exception {
-        sut.parseBooleanOrDie("I'm not a boolean value!");
+    
+    @Test
+    void testParseBooleanOrDie_invalid() {
+        assertThrows(Exception.class, () -> sut.parseBooleanOrDie("I'm not a boolean value!"));
     }
 
     @Test
-    public void testFailIfNull_ok() throws Exception {
-        sut.failIfNull(sut, "");
+    void testFailIfNull_ok() {
+        assertDoesNotThrow(() -> sut.failIfNull(sut, ""));
     }
 
     @Test

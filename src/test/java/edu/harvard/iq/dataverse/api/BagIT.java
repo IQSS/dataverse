@@ -6,13 +6,13 @@ import edu.harvard.iq.dataverse.engine.command.impl.LocalSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class BagIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
 
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -65,7 +65,7 @@ public class BagIT {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
 
         // Not checking if delete happened. Hopefully, it did.

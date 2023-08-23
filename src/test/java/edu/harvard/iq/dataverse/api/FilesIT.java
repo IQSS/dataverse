@@ -5,8 +5,8 @@ import io.restassured.response.Response;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
-import org.junit.Test;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 import io.restassured.path.json.JsonPath;
 import static io.restassured.path.json.JsonPath.with;
 import io.restassured.path.xml.XmlPath;
@@ -29,22 +29,22 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
 import static jakarta.ws.rs.core.Response.Status.*;
-import static junit.framework.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FilesIT {
 
     private static final Logger logger = Logger.getLogger(FilesIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
@@ -502,7 +502,7 @@ public class FilesIT {
 
         // give file time to ingest
        // sleep(10000);
-       assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+       assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Response ddi = UtilIT.getFileMetadata(origFileId.toString(), "ddi", apiToken);
 //        ddi.prettyPrint();
@@ -1203,7 +1203,7 @@ public class FilesIT {
         assertNotNull(origFileId);    // If checkOut fails, display message
        // sleep(10000);
         
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
         Response uningestFileResponse = UtilIT.uningestFile(origFileId, apiToken);
         assertEquals(200, uningestFileResponse.getStatusCode());       
     }
@@ -1237,7 +1237,7 @@ public class FilesIT {
         Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
         
         //sleep(2000); //ensure tsv is consumed
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
         msg("Publish dataverse and dataset");
         Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataversetResp.then().assertThat()
@@ -1335,7 +1335,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         
         // wait for it to ingest... 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, 5));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, 5), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
      //   sleep(10000);
      
         Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
@@ -1479,7 +1479,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
 
         // give file time to ingest
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
        // sleep(10000);
 
         Response ddi = UtilIT.getFileMetadata(origFileId.toString(), "ddi", apiToken);
@@ -1734,7 +1734,7 @@ public class FilesIT {
 
         Integer fileIdCsv = JsonPath.from(uploadFileCsv.body().asString()).getInt("data.files[0].dataFile.id");
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToCsv, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToCsv);
 
         // Just the tabular file, not the original, no byte range. Vanilla.
         Response downloadFileNoArgs = UtilIT.downloadFile(fileIdCsv, null, null, null, authorApiToken);
@@ -1867,7 +1867,7 @@ public class FilesIT {
         logger.info(r.prettyPrint());
         assertEquals(200, r.getStatusCode());
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Long dataFileId = JsonPath.from(r.body().asString()).getLong("data.files[0].dataFile.id");
         Response fileMeta = UtilIT.getDataFileMetadataDraft(dataFileId, apiToken);
@@ -1880,7 +1880,7 @@ public class FilesIT {
         logger.info(rTabIngest.prettyPrint());
         assertEquals(200, rTabIngest.getStatusCode());
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Long ingDataFileId = JsonPath.from(rTabIngest.body().asString()).getLong("data.files[0].dataFile.id");
         Response ingFileMeta = UtilIT.getDataFileMetadataDraft(ingDataFileId, apiToken);
@@ -2094,8 +2094,8 @@ public class FilesIT {
             fileInfoResponseString = fileInfoResponse.body().asString();
             msg(fileInfoResponseString);
 
-            org.junit.Assert.assertEquals("The file was NOT supposed to be issued a PID", "",
-                    JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId"));
+            assertEquals("", JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId"),
+                "The file was NOT supposed to be issued a PID");
         } finally {
             UtilIT.deleteSetting(SettingsServiceBean.Key.FilePIDsEnabled);
             UtilIT.deleteSetting(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection);

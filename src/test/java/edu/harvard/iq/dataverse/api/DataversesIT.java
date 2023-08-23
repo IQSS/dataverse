@@ -22,14 +22,15 @@ import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import jakarta.ws.rs.core.Response.Status;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.OK;
-import static junit.framework.Assert.assertEquals;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
@@ -39,12 +40,12 @@ public class DataversesIT {
 
     private static final Logger logger = Logger.getLogger(DataversesIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
     
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
     }
