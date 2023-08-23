@@ -2,7 +2,6 @@
 package edu.harvard.iq.dataverse.metadataimport;
 
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
@@ -17,13 +16,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.io.StringReader;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;

@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import java.io.IOException;
-import javax.inject.Inject;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.inject.Inject;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.swordapp.server.ServiceDocumentAPI;
 import org.swordapp.server.servlets.SwordServlet;
 

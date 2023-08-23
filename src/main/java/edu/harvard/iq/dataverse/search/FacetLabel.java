@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 @Named
 public class FacetLabel implements Comparable<FacetLabel>{

@@ -6,7 +6,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 import org.swordapp.server.SwordConfiguration;
 
 public class SwordConfigurationImpl implements SwordConfiguration {

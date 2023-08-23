@@ -1,11 +1,11 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
+import io.restassured.RestAssured;
 
-import static com.jayway.restassured.RestAssured.given;
+import static io.restassured.RestAssured.given;
 
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 
 import java.util.logging.Logger;
 
@@ -13,21 +13,21 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.Ignore;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 
 import java.util.List;
 import java.util.Map;
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.Status.CONFLICT;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static jakarta.ws.rs.core.Response.Status.CONFLICT;
+import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
 
 import edu.harvard.iq.dataverse.DataFile;
 
@@ -42,11 +42,11 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import com.jayway.restassured.parsing.Parser;
+import io.restassured.parsing.Parser;
 
-import static com.jayway.restassured.path.json.JsonPath.with;
+import static io.restassured.path.json.JsonPath.with;
 
-import com.jayway.restassured.path.xml.XmlPath;
+import io.restassured.path.xml.XmlPath;
 
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
 
@@ -67,10 +67,10 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.core.Response.Status;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.core.Response.Status;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -670,9 +670,7 @@ public class DatasetsIT {
         exportDatasetAsDdi.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // This is now returning [] instead of sammi@sample.com. Not sure why.
-        // :ExcludeEmailFromExport is absent so the email should be shown.
-        assertEquals("[]", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+        assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
         Response reexportAllFormats = UtilIT.reexportDatasetAllFormats(datasetPersistentId);
@@ -762,7 +760,7 @@ public class DatasetsIT {
 
         assertEquals("Dataverse, Admin", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact"));
         // no "sammi@sample.com" to be found https://github.com/IQSS/dataverse/issues/3443
-        assertEquals("[]", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@email"));
+        assertEquals(null, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@email"));
         assertEquals("Sample Datasets, inc.", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@affiliation"));
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
