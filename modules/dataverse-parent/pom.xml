@@ -15,6 +15,7 @@
         <module>../../scripts/zipdownload</module>
         <module>../container-base</module>
         <module>../dataverse-spi</module>
+        <module>../solr-configset</module>
     </modules>
     
     <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
@@ -52,6 +53,11 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.solr</groupId>
+                <artifactId>solr-solrj</artifactId>
+                <version>${solr.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>
@@ -125,6 +131,12 @@
                 <version>${testcontainers.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
+            </dependency>
+    
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.jupiter.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -200,6 +212,8 @@
         
         <!-- Container related -->
         <fabric8-dmp.version>0.43.0</fabric8-dmp.version>
+        <solr.collection>collection1</solr.collection>
+        <solr.configset>dataverse</solr.configset> <!-- Note: container usage only for now, might be reused in code -->
     </properties>
     
     <pluginRepositories>
@@ -407,7 +421,6 @@
                 -->
                 <!-- <payara.version>5.2022.5</payara.version> -->
             </properties>
-    
             <build>
                 <plugins>
                     <!-- This will get the current commit id to include in image tags of container builds as Maven properties -->
@@ -433,8 +446,6 @@
                     </plugin>
                 </plugins>
             </build>
-            
         </profile>
     </profiles>
-    
 </project>

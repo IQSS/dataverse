@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd;">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>edu.harvard.iq</groupId>
+        <artifactId>dataverse-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../dataverse-parent</relativePath>
+    </parent>
+    
+    <artifactId>solr-configset</artifactId>
+    <!-- We actually create a ZIP file, so let's not create an empty JAR -->
+    <packaging>${solr.packaging.type}</packaging>
+    
+    <properties>
+        <solr.configset.directory>${project.build.directory}/${solr.configset}</solr.configset.directory>
+        <solr.packaging.type>jar</solr.packaging.type>
+        <solrteur.script>${project.build.sourceDirectory}/io/gdcc/solrteur/solrteur.java</solrteur.script>
+    </properties>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>${target.java.version}</release>
+                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                    <compilerArgument>${compilerArgument}</compilerArgument>
+                </configuration>
+            </plugin>
+            
+            <!-- Download Solr to build configset template -->
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.6.8</version>
+                <executions>
+                    <execution>
+                        <id>download-solr</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://archive.apache.org/dist/lucene/solr/${solr.version}/solr-${solr.version}.zip</url>
+                            <unpack>false</unpack>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <followRedirects>true</followRedirects>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+    
+            <plugin>
+                <groupId>dev.jbang</groupId>
+                <artifactId>jbang-maven-plugin</artifactId>
+                <version>0.0.7</version>
+                <executions>
+                    <execution>
+                        <id>extract-template</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <args>
+                                <arg>--solr-version="${solr.version}"</arg>
+                                <arg>--target="${solr.configset.directory}"</arg>
+                                <arg>extract-zip</arg>
+                                <arg>--zip="${project.build.directory}/solr-${solr.version}.zip"</arg>
+                            </args>
+                            <script>${solrteur.script}</script>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>compile-solrconfig-xml</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <args>
+                                <arg>--solr-version="${solr.version}"</arg>
+                                <arg>--target="${solr.configset.directory}"</arg>
+                                <arg>solrconfig</arg>
+                                <arg>--xslts="${project.resources[0].directory}/solrconfig-xslt"</arg>
+                            </args>
+                            <script>${solrteur.script}</script>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>compile-schema</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <args>
+                                <arg>--solr-version="${solr.version}"</arg>
+                                <arg>--target="${solr.configset.directory}"</arg>
+                                <arg>schema</arg>
+                                <!--<arg>-tsvs="${project.basedir}/../../scripts/api/data/metadatablocks"</arg>-->
+                                <arg>--tsvs="${project.resources[0].directory}/tsv"</arg>
+                                <arg>--base="${project.resources[0].directory}/schema.xml"</arg>
+                            </args>
+                            <script>${solrteur.script}</script>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+    
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>test-solr-config</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <buildDirectory>${project.build.directory}</buildDirectory>
+                            </systemPropertyVariables>
+                            
+                            <groups>SolrConfig</groups>
+                            <includes>
+                                <include>**/*Test.java</include>
+                                <include>**/*IT.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    
+    <dependencies>
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.6.3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>Saxon-HE</artifactId>
+            <version>10.6</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-solrj</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-core</artifactId>
+            <version>${solr.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    
+    <profiles>
+        <profile>
+            <id>zip</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>${maven-assembly-plugin.version}</version>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <finalName>${project.artifactId}</finalName>
+                            <descriptors>
+                                <descriptor>src/assembly/default.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>create-archive</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    
+        <profile>
+            <id>ct</id>
+            <properties>
+                <solr.packaging.type>docker</solr.packaging.type>
+                <solr.configsets.path>/opt/solr/server/solr/configsets</solr.configsets.path>
+                <solr.memory>1073741824</solr.memory> <!-- = 1 GiB in bytes -->
+            </properties>
+            <build>
+                <plugins>
+                    <!-- Build image via Docker Maven Plugin -->
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <startParallel>true</startParallel>
+                            <images>
+                                <image>
+                                    <alias>solr</alias>
+                                    <name>${ct.orgname}/solr:${revision}</name>
+                                    <registry>${ct.registry}</registry>
+                                    <build>
+                                        <from>solr:${solr.version}</from>
+                                        <!-- Tune some settings by default for Dataverse usage -->
+                                        <env>
+                                            <!-- Use 80% of RAM as heap space by default, using the JVM Container Limits support -->
+                                            <!-- Ratios taken from https://github.com/fabric8io-images/run-java-sh/blob/master/TUNING.md#recommandations -->
+                                            <SOLR_JAVA_MEM>-XX:MaxRAMPercentage=80.0 -XX:MinHeapFreeRatio=20 -XX:MaxHeapFreeRatio=40</SOLR_JAVA_MEM>
+                                            <!-- To avoid "401 - URI too long" errors we need to set a larger request size -->
+                                            <SOLR_OPTS>-Dsolr.jetty.request.header.size=102400</SOLR_OPTS>
+                                        </env>
+                                        <labels>
+                                            <!-- Git details are coming from the git plugin, see parent module -->
+                                            <org.opencontainers.image.created>${git.build.time}</org.opencontainers.image.created>
+                                            <org.opencontainers.image.authors><![CDATA[Research Data Management at FZJ <forschungsdaten@fz-juelich.de>]]></org.opencontainers.image.authors>
+                                            <org.opencontainers.image.url>https://k8s-docs.gdcc.io</org.opencontainers.image.url>
+                                            <org.opencontainers.image.documentation>https://k8s-docs.gdcc.io</org.opencontainers.image.documentation>
+                                            <org.opencontainers.image.source>https://github.com/gdcc/dataverse/tree/develop%2Bct/modules/solr-configset</org.opencontainers.image.source>
+                                            <org.opencontainers.image.version>${project.version}</org.opencontainers.image.version>
+                                            <org.opencontainers.image.revision>${git.commit.id.abbrev}</org.opencontainers.image.revision>
+                                            <org.opencontainers.image.vendor>Global Dataverse Community Consortium</org.opencontainers.image.vendor>
+                                            <org.opencontainers.image.licenses>Apache-2.0</org.opencontainers.image.licenses>
+                                            <org.opencontainers.image.title>gdcc/solr :: Dataverse-ready Solr</org.opencontainers.image.title>
+                                            <org.opencontainers.image.description>This container image provides a Dataverse-ready Solr Search Index.</org.opencontainers.image.description>
+                                        </labels>
+                                        <assembly>
+                                            <targetDir>${solr.configsets.path}</targetDir>
+                                            <descriptor>${project.basedir}/src/assembly/default.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                    <!-- Run via Maven: mvn -Pct package docker:run -->
+                                    <run>
+                                        <cmd>
+                                            <shell>solr-precreate ${solr.collection} ${solr.configsets.path}/${solr.configset}</shell>
+                                        </cmd>
+                                        <!-- Limit to 1 GiB memory by default, but allow overrides via property -->
+                                        <memory>${solr.memory}</memory>
+                                        <ports>
+                                            <port>8983:8983</port>
+                                        </ports>
+                                        <volumes>
+                                            <bind>
+                                                <volume>solr-temp-volume:/var/solr</volume>
+                                            </bind>
+                                        </volumes>
+                                    </run>
+                                </image>
+                            </images>
+                            <volumes>
+                                <volume>
+                                    <name>solr-temp-volume</name>
+                                    <driver>local</driver>
+                                    <opts>
+                                        <type>tmpfs</type>
+                                        <device>tmpfs</device>
+                                        <o>size=256m,uid=8939</o>
+                                    </opts>
+                                    <labels>
+                                        <volatileData>true</volatileData>
+                                    </labels>
+                                </volume>
+                            </volumes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    
+</project>
