@@ -82,7 +82,8 @@ public class SiteMapUtilTest {
         String tmpDir = tmpDirPath.toString();
         File docroot = new File(tmpDir + File.separator + "docroot");
         docroot.mkdirs();
-        System.setProperty("com.sun.aas.instanceRoot", tmpDir);
+        // TODO: this and the above should be replaced with JUnit 5 @TestDir
+        System.setProperty("test.filesDir", tmpDir);
 
         SiteMapUtil.updateSiteMap(dataverses, datasets);
 
@@ -117,7 +118,7 @@ public class SiteMapUtilTest {
         assertFalse(sitemapString.contains(harvestedPid));
         assertFalse(sitemapString.contains(deaccessionedPid));
 
-        System.clearProperty("com.sun.aas.instanceRoot");
+        System.clearProperty("test.filesDir");
 
     }
 
