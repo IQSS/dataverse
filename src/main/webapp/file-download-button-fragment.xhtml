@@ -12,7 +12,7 @@
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     
     <!-- Access Status -->
-    <li class="dropdown-header">File Access <span class="glyphicon glyphicon-file"/></li>
+    <li class="dropdown-header">#{bundle['file.accessBtn.header.access']} <span class="glyphicon glyphicon-file"/></li>
     <li><span class="dropdown-item-text">
             <span class="#{!fileMetadata.restricted ?
                            'glyphicon glyphicon-globe text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'glyphicon glyphicon-lock text-danger' : 'icon-unlock text-success')}"/>
@@ -24,14 +24,14 @@
         </span></li>
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
                              and fileMetadata.dataFile.owner.fileAccessRequest and !dataFileServiceBean.isActivelyEmbargoed(fileMetadata)}">
-        <p:outputPanel id="requestPanel" styleClass="iq-dropdown-list-item #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}"
+        <p:outputPanel id="requestPanel" styleClass="iq-dropdown-list-item #{fileMetadata.dataFile.containsFileAccessRequestFromUser(dataverseSession.user) ? 'disabled' : ''}"
                        rendered="#{fileDownloadHelper.session.user.authenticated}">
-            <p:commandLink styleClass="btn-request #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'italic'  : ''}"
+            <p:commandLink styleClass="btn-request #{fileMetadata.dataFile.containsFileAccessRequestFromUser(dataverseSession.user) ? 'italic'  : ''}"
                         actionListener="#{fileDownloadHelper.handleCommandLinkClick(fileMetadata)}"
                         update="@([id$=requestAccessConsolidated]), @([id$=requestPanel]),  @([id$=filesTable]), @([id$=messagePanel])"
                         id="requestAccessConsolidated"
-                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
-                #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
+                        disabled="#{fileMetadata.dataFile.containsFileAccessRequestFromUser(dataverseSession.user)}">
+                #{fileMetadata.dataFile.containsFileAccessRequestFromUser(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
             </p:commandLink>
         </p:outputPanel>
         <li jsf:rendered="#{!fileDownloadHelper.session.user.authenticated}">
@@ -211,7 +211,7 @@
     <!-- END: CAN DOWNLOAD ACCESS Options -->
     
     <!-- Download Metadata -->
-    <li class="dropdown-header">Download Metadata <span class="glyphicon glyphicon-download-alt"/></li>
+    <li class="dropdown-header">#{bundle['file.accessBtn.header.metadata']} <span class="glyphicon glyphicon-download-alt"/></li>
     
     <ui:fragment rendered="#{fileMetadata.dataFile.tabularData and fileDownloadHelper.canDownloadFile(fileMetadata)}">
         <li>
@@ -323,8 +323,35 @@
         </ui:repeat>
         <!-- END: externalTools -->
     </ui:fragment>
-    <!-- Explore Options -->
-
+    
+    
+    <!-- Query Options -->
+    <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty queryTools}">
+        <!--query Tools is set as a ui:param by the file and dataset pages-->
+        <li class="dropdown-header">#{bundle['file.accessBtn.header.query']} <span class="glyphicon glyphicon-equalizer"/></li>
+        <!-- query Tools -->
+        <ui:repeat var="tool" value="#{queryTools}">
+            <li>
+                <p:commandLink rendered="#{!downloadPopupRequired}"
+                               styleClass="btn-query #{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                               action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}">
+                    #{tool.getDisplayNameLang()}
+                </p:commandLink>
+                <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse because we know we'll need it later in the popup.-->
+                <p:commandLink rendered="#{downloadPopupRequired}"
+                               action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
+                               styleClass="btn-query #{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload)}"
+                               process="@this"
+                               update="@widgetVar(downloadPopup)"
+                               oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                    #{tool.getDisplayNameLang()}
+                </p:commandLink>
+            </li>
+        </ui:repeat>
+        <!-- END: externalTools -->
+    </ui:fragment>
     <!-- Compute Options -->
     <ui:fragment rendered="#{(isFilePg ? FilePage.showComputeButton() : DatasetPage.showComputeButton(fileMetadata)) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
         <li class="dropdown-header">#{bundle['dataset.accessBtn.header.compute']} <span class="glyphicon glyphicon-flash"/></li>

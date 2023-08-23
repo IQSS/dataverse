@@ -252,8 +252,8 @@ if not pgOnly:
    # 1d. check java version
    java_version = subprocess.check_output(["java", "-version"], stderr=subprocess.STDOUT).decode()
    print("Found java version "+java_version)
-   if not re.search('(1.8|11)', java_version):
-      sys.exit("Dataverse requires OpenJDK 1.8 or 11. Please make sure it's in your PATH, and try again.")
+   if not re.search('(17)', java_version):
+      sys.exit("Dataverse requires OpenJDK 17. Please make sure it's in your PATH, and try again.")
 
    # 1e. check if the setup scripts - setup-all.sh, are available as well, maybe?
    # @todo (?)
@@ -314,7 +314,7 @@ else:
                   gfDir = config.get('glassfish', 'GLASSFISH_DIRECTORY')
                   while not test_appserver_directory(gfDir):
                      print("\nInvalid Payara directory!")
-                     gfDir = read_user_input("Enter the root directory of your Payara5 installation:\n(Or ctrl-C to exit the installer): ")
+                     gfDir = read_user_input("Enter the root directory of your Payara installation:\n(Or ctrl-C to exit the installer): ")
                   config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
                elif option == "mail_server":
                   mailServer = config.get('system', 'MAIL_SERVER')
@@ -511,12 +511,12 @@ print("\nInstalling additional configuration files (Jhove)... ")
 try: 
    copy2(jhoveConfigSchemaDist, gfConfigDir)
    # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
-   # and may need to be adjusted, if Payara is installed anywhere other than /usr/local/payara5:
-   if gfDir == "/usr/local/payara5":
+   # and may need to be adjusted, if Payara is installed anywhere other than /usr/local/payara6:
+   if gfDir == "/usr/local/payara6":
       copy2(jhoveConfigDist, gfConfigDir)
    else:
-      # use sed to replace /usr/local/payara5 in the distribution copy with the real gfDir:
-      sedCommand = "sed 's:/usr/local/payara5:"+gfDir+":g' < " + jhoveConfigDist + " > " + gfConfigDir + "/" + jhoveConfig
+      # use sed to replace /usr/local/payara6 in the distribution copy with the real gfDir:
+      sedCommand = "sed 's:/usr/local/payara6:"+gfDir+":g' < " + jhoveConfigDist + " > " + gfConfigDir + "/" + jhoveConfig
       subprocess.call(sedCommand, shell=True)
 
    print("done.")
@@ -578,8 +578,8 @@ print("test name space \"10.5072\" with the \"shoulder\" \"FK2\"")
 print("However, you have to contact DataCite (support\@datacite.org) and request a test account, before you ")
 print("can publish datasets. Once you receive the account name and password, add them to your domain.xml,")
 print("as the following two JVM options:")
-print("\t<jvm-options>-Ddoi.username=...</jvm-options>")
-print("\t<jvm-options>-Ddoi.password=...</jvm-options>")
+print("\t<jvm-options>-Ddataverse.pid.datacite.username=...</jvm-options>")
+print("\t<jvm-options>-Ddataverse.pid.datacite.password=...</jvm-options>")
 print("and restart payara")
 print("If this is a production Dataverse and you are planning to register datasets as ")
 print("\"real\", non-test DOIs or Handles, consult the \"Persistent Identifiers and Publishing Datasets\"")

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  This schema module includes three named character entity files.
+-->
+<!DOCTYPE xs:schema [
+<!-- These are the entity sets for ISO Latin 1 characters for the XHTML -->
+<!ENTITY % HTMLlat1 PUBLIC
+   "-//W3C//ENTITIES Latin 1 for XHTML//EN"
+   "xhtml-lat1.ent">
+%HTMLlat1;
+<!-- These are the entity sets for special characters for the XHTML -->
+<!ENTITY % HTMLsymbol PUBLIC
+   "-//W3C//ENTITIES Symbols for XHTML//EN"
+   "xhtml-symbol.ent">
+%HTMLsymbol;
+<!-- These are the entity sets for symbol characters for the XHTML -->
+<!ENTITY % HTMLspecial PUBLIC
+   "-//W3C//ENTITIES Special for XHTML//EN"
+   "xhtml-special.ent">
+%HTMLspecial;
+]>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.w3.org/1999/xhtml"
+           xmlns="http://www.w3.org/1999/xhtml">
+
+  <xs:annotation>
+    <xs:documentation>
+      Character Entities for XHTML    
+      This is the XML Schema Character Entities module for XHTML
+
+      This module declares the set of character entities for XHTML,
+      including the Latin 1, Symbol and Special character collections.
+      XML Schema does not support Entities, hence Entities are enable
+      through an Internal DTD Subset.
+      
+      $Id$
+    </xs:documentation>
+    <xs:documentation source="xhtml-copyright-1.xsd"/>
+  </xs:annotation>
+
+</xs:schema>

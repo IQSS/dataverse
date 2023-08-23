@@ -52,6 +52,20 @@ If you ever want to check an environment variable, you can "echo" it like this:
 
   echo $SERVER_URL
 
+With curl version 7.56.0 and higher, it is recommended to use --form-string with outer quote rather than -F flag without outer quote.
+
+For example, curl command parameter below might cause error such as ``warning: garbage at end of field specification: ,"categories":["Data"]}``.
+
+.. code-block:: bash
+
+  -F jsonData={\"description\":\"My description.\",\"categories\":[\"Data\"]}
+
+Instead, use --form-string with outer quote. See https://github.com/curl/curl/issues/2022
+
+.. code-block:: bash
+
+  --form-string 'jsonData={"description":"My description.","categories":["Data"]}'
+
 If you don't like curl, don't have curl, or want to use a different programming language, you are encouraged to check out the Python, Javascript, R, and Java options in the :doc:`client-libraries` section.
 
 .. _curl: https://curl.haxx.se

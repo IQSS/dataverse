@@ -365,8 +365,8 @@ public class TabularSubsetGenerator implements SubsetGenerator {
 
     public void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases,
         String delimiter) {
-        try {
-            subsetFile(new FileInputStream(new File(infile)), outfile, columns, numCases, delimiter);
+        try (FileInputStream fis = new FileInputStream(new File(infile))){
+            subsetFile(fis, outfile, columns, numCases, delimiter);
         } catch (IOException ex) {
             throw new RuntimeException("Could not open file "+infile);
         }
@@ -375,33 +375,28 @@ public class TabularSubsetGenerator implements SubsetGenerator {
 
     public void subsetFile(InputStream in, String outfile, List<Integer> columns, Long numCases,
         String delimiter) {
-        try {
-          Scanner scanner =  new Scanner(in);
-          scanner.useDelimiter("\\n");
+          try (Scanner scanner = new Scanner(in); BufferedWriter out = new BufferedWriter(new FileWriter(outfile))) {
+            scanner.useDelimiter("\\n");
 
-          BufferedWriter out = new BufferedWriter(new FileWriter(outfile));
-            for (long caseIndex = 0; caseIndex < numCases; caseIndex++) {
-                if (scanner.hasNext()) {
-                    String[] line = (scanner.next()).split(delimiter,-1);
-                    List<String> ln = new ArrayList<String>();
-                    for (Integer i : columns) {
-                        ln.add(line[i]);
+                for (long caseIndex = 0; caseIndex < numCases; caseIndex++) {
+                    if (scanner.hasNext()) {
+                        String[] line = (scanner.next()).split(delimiter,-1);
+                        List<String> ln = new ArrayList<String>();
+                        for (Integer i : columns) {
+                            ln.add(line[i]);
+                        }
+                        out.write(StringUtils.join(ln,"\t")+"\n");
+                    } else {
+                        throw new RuntimeException("Tab file has fewer rows than the determined number of cases.");
                     }
-                    out.write(StringUtils.join(ln,"\t")+"\n");
-                } else {
-                    throw new RuntimeException("Tab file has fewer rows than the determined number of cases.");
                 }
-            }
 
-          while (scanner.hasNext()) {
-              if (!"".equals(scanner.next()) ) {
-                  throw new RuntimeException("Tab file has extra nonempty rows than the determined number of cases.");
+              while (scanner.hasNext()) {
+                  if (!"".equals(scanner.next()) ) {
+                      throw new RuntimeException("Tab file has extra nonempty rows than the determined number of cases.");
 
+                  }
               }
-          }
-
-          scanner.close();
-          out.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -418,50 +413,48 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     
     public static Double[] subsetDoubleVector(InputStream in, int column, int numCases) {
         Double[] retVector = new Double[numCases];
-        Scanner scanner = new Scanner(in);
-        scanner.useDelimiter("\\n");
+        try (Scanner scanner = new Scanner(in)) {
+            scanner.useDelimiter("\\n");
 
-        for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-            if (scanner.hasNext()) {
-                String[] line = (scanner.next()).split("\t", -1);
+            for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
+                if (scanner.hasNext()) {
+                    String[] line = (scanner.next()).split("\t", -1);
 
-                // Verified: new Double("nan") works correctly, 
-                // resulting in Double.NaN;
-                // Double("[+-]Inf") doesn't work however; 
-                // (the constructor appears to be expecting it
-                // to be spelled as "Infinity", "-Infinity", etc. 
-                if ("inf".equalsIgnoreCase(line[column]) || "+inf".equalsIgnoreCase(line[column])) {
-                    retVector[caseIndex] = java.lang.Double.POSITIVE_INFINITY;
-                } else if ("-inf".equalsIgnoreCase(line[column])) {
-                    retVector[caseIndex] = java.lang.Double.NEGATIVE_INFINITY;
-                } else if (line[column] == null || line[column].equals("")) {
-                    // missing value:
-                    retVector[caseIndex] = null;
-                } else {
-                    try {
-                        retVector[caseIndex] = new Double(line[column]);
-                    } catch (NumberFormatException ex) {
-                        retVector[caseIndex] = null; // missing value
+                    // Verified: new Double("nan") works correctly,
+                    // resulting in Double.NaN;
+                    // Double("[+-]Inf") doesn't work however;
+                    // (the constructor appears to be expecting it
+                    // to be spelled as "Infinity", "-Infinity", etc.
+                    if ("inf".equalsIgnoreCase(line[column]) || "+inf".equalsIgnoreCase(line[column])) {
+                        retVector[caseIndex] = java.lang.Double.POSITIVE_INFINITY;
+                    } else if ("-inf".equalsIgnoreCase(line[column])) {
+                        retVector[caseIndex] = java.lang.Double.NEGATIVE_INFINITY;
+                    } else if (line[column] == null || line[column].equals("")) {
+                        // missing value:
+                        retVector[caseIndex] = null;
+                    } else {
+                        try {
+                            retVector[caseIndex] = new Double(line[column]);
+                        } catch (NumberFormatException ex) {
+                            retVector[caseIndex] = null; // missing value
+                        }
                     }
+
+                } else {
+                    throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
                 }
-
-            } else {
-                scanner.close();
-                throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
             }
-        }
 
-        int tailIndex = numCases;
-        while (scanner.hasNext()) {
-            String nextLine = scanner.next();
-            if (!"".equals(nextLine)) {
-                scanner.close();
-                throw new RuntimeException("Column " + column + ": tab file has more nonempty rows than the stored number of cases (" + numCases + ")! current index: " + tailIndex + ", line: " + nextLine);
+            int tailIndex = numCases;
+            while (scanner.hasNext()) {
+                String nextLine = scanner.next();
+                if (!"".equals(nextLine)) {
+                    throw new RuntimeException("Column " + column + ": tab file has more nonempty rows than the stored number of cases (" + numCases + ")! current index: " + tailIndex + ", line: " + nextLine);
+                }
+                tailIndex++;
             }
-            tailIndex++;
-        }
 
-        scanner.close();
+        }
         return retVector;
 
     }
@@ -472,48 +465,46 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      */
     public static Float[] subsetFloatVector(InputStream in, int column, int numCases) {
         Float[] retVector = new Float[numCases];
-        Scanner scanner = new Scanner(in);
-        scanner.useDelimiter("\\n");
+        try (Scanner scanner = new Scanner(in)) {
+            scanner.useDelimiter("\\n");
 
-        for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-            if (scanner.hasNext()) {
-                String[] line = (scanner.next()).split("\t", -1);
-                // Verified: new Float("nan") works correctly, 
-                // resulting in Float.NaN;
-                // Float("[+-]Inf") doesn't work however; 
-                // (the constructor appears to be expecting it
-                // to be spelled as "Infinity", "-Infinity", etc. 
-                if ("inf".equalsIgnoreCase(line[column]) || "+inf".equalsIgnoreCase(line[column])) {
-                    retVector[caseIndex] = java.lang.Float.POSITIVE_INFINITY;
-                } else if ("-inf".equalsIgnoreCase(line[column])) {
-                    retVector[caseIndex] = java.lang.Float.NEGATIVE_INFINITY;
-                } else if (line[column] == null || line[column].equals("")) {
-                    // missing value:
-                    retVector[caseIndex] = null;
-                } else {
-                    try {
-                        retVector[caseIndex] = new Float(line[column]);
-                    } catch (NumberFormatException ex) {
-                        retVector[caseIndex] = null; // missing value
+            for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
+                if (scanner.hasNext()) {
+                    String[] line = (scanner.next()).split("\t", -1);
+                    // Verified: new Float("nan") works correctly,
+                    // resulting in Float.NaN;
+                    // Float("[+-]Inf") doesn't work however;
+                    // (the constructor appears to be expecting it
+                    // to be spelled as "Infinity", "-Infinity", etc.
+                    if ("inf".equalsIgnoreCase(line[column]) || "+inf".equalsIgnoreCase(line[column])) {
+                        retVector[caseIndex] = java.lang.Float.POSITIVE_INFINITY;
+                    } else if ("-inf".equalsIgnoreCase(line[column])) {
+                        retVector[caseIndex] = java.lang.Float.NEGATIVE_INFINITY;
+                    } else if (line[column] == null || line[column].equals("")) {
+                        // missing value:
+                        retVector[caseIndex] = null;
+                    } else {
+                        try {
+                            retVector[caseIndex] = new Float(line[column]);
+                        } catch (NumberFormatException ex) {
+                            retVector[caseIndex] = null; // missing value
+                        }
                     }
+                } else {
+                    throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
                 }
-            } else {
-                scanner.close();
-                throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
             }
-        }
 
-        int tailIndex = numCases;
-        while (scanner.hasNext()) {
-            String nextLine = scanner.next();
-            if (!"".equals(nextLine)) {
-                scanner.close();
-                throw new RuntimeException("Column "+column+": tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
+            int tailIndex = numCases;
+            while (scanner.hasNext()) {
+                String nextLine = scanner.next();
+                if (!"".equals(nextLine)) {
+                    throw new RuntimeException("Column "+column+": tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
+                }
+                tailIndex++;
             }
-            tailIndex++;
-        }
 
-        scanner.close();
+        }
         return retVector;
 
     }
@@ -524,34 +515,32 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      */
     public static Long[] subsetLongVector(InputStream in, int column, int numCases) {
         Long[] retVector = new Long[numCases];
-        Scanner scanner = new Scanner(in);
-        scanner.useDelimiter("\\n");
+        try (Scanner scanner = new Scanner(in)) {
+            scanner.useDelimiter("\\n");
 
-        for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-            if (scanner.hasNext()) {
-                String[] line = (scanner.next()).split("\t", -1);
-                try {
-                    retVector[caseIndex] = new Long(line[column]);
-                } catch (NumberFormatException ex) {
-                    retVector[caseIndex] = null; // assume missing value
+            for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
+                if (scanner.hasNext()) {
+                    String[] line = (scanner.next()).split("\t", -1);
+                    try {
+                        retVector[caseIndex] = new Long(line[column]);
+                    } catch (NumberFormatException ex) {
+                        retVector[caseIndex] = null; // assume missing value
+                    }
+                } else {
+                    throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
                 }
-            } else {
-                scanner.close();
-                throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
             }
-        }
 
-        int tailIndex = numCases;
-        while (scanner.hasNext()) {
-            String nextLine = scanner.next();
-            if (!"".equals(nextLine)) {
-                scanner.close();
-                throw new RuntimeException("Column "+column+": tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
+            int tailIndex = numCases;
+            while (scanner.hasNext()) {
+                String nextLine = scanner.next();
+                if (!"".equals(nextLine)) {
+                    throw new RuntimeException("Column "+column+": tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
+                }
+                tailIndex++;
             }
-            tailIndex++;
-        }
 
-        scanner.close();
+        }
         return retVector;
 
     }
@@ -562,75 +551,72 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      */
     public static String[] subsetStringVector(InputStream in, int column, int numCases) {
         String[] retVector = new String[numCases];
-        Scanner scanner = new Scanner(in);
-        scanner.useDelimiter("\\n");
+        try (Scanner scanner = new Scanner(in)) {
+            scanner.useDelimiter("\\n");
 
-        for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-            if (scanner.hasNext()) {
-                String[] line = (scanner.next()).split("\t", -1);
-                retVector[caseIndex] = line[column];
-                
-                
-                if ("".equals(line[column])) {
-                    // An empty string is a string missing value!
-                    // An empty string in quotes is an empty string!
-                    retVector[caseIndex] = null;
-                } else {
-                    // Strip the outer quotes:
-                    line[column] = line[column].replaceFirst("^\\\"", "");
-                    line[column] = line[column].replaceFirst("\\\"$", "");
-
-                    // We need to restore the special characters that 
-                    // are stored in tab files escaped - quotes, new lines 
-                    // and tabs. Before we do that however, we need to 
-                    // take care of any escaped backslashes stored in 
-                    // the tab file. I.e., "foo\t" should be transformed 
-                    // to "foo<TAB>"; but "foo\\t" should be transformed 
-                    // to "foo\t". This way new lines and tabs that were
-                    // already escaped in the original data are not 
-                    // going to be transformed to unescaped tab and 
-                    // new line characters!
-                    String[] splitTokens = line[column].split(Matcher.quoteReplacement("\\\\"), -2);
-
-                    // (note that it's important to use the 2-argument version 
-                    // of String.split(), and set the limit argument to a
-                    // negative value; otherwise any trailing backslashes 
-                    // are lost.)
-                    for (int i = 0; i < splitTokens.length; i++) {
-                        splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\\""), "\"");
-                        splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\t"), "\t");
-                        splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\n"), "\n");
-                        splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\r"), "\r");
-                    }
-                    // TODO: 
-                    // Make (some of?) the above optional; for ex., we 
-                    // do need to restore the newlines when calculating UNFs;
-                    // But if we are subsetting these vectors in order to 
-                    // create a new tab-delimited file, they will 
-                    // actually break things! -- L.A. Jul. 28 2014
-
-                    line[column] = StringUtils.join(splitTokens, '\\');
-
+            for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
+                if (scanner.hasNext()) {
+                    String[] line = (scanner.next()).split("\t", -1);
                     retVector[caseIndex] = line[column];
+
+                    if ("".equals(line[column])) {
+                        // An empty string is a string missing value!
+                        // An empty string in quotes is an empty string!
+                        retVector[caseIndex] = null;
+                    } else {
+                        // Strip the outer quotes:
+                        line[column] = line[column].replaceFirst("^\\\"", "");
+                        line[column] = line[column].replaceFirst("\\\"$", "");
+
+                        // We need to restore the special characters that
+                        // are stored in tab files escaped - quotes, new lines
+                        // and tabs. Before we do that however, we need to
+                        // take care of any escaped backslashes stored in
+                        // the tab file. I.e., "foo\t" should be transformed
+                        // to "foo<TAB>"; but "foo\\t" should be transformed
+                        // to "foo\t". This way new lines and tabs that were
+                        // already escaped in the original data are not
+                        // going to be transformed to unescaped tab and
+                        // new line characters!
+                        String[] splitTokens = line[column].split(Matcher.quoteReplacement("\\\\"), -2);
+
+                        // (note that it's important to use the 2-argument version
+                        // of String.split(), and set the limit argument to a
+                        // negative value; otherwise any trailing backslashes
+                        // are lost.)
+                        for (int i = 0; i < splitTokens.length; i++) {
+                            splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\\""), "\"");
+                            splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\t"), "\t");
+                            splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\n"), "\n");
+                            splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\r"), "\r");
+                        }
+                        // TODO:
+                        // Make (some of?) the above optional; for ex., we
+                        // do need to restore the newlines when calculating UNFs;
+                        // But if we are subsetting these vectors in order to
+                        // create a new tab-delimited file, they will
+                        // actually break things! -- L.A. Jul. 28 2014
+
+                        line[column] = StringUtils.join(splitTokens, '\\');
+
+                        retVector[caseIndex] = line[column];
+                    }
+
+                } else {
+                    throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
                 }
-
-            } else {
-                scanner.close();
-                throw new RuntimeException("Tab file has fewer rows than the stored number of cases!");
             }
-        }
 
-        int tailIndex = numCases;
-        while (scanner.hasNext()) {
-            String nextLine = scanner.next();
-            if (!"".equals(nextLine)) {
-                scanner.close();
-                throw new RuntimeException("Column "+column+": tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
+            int tailIndex = numCases;
+            while (scanner.hasNext()) {
+                String nextLine = scanner.next();
+                if (!"".equals(nextLine)) {
+                    throw new RuntimeException("Column "+column+": tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
+                }
+                tailIndex++;
             }
-            tailIndex++;
-        }
 
-        scanner.close();
+        }
         return retVector;
 
     }
@@ -643,42 +629,40 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      */
     public static Double[][] subsetDoubleVectors(InputStream in, Set<Integer> columns, int numCases) throws IOException {
         Double[][] retVector = new Double[columns.size()][numCases];
-        Scanner scanner = new Scanner(in);
-        scanner.useDelimiter("\\n");
+        try (Scanner scanner = new Scanner(in)) {
+            scanner.useDelimiter("\\n");
 
-        for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
-            if (scanner.hasNext()) {
-                String[] line = (scanner.next()).split("\t", -1);
-                int j = 0;
-                for (Integer i : columns) {
-                    try {
-                        // TODO: verify that NaN and +-Inf are going to be
-                        // handled correctly here! -- L.A. 
-                        // NO, "+-Inf" is not handled correctly; see the 
-                        // comment further down below. 
-                        retVector[j][caseIndex] = new Double(line[i]);
-                    } catch (NumberFormatException ex) {
-                        retVector[j][caseIndex] = null; // missing value
+            for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
+                if (scanner.hasNext()) {
+                    String[] line = (scanner.next()).split("\t", -1);
+                    int j = 0;
+                    for (Integer i : columns) {
+                        try {
+                            // TODO: verify that NaN and +-Inf are going to be
+                            // handled correctly here! -- L.A.
+                            // NO, "+-Inf" is not handled correctly; see the
+                            // comment further down below.
+                            retVector[j][caseIndex] = new Double(line[i]);
+                        } catch (NumberFormatException ex) {
+                            retVector[j][caseIndex] = null; // missing value
+                        }
+                        j++;
                     }
-                    j++; 
+                } else {
+                    throw new IOException("Tab file has fewer rows than the stored number of cases!");
                 }
-            } else {
-                scanner.close();
-                throw new IOException("Tab file has fewer rows than the stored number of cases!");
             }
-        }
 
-        int tailIndex = numCases;
-        while (scanner.hasNext()) {
-            String nextLine = scanner.next();
-            if (!"".equals(nextLine)) {
-                scanner.close();
-                throw new IOException("Tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
+            int tailIndex = numCases;
+            while (scanner.hasNext()) {
+                String nextLine = scanner.next();
+                if (!"".equals(nextLine)) {
+                    throw new IOException("Tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
+                }
+                tailIndex++;
             }
-            tailIndex++;
-        }
 
-        scanner.close();
+        }
         return retVector;
 
     }
@@ -839,237 +823,238 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             columnOffset = varcount * 8; 
             columnLength = columnEndOffsets[0] - varcount * 8;  
         }
+        int caseindex = 0;
         
-        FileChannel fc = (FileChannel.open(Paths.get(rotatedImageFile.getAbsolutePath()), StandardOpenOption.READ));
-        fc.position(columnOffset);
-        int MAX_COLUMN_BUFFER = 8192;
-        
-        ByteBuffer in = ByteBuffer.allocate(MAX_COLUMN_BUFFER);
-        
-        if (columnLength < MAX_COLUMN_BUFFER) {
-          in.limit((int)(columnLength));
-        }
-        
-        long bytesRead = 0;
-        long bytesReadTotal = 0;
-        int caseindex = 0; 
-        int byteoffset = 0; 
-        byte[] leftover = null; 
-        
-        while (bytesReadTotal < columnLength) {
-            bytesRead = fc.read(in);
-            byte[] columnBytes = in.array();
-            int bytecount = 0; 
+        try (FileChannel fc = (FileChannel.open(Paths.get(rotatedImageFile.getAbsolutePath()),
+                StandardOpenOption.READ))) {
+            fc.position(columnOffset);
+            int MAX_COLUMN_BUFFER = 8192;
 
-            
-            while (bytecount < bytesRead) {
-                if (columnBytes[bytecount] == '\n') {
-                    /*
-                    String token = new String(columnBytes, byteoffset, bytecount-byteoffset, "UTF8");
+            ByteBuffer in = ByteBuffer.allocate(MAX_COLUMN_BUFFER);
 
-                    if (leftover != null) {
-                        String leftoverString = new String (leftover, "UTF8");
-                        token = leftoverString + token;
-                        leftover = null;
-                    }
-                    */
-                    /* 
-                     * Note that the way I was doing it at first - above - 
-                     * was not quite the correct way - because I was creating UTF8
-                     * strings from the leftover bytes, and the bytes in the 
-                     * current buffer *separately*; which means, if a multi-byte
-                     * UTF8 character got split in the middle between one buffer
-                     * and the next, both chunks of it would become junk 
-                     * characters, on each side!
-                     * The correct way of doing it, of course, is to create a
-                     * merged byte buffer, and then turn it into a UTF8 string. 
-                     *      -- L.A. 4.0
-                     */
-                    String token = null; 
-                    
-                    if (leftover == null) {
-                        token = new String(columnBytes, byteoffset, bytecount-byteoffset, "UTF8");
-                    } else {
-                        byte[] merged = new byte[leftover.length + bytecount-byteoffset];
-                        
-                        System.arraycopy(leftover, 0, merged, 0, leftover.length);
-                        System.arraycopy(columnBytes, byteoffset, merged, leftover.length, bytecount-byteoffset);
-                        token = new String (merged, "UTF8");
-                        leftover = null;
-                        merged = null; 
-                    }
-                    
-                    if (isString) {
-                        if ("".equals(token)) {
-                            // An empty string is a string missing value!
-                            // An empty string in quotes is an empty string!
-                            retVector[caseindex] = null;
-                        } else {
-                            // Strip the outer quotes:
-                            token = token.replaceFirst("^\\\"", "");
-                            token = token.replaceFirst("\\\"$", "");
-                            
-                            // We need to restore the special characters that 
-                            // are stored in tab files escaped - quotes, new lines 
-                            // and tabs. Before we do that however, we need to 
-                            // take care of any escaped backslashes stored in 
-                            // the tab file. I.e., "foo\t" should be transformed 
-                            // to "foo<TAB>"; but "foo\\t" should be transformed 
-                            // to "foo\t". This way new lines and tabs that were
-                            // already escaped in the original data are not 
-                            // going to be transformed to unescaped tab and 
-                            // new line characters!
-                            
-                            String[] splitTokens = token.split(Matcher.quoteReplacement("\\\\"), -2);
-                            
-                            // (note that it's important to use the 2-argument version 
-                            // of String.split(), and set the limit argument to a
-                            // negative value; otherwise any trailing backslashes 
-                            // are lost.)
-                            
-                            for (int i = 0; i < splitTokens.length; i++) {
-                                splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\\""), "\"");
-                                splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\t"), "\t");
-                                splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\n"), "\n");
-                                splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\r"), "\r");
-                            }
-                            // TODO: 
-                            // Make (some of?) the above optional; for ex., we 
-                            // do need to restore the newlines when calculating UNFs;
-                            // But if we are subsetting these vectors in order to 
-                            // create a new tab-delimited file, they will 
-                            // actually break things! -- L.A. Jul. 28 2014
-                            
-                            token = StringUtils.join(splitTokens, '\\');
-                            
-                            // "compatibility mode" - a hack, to be able to produce
-                            // unfs identical to those produced by the "early" 
-                            // unf5 jar; will be removed in production 4.0. 
-                            // -- L.A. (TODO: ...)
-                            if (compatmode && !"".equals(token)) {
-                                if (token.length() > 128) {
-                                    if ("".equals(token.trim())) {
-                                        // don't ask... 
-                                        token = token.substring(0, 129);
-                                    } else {
-                                        token = token.substring(0, 128);
-                                        //token = String.format(loc, "%.128s", token);
-                                        token = token.trim();
-                                        //dbgLog.info("formatted and trimmed: "+token);
-                                    }
-                                } else {
-                                    if ("".equals(token.trim())) {
-                                        // again, don't ask; 
-                                        // - this replicates some bugginness 
-                                        // that happens inside unf5;
-                                        token = "null";
-                                    } else {
-                                        token = token.trim();
-                                    }
-                                }
-                            }
-                            
-                            retVector[caseindex] = token;
-                        }
-                    } else if (isDouble) {
-                        try {
-                            // TODO: verify that NaN and +-Inf are 
-                            // handled correctly here! -- L.A.
-                            // Verified: new Double("nan") works correctly, 
-                            // resulting in Double.NaN;
-                            // Double("[+-]Inf") doesn't work however; 
-                            // (the constructor appears to be expecting it
-                            // to be spelled as "Infinity", "-Infinity", etc. 
-                            if ("inf".equalsIgnoreCase(token) || "+inf".equalsIgnoreCase(token)) {
-                                retVector[caseindex] = java.lang.Double.POSITIVE_INFINITY;
-                            } else if ("-inf".equalsIgnoreCase(token)) {
-                                retVector[caseindex] = java.lang.Double.NEGATIVE_INFINITY;
-                            } else if (token == null || token.equals("")) {
-                                // missing value:
-                                retVector[caseindex] = null;
-                            } else {
-                                retVector[caseindex] = new Double(token);
-                            }
-                        } catch (NumberFormatException ex) {
-                            dbgLog.warning("NumberFormatException thrown for "+token+" as Double");
+            if (columnLength < MAX_COLUMN_BUFFER) {
+                in.limit((int) (columnLength));
+            }
 
-                            retVector[caseindex] = null; // missing value
-                            // TODO: ?
+            long bytesRead = 0;
+            long bytesReadTotal = 0;
+
+            int byteoffset = 0;
+            byte[] leftover = null;
+
+            while (bytesReadTotal < columnLength) {
+                bytesRead = fc.read(in);
+                byte[] columnBytes = in.array();
+                int bytecount = 0;
+
+                while (bytecount < bytesRead) {
+                    if (columnBytes[bytecount] == '\n') {
+                        /*
+                        String token = new String(columnBytes, byteoffset, bytecount-byteoffset, "UTF8");
+
+                        if (leftover != null) {
+                            String leftoverString = new String (leftover, "UTF8");
+                            token = leftoverString + token;
+                            leftover = null;
                         }
-                    } else if (isLong) {
-                        try {
-                            retVector[caseindex] = new Long(token);
-                        } catch (NumberFormatException ex) {
-                            retVector[caseindex] = null; // assume missing value
-                        }
-                    } else if (isFloat) {
-                        try {
-                            if ("inf".equalsIgnoreCase(token) || "+inf".equalsIgnoreCase(token)) {
-                                retVector[caseindex] = java.lang.Float.POSITIVE_INFINITY;
-                            } else if ("-inf".equalsIgnoreCase(token)) {
-                                retVector[caseindex] = java.lang.Float.NEGATIVE_INFINITY;
-                            } else if (token == null || token.equals("")) {
-                                // missing value:
-                                retVector[caseindex] = null;
-                            } else {
-                                retVector[caseindex] = new Float(token);
-                            }
-                        } catch (NumberFormatException ex) {
-                            dbgLog.warning("NumberFormatException thrown for "+token+" as Float");
-                            retVector[caseindex] = null; // assume missing value (TODO: ?)
-                        }
-                    }
-                    caseindex++;
-                    
-                    if (bytecount == bytesRead - 1) {
-                        byteoffset = 0;
-                    } else {
-                        byteoffset = bytecount + 1;
-                    }
-                } else {
-                    if (bytecount == bytesRead - 1) {
-                        // We've reached the end of the buffer; 
-                        // This means we'll save whatever unused bytes left in 
-                        // it - i.e., the bytes between the last new line 
-                        // encountered and the end - in the leftover buffer. 
-                        
-                        // *EXCEPT*, there may be a case of a very long String
-                        // that is actually longer than MAX_COLUMN_BUFFER, in 
-                        // which case it is possible that we've read through
-                        // an entire buffer of bytes without finding any 
-                        // new lines... in this case we may need to add this
-                        // entire byte buffer to an already existing leftover 
-                        // buffer!
+                        */
+                        /*
+                         * Note that the way I was doing it at first - above - 
+                         * was not quite the correct way - because I was creating UTF8
+                         * strings from the leftover bytes, and the bytes in the 
+                         * current buffer *separately*; which means, if a multi-byte
+                         * UTF8 character got split in the middle between one buffer
+                         * and the next, both chunks of it would become junk 
+                         * characters, on each side!
+                         * The correct way of doing it, of course, is to create a
+                         * merged byte buffer, and then turn it into a UTF8 string. 
+                         *      -- L.A. 4.0
+                         */
+                        String token = null;
+
                         if (leftover == null) {
-                            leftover = new byte[(int)bytesRead - byteoffset];
-                            System.arraycopy(columnBytes, byteoffset, leftover, 0, (int)bytesRead - byteoffset);
+                            token = new String(columnBytes, byteoffset, bytecount - byteoffset, "UTF8");
                         } else {
-                            if (byteoffset != 0) {
-                                throw new IOException("Reached the end of the byte buffer, with some leftover left from the last read; yet the offset is not zero!");
-                            }
-                            byte[] merged = new byte[leftover.length + (int)bytesRead];
+                            byte[] merged = new byte[leftover.length + bytecount - byteoffset];
 
                             System.arraycopy(leftover, 0, merged, 0, leftover.length);
-                            System.arraycopy(columnBytes, byteoffset, merged, leftover.length, (int)bytesRead);
-                            //leftover = null;
-                            leftover = merged;
-                            merged = null;   
+                            System.arraycopy(columnBytes, byteoffset, merged, leftover.length, bytecount - byteoffset);
+                            token = new String(merged, "UTF8");
+                            leftover = null;
+                            merged = null;
                         }
-                        byteoffset = 0;
 
+                        if (isString) {
+                            if ("".equals(token)) {
+                                // An empty string is a string missing value!
+                                // An empty string in quotes is an empty string!
+                                retVector[caseindex] = null;
+                            } else {
+                                // Strip the outer quotes:
+                                token = token.replaceFirst("^\\\"", "");
+                                token = token.replaceFirst("\\\"$", "");
+
+                                // We need to restore the special characters that
+                                // are stored in tab files escaped - quotes, new lines
+                                // and tabs. Before we do that however, we need to
+                                // take care of any escaped backslashes stored in
+                                // the tab file. I.e., "foo\t" should be transformed
+                                // to "foo<TAB>"; but "foo\\t" should be transformed
+                                // to "foo\t". This way new lines and tabs that were
+                                // already escaped in the original data are not
+                                // going to be transformed to unescaped tab and
+                                // new line characters!
+
+                                String[] splitTokens = token.split(Matcher.quoteReplacement("\\\\"), -2);
+
+                                // (note that it's important to use the 2-argument version
+                                // of String.split(), and set the limit argument to a
+                                // negative value; otherwise any trailing backslashes
+                                // are lost.)
+
+                                for (int i = 0; i < splitTokens.length; i++) {
+                                    splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\\""), "\"");
+                                    splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\t"), "\t");
+                                    splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\n"), "\n");
+                                    splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\r"), "\r");
+                                }
+                                // TODO:
+                                // Make (some of?) the above optional; for ex., we
+                                // do need to restore the newlines when calculating UNFs;
+                                // But if we are subsetting these vectors in order to
+                                // create a new tab-delimited file, they will
+                                // actually break things! -- L.A. Jul. 28 2014
+
+                                token = StringUtils.join(splitTokens, '\\');
+
+                                // "compatibility mode" - a hack, to be able to produce
+                                // unfs identical to those produced by the "early"
+                                // unf5 jar; will be removed in production 4.0.
+                                // -- L.A. (TODO: ...)
+                                if (compatmode && !"".equals(token)) {
+                                    if (token.length() > 128) {
+                                        if ("".equals(token.trim())) {
+                                            // don't ask...
+                                            token = token.substring(0, 129);
+                                        } else {
+                                            token = token.substring(0, 128);
+                                            // token = String.format(loc, "%.128s", token);
+                                            token = token.trim();
+                                            // dbgLog.info("formatted and trimmed: "+token);
+                                        }
+                                    } else {
+                                        if ("".equals(token.trim())) {
+                                            // again, don't ask;
+                                            // - this replicates some bugginness
+                                            // that happens inside unf5;
+                                            token = "null";
+                                        } else {
+                                            token = token.trim();
+                                        }
+                                    }
+                                }
+
+                                retVector[caseindex] = token;
+                            }
+                        } else if (isDouble) {
+                            try {
+                                // TODO: verify that NaN and +-Inf are
+                                // handled correctly here! -- L.A.
+                                // Verified: new Double("nan") works correctly,
+                                // resulting in Double.NaN;
+                                // Double("[+-]Inf") doesn't work however;
+                                // (the constructor appears to be expecting it
+                                // to be spelled as "Infinity", "-Infinity", etc.
+                                if ("inf".equalsIgnoreCase(token) || "+inf".equalsIgnoreCase(token)) {
+                                    retVector[caseindex] = java.lang.Double.POSITIVE_INFINITY;
+                                } else if ("-inf".equalsIgnoreCase(token)) {
+                                    retVector[caseindex] = java.lang.Double.NEGATIVE_INFINITY;
+                                } else if (token == null || token.equals("")) {
+                                    // missing value:
+                                    retVector[caseindex] = null;
+                                } else {
+                                    retVector[caseindex] = new Double(token);
+                                }
+                            } catch (NumberFormatException ex) {
+                                dbgLog.warning("NumberFormatException thrown for " + token + " as Double");
+
+                                retVector[caseindex] = null; // missing value
+                                // TODO: ?
+                            }
+                        } else if (isLong) {
+                            try {
+                                retVector[caseindex] = new Long(token);
+                            } catch (NumberFormatException ex) {
+                                retVector[caseindex] = null; // assume missing value
+                            }
+                        } else if (isFloat) {
+                            try {
+                                if ("inf".equalsIgnoreCase(token) || "+inf".equalsIgnoreCase(token)) {
+                                    retVector[caseindex] = java.lang.Float.POSITIVE_INFINITY;
+                                } else if ("-inf".equalsIgnoreCase(token)) {
+                                    retVector[caseindex] = java.lang.Float.NEGATIVE_INFINITY;
+                                } else if (token == null || token.equals("")) {
+                                    // missing value:
+                                    retVector[caseindex] = null;
+                                } else {
+                                    retVector[caseindex] = new Float(token);
+                                }
+                            } catch (NumberFormatException ex) {
+                                dbgLog.warning("NumberFormatException thrown for " + token + " as Float");
+                                retVector[caseindex] = null; // assume missing value (TODO: ?)
+                            }
+                        }
+                        caseindex++;
+
+                        if (bytecount == bytesRead - 1) {
+                            byteoffset = 0;
+                        } else {
+                            byteoffset = bytecount + 1;
+                        }
+                    } else {
+                        if (bytecount == bytesRead - 1) {
+                            // We've reached the end of the buffer;
+                            // This means we'll save whatever unused bytes left in
+                            // it - i.e., the bytes between the last new line
+                            // encountered and the end - in the leftover buffer.
+
+                            // *EXCEPT*, there may be a case of a very long String
+                            // that is actually longer than MAX_COLUMN_BUFFER, in
+                            // which case it is possible that we've read through
+                            // an entire buffer of bytes without finding any
+                            // new lines... in this case we may need to add this
+                            // entire byte buffer to an already existing leftover
+                            // buffer!
+                            if (leftover == null) {
+                                leftover = new byte[(int) bytesRead - byteoffset];
+                                System.arraycopy(columnBytes, byteoffset, leftover, 0, (int) bytesRead - byteoffset);
+                            } else {
+                                if (byteoffset != 0) {
+                                throw new IOException("Reached the end of the byte buffer, with some leftover left from the last read; yet the offset is not zero!");
+                                }
+                                byte[] merged = new byte[leftover.length + (int) bytesRead];
+
+                                System.arraycopy(leftover, 0, merged, 0, leftover.length);
+                                System.arraycopy(columnBytes, byteoffset, merged, leftover.length, (int) bytesRead);
+                                // leftover = null;
+                                leftover = merged;
+                                merged = null;
+                            }
+                            byteoffset = 0;
+
+                        }
                     }
+                    bytecount++;
                 }
-                bytecount++;
+
+                bytesReadTotal += bytesRead;
+                in.clear();
+                if (columnLength - bytesReadTotal < MAX_COLUMN_BUFFER) {
+                    in.limit((int) (columnLength - bytesReadTotal));
+                }
             }
-            
-            bytesReadTotal += bytesRead; 
-            in.clear();
-            if (columnLength - bytesReadTotal < MAX_COLUMN_BUFFER) {
-                in.limit((int)(columnLength - bytesReadTotal));
-            }
+
         }
-        
-        fc.close();
 
         if (caseindex != casecount) {
             throw new IOException("Faile to read "+casecount+" tokens for column "+column);
@@ -1080,31 +1065,31 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     }
     
     private long[] extractColumnOffsets (File rotatedImageFile, int varcount, int casecount) throws IOException {
-         BufferedInputStream rotfileStream = new BufferedInputStream(new FileInputStream(rotatedImageFile));
-        
-        byte[] offsetHeader = new byte[varcount * 8];
         long[] byteOffsets = new long[varcount];
         
-        
-        int readlen = rotfileStream.read(offsetHeader); 
-        
-        if (readlen != varcount * 8) {
-            throw new IOException ("Could not read "+varcount*8+" header bytes from the rotated file.");
+        try (BufferedInputStream rotfileStream = new BufferedInputStream(new FileInputStream(rotatedImageFile))) {
+
+            byte[] offsetHeader = new byte[varcount * 8];
+
+            int readlen = rotfileStream.read(offsetHeader);
+
+            if (readlen != varcount * 8) {
+                throw new IOException("Could not read " + varcount * 8 + " header bytes from the rotated file.");
+            }
+
+            for (int varindex = 0; varindex < varcount; varindex++) {
+                byte[] offsetBytes = new byte[8];
+                System.arraycopy(offsetHeader, varindex * 8, offsetBytes, 0, 8);
+
+                ByteBuffer offsetByteBuffer = ByteBuffer.wrap(offsetBytes);
+                byteOffsets[varindex] = offsetByteBuffer.getLong();
+
+                // System.out.println(byteOffsets[varindex]);
+            }
+
         }
-        
-        for (int varindex = 0; varindex < varcount; varindex++) {
-            byte[] offsetBytes = new byte[8];
-            System.arraycopy(offsetHeader, varindex*8, offsetBytes, 0, 8);
-           
-            ByteBuffer offsetByteBuffer = ByteBuffer.wrap(offsetBytes);
-            byteOffsets[varindex] = offsetByteBuffer.getLong();
-            
-            //System.out.println(byteOffsets[varindex]);
-        }
-        
-        rotfileStream.close(); 
-        
-        return byteOffsets; 
+
+        return byteOffsets;
     }
     
     private File getRotatedImage(File tabfile, int varcount, int casecount)  throws IOException {
@@ -1149,85 +1134,84 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         
         // read the tab-delimited file: 
         
-        FileInputStream tabfileStream = new FileInputStream(tabfile);
-        
-        Scanner scanner = new Scanner(tabfileStream);
-        scanner.useDelimiter("\\n");
-        
-        for (int caseindex = 0; caseindex < casecount; caseindex++) {
-            if (scanner.hasNext()) {
-                String[] line = (scanner.next()).split("\t", -1);
-                // TODO: throw an exception if there are fewer tab-delimited 
-                // tokens than the number of variables specified. 
-                String token = "";
-                int tokensize = 0; 
-                for (int varindex = 0; varindex < varcount; varindex++) {
-                    // TODO: figure out the safest way to convert strings to 
-                    // bytes here. Is it going to be safer to use getBytes("UTF8")?
-                    // we are already making the assumption that the values 
-                    // in the tab file are in UTF8. -- L.A.
-                    token = line[varindex] + "\n";
-                    tokensize = token.getBytes().length;
-                    if (bufferedSizes[varindex]+tokensize > MAX_COLUMN_BUFFER) {
-                        // fill the buffer and dump its contents into the temp file:
-                        // (do note that there may be *several* MAX_COLUMN_BUFFERs
-                        // worth of bytes in the token!)
-                        
-                        int tokenoffset = 0; 
+        try (FileInputStream tabfileStream = new FileInputStream(tabfile);
+                Scanner scanner = new Scanner(tabfileStream)) {
+            scanner.useDelimiter("\\n");
 
-                        if (bufferedSizes[varindex] != MAX_COLUMN_BUFFER) {
-                            tokenoffset = MAX_COLUMN_BUFFER-bufferedSizes[varindex];
-                            System.arraycopy(token.getBytes(), 0, bufferedColumns[varindex], bufferedSizes[varindex], tokenoffset);
-                        } // (otherwise the buffer is already full, and we should 
-                          // simply dump it into the temp file, without adding any 
-                          // extra bytes to it)
-                        
-                        File bufferTempFile = columnTempFiles[varindex]; 
-                        if (bufferTempFile == null) {
-                            bufferTempFile = File.createTempFile("columnBufferFile", "bytes");
-                            columnTempFiles[varindex] = bufferTempFile; 
-                        } 
-                        
-                        // *append* the contents of the buffer to the end of the
-                        // temp file, if already exists:
-                        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream (bufferTempFile, true));
-                        outputStream.write(bufferedColumns[varindex], 0, MAX_COLUMN_BUFFER);
-                        cachedfileSizes[varindex] += MAX_COLUMN_BUFFER;
-                        
-                        // keep writing MAX_COLUMN_BUFFER-size chunks of bytes into 
-                        // the temp file, for as long as there's more than MAX_COLUMN_BUFFER
-                        // bytes left in the token:
-                        
-                        while (tokensize - tokenoffset > MAX_COLUMN_BUFFER) {
-                            outputStream.write(token.getBytes(), tokenoffset, MAX_COLUMN_BUFFER);
-                            cachedfileSizes[varindex] += MAX_COLUMN_BUFFER;
-                            tokenoffset += MAX_COLUMN_BUFFER;
+            for (int caseindex = 0; caseindex < casecount; caseindex++) {
+                if (scanner.hasNext()) {
+                    String[] line = (scanner.next()).split("\t", -1);
+                    // TODO: throw an exception if there are fewer tab-delimited
+                    // tokens than the number of variables specified.
+                    String token = "";
+                    int tokensize = 0;
+                    for (int varindex = 0; varindex < varcount; varindex++) {
+                        // TODO: figure out the safest way to convert strings to
+                        // bytes here. Is it going to be safer to use getBytes("UTF8")?
+                        // we are already making the assumption that the values
+                        // in the tab file are in UTF8. -- L.A.
+                        token = line[varindex] + "\n";
+                        tokensize = token.getBytes().length;
+                        if (bufferedSizes[varindex] + tokensize > MAX_COLUMN_BUFFER) {
+                            // fill the buffer and dump its contents into the temp file:
+                            // (do note that there may be *several* MAX_COLUMN_BUFFERs
+                            // worth of bytes in the token!)
+
+                            int tokenoffset = 0;
+
+                            if (bufferedSizes[varindex] != MAX_COLUMN_BUFFER) {
+                                tokenoffset = MAX_COLUMN_BUFFER - bufferedSizes[varindex];
+                                System.arraycopy(token.getBytes(), 0, bufferedColumns[varindex], bufferedSizes[varindex], tokenoffset);
+                            } // (otherwise the buffer is already full, and we should
+                              // simply dump it into the temp file, without adding any
+                              // extra bytes to it)
+
+                            File bufferTempFile = columnTempFiles[varindex];
+                            if (bufferTempFile == null) {
+                                bufferTempFile = File.createTempFile("columnBufferFile", "bytes");
+                                columnTempFiles[varindex] = bufferTempFile;
+                            }
+
+                            // *append* the contents of the buffer to the end of the
+                            // temp file, if already exists:
+                            try (BufferedOutputStream outputStream = new BufferedOutputStream(
+                                    new FileOutputStream(bufferTempFile, true))) {
+                                outputStream.write(bufferedColumns[varindex], 0, MAX_COLUMN_BUFFER);
+                                cachedfileSizes[varindex] += MAX_COLUMN_BUFFER;
+
+                                // keep writing MAX_COLUMN_BUFFER-size chunks of bytes into
+                                // the temp file, for as long as there's more than MAX_COLUMN_BUFFER
+                                // bytes left in the token:
+
+                                while (tokensize - tokenoffset > MAX_COLUMN_BUFFER) {
+                                    outputStream.write(token.getBytes(), tokenoffset, MAX_COLUMN_BUFFER);
+                                    cachedfileSizes[varindex] += MAX_COLUMN_BUFFER;
+                                    tokenoffset += MAX_COLUMN_BUFFER;
+                                }
+
+                            }
+
+                            // buffer the remaining bytes and reset the buffered
+                            // byte counter:
+
+                            System.arraycopy(token.getBytes(), 
+                                    tokenoffset, 
+                                    bufferedColumns[varindex], 
+                                    0,
+                                    tokensize - tokenoffset);
+
+                            bufferedSizes[varindex] = tokensize - tokenoffset;
+
+                        } else {
+                            // continue buffering
+                            System.arraycopy(token.getBytes(), 0, bufferedColumns[varindex], bufferedSizes[varindex], tokensize);
+                            bufferedSizes[varindex] += tokensize;
                         }
-                        
-                        outputStream.close();
-                        
-                        // buffer the remaining bytes and reset the buffered 
-                        // byte counter: 
-                        
-                        System.arraycopy(token.getBytes(), 
-                                tokenoffset, 
-                                bufferedColumns[varindex], 
-                                0,
-                                tokensize - tokenoffset); 
-                        
-                        bufferedSizes[varindex] = tokensize - tokenoffset; 
-                        
-                    } else {
-                        // continue buffering
-                        System.arraycopy(token.getBytes(), 0, bufferedColumns[varindex], bufferedSizes[varindex], tokensize);
-                        bufferedSizes[varindex] += tokensize; 
                     }
+                } else {
+                    throw new IOException("Tab file has fewer rows than the stored number of cases!");
                 }
-            } else {
-                scanner.close();
-                throw new IOException("Tab file has fewer rows than the stored number of cases!");
             }
-            
         }
         
         // OK, we've created the individual byte vectors of the tab file columns;
@@ -1235,60 +1219,61 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         // We now need to go through all these buffers and create the final 
         // rotated image file. 
         
-        BufferedOutputStream finalOut = new BufferedOutputStream(new FileOutputStream (new File(rotatedImageFileName)));
-        
-        // but first we should create the offset header and write it out into 
-        // the final file; because it should be at the head, doh!
-        
-        long columnOffset = varcount * 8;
-        // (this is the offset of the first column vector; it is equal to the
-        // size of the offset header, i.e. varcount * 8 bytes)
-      
-        for (int varindex = 0; varindex < varcount; varindex++) {
-            long totalColumnBytes = cachedfileSizes[varindex] + bufferedSizes[varindex];
-            columnOffset+=totalColumnBytes;
-            //totalColumnBytes;
-            byte[] columnOffsetByteArray = ByteBuffer.allocate(8).putLong(columnOffset).array();
-            System.arraycopy(columnOffsetByteArray, 0, offsetHeader, varindex * 8, 8);
-        }
-        
-        finalOut.write(offsetHeader, 0, varcount * 8);
-        
-        for (int varindex = 0; varindex < varcount; varindex++) {
-            long cachedBytesRead = 0; 
-            
-            // check if there is a cached temp file:
-            
-            File cachedTempFile = columnTempFiles[varindex]; 
-            if (cachedTempFile != null) {
-                byte[] cachedBytes = new byte[MAX_COLUMN_BUFFER];
-                BufferedInputStream cachedIn = new BufferedInputStream(new FileInputStream(cachedTempFile));
-                int readlen = 0; 
-                while ((readlen = cachedIn.read(cachedBytes)) > -1) {
-                    finalOut.write(cachedBytes, 0, readlen);
-                    cachedBytesRead += readlen;
+        try (BufferedOutputStream finalOut = new BufferedOutputStream(
+                new FileOutputStream(new File(rotatedImageFileName)))) {
+
+            // but first we should create the offset header and write it out into
+            // the final file; because it should be at the head, doh!
+
+            long columnOffset = varcount * 8;
+            // (this is the offset of the first column vector; it is equal to the
+            // size of the offset header, i.e. varcount * 8 bytes)
+
+            for (int varindex = 0; varindex < varcount; varindex++) {
+                long totalColumnBytes = cachedfileSizes[varindex] + bufferedSizes[varindex];
+                columnOffset += totalColumnBytes;
+                // totalColumnBytes;
+                byte[] columnOffsetByteArray = ByteBuffer.allocate(8).putLong(columnOffset).array();
+                System.arraycopy(columnOffsetByteArray, 0, offsetHeader, varindex * 8, 8);
+            }
+
+            finalOut.write(offsetHeader, 0, varcount * 8);
+
+            for (int varindex = 0; varindex < varcount; varindex++) {
+                long cachedBytesRead = 0;
+
+                // check if there is a cached temp file:
+
+                File cachedTempFile = columnTempFiles[varindex];
+                if (cachedTempFile != null) {
+                    byte[] cachedBytes = new byte[MAX_COLUMN_BUFFER];
+                    try (BufferedInputStream cachedIn = new BufferedInputStream(new FileInputStream(cachedTempFile))) {
+                        int readlen = 0;
+                        while ((readlen = cachedIn.read(cachedBytes)) > -1) {
+                            finalOut.write(cachedBytes, 0, readlen);
+                            cachedBytesRead += readlen;
+                        }
+                    }
+
+                    // delete the temp file:
+                    cachedTempFile.delete();
+
                 }
-                cachedIn.close();
-                // delete the temp file: 
-                cachedTempFile.delete();
-                
-            }
-            
-            if (cachedBytesRead != cachedfileSizes[varindex]) {
-                finalOut.close();
-                throw new IOException("Could not read the correct number of bytes cached for column "+varindex+"; "+
+
+                if (cachedBytesRead != cachedfileSizes[varindex]) {
+                    throw new IOException("Could not read the correct number of bytes cached for column "+varindex+"; "+
                         cachedfileSizes[varindex] + " bytes expected, "+cachedBytesRead+" read.");
+                }
+
+                // then check if there are any bytes buffered for this column:
+
+                if (bufferedSizes[varindex] > 0) {
+                    finalOut.write(bufferedColumns[varindex], 0, bufferedSizes[varindex]);
+                }
+
             }
-            
-            // then check if there are any bytes buffered for this column:
-            
-            if (bufferedSizes[varindex] > 0) {
-                finalOut.write(bufferedColumns[varindex], 0, bufferedSizes[varindex]);
-            }
-            
         }
         
-        finalOut.close();
         return new File(rotatedImageFileName);
 
     }
@@ -1305,87 +1290,86 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      */
     private void reverseRotatedImage (File rotfile, int varcount, int casecount) throws IOException {
         // open the file, read in the offset header: 
-        BufferedInputStream rotfileStream = new BufferedInputStream(new FileInputStream(rotfile));
-        
-        byte[] offsetHeader = new byte[varcount * 8];
-        long[] byteOffsets = new long[varcount];
-        
-        int readlen = rotfileStream.read(offsetHeader); 
-        
-        if (readlen != varcount * 8) {
-            throw new IOException ("Could not read "+varcount*8+" header bytes from the rotated file.");
-        }
-        
-        for (int varindex = 0; varindex < varcount; varindex++) {
-            byte[] offsetBytes = new byte[8];
-            System.arraycopy(offsetHeader, varindex*8, offsetBytes, 0, 8);
-           
-            ByteBuffer offsetByteBuffer = ByteBuffer.wrap(offsetBytes);
-            byteOffsets[varindex] = offsetByteBuffer.getLong();
+        try (BufferedInputStream rotfileStream = new BufferedInputStream(new FileInputStream(rotfile))) {
+            byte[] offsetHeader = new byte[varcount * 8];
+            long[] byteOffsets = new long[varcount];
             
-            //System.out.println(byteOffsets[varindex]);
-        }
-        
-        String [][] reversedMatrix = new String[casecount][varcount];
-        
-        long offset = varcount * 8; 
-        byte[] columnBytes; 
-        
-        for (int varindex = 0; varindex < varcount; varindex++) {
-            long columnLength = byteOffsets[varindex] - offset; 
+            int readlen = rotfileStream.read(offsetHeader); 
             
-            
-            
-            columnBytes = new byte[(int)columnLength];
-            readlen = rotfileStream.read(columnBytes);
-            
-            if (readlen != columnLength) {
-                throw new IOException ("Could not read "+columnBytes+" bytes for column "+varindex);
+            if (readlen != varcount * 8) {
+                throw new IOException ("Could not read "+varcount*8+" header bytes from the rotated file.");
             }
-            /*
-            String columnString = new String(columnBytes);
-            //System.out.print(columnString);
-            String[] values = columnString.split("\n", -1);
             
-            if (values.length < casecount) {
-                throw new IOException("count mismatch: "+values.length+" tokens found for column "+varindex);
+            for (int varindex = 0; varindex < varcount; varindex++) {
+                byte[] offsetBytes = new byte[8];
+                System.arraycopy(offsetHeader, varindex*8, offsetBytes, 0, 8);
+               
+                ByteBuffer offsetByteBuffer = ByteBuffer.wrap(offsetBytes);
+                byteOffsets[varindex] = offsetByteBuffer.getLong();
+                
+                //System.out.println(byteOffsets[varindex]);
+            }
+            
+            String [][] reversedMatrix = new String[casecount][varcount];
+            
+            long offset = varcount * 8; 
+            byte[] columnBytes; 
+            
+            for (int varindex = 0; varindex < varcount; varindex++) {
+                long columnLength = byteOffsets[varindex] - offset; 
+                
+                
+                
+                columnBytes = new byte[(int)columnLength];
+                readlen = rotfileStream.read(columnBytes);
+                
+                if (readlen != columnLength) {
+                    throw new IOException ("Could not read "+columnBytes+" bytes for column "+varindex);
+                }
+                /*
+                String columnString = new String(columnBytes);
+                //System.out.print(columnString);
+                String[] values = columnString.split("\n", -1);
+                
+                if (values.length < casecount) {
+                    throw new IOException("count mismatch: "+values.length+" tokens found for column "+varindex);
+                }
+                
+                for (int caseindex = 0; caseindex < casecount; caseindex++) {
+                    reversedMatrix[caseindex][varindex] = values[caseindex];
+                }*/
+                
+                int bytecount = 0; 
+                int byteoffset = 0; 
+                int caseindex = 0;
+                //System.out.println("generating value vector for column "+varindex);
+                while (bytecount < columnLength) {
+                    if (columnBytes[bytecount] == '\n') {
+                        String token = new String(columnBytes, byteoffset, bytecount-byteoffset);
+                        reversedMatrix[caseindex++][varindex] = token;
+                        byteoffset = bytecount + 1;
+                    }
+                    bytecount++;
+                }
+                
+                if (caseindex != casecount) {
+                    throw new IOException("count mismatch: "+caseindex+" tokens found for column "+varindex);
+                }
+                offset = byteOffsets[varindex];
             }
             
             for (int caseindex = 0; caseindex < casecount; caseindex++) {
-                reversedMatrix[caseindex][varindex] = values[caseindex];
-            }*/
-            
-            int bytecount = 0; 
-            int byteoffset = 0; 
-            int caseindex = 0;
-            //System.out.println("generating value vector for column "+varindex);
-            while (bytecount < columnLength) {
-                if (columnBytes[bytecount] == '\n') {
-                    String token = new String(columnBytes, byteoffset, bytecount-byteoffset);
-                    reversedMatrix[caseindex++][varindex] = token;
-                    byteoffset = bytecount + 1;
-                }
-                bytecount++;
-            }
-            
-            if (caseindex != casecount) {
-                throw new IOException("count mismatch: "+caseindex+" tokens found for column "+varindex);
-            }
-            offset = byteOffsets[varindex];
-        }
-        
-        for (int caseindex = 0; caseindex < casecount; caseindex++) {
-            for (int varindex = 0; varindex < varcount; varindex++) {
-                System.out.print(reversedMatrix[caseindex][varindex]);
-                if (varindex < varcount-1) {
-                    System.out.print("\t");
-                } else {
-                    System.out.print("\n");
+                for (int varindex = 0; varindex < varcount; varindex++) {
+                    System.out.print(reversedMatrix[caseindex][varindex]);
+                    if (varindex < varcount-1) {
+                        System.out.print("\t");
+                    } else {
+                        System.out.print("\n");
+                    }
                 }
             }
+            
         }
-        
-        rotfileStream.close();
         
         
     }

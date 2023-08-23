@@ -20,7 +20,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -36,12 +35,12 @@ import java.util.Set;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBTransactionRolledbackException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionRolledbackLocalException;
-import javax.inject.Named;
-import javax.persistence.NoResultException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBTransactionRolledbackException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionRolledbackLocalException;
+import jakarta.inject.Named;
+import jakarta.persistence.NoResultException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -100,7 +99,7 @@ public class SearchServiceBean {
      * @throws SearchException
      */
     public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
+        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true, null, null);
     }
 
     /**
@@ -121,10 +120,24 @@ public class SearchServiceBean {
      * @param onlyDatatRelatedToMe
      * @param numResultsPerPage
      * @param retrieveEntities - look up dvobject entities with .find() (potentially expensive!)
+     * @param geoPoint e.g. "35,15"
+     * @param geoRadius e.g. "5"
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities) throws SearchException {
+    public SolrQueryResponse search(
+            DataverseRequest dataverseRequest,
+            List<Dataverse> dataverses,
+            String query,
+            List<String> filterQueries,
+            String sortField, String sortOrder,
+            int paginationStart,
+            boolean onlyDatatRelatedToMe,
+            int numResultsPerPage,
+            boolean retrieveEntities,
+            String geoPoint,
+            String geoRadius
+    ) throws SearchException {
 
         if (paginationStart < 0) {
             throw new IllegalArgumentException("paginationStart must be 0 or greater");
@@ -204,8 +217,12 @@ public class SearchServiceBean {
         for (String filterQuery : filterQueries) {
             solrQuery.addFilterQuery(filterQuery);
         }
-
-
+        if (geoPoint != null && !geoPoint.isBlank() && geoRadius != null && !geoRadius.isBlank()) {
+            solrQuery.setParam("pt", geoPoint);
+            solrQuery.setParam("d", geoRadius);
+            // See https://solr.apache.org/guide/8_11/spatial-search.html#bbox
+            solrQuery.addFilterQuery("{!bbox sfield=" + SearchFields.GEOLOCATION + "}");
+        }
 
         // -----------------------------------
         // Facets to Retrieve
@@ -396,6 +413,7 @@ public class SearchServiceBean {
             String identifierOfDataverse = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER_OF_DATAVERSE);
             String nameOfDataverse = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_NAME);
             Long embargoEndDate = (Long) solrDocument.getFieldValue(SearchFields.EMBARGO_END_DATE);
+            Boolean datasetValid = (Boolean) solrDocument.getFieldValue(SearchFields.DATASET_VALID);
             
             List<String> matchedFields = new ArrayList<>();
             List<Highlight> highlights = new ArrayList<>();
@@ -460,6 +478,7 @@ public class SearchServiceBean {
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setDeaccessionReason(deaccessionReason);
             solrSearchResult.setDvTree(dvTree);
+            solrSearchResult.setDatasetValid(datasetValid);
 
             String originSource = (String) solrDocument.getFieldValue(SearchFields.METADATA_SOURCE);
             if (IndexServiceBean.HARVESTED.equals(originSource)) {

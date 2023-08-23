@@ -78,6 +78,11 @@ This template can be used for configuring this setting (**this is not something 
 
 - :download:`orcid-sandbox.json <../_static/installation/files/root/auth-providers/orcid-sandbox.json>`
 
+Disabling Sign Up
+~~~~~~~~~~~~~~~~~
+
+See :ref:`:AllowRemoteAuthSignUp`.
+
 Converting Local Users to OAuth
 -------------------------------
 

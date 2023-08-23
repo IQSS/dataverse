@@ -16,7 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import java.util.Date;
-import javax.faces.context.FacesContext;
+import jakarta.faces.context.FacesContext;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
@@ -40,7 +40,7 @@ public class MakeDataCountLoggingServiceBeanTest {
         dataset.setAuthority("Authority");
         dataset.setProtocol("Protocol");
         dataset.setIdentifier("Identifier"); 
-        GlobalId id = new GlobalId(dataset);
+        GlobalId id = dataset.getGlobalId();
         dataset.setGlobalId(id);
         dvVersion.setDataset(dataset);
         dvVersion.setAuthorsStr("OneAuthor;TwoAuthor");

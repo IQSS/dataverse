@@ -86,4 +86,3 @@ configuration option. For details, see :doc:`config`.
 .. hint::
    In contrast to our :doc:`oauth2`, you can use multiple providers by creating distinct configurations enabled by
    the same technology and without modifying the Dataverse Software code base (standards for the win!).
-

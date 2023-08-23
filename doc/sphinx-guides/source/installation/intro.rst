@@ -48,7 +48,7 @@ If you've encountered a problem installing Dataverse and are ready to ask for he
 - Operating system (usually a Linux distribution) and version.
 - Output from the installer (STDOUT, STDERR).
 - The ``scripts/api/setup-all.*.log`` files left behind by the installer.
-- The ``server.log`` file from Payara (by default at ``/usr/local/payara5/glassfish/domains/domain1/logs/server.log``).
+- The ``server.log`` file from Payara (by default at ``/usr/local/payara6/glassfish/domains/domain1/logs/server.log``).
 
 Improving this Guide
 --------------------

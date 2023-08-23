@@ -24,6 +24,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 import org.apache.http.Header;
@@ -630,5 +631,9 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     public static String getBaseStoreIdFor(String driverId) {
         return System.getProperty("dataverse.files." + driverId + ".base-store");
     }
-    
+
+    @Override
+    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
+        return baseStore.cleanUp(filter, dryRun);
+    }
 }

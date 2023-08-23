@@ -93,6 +93,13 @@ Dropbox Upload
 
 Some Dataverse installations support the ability to upload files directly from Dropbox. To do so, click the "Upload from Dropbox" button, log in to Dropbox in the pop-up window, and select the files you'd like to transfer over.
 
+.. _folder-upload:
+
+Folder Upload
+-------------
+
+Some Dataverse installations support the ability to upload files from a local folder and subfolders. To do this, click the "Upload from Folder" button, select the folder you wish to upload, select/unselect specific files, and click "Start Uploads". More detailed instructions are available in the `DVWebloader wiki <https://github.com/gdcc/dvwebloader/wiki#use>`_.
+
 .. _rsync_upload:
 
 rsync + SSH Upload
@@ -143,6 +150,11 @@ Additional command line arguments are available to make the DVUploader list what
 
 DVUploader is a community-developed tool, and its creation was primarily supported by the Texas Digital Library. Further information and support for DVUploader can be sought at `the project's GitHub repository <https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader>`_ . 
 
+Integrations Dashboard Uploader
+-------------------------------
+
+There is an experimental uploader described at :ref:`integrations-dashboard` that provides a graphical user interface (GUI) for uploading files from a local file system and various remote locations such as GitHub.
+
 .. _duplicate-files:
 
 Duplicate Files
@@ -177,10 +189,33 @@ File Handling
 
 Certain file types in the Dataverse installation are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the sections below for information about special functionality for specific file types.
 
+.. _file-previews:
+
 File Previews
 -------------
 
 Dataverse installations can add previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Private URL. See also :ref:`privateurl`.
+
+Previewers are available for the following file types:
+
+- Text
+- PDF
+- Tabular (CSV, Excel, etc., see :doc:`tabulardataingest/index`)
+- Code (R, etc.)
+- Images (PNG, GIF, JPG)
+- Audio (MP3, MPEG, WAV, OGG, M4A)
+- Video (MP4, OGG, Quicktime)
+- Zip (preview and extract/download)
+- HTML
+- GeoJSON
+- GeoTIFF
+- Shapefile
+- NetCDF/HDF5
+- Hypothes.is
+
+Additional file types will be added to the `dataverse-previewers <https://github.com/gdcc/dataverse-previewers>`_ repo before they are listed above so please check there for the latest information or to request (or contribute!) an additional file previewer.
+
+Installation of previewers is explained in the :doc:`/admin/external-tools` section of in the Admin Guide.
 
 Tabular Data Files
 ------------------
@@ -193,10 +228,11 @@ Additional download options available for tabular data (found in the same drop-d
 - The original file uploaded by the user; 
 - Saved as R data (if the original file was not in R format); 
 - Variable Metadata (as a `DDI Codebook <https://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file);
-- Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
-- All of the above, as a zipped bundle. 
+- Data File Citation (currently in either RIS, EndNote XML, or BibTeX format).
 
 Differentially Private (DP) Metadata can also be accessed for restricted tabular files if the data depositor has created a DP Metadata Release. See :ref:`dp-release-create` for more information.
+
+.. _research-code:
 
 Research Code
 -------------
@@ -213,7 +249,7 @@ The following are general guidelines applicable to all programming languages.
 - Consider providing notes (in the README) on the expected code outputs or adding tests in the code, which would ensure that its functionality is intact.
 
 Capturing code dependencies will help other researchers recreate the necessary runtime environment. Without it, your code will not be able to run correctly (or at all). 
-One option is to use platforms such as `Whole Tale <https://wholetale.org>`_, `Jupyter Binder <https://mybinder.org>`_ or `Renku <https://renkulab.io>`_, which facilitate research reproducibility. Have a look at `Dataverse Integrations <https://guides.dataverse.org/en/5.4/admin/integrations.html>`_ for more information. 
+One option is to use platforms such as `Whole Tale <https://wholetale.org>`_, `Jupyter Binder <https://mybinder.org>`_ or `Renku <https://renkulab.io>`_, which facilitate research reproducibility. For more information, have a look at :doc:`/admin/integrations` in the Admin Guide, especially the sections on :ref:`wholetale`, :ref:`binder`, and :ref:`renku`.
 Another option is to use an automatic code dependency capture, which is often supported through the programming language. Here are a few examples:
 
 - If you are using the conda package manager, you can export your environment with the command ``conda env export > environment.yml``. For more information, see the `official documentation <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#sharing-an-environment>`__.
@@ -268,7 +304,7 @@ After you :ref:`upload your files <dataset-file-upload>`, you can apply a "Workf
 |cw-image4|
 
 How to Describe Your Computational Workflow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Dataverse installation you are using may have enabled Computational Workflow metadata fields for your use. If so, when :ref:`editing your dataset metadata <adding-new-dataset>`, you will see the fields described below.
 
@@ -294,10 +330,80 @@ You can also search for files within datasets that have been tagged as "Workflow
 
 |cw-image6|
 
+.. _fits:
+
 Astronomy (FITS)
 ----------------
 
 Metadata found in the header section of `Flexible Image Transport System (FITS) files <https://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by the Dataverse Software, aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable and browsable (facets) at the Dataset-level.
+
+.. _geojson:
+
+GeoJSON
+-------
+
+A map will be shown as a preview of GeoJSON files when the previewer has been enabled (see :ref:`file-previews`). See also a `video demo <https://www.youtube.com/watch?v=EACJJaV3O1c&t=588s>`_ of the GeoJSON previewer by its author, Kaitlin Newson.
+
+.. _geotiff:
+
+GeoTIFF
+-------
+
+A map is also displayed as a preview of GeoTiFF image files, whose previewer must be enabled (see :ref:`file-previews`). Since GeoTIFFs do not have their own mimetype, it is advisable to use this previewer only when GeoTIFFs are used (and not "normal" TIFs). For performance reasons, this previewer has a file size limit of 15 MB and a row/column limit of 50,000 so that larger files are not loaded.
+
+.. _shapefile:
+
+Shapefile
+---------
+
+Another previewer can be enabled for shapefiles (see :ref:`file-previews`). This previewer only works with zipped shapefiles (see :doc:`/developers/geospatial`). A file size limit of 20 MB is set for this previewer (also because of performance reasons).
+
+.. _netcdf-and-hdf5:
+
+NetCDF and HDF5
+---------------
+
+H5Web Previewer
+~~~~~~~~~~~~~~~
+
+NetCDF and HDF5 files can be explored and visualized with H5Web_, which has been adapted into a file previewer tool (see :ref:`file-previews`) that can be enabled in your Dataverse installation.
+
+.. _H5Web: https://h5web.panosc.eu
+
+|h5web|
+
+NcML
+~~~~
+
+For NetCDF and HDF5 files, an attempt will be made to extract metadata in NcML_ (XML) format and save it as an auxiliary file. (See also :doc:`/developers/aux-file-support` in the Developer Guide.) A previewer for these NcML files is available (see :ref:`file-previews`).
+
+Please note that only modern versions of these formats, the ones based on HDF5 such as NetCDF 4+ and HDF5 itself (rather than HDF4), will yield an NcML auxiliary file.
+
+.. _NcML: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
+
+Geospatial Bounding Box
+~~~~~~~~~~~~~~~~~~~~~~~
+
+An attempt will be made to extract a geospatial bounding box (west, south, east, north) from NetCDF and HDF5 files and then insert these values into the geospatial metadata block, if enabled.
+
+This is the mapping that is used:
+
+- geospatial_lon_min: West Longitude
+- geospatial_lon_max: East Longitude
+- geospatial_lat_max: North Latitude
+- geospatial_lat_min: South Latitude
+
+Please note the following rules regarding these fields:
+
+- West Longitude and East Longitude are expected to be in the range of -180 and 180. (When using :ref:`geospatial-search`, you should use this range for longitude.)
+- If West Longitude and East Longitude are both over 180 (outside the expected -180:180 range), 360 will be subtracted to shift the values from the 0:360 range to the expected -180:180 range.
+- If either West Longitude or East Longitude are less than zero but the other longitude is greater than 180 (which would imply an indeterminate domain, a lack of clarity of if the domain is -180:180 or 0:360), metadata will be not be extracted.
+- If the bounding box was successfully populated, the subsequent removal of the NetCDF or HDF5 file from the dataset does not automatically remove the bounding box from the dataset metadata. You must remove the bounding box manually, if desired.
+- This feature is disabled if S3 direct upload is enabled (see :ref:`s3-direct-upload-features-disabled`) unless :ref:`dataverse.netcdf.geo-extract-s3-direct-upload` has been set to true.
+
+If the bounding box was successfully populated, :ref:`geospatial-search` should be able to find it.
+
+.. _compressed-files:
 
 Compressed Files
 ----------------
@@ -718,6 +824,8 @@ If you deaccession the most recently published version of the dataset but not al
 .. |cw-image6| image:: ./img/file-tags-facets.png
    :class: img-responsive
 .. |bagit-image1| image:: ./img/bagit-handler-errors.png
+   :class: img-responsive
+.. |h5web| image:: ./img/h5web.png
    :class: img-responsive
    
 .. _Make Data Count: https://makedatacount.org

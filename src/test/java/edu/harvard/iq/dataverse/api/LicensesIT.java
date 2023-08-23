@@ -1,38 +1,23 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import org.junit.Test;
 import org.junit.BeforeClass;
 
-import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Logger;
 
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertTrue;
-import org.junit.Ignore;
 
 public class LicensesIT {
 
@@ -91,7 +76,8 @@ public class LicensesIT {
         getLicensesResponse.prettyPrint();
         body = getLicensesResponse.getBody().asString();
         status = JsonPath.from(body).getString("status");
-        long licenseId = JsonPath.from(body).getLong("data[-1].id");
+        //Last added license; with the highest id
+        long licenseId = (long) JsonPath.from(body).<Integer>getList("data.id").stream().max((x, y) -> Integer.compare(x, y)).get();
         //Assumes the first license is active, which should be true on a test server 
         long activeLicenseId = JsonPath.from(body).getLong("data[0].id");
         assertEquals("OK", status);
@@ -144,6 +130,20 @@ public class LicensesIT {
         status = JsonPath.from(body).getString("status");
         assertEquals("OK", status);
         
+        //Fail trying to set null sort order
+        Response setSortOrderErrorResponse = UtilIT.setLicenseSortOrderById(activeLicenseId, null, adminApiToken);
+        setSortOrderErrorResponse.prettyPrint();
+        body = setSortOrderErrorResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+        //Succeed in setting sort order
+        Response setSortOrderResponse = UtilIT.setLicenseSortOrderById(activeLicenseId, 2l, adminApiToken);
+        setSortOrderResponse.prettyPrint();
+        body = setSortOrderResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+
         //Succeed in deleting our test license
         Response deleteLicenseByIdResponse = UtilIT.deleteLicenseById(licenseId, adminApiToken);
         deleteLicenseByIdResponse.prettyPrint();
