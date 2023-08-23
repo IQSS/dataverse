@@ -11,8 +11,8 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import java.util.ArrayList;
 import java.util.List;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -338,7 +338,7 @@ public class ExternalToolServiceBeanTest {
         }
         assertNotNull(expectedException);
         System.out.println("exception: " + expectedException);
-        assertEquals("Type must be one of these values: [explore, configure, preview].", expectedException.getMessage());
+        assertEquals("Type must be one of these values: [explore, configure, preview, query].", expectedException.getMessage());
     }
 
     @Test

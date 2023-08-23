@@ -421,7 +421,6 @@
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                             <ui:param name="bean" value="#{DatasetPage}"/>
                             <ui:param name="unrestrictFileAction" value="restrictFiles"/>
-                            <ui:param name="editFileAction" value="editFileMetadata"/>
                             <ui:param name="refreshTagsPopoupAction" value="refreshTagsPopUp"/>                          
                         </ui:include>  
                     </ul>
@@ -437,7 +436,7 @@
                 <div jsf:id="downloadButtonBlockNormal" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                      and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
-                                     and !DatasetPage.isHasTabular()}">
+                                     and !DatasetPage.isVersionHasTabular()}">
                     <p:commandLink 
                                    styleClass="btn btn-default btn-download"
                                    disabled="#{false and DatasetPage.lockedFromDownload}"
@@ -451,7 +450,7 @@
                 <div jsf:id="downloadButtonBlockTabular" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                      and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
-                                     and DatasetPage.isHasTabular()}">
+                                     and DatasetPage.isVersionHasTabular()}">
                     <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown">  
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
                     </button>
@@ -528,15 +527,22 @@
                     
                     <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
+                     <ui:fragment rendered="#{DatasetPage.isShowQueryButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
+                        <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getQueryToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
+                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber)).concat('&amp;toolType=QUERY')}">
+                            <img src="#{resource['images/Robot-Icon_2.png']}"  width="32" height="32" /><span class="sr-only">#{bundle.preview} "#{empty(fileMetadata.directoryLabel) ? "":fileMetadata.directoryLabel.concat("/")}#{fileMetadata.label}"</span>
+                        </a>                       
+                     </ui:fragment>
+                                   
                     <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
                         <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getPreviewToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
-                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
-                            <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview} "#{empty(fileMetadata.directoryLabel) ? "":fileMetadata.directoryLabel.concat("/")}#{fileMetadata.label}"</span>
+                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber)).concat('&amp;toolType=PREVIEW')}">
+                            <span style="margin-top: 10px;"  class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview} "#{empty(fileMetadata.directoryLabel) ? "":fileMetadata.directoryLabel.concat("/")}#{fileMetadata.label}"</span>
                         </a>
                     </ui:fragment>
                     <a type="button" style="padding:6px 8px;" class="btn-access-file btn btn-link bootstrap-button-tooltip dropdown-toggle" 
                        title="#{bundle['file.accessBtn']}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" tabindex="0">
-                        <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle['file.accessBtn']}</span><span class="caret"></span>
+                        <span style="margin-top: 10px;" class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle['file.accessBtn']}</span><span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu pull-right text-left">
                         <!-- Explore/Download/Request Button Block -->

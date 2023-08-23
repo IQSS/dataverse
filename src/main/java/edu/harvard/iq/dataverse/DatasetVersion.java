@@ -25,37 +25,37 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
-import javax.persistence.Version;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.constraints.Size;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Size;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -66,7 +66,9 @@ import org.apache.commons.lang3.StringUtils;
 @NamedQueries({
     @NamedQuery(name = "DatasetVersion.findUnarchivedReleasedVersion",
                query = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.dataset.harvestedFrom IS NULL and o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL"
-    )})
+    ), 
+    @NamedQuery(name = "DatasetVersion.findById", 
+                query = "SELECT o FROM DatasetVersion o LEFT JOIN FETCH o.fileMetadatas WHERE o.id=:id")})
     
     
 @Entity
@@ -1812,7 +1814,7 @@ public class DatasetVersion implements Serializable {
     // So something will need to be modified to accommodate this. -- L.A.  
     /**
      * We call the export format "Schema.org JSON-LD" and extensive Javadoc can
-     * be found in {@link SchemaDotOrgExporter}.
+     * be found in {@link edu.harvard.iq.dataverse.export.SchemaDotOrgExporter}.
      */
     public String getJsonLd() {
         // We show published datasets only for "datePublished" field below.

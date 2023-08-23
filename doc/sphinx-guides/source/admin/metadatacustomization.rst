@@ -413,8 +413,8 @@ Setting Up a Dev Environment for Testing
 
 You have several options for setting up a dev environment for testing metadata block changes:
 
+- Docker: See :doc:`/container/index`.
 - Vagrant: See the :doc:`/developers/tools` section of the Developer Guide.
-- docker-aio: See https://github.com/IQSS/dataverse/tree/develop/conf/docker-aio
 - AWS deployment: See the :doc:`/developers/deployment` section of the Developer Guide.
 - Full dev environment: See the :doc:`/developers/dev-environment` section of the Developer Guide.
 

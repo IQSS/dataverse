@@ -1,6 +1,0 @@
-{
-	"hostname": "remote.libra.research",
-	"name": "LibraResearch Institute",
-	"primaryStorage": false,
-	"transferProtocols": "rsync"
-}

@@ -164,6 +164,8 @@ RUN <<EOF
     ${ASADMIN} create-jvm-options '-XX\:MetaspaceSize=${ENV=MEM_METASPACE_SIZE}'
     ${ASADMIN} create-jvm-options '-XX\:MaxMetaspaceSize=${ENV=MEM_MAX_METASPACE_SIZE}'
     ${ASADMIN} create-jvm-options '-XX\:+IgnoreUnrecognizedVMOptions'
+    # Workaround for FISH-7722: Failed to deploy war with @Stateless https://github.com/payara/Payara/issues/6337
+    ${ASADMIN} create-jvm-options --add-opens=java.base/java.io=ALL-UNNAMED
     # Disable autodeploy and hot reload
     ${ASADMIN} set configs.config.server-config.admin-service.das-config.dynamic-reload-enabled="false"
     ${ASADMIN} set configs.config.server-config.admin-service.das-config.autodeploy-enabled="false"
@@ -206,7 +208,7 @@ RUN <<EOF
     # Stop domain
     ${ASADMIN} stop-domain "${DOMAIN_NAME}"
     # Disable JSP servlet dynamic reloads
-    sed -i 's#<servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>#<servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>\n    <init-param>\n      <param-name>development</param-name>\n      <param-value>false</param-value>\n    </init-param>\n    <init-param>\n      <param-name>genStrAsCharArray</param-name>\n      <param-value>true</param-value>\n    </init-param>#' "${DOMAIN_DIR}/config/default-web.xml"
+    sed -i 's#<servlet-class>org.glassfish.wasp.servlet.JspServlet</servlet-class>#<servlet-class>org.glassfish.wasp.servlet.JspServlet</servlet-class>\n    <init-param>\n      <param-name>development</param-name>\n      <param-value>false</param-value>\n    </init-param>\n    <init-param>\n      <param-name>genStrAsCharArray</param-name>\n      <param-value>true</param-value>\n    </init-param>#' "${DOMAIN_DIR}/config/default-web.xml"
     # Cleanup old CA certificates to avoid unnecessary log clutter during startup
     ${SCRIPT_DIR}/removeExpiredCaCerts.sh
     # Delete generated files
