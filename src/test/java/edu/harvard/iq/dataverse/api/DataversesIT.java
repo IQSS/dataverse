@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.path.json.JsonPath.with;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import static io.restassured.RestAssured.given;
+import static io.restassured.path.json.JsonPath.with;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -31,7 +31,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import java.nio.file.Files;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 
