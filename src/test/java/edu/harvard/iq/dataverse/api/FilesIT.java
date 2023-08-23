@@ -1399,8 +1399,8 @@ public class FilesIT {
         createUser = UtilIT.createRandomUser();
         String apiTokenRegular = UtilIT.getApiTokenFromResponse(createUser);
 
-        msg("Add tabular file");
-        String pathToFile = "scripts/search/data/tabular/stata13-auto-withstrls.dta";
+        msg("Add a non-tabular file");
+        String pathToFile = "scripts/search/data/binary/trees.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
@@ -1412,10 +1412,12 @@ public class FilesIT {
 
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
-                .body("data.label", equalTo("stata13-auto-withstrls.dta"))
-                .body("data.dataFile.filename", equalTo("stata13-auto-withstrls.dta"))
+                .body("data.label", equalTo("trees.png"))
+                .body("data.dataFile.filename", equalTo("trees.png"))
+                .body("data.dataFile.contentType", equalTo("image/png"))
+                .body("data.dataFile.filesize", equalTo(8361))
                 .statusCode(OK.getStatusCode());
-
+        
         getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular);
         getFileDataResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
