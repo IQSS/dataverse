@@ -7,7 +7,6 @@ JHOVE_SCHEMA=${INSTALLER_ZIP_DIR}/jhoveConfig.xsd
 SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml ${INSTALLER_ZIP_DIR}/update-fields.sh
 SOLR_CONFIG=${INSTALLER_ZIP_DIR}/solrconfig.xml
 PYTHON_FILES=${INSTALLER_ZIP_DIR}/README_python.txt ${INSTALLER_ZIP_DIR}/installConfig.py ${INSTALLER_ZIP_DIR}/installUtils.py ${INSTALLER_ZIP_DIR}/install.py ${INSTALLER_ZIP_DIR}/installAppServer.py ${INSTALLER_ZIP_DIR}/requirements.txt ${INSTALLER_ZIP_DIR}/default.config ${INSTALLER_ZIP_DIR}/interactive.config
-INSTALL_SCRIPT=${INSTALLER_ZIP_DIR}/install
 
 installer:	dvinstall.zip
 

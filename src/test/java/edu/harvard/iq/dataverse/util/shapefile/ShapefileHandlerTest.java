@@ -11,16 +11,18 @@ package edu.harvard.iq.dataverse.util.shapefile;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import static edu.harvard.iq.dataverse.util.ShapefileHandler.SHP_XML_EXTENSION;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.io.File;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-
-import org.junit.rules.TemporaryFolder;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,10 +42,8 @@ import java.util.zip.ZipOutputStream;
  */
 public class ShapefileHandlerTest {
     
-        
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-   
+    @TempDir
+    Path tempFolder;
     
     public void msg(String s){
             System.out.println(s);
@@ -61,27 +61,8 @@ public class ShapefileHandlerTest {
         if (filename == null){
             return null;
         }
-        File aFile = this.tempFolder.newFile(filename);
-        //  FileUtils.writeStringToFile(tempFile, "hello world");
-
-        aFile.createNewFile();
-        return aFile;
+        return Files.createFile(tempFolder.resolve(filename)).toFile();
     }
-    
-
-     
-     
-    private void showFilesInFolder(String m, String folder_name) throws IOException{
-        msgt(m);
-        File folder = new File(folder_name);
-        for (File f : folder.listFiles() ){
-            this.msg("fname: " + f.getCanonicalPath());
-        }
-    } 
-         
-    private void showFilesInTempFolder(String m) throws IOException{
-        this.showFilesInFolder(m, this.tempFolder.getRoot().getAbsolutePath());
-    } 
     
     private FileInputStream createZipReturnFilestream(List<String> file_names, String zipfile_name) throws IOException{
         
@@ -116,8 +97,8 @@ public class ShapefileHandlerTest {
            //msg("File created: " + file_obj.getName());           
         }
         
-        File zip_file_obj = this.tempFolder.newFile(zipfile_name);
-        ZipOutputStream zip_stream = new ZipOutputStream(new FileOutputStream(zip_file_obj));
+        Path zip_file_obj = this.tempFolder.resolve(zipfile_name);
+        ZipOutputStream zip_stream = new ZipOutputStream(new FileOutputStream(zip_file_obj.toFile()));
 
         // Iterate through File objects and add them to the ZipOutputStream
         for (File file_obj : fileCollection) {
@@ -131,7 +112,7 @@ public class ShapefileHandlerTest {
              file_obj.delete();
         }
         
-        return zip_file_obj;
+        return zip_file_obj.toFile();
         
     } // end createAndZipFiles
     
@@ -149,17 +130,14 @@ public class ShapefileHandlerTest {
         shp_handler.DEBUG= true;
 
         // Contains shapefile?
-        assertEquals(shp_handler.containsShapefile(), false);
+        assertFalse(shp_handler.containsShapefile());
 
         // get file_groups Map
         Map<String, List<String>> file_groups = shp_handler.getFileGroups();
         
-        assertEquals("verify that the dict is not empty", file_groups.isEmpty(), false);
-        assertEquals("verify key existance", file_groups.containsKey("not-quite-a-shape"), true);
-        assertEquals("verify value of key", file_groups.get("not-quite-a-shape"), Arrays.asList("shp", "shx", "dbf", "pdf"));
-        
-        this.showFilesInTempFolder(this.tempFolder.getRoot().getAbsolutePath());
-
+        assertFalse(file_groups.isEmpty(), "verify that the dict is not empty");
+        assertTrue(file_groups.containsKey("not-quite-a-shape"), "verify key existance");
+        assertEquals(List.of("shp", "shx", "dbf", "pdf"), file_groups.get("not-quite-a-shape"), "verify value of key");
         
         // Delete .zip
         zipfile_obj.delete();
@@ -185,8 +163,8 @@ public class ShapefileHandlerTest {
         ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zipfile_obj));
         shp_handler.DEBUG= true;
         
-        assertEquals("verify shapefile existance", shp_handler.containsShapefile(), true);
-        assertEquals("verify that no error was found", shp_handler.errorFound, false);
+        assertTrue(shp_handler.containsShapefile(), "verify shapefile existance");
+        assertFalse(shp_handler.errorFound, "verify that no error was found");
         
         shp_handler.showFileGroups();
        // if (true){
@@ -195,21 +173,18 @@ public class ShapefileHandlerTest {
         // get file_groups Map
         Map<String, List<String>> file_groups = shp_handler.getFileGroups();
         
-        assertEquals("verify that the dict is not empty", file_groups.isEmpty(), false);
+        assertFalse(file_groups.isEmpty(), "verify that the dict is not empty");
 
         // Verify the keys
-        assertEquals("verify key existance of 'shape1'", file_groups.containsKey("shape1"), true);
-        assertEquals("verify key existance of 'shape2'", file_groups.containsKey("shape2"), true);
+        assertTrue(file_groups.containsKey("shape1"), "verify key existance of 'shape1'");
+        assertTrue(file_groups.containsKey("shape2"), "verify key existance of 'shape2'");
 
         // Verify the values
-        assertEquals("verify value of key 'shape1'", file_groups.get("shape1"), Arrays.asList("shp", "shx", "dbf", "prj", "fbn", "fbx"));
-        assertEquals("verify value of key 'shape2'", file_groups.get("shape2"), Arrays.asList("shp", "shx", "dbf", "prj", "txt", "pdf", ShapefileHandler.BLANK_EXTENSION));
-        
-        this.showFilesInTempFolder(this.tempFolder.getRoot().getAbsolutePath());
-
+        assertEquals(file_groups.get("shape1"), Arrays.asList("shp", "shx", "dbf", "prj", "fbn", "fbx"), "verify value of key 'shape1'");
+        assertEquals(file_groups.get("shape2"), Arrays.asList("shp", "shx", "dbf", "prj", "txt", "pdf", ShapefileHandler.BLANK_EXTENSION), "verify value of key 'shape2'");
         
         // Rezip/Reorder the files
-        File test_unzip_folder = this.tempFolder.newFolder("test_unzip").getAbsoluteFile();
+        File test_unzip_folder = Files.createDirectory(this.tempFolder.resolve("test_unzip")).toFile();
         //File test_unzip_folder = new File("/Users/rmp553/Desktop/blah");
         shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), test_unzip_folder );
         
@@ -218,9 +193,9 @@ public class ShapefileHandlerTest {
         List<String> rezipped_filenames = new ArrayList<>();
         rezipped_filenames.addAll(Arrays.asList(test_unzip_folder.list()));
         msg("rezipped_filenames: " + rezipped_filenames);
-        List<String> expected_filenames = Arrays.asList("shape1.zip", "shape2.zip", "shape2.txt", "shape2.pdf", "shape2", "README.MD", "shp_dictionary.xls", "notes");  
-
-        assertEquals("verify that all files exist", rezipped_filenames.containsAll(rezipped_filenames), true);
+        List<String> expected_filenames = Arrays.asList("shape1.zip", "shape2.zip", "shape2.txt", "shape2.pdf", "shape2", "README.MD", "shp_dictionary.xls", "notes");
+        
+        assertTrue(rezipped_filenames.containsAll(expected_filenames), "verify that all files exist");
         
         // Delete .zip
         zipfile_obj.delete();
@@ -240,23 +215,23 @@ public class ShapefileHandlerTest {
         // Pass the .zip to the ShapefileHandler
         ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zipfile_obj));
         shp_handler.DEBUG= true;
-
-        assertEquals("verify shapefile existance", shp_handler.containsShapefile(), true);
+        
+        assertTrue(shp_handler.containsShapefile(), "verify shapefile existance");
 
         // get file_groups Map
         Map<String, List<String>> file_groups = shp_handler.getFileGroups();
-
-        assertEquals("verify that the dict is not empty", file_groups.isEmpty(), false);
+        
+        assertFalse(file_groups.isEmpty(), "verify that the dict is not empty");
 
         // Verify the keys
-        assertEquals("verify key existance of 'shape1'", file_groups.containsKey("shape1"), true);
+        assertTrue(file_groups.containsKey("shape1"), "verify key existance of 'shape1'");
 
         // Verify the values
-        assertEquals("verify value of key 'shape1'", file_groups.get("shape1"), Arrays.asList("shp", "shx", "dbf", "prj", "pdf", "cpg", SHP_XML_EXTENSION));
-        assertEquals("verify value of key 'README'", file_groups.get("README"), Arrays.asList("md"));
-        assertEquals("verify value of key 'shape_notes'", file_groups.get("shape_notes"), Arrays.asList("txt"));
+        assertEquals(List.of("shp", "shx", "dbf", "prj", "pdf", "cpg", SHP_XML_EXTENSION), file_groups.get("shape1"), "verify value of key 'shape1'");
+        assertEquals(List.of("md"), file_groups.get("README"), "verify value of key 'README'");
+        assertEquals(List.of("txt"), file_groups.get("shape_notes"), "verify value of key 'shape_notes'");
         
-        File unzip2Folder = this.tempFolder.newFolder("test_unzip2").getAbsoluteFile();
+        File unzip2Folder = Files.createDirectory(this.tempFolder.resolve("test_unzip2")).toFile();
         // Rezip/Reorder the files
         shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), unzip2Folder);
         //shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), new File("/Users/rmp553/Desktop/blah"));
@@ -267,9 +242,9 @@ public class ShapefileHandlerTest {
         rezipped_filenames.addAll(Arrays.asList(unzip2Folder.list()));
         
         msg("rezipped_filenames: " + rezipped_filenames);
-        List<String> expected_filenames = Arrays.asList("shape1.zip", "scratch-for-unzip-12345", "shape1.pdf", "README.md", "shape_notes.txt");  
-
-        assertEquals("verify that all files exist", expected_filenames.containsAll(rezipped_filenames), true);
+        List<String> expected_filenames = Arrays.asList("shape1.zip", "scratch-for-unzip-12345", "shape1.pdf", "README.md", "shape_notes.txt");
+        
+        assertTrue(expected_filenames.containsAll(rezipped_filenames), "verify that all files exist");
         
         // Delete .zip
         zipfile_obj.delete();

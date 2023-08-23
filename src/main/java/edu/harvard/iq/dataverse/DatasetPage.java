@@ -33,13 +33,14 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
@@ -57,7 +58,6 @@ import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.WebloaderUtil;
 import edu.harvard.iq.dataverse.validation.URLValidator;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -81,27 +81,29 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Collection;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import java.util.stream.Collectors;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ActionEvent;
+import jakarta.faces.event.ValueChangeEvent;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
-import javax.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 //import org.primefaces.context.RequestContext;
 import java.util.Arrays;
 import java.util.HashSet;
-import javax.faces.model.SelectItem;
-import javax.faces.validator.ValidatorException;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.validator.ValidatorException;
 
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -122,12 +124,12 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.util.Collections;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
 
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.faces.event.AjaxBehaviorEvent;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -233,6 +235,8 @@ public class DatasetPage implements java.io.Serializable {
     ExternalToolServiceBean externalToolService;
     @EJB
     SolrClientService solrClientService;
+    @EJB
+    DvObjectServiceBean dvObjectService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -341,7 +345,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private Boolean hasRsyncScript = false;
 
-    private Boolean hasTabular = false;
+    /*private Boolean hasTabular = false;*/
 
 
     /**
@@ -349,6 +353,12 @@ public class DatasetPage implements java.io.Serializable {
      * boolean is for the dataset level ("has ever had a tabular file") but
      * sometimes you want to know about the current version ("no tabular files
      * currently"). Like all files, tabular files can be deleted.
+     */
+    /**
+     * There doesn't seem to be an actual real life case where we need to know 
+     * if this dataset "has ever had a tabular file" - for all practical purposes
+     * only the versionHasTabular appears to be in use. I'm going to remove the  
+     * other boolean. 
      */
     private boolean versionHasTabular = false;
 
@@ -378,6 +388,8 @@ public class DatasetPage implements java.io.Serializable {
     Map<Long, List<ExternalTool>> previewToolsByFileId = new HashMap<>();
     // TODO: Consider renaming "previewTools" to "filePreviewTools".
     List<ExternalTool> previewTools = new ArrayList<>();
+    Map<Long, List<ExternalTool>> fileQueryToolsByFileId = new HashMap<>();
+    List<ExternalTool> fileQueryTools = new ArrayList<>();
     private List<ExternalTool> datasetExploreTools;
 
     public Boolean isHasRsyncScript() {
@@ -678,48 +690,45 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<FileMetadata> selectFileMetadatasForDisplay() {
-        Set<Long> searchResultsIdSet = null;
-
-        if (isIndexedVersion()) {
+        final Set<Long> searchResultsIdSet;
+        if (isIndexedVersion() && StringUtil.isEmpty(fileLabelSearchTerm) && StringUtil.isEmpty(fileTypeFacet) && StringUtil.isEmpty(fileAccessFacet) && StringUtil.isEmpty(fileTagsFacet)) {
+            // Indexed version: we need facets, they are set as a side effect of getFileIdsInVersionFromSolr method.
+            // But, no search terms were specified, we will return the full
+            // list of the files in the version: we discard the result from getFileIdsInVersionFromSolr.
+            getFileIdsInVersionFromSolr(workingVersion.getId(), this.fileLabelSearchTerm);
+            // Since the search results should include the full set of fmds if all the
+            // terms/facets are empty, setting them to null should just be
+            // an optimization to skip the loop below
+            searchResultsIdSet = null;
+        } else if (isIndexedVersion()) {
             // We run the search even if no search term and/or facets are
             // specified - to generate the facet labels list:
             searchResultsIdSet = getFileIdsInVersionFromSolr(workingVersion.getId(), this.fileLabelSearchTerm);
-            // But, if no search terms were specified, we return the full
-            // list of the files in the version:
-            if (StringUtil.isEmpty(fileLabelSearchTerm)
-                    && StringUtil.isEmpty(fileTypeFacet)
-                    && StringUtil.isEmpty(fileAccessFacet)
-                    && StringUtil.isEmpty(fileTagsFacet)) {
-                // Since the search results should include the full set of fmds if all the
-                // terms/facets are empty, setting them to null should just be
-                // an optimization for the loop below
-                searchResultsIdSet = null;
-            }
-        } else {
+        } else if (!StringUtil.isEmpty(this.fileLabelSearchTerm)) {
             // No, this is not an indexed version.
             // If the search term was specified, we'll run a search in the db;
             // if not - return the full list of files in the version.
             // (no facets without solr!)
-            if (!StringUtil.isEmpty(this.fileLabelSearchTerm)) {
-                searchResultsIdSet = getFileIdsInVersionFromDb(workingVersion.getId(), this.fileLabelSearchTerm);
-            }
+            searchResultsIdSet = getFileIdsInVersionFromDb(workingVersion.getId(), this.fileLabelSearchTerm);
+        } else {
+            searchResultsIdSet = null;
         }
 
-        List<FileMetadata> retList = new ArrayList<>();
-
-        for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
-            if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getDataFile().getId())) {
-                retList.add(fileMetadata);
-            }
+        final List<FileMetadata> md = workingVersion.getFileMetadatas();
+        final List<FileMetadata> retList;
+        if (searchResultsIdSet == null) {
+            retList = new ArrayList<>(md);
+        } else {
+            retList = md.stream().filter(x -> searchResultsIdSet.contains(x.getDataFile().getId())).collect(Collectors.toList());
         }
         sortFileMetadatas(retList);
         return retList;
     }
 
-    private void sortFileMetadatas(List<FileMetadata> fileList) {
+    private void sortFileMetadatas(final List<FileMetadata> fileList) {
         
-        DataFileComparator dfc = new DataFileComparator();
-        Comparator<FileMetadata> comp = dfc.compareBy(folderPresort, tagPresort, fileSortField, !"desc".equals(fileSortOrder));
+        final DataFileComparator dfc = new DataFileComparator();
+        final Comparator<FileMetadata> comp = dfc.compareBy(folderPresort, tagPresort, fileSortField, !"desc".equals(fileSortOrder));
         Collections.sort(fileList, comp);
     }
 
@@ -1843,6 +1852,17 @@ public class DatasetPage implements java.io.Serializable {
         return settingsWrapper.isWebloaderUpload() && StorageIO.isDirectUploadEnabled(dataset.getEffectiveStorageDriverId());
     }
 
+    private void setIdByPersistentId() {
+        GlobalId gid = PidUtil.parseAsGlobalID(persistentId);
+        Long id = dvObjectService.findIdByGlobalId(gid, DvObject.DType.Dataset);
+        if (id == null) {
+            id = dvObjectService.findIdByAltGlobalId(gid, DvObject.DType.Dataset);
+        }
+        if (id != null) {
+            this.setId(id);
+        }
+    }
+
     private String init(boolean initFull) {
 
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
@@ -1866,44 +1886,60 @@ public class DatasetPage implements java.io.Serializable {
             // Set the workingVersion and Dataset
             // ---------------------------------------
             if (persistentId != null) {
-                logger.fine("initializing DatasetPage with persistent ID " + persistentId);
-                // Set Working Version and Dataset by PersistentID
-                dataset = datasetService.findByGlobalId(persistentId);
-                if (dataset == null) {
-                    logger.warning("No such dataset: "+persistentId);
-                    return permissionsWrapper.notFound();
-                }
-                logger.fine("retrieved dataset, id="+dataset.getId());
-
-                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
-                //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
-                this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
-
-            } else if (this.getId() != null) {
+                setIdByPersistentId();
+            }
+            
+            if (this.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
+                
+                // We are only performing these lookups to obtain the database id
+                // of the version that we are displaying, and then we will use it
+                // to perform a .findDeep(versionId); see below. 
+                
+                // TODO: replace the code block below, the combination of 
+                // datasetService.find(id) and datasetVersionService.selectRequestedVersion()
+                // with some optimized, direct query-based way of obtaining 
+                // the numeric id of the requested DatasetVersion (and that's 
+                // all we need, we are not using any of the entities produced 
+                // below. 
+                
                 dataset = datasetService.find(this.getId());
+                
                 if (dataset == null) {
                     logger.warning("No such dataset: "+dataset);
                     return permissionsWrapper.notFound();
                 }
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
                 retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
+                if (retrieveDatasetVersionResponse == null) {
+                    return permissionsWrapper.notFound();
+                }
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-                logger.info("retreived version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
+                
+                versionId = workingVersion.getId();
 
-            } else if (versionId != null) {
-                // TODO: 4.2.1 - this method is broken as of now!
-                // Set Working Version and Dataset by DatasaetVersion Id
-                //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
+                this.workingVersion = null;
+                this.dataset = null;
 
+            } 
+            
+            // ... And now the "real" working version lookup: 
+            
+            if (versionId != null) {
+                this.workingVersion = datasetVersionService.findDeep(versionId);
+                dataset = workingVersion.getDataset();
             }
+            
+            if (workingVersion == null) {
+                logger.warning("Failed to retrieve version");
+                return permissionsWrapper.notFound();
+            }
+            
             this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
 
 
-            if (retrieveDatasetVersionResponse == null) {
-                return permissionsWrapper.notFound();
-            }
+            
 
             switch (selectTab){
                 case "dataFilesTab":
@@ -1918,16 +1954,6 @@ public class DatasetPage implements java.io.Serializable {
                 case "versionsTab":
                     selectedTabIndex = 3;
                     break;
-            }
-
-            //this.dataset = this.workingVersion.getDataset();
-
-            // end: Set the workingVersion and Dataset
-            // ---------------------------------------
-            // Is the DatasetVersion or Dataset null?
-            //
-            if (workingVersion == null || this.dataset == null) {
-                return permissionsWrapper.notFound();
             }
 
             // Is the Dataset harvested?
@@ -1957,7 +1983,7 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notAuthorized();
             }
 
-            if (!retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()) {
+            if (retrieveDatasetVersionResponse != null && !retrieveDatasetVersionResponse.wasRequestedVersionRetrieved()) {
                 //msg("checkit " + retrieveDatasetVersionResponse.getDifferentVersionMessage());
                 JsfHelper.addWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
             }
@@ -1978,11 +2004,6 @@ public class DatasetPage implements java.io.Serializable {
                 // init the list of FileMetadatas
                 if (workingVersion.isDraft() && canUpdateDataset()) {
                     readOnly = false;
-                } else {
-                    // an attempt to retreive both the filemetadatas and datafiles early on, so that
-                    // we don't have to do so later (possibly, many more times than necessary):
-                    AuthenticatedUser au = session.getUser() instanceof AuthenticatedUser ? (AuthenticatedUser) session.getUser() : null;
-                    datafileService.findFileMetadataOptimizedExperimental(dataset, workingVersion, au);
                 }
                 // This will default to all the files in the version, if the search term
                 // parameter hasn't been specified yet:
@@ -2109,23 +2130,18 @@ public class DatasetPage implements java.io.Serializable {
         displayLockInfo(dataset);
         displayPublishMessage();
 
+        // TODO: replace this loop, and the loop in the method that calculates 
+        // the total "originals" size of the dataset with direct custom queries; 
+        // then we'll be able to drop the lookup hint for DataTable from the 
+        // findDeep() method for the version and further speed up the lookup 
+        // a little bit. 
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (fmd.getDataFile().isTabularData()) {
                 versionHasTabular = true;
                 break;
             }
         }
-        for(DataFile f : dataset.getFiles()) {
-            // TODO: Consider uncommenting this optimization.
-//            if (versionHasTabular) {
-//                hasTabular = true;
-//                break;
-//            }
-            if(f.isTabularData()) {
-                hasTabular = true;
-                break;
-            }
-        }
+        
         //Show ingest success message if refresh forces a page reload after ingest success
         //This is needed to display the explore buttons (the fileDownloadHelper needs to be reloaded via page
         if (showIngestSuccess) {
@@ -2135,6 +2151,7 @@ public class DatasetPage implements java.io.Serializable {
         configureTools = externalToolService.findFileToolsByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
         previewTools = externalToolService.findFileToolsByType(ExternalTool.Type.PREVIEW);
+        fileQueryTools = externalToolService.findFileToolsByType(ExternalTool.Type.QUERY);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
         if (dataset.getId() != null && canUpdateDataset()) {
@@ -2168,8 +2185,27 @@ public class DatasetPage implements java.io.Serializable {
         if (workingVersion.isDraft() && workingVersion.getId() != null && canUpdateDataset() 
                 && !dataset.isLockedFor(DatasetLock.Reason.finalizePublication)
               &&   (canPublishDataset() || !dataset.isLockedFor(DatasetLock.Reason.InReview) )){
-            JsfHelper.addWarningMessage(datasetService.getReminderString(dataset, canPublishDataset()));
+            JsfHelper.addWarningMessage(datasetService.getReminderString(dataset, canPublishDataset(), false, isValid()));
         }               
+    }
+
+    Boolean valid = null;
+
+    public boolean isValid() {
+        if (valid == null) {
+            DatasetVersion version = dataset.getLatestVersion();
+            if (!version.isDraft()) {
+                valid = true;
+            }
+            DatasetVersion newVersion = version.cloneDatasetVersion();
+            newVersion.setDatasetFields(newVersion.initDatasetFields());
+            valid = newVersion.isValid();
+        }
+        return valid;
+    }
+
+    public boolean isValidOrCanReviewIncomplete() {
+        return isValid() || JvmSettings.UI_ALLOW_REVIEW_INCOMPLETE.lookupOptional(Boolean.class).orElse(false);
     }
 
     private void displayLockInfo(Dataset dataset) {
@@ -2390,9 +2426,9 @@ public class DatasetPage implements java.io.Serializable {
         return fileNode;
     }
 
-    public boolean isHasTabular() {
+    /*public boolean isHasTabular() {
         return hasTabular;
-    }
+    }*/
 
     public boolean isVersionHasTabular() {
         return versionHasTabular;
@@ -2829,48 +2865,28 @@ public class DatasetPage implements java.io.Serializable {
 
         //dataset = datasetService.find(dataset.getId());
         dataset = null;
+        workingVersion = null; 
 
         logger.fine("refreshing working version");
 
         DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
 
-        if (persistentId != null) {
-            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
-            dataset = datasetService.findByGlobalId(persistentId);
-            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
-        } else if (versionId != null) {
-            retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
-        } else if (dataset.getId() != null) {
-            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
-            dataset = datasetService.find(dataset.getId());
-            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
-        }
+        if (versionId != null) {
+            // versionId must have been set by now, in the init() method, 
+            // regardless of how the page was originally called - by the dataset
+            // database id, by the persistent identifier, or by the db id of
+            // the version. 
+            this.workingVersion = datasetVersionService.findDeep(versionId);
+            dataset = workingVersion.getDataset();
+        } 
+        
 
-        if (retrieveDatasetVersionResponse == null) {
+        if (this.workingVersion == null) {
             // TODO:
             // should probably redirect to the 404 page, if we can't find
             // this version anymore.
             // -- L.A. 4.2.3
             return "";
-        }
-        this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-
-        if (this.workingVersion == null) {
-            // TODO:
-            // same as the above
-
-            return "";
-        }
-
-        if (dataset == null) {
-            // this would be the case if we were retrieving the version by
-            // the versionId, above.
-            this.dataset = this.workingVersion.getDataset();
-        }
-
-        if (readOnly) {
-            AuthenticatedUser au = session.getUser() instanceof AuthenticatedUser ? (AuthenticatedUser) session.getUser() : null;
-            datafileService.findFileMetadataOptimizedExperimental(dataset, workingVersion, au);
         }
 
         fileMetadatasSearch = selectFileMetadatasForDisplay();
@@ -3050,19 +3066,32 @@ public class DatasetPage implements java.io.Serializable {
         this.tooLargeToDownload = tooLargeToDownload;
     }
 
+    private Long sizeOfDatasetArchival = null; 
+    private Long sizeOfDatasetOriginal = null; 
+    
+    
     public Long getSizeOfDatasetNumeric() {
-        if (this.hasTabular){
+        if (this.versionHasTabular){
             return Math.min(getSizeOfDatasetOrigNumeric(), getSizeOfDatasetArchivalNumeric());
         }
         return getSizeOfDatasetOrigNumeric();
     }
 
     public Long getSizeOfDatasetOrigNumeric() {
-        return DatasetUtil.getDownloadSizeNumeric(workingVersion, true);
+        if (versionHasTabular) {
+            if (sizeOfDatasetOriginal == null) {
+                sizeOfDatasetOriginal = DatasetUtil.getDownloadSizeNumeric(workingVersion, true);
+            }
+            return sizeOfDatasetOriginal;
+        }
+        return getSizeOfDatasetArchivalNumeric();
     }
 
     public Long getSizeOfDatasetArchivalNumeric() {
-        return DatasetUtil.getDownloadSizeNumeric(workingVersion, false);
+        if (sizeOfDatasetArchival == null) {
+            sizeOfDatasetArchival = DatasetUtil.getDownloadSizeNumeric(workingVersion, false);
+        }
+        return sizeOfDatasetArchival; 
     }
 
     public String getSizeOfSelectedAsString(){
@@ -3617,7 +3646,7 @@ public class DatasetPage implements java.io.Serializable {
                 //ToDo - could drop use of selectedTemplate and just use the persistent dataset.getTemplate() 
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
-                        cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, selectedTemplate);
+                        cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), selectedTemplate);
                     } else {
                         JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.create.authenticatedUsersOnly"));
                         return null;
@@ -4436,6 +4465,8 @@ public class DatasetPage implements java.io.Serializable {
             try {
                 exporter = ExportService.getInstance().getExporter(formatName);
             } catch (ExportException ex) {
+                logger.warning("Failed to get : " + formatName);
+                logger.warning(ex.getLocalizedMessage());
                 exporter = null;
             }
             if (exporter != null && exporter.isAvailableToUsers()) {
@@ -5477,12 +5508,25 @@ public class DatasetPage implements java.io.Serializable {
         List<ExternalTool> previewTools = getPreviewToolsForDataFile(fileId);
         return previewTools.size() > 0;
     }
+    
+    public boolean isShowQueryButton(Long fileId) { 
+        DataFile dataFile = datafileService.find(fileId);
+
+        if(dataFile.isRestricted() || !dataFile.isReleased()  || FileUtil.isActivelyEmbargoed(dataFile)){
+            return false;
+        }
+        
+        List<ExternalTool> fileQueryTools = getQueryToolsForDataFile(fileId);
+        return fileQueryTools.size() > 0;
+    }
 
     public List<ExternalTool> getPreviewToolsForDataFile(Long fileId) {
         return getCachedToolsForDataFile(fileId, ExternalTool.Type.PREVIEW);
     }
 
-
+    public List<ExternalTool> getQueryToolsForDataFile(Long fileId) {
+        return getCachedToolsForDataFile(fileId, ExternalTool.Type.QUERY);
+    }
     public List<ExternalTool> getConfigureToolsForDataFile(Long fileId) {
         return getCachedToolsForDataFile(fileId, ExternalTool.Type.CONFIGURE);
     }
@@ -5507,6 +5551,10 @@ public class DatasetPage implements java.io.Serializable {
                 cachedToolsByFileId = previewToolsByFileId;
                 externalTools = previewTools;
                 break;
+            case QUERY:
+                cachedToolsByFileId = fileQueryToolsByFileId;
+                externalTools = fileQueryTools;
+                break;    
             default:
                 break;
         }
@@ -6089,16 +6137,23 @@ public class DatasetPage implements java.io.Serializable {
     
     /**
      * Add Signposting
+     * 
      * @return String
      */
+
+    String signpostingLinkHeader = null;
+
     public String getSignpostingLinkHeader() {
         if (!workingVersion.isReleased()) {
             return null;
         }
-        SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion,
-                JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
-                JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""));
-        return sr.getLinks();
+        if (signpostingLinkHeader == null) {
+            SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion,
+                    JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
+                    JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""));
+            signpostingLinkHeader = sr.getLinks();
+        }
+        return signpostingLinkHeader;
     }
 
 }

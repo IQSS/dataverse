@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -13,29 +12,28 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -590,8 +588,34 @@ public class Dataverse extends DvObjectContainer {
         this.citationDatasetFieldTypes = citationDatasetFieldTypes;
     }
     
-    
+    /**
+     * @Note: this setting is Nullable, with {@code null} indicating that the 
+     * desired behavior is not explicitly configured for this specific collection. 
+     * See the comment below. 
+     */
+    @Column(nullable = true)
+    private Boolean filePIDsEnabled;
 
+    /**
+     * Specifies whether the PIDs for Datafiles should be registered when publishing 
+     * datasets in this Collection, if the behavior is explicitly configured.
+     * @return {@code Boolean.TRUE} if explicitly enabled, {@code Boolean.FALSE} if explicitly disabled. 
+     * {@code null} indicates that the behavior is not explicitly defined, in which 
+     * case the behavior should follow the explicit configuration of the first 
+     * direct ancestor collection, or the instance-wide configuration, if none 
+     * present. 
+     * @Note: If present, this configuration therefore by default applies to all 
+     * the sub-collections, unless explicitly overwritten there.
+     * @author landreev
+     */
+    public Boolean getFilePIDsEnabled() {
+        return filePIDsEnabled;
+    }
+    
+    public void setFilePIDsEnabled(boolean filePIDsEnabled) {
+        this.filePIDsEnabled = filePIDsEnabled;
+    }
+    
     public List<DataverseFacet> getDataverseFacets() {
         return getDataverseFacets(false);
     }
