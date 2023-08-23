@@ -19,7 +19,7 @@ We assume you plan to run your Dataverse installation on Linux and we recommend 
 Java
 ----
 
-The Dataverse Software requires Java SE 11 (or higher).
+The Dataverse Software requires Java SE 17 (or higher).
 
 Installing Java
 ===============
@@ -30,11 +30,11 @@ The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/jav
 
 On a RHEL/derivative, install OpenJDK (devel version) using yum::
 
-	# sudo yum install java-11-openjdk
+	# sudo yum install java-17-openjdk
 
-If you have multiple versions of Java installed, Java 11 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
+If you have multiple versions of Java installed, Java 17 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
 
-On RHEL/derivative you can make Java 11 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
+On RHEL/derivative you can make Java 17 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
 
         # alternatives --config java
 
@@ -44,7 +44,7 @@ On RHEL/derivative you can make Java 11 the default with the ``alternatives`` co
 Payara
 ------
 
-Payara 5.2022.3 is recommended. Newer versions might work fine, regular updates are recommended.
+Payara 6.2023.8 is recommended. Newer versions might work fine. Regular updates are recommended.
 
 Installing Payara
 =================
@@ -53,25 +53,27 @@ Installing Payara
 
 	# useradd dataverse
 
-- Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
+- Download and install Payara (installed in ``/usr/local/payara6`` in the example commands below)::
 
-	# wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2022.3/payara-5.2022.3.zip
-	# unzip payara-5.2022.3.zip
-	# mv payara5 /usr/local
+	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2023.8/payara-6.2023.8.zip
+	# unzip payara-6.2023.8.zip
+	# mv payara6 /usr/local
+
+If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/
 
 If you intend to install and run Payara under a service account (and we hope you do), chown -R the Payara hierarchy to root to protect it but give the service account access to the below directories:
 
 - Set service account permissions::
 
-	# chown -R root:root /usr/local/payara5
-	# chown dataverse /usr/local/payara5/glassfish/lib
-	# chown -R dataverse:dataverse /usr/local/payara5/glassfish/domains/domain1
+	# chown -R root:root /usr/local/payara6
+	# chown dataverse /usr/local/payara6/glassfish/lib
+	# chown -R dataverse:dataverse /usr/local/payara6/glassfish/domains/domain1
 
 After installation, you may chown the lib/ directory back to root; the installer only needs write access to copy the JDBC driver into that directory.
 
 - Change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
 
-	# vim /usr/local/payara5/glassfish/domains/domain1/config/domain.xml
+	# vim /usr/local/payara6/glassfish/domains/domain1/config/domain.xml
 
 This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4-performance-tuning-monitoring-and-troubleshooting.php among other places.
 

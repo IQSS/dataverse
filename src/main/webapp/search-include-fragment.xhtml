@@ -9,7 +9,7 @@
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <c:set var="page" value="/dataverse/#{DataversePage.dataverse.alias}"/>
-    <c:set var="cvocConf" value="#{settingsWrapper.getCVocConf()}"/>
+    <c:set var="cvocConf" value="#{settingsWrapper.getCVocConf(true)}"/>
     <p:fragment>
         <p:autoUpdate/>
         <ui:repeat value="#{DatasetPage.vocabScripts}" var="vocabScriptUrl">
@@ -28,7 +28,7 @@
                         <p:watermark for="searchBasic" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
 
                         <span class="input-group-btn">
-                            <p:commandLink id="searchbutton" title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" 
+                            <p:commandLink id="searchbutton" title="#{bundle['dataverse.search.btn.find']}" ariaLabel="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" 
                                            action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage, DataversePage.dataverse)}">
                                 <span class="glyphicon glyphicon-search no-text"/>
                             </p:commandLink>
@@ -105,6 +105,7 @@
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
+                        <f:passThroughAttribute name="aria-label" value="#{bundle['facet.collection.label']}"/>
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null ? true : false}" ariaLabel="#{bundle['facet.collection.label']}"/>
                     </h:outputLink>
                     <!--DATAVERSES ONLY-->
@@ -136,6 +137,7 @@
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
+                        <f:passThroughAttribute name="aria-label" value="#{bundle['facet.dataset.label']}"/>
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null ? true : false}" ariaLabel="#{bundle['facet.dataset.label']}"/>
                     </h:outputLink>
                     <!--DATASETS ONLY-->
@@ -167,6 +169,7 @@
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
+                        <f:passThroughAttribute name="aria-label" value="#{bundle['facet.datafile.label']}"/>
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('files') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null ? true : false}" ariaLabel="#{bundle['facet.datafile.label']}"/>
                     </h:outputLink>
                     <!--FILES ONLY-->
@@ -555,6 +558,7 @@
                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{SearchIncludeFragment.isActivelyEmbargoed(result)}"/>
                             <h:outputText value="#{DatasetUtil:getLocaleExternalStatus(result.externalStatus)}" styleClass="label label-info" rendered="#{!empty result.externalStatus and SearchIncludeFragment.canPublishDataset(result.entityId)}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
+                            <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!SearchIncludeFragment.isValid(result)}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" aria-label="#{result.title}">

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -29,7 +30,7 @@ class UrlTokenUtilTest {
         DatasetVersion dv = new DatasetVersion();
         Dataset ds = new Dataset();
         ds.setId(50L);
-        ds.setGlobalId(new GlobalId("doi:10.5072/FK2ABCDEF"));
+        ds.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL,"10.5072","FK2ABCDEF",null, DOIServiceBean.DOI_RESOLVER_URL, null));
         dv.setDataset(ds);
         fmd.setDatasetVersion(dv);
         List<FileMetadata> fmdl = new ArrayList<>();

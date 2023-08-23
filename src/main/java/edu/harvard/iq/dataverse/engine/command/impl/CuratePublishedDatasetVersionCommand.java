@@ -7,8 +7,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -55,10 +55,11 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // Invariant: Dataset has no locks preventing the update
         DatasetVersion updateVersion = getDataset().getLatestVersionForCopy();
 
+        DatasetVersion newVersion = getDataset().getOrCreateEditVersion();
         // Copy metadata from draft version to latest published version
-        updateVersion.setDatasetFields(getDataset().getOrCreateEditVersion().initDatasetFields());
+        updateVersion.setDatasetFields(newVersion.initDatasetFields());
 
-        validateOrDie(updateVersion, isValidateLenient());
+        
 
         // final DatasetVersion editVersion = getDataset().getEditVersion();
         DatasetFieldUtil.tidyUpFields(updateVersion.getDatasetFields(), true);
@@ -66,16 +67,19 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // Merge the new version into our JPA context
         ctxt.em().merge(updateVersion);
 
-
         TermsOfUseAndAccess oldTerms = updateVersion.getTermsOfUseAndAccess();
-        TermsOfUseAndAccess newTerms = getDataset().getOrCreateEditVersion().getTermsOfUseAndAccess();
+        TermsOfUseAndAccess newTerms = newVersion.getTermsOfUseAndAccess();
         newTerms.setDatasetVersion(updateVersion);
         updateVersion.setTermsOfUseAndAccess(newTerms);
         //Put old terms on version that will be deleted....
-        getDataset().getOrCreateEditVersion().setTermsOfUseAndAccess(oldTerms);
+        newVersion.setTermsOfUseAndAccess(oldTerms);
+        
+        //Validate metadata and TofA conditions
+        validateOrDie(updateVersion, isValidateLenient());
+        
         //Also set the fileaccessrequest boolean on the dataset to match the new terms
         getDataset().setFileAccessRequest(updateVersion.getTermsOfUseAndAccess().isFileAccessRequest());
-        List<WorkflowComment> newComments = getDataset().getOrCreateEditVersion().getWorkflowComments();
+        List<WorkflowComment> newComments = newVersion.getWorkflowComments();
         if (newComments!=null && newComments.size() >0) {
             for(WorkflowComment wfc: newComments) {
                 wfc.setDatasetVersion(updateVersion);

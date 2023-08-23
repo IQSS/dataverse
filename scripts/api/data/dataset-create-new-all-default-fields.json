@@ -466,9 +466,9 @@
           },
           {
             "typeName": "productionPlace",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "ProductionPlace"
+            "value": ["ProductionPlace"]
           },
           {
             "typeName": "contributor",
@@ -710,9 +710,9 @@
           },
           {
             "typeName": "series",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "compound",
-            "value": {
+            "value": [{
               "seriesName": {
                 "typeName": "seriesName",
                 "multiple": false,
@@ -725,7 +725,7 @@
                 "typeClass": "primitive",
                 "value": "SeriesInformation"
               }
-            }
+            }]
           },
           {
             "typeName": "software",
@@ -899,25 +899,25 @@
                   "typeName": "westLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "10"
+                  "value": "-72"
                 },
                 "eastLongitude": {
                   "typeName": "eastLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "20"
+                  "value": "-70"
                 },
                 "northLongitude": {
                   "typeName": "northLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "30"
+                  "value": "43"
                 },
                 "southLongitude": {
                   "typeName": "southLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "40"
+                  "value": "42"
                 }
               },
               {
@@ -925,25 +925,25 @@
                   "typeName": "westLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "50"
+                  "value": "-18"
                 },
                 "eastLongitude": {
                   "typeName": "eastLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "60"
+                  "value": "-13"
                 },
                 "northLongitude": {
                   "typeName": "northLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "70"
+                  "value": "29"
                 },
                 "southLongitude": {
                   "typeName": "southLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "80"
+                  "value": "28"
                 }
               }
             ]
@@ -1404,7 +1404,7 @@
             "multiple": true,
             "typeClass": "controlledVocabulary",
             "value": [
-              "cell counting",
+              "genome sequencing",
               "cell sorting",
               "clinical chemistry analysis",
               "DNA methylation profiling"

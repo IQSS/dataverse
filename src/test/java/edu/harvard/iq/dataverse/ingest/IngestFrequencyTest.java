@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 
 import org.junit.Test;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

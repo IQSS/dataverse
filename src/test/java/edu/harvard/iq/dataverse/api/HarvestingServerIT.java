@@ -2,18 +2,18 @@ package edu.harvard.iq.dataverse.api;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
+import io.restassured.RestAssured;
+import static io.restassured.RestAssured.given;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.path.xml.XmlPath;
-import com.jayway.restassured.path.xml.element.Node;
+import io.restassured.response.Response;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.path.xml.element.Node;
 import java.util.ArrayList;
 import java.util.Collections;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import java.util.List;
 import java.util.Set;
@@ -240,7 +240,7 @@ public class HarvestingServerIT {
         assertEquals(200, getSetResponse.getStatusCode());
         
         getSetResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("status", equalTo(ApiConstants.STATUS_OK))
                 .body("data.definition", equalTo("*"))
                 .body("data.description", equalTo(""))
                 .body("data.name", equalTo(setName));
@@ -353,7 +353,7 @@ public class HarvestingServerIT {
         assertEquals(200, getSetResponse.getStatusCode());
         
         getSetResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("status", equalTo(ApiConstants.STATUS_OK))
                 .body("data.definition", equalTo(newDefinition))
                 .body("data.description", equalTo(newDescription))
                 .body("data.name", equalTo(setName));

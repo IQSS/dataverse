@@ -1,0 +1,132 @@
+version: "2.4"
+
+services:
+
+  dev_dataverse:
+    container_name: "dev_dataverse"
+    hostname: dataverse
+    image: ${APP_IMAGE}
+    restart: on-failure
+    user: payara
+    environment:
+      - DATAVERSE_DB_HOST=postgres
+      - DATAVERSE_DB_PASSWORD=secret
+      - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
+      - ENABLE_JDWP=1
+      - DATAVERSE_FEATURE_API_BEARER_AUTH=1
+    ports:
+      - "8080:8080" # HTTP (Dataverse Application)
+      - "4848:4848" # HTTP (Payara Admin Console)
+      - "9009:9009" # JDWP
+      - "8686:8686" # JMX
+    networks:
+      - dataverse
+    depends_on:
+      - dev_postgres
+      - dev_solr
+    volumes:
+      - ./docker-dev-volumes/app/data:/dv
+      - ./docker-dev-volumes/app/secrets:/secrets
+    tmpfs:
+      - /dumps:mode=770,size=2052M,uid=1000,gid=1000
+      - /tmp:mode=770,size=2052M,uid=1000,gid=1000
+    mem_limit: 2147483648 # 2 GiB
+    mem_reservation: 1024m
+    privileged: false
+
+  dev_bootstrap:
+    container_name: "dev_bootstrap"
+    image: gdcc/configbaker:unstable
+    restart: "no"
+    command:
+      - bootstrap.sh
+      - dev
+    networks:
+      - dataverse
+
+  dev_postgres:
+    container_name: "dev_postgres"
+    hostname: postgres
+    image: postgres:${POSTGRES_VERSION}
+    restart: on-failure
+    environment:
+      - POSTGRES_USER=${DATAVERSE_DB_USER}
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"
+    networks:
+      - dataverse
+    volumes:
+      - ./docker-dev-volumes/postgresql/data:/var/lib/postgresql/data
+
+  dev_solr_initializer:
+    container_name: "dev_solr_initializer"
+    image: gdcc/configbaker:unstable
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - "fix-fs-perms.sh solr && cp -a /template/* /solr-template"
+    volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
+      - ./docker-dev-volumes/solr/conf:/solr-template
+
+  dev_solr:
+    container_name: "dev_solr"
+    hostname: "solr"
+    image: solr:${SOLR_VERSION}
+    depends_on:
+      - dev_solr_initializer
+    restart: on-failure
+    ports:
+      - "8983:8983"
+    networks:
+      - dataverse
+    command:
+      - "solr-precreate"
+      - "collection1"
+      - "/template"
+    volumes:
+      - ./docker-dev-volumes/solr/data:/var/solr
+      - ./docker-dev-volumes/solr/conf:/template
+
+  dev_smtp:
+    container_name: "dev_smtp"
+    hostname: "smtp"
+    image: maildev/maildev:2.0.5
+    restart: on-failure
+    ports:
+      - "25:25" # smtp server
+      - "1080:1080" # web ui
+    environment:
+      - MAILDEV_SMTP_PORT=25
+      - MAILDEV_MAIL_DIRECTORY=/mail
+    networks:
+      - dataverse
+    #volumes:
+    #  - ./docker-dev-volumes/smtp/data:/mail
+    tmpfs:
+      - /mail:mode=770,size=128M,uid=1000,gid=1000
+
+  dev_keycloak:
+    container_name: "dev_keycloack"
+    image: 'quay.io/keycloak/keycloak:19.0'
+    hostname: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=kcadmin
+      - KEYCLOAK_ADMIN_PASSWORD=kcpassword
+      - KEYCLOAK_LOGLEVEL=DEBUG
+      - KC_HOSTNAME_STRICT=false
+    networks:
+      dataverse:
+        aliases:
+          - keycloak.mydomain.com #create a DNS alias within the network (add the same alias to your /etc/hosts to get a working OIDC flow)
+    command: start-dev --import-realm --http-port=8090  # change port to 8090, so within the network and external the same port is used
+    ports:
+      - "8090:8090"
+    volumes:
+      - './conf/keycloak/oidc-realm.json:/opt/keycloak/data/import/oidc-realm.json'
+
+networks:
+  dataverse:
+    driver: bridge

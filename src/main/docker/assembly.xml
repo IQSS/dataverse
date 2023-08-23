@@ -1,0 +1,28 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <fileSets>
+        <!-- Get our app, but exclude deps -->
+        <fileSet>
+            <directory>target/${project.artifactId}-${project.version}</directory>
+            <outputDirectory>app</outputDirectory>
+            <excludes>
+                <exclude>WEB-INF/lib/**/*</exclude>
+            </excludes>
+        </fileSet>
+        <!-- Get our dependencies in a seperate folder (image layer cache!) -->
+        <fileSet>
+            <directory>target/${project.artifactId}-${project.version}/WEB-INF/lib</directory>
+            <outputDirectory>deps</outputDirectory>
+        </fileSet>
+        <!-- Supplemental data (configs, metadata, ...) -->
+        <fileSet>
+            <directory>conf/jhove</directory>
+            <outputDirectory>supplements</outputDirectory>
+        </fileSet>
+        <!-- Init scripts and usage scripts (bootstrapping, configuration, ...) -->
+        <fileSet>
+            <directory>src/main/docker/scripts</directory>
+            <outputDirectory>scripts</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>

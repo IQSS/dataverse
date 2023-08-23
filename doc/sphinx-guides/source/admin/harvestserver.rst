@@ -18,7 +18,7 @@ If you want to learn more about OAI-PMH, you could take a look at
 or the `OAI-PMH protocol definition <https://www.openarchives.org/OAI/openarchivesprotocol.html>`_.
 
 You might consider adding your OAI-enabled Dataverse installation to
-`this shared list <https://docs.google.com/spreadsheets/d/12cxymvXCqP_kCsLKXQD32go79HBWZ1vU_tdG4kvP5S8/>`_
+`this shared list <https://docs.google.com/spreadsheets/d/1bfsw7gnHlHerLXuk7YprUT68liHfcaMxs1rFciA-mEo/>`_
 of such instances.
 
 The email portion of :ref:`systemEmail` will be visible via OAI-PMH (from the "Identify" verb).

@@ -57,7 +57,7 @@ def test_appserver_directory(directory):
 
         #print("version: major: "+str(major_version)+", minor: "+str(minor_version))
 
-        if major_version != 5 or minor_version < 201:
+        if major_version != 6 or minor_version < 2023:
             return False
         return True
 

@@ -1,9 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
-import edu.harvard.iq.dataverse.GlobalId;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.File;
@@ -13,14 +12,14 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.endsWith;
@@ -389,21 +388,19 @@ public class SwordIT {
 
         String persistentId = null;
         Integer datasetId = null;
-        String protocol;
-        String authority;
-        String identifier = null;
 
         Response createDataset = UtilIT.createDatasetViaSwordApi(rootDataverseAlias, datasetTitle, apiTokenContributor);
-        createDataset.prettyPrint();
+        String createResponse = createDataset.prettyPrint();
         createDataset.then().assertThat()
                 .statusCode(CREATED.getStatusCode())
                 .body("entry.treatment", equalTo("no treatment information available"));
 
         persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
-        GlobalId globalId = new GlobalId(persistentId);
-        protocol = globalId.getProtocol();
-        authority = globalId.getAuthority();
-        identifier = globalId.getIdentifier();
+        //previsouly the test parsed the persistentID but this is now done via PIDProviderBeans
+        //Instead, verify it starts with the protocol and the rest was what was returned in the createDataset call
+        assertTrue(persistentId.startsWith("doi:"));
+        String identifier = persistentId.substring(4);
+        assertTrue(createResponse.contains(identifier));
 
         Response listDatasetsAtRoot = UtilIT.listDatasetsViaSword(rootDataverseAlias, apiTokenContributor);
         listDatasetsAtRoot.prettyPrint();
