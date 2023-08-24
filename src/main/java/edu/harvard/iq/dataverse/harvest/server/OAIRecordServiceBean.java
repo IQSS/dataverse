@@ -8,32 +8,27 @@ package edu.harvard.iq.dataverse.harvest.server;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.time.Instant;
-import java.io.File;
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.persistence.TemporalType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.TemporalType;
 
 /**
  *
@@ -113,7 +108,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                                 && (dataset.getLastExportTime() == null
                                 || dataset.getLastExportTime().before(publicationDate))) {
 
-                            setUpdateLogger.fine("Attempting to run export on dataset " + dataset.getGlobalIdString());
+                            setUpdateLogger.fine("Attempting to run export on dataset " + dataset.getGlobalId().asString());
                             exportAllFormats(dataset);
                         }
                         
@@ -147,14 +142,14 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         boolean isReleased = dataset.getReleasedVersion() != null;
         
         if (isReleased && dataset.getLastExportTime() != null) {
-            OAIRecord record = recordMap.get(dataset.getGlobalIdString());
+            OAIRecord record = recordMap.get(dataset.getGlobalId().asString());
             if (record == null) {
-                setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalIdString());
-                record = new OAIRecord(setName, dataset.getGlobalIdString(), new Date());
+                setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalId().asString());
+                record = new OAIRecord(setName, dataset.getGlobalId().asString(), new Date());
                 em.persist(record);
             } else {
                 if (record.isRemoved()) {
-                    setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
+                    setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalId().asString());
                     record.setRemoved(false);
                     record.setLastUpdateTime(new Date());
                 } else if (dataset.getLastExportTime().after(record.getLastUpdateTime())) {
@@ -181,7 +176,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     public void updateOaiRecordsForDataset(Dataset dataset) {
         // create Map of OaiRecords
 
-        List<OAIRecord> oaiRecords = findOaiRecordsByGlobalId(dataset.getGlobalIdString());
+        List<OAIRecord> oaiRecords = findOaiRecordsByGlobalId(dataset.getGlobalId().asString());
         if (oaiRecords != null) {
 
             DatasetVersion releasedVersion = dataset.getReleasedVersion();
@@ -195,7 +190,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             
             for (OAIRecord record : oaiRecords) {
                 if (record.isRemoved()) {
-                    logger.fine("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
+                    logger.fine("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalId().asString());
                     record.setRemoved(false);
                     record.setLastUpdateTime(new Date());
                 } else if (dataset.getLastExportTime().after(record.getLastUpdateTime())) {
@@ -245,7 +240,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             exportServiceInstance.exportAllFormats(dataset);
             dataset = datasetService.merge(dataset);
         } catch (Exception e) {
-            logger.fine("Caught unknown exception while trying to export");
+            logger.log(Level.FINE, "Caught unknown exception while trying to export", e);
             throw new ExportException(e.getMessage());
         }
     }
@@ -265,7 +260,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         
         try {
            oaiRecord = (OAIRecord) query.setMaxResults(1).getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (jakarta.persistence.NoResultException e) {
            // Do nothing, just return null. 
         }
         logger.fine("returning oai record.");
@@ -373,6 +368,18 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             logger.fine("Caught exception; returning null.");
             return null;
         }
+    }
+    
+    public Instant getEarliestDate() {
+        String queryString = "SELECT min(r.lastUpdateTime) FROM OAIRecord r";
+        TypedQuery<Date> query = em.createQuery(queryString, Date.class);
+        Date retDate = query.getSingleResult();
+        if (retDate != null) {
+            return retDate.toInstant();
+        }
+        
+        // if there are no records yet, return the default "now"
+        return new Date().toInstant();
     }
     
 }

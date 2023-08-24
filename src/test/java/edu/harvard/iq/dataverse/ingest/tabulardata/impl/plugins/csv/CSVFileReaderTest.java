@@ -22,8 +22,9 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -67,7 +68,7 @@ public class CSVFileReaderTest {
             } catch (IOException ex) {
                 fail();
             }
-            assertEquals("Error on line " + line, expLine, foundLine);
+            assertEquals(expLine, foundLine, "Error on line " + line);
             line++;
         }
 
@@ -121,15 +122,15 @@ public class CSVFileReaderTest {
         // OK, let's go through the individual variables:
         for (int i = 0; i < result.getVarQuantity(); i++) {
 
-            assertEquals("variable " + i + ":", expectedVariableNames[i], result.getDataVariables().get(i).getName());
+            assertEquals(expectedVariableNames[i], result.getDataVariables().get(i).getName(), "variable " + i + ":");
 
-            assertEquals("variable " + i + ":", expectedVariableTypes[i], result.getDataVariables().get(i).getType());
+            assertEquals(expectedVariableTypes[i], result.getDataVariables().get(i).getType(), "variable " + i + ":");
 
-            assertEquals("variable " + i + ":", expectedVariableIntervals[i], result.getDataVariables().get(i).getInterval());
+            assertEquals(expectedVariableIntervals[i], result.getDataVariables().get(i).getInterval(), "variable " + i + ":");
 
-            assertEquals("variable " + i + ":", expectedVariableFormatCategories[i], result.getDataVariables().get(i).getFormatCategory());
+            assertEquals(expectedVariableFormatCategories[i], result.getDataVariables().get(i).getFormatCategory(), "variable " + i + ":");
 
-            assertEquals("variable " + i + ":", expectedVariableFormats[i], result.getDataVariables().get(i).getFormat());
+            assertEquals(expectedVariableFormats[i], result.getDataVariables().get(i).getFormat(), "variable " + i + ":");
         }
     }
 
@@ -196,7 +197,7 @@ public class CSVFileReaderTest {
 
             Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
 
-            assertArrayEquals("column " + i + ":", floatVectors[vectorCount++], columnVector);
+            assertArrayEquals(floatVectors[vectorCount++], columnVector, "column " + i + ":");
         }
 
         // Discrete Numerics (aka, integers):
@@ -230,7 +231,7 @@ public class CSVFileReaderTest {
 
             Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
 
-            assertArrayEquals("column " + i + ":", longVectors[vectorCount++], columnVector);
+            assertArrayEquals(longVectors[vectorCount++], columnVector, "column " + i + ":");
         }
 
         // And finally, Strings:
@@ -257,7 +258,7 @@ public class CSVFileReaderTest {
 
             String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
 
-            assertArrayEquals("column " + i + ":", stringVectors[vectorCount++], columnVector);
+            assertArrayEquals(stringVectors[vectorCount++], columnVector, "column " + i + ":");
         }
     }
 
@@ -387,7 +388,7 @@ public class CSVFileReaderTest {
                 }
             }
 
-            assertEquals("Variable number " + i + ":", expectedUNFs[i], unf);
+            assertEquals(expectedUNFs[i], unf, "Variable number " + i + ":");
         }
 
     }

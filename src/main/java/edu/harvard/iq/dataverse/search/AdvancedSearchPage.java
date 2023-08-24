@@ -14,20 +14,16 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.JsonObject;
+import jakarta.ejb.EJB;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -111,7 +107,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
         List<String> queryStrings = new ArrayList<>();
         for (DatasetFieldType dsfType : metadataFieldList) {
             if (dsfType.getSearchValue() != null && !dsfType.getSearchValue().equals("")) {
-                queryStrings.add(constructQuery(dsfType.getSolrField().getNameSearchable(), dsfType.getSearchValue()));
+                //CVoc fields return term URIs - add quotes around them to avoid solr breaking them into individual search words
+                queryStrings.add(constructQuery(dsfType.getSolrField().getNameSearchable(), dsfType.getSearchValue(), getCVocConf().containsKey(dsfType.getId())));
             } else if (dsfType.getListValues() != null && !dsfType.getListValues().isEmpty()) {
                 List<String> listQueryStrings = new ArrayList<>();
                 for (String value : dsfType.getListValues()) {

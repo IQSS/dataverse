@@ -7,14 +7,14 @@ package edu.harvard.iq.dataverse.harvest.client;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
 /**
  *
@@ -40,12 +40,13 @@ public class ClientHarvestRun implements Serializable {
         this.id = id;
     }
 
-    public enum RunResultType { SUCCESS, FAILURE, INPROGRESS };
+    public enum RunResultType { SUCCESS, FAILURE, INPROGRESS, INTERRUPTED };
     
     private static String RESULT_LABEL_SUCCESS = "SUCCESS";
     private static String RESULT_LABEL_FAILURE = "FAILED";
     private static String RESULT_LABEL_INPROGRESS = "IN PROGRESS";
     private static String RESULT_DELETE_IN_PROGRESS = "DELETE IN PROGRESS";
+    private static String RESULT_LABEL_INTERRUPTED = "INTERRUPTED";
     
     @ManyToOne
     @JoinColumn(nullable = false)
@@ -76,6 +77,8 @@ public class ClientHarvestRun implements Serializable {
             return RESULT_LABEL_FAILURE;
         } else if (isInProgress()) {
             return RESULT_LABEL_INPROGRESS;
+        } else if (isInterrupted()) {
+            return RESULT_LABEL_INTERRUPTED;
         }
         return null;
     }
@@ -84,8 +87,8 @@ public class ClientHarvestRun implements Serializable {
         if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
             return RESULT_DELETE_IN_PROGRESS;
         }
-        if (isSuccess()) {
-            String resultLabel = RESULT_LABEL_SUCCESS;
+        if (isSuccess() || isInterrupted()) {
+            String resultLabel = getResultLabel();
             
             resultLabel = resultLabel.concat("; "+harvestedDatasetCount+" harvested, ");
             resultLabel = resultLabel.concat(deletedDatasetCount+" deleted, ");
@@ -128,6 +131,14 @@ public class ClientHarvestRun implements Serializable {
         harvestResult = RunResultType.INPROGRESS;
     }
 
+    public boolean isInterrupted() {
+        return RunResultType.INTERRUPTED == harvestResult;
+    }
+    
+    public void setInterrupted() {
+        harvestResult = RunResultType.INTERRUPTED;
+    }
+    
     // Time of this harvest attempt:
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date startTime;

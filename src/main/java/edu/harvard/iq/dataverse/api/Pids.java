@@ -1,28 +1,33 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
-import javax.ejb.Stateless;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.Stateless;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 /**
  * PIDs are Persistent IDentifiers such as DOIs or Handles.
@@ -36,21 +41,23 @@ import javax.ws.rs.core.Response;
 public class Pids extends AbstractApiBean {
 
     @GET
+    @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPid(@QueryParam("persistentId") String persistentId) {
-        try {
-            User user = findUserOrDie();
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
-            }
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.errors.invalidApiToken"));
+    public Response getPid(@Context ContainerRequestContext crc, @QueryParam("persistentId") String persistentId) {
+        User user = getRequestUser(crc);
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
         }
-        String baseUrl = systemConfig.getDataCiteRestApiUrlString();
-        String username = System.getProperty("doi.username");
-        String password = System.getProperty("doi.password");
+
+        // FIXME: Even before changing to MPCONFIG retrieval, this was pinned to be DataCite specific!
+        //        Should this be extended to EZID and other PID systems like Handle?
+        String baseUrl = JvmSettings.DATACITE_REST_API_URL.lookup();
+        String username = JvmSettings.DATACITE_USERNAME.lookup();
+        String password = JvmSettings.DATACITE_PASSWORD.lookup();
+        
         try {
-            JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
+            GlobalId globalId = PidUtil.parseAsGlobalID(persistentId);
+            JsonObjectBuilder result = PidUtil.queryDoi(globalId, baseUrl, username, password);
             return ok(result);
         } catch (NotFoundException ex) {
             return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());
@@ -60,16 +67,13 @@ public class Pids extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("unreserved")
-    public Response getUnreserved(@QueryParam("persistentId") String persistentId) {
-        try {
-            User user = findUserOrDie();
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
-            }
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.errors.invalidApiToken"));
+    public Response getUnreserved(@Context ContainerRequestContext crc, @QueryParam("persistentId") String persistentId) {
+        User user = getRequestUser(crc);
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
         }
 
         JsonArrayBuilder unreserved = Json.createArrayBuilder();
@@ -93,12 +97,13 @@ public class Pids extends AbstractApiBean {
     }
 
     @POST
+    @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{id}/reserve")
-    public Response reservePid(@PathParam("id") String idSupplied) {
+    public Response reservePid(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            execCommand(new ReservePidCommand(createDataverseRequest(findUserOrDie()), dataset));
+            execCommand(new ReservePidCommand(createDataverseRequest(getRequestUser(crc)), dataset));
             return ok(BundleUtil.getStringFromBundle("pids.api.reservePid.success", Arrays.asList(dataset.getGlobalId().asString())));
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -106,9 +111,10 @@ public class Pids extends AbstractApiBean {
     }
 
     @DELETE
+    @AuthRequired
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{id}/delete")
-    public Response deletePid(@PathParam("id") String idSupplied) {
+    public Response deletePid(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             //Restrict to never-published datasets (that should have draft/nonpublic pids). The underlying code will invalidate
@@ -117,7 +123,7 @@ public class Pids extends AbstractApiBean {
             if(dataset.isReleased()) {
             	return badRequest("Not allowed for Datasets that have been published.");
             }
-            execCommand(new DeletePidCommand(createDataverseRequest(findUserOrDie()), dataset));
+            execCommand(new DeletePidCommand(createDataverseRequest(getRequestUser(crc)), dataset));
             return ok(BundleUtil.getStringFromBundle("pids.api.deletePid.success", Arrays.asList(dataset.getGlobalId().asString())));
         } catch (WrappedResponse ex) {
             return ex.getResponse();

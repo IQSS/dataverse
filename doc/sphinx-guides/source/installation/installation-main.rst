@@ -28,8 +28,8 @@ Unpack the zip file - this will create the directory ``dvinstall``.
 
 Just make sure the user running the installer has write permission to:
 
-- /usr/local/payara5/glassfish/lib
-- /usr/local/payara5/glassfish/domains/domain1
+- /usr/local/payara6/glassfish/lib
+- /usr/local/payara6/glassfish/domains/domain1
 - the current working directory of the installer (it currently writes its logfile there), and
 - your jvm-option specified files.dir
 
@@ -47,7 +47,7 @@ Follow the instructions in the text file.
 The script will prompt you for some configuration values. If this is a test/evaluation installation, it may be possible to accept the default values provided for most of the settings:
 
 - Internet Address of your host: localhost
-- Payara Directory: /usr/local/payara5
+- Payara Directory: /usr/local/payara6
 - Payara User: current user running the installer script
 - Administrator email address for this Dataverse installation: (none)
 - SMTP (mail) server to relay notification messages: localhost
@@ -82,6 +82,8 @@ While Postgres can accomodate usernames and database names containing hyphens, i
 
 For more information, please see https://docs.payara.fish/documentation/payara-server/password-aliases/password-alias-asadmin-commands.html
 
+.. _importance-of-siteUrl:
+
 **IMPORTANT:** The installer will also ask for an external site URL for the Dataverse installation. It is *imperative* that this value be supplied accurately, or a long list of functions will be inoperable, including:
 
 - email confirmation links
@@ -96,7 +98,7 @@ The supplied site URL will be saved under the JVM option :ref:`dataverse.siteUrl
 
 **IMPORTANT:** Please note, that "out of the box" the installer will configure the Dataverse installation to leave unrestricted access to the administration APIs from (and only from) localhost. Please consider the security implications of this arrangement (anyone with shell access to the server can potentially mess with your Dataverse installation). An alternative solution would be to block open access to these sensitive API endpoints completely; and to only allow requests supplying a pre-defined "unblock token" (password). If you prefer that as a solution, please consult the supplied script ``post-install-api-block.sh`` for examples on how to set it up. See also "Securing Your Installation" under the :doc:`config` section.
 
-The Dataverse Software uses JHOVE_ to help identify the file format (CSV, PNG, etc.) for files that users have uploaded. The installer places files called ``jhove.conf`` and ``jhoveConfig.xsd`` into the directory ``/usr/local/payara5/glassfish/domains/domain1/config`` by default and makes adjustments to the jhove.conf file based on the directory into which you chose to install Payara.
+The Dataverse Software uses JHOVE_ to help identify the file format (CSV, PNG, etc.) for files that users have uploaded. The installer places files called ``jhove.conf`` and ``jhoveConfig.xsd`` into the directory ``/usr/local/payara6/glassfish/domains/domain1/config`` by default and makes adjustments to the jhove.conf file based on the directory into which you chose to install Payara.
 
 .. _JHOVE: http://jhove.openpreservation.org
 
@@ -133,6 +135,11 @@ Dataset Cannot Be Published
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check to make sure you used a fully qualified domain name when installing the Dataverse Software. You can change the ``dataverse.fqdn`` JVM option after the fact per the :doc:`config` section.
+
+Got ERR_ADDRESS_UNREACHABLE While Navigating on Interface or API Calls
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are receiving an ``ERR_ADDRESS_UNREACHABLE`` while navigating the GUI or making an API call, make sure the ``siteUrl`` JVM option is defined. For details on how to set ``siteUrl``, please refer to :ref:`dataverse.siteUrl` from the :doc:`config` section. For context on why setting this option is necessary, refer to :ref:`dataverse.fqdn` from the :doc:`config` section.
 
 Problems Sending Email
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -242,7 +249,7 @@ Deleting Uploaded Files
 
 The path below will depend on the value for ``dataverse.files.directory`` as described in the :doc:`config` section:
 
-``rm -rf /usr/local/payara5/glassfish/domains/domain1/files``
+``rm -rf /usr/local/payara6/glassfish/domains/domain1/files``
 
 Rerun Installer
 ^^^^^^^^^^^^^^^

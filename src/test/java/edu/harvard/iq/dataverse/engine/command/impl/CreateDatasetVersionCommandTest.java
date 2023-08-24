@@ -16,9 +16,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -33,7 +35,7 @@ public class CreateDatasetVersionCommandTest {
         Dataset ds = makeDataset();
         
         // Populate the Initial version
-        DatasetVersion dsvInitial = ds.getEditVersion();
+        DatasetVersion dsvInitial = ds.getOrCreateEditVersion();
         dsvInitial.setCreateTime( dateFmt.parse("20001012") );
         dsvInitial.setLastUpdateTime( dsvInitial.getLastUpdateTime() );
         dsvInitial.setId( MocksFactory.nextId() );
@@ -62,14 +64,14 @@ public class CreateDatasetVersionCommandTest {
         assertEquals( dsvCreationDate, dsvNew.getLastUpdateTime() );
         assertEquals( dsvCreationDate.getTime(), ds.getModificationTime().getTime() );
         assertEquals( ds, dsvNew.getDataset() );
-        assertEquals( dsvNew, ds.getEditVersion() );
+        assertEquals( dsvNew, ds.getOrCreateEditVersion() );
         Map<DvObject, Set<Permission>> expected = new HashMap<>();
         expected.put(ds, Collections.singleton(Permission.AddDataset));
         assertEquals(expected, testEngine.getReqiredPermissionsForObjects() );
     }
     
-    @Test(expected=IllegalCommandException.class)
-    public void testCantCreateTwoDraftVersions() throws Exception {
+    @Test
+    void testCantCreateTwoDraftVersions() {
         DatasetVersion dsvNew = new DatasetVersion();
         dsvNew.setVersionState(DatasetVersion.VersionState.DRAFT);
         Dataset sampleDataset = makeDataset();
@@ -87,7 +89,7 @@ public class CreateDatasetVersionCommandTest {
             
         });
         
-        testEngine.submit(sut);
+        assertThrows(IllegalCommandException.class, () -> testEngine.submit(sut));
     }
     
     
