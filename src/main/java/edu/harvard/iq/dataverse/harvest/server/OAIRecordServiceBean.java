@@ -8,31 +8,27 @@ package edu.harvard.iq.dataverse.harvest.server;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import java.io.File;
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.persistence.TemporalType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.TemporalType;
 
 /**
  *
@@ -112,7 +108,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                                 && (dataset.getLastExportTime() == null
                                 || dataset.getLastExportTime().before(publicationDate))) {
 
-                            setUpdateLogger.fine("Attempting to run export on dataset " + dataset.getGlobalIdString());
+                            setUpdateLogger.fine("Attempting to run export on dataset " + dataset.getGlobalId().asString());
                             exportAllFormats(dataset);
                         }
                         
@@ -146,14 +142,14 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         boolean isReleased = dataset.getReleasedVersion() != null;
         
         if (isReleased && dataset.getLastExportTime() != null) {
-            OAIRecord record = recordMap.get(dataset.getGlobalIdString());
+            OAIRecord record = recordMap.get(dataset.getGlobalId().asString());
             if (record == null) {
-                setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalIdString());
-                record = new OAIRecord(setName, dataset.getGlobalIdString(), new Date());
+                setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalId().asString());
+                record = new OAIRecord(setName, dataset.getGlobalId().asString(), new Date());
                 em.persist(record);
             } else {
                 if (record.isRemoved()) {
-                    setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
+                    setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalId().asString());
                     record.setRemoved(false);
                     record.setLastUpdateTime(new Date());
                 } else if (dataset.getLastExportTime().after(record.getLastUpdateTime())) {
@@ -180,7 +176,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     public void updateOaiRecordsForDataset(Dataset dataset) {
         // create Map of OaiRecords
 
-        List<OAIRecord> oaiRecords = findOaiRecordsByGlobalId(dataset.getGlobalIdString());
+        List<OAIRecord> oaiRecords = findOaiRecordsByGlobalId(dataset.getGlobalId().asString());
         if (oaiRecords != null) {
 
             DatasetVersion releasedVersion = dataset.getReleasedVersion();
@@ -194,7 +190,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             
             for (OAIRecord record : oaiRecords) {
                 if (record.isRemoved()) {
-                    logger.fine("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
+                    logger.fine("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalId().asString());
                     record.setRemoved(false);
                     record.setLastUpdateTime(new Date());
                 } else if (dataset.getLastExportTime().after(record.getLastUpdateTime())) {
@@ -244,7 +240,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             exportServiceInstance.exportAllFormats(dataset);
             dataset = datasetService.merge(dataset);
         } catch (Exception e) {
-            logger.fine("Caught unknown exception while trying to export");
+            logger.log(Level.FINE, "Caught unknown exception while trying to export", e);
             throw new ExportException(e.getMessage());
         }
     }
@@ -264,7 +260,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         
         try {
            oaiRecord = (OAIRecord) query.setMaxResults(1).getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (jakarta.persistence.NoResultException e) {
            // Do nothing, just return null. 
         }
         logger.fine("returning oai record.");
@@ -286,15 +282,15 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         return findOaiRecordsBySetName(setName, null, null);
     }    
     
-    public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until) {
+    public List<OAIRecord> findOaiRecordsBySetName(String setName, Instant from, Instant until) {
         return findOaiRecordsBySetName(setName, from, until, false);
     }
     
-    public List<OAIRecord> findOaiRecordsNotInThisSet(String setName, Date from, Date until) {
+    public List<OAIRecord> findOaiRecordsNotInThisSet(String setName, Instant from, Instant until) {
         return findOaiRecordsBySetName(setName, from, until, true);
     }
     
-    public List<OAIRecord> findOaiRecordsBySetName(String setName, Date from, Date until, boolean excludeSet) {
+    public List<OAIRecord> findOaiRecordsBySetName(String setName, Instant from, Instant until, boolean excludeSet) {
                 
         if (setName == null) {
             setName = "";
@@ -314,35 +310,18 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         logger.fine("Query: "+queryString);
         
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName",setName); }
-        if (from != null) { query.setParameter("from",from,TemporalType.TIMESTAMP); }
-        // In order to achieve inclusivity on the "until" matching, we need to do 
-        // the following (if the "until" parameter is supplied):
-        // 1) if the supplied "until" parameter has the time portion (and is not just
-        // a date), we'll increment it by one second. This is because the time stamps we 
-        // keep in the database also have fractional thousands of a second. 
-        // So, a record may be shown as "T17:35:45", but in the database it is 
-        // actually "17:35:45.356", so "<= 17:35:45" isn't going to work on this 
-        // time stamp! - So we want to try "<= 17:35:45" instead. 
-        // 2) if it's just a date, we'll increment it by a *full day*. Otherwise
-        // our database time stamp of 2016-10-23T17:35:45.123Z is NOT going to 
-        // match " <= 2016-10-23" - which is really going to be interpreted as 
-        // "2016-10-23T00:00:00.000". 
-        // -- L.A. 4.6
+        if (setName != null) { 
+            query.setParameter("setName",setName); 
+        }
+        // TODO: review and phase out the use of java.util.Date throughout this service.
+        
+        if (from != null) { 
+            query.setParameter("from",Date.from(from),TemporalType.TIMESTAMP); 
+        }
         
         if (until != null) { 
-            // 24 * 3600 * 1000 = number of milliseconds in a day. 
-            
-            if (until.getTime() % (24 * 3600 * 1000) == 0) {
-                // The supplied "until" parameter is a date, with no time
-                // portion. 
-                logger.fine("plain date. incrementing by one day");
-                until.setTime(until.getTime()+(24 * 3600 * 1000));
-            } else {
-                logger.fine("date and time. incrementing by one second");
-                until.setTime(until.getTime()+1000);
-            }
-            query.setParameter("until",until,TemporalType.TIMESTAMP); 
+            Date untilDate = Date.from(until);
+            query.setParameter("until",untilDate,TemporalType.TIMESTAMP); 
         }
                 
         try {
@@ -389,6 +368,18 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             logger.fine("Caught exception; returning null.");
             return null;
         }
+    }
+    
+    public Instant getEarliestDate() {
+        String queryString = "SELECT min(r.lastUpdateTime) FROM OAIRecord r";
+        TypedQuery<Date> query = em.createQuery(queryString, Date.class);
+        Date retDate = query.getSingleResult();
+        if (retDate != null) {
+            return retDate.toInstant();
+        }
+        
+        // if there are no records yet, return the default "now"
+        return new Date().toInstant();
     }
     
 }

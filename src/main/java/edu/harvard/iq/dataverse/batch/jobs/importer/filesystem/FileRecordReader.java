@@ -24,20 +24,21 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.io.filefilter.NotFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
-import javax.annotation.PostConstruct;
-import javax.batch.api.BatchProperty;
-import javax.batch.api.chunk.AbstractItemReader;
-import javax.batch.operations.JobOperator;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.context.JobContext;
-import javax.batch.runtime.context.StepContext;
-import javax.ejb.EJB;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.chunk.AbstractItemReader;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.batch.runtime.context.JobContext;
+import jakarta.batch.runtime.context.StepContext;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.Serializable;
@@ -54,7 +55,7 @@ import java.util.logging.Logger;
 @Dependent
 public class FileRecordReader extends AbstractItemReader {
     
-    public static final String SEP = System.getProperty("file.separator");
+    public static final String SEP = File.separator;
 
     @Inject
     JobContext jobContext;
@@ -96,9 +97,11 @@ public class FileRecordReader extends AbstractItemReader {
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
- 
-        directory = new File(System.getProperty("dataverse.files.directory")
-                + SEP + dataset.getAuthority() + SEP + dataset.getIdentifier() + SEP + uploadFolder);
+    
+        // Retrieve via MPCONFIG. Has sane default /tmp/dataverse from META-INF/microprofile-config.properties
+        String baseDir = JvmSettings.FILES_DIRECTORY.lookup();
+        
+        directory = new File(baseDir + SEP + dataset.getAuthority() + SEP + dataset.getIdentifier() + SEP + uploadFolder);
         // TODO: 
         // The above goes directly to the filesystem directory configured by the 
         // old "dataverse.files.directory" JVM option (otherwise used for temp

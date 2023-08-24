@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
  * 
  * @author rmp553
  */
+//ToDo - used at all?
 public class FileVersionInfo {
     
     private Long id;
