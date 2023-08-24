@@ -1115,9 +1115,9 @@ public class FilesIT {
 
         long fileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
-        Response searchShouldFindNothingBecauseUnpublished = UtilIT.search("id:datafile_" + fileId + "_draft", apiToken);
-        searchShouldFindNothingBecauseUnpublished.prettyPrint();
-        searchShouldFindNothingBecauseUnpublished.then().assertThat()
+        Response searchShouldFindBecauseAuthorApiTokenSupplied = UtilIT.search("id:datafile_" + fileId + "_draft", apiToken);
+        searchShouldFindBecauseAuthorApiTokenSupplied.prettyPrint();
+        searchShouldFindBecauseAuthorApiTokenSupplied.then().assertThat()
                 .body("data.total_count", equalTo(1))
                 .statusCode(OK.getStatusCode());
 
