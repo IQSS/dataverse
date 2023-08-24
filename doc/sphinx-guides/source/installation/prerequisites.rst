@@ -226,8 +226,6 @@ For systems using init.d (like CentOS 6), download this :download:`Solr init scr
         service start solr
         chkconfig solr on
 
-Please note that as of Solr 9 the following argument `to enable a module <https://solr.apache.org/guide/solr/latest/configuration-guide/solr-modules.html>`_ has been added to the init scripts: ``-Dsolr.modules=scripting``
-
 Securing Solr
 =============
 
