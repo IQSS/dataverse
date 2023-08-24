@@ -3,7 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import static io.restassured.RestAssured.given;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
