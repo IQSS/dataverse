@@ -34,6 +34,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterAll;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -47,6 +48,15 @@ public class FilesIT {
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response removePublicInstall = UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
+        removePublicInstall.then().assertThat().statusCode(200);
+
+    }
+
+    @AfterAll
+    public static void tearDownClass() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
     }
 
     /**
