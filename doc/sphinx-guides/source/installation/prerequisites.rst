@@ -174,7 +174,7 @@ Become the ``solr`` user and then download and configure Solr::
 
         su - solr
         cd /usr/local/solr
-        wget https://archive.apache.org/dist/lucene/solr/9.3.0/solr-9.3.0.tgz
+        wget https://archive.apache.org/dist/solr/solr/9.3.0/solr-9.3.0.tgz
         tar xvzf solr-9.3.0.tgz
         cd solr-9.3.0
         cp -r server/solr/configsets/_default server/solr/collection1

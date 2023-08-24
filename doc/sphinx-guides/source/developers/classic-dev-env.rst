@@ -144,7 +144,7 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr``
 
-``curl -O http://archive.apache.org/dist/lucene/solr/9.3.0/solr-9.3.0.tgz``
+``curl -O http://archive.apache.org/dist/solr/solr/9.3.0/solr-9.3.0.tgz``
 
 ``tar xvfz solr-9.3.0.tgz``
 
