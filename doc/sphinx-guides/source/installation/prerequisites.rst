@@ -226,7 +226,7 @@ For systems using init.d (like CentOS 6), download this :download:`Solr init scr
         service start solr
         chkconfig solr on
 
-Please note that as of Solr 9 the following argument `to enable a module <https://solr.apache.org/guide/solr/latest/configuration-guide/solr-modules.html>`_ has been added to the init scripts: ``-Dsolr.modules=scripting``. As explained in `Solr release notes <https://solr.apache.org/guide/solr/9_0/upgrade-notes/major-changes-in-solr-9.html#security>`_, "To improve security, XSLTResponseWriter has been moved to the scripting Module instead of shipping as part of Solr core. This module needs to be enabled explicitly."
+Please note that as of Solr 9 the following argument `to enable a module <https://solr.apache.org/guide/solr/latest/configuration-guide/solr-modules.html>`_ has been added to the init scripts: ``-Dsolr.modules=scripting``
 
 Securing Solr
 =============
