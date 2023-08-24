@@ -966,6 +966,9 @@ public class SearchIT {
         Response datasetAsJson2 = UtilIT.nativeGet(datasetId2, apiToken);
         datasetAsJson2.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        
+        // Wait a little while for the index to pick up the datasets, otherwise timing issue with searching for it.
+        UtilIT.sleepForReindex(datasetId2.toString(), apiToken, 2);
 
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         String identifier2 = JsonPath.from(datasetAsJson2.getBody().asString()).getString("data.identifier"); 

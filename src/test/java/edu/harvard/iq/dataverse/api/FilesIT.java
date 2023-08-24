@@ -1105,6 +1105,9 @@ public class FilesIT {
         msg("Add initial file");
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        
+        // Wait a little while for the index to pick up the file, otherwise timing issue with searching for it.
+        UtilIT.sleepForReindex(datasetId.toString(), apiToken, 2);
 
         String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
