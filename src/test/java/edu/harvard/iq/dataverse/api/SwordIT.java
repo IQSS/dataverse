@@ -24,15 +24,16 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.startsWith;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * In all these tests you should never see something like "[long string exposing
@@ -54,7 +55,7 @@ public class SwordIT {
     private static final String rootDvNotPublished = "Many of these SWORD tests require that the root dataverse collection has been published. Publish the root dataverse and then re-run these tests.";
     private static final String rootDvLackPermissions = "Many of these SWORD tests require you set permissions for the root dataverse collection: \"Anyone with a Dataverse account can add sub dataverses and datasets\" + curator role for new datasets. Please set and re-run these tests.";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
         boolean testAgainstDev1 = false;
@@ -72,7 +73,7 @@ public class SwordIT {
         Response checkRootDataverse = UtilIT.listDatasetsViaSword(rootDataverseAlias, apitoken);
         //checkRootDataverse.prettyPrint();
         checkRootDataverse.then().assertThat().statusCode(OK.getStatusCode());
-        assumeTrue(rootDvNotPublished,  checkRootDataverse.getBody().xmlPath().getBoolean("feed.dataverseHasBeenReleased"));
+        assumeTrue(checkRootDataverse.getBody().xmlPath().getBoolean("feed.dataverseHasBeenReleased"), rootDvNotPublished);
         
         // check that root dataverse has permissions for any user set to dataverse + dataset creator (not admin, not curator!)
         checkRootDataverse = UtilIT.getRoleAssignmentsOnDataverse(rootDataverseAlias, apiTokenSuperuser);
@@ -87,7 +88,7 @@ public class SwordIT {
                 break;
             }
         }
-        assumeTrue(rootDvLackPermissions, properPermissionsSet);
+        assumeTrue(properPermissionsSet, rootDvLackPermissions);
 
     }
 
@@ -967,7 +968,7 @@ public class SwordIT {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         // cleanup, allow custom terms again (delete because it defaults to true)
         UtilIT.deleteSetting(SettingsServiceBean.Key.AllowCustomTermsOfUse);
