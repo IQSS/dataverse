@@ -75,8 +75,6 @@ WORKDIR /
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 # Mark these directories as mutuable data containers to avoid cluttering the images overlayfs at runtime.
 VOLUME ${STORAGE_DIR} ${SECRETS_DIR} ${DUMPS_DIR}
-# Workaround for https://github.com/payara/Payara/issues/6344
-ENV JAVA_TOOL_OPTIONS="-Djdk.util.zip.disableZip64ExtraFieldValidation=true --add-opens=java.base/java.io=ALL-UNNAMED"
 RUN <<EOF
     # Create pathes
     mkdir -p "${HOME_DIR}" "${PAYARA_DIR}" "${DEPLOY_DIR}" "${CONFIG_DIR}" "${SCRIPT_DIR}"
@@ -166,6 +164,8 @@ RUN <<EOF
     ${ASADMIN} create-jvm-options '-XX\:MetaspaceSize=${ENV=MEM_METASPACE_SIZE}'
     ${ASADMIN} create-jvm-options '-XX\:MaxMetaspaceSize=${ENV=MEM_MAX_METASPACE_SIZE}'
     ${ASADMIN} create-jvm-options '-XX\:+IgnoreUnrecognizedVMOptions'
+    # Workaround for FISH-7722: Failed to deploy war with @Stateless https://github.com/payara/Payara/issues/6337
+    ${ASADMIN} create-jvm-options --add-opens=java.base/java.io=ALL-UNNAMED
     # Disable autodeploy and hot reload
     ${ASADMIN} set configs.config.server-config.admin-service.das-config.dynamic-reload-enabled="false"
     ${ASADMIN} set configs.config.server-config.admin-service.das-config.autodeploy-enabled="false"

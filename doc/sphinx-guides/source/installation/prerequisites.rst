@@ -19,7 +19,7 @@ We assume you plan to run your Dataverse installation on Linux and we recommend 
 Java
 ----
 
-The Dataverse Software requires Java SE 11 (or higher).
+The Dataverse Software requires Java SE 17 (or higher).
 
 Installing Java
 ===============
@@ -30,11 +30,11 @@ The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/jav
 
 On a RHEL/derivative, install OpenJDK (devel version) using yum::
 
-	# sudo yum install java-11-openjdk
+	# sudo yum install java-17-openjdk
 
-If you have multiple versions of Java installed, Java 11 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
+If you have multiple versions of Java installed, Java 17 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
 
-On RHEL/derivative you can make Java 11 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
+On RHEL/derivative you can make Java 17 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
 
         # alternatives --config java
 
@@ -44,7 +44,7 @@ On RHEL/derivative you can make Java 11 the default with the ``alternatives`` co
 Payara
 ------
 
-Payara 6.2023.7 is recommended. Newer versions might work fine. Regular updates are recommended.
+Payara 6.2023.8 is recommended. Newer versions might work fine. Regular updates are recommended.
 
 Installing Payara
 =================
@@ -55,8 +55,8 @@ Installing Payara
 
 - Download and install Payara (installed in ``/usr/local/payara6`` in the example commands below)::
 
-	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2023.7/payara-6.2023.7.zip
-	# unzip payara-6.2023.7.zip
+	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2023.8/payara-6.2023.8.zip
+	# unzip payara-6.2023.8.zip
 	# mv payara6 /usr/local
 
 If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/

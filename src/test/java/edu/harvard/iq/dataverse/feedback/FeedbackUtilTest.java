@@ -34,10 +34,10 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
 import org.mockito.Mockito;
 
 public class FeedbackUtilTest {
@@ -58,7 +58,7 @@ public class FeedbackUtilTest {
     private static final String systemEmail = "support@librascholar.edu";
     private static final boolean weKnowHowToCreateMockAuthenticatedUsers = false;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws IOException, JsonParseException, AddressException {
 
         if (weKnowHowToCreateMockAuthenticatedUsers) {
