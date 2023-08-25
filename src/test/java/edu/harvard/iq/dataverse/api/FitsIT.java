@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.path.json.JsonPath.with;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import static io.restassured.path.json.JsonPath.with;
+import io.restassured.response.Response;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -11,13 +11,13 @@ import jakarta.json.JsonObject;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class FitsIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
