@@ -3329,8 +3329,7 @@ public class Datasets extends AbstractApiBean {
     public Response addGlobusFilesToDataset(@Context ContainerRequestContext crc,
                                             @PathParam("id") String datasetId,
                                             @FormDataParam("jsonData") String jsonData,
-                                            @Context UriInfo uriInfo,
-                                            @Context HttpHeaders headers
+                                            @Context UriInfo uriInfo
     ) throws IOException, ExecutionException, InterruptedException {
 
         logger.info(" ====  (api addGlobusFilesToDataset) jsonData   ====== " + jsonData);
@@ -3390,12 +3389,8 @@ public class Datasets extends AbstractApiBean {
         }
 
 
-        String requestUrl = headers.getRequestHeader("origin").get(0);
-
-        if(requestUrl.contains("localhost")){
-            requestUrl = "http://localhost:8080";
-        }
-
+        String requestUrl = SystemConfig.getDataverseSiteUrlStatic();
+        
         // Async Call
         globusService.globusUpload(jsonData, token, dataset, requestUrl, authUser);
 

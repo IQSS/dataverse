@@ -737,6 +737,8 @@ public class GlobusServiceBean implements java.io.Serializable {
                             + datasetIdentifier + " -F jsonData='" + newjsonData + "'";
                     System.out.println("*******====command ==== " + command);
 
+                    //ToDo - refactor to call AddReplaceFileHelper.addFiles directly instead of calling API
+                
                     String output = addFilesAsync(command, globusLogger);
                     if (output.equalsIgnoreCase("ok")) {
                         // if(!taskSkippedFiles)
