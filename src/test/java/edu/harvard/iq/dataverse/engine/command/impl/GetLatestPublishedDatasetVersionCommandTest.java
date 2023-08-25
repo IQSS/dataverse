@@ -9,8 +9,9 @@ import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
 
 /**
@@ -28,9 +29,9 @@ public class GetLatestPublishedDatasetVersionCommandTest {
         List<DatasetVersion> versions = make10Versions(ds);
         ds.setVersions(versions);
         
-        assertEquals( 10l, engine.submit(new GetLatestPublishedDatasetVersionCommand(makeRequest(), ds)).getVersionNumber().longValue() );
-        assertTrue( "Published datasets should require no permissions to view",
-                        engine.getReqiredPermissionsForObjects().get(ds).isEmpty() );
+        assertEquals(10L, engine.submit(new GetLatestPublishedDatasetVersionCommand(makeRequest(), ds)).getVersionNumber().longValue());
+        assertTrue(engine.getReqiredPermissionsForObjects().get(ds).isEmpty(),
+            "Published datasets should require no permissions to view");
     }
     
     @Test
@@ -41,9 +42,9 @@ public class GetLatestPublishedDatasetVersionCommandTest {
         versions.add( MocksFactory.makeDatasetVersion(ds.getCategories()) );
         ds.setVersions(versions);
         
-        assertEquals( 10l, engine.submit(new GetLatestPublishedDatasetVersionCommand(makeRequest(), ds)).getVersionNumber().longValue() );
-        assertTrue( "Published datasets should require no permissions to view",
-                        engine.getReqiredPermissionsForObjects().get(ds).isEmpty() );
+        assertEquals(10L, engine.submit(new GetLatestPublishedDatasetVersionCommand(makeRequest(), ds)).getVersionNumber().longValue());
+        assertTrue(engine.getReqiredPermissionsForObjects().get(ds).isEmpty(),
+            "Published datasets should require no permissions to view");
     }
     
     @Test

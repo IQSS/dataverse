@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
@@ -17,8 +17,10 @@ import java.util.HashMap;
 import java.util.List;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
-import org.junit.Test;
-import org.junit.BeforeClass;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.util.Map;
 import java.util.UUID;
@@ -28,11 +30,10 @@ import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static junit.framework.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertTrue;
-import org.junit.Ignore;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AdminIT {
 
@@ -40,7 +41,7 @@ public class AdminIT {
 
     private final String testNonSuperuserApiToken = createTestNonSuperuserApiToken();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
@@ -604,7 +605,7 @@ public class AdminIT {
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
         UtilIT.makeSuperUser(superuserUsername);
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + origFileId, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", superuserApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", superuserApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + origFileId);
 
         //Bad file id         
         Response computeDataFileHashResponse = UtilIT.computeDataFileHashValue("BadFileId", DataFile.ChecksumType.MD5.toString(), superuserApiToken);
@@ -669,7 +670,7 @@ public class AdminIT {
     }
     
     @Test
-    @Ignore
+    @Disabled
     public void testMigrateHDLToDOI() {
         /*
         This test is set to ignore because it requires a setup that will

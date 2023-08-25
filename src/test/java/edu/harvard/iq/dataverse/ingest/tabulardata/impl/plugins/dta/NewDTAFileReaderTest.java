@@ -4,19 +4,16 @@ import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DataReader;
+
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
-import org.junit.Assert;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NewDTAFileReaderTest {
     NewDTAFileReader instance;
@@ -51,7 +48,7 @@ public class NewDTAFileReaderTest {
         
         String[] vars = {"make","price","mpg","rep78","trunk","gear_ratio","strls"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
-        Assert.assertArrayEquals(vars, actualVars);
+        assertArrayEquals(vars, actualVars);
         String expected = "\"Buick LeSabre\"	5788	1.1111111111111111E21	100	32767	2.73	\"a\"\n" +
                           "\"Buick Opel\"	4453	26.0		10	2.87	\"bb\"\n" +
                           "\"Buick Regal\"	5189	20.0	3	16	2.93	\"ccc\"\n";
@@ -69,7 +66,7 @@ public class NewDTAFileReaderTest {
         assertEquals(4, (long)table.getCaseQuantity());
         String[] vars = {"Clock","Daily","Weekly","Monthly","Quarterly","BiAnnually","Annually"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
-        Assert.assertArrayEquals(vars, actualVars);
+        assertArrayEquals(vars, actualVars);
         String expected = "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-01-01	2018-01-01	2018\n" +
                           "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-04-01	2018-01-01	2018\n" +
                           "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-07-01	2018-07-01	2018\n" +
@@ -77,14 +74,14 @@ public class NewDTAFileReaderTest {
         assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
     }
     
-    @Test(expected = IOException.class)
-    public void testNull() throws IOException {
+    @Test
+    void testNull() {
         instance = new NewDTAFileReader(null, 117);
-        TabularDataIngest result = instance.read(null, new File(""));
+        assertThrows(IOException.class, () -> instance.read(null, new File("")));
     }
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
-    @Ignore
+    @Disabled
     @Test
     public void testFirstCategoryNonZeroOffset() throws IOException {
         instance = new NewDTAFileReader(null, 117);
@@ -105,7 +102,7 @@ public class NewDTAFileReaderTest {
     }
 
     // TODO: Can we create a small file to check into the code base that exercises the value-label names non-zero offset issue?
-    @Ignore
+    @Disabled
     @Test
     public void testFirstCategoryNonZeroOffset1() throws IOException {
         instance = new NewDTAFileReader(null, 118);
@@ -125,7 +122,7 @@ public class NewDTAFileReaderTest {
     }
     
     // TODO: Is there a way to exersise this code with a smaller file? 33k.dta is 21MB.
-    @Ignore
+    @Disabled
     @Test
     public void test33k() throws IOException {
         instance = new NewDTAFileReader(null, 119);
@@ -135,7 +132,7 @@ public class NewDTAFileReaderTest {
     
     // TODO: Can we create a small file to check into the code base that exercises the characteristics issue?
     // FIXME: testCharacteristics is passing in DTA117FileReaderTest but not here.
-    @Ignore
+    @Disabled
     @Test
     public void testCharacteristics() throws IOException {
         instance = new NewDTAFileReader(null, 117);

@@ -143,6 +143,7 @@ public class MocksFactory {
         Dataset ds = new Dataset();
         ds.setId( nextId() );
         ds.setIdentifier("sample-ds-" + ds.getId() );
+        ds.setAuthority("10.5072");
         ds.setCategoriesByName( Arrays.asList("CatOne", "CatTwo", "CatThree") );
         final List<DataFile> files = makeFiles(10);
         final List<FileMetadata> metadatas = new ArrayList<>(10);
