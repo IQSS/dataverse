@@ -305,6 +305,8 @@ Here are the configuration options for PermaLinks:
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 - :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to false)
 
+You must restart Payara after making changes to these settings.
+
 .. _auth-modes:
 
 Auth Modes: Local vs. Remote vs. Both
