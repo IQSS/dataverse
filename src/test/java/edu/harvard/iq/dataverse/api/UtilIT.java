@@ -3341,4 +3341,10 @@ public class UtilIT {
                 .urlEncodingEnabled(false)
                 .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
     }
+
+    static Response getVersionFileCounts(Integer datasetId, String version, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/files/counts");
+    }
 }

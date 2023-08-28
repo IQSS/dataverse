@@ -520,7 +520,39 @@ public class Datasets extends AbstractApiBean {
             return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, contentType, dataFileAccessStatus, categoryName, searchText, fileMetadatasOrderCriteria)));
         }, getRequestUser(crc));
     }
-    
+
+    // TODO: Finalize and refine
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/files/counts")
+    public Response getVersionFileCounts(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+
+            jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion));
+
+            Map<String, Long> fileMetadataCountsPerContentType = datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion);
+            JsonObjectBuilder fileMetadataCountsPerContentTypeJsonBuilder = Json.createObjectBuilder();
+            for (Map.Entry<String, Long> fileMetadataCount : fileMetadataCountsPerContentType.entrySet()) {
+                fileMetadataCountsPerContentTypeJsonBuilder.add(fileMetadataCount.getKey(), fileMetadataCount.getValue());
+            }
+            jsonObjectBuilder.add("perContentType", fileMetadataCountsPerContentTypeJsonBuilder);
+
+            // TODO
+            jsonObjectBuilder.add("perAccessStatus", 3);
+
+            Map<String, Long> fileMetadataCountsPerCategoryName = datasetVersionFilesServiceBean.getFileMetadataCountPerCategoryName(datasetVersion);
+            JsonObjectBuilder fileMetadataCountsPerCategoryNameJsonBuilder = Json.createObjectBuilder();
+            for (Map.Entry<String, Long> fileMetadataCount : fileMetadataCountsPerCategoryName.entrySet()) {
+                fileMetadataCountsPerCategoryNameJsonBuilder.add(fileMetadataCount.getKey(), fileMetadataCount.getValue());
+            }
+            jsonObjectBuilder.add("perCategoryName", fileMetadataCountsPerCategoryNameJsonBuilder);
+
+            return ok(jsonObjectBuilder);
+        }, getRequestUser(crc));
+    }
+
     @GET
     @AuthRequired
     @Path("{id}/dirindex")

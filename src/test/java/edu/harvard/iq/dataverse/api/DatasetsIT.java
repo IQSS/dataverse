@@ -11,6 +11,7 @@ import io.restassured.response.Response;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.logging.Logger;
 
 import org.junit.jupiter.api.AfterAll;
@@ -19,8 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.jupiter.api.Disabled;
 
-import java.util.List;
-import java.util.Map;
 import jakarta.json.JsonObject;
 
 import static jakarta.ws.rs.core.Response.Status.CREATED;
@@ -40,8 +39,6 @@ import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-
-import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -69,8 +66,7 @@ import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
+
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
@@ -3327,8 +3323,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         fileMetadatasCount = getVersionFilesResponsePaginated.jsonPath().getList("data").size();
         assertEquals(testPageSize, fileMetadatasCount);
 
-        String testFileId3 = JsonPath.from(getVersionFilesResponsePaginated.body().asString()).getString("data[0].dataFile.id");
-
         // Test page 3 (last)
         getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, testDatasetVersion, testPageSize, testPageSize * 2, null, null, null, null, null, apiToken);
 
@@ -3489,5 +3483,42 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         fileMetadatasCount = getVersionFilesResponseSearchText.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
+    }
+
+    @Test
+    public void getVersionFileCounts() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        String testFileName1 = "test_1.txt";
+        String testFileName2 = "test_2.txt";
+        String testFileName3 = "test_3.png";
+
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName1, new byte[50], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName2, new byte[200], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName3, new byte[100], apiToken);
+
+        String testDatasetVersion = ":latest";
+
+        Response getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, testDatasetVersion, apiToken);
+
+        getVersionFileCountsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        JsonPath responseJsonPath = getVersionFileCountsResponse.jsonPath();
+        LinkedHashMap<String, Integer> responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
+
+        assertEquals((Integer) responseJsonPath.get("data.total"), 3);
+        assertEquals(responseCountPerContentTypeMap.get("image/png"), 1);
+        assertEquals(responseCountPerContentTypeMap.get("text/plain"), 2);
     }
 }
