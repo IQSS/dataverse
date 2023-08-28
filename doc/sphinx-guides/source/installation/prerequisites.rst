@@ -154,12 +154,12 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 Solr
 ----
 
-The Dataverse Software search index is powered by Solr.
+The Dataverse software search index is powered by Solr.
 
 Supported Versions
 ==================
 
-The Dataverse Software has been tested with Solr version 9.3.0. Future releases in the 8.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 8.x (e.g. 9.x) are not supported.
+The Dataverse software has been tested with Solr version 9.3.0. Future releases in the 9.x series are likely to be compatible. Please get in touch (:ref:`support`) if you are having trouble with a newer version.
 
 Installing Solr
 ===============
