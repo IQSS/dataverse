@@ -34,6 +34,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterAll;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -47,6 +48,15 @@ public class FilesIT {
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response removePublicInstall = UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
+        removePublicInstall.then().assertThat().statusCode(200);
+
+    }
+
+    @AfterAll
+    public static void tearDownClass() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
     }
 
     /**
@@ -1095,6 +1105,9 @@ public class FilesIT {
         msg("Add initial file");
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        
+        // Wait a little while for the index to pick up the file, otherwise timing issue with searching for it.
+        UtilIT.sleepForReindex(datasetId.toString(), apiToken, 2);
 
         String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
@@ -1105,9 +1118,9 @@ public class FilesIT {
 
         long fileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
-        Response searchShouldFindNothingBecauseUnpublished = UtilIT.search("id:datafile_" + fileId + "_draft", apiToken);
-        searchShouldFindNothingBecauseUnpublished.prettyPrint();
-        searchShouldFindNothingBecauseUnpublished.then().assertThat()
+        Response searchShouldFindBecauseAuthorApiTokenSupplied = UtilIT.search("id:datafile_" + fileId + "_draft", apiToken);
+        searchShouldFindBecauseAuthorApiTokenSupplied.prettyPrint();
+        searchShouldFindBecauseAuthorApiTokenSupplied.then().assertThat()
                 .body("data.total_count", equalTo(1))
                 .statusCode(OK.getStatusCode());
 
