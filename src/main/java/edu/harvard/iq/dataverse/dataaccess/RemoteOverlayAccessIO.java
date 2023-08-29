@@ -85,7 +85,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         logger.fine("Parsing storageidentifier: " + dvObject.getStorageIdentifier());
         path = dvObject.getStorageIdentifier().substring(dvObject.getStorageIdentifier().lastIndexOf("//") + 2);
         validatePath(path);
-        
+
         logger.fine("Base URL: " + path);
     }
 
@@ -98,18 +98,17 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         validatePath(path);
         logger.fine("Base URL: " + path);
     }
-    
+
     private void validatePath(String relPath) throws IOException {
         try {
             URI absoluteURI = new URI(baseUrl + "/" + relPath);
-            if(!absoluteURI.normalize().toString().startsWith(baseUrl)) {
+            if (!absoluteURI.normalize().toString().startsWith(baseUrl)) {
                 throw new IOException("storageidentifier doesn't start with " + this.driverId + "'s base-url");
             }
-        } catch(URISyntaxException use) {
+        } catch (URISyntaxException use) {
             throw new IOException("Could not interpret storageidentifier in remote store " + this.driverId);
         }
-     }
-
+    }
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
@@ -150,7 +149,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                     this.setSize(dataFile.getFilesize());
                 } else {
                     logger.fine("Setting size");
-                    this.setSize(getSizeFromHttpHeader());
+                    this.setSize(retrieveSize());
                 }
                 if (dataFile.getContentType() != null && dataFile.getContentType().equals("text/tab-separated-values")
                         && dataFile.isTabularData() && dataFile.getDataTable() != null && (!this.noVarHeader())) {
@@ -171,16 +170,14 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             }
         } else if (dvObject instanceof Dataset) {
             throw new IOException(
-                    "Data Access: RemoteOverlay Storage driver does not support dvObject type Dataverse yet");
+                    "Data Access: " + this.getClass().getName() + " does not support dvObject type Dataverse yet");
         } else if (dvObject instanceof Dataverse) {
             throw new IOException(
-                    "Data Access: RemoteOverlay Storage driver does not support dvObject type Dataverse yet");
-        } else {
-            this.setSize(getSizeFromHttpHeader());
+                    "Data Access: " + this.getClass().getName() + " does not support dvObject type Dataverse yet");
         }
     }
 
-    private long getSizeFromHttpHeader() {
+    long retrieveSize() {
         long size = -1;
         HttpHead head = new HttpHead(baseUrl + "/" + path);
         try {
@@ -356,8 +353,9 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         String fullStorageLocation = dvObject.getStorageIdentifier();
         logger.fine("storageidentifier: " + fullStorageLocation);
         int driverIndex = fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR);
-        if(driverIndex >=0) {
-          fullStorageLocation = fullStorageLocation.substring(fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
+        if (driverIndex >= 0) {
+            fullStorageLocation = fullStorageLocation
+                    .substring(fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
         }
         if (this.getDvObject() instanceof Dataset) {
             throw new IOException("RemoteOverlayAccessIO: Datasets are not a supported dvObject");
@@ -379,7 +377,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public boolean exists() {
         logger.fine("Exists called");
-        return (getSizeFromHttpHeader() != -1);
+        return (retrieveSize() != -1);
     }
 
     @Override
@@ -407,7 +405,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         }
         return false;
     }
-    
+
     public boolean downloadRedirectEnabled(String auxObjectTag) {
         return baseStore.downloadRedirectEnabled(auxObjectTag);
     }
@@ -422,8 +420,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             if (secretKey == null) {
                 return baseUrl + "/" + path;
             } else {
-                return UrlSignerUtil.signUrl(baseUrl + "/" + path, getUrlExpirationMinutes(), null, "GET",
-                        secretKey);
+                return UrlSignerUtil.signUrl(baseUrl + "/" + path, getUrlExpirationMinutes(), null, "GET", secretKey);
             }
         } else {
             return baseStore.generateTemporaryDownloadUrl(auxiliaryTag, auxiliaryType, auxiliaryFileName);
@@ -464,9 +461,10 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         if (baseStore == null) {
             String baseDriverId = getBaseStoreIdFor(driverId);
             String fullStorageLocation = null;
-            String baseDriverType = System.getProperty("dataverse.files." + baseDriverId + ".type", DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
-            
-            if(dvObject  instanceof Dataset) {
+            String baseDriverType = System.getProperty("dataverse.files." + baseDriverId + ".type",
+                    DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+
+            if (dvObject instanceof Dataset) {
                 baseStore = DataAccess.getStorageIO(dvObject, req, baseDriverId);
             } else {
                 if (this.getDvObject() != null) {
@@ -481,8 +479,8 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                         break;
                     case DataAccess.FILE:
                         fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files") + "/"
-                                + fullStorageLocation;
+                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files")
+                                + "/" + fullStorageLocation;
                         break;
                     default:
                         logger.warning("Not Implemented: RemoteOverlay store with base store type: "
@@ -492,12 +490,12 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 } else if (storageLocation != null) {
                     // <remoteDriverId>://<baseStorageIdentifier>//<baseUrlPath>
-                    //remoteDriverId:// is removed if coming through directStorageIO
+                    // remoteDriverId:// is removed if coming through directStorageIO
                     int index = storageLocation.indexOf(DataAccess.SEPARATOR);
-                    if(index > 0) {
+                    if (index > 0) {
                         storageLocation = storageLocation.substring(index + DataAccess.SEPARATOR.length());
                     }
-                    //THe base store needs the baseStoreIdentifier and not the relative URL
+                    // THe base store needs the baseStoreIdentifier and not the relative URL
                     fullStorageLocation = storageLocation.substring(0, storageLocation.indexOf("//"));
 
                     switch (baseDriverType) {
@@ -508,8 +506,8 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                         break;
                     case DataAccess.FILE:
                         fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files") + "/"
-                                + fullStorageLocation;
+                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files")
+                                + "/" + fullStorageLocation;
                         break;
                     default:
                         logger.warning("Not Implemented: RemoteOverlay store with base store type: "
@@ -525,37 +523,41 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         }
         remoteStoreName = System.getProperty("dataverse.files." + this.driverId + ".remote-store-name");
         try {
-          remoteStoreUrl = new URL(System.getProperty("dataverse.files." + this.driverId + ".remote-store-url"));
-        } catch(MalformedURLException mfue) {
+            remoteStoreUrl = new URL(System.getProperty("dataverse.files." + this.driverId + ".remote-store-url"));
+        } catch (MalformedURLException mfue) {
             logger.fine("Unable to read remoteStoreUrl for driver: " + this.driverId);
         }
     }
 
-    //Convenience method to assemble the path, starting with the DOI authority/identifier/, that is needed to create a base store via DataAccess.getDirectStorageIO - the caller has to add the store type specific prefix required.
+    // Convenience method to assemble the path, starting with the DOI
+    // authority/identifier/, that is needed to create a base store via
+    // DataAccess.getDirectStorageIO - the caller has to add the store type specific
+    // prefix required.
     private String getStoragePath() throws IOException {
         String fullStoragePath = dvObject.getStorageIdentifier();
         logger.fine("storageidentifier: " + fullStoragePath);
         int driverIndex = fullStoragePath.lastIndexOf(DataAccess.SEPARATOR);
-        if(driverIndex >=0) {
-          fullStoragePath = fullStoragePath.substring(fullStoragePath.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
+        if (driverIndex >= 0) {
+            fullStoragePath = fullStoragePath
+                    .substring(fullStoragePath.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
         }
         int suffixIndex = fullStoragePath.indexOf("//");
-        if(suffixIndex >=0) {
-          fullStoragePath = fullStoragePath.substring(0, suffixIndex);
+        if (suffixIndex >= 0) {
+            fullStoragePath = fullStoragePath.substring(0, suffixIndex);
         }
         if (this.getDvObject() instanceof Dataset) {
             fullStoragePath = this.getDataset().getAuthorityForFileStorage() + "/"
                     + this.getDataset().getIdentifierForFileStorage() + "/" + fullStoragePath;
         } else if (this.getDvObject() instanceof DataFile) {
             fullStoragePath = this.getDataFile().getOwner().getAuthorityForFileStorage() + "/"
-                    + this.getDataFile().getOwner().getIdentifierForFileStorage() + "/" + fullStoragePath; 
-        }else if (dvObject instanceof Dataverse) {
+                    + this.getDataFile().getOwner().getIdentifierForFileStorage() + "/" + fullStoragePath;
+        } else if (dvObject instanceof Dataverse) {
             throw new IOException("RemoteOverlayAccessIO: Dataverses are not a supported dvObject");
         }
         logger.fine("fullStoragePath: " + fullStoragePath);
         return fullStoragePath;
     }
-    
+
     public CloseableHttpClient getSharedHttpClient() {
         if (httpclient == null) {
             try {
@@ -617,11 +619,11 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         String baseUrl = System.getProperty("dataverse.files." + driverId + ".base-url");
         try {
             URI absoluteURI = new URI(baseUrl + "/" + urlPath);
-            if(!absoluteURI.normalize().toString().startsWith(baseUrl)) {
+            if (!absoluteURI.normalize().toString().startsWith(baseUrl)) {
                 logger.warning("storageidentifier doesn't start with " + driverId + "'s base-url: " + storageId);
                 return false;
             }
-        } catch(URISyntaxException use) {
+        } catch (URISyntaxException use) {
             logger.warning("Could not interpret storageidentifier in remote store " + driverId + " : " + storageId);
             return false;
         }
