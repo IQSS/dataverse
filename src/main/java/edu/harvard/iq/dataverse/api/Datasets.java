@@ -470,11 +470,18 @@ public class Datasets extends AbstractApiBean {
         // @todo:  when full versions list - including files - is requested, consider 
         // using datasetservice.findDeep() (needs testing on "monstrous" datasets 
         // with a lot of versions!)
-        return response( req ->
-             ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id), offset, limit) )
+        
+        return response( req -> {
+            Dataset dataset = findDatasetOrDie(id); 
+            if (includeFiles == null ? false : includeFiles) {
+                dataset = datasetService.findDeep(dataset.getId());
+            } 
+            //return ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id), offset, limit) )
+            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit) )
                                 .stream()
                                 .map( d -> json(d, includeFiles == null ? false : includeFiles) )
-                                .collect(toJsonArray())), getRequestUser(crc));
+                                .collect(toJsonArray()));
+        }, getRequestUser(crc));
     }
     
     @GET
