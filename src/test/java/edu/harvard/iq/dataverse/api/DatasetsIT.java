@@ -3406,13 +3406,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(1, fileMetadatasCount);
 
         // Test Category Name
-        Response getVersionFilesResponseCategoryName = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, "image/png", null, "nonExistentCategory", null, null, apiToken);
+        String testCategory = "testCategory";
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(testFileId1, apiToken, List.of(testCategory));
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+        setFileCategoriesResponse = UtilIT.setFileCategories(testFileId2, apiToken, List.of(testCategory));
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getVersionFilesResponseCategoryName = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, testCategory, null, null, apiToken);
 
         getVersionFilesResponseCategoryName.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName1))
+                .body("data[1].label", equalTo(testFileName2));
 
         fileMetadatasCount = getVersionFilesResponseCategoryName.jsonPath().getList("data").size();
-        assertEquals(0, fileMetadatasCount);
+        assertEquals(2, fileMetadatasCount);
 
         // Test Access Status Restricted
         Response restrictFileResponse = UtilIT.restrictFile(String.valueOf(testFileId1), true, apiToken);
