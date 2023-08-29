@@ -83,8 +83,7 @@
         <li>
             <p:commandLink      update="@([id$=fileTagsPopup])" 
                                 onclick="if (!testTermsOfAccess() || !(#{fileMetadata!=null} || testFilesSelected()))
-                                            return false;"                                 
-                                action="#{bean[refreshTagsPopoupAction]()}">            
+                                            return false;">            
                 <h:outputText value="#{bundle['file.tags']}"/>
             </p:commandLink>    
         </li>  
