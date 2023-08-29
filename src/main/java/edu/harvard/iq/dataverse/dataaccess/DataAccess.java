@@ -48,6 +48,7 @@ public class DataAccess {
     public static final String S3 = "s3";
     static final String SWIFT = "swift";
     static final String REMOTE = "remote";
+    static final String GLOBUS = "globus";
     static final String TMP = "tmp";
     public static final String SEPARATOR = "://";
     //Default to "file" is for tests only
@@ -98,6 +99,8 @@ public class DataAccess {
 			return new SwiftAccessIO<>(dvObject, req, storageDriverId);
 		case REMOTE:
 			return new RemoteOverlayAccessIO<>(dvObject, req, storageDriverId);
+	     case GLOBUS:
+	            return new GlobusOverlayAccessIO<>(dvObject, req, storageDriverId);
 		case TMP:
 			throw new IOException(
 					"DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
@@ -369,6 +372,8 @@ public class DataAccess {
             return S3AccessIO.isValidIdentifier(driverId, storageId);
         case REMOTE:
             return RemoteOverlayAccessIO.isValidIdentifier(driverId, storageId);
+        case GLOBUS:
+            return GlobusOverlayAccessIO.isValidIdentifier(driverId, storageId);
         default:
             logger.warning("Request to validate for storage driver: " + driverId);
         }
