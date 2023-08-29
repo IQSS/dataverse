@@ -53,6 +53,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,15 +63,12 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -846,6 +844,30 @@ public class Files extends AbstractApiBean {
                 return error(BAD_REQUEST, "This operation is only available for tabular files.");
             }
             return ok(jsonDT(dataFile.getDataTables()));
+        }, getRequestUser(crc));
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{id}/metadata/categories")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setFileCategories(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            jakarta.json.JsonObject jsonObject;
+            try (StringReader stringReader = new StringReader(jsonBody)) {
+                jsonObject = Json.createReader(stringReader).readObject();
+                JsonArray requestedCategoriesJson = jsonObject.getJsonArray("categories");
+                FileMetadata fileMetadata = dataFile.getFileMetadata();
+                for (JsonValue jsonValue : requestedCategoriesJson) {
+                    JsonString jsonString = (JsonString) jsonValue;
+                    fileMetadata.addCategoryByName(jsonString.getString());
+                }
+                execCommand(new UpdateDatasetVersionCommand(fileMetadata.getDataFile().getOwner(), req));
+                return ok("Categories of file " + dataFileId + " updated.");
+            } catch (JsonParsingException jpe) {
+                return error(Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
+            }
         }, getRequestUser(crc));
     }
 }

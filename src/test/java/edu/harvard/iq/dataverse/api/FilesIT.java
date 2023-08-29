@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.api;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+
+import java.util.List;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
@@ -30,11 +32,10 @@ import jakarta.json.JsonObjectBuilder;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import org.hamcrest.CoreMatchers;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -2183,5 +2184,42 @@ public class FilesIT {
         getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
         int dataTablesNumber = JsonPath.from(getFileDataTablesForTabularFileResponse.body().asString()).getList("data").size();
         assertTrue(dataTablesNumber > 0);
+    }
+
+    @Test
+    public void testSetFileCategories() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload test file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Set categories
+        String testCategory1 = "testCategory1";
+        String testCategory2 = "testCategory2";
+        List<String> testCategories = List.of(testCategory1, testCategory2);
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, testCategories);
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get file data and check for new categories
+        Response getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("data.categories", hasItem(testCategory1))
+                .body("data.categories", hasItem(testCategory2))
+                .statusCode(OK.getStatusCode());
     }
 }

@@ -3347,4 +3347,18 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/files/counts");
     }
+
+    static Response setFileCategories(String dataFileId, String apiToken, List<String> categories) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (String category : categories) {
+            jsonArrayBuilder.add(category);
+        }
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("categories", jsonArrayBuilder);
+        String jsonString = jsonObjectBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/files/" + dataFileId + "/metadata/categories");
+    }
 }
