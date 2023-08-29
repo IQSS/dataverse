@@ -3506,8 +3506,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
-        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
+        // Creating test files
         String testFileName1 = "test_1.txt";
         String testFileName2 = "test_2.txt";
         String testFileName3 = "test_3.png";
@@ -3516,17 +3517,26 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName2, new byte[200], apiToken);
         UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName3, new byte[100], apiToken);
 
-        String testDatasetVersion = ":latest";
+        // Creating a categorized test file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+        String testCategory = "testCategory";
+        UtilIT.setFileCategories(dataFileId, apiToken, List.of(testCategory));
 
-        Response getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, testDatasetVersion, apiToken);
+        // Getting the file counts and assert each count
+        Response getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, ":latest", apiToken);
 
         getVersionFileCountsResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         JsonPath responseJsonPath = getVersionFileCountsResponse.jsonPath();
         LinkedHashMap<String, Integer> responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
+        LinkedHashMap<String, Integer> responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
 
-        assertEquals((Integer) responseJsonPath.get("data.total"), 3);
-        assertEquals(responseCountPerContentTypeMap.get("image/png"), 1);
+        assertEquals((Integer) responseJsonPath.get("data.total"), 4);
+        assertEquals(responseCountPerContentTypeMap.get("image/png"), 2);
         assertEquals(responseCountPerContentTypeMap.get("text/plain"), 2);
+        assertEquals(responseCountPerCategoryNameMap.get(testCategory), 1);
     }
 }
