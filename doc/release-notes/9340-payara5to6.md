@@ -76,6 +76,12 @@
 
    `sudo -u dataverse vi /usr/local/payara6/glassfish/domains/domain1/config/jhove.conf`
 
+1. Copy logos from Payara 5 to Payara 6
+
+   These logos are for collections (dataverses).
+
+   `sudo -u dataverse cp -r /usr/local/payara5/glassfish/domains/domain1/docroot/logos /usr/local/payara6/glassfish/domains/domain1/docroot`
+
 1. If you are using Make Data Count (MDC), edit :MDCLogPath
 
    Your `:MDCLogPath` database setting might be pointing to a Payara 5 directory such as `/usr/local/payara5/glassfish/domains/domain1/logs`. If so, edit this to be Payara 6. You'll probably want to copy your logs over as well.
