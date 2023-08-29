@@ -290,11 +290,11 @@
             <artifactId>colt</artifactId>
             <version>1.2.0</version>
         </dependency>
-        <!-- fits.jar, not available from network repos, supplied in local_lib -->
+        <!-- FITS -->
         <dependency>
-            <groupId>nom.tam.fits</groupId>
-            <artifactId>fits</artifactId>
-            <version>2012-10-25-generated</version>
+            <groupId>gov.nasa.gsfc.heasarc</groupId>
+            <artifactId>nom-tam-fits</artifactId>
+            <version>1.18.0</version>
         </dependency>
         <dependency>
             <groupId>net.handle</groupId>
