@@ -294,7 +294,7 @@
         <dependency>
             <groupId>gov.nasa.gsfc.heasarc</groupId>
             <artifactId>nom-tam-fits</artifactId>
-            <version>1.18.0</version>
+            <version>1.12.0</version>
         </dependency>
         <dependency>
             <groupId>net.handle</groupId>
