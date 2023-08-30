@@ -52,31 +52,32 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author qqmyers
- * @param <T> what it stores
  */
 /*
  * Remote Overlay Driver
  * 
  * StorageIdentifier format:
- * <httpDriverId>://<baseStorageIdentifier>//<baseUrlPath>
+ * <remoteDriverId>://<baseStorageIdentifier>//<relativePath>
+ * 
+ * baseUrl: http(s)://<host(:port)/basePath>
  */
 public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.RemoteOverlayAccessIO");
 
-    private StorageIO<DvObject> baseStore = null;
-    private String path = null;
-    private String baseUrl = null;
+    protected StorageIO<DvObject> baseStore = null;
+    protected String path = null;
+    protected String baseUrl = null;
 
-    private static HttpClientContext localContext = HttpClientContext.create();
-    private PoolingHttpClientConnectionManager cm = null;
+    protected static HttpClientContext localContext = HttpClientContext.create();
+    protected PoolingHttpClientConnectionManager cm = null;
     CloseableHttpClient httpclient = null;
-    private int timeout = 1200;
-    private RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 1000)
+    protected int timeout = 1200;
+    protected RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 1000)
             .setConnectionRequestTimeout(timeout * 1000).setSocketTimeout(timeout * 1000)
             .setCookieSpec(CookieSpecs.STANDARD).setExpectContinueEnabled(true).build();
-    private static boolean trustCerts = false;
-    private int httpConcurrency = 4;
+    protected static boolean trustCerts = false;
+    protected int httpConcurrency = 4;
 
     public RemoteOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
@@ -86,7 +87,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         path = dvObject.getStorageIdentifier().substring(dvObject.getStorageIdentifier().lastIndexOf("//") + 2);
         validatePath(path);
 
-        logger.fine("Base URL: " + path);
+        logger.fine("Relative path: " + path);
     }
 
     public RemoteOverlayAccessIO(String storageLocation, String driverId) throws IOException {
@@ -96,7 +97,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
         path = storageLocation.substring(storageLocation.lastIndexOf("//") + 2);
         validatePath(path);
-        logger.fine("Base URL: " + path);
+        logger.fine("Relative path: " + path);
     }
 
     private void validatePath(String relPath) throws IOException {
@@ -420,7 +421,8 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             if (secretKey == null) {
                 return baseUrl + "/" + path;
             } else {
-                return UrlSignerUtil.signUrl(baseUrl + "/" + path, getUrlExpirationMinutes(), null, "GET", secretKey);
+                return UrlSignerUtil.signUrl(baseUrl + "/" + path, getUrlExpirationMinutes(), null, "GET",
+                        secretKey);
             }
         } else {
             return baseStore.generateTemporaryDownloadUrl(auxiliaryTag, auxiliaryType, auxiliaryFileName);
@@ -483,9 +485,9 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                                 + "/" + fullStorageLocation;
                         break;
                     default:
-                        logger.warning("Not Implemented: RemoteOverlay store with base store type: "
+                        logger.warning("Not Supported: " + this.getClass().getName() + " store with base store type: "
                                 + System.getProperty("dataverse.files." + baseDriverId + ".type"));
-                        throw new IOException("Not implemented");
+                        throw new IOException("Not supported");
                     }
 
                 } else if (storageLocation != null) {
@@ -510,9 +512,9 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                                 + "/" + fullStorageLocation;
                         break;
                     default:
-                        logger.warning("Not Implemented: RemoteOverlay store with base store type: "
+                        logger.warning("Not Supported: " + this.getClass().getName() + " store with base store type: "
                                 + System.getProperty("dataverse.files." + baseDriverId + ".type"));
-                        throw new IOException("Not implemented");
+                        throw new IOException("Not supported");
                     }
                 }
                 baseStore = DataAccess.getDirectStorageIO(fullStorageLocation);
@@ -533,7 +535,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     // authority/identifier/, that is needed to create a base store via
     // DataAccess.getDirectStorageIO - the caller has to add the store type specific
     // prefix required.
-    private String getStoragePath() throws IOException {
+    protected String getStoragePath() throws IOException {
         String fullStoragePath = dvObject.getStorageIdentifier();
         logger.fine("storageidentifier: " + fullStoragePath);
         int driverIndex = fullStoragePath.lastIndexOf(DataAccess.SEPARATOR);
@@ -596,21 +598,21 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
         throw new UnsupportedDataAccessOperationException(
-                "RemoteOverlayAccessIO: savePath() not implemented in this storage driver.");
+                this.getClass().getName() + ": savePath() not implemented in this storage driver.");
 
     }
 
     @Override
     public void saveInputStream(InputStream inputStream) throws IOException {
         throw new UnsupportedDataAccessOperationException(
-                "RemoteOverlayAccessIO: saveInputStream() not implemented in this storage driver.");
+                this.getClass().getName() + ": saveInputStream() not implemented in this storage driver.");
 
     }
 
     @Override
     public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
         throw new UnsupportedDataAccessOperationException(
-                "RemoteOverlayAccessIO: saveInputStream(InputStream, Long) not implemented in this storage driver.");
+                this.getClass().getName() + ": saveInputStream(InputStream, Long) not implemented in this storage driver.");
 
     }
 
