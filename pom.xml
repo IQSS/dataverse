@@ -290,22 +290,16 @@
             <artifactId>colt</artifactId>
             <version>1.2.0</version>
         </dependency>
-        <!-- fits.jar, not available from network repos, supplied in local_lib -->
+        <!-- FITS -->
         <dependency>
-            <groupId>nom.tam.fits</groupId>
-            <artifactId>fits</artifactId>
-            <version>2012-10-25-generated</version>
+            <groupId>gov.nasa.gsfc.heasarc</groupId>
+            <artifactId>nom-tam-fits</artifactId>
+            <version>1.12.0</version>
         </dependency>
         <dependency>
             <groupId>net.handle</groupId>
             <artifactId>handle-client</artifactId>
             <version>9.3.1</version>
-        </dependency>
-        <!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
-        <dependency>
-            <groupId>edu.harvard.iq.dvn</groupId>
-            <artifactId>unf5</artifactId>
-            <version>5.0</version>
         </dependency>
         <!-- (new) UNF v6: -->
         <dependency>

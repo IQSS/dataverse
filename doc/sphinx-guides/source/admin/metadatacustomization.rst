@@ -414,11 +414,8 @@ Setting Up a Dev Environment for Testing
 You have several options for setting up a dev environment for testing metadata block changes:
 
 - Docker: See :doc:`/container/index`.
-- Vagrant: See the :doc:`/developers/tools` section of the Developer Guide.
 - AWS deployment: See the :doc:`/developers/deployment` section of the Developer Guide.
 - Full dev environment: See the :doc:`/developers/dev-environment` section of the Developer Guide.
-
-To get a clean environment in Vagrant, you'll be running ``vagrant destroy``. In Docker, you'll use ``docker rm``. For a full dev environment or AWS installation, you might find ``rebuild`` and related scripts at ``scripts/deploy/phoenix.dataverse.org`` useful.
 
 Editing TSV files
 ~~~~~~~~~~~~~~~~~
