@@ -39,7 +39,6 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.bouncycastle.math.ec.ScaleYPointMap;
 
 /**
  * This class is used to generate a JSON-LD representation of a Dataverse object leveraging the OAI_ORE and other community vocabularies. As of v1.0.0,
