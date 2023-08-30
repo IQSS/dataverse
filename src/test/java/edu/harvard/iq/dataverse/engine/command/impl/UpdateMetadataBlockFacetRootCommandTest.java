@@ -8,8 +8,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -26,7 +26,7 @@ public class UpdateMetadataBlockFacetRootCommandTest {
     private DataverseRequest dataverseRequest;
     private Dataverse dataverse;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         dataverseRequest = Mockito.mock(DataverseRequest.class);
         dataverse = Mockito.mock(Dataverse.class);
@@ -43,7 +43,7 @@ public class UpdateMetadataBlockFacetRootCommandTest {
 
         Mockito.verify(dataverse).isMetadataBlockFacetRoot();
         Mockito.verifyNoMoreInteractions(dataverse);
-        Mockito.verifyZeroInteractions(context.dataverses());
+        Mockito.verifyNoInteractions(context.dataverses());
     }
 
     @Test

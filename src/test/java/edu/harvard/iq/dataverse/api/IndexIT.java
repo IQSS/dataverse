@@ -10,20 +10,20 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import static jakarta.ws.rs.core.Response.Status.OK;
-import static junit.framework.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 
 public class IndexIT {
 
     private static final Logger logger = Logger.getLogger(IndexIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
 
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -100,11 +100,11 @@ public class IndexIT {
       
     }
    
-    @After
+    @AfterEach
     public void tearDownDataverse() {
         }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
     }
 

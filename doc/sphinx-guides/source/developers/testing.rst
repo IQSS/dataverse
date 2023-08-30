@@ -47,12 +47,14 @@ Writing Unit Tests with JUnit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We are aware that there are newer testing tools such as TestNG, but we use `JUnit <http://junit.org>`_ because it's tried and true.
-We support both (legacy) JUnit 4.x tests (forming the majority of our tests) and
-newer JUnit 5 based testing.
+We support JUnit 5 based testing and require new tests written with it.
+(Since Dataverse 6.0, we migrated all of our tests formerly based on JUnit 4.)
 
-NOTE: When adding new tests, you should give JUnit 5 a go instead of adding more dependencies to JUnit 4.x.
-
-If writing tests is new to you, poke around existing unit tests which all end in ``Test.java`` and live under ``src/test``. Each test is annotated with ``@Test`` and should have at least one assertion which specifies the expected result. In Netbeans, you can run all the tests in it by clicking "Run" -> "Test File". From the test file, you should be able to navigate to the code that's being tested by right-clicking on the file and clicking "Navigate" -> "Go to Test/Tested class". Likewise, from the code, you should be able to use the same "Navigate" menu to go to the tests.
+If writing tests is new to you, poke around existing unit tests which all end in ``Test.java`` and live under ``src/test``.
+Each test is annotated with ``@Test`` and should have at least one assertion which specifies the expected result.
+In Netbeans, you can run all the tests in it by clicking "Run" -> "Test File".
+From the test file, you should be able to navigate to the code that's being tested by right-clicking on the file and clicking "Navigate" -> "Go to Test/Tested class".
+Likewise, from the code, you should be able to use the same "Navigate" menu to go to the tests.
 
 NOTE: Please remember when writing tests checking possibly localized outputs to check against ``en_US.UTF-8`` and ``UTC``
 l10n strings!
@@ -62,22 +64,24 @@ Refactoring Code to Make It Unit-Testable
 
 Existing code is not necessarily written in a way that lends itself to easy testing. Generally speaking, it is difficult to write unit tests for both JSF "backing" beans (which end in ``Page.java``) and "service" beans (which end in ``Service.java``) because they require the database to be running in order to test them. If service beans can be exercised via API they can be tested with integration tests (described below) but a good technique for making the logic testable it to move code to "util beans" (which end in ``Util.java``) that operate on Plain Old Java Objects (POJOs). ``PrivateUrlUtil.java`` is a good example of moving logic from ``PrivateUrlServiceBean.java`` to a "util" bean to make the code testable.
 
-Parameterized Tests and JUnit Theories
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Parameterized Tests
+^^^^^^^^^^^^^^^^^^^
+
 Often times you will want to test a method multiple times with similar values.
 In order to avoid test bloat (writing a test for every data combination),
 JUnit offers Data-driven unit tests. This allows a test to be run for each set
 of defined data values.
 
-JUnit 4 uses ``Parameterized.class`` and ``Theories.class``. For reference, take a look at issue https://github.com/IQSS/dataverse/issues/5619.
-
-JUnit 5 doesn't offer theories (see `jqwik <https://jqwik.net>`_ for this), but
-greatly extended parameterized testing. Some guidance how to write those:
+JUnit 5 offers great parameterized testing. Some guidance how to write those:
 
 - https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests
 - https://www.baeldung.com/parameterized-tests-junit-5
 - https://blog.codefx.org/libraries/junit-5-parameterized-tests/
-- See also some examples in our codebase.
+- See also many examples in our codebase.
+
+Note that JUnit 5 also offers support for custom test parameter resolvers. This enables keeping tests cleaner,
+as preparation might happen within some extension and the test code is more focused on the actual testing.
+See https://junit.org/junit5/docs/current/user-guide/#extensions-parameter-resolution for more information.
 
 JUnit 5 Test Helper Extensions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -116,11 +120,14 @@ In addition, there is a writeup on "The Testable Command" at https://github.com/
 Running Non-Essential (Excluded) Unit Tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You should be aware that some unit tests have been deemed "non-essential" and have been annotated with ``@Category(NonEssentialTests.class)`` and are excluded from the "dev" Maven profile, which is the default profile. All unit tests (that have not been annotated with ``@Ignore``), including these non-essential tests, are run from continuous integration systems such as Jenkins and GitHub Actions with the following ``mvn`` command that invokes a non-default profile:
+You should be aware that some unit tests have been deemed "non-essential" and have been annotated with ``@Tag(Tags.NOT_ESSENTIAL_UNITTESTS)`` and are excluded from the "dev" Maven profile, which is the default profile.
+All unit tests (that have not been annotated with ``@Disable``), including these non-essential tests, are run from continuous integration systems such as Jenkins and GitHub Actions with the following ``mvn`` command that invokes a non-default profile:
 
 ``mvn test -P all-unit-tests``
 
-Generally speaking, unit tests have been flagged as non-essential because they are slow or because they require an Internet connection. You should not feel obligated to run these tests continuously but you can use the ``mvn`` command above to run them. To iterate on the unit test in Netbeans and execute it with "Run -> Test File", you must temporarily comment out the annotation flagging the test as non-essential.
+Generally speaking, unit tests have been flagged as non-essential because they are slow or because they require an Internet connection.
+You should not feel obligated to run these tests continuously but you can use the ``mvn`` command above to run them.
+To iterate on the unit test in Netbeans and execute it with "Run -> Test File", you must temporarily comment out the annotation flagging the test as non-essential.
 
 Integration Tests
 -----------------
@@ -499,7 +506,6 @@ Browser-Based Testing
 Installation Testing
 ~~~~~~~~~~~~~~~~~~~~
 
-- Run `vagrant up` on a server to test the installer
 - Work with @donsizemore to automate testing of https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible
 
 Future Work on Load/Performance Testing

@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Matchers;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -97,7 +96,7 @@ public class PasswordResetServiceBeanTest {
 
     @Test
     void testAttemptPasswordReset_withValidationErrors() {
-        when(mockedPasswordValidatorServiceBean.validate(Matchers.anyString())).thenReturn(Arrays.asList("error"));
+        when(mockedPasswordValidatorServiceBean.validate(ArgumentMatchers.anyString())).thenReturn(Arrays.asList("error"));
 
         PasswordChangeAttemptResponse passwordChangeAttemptResponse = passwordResetServiceBean.attemptPasswordReset(new BuiltinUser(), "newpass", "token");
 
