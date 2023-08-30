@@ -467,19 +467,13 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions")
     public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("includeFiles") Boolean includeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
-        // @todo:  when full versions list - including files - is requested, consider 
-        // using datasetservice.findDeep() (needs testing on "monstrous" datasets 
-        // with a lot of versions!)
         
         return response( req -> {
             Dataset dataset = findDatasetOrDie(id); 
-            if (includeFiles == null ? false : includeFiles) {
-                dataset = datasetService.findDeep(dataset.getId());
-            } 
-            //return ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id), offset, limit) )
-            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit) )
+
+            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, (includeFiles == null ? true : includeFiles)) )
                                 .stream()
-                                .map( d -> json(d, includeFiles == null ? false : includeFiles) )
+                                .map( d -> json(d, includeFiles == null ? true : includeFiles) )
                                 .collect(toJsonArray()));
         }, getRequestUser(crc));
     }
@@ -491,8 +485,15 @@ public class Datasets extends AbstractApiBean {
         return response( req -> {
             // @todo: consider using DatasetVersionServiceBean.findDeep() here 
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                    : ok(json(dsv, includeFiles == null ? false : includeFiles));
+            
+            if (dsv == null || dsv.getId() == null) {
+                return notFound("Dataset version not found");
+            }
+            
+            if (includeFiles == null ? true : includeFiles) {
+                dsv = datasetversionService.findDeep(dsv.getId());
+            }
+            return ok(json(dsv, includeFiles == null ? true : includeFiles));
         }, getRequestUser(crc));
     }
     
@@ -509,23 +510,6 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
             }
             return ok(jsonFileMetadatas(datasetversionService.getFileMetadatas(datasetVersion, limit, offset, fileMetadatasOrderCriteria)));
-        }, getRequestUser(crc));
-    }
-    
-    //@todo: remember to delete this! (for experiments only!)
-    @GET
-    @AuthRequired
-    @Path("{id}/versions/{versionId}/files2")
-    public Response getVersionFiles2(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") Long versionId, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset, @QueryParam("orderCriteria") String orderCriteria, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return response( req -> {
-            //DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            DatasetVersionServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
-            try {
-                fileMetadatasOrderCriteria = orderCriteria != null ? DatasetVersionServiceBean.FileMetadatasOrderCriteria.valueOf(orderCriteria) : DatasetVersionServiceBean.FileMetadatasOrderCriteria.NameAZ;
-            } catch (IllegalArgumentException e) {
-                return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
-            }
-            return ok(jsonFileMetadatas(datasetversionService.getFileMetadatasByDbId(versionId, limit, offset, fileMetadatasOrderCriteria)));
         }, getRequestUser(crc));
     }
     

@@ -676,11 +676,11 @@ public class Dataset extends DvObjectContainer {
         Timestamp citationDate = null;
         //Only calculate if this dataset doesn't use an alternate date field for publication date
         if (citationDateDatasetFieldType == null) {
-            List<DatasetVersion> versions = this.versions;
+            //List<DatasetVersion> versions = this.versions;
             // TODo - is this ever not version 1.0 (or draft if not published yet)
-            DatasetVersion oldest = versions.get(versions.size() - 1);
+            //DatasetVersion oldest = versions.get(versions.size() - 1);
             citationDate = super.getPublicationDate();
-            if (oldest.isPublished()) {
+            /*if (oldest.isPublished()) {
                 List<FileMetadata> fms = oldest.getFileMetadatas();
                 for (FileMetadata fm : fms) {
                     Embargo embargo = fm.getDataFile().getEmbargo();
@@ -691,7 +691,7 @@ public class Dataset extends DvObjectContainer {
                         }
                     }
                 }
-            }
+            }*/
         }
         return citationDate;
     }
