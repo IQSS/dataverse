@@ -1,22 +1,20 @@
 package edu.harvard.iq.dataverse;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
-
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  * @author rmp553
  */
 public class GlobalIdTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testValidDOI() {
@@ -68,34 +66,34 @@ public class GlobalIdTest {
     }
 
     @Test
-    @Ignore /* Could now add a 'doy' protocol so the test would have to check against registered PIDProviders (currently Beans)*/
+    @Disabled /* Could now add a 'doy' protocol so the test would have to check against registered PIDProviders (currently Beans)*/
     public void testUnknownProtocol() {
         System.out.println("testUnknownProtocol");
 
         String badProtocol = "doy:10.5072/FK2/BYM3IW";
-
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Failed to parse identifier: " + badProtocol);
+        
+        //exception.expect(IllegalArgumentException.class);
+        //exception.expectMessage("Failed to parse identifier: " + badProtocol);
         //new GlobalId(badProtocol);
     }
 
     @Test
-    @Ignore /* Could now change parsing rules so the test would have to check against registered PIDProviders (currently Beans)*/
+    @Disabled /* Could now change parsing rules so the test would have to check against registered PIDProviders (currently Beans)*/
     public void testBadIdentifierOnePart() {
         System.out.println("testBadIdentifierOnePart");
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Failed to parse identifier: 1part");
+        //exception.expect(IllegalArgumentException.class);
+        //exception.expectMessage("Failed to parse identifier: 1part");
         //new GlobalId("1part");
     }
 
     @Test
-    @Ignore /* Could now change parsing rules so the test would have to check against registered PIDProviders (currently Beans)*/
+    @Disabled /* Could now change parsing rules so the test would have to check against registered PIDProviders (currently Beans)*/
     public void testBadIdentifierTwoParts() {
         System.out.println("testBadIdentifierTwoParts");
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Failed to parse identifier: doi:2part/blah");
+        //exception.expect(IllegalArgumentException.class);
+        //exception.expectMessage("Failed to parse identifier: doi:2part/blah");
         //new GlobalId("doi:2part/blah");
     }
 

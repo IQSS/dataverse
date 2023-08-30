@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import javax.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestContext;
 
 import static edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism.ACCESS_DATAFILE_PATH_PREFIX;
 import static edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism.RESPONSE_MESSAGE_BAD_API_KEY;
