@@ -230,7 +230,7 @@
     <!-- incomplete datasets issue 8822 -->
     <field name="datasetValid" type="boolean" stored="true" indexed="true" multiValued="false"/>
 
-    <field name="fileCount" type="long" stored="true" indexed="true" multiValued="false"/>
+    <field name="fileCount" type="plong" stored="true" indexed="true" multiValued="false"/>
     
     <!--
         METADATA SCHEMA FIELDS
