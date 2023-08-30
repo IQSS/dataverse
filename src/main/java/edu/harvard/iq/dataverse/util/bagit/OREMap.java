@@ -38,14 +38,33 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.bouncycastle.math.ec.ScaleYPointMap;
 
+/**
+ * This class is used to generate a JSON-LD representation of a Dataverse object leveraging the OAI_ORE and other community vocabularies. As of v1.0.0,
+ * the format is being versioned and ANY CHANGES TO THE OUTPUT of this class must be reflected in a version increment (see DATAVERSE_ORE_FORMAT_VERSION).
+ * 
+ * The OREMap class is intended to record ALL the information needed to recreate an existing Dataverse dataset. As of v1.0.0, this is true with the 
+ * exception that auxiliary files are not referenced in the OREMap. While many types of auxiliary files will be regenerated automatically based on datafile
+ *  contents, Dataverse now allows manually uploaded auxiliary files and these cannot be reproduced solely from the dataset/datafile contents. 
+ */
 public class OREMap {
 
+    //Required Services
     static SettingsServiceBean settingsService;
     static DatasetFieldServiceBean datasetFieldService;
+    static SystemConfig systemConfig;
+    
     private static final Logger logger = Logger.getLogger(OREMap.class.getCanonicalName());
     
     public static final String NAME = "OREMap";
+    
+    //NOTE: Update this value whenever the output of this class is changed
+    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.0";
+    private static final String DATAVERSE_SOFTWARE_NAME = "Dataverse";
+    private static final String DATAVERSE_SOFTWARE_URL = "https://github.com/iqss/dataverse";
+    
+    
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
     private Boolean excludeEmail = null;
@@ -269,10 +288,23 @@ public class OREMap {
             return aggBuilder.add("@context", contextBuilder.build());
         } else {
             // Now create the overall map object with it's metadata
+            
+            //Start with a reference to the Dataverse software
+            JsonObjectBuilder dvSoftwareBuilder = Json.createObjectBuilder()
+                    .add("@type", JsonLDTerm.ore("SoftwareApplication").getLabel())
+                    .add(JsonLDTerm.schemaOrg("name").getLabel(), DATAVERSE_SOFTWARE_NAME)
+                    .add(JsonLDTerm.schemaOrg("version").getLabel(), systemConfig.getVersion(true))
+                    .add(JsonLDTerm.schemaOrg("url").getLabel(), DATAVERSE_SOFTWARE_URL);
+            
+            //Now the OREMAP object itself
             JsonObjectBuilder oremapBuilder = Json.createObjectBuilder()
                     .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
                     .add(JsonLDTerm.dcTerms("creator").getLabel(), BrandingUtil.getInstallationBrandName())
                     .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
+                    //Add the version of our ORE format used
+                    .add(JsonLDTerm.schemaOrg("additionalType").getLabel(), DATAVERSE_ORE_FORMAT_VERSION)
+                    //Indicate which Dataverse version created it
+                    .add(JsonLDTerm.DVCore("generatedBy").getLabel(), dvSoftwareBuilder)
                     // Define an id for the map itself (separate from the @id of the dataset being
                     // described
                     .add("@id",
@@ -283,7 +315,11 @@ public class OREMap {
                             aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())
                                     .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
                     // and finally add the context
-                    .add("@context", contextBuilder.build());
+                    .add("@context", contextBuilder.build())
+                    ;
+            
+            
+            
             return oremapBuilder;
         }
     }
@@ -467,8 +503,10 @@ public class OREMap {
         }
     }
 
-    public static void injectSettingsService(SettingsServiceBean settingsSvc, DatasetFieldServiceBean datasetFieldSvc) {
+    //These are used to pick up various settings/constants from the application
+    public static void injectServices(SettingsServiceBean settingsSvc, DatasetFieldServiceBean datasetFieldSvc, SystemConfig systemCfg) {
         settingsService = settingsSvc;
         datasetFieldService = datasetFieldSvc;
+        systemConfig = systemCfg;
     }
 }
