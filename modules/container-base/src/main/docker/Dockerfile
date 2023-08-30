@@ -155,6 +155,8 @@ RUN <<EOF
     ${ASADMIN} create-jvm-options "-XX\:HeapDumpPath=\${ENV=DUMPS_DIR}"
     # Set logging to console only for containers
     ${ASADMIN} set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false \
+    # Workaround for excessive logging when downloading file if guestbook: https://github.com/IQSS/dataverse/issues/9806
+    ${ASADMIN} set-log-levels jakarta.enterprise.resource.webcontainer.faces=OFF
 
     ### PRODUCTION READINESS
     ${ASADMIN} create-jvm-options '-XX\:+UseG1GC'

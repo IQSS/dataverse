@@ -130,3 +130,19 @@
    `sudo -u dataverse /usr/local/payara6/bin/asadmin stop-domain`
 
    `sudo -u dataverse /usr/local/payara6/bin/asadmin start-domain`
+
+1. Reducing logging related to third party code used with Terms of Use/Guestbook
+
+   Some third party library code is used in the UI of the application and unfortunately, in this release, it seems to be leading to excessive logging, despite everything appearing to work properly. For example, downloading a file with Terms of Use/Guestbook enabled works, but a very long exception stack trace ends up in server.log (look for `ViewHandlingStrategyNotFoundException`).
+
+   To supress these messages, the following line can be added to `/usr/local/payara6/glassfish/domains/domain1/config/logging.properties`
+
+   `jakarta.enterprise.resource.webcontainer.faces.level=OFF`
+
+   Alternatively, you can run this (it does the same thing):
+
+   `asadmin set-log-levels jakarta.enterprise.resource.webcontainer.faces=OFF`
+
+   A Payara restart should not be required.
+
+   If you'd like additional details on this bug, please see issue #9806.

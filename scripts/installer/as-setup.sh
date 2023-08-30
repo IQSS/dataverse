@@ -119,6 +119,9 @@ function preliminary_setup()
   # Workaround for FISH-7722: Failed to deploy war with @Stateless https://github.com/payara/Payara/issues/6337
   ./asadmin $ASADMIN_OPTS create-jvm-options --add-opens=java.base/java.io=ALL-UNNAMED
 
+  # Workaround for excessive logging when downloading file if guestbook: https://github.com/IQSS/dataverse/issues/9806
+  ./asadmin $ASADMIN_OPTS set-log-levels jakarta.enterprise.resource.webcontainer.faces=OFF
+
   # enable comet support
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
 
