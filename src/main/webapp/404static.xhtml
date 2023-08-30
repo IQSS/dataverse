@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html" lang="en">
     <head>
-        <title>Dataverse - Not Found</title>
+        <title>#{bundle['error.404.page.title']}</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta http-equiv="Content-Language" content="en" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -72,7 +72,7 @@
             <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" role="navigation">
                 <div class="container">
                     <div class="navbar-header">
-                        <h:outputFormat class="navbar-brand custom-logo" value="Dataverse Project"/>
+                        <h:outputFormat class="navbar-brand custom-logo" value="#{bundle['footer.dataverseProject']}"/>
                     </div>
                     <div class="collapse navbar-collapse" id="topNavBar">
                         <ul class="nav navbar-nav navbar-right">
@@ -85,7 +85,6 @@
             </nav>
         </div>
         <div class="container" id="content">
-            <!-- div class="jumbotron" style="margin-top:20px;" -->
             <div class="alert alert-danger" role="alert" style="margin-top:3em;">
                 <h:outputFormat value="#{bundle['error.404.message']}" escape="false" />
             </div>
