@@ -103,6 +103,21 @@ public class DatasetVersionFilesServiceBean implements Serializable {
     }
 
     /**
+     * Given a DatasetVersion, returns its file metadata count per DataFileAccessStatus
+     *
+     * @param datasetVersion the DatasetVersion to access
+     * @return Map<DataFileAccessStatus, Long> of file metadata counts per DataFileAccessStatus
+     */
+    public Map<DataFileAccessStatus, Long> getFileMetadataCountPerAccessStatus(DatasetVersion datasetVersion) {
+        Map<DataFileAccessStatus, Long> allCounts = new HashMap<>();
+        addAccessStatusCountToTotal(datasetVersion, allCounts, DataFileAccessStatus.Public);
+        addAccessStatusCountToTotal(datasetVersion, allCounts, DataFileAccessStatus.Restricted);
+        addAccessStatusCountToTotal(datasetVersion, allCounts, DataFileAccessStatus.EmbargoedThenPublic);
+        addAccessStatusCountToTotal(datasetVersion, allCounts, DataFileAccessStatus.EmbargoedThenRestricted);
+        return allCounts;
+    }
+
+    /**
      * Returns a FileMetadata list of files in the specified DatasetVersion
      *
      * @param datasetVersion the DatasetVersion to access
@@ -142,6 +157,21 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         }
 
         return baseQuery.fetch();
+    }
+
+    private void addAccessStatusCountToTotal(DatasetVersion datasetVersion, Map<DataFileAccessStatus, Long> totalCounts, DataFileAccessStatus dataFileAccessStatus) {
+        long fileMetadataCount = getFileMetadataCountByAccessStatus(datasetVersion, dataFileAccessStatus);
+        if (fileMetadataCount > 0) {
+            totalCounts.put(dataFileAccessStatus, fileMetadataCount);
+        }
+    }
+
+    private long getFileMetadataCountByAccessStatus(DatasetVersion datasetVersion, DataFileAccessStatus accessStatus) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        return queryFactory
+                .selectFrom(fileMetadata)
+                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()).and(createGetFileMetadatasAccessStatusExpression(accessStatus)))
+                .stream().count();
     }
 
     private JPAQuery<FileMetadata> createGetFileMetadatasBaseQuery(DatasetVersion datasetVersion, FileMetadatasOrderCriteria orderCriteria) {

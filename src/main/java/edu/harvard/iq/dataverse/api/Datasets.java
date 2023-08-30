@@ -521,7 +521,6 @@ public class Datasets extends AbstractApiBean {
         }, getRequestUser(crc));
     }
 
-    // TODO: Finalize and refine
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/files/counts")
@@ -539,8 +538,12 @@ public class Datasets extends AbstractApiBean {
             }
             jsonObjectBuilder.add("perContentType", fileMetadataCountsPerContentTypeJsonBuilder);
 
-            // TODO
-            jsonObjectBuilder.add("perAccessStatus", 3);
+            Map<DatasetVersionFilesServiceBean.DataFileAccessStatus, Long> fileMetadataCountsPerAccessStatus = datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion);
+            JsonObjectBuilder fileMetadataCountsPerAccessStatusJsonBuilder = Json.createObjectBuilder();
+            for (Map.Entry<DatasetVersionFilesServiceBean.DataFileAccessStatus, Long> fileMetadataCount : fileMetadataCountsPerAccessStatus.entrySet()) {
+                fileMetadataCountsPerAccessStatusJsonBuilder.add(fileMetadataCount.getKey().toString(), fileMetadataCount.getValue());
+            }
+            jsonObjectBuilder.add("perAccessStatus", fileMetadataCountsPerAccessStatusJsonBuilder);
 
             Map<String, Long> fileMetadataCountsPerCategoryName = datasetVersionFilesServiceBean.getFileMetadataCountPerCategoryName(datasetVersion);
             JsonObjectBuilder fileMetadataCountsPerCategoryNameJsonBuilder = Json.createObjectBuilder();

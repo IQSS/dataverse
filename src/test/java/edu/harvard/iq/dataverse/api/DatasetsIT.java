@@ -3436,18 +3436,18 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         fileMetadatasCount = getVersionFilesResponseRestricted.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
 
-        // Test Access Status Embargoed Then Public
+        // Test Access Status Embargoed
         UtilIT.setSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths, "12");
         String activeEmbargoDate = LocalDate.now().plusMonths(6).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-        // Create embargo for test file 1 (Embargo and Restricted)
-        Response createExpiredFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(testFileId1), activeEmbargoDate, apiToken);
+        // Create embargo for test file 1 (Embargoed and Restricted)
+        Response createActiveFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(testFileId1), activeEmbargoDate, apiToken);
 
-        createExpiredFileEmbargoResponse.then().assertThat()
+        createActiveFileEmbargoResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // Create embargo for test file 2 (Embargo and Public)
-        Response createActiveFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(testFileId2), activeEmbargoDate, apiToken);
+        // Create embargo for test file 2 (Embargoed and Public)
+        createActiveFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(testFileId2), activeEmbargoDate, apiToken);
 
         createActiveFileEmbargoResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -3523,7 +3523,14 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
         String testCategory = "testCategory";
-        UtilIT.setFileCategories(dataFileId, apiToken, List.of(testCategory));
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, List.of(testCategory));
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Setting embargo for file (Embargo and Public)
+        UtilIT.setSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths, "12");
+        String activeEmbargoDate = LocalDate.now().plusMonths(6).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        Response createFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(dataFileId), activeEmbargoDate, apiToken);
+        createFileEmbargoResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Getting the file counts and assert each count
         Response getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, ":latest", apiToken);
@@ -3533,10 +3540,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         JsonPath responseJsonPath = getVersionFileCountsResponse.jsonPath();
         LinkedHashMap<String, Integer> responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
         LinkedHashMap<String, Integer> responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        LinkedHashMap<String, Integer> responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
 
-        assertEquals((Integer) responseJsonPath.get("data.total"), 4);
-        assertEquals(responseCountPerContentTypeMap.get("image/png"), 2);
-        assertEquals(responseCountPerContentTypeMap.get("text/plain"), 2);
-        assertEquals(responseCountPerCategoryNameMap.get(testCategory), 1);
+        assertEquals(4, (Integer) responseJsonPath.get("data.total"));
+        assertEquals(2, responseCountPerContentTypeMap.get("image/png"));
+        assertEquals(2, responseCountPerContentTypeMap.get("text/plain"));
+        assertEquals(1, responseCountPerCategoryNameMap.get(testCategory));
+        assertEquals(3, responseCountPerAccessStatusMap.get(DatasetVersionFilesServiceBean.DataFileAccessStatus.Public.toString()));
+        assertEquals(1, responseCountPerAccessStatusMap.get(DatasetVersionFilesServiceBean.DataFileAccessStatus.EmbargoedThenPublic.toString()));
     }
 }
