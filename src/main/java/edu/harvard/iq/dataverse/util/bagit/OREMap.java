@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.Embargo;
@@ -133,6 +134,18 @@ public class OREMap {
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
                 .add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
         addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
+        //Add version state info - DRAFT, RELEASED, DEACCESSIONED, ARCHIVED with extra info for DEACCESIONED
+        VersionState vs = version.getVersionState();
+        if(vs.equals(VersionState.DEACCESSIONED)) {
+            JsonObjectBuilder deaccBuilder = Json.createObjectBuilder();
+            deaccBuilder.add(JsonLDTerm.schemaOrg("name").getLabel(), vs.name());
+            deaccBuilder.add(JsonLDTerm.DVCore("reason").getLabel(), version.getVersionNote());
+            addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("forwardUrl"), version.getArchiveNote());
+            aggBuilder.add(JsonLDTerm.schemaOrg("creativeWorkStatus").getLabel(), deaccBuilder);
+            
+        } else {
+            aggBuilder.add(JsonLDTerm.schemaOrg("creativeWorkStatus").getLabel(), vs.name());
+        }
 
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
         if (terms.getLicense() != null) {
