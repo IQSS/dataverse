@@ -528,30 +528,10 @@ public class Datasets extends AbstractApiBean {
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-
             jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion));
-
-            Map<String, Long> fileMetadataCountsPerContentType = datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion);
-            JsonObjectBuilder fileMetadataCountsPerContentTypeJsonBuilder = Json.createObjectBuilder();
-            for (Map.Entry<String, Long> fileMetadataCount : fileMetadataCountsPerContentType.entrySet()) {
-                fileMetadataCountsPerContentTypeJsonBuilder.add(fileMetadataCount.getKey(), fileMetadataCount.getValue());
-            }
-            jsonObjectBuilder.add("perContentType", fileMetadataCountsPerContentTypeJsonBuilder);
-
-            Map<DatasetVersionFilesServiceBean.DataFileAccessStatus, Long> fileMetadataCountsPerAccessStatus = datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion);
-            JsonObjectBuilder fileMetadataCountsPerAccessStatusJsonBuilder = Json.createObjectBuilder();
-            for (Map.Entry<DatasetVersionFilesServiceBean.DataFileAccessStatus, Long> fileMetadataCount : fileMetadataCountsPerAccessStatus.entrySet()) {
-                fileMetadataCountsPerAccessStatusJsonBuilder.add(fileMetadataCount.getKey().toString(), fileMetadataCount.getValue());
-            }
-            jsonObjectBuilder.add("perAccessStatus", fileMetadataCountsPerAccessStatusJsonBuilder);
-
-            Map<String, Long> fileMetadataCountsPerCategoryName = datasetVersionFilesServiceBean.getFileMetadataCountPerCategoryName(datasetVersion);
-            JsonObjectBuilder fileMetadataCountsPerCategoryNameJsonBuilder = Json.createObjectBuilder();
-            for (Map.Entry<String, Long> fileMetadataCount : fileMetadataCountsPerCategoryName.entrySet()) {
-                fileMetadataCountsPerCategoryNameJsonBuilder.add(fileMetadataCount.getKey(), fileMetadataCount.getValue());
-            }
-            jsonObjectBuilder.add("perCategoryName", fileMetadataCountsPerCategoryNameJsonBuilder);
-
+            jsonObjectBuilder.add("perContentType", json(datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion)));
+            jsonObjectBuilder.add("perCategoryName", json(datasetVersionFilesServiceBean.getFileMetadataCountPerCategoryName(datasetVersion)));
+            jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion)));
             return ok(jsonObjectBuilder);
         }, getRequestUser(crc));
     }
