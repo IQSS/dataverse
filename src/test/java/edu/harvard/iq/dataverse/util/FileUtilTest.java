@@ -8,10 +8,6 @@ import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.harvard.iq.dataverse.*;
-import edu.harvard.iq.dataverse.api.UtilIT;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.FileUtil.FileCitationExtension;
 
@@ -19,110 +15,76 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.net.URI;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import java.util.stream.Stream;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Enclosed.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class FileUtilTest {
-
-    @RunWith(Parameterized.class)
-    public static class FileUtilParamTest {
-
-        @Parameters
-        public static Collection data() {
-            return Arrays.asList(new Object[][] {
-                { null, null, null },
-
-                { "trees.png-endnote.xml", "trees.png", FileUtil.FileCitationExtension.ENDNOTE },
-                { "trees.png.ris", "trees.png", FileUtil.FileCitationExtension.RIS },
-                { "trees.png.bib", "trees.png", FileUtil.FileCitationExtension.BIBTEX },
-                { null, "trees.png", null },
-
-                { "50by1000-endnote.xml", "50by1000.tab", FileUtil.FileCitationExtension.ENDNOTE },
-                { "50by1000.ris", "50by1000.tab", FileUtil.FileCitationExtension.RIS },
-                { "50by1000.bib", "50by1000.tab", FileUtil.FileCitationExtension.BIBTEX }
-            });
-        }
-
-        @Parameter
-        public String expectedFileName;
-
-        @Parameter(1)
-        public String actualFileName;
-
-        @Parameter(2)
-        public FileCitationExtension citationExtension;
-
-        @Test
-        public void testGetCiteDataFileFilename() {
-            assertEquals(expectedFileName, FileUtil.getCiteDataFileFilename(actualFileName, citationExtension));
-        }
+    
+    static Stream<Arguments> dataFilenames() {
+        return Stream.of(
+            Arguments.of(null, null, null),
+            Arguments.of("trees.png-endnote.xml", "trees.png", FileUtil.FileCitationExtension.ENDNOTE),
+            Arguments.of("trees.png.ris", "trees.png", FileUtil.FileCitationExtension.RIS),
+            Arguments.of("trees.png.bib", "trees.png", FileUtil.FileCitationExtension.BIBTEX),
+            Arguments.of(null, "trees.png", null),
+            Arguments.of("50by1000-endnote.xml", "50by1000.tab", FileUtil.FileCitationExtension.ENDNOTE),
+            Arguments.of("50by1000.ris", "50by1000.tab", FileUtil.FileCitationExtension.RIS),
+            Arguments.of("50by1000.bib", "50by1000.tab", FileUtil.FileCitationExtension.BIBTEX)
+        );
+    }
+    
+    @ParameterizedTest
+    @MethodSource("dataFilenames")
+    void testGetCiteDataFileFilename(String expectedFileName, String actualFileName, FileCitationExtension citationExtension) {
+        assertEquals(expectedFileName, FileUtil.getCiteDataFileFilename(actualFileName, citationExtension));
+    }
+    
+    static Stream<Arguments> dataReplaceNames() {
+        return Stream.of(
+            // functional approach: what should the method do
+            // replace no extension with an empty extension
+            Arguments.of("no-extension.", "no-extension", ""),
+        
+            // replace extension x with same extension
+            Arguments.of("extension.x", "extension.x", "x"),
+        
+            // replace extension x with another extension y
+            Arguments.of("extension.y", "extension.x", "y"),
+        
+            // interface approach: what are possible inputs
+            // will not pass as null is not handled
+            //Arguments.of(null, null, null),
+            //Arguments.of(null, null, ""),
+            //Arguments.of(null, null, "y"),
+            
+            Arguments.of(".null", "", null),
+            Arguments.of(".", "", ""),
+            Arguments.of(".y", "", "y")
+        );
+    }
+    
+    @ParameterizedTest
+    @MethodSource("dataReplaceNames")
+    void testReplaceExtension(String expectedString, String originalName, String newExtension) {
+        assertEquals(expectedString, FileUtil.replaceExtension(originalName, newExtension));
     }
 
-    @RunWith(Parameterized.class)
-    public static class FileUtilParamTest2 {
-
-        @Parameter
-        public String expectedString;
-
-        @Parameter(1)
-        public String originalName;
-
-        @Parameter(2)
-        public String newExtension;
-
-        @Parameters
-        public static Collection data() {
-            return Arrays.asList(new Object[][] {
-                // functional approach: what should the method do
-                // replace no extension with an empty extension
-                { "no-extension.", "no-extension", ""},
-
-                // replace extension x with same extension
-                { "extension.x", "extension.x", "x" },
-
-                // replace extension x with another extension y
-                { "extension.y", "extension.x", "y" },
-
-                // interface approach: what are possible inputs
-                // will not pass as null is not handled
-                //{ null, null, null },
-                //{ null, null, "" },
-                //{ null, null, "y" },
-
-                { ".null", "", null },
-                { ".", "", "" },
-                { ".y", "", "y" },
-            });
-        }
-
-        @Test
-        public void testReplaceExtension() {
-            assertEquals(expectedString, FileUtil.replaceExtension(originalName, newExtension));
-        }
-
-    }
-
-    public static class FileUtilNoParamTest {
+    static class FileUtilNoParamTest {
         @Test
         public void testIsDownloadPopupRequiredNull() {
-            assertEquals(false, FileUtil.isDownloadPopupRequired(null));
+            assertFalse(FileUtil.isDownloadPopupRequired(null));
         }
 
         @Test
@@ -130,7 +92,7 @@ public class FileUtilTest {
             Dataset dataset = new Dataset();
             DatasetVersion dsv1 = dataset.getOrCreateEditVersion();
             assertEquals(DatasetVersion.VersionState.DRAFT, dsv1.getVersionState());
-            assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
+            assertFalse(FileUtil.isDownloadPopupRequired(dsv1));
         }
 
         @Test
@@ -142,7 +104,7 @@ public class FileUtilTest {
             license.setDefault(true);
             termsOfUseAndAccess.setLicense(license);
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
-            assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
+            assertFalse(FileUtil.isDownloadPopupRequired(dsv1));
         }
 
         @Test
@@ -160,7 +122,7 @@ public class FileUtilTest {
             termsOfUseAndAccess.setLicense(license);
             termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
-            assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
+            assertFalse(FileUtil.isDownloadPopupRequired(dsv1));
         }
 
         @Test
@@ -171,7 +133,7 @@ public class FileUtilTest {
             termsOfUseAndAccess.setLicense(null);
             termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
-            assertEquals(true, FileUtil.isDownloadPopupRequired(dsv1));
+            assertTrue(FileUtil.isDownloadPopupRequired(dsv1));
         }
 
         @Test
@@ -181,7 +143,7 @@ public class FileUtilTest {
             TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
             termsOfUseAndAccess.setTermsOfAccess("Terms of *Access* is different than Terms of Use");
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
-            assertEquals(true, FileUtil.isDownloadPopupRequired(dsv1));
+            assertTrue(FileUtil.isDownloadPopupRequired(dsv1));
         }
 
         @Test
@@ -195,17 +157,17 @@ public class FileUtilTest {
             dataset.setGuestbook(guestbook);
             Dataverse dataverse = new Dataverse();
             guestbook.setDataverse(dataverse);
-            assertEquals(true, FileUtil.isDownloadPopupRequired(datasetVersion));
+            assertTrue(FileUtil.isDownloadPopupRequired(datasetVersion));
         }
 
         @Test
         public void testIsPubliclyDownloadable() {
-            assertEquals(false, FileUtil.isPubliclyDownloadable(null));
+            assertFalse(FileUtil.isPubliclyDownloadable(null));
 
             FileMetadata restrictedFileMetadata = new FileMetadata();
             restrictedFileMetadata.setRestricted(true);
             restrictedFileMetadata.setDataFile(new DataFile());
-            assertEquals(false, FileUtil.isPubliclyDownloadable(restrictedFileMetadata));
+            assertFalse(FileUtil.isPubliclyDownloadable(restrictedFileMetadata));
 
             FileMetadata nonRestrictedFileMetadata = new FileMetadata();
             nonRestrictedFileMetadata.setDataFile(new DataFile());
@@ -215,7 +177,7 @@ public class FileUtilTest {
             Dataset dataset = new Dataset();
             dsv.setDataset(dataset);
             nonRestrictedFileMetadata.setRestricted(false);
-            assertEquals(true, FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
+            assertTrue(FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
         }
 
         @Test
@@ -232,7 +194,7 @@ public class FileUtilTest {
             Dataset dataset = new Dataset();
             dsv.setDataset(dataset);
             nonRestrictedFileMetadata.setRestricted(false);
-            assertEquals(false, FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
+            assertFalse(FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
         }
 
         @Test
@@ -250,7 +212,7 @@ public class FileUtilTest {
             Dataset dataset = new Dataset();
             dsv.setDataset(dataset);
             embargoedFileMetadata.setRestricted(false);
-            assertEquals(false, FileUtil.isPubliclyDownloadable(embargoedFileMetadata));
+            assertFalse(FileUtil.isPubliclyDownloadable(embargoedFileMetadata));
         }
 
         @Test
@@ -272,7 +234,7 @@ public class FileUtilTest {
 
         @Test
         public void testGetPublicDownloadUrl() {
-            assertEquals(null, FileUtil.getPublicDownloadUrl(null, null, null));
+            assertNull(FileUtil.getPublicDownloadUrl(null, null, null));
             assertEquals("https://demo.dataverse.org/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/TLU3EP", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", "doi:10.5072/FK2/TLU3EP", 33L)); //pid before fileId
             assertEquals("https://demo.dataverse.org/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/TLU3EP", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", "doi:10.5072/FK2/TLU3EP", null));
             assertEquals("https://demo.dataverse.org/api/access/datafile/33", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", null, 33L)); //pid before fileId

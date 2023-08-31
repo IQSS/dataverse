@@ -214,7 +214,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             qParam = "&q=" + query;
         }
 
-        return widgetWrapper.wrapURL(dataverseRedirectPage + "?faces-redirect=true&q=" + qParam + optionalDataverseScope);
+        return widgetWrapper.wrapURL(dataverseRedirectPage + "?faces-redirect=true" + qParam + optionalDataverseScope);
 
     }
 
