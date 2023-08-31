@@ -10,7 +10,7 @@ RST Cheat Sheet for Sphinx v 1.2.2
 | Bold text                     | **text**                                                   |                                                            |
 | Italics/emphasis              | *text*                                                     |                                                            |
 | literal                       | ``literal``                                                |                                                            |
-| Internal cross-reference link | See section 5.3.1 of Sphinx documentationand example below | See section 5.3.1 of Sphinx documentationand example below |
+| Internal cross-reference link | See section 5.3.1 of Sphinx documentation and example below | See section 5.3.1 of Sphinx documentation and example below |
 | code block                    | .. code-block:: guess<?xml version="1.0""?>                | Allows for code blocks to be displayed properly            |
 
 For more cheats please visit the [RST cheat sheet google doc] (https://docs.google.com/document/d/105H3iwPwgnPqwuMJI7q-h6FLtXV_EUCiwq2P13lADgA/edit?usp=sharing)

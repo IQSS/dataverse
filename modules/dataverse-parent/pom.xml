@@ -13,6 +13,7 @@
     <modules>
         <module>../../pom.xml</module>
         <module>../../scripts/zipdownload</module>
+        <module>../container-base</module>
     </modules>
     
     <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
@@ -129,7 +130,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>5.12.1</revision>
+        <revision>5.13</revision>
     
         <target.java.version>11</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -147,7 +148,7 @@
     
         <!-- Major system components and dependencies -->
         <payara.version>5.2022.3</payara.version>
-        <postgresql.version>42.5.0</postgresql.version>
+        <postgresql.version>42.5.1</postgresql.version>
         <solr.version>8.11.1</solr.version>
         <aws.version>1.12.290</aws.version>
         <google.cloud.version>0.177.0</google.cloud.version>
@@ -163,7 +164,7 @@
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         
         <!-- NEW gdcc XOAI library implementation -->
-        <gdcc.xoai.version>5.0.0-RC1</gdcc.xoai.version>
+        <gdcc.xoai.version>5.0.0</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
         <testcontainers.version>1.15.0</testcontainers.version>
@@ -181,10 +182,14 @@
         <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
         <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
         <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
+        <maven-install-plugin.version>3.0.0-M1</maven-install-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
         <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
+        
+        <!-- Container related -->
+        <fabric8-dmp.version>0.40.2</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>
@@ -227,6 +232,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>${maven-install-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surefire-plugin.version}</version>
                 </plugin>
@@ -246,6 +256,11 @@
                             <version>${checkstyle.version}</version>
                         </dependency>
                     </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>${fabric8-dmp.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -300,6 +315,11 @@
             </snapshots>
         </repository>
         <repository>
+            <id>unidata-all</id>
+            <name>Unidata All</name>
+            <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
+        </repository>
+        <repository>
             <id>dvn.private</id>
             <name>Local repository for hosting jars not available from network repositories.</name>
             <url>file://${project.basedir}/local_lib</url>
@@ -317,5 +337,45 @@
         </repository>
         -->
     </repositories>
+    
+    <profiles>
+        <profile>
+            <id>ct</id>
+            <properties>
+                <!--
+                    Payara 5.2022.3 has problems with postboot deployment scripts.
+                    Fixed in this release, see https://github.com/payara/Payara/pull/5991
+                -->
+                <payara.version>5.2022.4</payara.version>
+            </properties>
+    
+            <build>
+                <plugins>
+                    <!-- This will get the current commit id to include in image tags of container builds as Maven properties -->
+                    <plugin>
+                        <groupId>io.github.git-commit-id</groupId>
+                        <artifactId>git-commit-id-maven-plugin</artifactId>
+                        <version>5.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>retrieve-git-details</id>
+                                <goals>
+                                    <goal>revision</goal>
+                                </goals>
+                                <phase>initialize</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <dotGitDirectory>${project.basedir}/../../.git</dotGitDirectory>
+                            <dateFormatTimeZone>UTC</dateFormatTimeZone>
+                            <abbrevLength>8</abbrevLength>
+                            <verbose>false</verbose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            
+        </profile>
+    </profiles>
     
 </project>
