@@ -506,7 +506,6 @@ Browser-Based Testing
 Installation Testing
 ~~~~~~~~~~~~~~~~~~~~
 
-- Run `vagrant up` on a server to test the installer
 - Work with @donsizemore to automate testing of https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible
 
 Future Work on Load/Performance Testing
