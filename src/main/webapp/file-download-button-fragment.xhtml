@@ -141,7 +141,7 @@
                 </p:commandLink>
                 <p:commandLink styleClass="highlightBold btn-download" rendered="#{downloadPopupRequired}"
                                process="@this"
-                               action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'bundle' )}"
+                               actionListener="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'bundle' )}"
                                update="@widgetVar(downloadPopup)"
                                oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
                     #{bundle['file.downloadBtn.format.all']}
@@ -311,7 +311,7 @@
                 </p:commandLink>
                 <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse because we know we'll need it later in the popup.-->
                 <p:commandLink rendered="#{downloadPopupRequired}"
-                               action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
+                               actionListener="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
                                styleClass="btn-explore #{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload)}"
                                process="@this"
