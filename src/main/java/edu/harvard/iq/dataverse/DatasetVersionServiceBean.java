@@ -1309,6 +1309,7 @@ w
                     .setHint("eclipselink.left-join-fetch", "fm.dataFile.embargo")
                     .setHint("eclipselink.left-join-fetch", "fm.datasetVersion")
                     .setHint("eclipselink.left-join-fetch", "fm.dataFile.releaseUser")
+                    .setHint("eclipselink.left-join-fetch", "fm.dataFile.dataFileTags")
                     .setHint("eclipselink.left-join-fetch", "fm.dataFile.creator");
         } else {
             // @todo: is there really no way to use offset-limit with left join hints?

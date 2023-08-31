@@ -158,6 +158,22 @@ public class Dataset extends DvObjectContainer {
         this.citationDateDatasetFieldType = citationDateDatasetFieldType;
     }    
 
+    // Per DataCite best practices, the citation date of a dataset may need 
+    // to be adjusted to reflect the latest embargo availability date of any 
+    // file within the first published version. 
+    // If any files are embargoed in the first version, we will find calculate
+    // the date and cache it here. 
+    private Timestamp embargoCitationDate;
+    
+    public Timestamp getEmbargoCitationDate() {
+        return embargoCitationDate;
+    }
+
+    public void setEmbargoCitationDate(Timestamp embargoCitationDate) {
+        this.embargoCitationDate = embargoCitationDate;
+    }
+    
+    
     
     @ManyToOne
     @JoinColumn(name="template_id",nullable = true)
@@ -680,6 +696,11 @@ public class Dataset extends DvObjectContainer {
             // TODo - is this ever not version 1.0 (or draft if not published yet)
             //DatasetVersion oldest = versions.get(versions.size() - 1);
             citationDate = super.getPublicationDate();
+            if (embargoCitationDate != null) {
+                if (citationDate.compareTo(embargoCitationDate) < 0) {
+                    return embargoCitationDate;
+                }
+            }
             /*if (oldest.isPublished()) {
                 List<FileMetadata> fms = oldest.getFileMetadatas();
                 for (FileMetadata fm : fms) {
