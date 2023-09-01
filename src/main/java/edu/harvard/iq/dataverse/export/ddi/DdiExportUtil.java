@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -61,6 +62,21 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.InputStream;
+
+
+import java.io.OutputStream;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.stream.StreamSource;
+
+import org.apache.fop.apps.FOUserAgent;
+import org.apache.fop.apps.Fop;
+import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.MimeConstants;
+
 
 public class DdiExportUtil {
 
@@ -2088,6 +2104,40 @@ public class DdiExportUtil {
         }
 
         return true;
+    }
+
+    public static void datasetPdfDDI(InputStream datafile, OutputStream outputStream) throws XMLStreamException {
+        try {
+            InputStream  styleSheetInput = DdiExportUtil.class.getClassLoader().getResourceAsStream("edu/harvard/iq/dataverse/ddi-to-fo.xsl");
+
+            final FopFactory fopFactory = FopFactory.newInstance(new File(".").toURI());
+            FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
+
+            try {
+                Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, outputStream);
+                // Setup XSLT
+                TransformerFactory factory = TransformerFactory.newInstance();
+                Transformer transformer = factory.newTransformer(new StreamSource(styleSheetInput));
+
+                // Set the value of a <param> in the stylesheet
+                transformer.setParameter("versionParam", "2.0");
+
+                // Setup input for XSLT transformation
+                Source src = new StreamSource(datafile);
+
+                // Resulting SAX events (the generated FO) must be piped through to FOP
+                Result res = new SAXResult(fop.getDefaultHandler());
+
+                // Start XSLT transformation and FOP processing
+                transformer.transform(src, res);
+
+            } catch (Exception e) {
+                logger.severe(e.getMessage());
+            }
+        }  catch (Exception e) {
+            logger.info("Second try");
+            logger.severe(e.getMessage());
+        }
     }
 
     public static void datasetHtmlDDI(InputStream datafile, OutputStream outputStream) throws XMLStreamException {
