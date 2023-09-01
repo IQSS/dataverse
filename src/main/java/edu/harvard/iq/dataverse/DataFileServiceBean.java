@@ -21,16 +21,16 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 /**
  *
@@ -189,6 +189,18 @@ public class DataFileServiceBean implements java.io.Serializable {
         String qr = "select o from DataFile o where o.owner.id = :studyId order by o.id";
         return em.createQuery(qr, DataFile.class)
                 .setParameter("studyId", studyId).getResultList();
+    }
+    
+    /**
+     * 
+     * @param collectionId numeric id of the parent collection ("dataverse")
+     * @return list of files in the datasets that are *direct* children of the collection specified
+     * (i.e., no datafiles in sub-collections of this collection will be included)
+     */
+    public List<DataFile> findByDirectCollectionOwner(Long collectionId) {
+        String queryString = "select f from DataFile f, Dataset d where f.owner.id = d.id and d.owner.id = :collectionId order by f.id";
+        return em.createQuery(queryString, DataFile.class)
+                .setParameter("collectionId", collectionId).getResultList();
     }
     
     public List<DataFile> findAllRelatedByRootDatafileId(Long datafileId) {
@@ -1072,38 +1084,6 @@ public class DataFileServiceBean implements java.io.Serializable {
      * @param idServiceBean
      * @return  {@code true} iff the global identifier is unique.
      */
-/*    public boolean isGlobalIdUnique(String userIdentifier, DataFile datafile, GlobalIdServiceBean idServiceBean) {
-        String testProtocol = "";
-        String testAuthority = "";
-        if (datafile.getAuthority() != null){
-            testAuthority = datafile.getAuthority();
-        } else {
-            testAuthority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority);
-        }
-        if (datafile.getProtocol() != null){
-            testProtocol = datafile.getProtocol();
-        } else {
-            testProtocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
-        }
-        
-        boolean u = em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
-            .setParameter("protocol", testProtocol)
-            .setParameter("authority", testAuthority)
-            .setParameter("identifier",userIdentifier)
-            .getResultList().isEmpty();
-            
-        try{
-            if (idServiceBean.alreadyExists(new GlobalId(testProtocol, testAuthority, userIdentifier))) {
-                u = false;
-            }
-        } catch (Exception e){
-            //we can live with failure - means identifier not found remotely
-        }
-
-       
-        return u;
-    }
-*/    
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
         // Verify that the DataFile no longer exists: 
         if (find(dataFileId) != null) {

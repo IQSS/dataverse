@@ -25,7 +25,7 @@ import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecord
 import edu.harvard.iq.dataverse.engine.command.Command;
 import org.apache.commons.io.FileUtils;
 
-import javax.batch.runtime.JobExecution;
+import jakarta.batch.runtime.JobExecution;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;

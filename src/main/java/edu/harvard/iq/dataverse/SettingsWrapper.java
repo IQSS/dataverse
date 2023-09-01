@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
@@ -26,16 +27,16 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.Set;
 
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
-import javax.faces.validator.ValidatorException;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.json.JsonObject;
-import javax.mail.internet.InternetAddress;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.validator.ValidatorException;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.json.JsonObject;
+import jakarta.mail.internet.InternetAddress;
 
 /**
  *
@@ -58,6 +59,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     @EJB
     DatasetFieldServiceBean fieldService;
+    
+    @EJB
+    MetadataBlockServiceBean mdbService;
 
     private Map<String, String> settingsMap;
     
@@ -114,6 +118,8 @@ public class SettingsWrapper implements java.io.Serializable {
     private Boolean dataFilePIDSequentialDependent = null;
     
     private Boolean customLicenseAllowed = null;
+    
+    private List<MetadataBlock> systemMetadataBlocks;
     
     private Set<Type> alwaysMuted = null;
 
@@ -722,4 +728,19 @@ public class SettingsWrapper implements java.io.Serializable {
         return customLicenseAllowed;
     }
 
+    public List<MetadataBlock> getSystemMetadataBlocks() {
+
+        if (systemMetadataBlocks == null) {
+            systemMetadataBlocks = new ArrayList<MetadataBlock>();
+        }
+        List<MetadataBlock> blocks = mdbService.listMetadataBlocks();
+        for (MetadataBlock mdb : blocks) {
+            String smdbString = JvmSettings.MDB_SYSTEM_KEY_FOR.lookupOptional(mdb.getName()).orElse(null);
+            if (smdbString != null) {
+                systemMetadataBlocks.add(mdb);
+            }
+        }
+
+        return systemMetadataBlocks;
+    }
 }

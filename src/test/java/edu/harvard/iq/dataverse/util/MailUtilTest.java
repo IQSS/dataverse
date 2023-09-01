@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(OrderAnnotation.class)
@@ -27,7 +27,7 @@ public class MailUtilTest {
     @Mock
     SettingsServiceBean settingsSvc;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         userNotification = new UserNotification();
 
