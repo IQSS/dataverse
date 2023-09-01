@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.api.auth;
 
 import edu.harvard.iq.dataverse.authorization.users.User;
 
-import javax.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestContext;
 
 /**
  * @author Guillermo Portas

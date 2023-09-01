@@ -36,6 +36,8 @@ To get the json-ld formatted metadata for a Dataset, specify the Dataset ID (DAT
 You should expect a 200 ("OK") response and JSON-LD mirroring the OAI-ORE representation in the returned 'data' object.
 
 
+.. _add-semantic-metadata:
+
 Add Dataset Metadata
 --------------------
 
