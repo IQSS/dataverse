@@ -3,12 +3,12 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,7 +19,7 @@ import java.util.UUID;
  *
  * @author adaybujeda
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EditDataFilesPageHelperTest {
 
     private static final String FILENAME = UUID.randomUUID().toString();

@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseTheme;
-import edu.harvard.iq.dataverse.api.Datasets;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -55,12 +54,10 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
 import java.util.*;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-
-import org.apache.commons.collections4.CollectionUtils;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -71,10 +68,10 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 
 /**
  * Convert objects to Json.
@@ -306,6 +303,9 @@ public class JsonPrinter {
         if(dv.getStorageDriverId() != null) {
         	bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
         }
+        if (dv.getFilePIDsEnabled() != null) {
+            bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
+        }
 
         return bld;
     }
@@ -373,17 +373,21 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList) {
+        Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
-                .add("id", dsv.getId()).add("datasetId", dsv.getDataset().getId())
-                .add("datasetPersistentId", dsv.getDataset().getGlobalId().asString())
-                .add("storageIdentifier", dsv.getDataset().getStorageIdentifier())
+                .add("id", dsv.getId()).add("datasetId", dataset.getId())
+                .add("datasetPersistentId", dataset.getGlobalId().asString())
+                .add("storageIdentifier", dataset.getStorageIdentifier())
                 .add("versionNumber", dsv.getVersionNumber()).add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name()).add("versionNote", dsv.getVersionNote())
                 .add("archiveNote", dsv.getArchiveNote()).add("deaccessionLink", dsv.getDeaccessionLink())
                 .add("distributionDate", dsv.getDistributionDate()).add("productionDate", dsv.getProductionDate())
                 .add("UNF", dsv.getUNF()).add("archiveTime", format(dsv.getArchiveTime()))
                 .add("lastUpdateTime", format(dsv.getLastUpdateTime())).add("releaseTime", format(dsv.getReleaseTime()))
-                .add("createTime", format(dsv.getCreateTime()));
+                .add("createTime", format(dsv.getCreateTime()))
+                .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
+                .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
+                .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD());
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
             bld.add("license", jsonLicense(dsv));
@@ -575,6 +579,7 @@ public class JsonPrinter {
         fieldsBld.add("description", fld.getDescription());
         fieldsBld.add("multiple", fld.isAllowMultiples());
         fieldsBld.add("isControlledVocabulary", fld.isControlledVocabulary());
+        fieldsBld.add("displayFormat", fld.getDisplayFormat());
         if (fld.isControlledVocabulary()) {
             // If the field has a controlled vocabulary,
             // add all values to the resulting JSON
@@ -610,7 +615,7 @@ public class JsonPrinter {
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
                 .add("categories", getFileCategories(fmd))
-                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd));
+                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd, false));
     }
 
       public static JsonObjectBuilder json(AuxiliaryFile auxFile) {
@@ -626,10 +631,10 @@ public class JsonPrinter {
                 .add("dataFile", JsonPrinter.json(auxFile.getDataFile()));
     }
     public static JsonObjectBuilder json(DataFile df) {
-        return JsonPrinter.json(df, null);
+        return JsonPrinter.json(df, null, false);
     }
     
-    public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata) {
+    public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider) {
         // File names are no longer stored in the DataFile entity; 
         // (they are instead in the FileMetadata (as "labels") - this way 
         // the filename can change between versions... 
@@ -654,7 +659,7 @@ public class JsonPrinter {
 
         JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
 
-        return jsonObjectBuilder()
+        NullSafeJsonBuilder builder = jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("persistentId", pidString)
                 .add("pidURL", pidURL)
@@ -665,7 +670,6 @@ public class JsonPrinter {
                 .add("categories", getFileCategories(fileMetadata))
                 .add("embargo", embargo)
                 //.add("released", df.isReleased())
-                .add("restricted", df.isRestricted())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
@@ -684,12 +688,22 @@ public class JsonPrinter {
                 //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
-                .add("fileMetadataId", fileMetadata.getId())
                 .add("tabularTags", getTabularFileTags(df))
-                .add("creationDate",  df.getCreateDateFormattedYYYYMMDD())
-                .add("dataTables", df.getDataTables().isEmpty() ? null : JsonPrinter.jsonDT(df.getDataTables()))
-                .add("varGroups", fileMetadata.getVarGroups().isEmpty()
-                        ? null: JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups()));
+                .add("creationDate", df.getCreateDateFormattedYYYYMMDD());
+        /*
+         * The restricted state was not included prior to #9175 so to avoid backward
+         * incompatability, it is now only added when generating json for the
+         * InternalExportDataProvider fileDetails.
+         */
+        if (forExportDataProvider) {
+            builder.add("restricted", df.isRestricted())
+            .add("fileMetadataId", fileMetadata.getId())
+            .add("dataTables", df.getDataTables().isEmpty() ? null : JsonPrinter.jsonDT(df.getDataTables()))
+            .add("varGroups", fileMetadata.getVarGroups().isEmpty()
+                    ? JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups())
+                    : null);
+        }
+        return builder;
     }
     
     //Started from https://github.com/RENCI-NRIG/dataverse/, i.e. https://github.com/RENCI-NRIG/dataverse/commit/2b5a1225b42cf1caba85e18abfeb952171c6754a

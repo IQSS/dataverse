@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.util;
 
-import javax.enterprise.inject.Produces;
-import javax.inject.Qualifier;
-import javax.inject.Singleton;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Qualifier;
+import jakarta.inject.Singleton;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
