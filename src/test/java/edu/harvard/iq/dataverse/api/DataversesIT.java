@@ -372,7 +372,7 @@ public class DataversesIT {
         while (checkIndex) {
             try {   
                     try {
-                        Thread.sleep(4000);
+                        Thread.sleep(8000);
                     } catch (InterruptedException ex) {
                     }                
                 Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
@@ -530,6 +530,8 @@ public class DataversesIT {
         assertEquals(201, importDDIRelease.getStatusCode());
 
         Integer datasetIdInt = JsonPath.from(importDDI.body().asString()).getInt("data.id");
+
+        UtilIT.sleepForReindex(String.valueOf(datasetIdInt), apiToken, 5);
 
         Response search1 = UtilIT.search("id:dataset_" + datasetIdInt + "_draft", apiToken); // santity check, can find it
         search1.prettyPrint();

@@ -1118,6 +1118,8 @@ public class FilesIT {
 
         long fileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
+
         Response searchShouldFindBecauseAuthorApiTokenSupplied = UtilIT.search("id:datafile_" + fileId + "_draft", apiToken);
         searchShouldFindBecauseAuthorApiTokenSupplied.prettyPrint();
         searchShouldFindBecauseAuthorApiTokenSupplied.then().assertThat()
