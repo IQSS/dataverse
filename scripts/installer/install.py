@@ -252,8 +252,8 @@ if not pgOnly:
    # 1d. check java version
    java_version = subprocess.check_output(["java", "-version"], stderr=subprocess.STDOUT).decode()
    print("Found java version "+java_version)
-   if not re.search('(1.8|11)', java_version):
-      sys.exit("Dataverse requires OpenJDK 1.8 or 11. Please make sure it's in your PATH, and try again.")
+   if not re.search('(17)', java_version):
+      sys.exit("Dataverse requires OpenJDK 17. Please make sure it's in your PATH, and try again.")
 
    # 1e. check if the setup scripts - setup-all.sh, are available as well, maybe?
    # @todo (?)
@@ -314,7 +314,7 @@ else:
                   gfDir = config.get('glassfish', 'GLASSFISH_DIRECTORY')
                   while not test_appserver_directory(gfDir):
                      print("\nInvalid Payara directory!")
-                     gfDir = read_user_input("Enter the root directory of your Payara5 installation:\n(Or ctrl-C to exit the installer): ")
+                     gfDir = read_user_input("Enter the root directory of your Payara installation:\n(Or ctrl-C to exit the installer): ")
                   config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
                elif option == "mail_server":
                   mailServer = config.get('system', 'MAIL_SERVER')
@@ -511,12 +511,12 @@ print("\nInstalling additional configuration files (Jhove)... ")
 try: 
    copy2(jhoveConfigSchemaDist, gfConfigDir)
    # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
-   # and may need to be adjusted, if Payara is installed anywhere other than /usr/local/payara5:
-   if gfDir == "/usr/local/payara5":
+   # and may need to be adjusted, if Payara is installed anywhere other than /usr/local/payara6:
+   if gfDir == "/usr/local/payara6":
       copy2(jhoveConfigDist, gfConfigDir)
    else:
-      # use sed to replace /usr/local/payara5 in the distribution copy with the real gfDir:
-      sedCommand = "sed 's:/usr/local/payara5:"+gfDir+":g' < " + jhoveConfigDist + " > " + gfConfigDir + "/" + jhoveConfig
+      # use sed to replace /usr/local/payara6 in the distribution copy with the real gfDir:
+      sedCommand = "sed 's:/usr/local/payara6:"+gfDir+":g' < " + jhoveConfigDist + " > " + gfConfigDir + "/" + jhoveConfig
       subprocess.call(sedCommand, shell=True)
 
    print("done.")

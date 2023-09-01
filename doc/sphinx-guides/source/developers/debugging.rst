@@ -20,8 +20,8 @@ during development without recompiling. Changing the options will require at lea
 how you get these options in. (Variable substitution only happens during deployment and when using system properties
 or environment variables, you'll need to pass these into the domain, which usually will require an app server restart.)
 
-Please note that since Payara 5.2021.1 supporting MicroProfile Config 2.0, you can
-`use profiles <https://download.eclipse.org/microprofile/microprofile-config-2.0/microprofile-config-spec-2.0.html#configprofile>`_
+Please note you can use
+`MicroProfile Config <https://download.eclipse.org/microprofile/microprofile-config-2.0/microprofile-config-spec-2.0.html#configprofile>`_
 to maintain your settings more easily for different environments.
 
 .. list-table::

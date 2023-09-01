@@ -1,23 +1,23 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.path.json.JsonPath.with;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import static io.restassured.path.json.JsonPath.with;
+import io.restassured.response.Response;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import javax.json.Json;
-import javax.json.JsonObject;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.OK;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class FitsIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
@@ -60,6 +60,7 @@ public class FitsIT {
         getJson.prettyPrint();
         getJson.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.files[0].description", equalTo("FITS file, 2 HDUs total:\nThe primary HDU; 1 Table HDU(s) 1 Image HDU(s); \nThe following recognized metadata keys have been found in the FITS file:\nCRVAL2; NAXIS; INSTRUME; NAXIS1; NAXIS0; EXPTIME; CD1_1; CRVAL1; TARGNAME; DATE-OBS; \n"))
                 .body("data.latestVersion.metadataBlocks.astrophysics.fields[0].value[0]", equalTo("Image"));
 
         // a bit more precise than the check for "Image" above (but annoyingly fiddly)

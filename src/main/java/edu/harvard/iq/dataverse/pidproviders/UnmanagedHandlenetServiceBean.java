@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import org.apache.commons.lang3.NotImplementedException;
 
 /** This class is just used to parse Handles that are not managed by any account configured in Dataverse

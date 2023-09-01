@@ -30,8 +30,6 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
-import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -39,9 +37,8 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,19 +46,19 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.validator.ValidatorException;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.validation.ConstraintViolation;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.validator.ValidatorException;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.validation.ConstraintViolation;
 
 import org.primefaces.PrimeFaces;
 import org.primefaces.component.tabview.TabView;
@@ -80,6 +77,7 @@ public class FilePage implements java.io.Serializable {
     private FileMetadata fileMetadata;
     private Long fileId;  
     private String version;
+    private String toolType;
     private DataFile file;   
     private GuestbookResponse guestbookResponse;
     private int selectedTabIndex;
@@ -91,6 +89,7 @@ public class FilePage implements java.io.Serializable {
     private List<ExternalTool> configureTools;
     private List<ExternalTool> exploreTools;
     private List<ExternalTool> toolsWithPreviews;
+    private List<ExternalTool> queryTools;
     private Long datasetVersionId;
     /**
      * Have the terms been met so that the Preview tab can show the preview?
@@ -152,7 +151,6 @@ public class FilePage implements java.io.Serializable {
      
         
         if (fileId != null || persistentId != null) {
-
             // ---------------------------------------
             // Set the file and datasetVersion 
             // ---------------------------------------           
@@ -242,13 +240,28 @@ public class FilePage implements java.io.Serializable {
             }
             configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
+            queryTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.QUERY, contentType);
             Collections.sort(exploreTools, CompareExternalToolName);
             toolsWithPreviews  = sortExternalTools();
-            if(!toolsWithPreviews.isEmpty()){
-                setSelectedTool(toolsWithPreviews.get(0));                
-            }
-        } else {
 
+            if (toolType != null) {
+                if (toolType.equals("PREVIEW")) {
+                    if (!toolsWithPreviews.isEmpty()) {
+                        setSelectedTool(toolsWithPreviews.get(0));
+                    }
+                }
+                if (toolType.equals("QUERY")) {
+                    if (!queryTools.isEmpty()) {
+                        setSelectedTool(queryTools.get(0));
+                    }
+                }
+            } else {
+                if (!getAllAvailableTools().isEmpty()){
+                    setSelectedTool(getAllAvailableTools().get(0));
+                }
+            }
+
+        } else {
             return permissionsWrapper.notFound();
         }
         
@@ -992,6 +1005,30 @@ public class FilePage implements java.io.Serializable {
         return toolsWithPreviews;
     }
     
+    public List<ExternalTool> getQueryTools() {
+        return queryTools;
+    }
+    
+    
+    public List<ExternalTool> getAllAvailableTools(){
+        List<ExternalTool> externalTools = new ArrayList<>();
+        externalTools.addAll(queryTools);
+        for (ExternalTool pt : toolsWithPreviews){
+            if (!externalTools.contains(pt)){
+                externalTools.add(pt);
+            }
+        }        
+        return externalTools;
+    }
+    
+    public String getToolType() {
+        return toolType;
+    }
+
+    public void setToolType(String toolType) {
+        this.toolType = toolType;
+    }
+    
     private ExternalTool selectedTool;
 
     public ExternalTool getSelectedTool() {
@@ -1184,7 +1221,22 @@ public class FilePage implements java.io.Serializable {
             return BundleUtil.getStringFromBundle("embargoed.willbeuntil");
         }
     }
-
+    
+    public String getToolTabTitle(){
+        if (getAllAvailableTools().size() > 1) {
+            return BundleUtil.getStringFromBundle("file.toolTab.header");
+        }
+        if( getSelectedTool() != null ){
+           if(getSelectedTool().isPreviewTool()){
+               return BundleUtil.getStringFromBundle("file.previewTab.header");
+           } 
+           if(getSelectedTool().isQueryTool()){
+               return BundleUtil.getStringFromBundle("file.queryTab.header");
+           }          
+        } 
+        return BundleUtil.getStringFromBundle("file.toolTab.header");
+    }
+    
     public String getIngestMessage() {
         return BundleUtil.getStringFromBundle("file.ingestFailed.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()));
     }
@@ -1192,6 +1244,15 @@ public class FilePage implements java.io.Serializable {
     //Determines whether this File uses a public store and therefore doesn't support embargoed or restricted files
     public boolean isHasPublicStore() {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier())));
+    }
+
+    /**
+     * This method only exists because in file-edit-button-fragment.xhtml we
+     * call bean.editFileMetadata() and we need both FilePage (this bean) and
+     * DatasetPage to have the method defined to prevent errors in server.log.
+     */
+    public String editFileMetadata(){
+        return "";
     }
 
 }

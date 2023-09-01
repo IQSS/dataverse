@@ -6,20 +6,20 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
+
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 
 /**
  * A specification or definition for how an external tool is intended to
@@ -148,7 +148,8 @@ public class ExternalTool implements Serializable {
 
         EXPLORE("explore"),
         CONFIGURE("configure"),
-        PREVIEW("preview");
+        PREVIEW("preview"),
+        QUERY("query");
 
         private final String text;
 
@@ -238,14 +239,30 @@ public class ExternalTool implements Serializable {
     }
 
     public boolean isExploreTool() {
-        boolean isExploreTool = false;
         for (ExternalToolType externalToolType : externalToolTypes) {
             if (externalToolType.getType().equals(Type.EXPLORE)) {
-                isExploreTool = true;
-                break;
+                return true;
             }
         }
-        return isExploreTool;
+        return false;
+    }
+    
+    public boolean isQueryTool() {
+        for (ExternalToolType externalToolType : externalToolTypes) {
+            if (externalToolType.getType().equals(Type.QUERY)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isPreviewTool() {
+        for (ExternalToolType externalToolType : externalToolTypes) {
+            if (externalToolType.getType().equals(Type.PREVIEW)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Scope getScope() {

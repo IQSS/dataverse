@@ -18,23 +18,24 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Before;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import javax.json.JsonObject;
-import javax.json.JsonString;
-import org.junit.runner.RunWith;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Tested class: AuthenticatedUser.java
  *
  * @author bsilverstein
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AuthenticatedUserTest {
 
     @Mock
@@ -51,7 +52,7 @@ public class AuthenticatedUserTest {
     public static final String IDENTIFIER_PREFIX = "@";
     public static final Set<Type> mutedTypes = EnumSet.of(Type.ASSIGNROLE, Type.REVOKEROLE);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         testUser = MocksFactory.makeAuthenticatedUser("Homer", "Simpson");
         expResult = testUser.getCreatedTime();
@@ -363,14 +364,14 @@ public class AuthenticatedUserTest {
         JsonObject jObject = testUser.toJson().build();
 
         Set<String> mutedEmails = new HashSet<>(jObject.getJsonArray("mutedEmails").getValuesAs(JsonString::getString));
-        assertTrue("Set contains two elements", mutedEmails.size() == 2);
-        assertTrue("Set contains REVOKEROLE", mutedEmails.contains("REVOKEROLE"));
-        assertTrue("Set contains ASSIGNROLE", mutedEmails.contains("ASSIGNROLE"));
+        assertTrue(mutedEmails.size() == 2, "Set contains two elements");
+        assertTrue(mutedEmails.contains("REVOKEROLE"), "Set contains REVOKEROLE");
+        assertTrue(mutedEmails.contains("ASSIGNROLE"), "Set contains ASSIGNROLE");
 
         Set<String> mutedNotifications = new HashSet<>(jObject.getJsonArray("mutedNotifications").getValuesAs(JsonString::getString));
-        assertTrue("Set contains two elements", mutedNotifications.size() == 2);
-        assertTrue("Set contains REVOKEROLE", mutedNotifications.contains("REVOKEROLE"));
-        assertTrue("Set contains ASSIGNROLE", mutedNotifications.contains("ASSIGNROLE"));
+        assertTrue(mutedNotifications.size() == 2, "Set contains two elements");
+        assertTrue(mutedNotifications.contains("REVOKEROLE"), "Set contains REVOKEROLE");
+        assertTrue(mutedNotifications.contains("ASSIGNROLE"), "Set contains ASSIGNROLE");
     }
 
     @Test
@@ -400,10 +401,10 @@ public class AuthenticatedUserTest {
                 Type.tokenizeToSet(" ASSIGNROLE , CREATEDV,REVOKEROLE  ")
             )
         );
-        assertTrue("typeSet contains 3 elements", typeSet.size() == 3);
-        assertTrue("typeSet contains ASSIGNROLE", typeSet.contains(Type.ASSIGNROLE));
-        assertTrue("typeSet contains CREATEDV", typeSet.contains(Type.CREATEDV));
-        assertTrue("typeSet contains REVOKEROLE", typeSet.contains(Type.REVOKEROLE));
+        assertTrue(typeSet.size() == 3, "typeSet contains 3 elements");
+        assertTrue(typeSet.contains(Type.ASSIGNROLE), "typeSet contains ASSIGNROLE");
+        assertTrue(typeSet.contains(Type.CREATEDV), "typeSet contains CREATEDV");
+        assertTrue(typeSet.contains(Type.REVOKEROLE), "typeSet contains REVOKEROLE");
     }
 
     @Test
