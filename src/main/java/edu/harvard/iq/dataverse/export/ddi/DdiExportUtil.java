@@ -2123,13 +2123,7 @@ public class DdiExportUtil {
 
     public static void datasetPdfDDI(InputStream datafile, OutputStream outputStream) throws XMLStreamException {
         try {
-            //File xsltfile = new File("/home/victoria/fop-2.8/fop/ddi-to-fo.xsl");
-            //URL resource = DdiExportUtil.class.getResource("edu/harvard/iq/dataverse/ddi-to-fo.xsl");
-            //File xsltfile = new File(resource.toURI());
             InputStream  styleSheetInput = DdiExportUtil.class.getClassLoader().getResourceAsStream("edu/harvard/iq/dataverse/ddi-to-fo.xsl");
-            logger.info("start datasetPdfDDI");
-            //InputStream xsltfile = DdiExportUtil.class.getClassLoader().getResourceAsStream(
-            //        "edu/harvard/iq/dataverse/from-ddi-2.5/ddi-to-fo.xsl");
 
             final FopFactory fopFactory = FopFactory.newInstance(new File(".").toURI());
             FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
@@ -2153,7 +2147,6 @@ public class DdiExportUtil {
                 transformer.transform(src, res);
 
             } catch (Exception e) {
-                logger.info("First try");
                 logger.severe(e.getMessage());
             }
         }  catch (Exception e) {
