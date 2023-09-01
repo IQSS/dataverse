@@ -56,15 +56,15 @@ function preliminary_setup()
 
   # avoid OutOfMemoryError: PermGen per http://eugenedvorkin.com/java-lang-outofmemoryerror-permgen-space-error-during-deployment-to-glassfish/
   #./asadmin $ASADMIN_OPTS list-jvm-options
-  # Note that these JVM options are different for Payara5 and Glassfish4:
+  # Note that these JVM options are different for Payara and Glassfish4:
   # old Glassfish4 options: (commented out)
   #./asadmin $ASADMIN_OPTS delete-jvm-options "-XX\:MaxPermSize=192m"
   #./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxPermSize=512m"
   #./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:PermSize=256m"
-  # payara5 ships with the "-server" option already in domain.xml, so no need:
+  # Payara ships with the "-server" option already in domain.xml, so no need:
   #./asadmin $ASADMIN_OPTS delete-jvm-options -client
 
-  # new Payara5 options: (thanks to donsizemore@unc.edu)
+  # new Payara options: (thanks to donsizemore@unc.edu)
   ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxMetaspaceSize=512m"
   ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MetaspaceSize=256m"
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Dfish.payara.classloading.delegate=false"
@@ -116,6 +116,9 @@ function preliminary_setup()
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
 
+  # Workaround for FISH-7722: Failed to deploy war with @Stateless https://github.com/payara/Payara/issues/6337
+  ./asadmin $ASADMIN_OPTS create-jvm-options --add-opens=java.base/java.io=ALL-UNNAMED
+
   # enable comet support
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
 
@@ -155,18 +158,18 @@ function final_setup(){
 
 if [ "$DOCKER_BUILD" = "true" ]
   then
-    FILES_DIR="/usr/local/payara5/glassfish/domains/domain1/files"
+    FILES_DIR="/usr/local/payara6/glassfish/domains/domain1/files"
     RSERVE_HOST="localhost"
     RSERVE_PORT="6311"
     RSERVE_USER="rserve"
     RSERVE_PASS="rserve"
     HOST_ADDRESS="localhost\:8080"
-    pushd /usr/local/payara5/glassfish/bin/
+    pushd /usr/local/payara6/glassfish/bin/
     ./asadmin start-domain domain1
     preliminary_setup
-    chmod -R 777 /usr/local/payara5/
-    rm -rf /usr/local/payara5/glassfish/domains/domain1/generated 
-    rm -rf /usr/local/payara5/glassfish/domains/domain1/applications
+    chmod -R 777 /usr/local/payara6/
+    rm -rf /usr/local/payara6/glassfish/domains/domain1/generated
+    rm -rf /usr/local/payara6/glassfish/domains/domain1/applications
     popd
     exit 0
 fi
@@ -276,7 +279,7 @@ if [ ! -d "$DOMAIN_DIR" ]
     exit 2
 fi
 
-echo "Setting up your app. server (Payara5) to support Dataverse"
+echo "Setting up your app. server (Payara) to support Dataverse"
 echo "Payara directory: "$GLASSFISH_ROOT
 echo "Domain directory:    "$DOMAIN_DIR
 

@@ -5,8 +5,8 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedU
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class GroupUtilTest {
 

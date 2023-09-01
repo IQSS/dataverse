@@ -208,6 +208,8 @@ Previewers are available for the following file types:
 - Zip (preview and extract/download)
 - HTML
 - GeoJSON
+- GeoTIFF
+- Shapefile
 - NetCDF/HDF5
 - Hypothes.is
 
@@ -329,6 +331,8 @@ You can also search for files within datasets that have been tagged as "Workflow
 
 |cw-image6|
 
+.. _fits:
+
 Astronomy (FITS)
 ----------------
 
@@ -340,6 +344,20 @@ GeoJSON
 -------
 
 A map will be shown as a preview of GeoJSON files when the previewer has been enabled (see :ref:`file-previews`). See also a `video demo <https://www.youtube.com/watch?v=EACJJaV3O1c&t=588s>`_ of the GeoJSON previewer by its author, Kaitlin Newson.
+
+.. _geotiff:
+
+GeoTIFF
+-------
+
+A map is also displayed as a preview of GeoTiFF image files, whose previewer must be enabled (see :ref:`file-previews`). Since GeoTIFFs do not have their own mimetype, it is advisable to use this previewer only when GeoTIFFs are used (and not "normal" TIFs). For performance reasons, this previewer has a file size limit of 15 MB and a row/column limit of 50,000 so that larger files are not loaded.
+
+.. _shapefile:
+
+Shapefile
+---------
+
+Another previewer can be enabled for shapefiles (see :ref:`file-previews`). This previewer only works with zipped shapefiles (see :doc:`/developers/geospatial`). A file size limit of 20 MB is set for this previewer (also because of performance reasons).
 
 .. _netcdf-and-hdf5:
 
@@ -359,6 +377,8 @@ NcML
 ~~~~
 
 For NetCDF and HDF5 files, an attempt will be made to extract metadata in NcML_ (XML) format and save it as an auxiliary file. (See also :doc:`/developers/aux-file-support` in the Developer Guide.) A previewer for these NcML files is available (see :ref:`file-previews`).
+
+Please note that only modern versions of these formats, the ones based on HDF5 such as NetCDF 4+ and HDF5 itself (rather than HDF4), will yield an NcML auxiliary file.
 
 .. _NcML: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
 
@@ -380,8 +400,11 @@ Please note the following rules regarding these fields:
 - If West Longitude and East Longitude are both over 180 (outside the expected -180:180 range), 360 will be subtracted to shift the values from the 0:360 range to the expected -180:180 range.
 - If either West Longitude or East Longitude are less than zero but the other longitude is greater than 180 (which would imply an indeterminate domain, a lack of clarity of if the domain is -180:180 or 0:360), metadata will be not be extracted.
 - If the bounding box was successfully populated, the subsequent removal of the NetCDF or HDF5 file from the dataset does not automatically remove the bounding box from the dataset metadata. You must remove the bounding box manually, if desired.
+- This feature is disabled if S3 direct upload is enabled (see :ref:`s3-direct-upload-features-disabled`) unless :ref:`dataverse.netcdf.geo-extract-s3-direct-upload` has been set to true.
 
 If the bounding box was successfully populated, :ref:`geospatial-search` should be able to find it.
+
+.. _compressed-files:
 
 Compressed Files
 ----------------

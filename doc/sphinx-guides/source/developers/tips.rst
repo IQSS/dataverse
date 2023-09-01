@@ -19,20 +19,20 @@ Undeploy the war File from the Dataverse Software Installation Script
 
 Because the initial deployment of the war file was done outside of Netbeans by the Dataverse Software installation script, it's a good idea to undeploy that war file to give Netbeans a clean slate to work with.
 
-Assuming you installed Payara in ``/usr/local/payara5``, run the following ``asadmin`` command to see the version of the Dataverse Software that the Dataverse Software installation script deployed:
+Assuming you installed Payara in ``/usr/local/payara6``, run the following ``asadmin`` command to see the version of the Dataverse Software that the Dataverse Software installation script deployed:
 
-``/usr/local/payara5/bin/asadmin list-applications``
+``/usr/local/payara6/bin/asadmin list-applications``
 
 You will probably see something like ``dataverse-5.0 <ejb, web>`` as the output. To undeploy, use whichever version you see like this:
 
-``/usr/local/payara5/bin/asadmin undeploy dataverse-5.0``
+``/usr/local/payara6/bin/asadmin undeploy dataverse-5.0``
 
 Now that Payara doesn't have anything deployed, we can proceed with getting Netbeans set up to deploy the code.
 
 Add Payara as a Server in Netbeans
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara5``. The defaults are fine so you can click "Next" and "Finish".
+Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara6``. The defaults are fine so you can click "Next" and "Finish".
 
 Please note that if you are on a Mac, Netbeans may be unable to start Payara due to proxy settings in Netbeans. Go to the "General" tab in Netbeans preferences and click "Test connection" to see if you are affected. If you get a green checkmark, you're all set. If you get a red exclamation mark, change "Proxy Settings" to "No Proxy" and retest. A more complicated answer having to do with changing network settings is available at https://discussions.apple.com/thread/7680039?answerId=30715103022#30715103022 and the bug is also described at https://netbeans.org/bugzilla/show_bug.cgi?id=268076
 
@@ -117,7 +117,7 @@ Deploying With ``asadmin``
 
 Sometimes you want to deploy code without using Netbeans or from the command line on a server you have ssh'ed into.
 
-For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/payara5/glassfish/bin`` or wherever you have installed Payara.
+For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/payara6/glassfish/bin`` or wherever you have installed Payara.
 
 There are four steps to this process:
 

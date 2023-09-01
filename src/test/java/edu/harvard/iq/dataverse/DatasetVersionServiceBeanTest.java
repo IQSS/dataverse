@@ -1,13 +1,13 @@
 package edu.harvard.iq.dataverse;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
@@ -18,13 +18,13 @@ public class DatasetVersionServiceBeanTest {
 
   private DatasetVersionServiceBean datasetVersionServiceBean;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     this.datasetVersionServiceBean = new DatasetVersionServiceBean();
     
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     this.datasetVersionServiceBean = null;
   }

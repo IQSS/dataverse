@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Dataverse.DataverseType;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+
 import static edu.harvard.iq.dataverse.dataverse.DataverseUtil.validateDataverseMetadataExternally;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -14,14 +14,11 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.search.IndexResponse;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.logging.Logger;
-import javax.persistence.TypedQuery;
-import org.apache.solr.client.solrj.SolrServerException;
+import jakarta.persistence.TypedQuery;
 
 /**
  * Update an existing dataverse.
