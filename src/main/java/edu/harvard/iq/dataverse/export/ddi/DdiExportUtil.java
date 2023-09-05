@@ -76,6 +76,7 @@ import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.MimeConstants;
+import java.io.File;
 
 
 public class DdiExportUtil {
@@ -2108,6 +2109,7 @@ public class DdiExportUtil {
 
     public static void datasetPdfDDI(InputStream datafile, OutputStream outputStream) throws XMLStreamException {
         try {
+            String sysId = DdiExportUtil.class.getClassLoader().getResource("edu/harvard/iq/dataverse/ddi-to-fo.xsl").toURI().toString();
             InputStream  styleSheetInput = DdiExportUtil.class.getClassLoader().getResourceAsStream("edu/harvard/iq/dataverse/ddi-to-fo.xsl");
 
             final FopFactory fopFactory = FopFactory.newInstance(new File(".").toURI());
@@ -2117,7 +2119,9 @@ public class DdiExportUtil {
                 Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, outputStream);
                 // Setup XSLT
                 TransformerFactory factory = TransformerFactory.newInstance();
-                Transformer transformer = factory.newTransformer(new StreamSource(styleSheetInput));
+                Source mySrc = new StreamSource(styleSheetInput);
+                mySrc.setSystemId(sysId);
+                Transformer transformer = factory.newTransformer(mySrc);
 
                 // Set the value of a <param> in the stylesheet
                 transformer.setParameter("versionParam", "2.0");
@@ -2135,7 +2139,6 @@ public class DdiExportUtil {
                 logger.severe(e.getMessage());
             }
         }  catch (Exception e) {
-            logger.info("Second try");
             logger.severe(e.getMessage());
         }
     }
