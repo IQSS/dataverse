@@ -423,15 +423,15 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
 
    if int(pg_major_version) >= 15:
       conn_cmd = "GRANT ALL ON SCHEMA public TO "+pgUser+";"
-   try:
-      cur.execute(conn_cmd)
-   except:
-      if force:
-         print("WARNING: failed to grant permissions on schema public - continuing, since the --force option was specified")
-      else:
-         sys.exit("Couldn't grant privileges on schema public to "+pgUser)
-   cur.close()
-   conn.close()
+      try:
+         cur.execute(conn_cmd)
+      except:
+         if force:
+            print("WARNING: failed to grant permissions on schema public - continuing, since the --force option was specified")
+         else:
+            sys.exit("Couldn't grant privileges on schema public to "+pgUser)
+      cur.close()
+      conn.close()
 
    print("Database and role created!")
    if pgOnly:
