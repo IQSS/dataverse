@@ -1,4 +1,4 @@
-# Some improvements have been added to the /versions API
+# Improvements in the /versions API
 
 - optional pagination has been added to `/api/datasets/{id}/versions` that may be useful in datasets with a large number of versions;
 - a new flag `includeFiles` is added to both `/api/datasets/{id}/versions` and `/api/datasets/{id}/versions/{vid}` (true by default), providing an option to drop the file information from the output;
