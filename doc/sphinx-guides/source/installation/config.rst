@@ -2982,6 +2982,8 @@ This setting controls the number of files that can be uploaded through the UI at
 
 ``curl -X PUT -d 500 http://localhost:8080/api/admin/settings/:MultipleUploadFilesLimit``
 
+.. _:ZipDownloadLimit:
+
 :ZipDownloadLimit
 +++++++++++++++++
 
