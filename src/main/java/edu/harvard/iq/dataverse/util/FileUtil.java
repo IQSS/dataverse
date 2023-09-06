@@ -1835,7 +1835,7 @@ public class FileUtil implements java.io.Serializable  {
     public static S3AccessIO getS3AccessForDirectUpload(Dataset dataset) {
     	String driverId = dataset.getEffectiveStorageDriverId();
     	boolean directEnabled = Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".upload-redirect")) ||
-            Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".aupload-out-of-band"));
+            Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".upload-out-of-band"));
     	//Should only be requested when it is allowed, but we'll log a warning otherwise
     	if(!directEnabled) {
     		logger.warning("Direct upload not supported for files in this dataset: " + dataset.getId());
