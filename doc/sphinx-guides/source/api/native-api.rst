@@ -1552,8 +1552,6 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     print r.json()
     print r.status_code
 
-This API call might result in the following error: "Dataset store configuration does not allow provided storageIdentifier". One of the possible causes for this error is that out of band upload is not allowed for the storage that the provided identifier refers to. This error can be resolved by enabling the ``dataverse.files.\<id\>.upload-out-of-band`` JVM option. See :ref:`file-storage`.
-
 .. _add-remote-file-api:
     
 Add a Remote File to a Dataset
@@ -2747,8 +2745,6 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST https://demo.dataverse.org/api/datasets/:persistentId/addFiles?persistentId=doi:10.5072/FK2/7U7YBV -F jsonData='[{"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"s3://demo-dataverse-bucket:176e28068b0-1c3f80357c42", "fileName":"file1.txt", "mimeType":"text/plain", "checksum": {"@type": "SHA-1", "@value": "123456"}}, {"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"s3://demo-dataverse-bucket:176e28068b0-1c3f80357d53", "fileName":"file2.txt", "mimeType":"text/plain", "checksum": {"@type": "SHA-1", "@value": "123789"}}]'
-
-This API call might result in the following error: "Dataset store configuration does not allow provided storageIdentifier". One of the possible causes for this error is that out of band upload is not allowed for the storage that the provided identifier refers to. This error can be resolved by enabling the ``dataverse.files.\<id\>.upload-out-of-band`` JVM option. See :ref:`file-storage`.
 
 Updating File Metadata
 ~~~~~~~~~~~~~~~~~~~~~~
