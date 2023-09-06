@@ -161,8 +161,9 @@ public class Dataset extends DvObjectContainer {
     // Per DataCite best practices, the citation date of a dataset may need 
     // to be adjusted to reflect the latest embargo availability date of any 
     // file within the first published version. 
-    // If any files are embargoed in the first version, we will find calculate
-    // the date and cache it here. 
+    // If any files are embargoed in the first version, this date will be
+    // calculated and cached here upon its publication, in the 
+    // FinalizeDatasetPublicationCommand. 
     private Timestamp embargoCitationDate;
     
     public Timestamp getEmbargoCitationDate() {
