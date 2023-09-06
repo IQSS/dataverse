@@ -65,4 +65,18 @@ public class Info extends AbstractApiBean {
     public Response getAllowsIncompleteMetadata() {
         return ok(JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false));
     }
+
+    @GET
+    @Path("zipDownloadLimit")
+    public Response getZipDownloadLimit() {
+        long zipDownloadLimit = SystemConfig.getLongLimitFromStringOrDefault(settingsSvc.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit), SystemConfig.defaultZipDownloadLimit);
+        return ok(zipDownloadLimit);
+    }
+
+    @GET
+    @Path("embargoEnabled")
+    public Response getEmbargoEnabled() {
+        String setting = settingsSvc.getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
+        return ok(setting != null && !setting.equals("0"));
+    }
 }
