@@ -1084,10 +1084,7 @@ public class DatasetPage implements java.io.Serializable {
 
     //This function applies to a single datafile
     private boolean isSwiftStorage(FileMetadata metadata){
-        if (metadata.getDataFile().getStorageIdentifier().startsWith("swift://")) {
-            return true;
-        }
-        return false;
+        return metadata.getDataFile().getStorageIdentifier().startsWith("swift://");
     }
 
 

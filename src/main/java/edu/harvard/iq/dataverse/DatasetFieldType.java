@@ -564,8 +564,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
              */
             String oddValue = name + getTmpNullFieldTypeIdentifier();
             boolean makeSolrFieldMultivalued = false;
-            SolrField solrField = new SolrField(oddValue, solrType, makeSolrFieldMultivalued, facetable);
-            return solrField;
+            return new SolrField(oddValue, solrType, makeSolrFieldMultivalued, facetable);
         }
     }
 
