@@ -10,19 +10,14 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.FileMetadata;
-import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * 

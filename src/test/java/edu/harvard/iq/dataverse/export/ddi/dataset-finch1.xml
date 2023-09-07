@@ -23,14 +23,14 @@
         <AuthEnty affiliation="Birds Inc.">Finch, Fiona</AuthEnty>
       </rspStmt>
       <prodStmt>
-        <producer affiliation="Hawk Institute" abbr="ProdAbb" role="http://www.hawk.edu/logo" URI="http://www.hawk.edu/url">Johnny Hawk</producer>
+        <producer affiliation="Hawk Institute" abbr="ProdAbb">Johnny Hawk</producer>
       </prodStmt>
       <distStmt>
-        <distrbtr xml:lang="en" affiliation="Valhalla Polytechnic" abbr="Dist-Abb" URI="http://www.valhalla.edu/url" role="http://www.valhalla.edu/logo">Odin Raven</distrbtr>
+        <distrbtr xml:lang="en" affiliation="Valhalla Polytechnic" abbr="Dist-Abb" URI="http://www.valhalla.edu/url">Odin Raven</distrbtr>
         <contact affiliation="Finch Academy" email="finch@mailinator.com">Jimmy Finch</contact>
         <depositr>Added, Depositor</depositr>
       </distStmt>
-      <holdings URI="https://doi.org/10.5072/FK2/PCA2E3"></holdings>
+      <holdings URI="https://doi.org/10.5072/FK2/PCA2E3"/>
     </citation>
     <stdyInfo>
       <subject>
@@ -45,17 +45,17 @@
         <timePrd cycle="P1" event="end" date="20160630">20160630</timePrd>
         <collDate cycle="P1" event="start" date="20070831">20070831</collDate>
         <collDate cycle="P1" event="end" date="20130630">20130630</collDate>
-        <dataKind>Kind of Data</dataKind>
         <nation>USA</nation>
         <geogCover>Cambridge</geogCover>
         <geogCover>MA</geogCover>
         <geogCover>Other Geographic Coverage</geogCover>
         <geoBndBox>
-          <southBL>41.6</southBL>
           <westBL>60.3</westBL>
           <eastBL>59.8</eastBL>
+          <southBL>41.6</southBL>
           <northBL>43.8</northBL>
         </geoBndBox>
+        <dataKind>Kind of Data</dataKind>
       </sumDscr>
     </stdyInfo>
     <method>

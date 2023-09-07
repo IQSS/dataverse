@@ -7,11 +7,11 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.faces.context.FacesContext;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Named
 @Stateless
