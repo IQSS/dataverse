@@ -1791,10 +1791,6 @@ public class DatasetPage implements java.io.Serializable {
         return fm.getDataFile().isShapefileType();
     }
 
-    private void msg(String s){
-        // System.out.println(s);
-    }
-
     private List<FileMetadata> displayFileMetadata;
 
     public List<FileMetadata> getDisplayFileMetadata() {
@@ -2391,8 +2387,6 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-        folderMap = null;
-
     }
 
     private DefaultTreeNode createFolderTreeNode(String name, TreeNode parent) {
@@ -2589,20 +2583,6 @@ public class DatasetPage implements java.io.Serializable {
             logger.log(Level.SEVERE, "sendBackToContributor: {0}", message);
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure", Collections.singletonList(message)));
         }
-
-        /*
-         The notifications below are redundant, since the ReturnDatasetToAuthorCommand
-         sends them already. - L.A. Sep. 7 2017
-
-        List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
-        List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
-
-        editUsers.removeAll(authUsers);
-        new HashSet<>(editUsers).forEach( au ->
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()),
-                                                     UserNotification.Type.RETURNEDDS, dataset.getLatestVersion().getId())
-        );
-        */
 
         //FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
         //FacesContext.getCurrentInstance().addMessage(null, message);
