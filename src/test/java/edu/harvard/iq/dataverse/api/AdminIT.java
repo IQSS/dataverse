@@ -734,6 +734,13 @@ public class AdminIT {
                 .statusCode(OK.getStatusCode());
     }
 
+    /**
+     * Disabled because once there are new fields in the database that Solr
+     * doesn't know about, dataset creation could be prevented, or at least
+     * subsequent search operations could fail because the dataset can't be
+     * indexed.
+     */
+    @Disabled
     @Test
     public void testLoadMetadataBlock_NoErrorPath() {
         Response createUser = UtilIT.createRandomUser();
@@ -778,6 +785,13 @@ public class AdminIT {
         assertEquals(244, (int) statistics.get("Controlled Vocabulary"));
     }
 
+    /**
+     * Disabled because once there are new fields in the database that Solr
+     * doesn't know about, dataset creation could be prevented, or at least
+     * subsequent search operations could fail because the dataset can't be
+     * indexed.
+     */
+    @Disabled
     @Test
     public void testLoadMetadataBlock_ErrorHandling() {
         Response createUser = UtilIT.createRandomUser();
