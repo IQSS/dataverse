@@ -543,11 +543,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             }
 
             Boolean parentAllowsMultiplesBoolean = false;
-            if (isHasParent()) {
-                if (getParentDatasetFieldType() != null) {
+            if (isHasParent() && (getParentDatasetFieldType() != null)) {
                     DatasetFieldType parent = getParentDatasetFieldType();
                     parentAllowsMultiplesBoolean = parent.isAllowMultiples();
-                }
             }
             
             boolean makeSolrFieldMultivalued;

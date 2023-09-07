@@ -480,12 +480,10 @@ public class DatasetPage implements java.io.Serializable {
                 return null;
             }
 
-            if (datasetThumbnail.isFromDataFile()) {
-                if (!datasetThumbnail.getDataFile().equals(dataset.getThumbnailFile())) {
+            if (datasetThumbnail.isFromDataFile() && (!datasetThumbnail.getDataFile().equals(dataset.getThumbnailFile()))) {
                     datasetService.assignDatasetThumbnailByNativeQuery(dataset, datasetThumbnail.getDataFile());
                     // refresh the dataset:
                     dataset = datasetService.find(dataset.getId());
-                }
             }
 
             thumbnailString = datasetThumbnail.getBase64image();
@@ -543,16 +541,14 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
-    public void addItemtoCart(String title, String persistentId) throws Exception{
-        if (canComputeAllFiles(true)) {
-            if (session.getUser() instanceof AuthenticatedUser) {
-                AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
-                try {
-                    authUser.getCart().addItem(title, persistentId);
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
-                } catch (Exception ex){
-                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
-                }
+    public void addItemtoCart(String title, String persistentId) throws Exception {
+        if (canComputeAllFiles(true) && (session.getUser() instanceof AuthenticatedUser)) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            try {
+                authUser.getCart().addItem(title, persistentId);
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+            } catch (Exception ex){
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
             }
         }
     }
