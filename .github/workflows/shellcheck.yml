@@ -42,5 +42,4 @@ jobs:
                       scripts/issues/*
                       scripts/r/*
                       scripts/tests/*
-                      scripts/vagrant/*
                       tests/*

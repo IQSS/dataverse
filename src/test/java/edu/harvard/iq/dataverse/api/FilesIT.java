@@ -1107,7 +1107,7 @@ public class FilesIT {
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
         
         // Wait a little while for the index to pick up the file, otherwise timing issue with searching for it.
-        UtilIT.sleepForReindex(datasetId.toString(), apiToken, 2);
+        UtilIT.sleepForReindex(datasetId.toString(), apiToken, 4);
 
         String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
