@@ -222,6 +222,11 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         if(!isConfigured()) {
             return null;
         }
+        // Occasionally, the protocol separator character ':' comes in still
+        // URL-encoded as %3A (usually as a result of the URL having been 
+        // encoded twice):
+        fullIdentifierString = fullIdentifierString.replace("%3A", ":");
+        
         int index1 = fullIdentifierString.indexOf(':');
         if (index1 > 0) { // ':' found with one or more characters before it
             String protocol = fullIdentifierString.substring(0, index1);
