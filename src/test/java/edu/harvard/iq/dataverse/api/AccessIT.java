@@ -633,27 +633,8 @@ public class AccessIT {
 
     @Test
     public void testGetUserPermissionsOnFile() {
-        Response createUser = UtilIT.createRandomUser();
-        createUser.then().assertThat().statusCode(OK.getStatusCode());
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-
-        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-
-        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
-        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-
-        // Upload test file
-        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
-        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
-        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
-
-        // Assert user permissions on file
-        int testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        Response getUserPermissionsOnFileResponse = UtilIT.getUserPermissionsOnFile(Integer.toString(testFileId), apiToken);
-
+        // Call with valid file id
+        Response getUserPermissionsOnFileResponse = UtilIT.getUserPermissionsOnFile(Integer.toString(basicFileId), apiToken);
         getUserPermissionsOnFileResponse.then().assertThat().statusCode(OK.getStatusCode());
         boolean canDownloadFile = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canDownloadFile");
         assertTrue(canDownloadFile);
