@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html" lang="en">
+    <head>
+        <title>#{bundle['error.404.page.title']}</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="en" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="Share, archive, and get credit for your data. Find and cite data across all research fields." />
+        
+        <link type="image/png" rel="icon" href="https://cdn.rawgit.com/IQSS/dataverse/src/main/webapp/resources/images/favicondataverse.png.xhtml" />
+
+        <link type="image/png" rel="image_src" href="https://cdn.rawgit.com/IQSS/dataverse/src/main/webapp/resources/images/dataverseproject.png.xhtml" />
+        
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" />
+
+        <link rel="stylesheet" href="https://cdn.rawgit.com/IQSS/dataverse/develop/src/main/webapp/resources/css/structure.css" />
+
+        <style type="text/css">
+            /* FontCustom CSS */
+            @font-face {
+              font-family: "fontcustom";
+              src: url("https://cdn.rawgit.com/IQSS/dataverse/src/main/webapp/resources/fontcustom/fontcustom_0cdeefae934823416d24b6c2132ac702.eot");
+              src: url("https://cdn.rawgit.com/IQSS/dataverse/src/main/webapp/resources/fontcustom/fontcustom_0cdeefae934823416d24b6c2132ac702.eot?#iefix") format("embedded-opentype"),
+                   url("https://cdn.rawgit.com/IQSS/dataverse/src/main/webapp/resources/fontcustom/fontcustom_0cdeefae934823416d24b6c2132ac702.woff") format("woff"),
+                   url("https://cdn.rawgit.com/IQSS/dataverse/src/main/webapp/resources/fontcustom/fontcustom_0cdeefae934823416d24b6c2132ac702.ttf") format("truetype"),
+                   url("https://cdn.rawgit.com/IQSS/dataverse/src/main/webapp/resources/fontcustom/fontcustom_0cdeefae934823416d24b6c2132ac702.svg#fontcustom") format("svg");
+              font-weight: normal;
+              font-style: normal;
+            }
+
+            @media screen and (-webkit-min-device-pixel-ratio:0) {
+              @font-face {
+                font-family: "fontcustom";
+                src: url("https://cdn.rawgit.com/IQSS/dataverse/src/main/webapp/resources/fontcustom/fontcustom_0cdeefae934823416d24b6c2132ac702.svg#fontcustom") format("svg");
+              }
+            }
+            
+            [data-icon]:before { content: attr(data-icon); }
+
+            [data-icon]:before,
+            .icon-dataverse:before {
+              display: inline-block;
+              font-family: "fontcustom";
+              font-style: normal;
+              font-weight: normal;
+              font-variant: normal;
+              line-height: 1;
+              text-decoration: inherit;
+              text-rendering: optimizeLegibility;
+              text-transform: none;
+              -moz-osx-font-smoothing: grayscale;
+              -webkit-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+            }
+
+            .icon-dataverse:before { content: "\f100"; }
+
+            /* Custom CSS */
+            #navbarFixed div.navbar-header img.navbar-brand.custom-logo {height:50px !important;}
+            #dataverseDesc span > span > span > h3 {font-weight: 300 !important;}
+
+            nav.navbar.navbar-default {background: #ececec !important;}
+        </style>
+    </head>
+    <body>
+        <div id="dataverse-header-block">
+            <!-- Navbar Panel -->
+            <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" role="navigation">
+                <div class="container">
+                    <div class="navbar-header">
+                        <h:outputFormat class="navbar-brand custom-logo" value="#{bundle['footer.dataverseProject']}"/>
+                    </div>
+                    <div class="collapse navbar-collapse" id="topNavBar">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li>
+                                &#160;
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div class="container" id="content">
+            <div class="alert alert-danger" role="alert" style="margin-top:3em;">
+                <h:outputFormat value="#{bundle['error.404.message']}" escape="false" />
+            </div>
+        </div>
+        <div id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-8 small">
+                        <p>Copyright &#169; 2023, The President &#38; Fellows of Harvard College | <a href="http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html" target="_blank">Privacy Policy</a>
+                        </p>
+                    </div>
+                    <div class="col-sm-4 text-right">
+                        <div class="poweredbylogo">
+                            <span>Powered by</span> 
+                            <a href="http://dataverse.org/" title="The Dataverse Project" target="_blank"><img src="https://cdn.rawgit.com/IQSS/dataverse/develop/src/main/webapp/resources/images/dataverseproject_logo.png" alt="The Dataverse Project" /></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

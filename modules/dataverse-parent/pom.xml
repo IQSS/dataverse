@@ -150,7 +150,7 @@
         <!-- Major system components and dependencies -->
         <payara.version>6.2023.8</payara.version>
         <postgresql.version>42.5.1</postgresql.version>
-        <solr.version>8.11.1</solr.version>
+        <solr.version>9.3.0</solr.version>
         <aws.version>1.12.290</aws.version>
         <google.cloud.version>0.177.0</google.cloud.version>
     
@@ -165,7 +165,7 @@
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         
         <!-- NEW gdcc XOAI library implementation -->
-        <gdcc.xoai.version>5.0.0</gdcc.xoai.version>
+        <gdcc.xoai.version>5.1.0</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
         <testcontainers.version>1.15.0</testcontainers.version>
@@ -416,11 +416,6 @@
             <id>unidata-all</id>
             <name>Unidata All</name>
             <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
-        </repository>
-        <repository>
-            <id>dvn.private</id>
-            <name>Local repository for hosting jars not available from network repositories.</name>
-            <url>file://${project.basedir}/local_lib</url>
         </repository>
         <!-- Uncomment when using snapshot releases from Maven Central -->
         <repository>
