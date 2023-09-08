@@ -688,9 +688,12 @@ public class JsonPrinter {
                 //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
+                .add("tabularData", df.isTabularData())
                 .add("tabularTags", getTabularFileTags(df))
                 .add("creationDate", df.getCreateDateFormattedYYYYMMDD())
-                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD());
+                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD())
+                .add("deleted", df.getDeleted())
+                .add("fileAccessRequest", df.getOwner().isFileAccessRequest());
         /*
          * The restricted state was not included prior to #9175 so to avoid backward
          * incompatability, it is now only added when generating json for the
