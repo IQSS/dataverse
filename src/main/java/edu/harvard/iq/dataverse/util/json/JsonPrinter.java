@@ -692,7 +692,6 @@ public class JsonPrinter {
                 .add("tabularTags", getTabularFileTags(df))
                 .add("creationDate", df.getCreateDateFormattedYYYYMMDD())
                 .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD())
-                .add("deleted", df.getDeleted())
                 .add("fileAccessRequest", df.getOwner().isFileAccessRequest());
         /*
          * The restricted state was not included prior to #9175 so to avoid backward
