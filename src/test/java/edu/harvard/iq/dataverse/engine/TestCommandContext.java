@@ -23,7 +23,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.Stack;
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * A base CommandContext for tests. Provides no-op implementations. Should

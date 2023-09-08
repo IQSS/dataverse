@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: beta-testing
 
     steps:
       - uses: actions/checkout@v3
@@ -16,7 +15,11 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '11'
+          java-version: '17'
+
+      - name: Enable API Session Auth feature flag
+        working-directory: src/main/resources/META-INF
+        run: echo -e "dataverse.feature.api-session-auth=true" >> microprofile-config.properties
 
       - name: Build application war
         run: mvn package
@@ -34,7 +37,6 @@ jobs:
   deploy-to-payara:
     needs: build
     runs-on: ubuntu-latest
-    environment: beta-testing
 
     steps:
       - uses: actions/checkout@v3
@@ -51,11 +53,11 @@ jobs:
       - name: Copy war file to remote instance
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.PAYARA_INSTANCE_HOST }}
-          username: ${{ secrets.PAYARA_INSTANCE_USERNAME }}
-          key: ${{ secrets.PAYARA_INSTANCE_SSH_PRIVATE_KEY }}
+          host: ${{ secrets.BETA_PAYARA_INSTANCE_HOST }}
+          username: ${{ secrets.BETA_PAYARA_INSTANCE_USERNAME }}
+          key: ${{ secrets.BETA_PAYARA_INSTANCE_SSH_PRIVATE_KEY }}
           source: './${{ env.war_file }}'
-          target: '/home/${{ secrets.PAYARA_INSTANCE_USERNAME }}'
+          target: '/home/${{ secrets.BETA_PAYARA_INSTANCE_USERNAME }}'
           overwrite: true
 
       - name: Execute payara war deployment remotely
@@ -63,17 +65,17 @@ jobs:
         env:
           INPUT_WAR_FILE: ${{ env.war_file }}
         with:
-          host: ${{ secrets.PAYARA_INSTANCE_HOST }}
-          username: ${{ secrets.PAYARA_INSTANCE_USERNAME }}
-          key: ${{ secrets.PAYARA_INSTANCE_SSH_PRIVATE_KEY }}
+          host: ${{ secrets.BETA_PAYARA_INSTANCE_HOST }}
+          username: ${{ secrets.BETA_PAYARA_INSTANCE_USERNAME }}
+          key: ${{ secrets.BETA_PAYARA_INSTANCE_SSH_PRIVATE_KEY }}
           envs: INPUT_WAR_FILE
           script: |
             APPLICATION_NAME=dataverse-backend
-            ASADMIN='/usr/local/payara5/bin/asadmin --user admin'
+            ASADMIN='/usr/local/payara6/bin/asadmin --user admin'
             $ASADMIN undeploy $APPLICATION_NAME
             $ASADMIN stop-domain
-            rm -rf /usr/local/payara5/glassfish/domains/domain1/generated
-            rm -rf /usr/local/payara5/glassfish/domains/domain1/osgi-cache
+            rm -rf /usr/local/payara6/glassfish/domains/domain1/generated
+            rm -rf /usr/local/payara6/glassfish/domains/domain1/osgi-cache
             $ASADMIN start-domain
             $ASADMIN deploy --name $APPLICATION_NAME $INPUT_WAR_FILE
             $ASADMIN stop-domain

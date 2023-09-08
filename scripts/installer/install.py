@@ -252,8 +252,8 @@ if not pgOnly:
    # 1d. check java version
    java_version = subprocess.check_output(["java", "-version"], stderr=subprocess.STDOUT).decode()
    print("Found java version "+java_version)
-   if not re.search('(1.8|11)', java_version):
-      sys.exit("Dataverse requires OpenJDK 1.8 or 11. Please make sure it's in your PATH, and try again.")
+   if not re.search('(17)', java_version):
+      sys.exit("Dataverse requires OpenJDK 17. Please make sure it's in your PATH, and try again.")
 
    # 1e. check if the setup scripts - setup-all.sh, are available as well, maybe?
    # @todo (?)
@@ -314,7 +314,7 @@ else:
                   gfDir = config.get('glassfish', 'GLASSFISH_DIRECTORY')
                   while not test_appserver_directory(gfDir):
                      print("\nInvalid Payara directory!")
-                     gfDir = read_user_input("Enter the root directory of your Payara5 installation:\n(Or ctrl-C to exit the installer): ")
+                     gfDir = read_user_input("Enter the root directory of your Payara installation:\n(Or ctrl-C to exit the installer): ")
                   config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
                elif option == "mail_server":
                   mailServer = config.get('system', 'MAIL_SERVER')
@@ -380,12 +380,13 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       print("Can't connect to PostgresQL as the admin user.\n")
       sys.exit("Is the server running, have you adjusted pg_hba.conf, etc?")
 
-   # 3b. get the Postgres version (do we need it still?)
+   # 3b. get the Postgres version for new permissions model in versions 15+
    try:
-      pg_full_version = conn.server_version
-      print("PostgresQL version: "+str(pg_full_version))
+      pg_full_version = str(conn.server_version)
+      pg_major_version = pg_full_version[0:2]
+      print("PostgreSQL version: "+pg_major_version)
    except:
-      print("Warning: Couldn't determine PostgresQL version.")
+      print("Warning: Couldn't determine PostgreSQL version.")
    conn.close()
 
    # 3c. create role:
@@ -410,13 +411,28 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       else:
          sys.exit("Couldn't create database or database already exists.\n")
 
-   conn_cmd = "GRANT ALL PRIVILEGES on DATABASE "+pgDb+" to "+pgUser+";"
+   # 3e. set permissions:
+
+   conn_cmd = "GRANT CREATE PRIVILEGES on DATABASE "+pgDb+" to "+pgUser+";"
    try:
       cur.execute(conn_cmd)
    except:
       sys.exit("Couldn't grant privileges on "+pgDb+" to "+pgUser)
    cur.close()
    conn.close()
+
+   if int(pg_major_version) >= 15:
+      conn_cmd = "GRANT ALL ON SCHEMA public TO "+pgUser+";"
+      print("PostgreSQL 15 or higher detected. Running " + conn_cmd)
+      try:
+         cur.execute(conn_cmd)
+      except:
+         if force:
+            print("WARNING: failed to grant permissions on schema public - continuing, since the --force option was specified")
+         else:
+            sys.exit("Couldn't grant privileges on schema public to "+pgUser)
+      cur.close()
+      conn.close()
 
    print("Database and role created!")
    if pgOnly:
@@ -511,12 +527,12 @@ print("\nInstalling additional configuration files (Jhove)... ")
 try: 
    copy2(jhoveConfigSchemaDist, gfConfigDir)
    # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
-   # and may need to be adjusted, if Payara is installed anywhere other than /usr/local/payara5:
-   if gfDir == "/usr/local/payara5":
+   # and may need to be adjusted, if Payara is installed anywhere other than /usr/local/payara6:
+   if gfDir == "/usr/local/payara6":
       copy2(jhoveConfigDist, gfConfigDir)
    else:
-      # use sed to replace /usr/local/payara5 in the distribution copy with the real gfDir:
-      sedCommand = "sed 's:/usr/local/payara5:"+gfDir+":g' < " + jhoveConfigDist + " > " + gfConfigDir + "/" + jhoveConfig
+      # use sed to replace /usr/local/payara6 in the distribution copy with the real gfDir:
+      sedCommand = "sed 's:/usr/local/payara6:"+gfDir+":g' < " + jhoveConfigDist + " > " + gfConfigDir + "/" + jhoveConfig
       subprocess.call(sedCommand, shell=True)
 
    print("done.")
