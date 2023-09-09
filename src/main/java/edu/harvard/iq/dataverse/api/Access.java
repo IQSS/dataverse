@@ -1682,7 +1682,7 @@ public class Access extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("/datafile/{id}/userFileAccessRequested")
-    public Response userFileAccessRequested(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+    public Response getUserFileAccessRequested(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
         DataFile dataFile;
         AuthenticatedUser requestAuthenticatedUser;
         try {

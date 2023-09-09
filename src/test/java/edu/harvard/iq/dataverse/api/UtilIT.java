@@ -3329,6 +3329,12 @@ public class UtilIT {
                 .get("/api/files/" + dataFileId + "/dataTables");
     }
 
+    static Response getUserFileAccessRequested(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + dataFileId + "/userFileAccessRequested");
+    }
+
     static Response getUserPermissionsOnFile(String dataFileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
