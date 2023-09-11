@@ -25,13 +25,13 @@ public class Info extends AbstractApiBean {
     @GET
     @Path("settings/:DatasetPublishPopupCustomText")
     public Response getDatasetPublishPopupCustomText() {
-        return getSettingByKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
+        return getSettingResponseByKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
     }
 
     @GET
     @Path("settings/:MaxEmbargoDurationInMonths")
     public Response getMaxEmbargoDurationInMonths() {
-        return getSettingByKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
+        return getSettingResponseByKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
     }
 
     @GET
@@ -74,7 +74,7 @@ public class Info extends AbstractApiBean {
         return ok(zipDownloadLimit);
     }
 
-    private Response getSettingByKey(SettingsServiceBean.Key key) {
+    private Response getSettingResponseByKey(SettingsServiceBean.Key key) {
         String setting = settingsService.getValueForKey(key);
         if (setting != null) {
             return ok(Json.createObjectBuilder().add("message", setting));
