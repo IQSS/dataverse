@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class RepositoryStorageAbstractionLayerUtilTest {
 

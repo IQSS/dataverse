@@ -48,13 +48,13 @@ import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.metamodel.Metamodel;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Context;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -71,7 +71,7 @@ public class MoveDatasetCommandTest {
         @Context
         protected HttpServletRequest httpRequest;
 	
-    @Before
+    @BeforeEach
     public void setUp() {
 
         auth = makeAuthenticatedUser("Super", "User");
@@ -283,13 +283,11 @@ public class MoveDatasetCommandTest {
 	 * Moving DS to its owning DV 
         * @throws IllegalCommandException
 	 */
-    @Test(expected = IllegalCommandException.class)
-    public void testInvalidMove() throws Exception {
-
+    @Test
+    void testInvalidMove() {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(
-                new MoveDatasetCommand(aRequest, moved, root, false));
-        fail();
+        assertThrows(IllegalCommandException.class,
+            () -> testEngine.submit(new MoveDatasetCommand(aRequest, moved, root, false)));
     }
         
     /**
@@ -301,14 +299,13 @@ public class MoveDatasetCommandTest {
      * Ignoring after permissions change in 47fb045. Did that change make this
      * case untestable? Unclear.
      */
-    @Ignore
-    @Test(expected = PermissionException.class)
-    public void testAuthenticatedUserWithNoRole() throws Exception {
+    @Disabled("Unstable test. Disabled since #5115 by @pdurbin. See commit 7a917177")
+    @Test
+    void testAuthenticatedUserWithNoRole() {
 
         DataverseRequest aRequest = new DataverseRequest(nobody, httpRequest);
-        testEngine.submit(
-                new MoveDatasetCommand(aRequest, moved, childA, null));
-        fail();
+        assertThrows(IllegalCommandException.class,
+            () -> testEngine.submit(new MoveDatasetCommand(aRequest, moved, childA, null)));
     }
 
     /**
@@ -317,25 +314,23 @@ public class MoveDatasetCommandTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(expected = PermissionException.class)
-    public void testNotAuthenticatedUser() throws Exception {
+    @Test
+    void testNotAuthenticatedUser() {
 
         DataverseRequest aRequest = new DataverseRequest(GuestUser.get(), httpRequest);
-        testEngine.submit(
-                new MoveDatasetCommand(aRequest, moved, root, null));
-        fail();
+        assertThrows(PermissionException.class,
+            () -> testEngine.submit(new MoveDatasetCommand(aRequest, moved, root, null)));
     }
     
     	/**
 	 * Moving published  DS to unpublished DV
         * @throws IllegalCommandException
 	 */
-    @Test(expected = IllegalCommandException.class)
-    public void testInvalidMovePublishedToUnpublished() throws Exception {
+    @Test
+    void testInvalidMovePublishedToUnpublished() {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
-        testEngine.submit(
-                new MoveDatasetCommand(aRequest, moved, childDraft, null));
-        fail();
+        assertThrows(IllegalCommandException.class,
+            () -> testEngine.submit(new MoveDatasetCommand(aRequest, moved, childDraft, null)));
     }
          
         
