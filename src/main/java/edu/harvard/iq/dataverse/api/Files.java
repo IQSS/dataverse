@@ -107,6 +107,8 @@ public class Files extends AbstractApiBean {
     MakeDataCountLoggingServiceBean mdcLogService;
     @Inject
     GuestbookResponseServiceBean guestbookResponseService;
+    @Inject
+    DataFileServiceBean dataFileServiceBean;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -868,6 +870,16 @@ public class Files extends AbstractApiBean {
             } catch (JsonParsingException jpe) {
                 return error(Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
             }
+        }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/hasBeenDeleted")
+    public Response getHasBeenDeleted(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            return ok(dataFileServiceBean.hasBeenDeleted(dataFile));
         }, getRequestUser(crc));
     }
 }
