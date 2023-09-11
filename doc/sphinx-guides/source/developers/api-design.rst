@@ -59,5 +59,5 @@ Settings need to be exposed outside to API clients outside of ``/api/admin`` (wh
 
   - Append a meaningful name for the setting (e.g. ``incompleteMetadataViaApi``).
 
-  - Final path example: ``/api/info/embargoEnabled``
+  - Final path example: ``/api/info/incompleteMetadataViaApi``
 
