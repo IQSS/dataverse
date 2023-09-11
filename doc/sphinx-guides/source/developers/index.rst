@@ -19,6 +19,7 @@ Developer Guide
    sql-upgrade-scripts
    testing
    documentation
+   api-design
    security
    dependencies
    debugging
