@@ -25,14 +25,15 @@ public class Info extends AbstractApiBean {
     @GET
     @Path("settings/:DatasetPublishPopupCustomText")
     public Response getDatasetPublishPopupCustomText() {
-        String setting = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
-        if (setting != null) {
-            return ok(Json.createObjectBuilder().add("message", setting));
-        } else {
-            return notFound("Setting " + SettingsServiceBean.Key.DatasetPublishPopupCustomText + " not found");
-        }
+        return getSettingByKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
     }
-    
+
+    @GET
+    @Path("settings/:MaxEmbargoDurationInMonths")
+    public Response getMaxEmbargoDurationInMonths() {
+        return getSettingByKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
+    }
+
     @GET
     @AuthRequired
     @Path("version")
@@ -41,25 +42,25 @@ public class Info extends AbstractApiBean {
         String[] comps = versionStr.split("build",2);
         String version = comps[0].trim();
         JsonValue build = comps.length > 1 ? Json.createArrayBuilder().add(comps[1].trim()).build().get(0) : JsonValue.NULL;
-        
+
         return response( req -> ok( Json.createObjectBuilder().add("version", version)
                                                               .add("build", build)), getRequestUser(crc));
     }
-    
+
     @GET
     @AuthRequired
     @Path("server")
     public Response getServer(@Context ContainerRequestContext crc) {
         return response( req -> ok(JvmSettings.FQDN.lookup()), getRequestUser(crc));
     }
-    
+
     @GET
     @AuthRequired
     @Path("apiTermsOfUse")
     public Response getTermsOfUse(@Context ContainerRequestContext crc) {
         return response( req -> ok(systemConfig.getApiTermsOfUse()), getRequestUser(crc));
     }
-    
+
     @GET
     @Path("settings/incompleteMetadataViaApi")
     public Response getAllowsIncompleteMetadata() {
@@ -73,10 +74,12 @@ public class Info extends AbstractApiBean {
         return ok(zipDownloadLimit);
     }
 
-    @GET
-    @Path("embargoEnabled")
-    public Response getEmbargoEnabled() {
-        String setting = settingsSvc.getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
-        return ok(setting != null && !setting.equals("0"));
+    private Response getSettingByKey(SettingsServiceBean.Key key) {
+        String setting = settingsService.getValueForKey(key);
+        if (setting != null) {
+            return ok(Json.createObjectBuilder().add("message", setting));
+        } else {
+            return notFound("Setting " + key + " not found");
+        }
     }
 }

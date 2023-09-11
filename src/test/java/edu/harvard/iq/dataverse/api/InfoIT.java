@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import static io.restassured.RestAssured.given;
+
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.jupiter.api.AfterAll;
@@ -17,38 +18,23 @@ public class InfoIT {
     @BeforeAll
     public static void setUpClass() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
     }
 
     @AfterAll
     public static void afterClass() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
+        UtilIT.deleteSetting(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
     }
 
     @Test
     public void testGetDatasetPublishPopupCustomText() {
+        testSettingEndpoint(SettingsServiceBean.Key.DatasetPublishPopupCustomText, "Hello world!");
+    }
 
-        given().urlEncodingEnabled(false)
-                .body("Hello world!")
-                .put("/api/admin/settings/"
-                        + SettingsServiceBean.Key.DatasetPublishPopupCustomText);
-
-        Response response = given().urlEncodingEnabled(false)
-                .get("/api/info/settings/" + SettingsServiceBean.Key.DatasetPublishPopupCustomText);
-        response.prettyPrint();
-        response.then().assertThat().statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Hello world!"));
-
-        given().urlEncodingEnabled(false)
-                .delete("/api/admin/settings/"
-                        + SettingsServiceBean.Key.DatasetPublishPopupCustomText);
-
-        response = given().urlEncodingEnabled(false)
-                .get("/api/info/settings/" + SettingsServiceBean.Key.DatasetPublishPopupCustomText);
-        response.prettyPrint();
-        response.then().assertThat().statusCode(NOT_FOUND.getStatusCode())
-                .body("message", equalTo("Setting "
-                        + SettingsServiceBean.Key.DatasetPublishPopupCustomText
-                        + " not found"));
+    @Test
+    public void testGetMaxEmbargoDurationInMonths() {
+        testSettingEndpoint(SettingsServiceBean.Key.MaxEmbargoDurationInMonths, "12");
     }
 
     @Test
@@ -68,9 +54,9 @@ public class InfoIT {
         response.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.message", notNullValue());
     }
-    
+
     @Test
-    public void getTermsOfUse() {
+    public void testGetTermsOfUse() {
         Response response = given().urlEncodingEnabled(false)
                 .get("/api/info/apiTermsOfUse");
         response.prettyPrint();
@@ -79,7 +65,7 @@ public class InfoIT {
     }
 
     @Test
-    public void getAllowsIncompleteMetadata() {
+    public void testGetAllowsIncompleteMetadata() {
         Response response = given().urlEncodingEnabled(false)
                 .get("/api/info/settings/incompleteMetadataViaApi");
         response.prettyPrint();
@@ -88,7 +74,7 @@ public class InfoIT {
     }
 
     @Test
-    public void getZipDownloadLimit() {
+    public void testGetZipDownloadLimit() {
         Response response = given().urlEncodingEnabled(false)
                 .get("/api/info/zipDownloadLimit");
         response.prettyPrint();
@@ -96,19 +82,18 @@ public class InfoIT {
                 .body("data", notNullValue());
     }
 
-    @Test
-    public void getEmbargoEnabled() {
-        String testEndpoint = "/api/info/embargoEnabled";
-        // Embargo disabled
-        Response response = given().urlEncodingEnabled(false).get(testEndpoint);
+    private void testSettingEndpoint(SettingsServiceBean.Key settingKey, String testSettingValue) {
+        String endpoint =  "/api/info/settings/" + settingKey;
+        // Setting not found
+        Response response = given().urlEncodingEnabled(false).get(endpoint);
+        response.prettyPrint();
+        response.then().assertThat().statusCode(NOT_FOUND.getStatusCode())
+                .body("message", equalTo("Setting " + settingKey + " not found"));
+        // Setting exists
+        UtilIT.setSetting(settingKey, testSettingValue);
+        response = given().urlEncodingEnabled(false).get(endpoint);
         response.prettyPrint();
         response.then().assertThat().statusCode(OK.getStatusCode())
-                .body("data", equalTo(false));
-        // Embargo enabled
-        UtilIT.setSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths, "12");
-        response = given().urlEncodingEnabled(false).get(testEndpoint);
-        response.prettyPrint();
-        response.then().assertThat().statusCode(OK.getStatusCode())
-                .body("data", equalTo(true));
+                .body("data.message", equalTo(testSettingValue));
     }
 }
