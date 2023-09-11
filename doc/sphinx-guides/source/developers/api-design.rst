@@ -45,14 +45,6 @@ Settings need to be exposed outside to API clients outside of ``/api/admin`` (wh
 
   - Final path example: ``/api/info/zipDownloadLimit``
 
-- If you are exposing logic based on a database setting rather that the setting itself (e.g. a boolean for if embargo is enabled rather than the value of ``:MaxEmbargoDurationInMonths``):
-
-  - Use ``/api/info`` as the root path.
-
-  - Append a meaningful name for the setting (e.g. ``embargoEnabled``).
-
-  - Final path example: ``/api/info/embargoEnabled``
-
 - If the database setting you're exposing make more sense outside of ``/api/info`` because there's more context (e.g. ``:CustomDatasetSummaryFields``):
 
   - Feel free to use a path outside of ``/api/info`` as the root path.
