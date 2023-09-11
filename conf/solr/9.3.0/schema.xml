@@ -23,7 +23,7 @@
 
 
  For more information, on how to customize this file, please see
- http://lucene.apache.org/solr/guide/documents-fields-and-schema-design.html
+ https://solr.apache.org/guide/solr/latest/indexing-guide/schema-elements.html
 
  PERFORMANCE NOTE: this schema includes many optional features and should not
  be used for benchmarking.  To improve performance one could
@@ -38,7 +38,7 @@
     catchall "text" field, and use that for searching.
 -->
 
-<schema name="default-config" version="1.7">
+<schema name="default-config" version="1.6">
     <!-- attribute "name" is the name of this schema and is only used for display purposes.
        version="x.y" is Solr's version number for the schema syntax and 
        semantics.  It should not normally be changed by applications.
@@ -129,15 +129,8 @@
     <!-- catchall text field that indexes tokens both normally and in reverse for efficient
         leading wildcard queries. -->
     <field name="text_rev" type="text_general_rev" indexed="true" stored="false" multiValued="true"/>    
-    <field name="name" type="text_en" indexed="true" stored="true"/> 
-
-
-
-
-
-
-
-
+    <field name="name" type="text_en" indexed="true" stored="true"/>
+    
     <field name="definitionPointDocId" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="definitionPointDvObjectId" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="discoverableBy" type="string" stored="true" indexed="true" multiValued="true"/>
@@ -163,7 +156,7 @@
 
     <field name="publicationStatus" type="string" stored="true" indexed="true" multiValued="true"/>
     <field name="externalStatus" type="string" stored="true" indexed="true" multiValued="false"/>
-    <field name="embargoEndDate" type="long" stored="true" indexed="true" multiValued="false"/>
+    <field name="embargoEndDate" type="plong" stored="true" indexed="true" multiValued="false"/>
     
     <field name="subtreePaths" type="string" stored="true" indexed="true" multiValued="true"/>
 
@@ -200,7 +193,7 @@
     <field name="identifier" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="persistentUrl" type="string" stored="true" indexed="false" multiValued="false"/>
     <field name="unf" type="string" stored="true" indexed="true" multiValued="false"/>
-    <field name="fileSizeInBytes" type="long" stored="true" indexed="true" multiValued="false"/>
+    <field name="fileSizeInBytes" type="plong" stored="true" indexed="true" multiValued="false"/>
     <field name="fileMd5" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="fileChecksumType" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="fileChecksumValue" type="string" stored="true" indexed="true" multiValued="false"/>
@@ -208,9 +201,9 @@
     <field name="deaccessionReason" type="string" stored="true" indexed="false" multiValued="false"/>
 
     <!-- Added for Dataverse 4.0 alpha 1. This is a required field so we don't have to go to the database to get the database id of the entity. On cards we use the id in links -->
-    <field name="entityId" type="long" stored="true" indexed="true" multiValued="false"/>
+    <field name="entityId" type="plong" stored="true" indexed="true" multiValued="false"/>
 
-    <field name="datasetVersionId" type="long" stored="true" indexed="true" multiValued="false"/>
+    <field name="datasetVersionId" type="plong" stored="true" indexed="true" multiValued="false"/>
 
     <!-- Added for Dataverse 4.0 alpha 1 to sort by name  -->
     <!-- https://redmine.hmdc.harvard.edu/issues/3482 -->
@@ -218,10 +211,10 @@
     <!-- http://stackoverflow.com/questions/13360706/solr-4-0-alphabetical-sorting-trouble/13361226#13361226 -->
     <field name="nameSort" type="alphaOnlySort" indexed="true" stored="true"/>
 
-    <field name="dateSort" type="date" indexed="true" stored="true"/>
+    <field name="dateSort" type="pdate" indexed="true" stored="true"/>
 
     <!-- Added for Dataverse 4.0: release date https://redmine.hmdc.harvard.edu/issues/3592 -->
-    <field name="releasedate" type="int" indexed="true" stored="true"/>
+    <field name="releasedate" type="pint" indexed="true" stored="true"/>
 
     <!-- Added for Dataverse 4.0: do we want a description field that applies to dataverses, datasets, and files? https://redmine.hmdc.harvard.edu/issues/3745 -->
     <field name="description" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -658,7 +651,8 @@
     <!-- Dynamic field definitions allow using convention over configuration
        for fields via the specification of patterns to match field names.
        EXAMPLE:  name="*_i" will match any field ending in _i (like myid_i, z_i)
-       RESTRICTION: the glob-like pattern in the name attribute must have a "*" only at the start or the end.  -->
+       RESTRICTION: the glob-like pattern in the name attribute must have a "*"
+       only at the start or the end.  -->
    
     <dynamicField name="*_i"  type="pint"    indexed="true"  stored="true"/>
     <dynamicField name="*_is" type="pints"    indexed="true"  stored="true"/>
@@ -666,19 +660,23 @@
     <dynamicField name="*_ss" type="strings"  indexed="true"  stored="true"/>
     <dynamicField name="*_l"  type="plong"   indexed="true"  stored="true"/>
     <dynamicField name="*_ls" type="plongs"   indexed="true"  stored="true"/>
-    <dynamicField name="*_txt" type="text_general" indexed="true" stored="true"/>
     <dynamicField name="*_b"  type="boolean" indexed="true" stored="true"/>
     <dynamicField name="*_bs" type="booleans" indexed="true" stored="true"/>
     <dynamicField name="*_f"  type="pfloat"  indexed="true"  stored="true"/>
     <dynamicField name="*_fs" type="pfloats"  indexed="true"  stored="true"/>
     <dynamicField name="*_d"  type="pdouble" indexed="true"  stored="true"/>
     <dynamicField name="*_ds" type="pdoubles" indexed="true"  stored="true"/>
+    <dynamicField name="*_dt"  type="pdate"    indexed="true"  stored="true"/>
+    <dynamicField name="*_dts" type="pdates"   indexed="true"  stored="true"/>
+    <dynamicField name="*_t"   type="text_general" indexed="true" stored="true" multiValued="false"/>
+    <dynamicField name="*_txt" type="text_general" indexed="true" stored="true"/>
+    
+    <dynamicField name="random_*" type="random"/>
+    <dynamicField name="ignored_*" type="ignored"/>
 
     <!-- Type used for data-driven schema, to add a string copy for each text field -->
-    <dynamicField name="*_str" type="strings" stored="false" docValues="true" indexed="false" />
-
-    <dynamicField name="*_dt"  type="pdate"    indexed="true"  stored="true"/>
-    <dynamicField name="*_dts" type="pdate"    indexed="true"  stored="true" multiValued="true"/>
+    <dynamicField name="*_str" type="strings" stored="false" docValues="true" indexed="false" useDocValuesAsStored="false" />
+    
     <dynamicField name="*_p"  type="location" indexed="true" stored="true"/>
     <dynamicField name="*_srpt"  type="location_rpt" indexed="true" stored="true"/>
     
@@ -723,43 +721,6 @@
          then default lucene sorting will be used which places docs without the
          field first in an ascending sort and last in a descending sort.
     -->
-
-<fieldType name="int" class="solr.TrieIntField" precisionStep="0" positionIncrementGap="0"/>
-<fieldType name="float" class="solr.TrieFloatField" precisionStep="0" positionIncrementGap="0"/>
-<fieldType name="long" class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0"/>
-<fieldType name="double" class="solr.TrieDoubleField" precisionStep="0" positionIncrementGap="0"/>
-
-<fieldType name="tint" class="solr.TrieIntField" precisionStep="8" positionIncrementGap="0"/>
-<fieldType name="tfloat" class="solr.TrieFloatField" precisionStep="8" positionIncrementGap="0"/>
-<fieldType name="tlong" class="solr.TrieLongField" precisionStep="8" positionIncrementGap="0"/>
-<fieldType name="tdouble" class="solr.TrieDoubleField" precisionStep="8" positionIncrementGap="0"/>
-
-<!-- The format for this date field is of the form 1995-12-31T23:59:59Z, and
-        is a more restricted form of the canonical representation of dateTime
-        http://www.w3.org/TR/xmlschema-2/#dateTime    
-        The trailing "Z" designates UTC time and is mandatory.
-        Optional fractional seconds are allowed: 1995-12-31T23:59:59.999Z
-        All other components are mandatory.
-
-        Expressions can also be used to denote calculations that should be
-        performed relative to "NOW" to determine the value, ie...
-
-            NOW/HOUR
-                ... Round to the start of the current hour
-            NOW-1DAY
-                ... Exactly 1 day prior to now
-            NOW/DAY+6MONTHS+3DAYS
-                ... 6 months and 3 days in the future from the start of
-                    the current day
-                    
-        Consult the DateField javadocs for more information.
-
-        Note: For faster range queries, consider the tdate type
-    -->
-    <fieldType name="date" class="solr.TrieDateField" precisionStep="0" positionIncrementGap="0"/>
-
-    <!-- A Trie based date field for faster date range queries and date faceting. -->
-    <fieldType name="tdate" class="solr.TrieDateField" precisionStep="6" positionIncrementGap="0"/>
 
     <!-- This is an example of using the KeywordTokenizer along
         With various TokenFilterFactories to produce a sortable field
@@ -815,6 +776,11 @@
     <fieldType name="pfloats" class="solr.FloatPointField" docValues="true" multiValued="true"/>
     <fieldType name="plongs" class="solr.LongPointField" docValues="true" multiValued="true"/>
     <fieldType name="pdoubles" class="solr.DoublePointField" docValues="true" multiValued="true"/>
+    <fieldType name="random" class="solr.RandomSortField" indexed="true"/>
+    
+    <!-- since fields of this type are by default not stored or indexed,
+       any data added to them will be ignored outright.  -->
+    <fieldType name="ignored" stored="false" indexed="false" multiValued="true" class="solr.StrField" />
 
     <!-- The format for this date field is of the form 1995-12-31T23:59:59Z, and
          is a more restricted form of the canonical representation of dateTime
@@ -841,7 +807,14 @@
     
     <!--Binary data type. The data should be sent/retrieved in as Base64 encoded Strings -->
     <fieldType name="binary" class="solr.BinaryField"/>
-
+    
+    <!--
+    RankFields can be used to store scoring factors to improve document ranking. They should be used
+    in combination with RankQParserPlugin.
+    (experimental)
+    -->
+    <fieldType name="rank" class="solr.RankField"/>
+    
     <!-- solr.TextField allows the specification of custom text analyzers
          specified as a tokenizer and a list of token filters. Different
          analyzers may be specified for indexing and querying.
@@ -851,7 +824,7 @@
          matching across fields.
 
          For more info on customizing your analyzer chain, please see
-         http://lucene.apache.org/solr/guide/understanding-analyzers-tokenizers-and-filters.html#understanding-analyzers-tokenizers-and-filters
+         https://solr.apache.org/guide/solr/latest/indexing-guide/document-analysis.html#using-analyzers-tokenizers-and-filters
      -->
 
     <!-- One can also specify an existing Analyzer class that has a
@@ -866,7 +839,7 @@
     <dynamicField name="*_ws" type="text_ws"  indexed="true"  stored="true"/>
     <fieldType name="text_ws" class="solr.TextField" positionIncrementGap="100">
       <analyzer>
-        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+        <tokenizer name="whitespace"/>
       </analyzer>
     </fieldType>
 
@@ -891,6 +864,30 @@
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" />
         <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
         <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+    </fieldType>
+    
+    <!-- SortableTextField generaly functions exactly like TextField,
+        except that it supports, and by default uses, docValues for sorting (or faceting)
+        on the first 1024 characters of the original field values (which is configurable).
+
+        This makes it a bit more useful then TextField in many situations, but the trade-off
+        is that it takes up more space on disk; which is why it's not used in place of TextField
+        for every fieldType in this _default schema.
+    -->
+    <dynamicField name="*_t_sort" type="text_gen_sort" indexed="true" stored="true" multiValued="false"/>
+    <dynamicField name="*_txt_sort" type="text_gen_sort" indexed="true" stored="true"/>
+    <fieldType name="text_gen_sort" class="solr.SortableTextField" positionIncrementGap="100" multiValued="true">
+      <analyzer type="index">
+        <tokenizer name="standard"/>
+        <filter name="stop" ignoreCase="true" words="stopwords.txt" />
+        <filter name="lowercase"/>
+      </analyzer>
+      <analyzer type="query">
+        <tokenizer name="standard"/>
+        <filter name="stop" ignoreCase="true" words="stopwords.txt" />
+        <filter name="synonymGraph" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+        <filter name="lowercase"/>
       </analyzer>
     </fieldType>
 
