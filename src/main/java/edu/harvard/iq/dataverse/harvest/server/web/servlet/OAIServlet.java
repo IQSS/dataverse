@@ -74,18 +74,13 @@ public class OAIServlet extends HttpServlet {
     
     @EJB
     SystemConfig systemConfig;
-
-    @Inject
-    @ConfigProperty(name = "dataverse.oai.server.maxidentifiers", defaultValue="100")
-    private Integer maxListIdentifiers;
     
-    @Inject
-    @ConfigProperty(name = "dataverse.oai.server.maxsets", defaultValue="100")
-    private Integer maxListSets;
+    //Todo - revert this change - added to get past some local compile issues
+    private Integer maxListIdentifiers=100;
     
-    @Inject
-    @ConfigProperty(name = "dataverse.oai.server.maxrecords", defaultValue="10")
-    private Integer maxListRecords;
+    private Integer maxListSets=100;
+    
+    private Integer maxListRecords=10;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet");
     // If we are going to stick with this solution - of providing a minimalist 
