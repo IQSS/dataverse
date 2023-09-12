@@ -413,7 +413,7 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
 
    # 3e. set permissions:
 
-   conn_cmd = "GRANT CREATE PRIVILEGES on DATABASE "+pgDb+" to "+pgUser+";"
+   conn_cmd = "GRANT ALL PRIVILEGES on DATABASE "+pgDb+" to "+pgUser+";"
    try:
       cur.execute(conn_cmd)
    except:
