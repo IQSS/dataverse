@@ -37,10 +37,7 @@ import org.junit.jupiter.api.AfterAll;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FilesIT {
 
@@ -2234,5 +2231,50 @@ public class FilesIT {
                 .body("data.categories", hasItem(testCategory1))
                 .body("data.categories", hasItem(testCategory2))
                 .statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testGetHasBeenDeleted() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload test file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Publish dataverse and dataset
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that the file has not been deleted
+        Response getHasBeenDeletedResponse = UtilIT.getHasBeenDeleted(dataFileId, apiToken);
+        getHasBeenDeletedResponse.then().assertThat().statusCode(OK.getStatusCode());
+        boolean fileHasBeenDeleted = JsonPath.from(getHasBeenDeletedResponse.body().asString()).getBoolean("data");
+        assertFalse(fileHasBeenDeleted);
+
+        // Delete test file
+        Response deleteFileInDatasetResponse = UtilIT.deleteFileInDataset(Integer.parseInt(dataFileId), apiToken);
+        deleteFileInDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that the file has been deleted
+        getHasBeenDeletedResponse = UtilIT.getHasBeenDeleted(dataFileId, apiToken);
+        getHasBeenDeletedResponse.then().assertThat().statusCode(OK.getStatusCode());
+        fileHasBeenDeleted = JsonPath.from(getHasBeenDeletedResponse.body().asString()).getBoolean("data");
+        assertTrue(fileHasBeenDeleted);
     }
 }
