@@ -39,7 +39,7 @@ public abstract class DvObjectContainer extends DvObject {
     
     private String metadataLanguage=null;
     
-    private String guestbookAtRequest = null;
+    private Boolean guestbookAtRequest = null;
     
     public String getEffectiveStorageDriverId() {
         String id = storageDriver;
@@ -101,7 +101,7 @@ public abstract class DvObjectContainer extends DvObject {
     
     public boolean getEffectiveGuestbookEntryAtRequest() {
         boolean gbAtRequest = false;
-        if (guestbookAtRequest==null || UNDEFINED_CODE.equals(guestbookAtRequest)) {
+        if (guestbookAtRequest==null) {
             if (this.getOwner() != null) {
                 gbAtRequest = this.getOwner().getEffectiveGuestbookEntryAtRequest();
             } else {
@@ -111,15 +111,12 @@ public abstract class DvObjectContainer extends DvObject {
                 }
             }
         } else {
-            gbAtRequest = Boolean.parseBoolean(guestbookAtRequest);
+            gbAtRequest = guestbookAtRequest;
         }
         return gbAtRequest;
     }
     
-    public String getGuestbookEntryAtRequest() {
-        if (guestbookAtRequest == null) {
-            return UNDEFINED_CODE;
-        }
+    public Boolean getGuestbookEntryAtRequest() {
         return guestbookAtRequest;
     }
 
@@ -128,7 +125,7 @@ public abstract class DvObjectContainer extends DvObject {
             this.guestbookAtRequest = null;
         } else {
             //Force to true or false
-            this.guestbookAtRequest = Boolean.valueOf(Boolean.parseBoolean(gbAtRequest)).toString();
+            this.guestbookAtRequest = Boolean.valueOf(Boolean.parseBoolean(gbAtRequest));
         }
     }
     

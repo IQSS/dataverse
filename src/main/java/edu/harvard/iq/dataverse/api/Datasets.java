@@ -3888,8 +3888,8 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
-        String gbAtRequest = dataset.getGuestbookEntryAtRequest();
-        if(gbAtRequest == null || gbAtRequest.equals(DvObjectContainer.UNDEFINED_CODE)) {
+        Boolean gbAtRequest = dataset.getGuestbookEntryAtRequest();
+        if(gbAtRequest == null) {
             return ok("Not set on dataset, using the default: " + dataset.getEffectiveGuestbookEntryAtRequest());
         }
         return ok(dataset.getEffectiveGuestbookEntryAtRequest());
