@@ -3,12 +3,12 @@ package edu.harvard.iq.dataverse.api.auth;
 import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.authorization.users.User;
 
-import javax.annotation.Priority;
-import javax.inject.Inject;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.ext.Provider;
+import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.Priorities;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
 
 /**

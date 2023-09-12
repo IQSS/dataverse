@@ -8,8 +8,6 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
@@ -37,12 +35,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 
 
@@ -215,7 +213,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             qParam = "&q=" + query;
         }
 
-        return widgetWrapper.wrapURL(dataverseRedirectPage + "?faces-redirect=true&q=" + qParam + optionalDataverseScope);
+        return widgetWrapper.wrapURL(dataverseRedirectPage + "?faces-redirect=true" + qParam + optionalDataverseScope);
 
     }
 

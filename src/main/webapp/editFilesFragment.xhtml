@@ -903,7 +903,7 @@
                                           filter="false">
                         <f:selectItems value="#{EditDatafilesPage.tabFileTags}" />
                         <p:ajax event="toggleSelect" listener="#{EditDatafilesPage.handleTabularTagsSelection}" update="tabularDataTags" />
-                        <p:ajax event="change" listener="#{EditDatafilesPage.TabularTagsSelection}" update="tabularDataTags" />
+                        <p:ajax event="change" listener="#{EditDatafilesPage.handleTabularTagsSelection}" update="tabularDataTags" />
                     </p:selectCheckboxMenu>
                     <p:message for="tabularDataTags" display="text" />
                 </div>

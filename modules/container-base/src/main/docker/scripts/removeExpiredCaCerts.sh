@@ -8,6 +8,14 @@
 set -euo pipefail
 
 KEYSTORE="${DOMAIN_DIR}/config/cacerts.jks"
+if [ ! -r "${KEYSTORE}" ]; then
+  KEYSTORE="${DOMAIN_DIR}/config/cacerts.p12"
+  if [ ! -r "${KEYSTORE}" ]; then
+    echo "Could not find CA certs keystore"
+    exit 1
+  fi
+fi
+
 keytool -list -v -keystore "${KEYSTORE}" -storepass changeit 2>/dev/null | \
     grep -i 'alias\|until' > aliases.txt
 

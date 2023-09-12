@@ -131,9 +131,9 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>5.14</revision>
+        <revision>6.0</revision>
     
-        <target.java.version>11</target.java.version>
+        <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <additionalparam>-Xdoclint:none</additionalparam>
         <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
@@ -148,9 +148,9 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>5.2022.3</payara.version>
-        <postgresql.version>42.5.1</postgresql.version>
-        <solr.version>8.11.1</solr.version>
+        <payara.version>6.2023.8</payara.version>
+        <postgresql.version>42.6.0</postgresql.version>
+        <solr.version>9.3.0</solr.version>
         <aws.version>1.12.290</aws.version>
         <google.cloud.version>0.177.0</google.cloud.version>
     
@@ -165,16 +165,14 @@
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         
         <!-- NEW gdcc XOAI library implementation -->
-        <gdcc.xoai.version>5.0.0</gdcc.xoai.version>
+        <gdcc.xoai.version>5.1.0</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
         <testcontainers.version>1.15.0</testcontainers.version>
         <smallrye-mpconfig.version>2.10.1</smallrye-mpconfig.version>
-    
-        <junit.version>4.13.1</junit.version>
-        <junit.jupiter.version>5.7.0</junit.jupiter.version>
-        <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
-        <mockito.version>2.28.2</mockito.version>
+        
+        <junit.jupiter.version>5.10.0</junit.jupiter.version>
+        <mockito.version>5.4.0</mockito.version>
         
         <checkstyle.version>9.3</checkstyle.version>
         
@@ -193,6 +191,7 @@
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-javadoc-plugin.version>3.4.1</maven-javadoc-plugin.version>
         <maven-flatten-plugin.version>1.3.0</maven-flatten-plugin.version>
+        <maven-enforcer-plugin.version>3.3.0</maven-enforcer-plugin.version>
         
         <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
         <nexus-staging-plugin.version>1.6.13</nexus-staging-plugin.version>
@@ -257,6 +256,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${maven-enforcer-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>${maven-checkstyle-plugin.version}</version>
                     <dependencies>
@@ -314,6 +318,47 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>no-junit4</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>junit:junit:*:*:test</exclude>
+                                        <exclude>org.junit:junit:*:*:test</exclude>
+                                        <exclude>org.junit.vintage:*:*:*:test</exclude>
+                                    </excludes>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>general-reqs</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <rules>
+                                <banDuplicatePomDependencyVersions/>
+                                <requireJavaVersion>
+                                    <version>[${target.java.version}.0,)</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
     
     <!--Maven checks for dependencies from these repos in the order shown in the pom.xml
@@ -369,15 +414,20 @@
             <name>Unidata All</name>
             <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
         </repository>
-        <repository>
-            <id>dvn.private</id>
-            <name>Local repository for hosting jars not available from network repositories.</name>
-            <url>file://${project.basedir}/local_lib</url>
-        </repository>
-        <!-- Uncomment when using snapshot releases from Maven Central 
+        <!-- Uncomment when using snapshot releases from Maven Central -->
         <repository>
             <id>oss-sonatype</id>
             <name>oss-sonatype</name>
+            <url>
+                https://oss.sonatype.org/content/repositories/snapshots/
+            </url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>s01-oss-sonatype</id>
+            <name>s01-oss-sonatype</name>
             <url>
                 https://s01.oss.sonatype.org/content/repositories/snapshots/
             </url>
@@ -385,7 +435,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        -->
+        <!-- -->
     </repositories>
     
     <profiles>
@@ -393,11 +443,9 @@
             <id>ct</id>
             <properties>
                 <!--
-                    Payara 5.2022.3 has problems with postboot deployment scripts.
-                    Fixed in this release, see https://github.com/payara/Payara/pull/5991
-                    Payara 5.2022.4 has security issues.
+                    With moving to Payara 6, we are aligned with containers and classic install again.
                 -->
-                <payara.version>5.2022.5</payara.version>
+                <!-- <payara.version>5.2022.5</payara.version> -->
             </properties>
     
             <build>

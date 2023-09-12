@@ -60,7 +60,7 @@ jobs:
                   shellspec
     shellspec-macos:
         name: "MacOS"
-        runs-on: macos-10.15
+        runs-on: macos-latest
         steps:
             - name: Install shellspec
               run: curl -fsSL https://git.io/shellspec | sh -s 0.28.1 --yes

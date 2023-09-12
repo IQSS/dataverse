@@ -2,11 +2,11 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class PersonOrOrgUtilTest {
 
@@ -58,7 +58,7 @@ public class PersonOrOrgUtilTest {
             verifyIsOrganization("Geographic Data Technology, Inc. (GDT)");
         }
 
-        @Ignore
+        @Disabled
         @Test
         public void testOrganizationES() {
             //Spanish recognition is not enabled - see export/Organization.java

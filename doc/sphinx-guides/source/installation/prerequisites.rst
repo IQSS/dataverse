@@ -19,7 +19,7 @@ We assume you plan to run your Dataverse installation on Linux and we recommend 
 Java
 ----
 
-The Dataverse Software requires Java SE 11 (or higher).
+The Dataverse Software requires Java SE 17 (or higher).
 
 Installing Java
 ===============
@@ -30,11 +30,11 @@ The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/jav
 
 On a RHEL/derivative, install OpenJDK (devel version) using yum::
 
-	# sudo yum install java-11-openjdk
+	# sudo yum install java-17-openjdk
 
-If you have multiple versions of Java installed, Java 11 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
+If you have multiple versions of Java installed, Java 17 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
 
-On RHEL/derivative you can make Java 11 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
+On RHEL/derivative you can make Java 17 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
 
         # alternatives --config java
 
@@ -44,7 +44,7 @@ On RHEL/derivative you can make Java 11 the default with the ``alternatives`` co
 Payara
 ------
 
-Payara 5.2022.3 is recommended. Newer versions might work fine, regular updates are recommended.
+Payara 6.2023.8 is recommended. Newer versions might work fine. Regular updates are recommended.
 
 Installing Payara
 =================
@@ -53,11 +53,11 @@ Installing Payara
 
 	# useradd dataverse
 
-- Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
+- Download and install Payara (installed in ``/usr/local/payara6`` in the example commands below)::
 
-	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/5.2022.3/payara-5.2022.3.zip
-	# unzip payara-5.2022.3.zip
-	# mv payara5 /usr/local
+	# wget https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2023.8/payara-6.2023.8.zip
+	# unzip payara-6.2023.8.zip
+	# mv payara6 /usr/local
 
 If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/
 
@@ -65,15 +65,15 @@ If you intend to install and run Payara under a service account (and we hope you
 
 - Set service account permissions::
 
-	# chown -R root:root /usr/local/payara5
-	# chown dataverse /usr/local/payara5/glassfish/lib
-	# chown -R dataverse:dataverse /usr/local/payara5/glassfish/domains/domain1
+	# chown -R root:root /usr/local/payara6
+	# chown dataverse /usr/local/payara6/glassfish/lib
+	# chown -R dataverse:dataverse /usr/local/payara6/glassfish/domains/domain1
 
 After installation, you may chown the lib/ directory back to root; the installer only needs write access to copy the JDBC driver into that directory.
 
 - Change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
 
-	# vim /usr/local/payara5/glassfish/domains/domain1/config/domain.xml
+	# vim /usr/local/payara6/glassfish/domains/domain1/config/domain.xml
 
 This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4-performance-tuning-monitoring-and-troubleshooting.php among other places.
 
@@ -97,10 +97,14 @@ Also note that Payara may utilize more than the default number of file descripto
 PostgreSQL
 ----------
 
+PostgreSQL 13 is recommended because it's the version we test against. Version 10 or higher is required because that's what's `supported by Flyway <https://documentation.red-gate.com/fd/postgresql-184127604.html>`_, which we use for database migrations.
+
+You are welcome to experiment with newer versions of PostgreSQL, but please note that as of PostgreSQL 15, permissions have been restricted on the ``public`` schema (`release notes <https://www.postgresql.org/docs/release/15.0/>`_, `EDB blog post <https://www.enterprisedb.com/blog/new-public-schema-permissions-postgresql-15>`_, `Crunchy Data blog post <https://www.crunchydata.com/blog/be-ready-public-schema-changes-in-postgres-15>`_). The Dataverse installer has been updated to restore the old permissions, but this may not be a long term solution.
+
 Installing PostgreSQL
 =====================
 
-The application has been tested with PostgreSQL versions up to 13 and version 10+ is required. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL7/derivative::
+*For example*, to install PostgreSQL 13 under RHEL7/derivative::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
@@ -154,12 +158,12 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 Solr
 ----
 
-The Dataverse Software search index is powered by Solr.
+The Dataverse software search index is powered by Solr.
 
 Supported Versions
 ==================
 
-The Dataverse Software has been tested with Solr version 8.11.1. Future releases in the 8.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 8.x (e.g. 9.x) are not supported.
+The Dataverse software has been tested with Solr version 9.3.0. Future releases in the 9.x series are likely to be compatible. Please get in touch (:ref:`support`) if you are having trouble with a newer version.
 
 Installing Solr
 ===============
@@ -174,19 +178,19 @@ Become the ``solr`` user and then download and configure Solr::
 
         su - solr
         cd /usr/local/solr
-        wget https://archive.apache.org/dist/lucene/solr/8.11.1/solr-8.11.1.tgz
-        tar xvzf solr-8.11.1.tgz
-        cd solr-8.11.1
+        wget https://archive.apache.org/dist/solr/solr/9.3.0/solr-9.3.0.tgz
+        tar xvzf solr-9.3.0.tgz
+        cd solr-9.3.0
         cp -r server/solr/configsets/_default server/solr/collection1
 
 You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
-        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-8.11.1/server/solr/collection1/conf
-        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-8.11.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-9.3.0/server/solr/collection1/conf
+        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-9.3.0/server/solr/collection1/conf
 
 Note: The Dataverse Project team has customized Solr to boost results that come from certain indexed elements inside the Dataverse installation, for example prioritizing results from Dataverse collections over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
 
-A Dataverse installation requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-8.11.1/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
+A Dataverse installation requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-9.3.0/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
 Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``::
 
@@ -205,7 +209,7 @@ Solr launches asynchronously and attempts to use the ``lsof`` binary to watch fo
 
 Finally, you need to tell Solr to create the core "collection1" on startup::
 
-        echo "name=collection1" > /usr/local/solr/solr-8.11.1/server/solr/collection1/core.properties
+        echo "name=collection1" > /usr/local/solr/solr-9.3.0/server/solr/collection1/core.properties
 
 Solr Init Script
 ================
