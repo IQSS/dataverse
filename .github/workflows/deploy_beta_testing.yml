@@ -21,6 +21,9 @@ jobs:
         working-directory: src/main/resources/META-INF
         run: echo -e "dataverse.feature.api-session-auth=true" >> microprofile-config.properties
 
+      - name: Set build number
+        run: scripts/installer/custom-build-number
+
       - name: Build application war
         run: mvn package
 
