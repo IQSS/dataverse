@@ -2846,13 +2846,13 @@ A curl example using an ``ID``
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl "$SERVER_URL/api/files/$ID/downloadCount"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/files/$ID/downloadCount"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/files/24/downloadCount"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/files/24/downloadCount"
 
 A curl example using a ``PERSISTENT_ID``
 
@@ -2862,13 +2862,13 @@ A curl example using a ``PERSISTENT_ID``
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_ID=doi:10.5072/FK2/AAA000
 
-  curl "$SERVER_URL/api/files/:persistentId/downloadCount?persistentId=$PERSISTENT_ID"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/files/:persistentId/downloadCount?persistentId=$PERSISTENT_ID"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/files/:persistentId/downloadCount?persistentId=doi:10.5072/FK2/AAA000"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/files/:persistentId/downloadCount?persistentId=doi:10.5072/FK2/AAA000"
 
 If you are interested in download counts for multiple files, see :doc:`/api/metrics`.
 
@@ -2885,13 +2885,13 @@ A curl example using an ``ID``
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl "$SERVER_URL/api/files/$ID/hasBeenDeleted"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/files/$ID/hasBeenDeleted"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/files/24/hasBeenDeleted"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/files/24/hasBeenDeleted"
 
 A curl example using a ``PERSISTENT_ID``
 
@@ -2901,13 +2901,13 @@ A curl example using a ``PERSISTENT_ID``
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_ID=doi:10.5072/FK2/AAA000
 
-  curl "$SERVER_URL/api/files/:persistentId/hasBeenDeleted?persistentId=$PERSISTENT_ID"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/files/:persistentId/hasBeenDeleted?persistentId=$PERSISTENT_ID"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/files/:persistentId/hasBeenDeleted?persistentId=doi:10.5072/FK2/AAA000"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET  "https://demo.dataverse.org/api/files/:persistentId/hasBeenDeleted?persistentId=doi:10.5072/FK2/AAA000"
 
 Updating File Metadata
 ~~~~~~~~~~~~~~~~~~~~~~
