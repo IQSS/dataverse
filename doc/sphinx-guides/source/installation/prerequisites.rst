@@ -97,10 +97,14 @@ Also note that Payara may utilize more than the default number of file descripto
 PostgreSQL
 ----------
 
+PostgreSQL 13 is recommended because it's the version we test against. Version 10 or higher is required because that's what's `supported by Flyway <https://documentation.red-gate.com/fd/postgresql-184127604.html>`_, which we use for database migrations.
+
+You are welcome to experiment with newer versions of PostgreSQL, but please note that as of PostgreSQL 15, permissions have been restricted on the ``public`` schema (`release notes <https://www.postgresql.org/docs/release/15.0/>`_, `EDB blog post <https://www.enterprisedb.com/blog/new-public-schema-permissions-postgresql-15>`_, `Crunchy Data blog post <https://www.crunchydata.com/blog/be-ready-public-schema-changes-in-postgres-15>`_). The Dataverse installer has been updated to restore the old permissions, but this may not be a long term solution.
+
 Installing PostgreSQL
 =====================
 
-The application has been tested with PostgreSQL versions up to 13 and version 10+ is required. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL7/derivative::
+*For example*, to install PostgreSQL 13 under RHEL7/derivative::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
