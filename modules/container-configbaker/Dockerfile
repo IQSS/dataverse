@@ -38,6 +38,7 @@ RUN rm ${SOLR_TEMPLATE}/conf/managed-schema.xml
 # Copy the data from scripts/api that provide the common base setup you'd get from the installer.
 # ".dockerignore" will take care of taking only the bare necessities
 COPY maven/setup ${SCRIPT_DIR}/bootstrap/base/
+RUN chmod +x ${BOOTSTRAP_DIR}/*/*.sh
 
 # Set the entrypoint to tini (as a process supervisor)
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
