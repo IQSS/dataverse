@@ -20,24 +20,25 @@ package edu.harvard.iq.dataverse.api.filesystem;
 */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.api.UtilIT;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.batch.entities.JobExecutionEntity;
 import edu.harvard.iq.dataverse.batch.entities.StepExecutionEntity;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.Ignore;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import javax.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.BatchStatus;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,11 +56,11 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 
-import static com.jayway.restassured.RestAssured.given;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Batch File System Import Job Integration Tests
@@ -92,7 +93,7 @@ public class FileRecordJobIT {
     private static final String API_TOKEN_HTTP_HEADER = "X-Dataverse-key";
     private static final String BUILTIN_USER_KEY = "burrito";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
 
         // this allows for testing on dataverse staging servers via jvm setting
@@ -122,7 +123,7 @@ public class FileRecordJobIT {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUpDataverse() {
 
         try {
@@ -189,12 +190,12 @@ public class FileRecordJobIT {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         RestAssured.reset();
     }
 
-    @After
+    @AfterEach
     public void tearDownDataverse() {
         try {
 
@@ -231,7 +232,7 @@ public class FileRecordJobIT {
      * Ignores failed checksum manifest import.
      */
     @Test
-    @Ignore
+    @Disabled
     public void testSameFileInDifferentDirectories() {
 
         try {
@@ -310,7 +311,7 @@ public class FileRecordJobIT {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testNewEditor() {
 
         try {
@@ -414,7 +415,7 @@ public class FileRecordJobIT {
      * Ignores failed checksum manifest import.
      */
     @Test
-    @Ignore
+    @Disabled
     public void testSameFileInDifferentDirectoriesUnauthorizedUser() {
 
         try {
@@ -613,7 +614,7 @@ public class FileRecordJobIT {
 //    }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * Add a file in MERGE mode (default), should only need to commit the new file
      */
@@ -758,7 +759,7 @@ public class FileRecordJobIT {
     }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * The success case: all files uploaded and present in checksum manifest
      */
@@ -827,7 +828,7 @@ public class FileRecordJobIT {
     }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * No checksum manifest found
      */
@@ -881,7 +882,7 @@ public class FileRecordJobIT {
     }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * Checksum manifest is missing an uploaded file
      */
@@ -948,7 +949,7 @@ public class FileRecordJobIT {
     }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * Checksum manifest references a file that isn't present, it should return failed status and detailed 
      * message in persistentUserData
@@ -1020,7 +1021,7 @@ public class FileRecordJobIT {
     }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * Published datasets should not allow import jobs for now since it isn't in DRAFT mode
      */
@@ -1102,7 +1103,7 @@ public class FileRecordJobIT {
 //    }
 
     @Test
-    @Ignore
+    @Disabled
     /**
      * No dataset found responses (bad dataset id, etc.)
      */

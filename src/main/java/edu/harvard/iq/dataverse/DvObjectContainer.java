@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Locale;
 import java.util.Optional;
 
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.MappedSuperclass;
 import org.apache.commons.lang3.StringUtils;
 
 /**

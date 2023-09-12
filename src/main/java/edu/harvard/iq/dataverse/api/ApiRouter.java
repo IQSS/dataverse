@@ -1,21 +1,22 @@
 package edu.harvard.iq.dataverse.api;
 
+import jakarta.servlet.Filter;
 import java.io.IOException;
 import java.util.logging.Logger;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Routes API calls that don't have a version number to the latest API version
  * 
  * @author michael
  */
-public class ApiRouter implements javax.servlet.Filter {
+public class ApiRouter implements Filter {
     private static final Logger logger = Logger.getLogger(ApiRouter.class.getName());
     
     @Override

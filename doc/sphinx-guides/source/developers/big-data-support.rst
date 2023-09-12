@@ -173,6 +173,8 @@ See also :ref:`Globus settings <:GlobusBasicToken>`.
 Data Capture Module (DCM)
 -------------------------
 
+Please note: The DCM feature is deprecated.
+
 Data Capture Module (DCM) is an experimental component that allows users to upload large datasets via rsync over ssh.
 
 DCM was developed and tested using Glassfish but these docs have been updated with references to Payara.
@@ -209,7 +211,7 @@ The JSON that a DCM sends to your Dataverse installation on successful checksum 
    :language: json
 
 - ``status`` - The valid strings to send are ``validation passed`` and ``validation failed``.
-- ``uploadFolder`` - This is the directory on disk where your Dataverse installation should attempt to find the files that a DCM has moved into place. There should always be a ``files.sha`` file and a least one data file. ``files.sha`` is a manifest of all the data files and their checksums. The ``uploadFolder`` directory is inside the directory where data is stored for the dataset and may have the same name as the "identifier" of the persistent id (DOI or Handle). For example, you would send ``"uploadFolder": "DNXV2H"`` in the JSON file when the absolute path to this directory is ``/usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/DNXV2H/DNXV2H``.
+- ``uploadFolder`` - This is the directory on disk where your Dataverse installation should attempt to find the files that a DCM has moved into place. There should always be a ``files.sha`` file and a least one data file. ``files.sha`` is a manifest of all the data files and their checksums. The ``uploadFolder`` directory is inside the directory where data is stored for the dataset and may have the same name as the "identifier" of the persistent id (DOI or Handle). For example, you would send ``"uploadFolder": "DNXV2H"`` in the JSON file when the absolute path to this directory is ``/usr/local/payara6/glassfish/domains/domain1/files/10.5072/FK2/DNXV2H/DNXV2H``.
 - ``totalSize`` - Your Dataverse installation will use this value to represent the total size in bytes of all the files in the "package" that's created. If 360 data files and one ``files.sha`` manifest file are in the ``uploadFolder``, this value is the sum of the 360 data files.
 
 
@@ -231,9 +233,9 @@ Add Dataverse Installation settings to use mock (same as using DCM, noted above)
 
 At this point you should be able to download a placeholder rsync script. Your Dataverse installation is then waiting for news from the DCM about if checksum validation has succeeded or not. First, you have to put files in place, which is usually the job of the DCM. You should substitute "X1METO" for the "identifier" of the dataset you create. You must also use the proper path for where you store files in your dev environment.
 
-- ``mkdir /usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/X1METO``
-- ``mkdir /usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
-- ``cd /usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
+- ``mkdir /usr/local/payara6/glassfish/domains/domain1/files/10.5072/FK2/X1METO``
+- ``mkdir /usr/local/payara6/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
+- ``cd /usr/local/payara6/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
 - ``echo "hello" > file1.txt``
 - ``shasum file1.txt > files.sha``
 
@@ -248,103 +250,10 @@ The following low level command should only be used when troubleshooting the "im
 
 ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$DV_BASE_URL/api/batch/jobs/import/datasets/files/$DATASET_DB_ID?uploadFolder=$UPLOAD_FOLDER&totalSize=$TOTAL_SIZE"``
 
-Steps to set up a DCM via Docker for Development
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If you need a fully operating DCM client for development purposes, these steps will guide you to setting one up. This includes steps to set up the DCM on S3 variant.
-
-Docker Image Set-up
-^^^^^^^^^^^^^^^^^^^
-
-See https://github.com/IQSS/dataverse/blob/develop/conf/docker-dcm/readme.md
-
-- Install docker if you do not have it
-      
-Optional steps for setting up the S3 Docker DCM Variant
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- Before: the default bucket for DCM to hold files in S3 is named test-dcm. It is coded into `post_upload_s3.bash` (line 30). Change to a different bucket if needed.
-- Also Note: With the new support for multiple file store in the Dataverse Software, DCM requires a store with id="s3" and DCM will only work with this store.
-
-  - Add AWS bucket info to dcmsrv
-    - Add AWS credentials to ``~/.aws/credentials``
-
-      - ``[default]``
-      - ``aws_access_key_id =``
-      - ``aws_secret_access_key =``
-
-- Dataverse installation configuration (on dvsrv):
-
-  - Set S3 as the storage driver
-
-    - ``cd /opt/payara5/bin/``
-    - ``./asadmin delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
-    - ``./asadmin create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"``
-    - ``./asadmin create-jvm-options "\-Ddataverse.files.s3.type=s3"``
-    - ``./asadmin create-jvm-options "\-Ddataverse.files.s3.label=s3"``
-    
-
-  - Add AWS bucket info to your Dataverse installation
-    - Add AWS credentials to ``~/.aws/credentials``
-    
-      - ``[default]``
-      - ``aws_access_key_id =``
-      - ``aws_secret_access_key =``
-
-    - Also: set region in ``~/.aws/config`` to create a region file. Add these contents:
-
-      - ``[default]``
-      - ``region = us-east-1``
-
-  - Add the S3 bucket names to your Dataverse installation
-
-    - S3 bucket for your Dataverse installation
-
-      - ``/usr/local/payara5/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3.bucket-name=iqsstestdcmbucket"``
-
-    - S3 bucket for DCM (as your Dataverse installation needs to do the copy over)
-
-      - ``/usr/local/payara5/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.dcm-s3-bucket-name=test-dcm"``
-
-  - Set download method to be HTTP, as DCM downloads through S3 are over this protocol ``curl -X PUT "http://localhost:8080/api/admin/settings/:DownloadMethods" -d "native/http"``
-
-Using the DCM Docker Containers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-For using these commands, you will need to connect to the shell prompt inside various containers (e.g. ``docker exec -it dvsrv /bin/bash``)
-
-- Create a dataset and download rsync upload script
-
-  - connect to client container: ``docker exec -it dcm_client bash``
-  - create dataset: ``cd /mnt ; ./create.bash`` ; this will echo the database ID to stdout
-  - download transfer script: ``./get_transfer.bash $database_id_from_create_script``
-  - execute the transfer script: ``bash ./upload-${database_id_from-create_script}.bash`` , and follow instructions from script.
-
-- Run script
-
-  - e.g. ``bash ./upload-3.bash`` (``3`` being the database id from earlier commands in this example).
-
-- Manually run post upload script on dcmsrv
-
-  - for posix implementation: ``docker exec -it dcmsrv /opt/dcm/scn/post_upload.bash``
-  - for S3 implementation: ``docker exec -it dcmsrv /opt/dcm/scn/post_upload_s3.bash``
-
-Additional DCM docker development tips
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- You can completely blow away all the docker images with these commands (including non DCM ones!)
-  - ``docker-compose -f docmer-compose.yml down -v``
-
-- There are a few logs to tail
-
-  - dvsrv : ``tail -n 2000 -f /opt/payara5/glassfish/domains/domain1/logs/server.log``
-  - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/breakage.log``
-  - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/access.log``
-
-- You may have to restart the app server domain occasionally to deal with memory filling up. If deployment is getting reallllllly slow, its a good time.
-
 Repository Storage Abstraction Layer (RSAL)
 -------------------------------------------
+
+Please note: The RSAL feature is deprecated.
 
 Steps to set up a DCM via Docker for Development
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Headers;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.http.Headers;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -16,20 +16,20 @@ import java.util.HashSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.Assert;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class DownloadFilesIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
@@ -90,7 +90,7 @@ public class DownloadFilesIT {
 
         // Note that a MANIFEST.TXT file is added.
         HashSet<String> expectedFiles1 = new HashSet<>(Arrays.asList("MANIFEST.TXT", "README.md", "CONTRIBUTING.md"));
-        Assert.assertEquals(expectedFiles1, filenamesFound1);
+        assertEquals(expectedFiles1, filenamesFound1);
 
         // A guest user can't download unpublished files.
         // (a guest user cannot even see that the draft version actually exists;
@@ -130,7 +130,7 @@ public class DownloadFilesIT {
 
         // The creator gets the draft version with an extra file.
         HashSet<String> expectedFiles2 = new HashSet<>(Arrays.asList("LICENSE.md", "MANIFEST.TXT", "README.md", "CONTRIBUTING.md"));
-        Assert.assertEquals(expectedFiles2, filenamesFound2);
+        assertEquals(expectedFiles2, filenamesFound2);
 
         Response downloadFiles5 = UtilIT.downloadFiles(datasetPid, null);
         downloadFiles5.then().assertThat()
@@ -140,7 +140,7 @@ public class DownloadFilesIT {
 
         // A guest user gets the 1.0 version with only 3 files.
         HashSet<String> expectedFiles3 = new HashSet<>(Arrays.asList("MANIFEST.TXT", "README.md", "CONTRIBUTING.md"));
-        Assert.assertEquals(expectedFiles3, filenamesFound3);
+        assertEquals(expectedFiles3, filenamesFound3);
 
         // Publishing version 2.0
         UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken)
@@ -154,7 +154,7 @@ public class DownloadFilesIT {
 
         // By not specifying a version, the creator gets the latest version. In this case, 2.0 (published) with 4 files.
         HashSet<String> expectedFiles4 = new HashSet<>(Arrays.asList("LICENSE.md", "MANIFEST.TXT", "README.md", "CONTRIBUTING.md"));
-        Assert.assertEquals(expectedFiles4, filenamesFound4);
+        assertEquals(expectedFiles4, filenamesFound4);
 
         String datasetVersion = "1.0";
         Response downloadFiles7 = UtilIT.downloadFiles(datasetPid, datasetVersion, apiToken);
@@ -165,7 +165,7 @@ public class DownloadFilesIT {
 
         // Creator specifies the 1.0 version and gets the expected 3 files.
         HashSet<String> expectedFiles5 = new HashSet<>(Arrays.asList("MANIFEST.TXT", "README.md", "CONTRIBUTING.md"));
-        Assert.assertEquals(expectedFiles5, filenamesFound5);
+        assertEquals(expectedFiles5, filenamesFound5);
 
         // Add Code of Conduct file
         Path pathtoCocFile = Paths.get(Files.createTempDirectory(null) + File.separator + "CODE_OF_CONDUCT.md");
@@ -186,7 +186,7 @@ public class DownloadFilesIT {
 
         // If the creator doesn't specify a version, they get the latest draft with 5 files.
         HashSet<String> expectedFiles6 = new HashSet<>(Arrays.asList("CODE_OF_CONDUCT.md", "LICENSE.md", "MANIFEST.TXT", "README.md", "CONTRIBUTING.md"));
-        Assert.assertEquals(expectedFiles6, filenamesFound6);
+        assertEquals(expectedFiles6, filenamesFound6);
 
         String datasetVersionLatestPublished = ":latest-published";
         Response downloadFiles9 = UtilIT.downloadFiles(datasetPid, datasetVersionLatestPublished, apiToken);
@@ -197,7 +197,7 @@ public class DownloadFilesIT {
 
         // The contributor requested "latest published" and got version 3 with 4 files.
         HashSet<String> expectedFiles7 = new HashSet<>(Arrays.asList("LICENSE.md", "MANIFEST.TXT", "README.md", "CONTRIBUTING.md"));
-        Assert.assertEquals(expectedFiles7, filenamesFound7);
+        assertEquals(expectedFiles7, filenamesFound7);
 
         // Guests cannot download draft versions.
         String datasetVersionDraft = ":draft";
@@ -266,14 +266,14 @@ public class DownloadFilesIT {
                 .statusCode(OK.getStatusCode());
 
         // The creator can download a restricted file from a draft.
-        Assert.assertEquals(new HashSet<>(Arrays.asList("secrets.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles1.getBody().asInputStream()));
+        assertEquals(new HashSet<>(Arrays.asList("secrets.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles1.getBody().asInputStream()));
 
         Response downloadFiles2 = UtilIT.downloadFiles(datasetPid, apiToken);
         downloadFiles2.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         // The creator can download a restricted file and an unrestricted file from a draft.
-        Assert.assertEquals(new HashSet<>(Arrays.asList("secrets.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles2.getBody().asInputStream()));
+        assertEquals(new HashSet<>(Arrays.asList("secrets.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles2.getBody().asInputStream()));
 
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken)
                 .then().assertThat().statusCode(OK.getStatusCode());
@@ -307,14 +307,14 @@ public class DownloadFilesIT {
                 .statusCode(OK.getStatusCode());
 
         // The guest can only get the unrestricted file (and the manifest).
-        Assert.assertEquals(new HashSet<>(Arrays.asList("README.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles4.getBody().asInputStream()));
+        assertEquals(new HashSet<>(Arrays.asList("README.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles4.getBody().asInputStream()));
 
         Response downloadFiles5 = UtilIT.downloadFiles(datasetPid, apiToken);
         downloadFiles5.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         // The creator can download both files (and the manifest).
-        Assert.assertEquals(new HashSet<>(Arrays.asList("secrets.md", "README.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles5.getBody().asInputStream()));
+        assertEquals(new HashSet<>(Arrays.asList("secrets.md", "README.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles5.getBody().asInputStream()));
 
     }
 
@@ -356,21 +356,21 @@ public class DownloadFilesIT {
                 .body("data.files[0].label", equalTo("50by1000.dta"));
 
         // UtilIT.MAXIMUM_INGEST_LOCK_DURATION is 3 but not long enough.
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION + 3));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION + 3), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Response downloadFiles1 = UtilIT.downloadFiles(datasetPid, apiToken);
         downloadFiles1.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         // By default we get the archival version (.tab).
-        Assert.assertEquals(new HashSet<>(Arrays.asList("50by1000.tab", "MANIFEST.TXT")), gatherFilenames(downloadFiles1.getBody().asInputStream()));
+        assertEquals(new HashSet<>(Arrays.asList("50by1000.tab", "MANIFEST.TXT")), gatherFilenames(downloadFiles1.getBody().asInputStream()));
 
         Response downloadFiles2 = UtilIT.downloadFiles(datasetPid, UtilIT.DownloadFormat.original, apiToken);
         downloadFiles2.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         // By passing format=original we get the original version, Stata (.dta) in this case.
-        Assert.assertEquals(new HashSet<>(Arrays.asList("50by1000.dta", "MANIFEST.TXT")), gatherFilenames(downloadFiles2.getBody().asInputStream()));
+        assertEquals(new HashSet<>(Arrays.asList("50by1000.dta", "MANIFEST.TXT")), gatherFilenames(downloadFiles2.getBody().asInputStream()));
     }
 
     /**
@@ -437,8 +437,8 @@ public class DownloadFilesIT {
                 .statusCode(OK.getStatusCode());
         Headers headers = downloadFile.getHeaders();
         // In "MY READ–ME.md" below the space is %20 and the en-dash ("–") is "%E2%80%93" (e2 80 93 in hex).
-        Assert.assertEquals("attachment; filename=\"MY%20READ%E2%80%93ME.md\"", headers.getValue("Content-disposition"));
-        Assert.assertEquals("text/markdown; name=\"MY%20READ%E2%80%93ME.md\";charset=UTF-8", headers.getValue("Content-Type"));
+        assertEquals("attachment; filename=\"MY%20READ%E2%80%93ME.md\"", headers.getValue("Content-disposition"));
+        assertEquals("text/markdown; name=\"MY%20READ%E2%80%93ME.md\";charset=UTF-8", headers.getValue("Content-Type"));
 
         // Download all files as a zip and assert "MY READ–ME.md" has an en-dash.
         Response downloadFiles = UtilIT.downloadFiles(datasetPid, apiToken);
@@ -450,7 +450,7 @@ public class DownloadFilesIT {
         // Note that a MANIFEST.TXT file is added.
         // "MY READ–ME.md" (with an en-dash) is correctly extracted from the downloaded zip
         HashSet<String> expectedFiles = new HashSet<>(Arrays.asList("MANIFEST.TXT", "MY READ–ME.md"));
-        Assert.assertEquals(expectedFiles, filenamesFound);
+        assertEquals(expectedFiles, filenamesFound);
     }
 
     private HashSet<String> gatherFilenames(InputStream inputStream) throws IOException {

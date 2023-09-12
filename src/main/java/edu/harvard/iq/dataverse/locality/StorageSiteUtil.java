@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.locality;
 
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 public class StorageSiteUtil {
 
