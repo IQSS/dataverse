@@ -501,10 +501,11 @@ public class Datasets extends AbstractApiBean {
                                     @QueryParam("categoryName") String categoryName,
                                     @QueryParam("searchText") String searchText,
                                     @QueryParam("orderCriteria") String orderCriteria,
+                                    @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                     @Context UriInfo uriInfo,
                                     @Context HttpHeaders headers) {
         return response(req -> {
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned);
             DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
             try {
                 fileMetadatasOrderCriteria = orderCriteria != null ? DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.valueOf(orderCriteria) : DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.NameAZ;
@@ -2709,11 +2710,15 @@ public class Datasets extends AbstractApiBean {
     }
 
     private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers) throws WrappedResponse {
+        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, false);
+    }
+
+    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned) throws WrappedResponse {
         DatasetVersion dsv = execCommand(handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>() {
 
             @Override
             public Command<DatasetVersion> handleLatest() {
-                return new GetLatestAccessibleDatasetVersionCommand(req, ds);
+                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned);
             }
 
             @Override
@@ -2723,12 +2728,12 @@ public class Datasets extends AbstractApiBean {
 
             @Override
             public Command<DatasetVersion> handleSpecific(long major, long minor) {
-                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor);
+                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned);
             }
 
             @Override
             public Command<DatasetVersion> handleLatestPublished() {
-                return new GetLatestPublishedDatasetVersionCommand(req, ds);
+                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned);
             }
         }));
         if (dsv == null || dsv.getId() == null) {

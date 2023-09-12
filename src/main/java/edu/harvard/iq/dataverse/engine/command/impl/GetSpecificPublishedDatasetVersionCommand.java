@@ -15,27 +15,32 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- *
  * @author Naomi
  */
 // No permission needed to view published dvObjects
 @RequiredPermissions({})
-public class GetSpecificPublishedDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
+public class GetSpecificPublishedDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     private final Dataset ds;
     private final long majorVersion;
     private final long minorVersion;
-    
+    private boolean includeDeaccessioned;
+
     public GetSpecificPublishedDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, long majorVersionNum, long minorVersionNum) {
+        this(aRequest, anAffectedDataset, majorVersionNum, minorVersionNum, false);
+    }
+
+    public GetSpecificPublishedDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, long majorVersionNum, long minorVersionNum, boolean includeDeaccessioned) {
         super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
         majorVersion = majorVersionNum;
         minorVersion = minorVersionNum;
+        this.includeDeaccessioned = includeDeaccessioned;
     }
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        for (DatasetVersion dsv: ds.getVersions()) {
-            if (dsv.isReleased()) {
+        for (DatasetVersion dsv : ds.getVersions()) {
+            if (dsv.isReleased() || (includeDeaccessioned && dsv.isDeaccessioned())) {
                 if (dsv.getVersionNumber().equals(majorVersion) && dsv.getMinorVersionNumber().equals(minorVersion)) {
                     return dsv;
                 }
@@ -43,5 +48,4 @@ public class GetSpecificPublishedDatasetVersionCommand extends AbstractCommand<D
         }
         return null;
     }
-    
 }
