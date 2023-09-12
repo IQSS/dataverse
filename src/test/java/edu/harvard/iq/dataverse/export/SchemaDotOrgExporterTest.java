@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import io.gdcc.spi.export.ExportDataProvider;
-import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
@@ -33,7 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,9 +40,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * For docs see {@link SchemaDotOrgExporter}.

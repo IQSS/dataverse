@@ -17,12 +17,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
-import junit.framework.Assert;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -34,19 +34,19 @@ public class DatasetVersionDTOTest {
     public DatasetVersionDTOTest() {
     }
     
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
     
-    @Before
+    @BeforeEach
     public void setUp() {
        
     }
-    @After
+    @AfterEach
     public void tearDown() {
     }
     
@@ -89,7 +89,7 @@ public class DatasetVersionDTOTest {
             JsonElement expected = gson.toJsonTree(expectedDTO, FieldDTO.class);
             JsonElement result = gson.toJsonTree(authorDTO);
             
-            Assert.assertEquals(expected, result);
+            assertEquals(expected, result);
             
         } catch (IOException e) {
             e.printStackTrace();

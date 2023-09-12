@@ -1,6 +1,6 @@
 package io.gdcc.spi.export;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 /**
  * XML Exporter is an extension of the base Exporter interface that adds the

@@ -24,13 +24,13 @@ import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Future;
-import javax.persistence.EntityManager;
-import javax.servlet.http.HttpServletRequest;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Before;
-import org.junit.Test;
+
+import jakarta.persistence.EntityManager;
+import jakarta.servlet.http.HttpServletRequest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SubmitDatasetForReviewCommandTest {
 
@@ -38,7 +38,7 @@ public class SubmitDatasetForReviewCommandTest {
     private DataverseRequest dataverseRequest;
     private TestDataverseEngine testEngine;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataset = new Dataset();
 
@@ -136,9 +136,10 @@ public class SubmitDatasetForReviewCommandTest {
         );
     }
 
-    @Test( expected=IllegalArgumentException.class )
-    public void testDatasetNull() {
-        new SubmitDatasetForReviewCommand(dataverseRequest, null);
+    @Test
+    void testDatasetNull() {
+        assertThrows(IllegalArgumentException.class,
+            () -> new SubmitDatasetForReviewCommand(dataverseRequest, null));
     }
     
     @Test
