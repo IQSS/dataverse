@@ -594,11 +594,10 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         globusLogger.info("Starting an globusUpload ");
 
-        String datasetIdentifier = dataset.getStorageIdentifier();
-
+        
         // ToDo - use DataAccess methods?
-        String storageType = datasetIdentifier.substring(0, datasetIdentifier.indexOf("://") + 3);
-        datasetIdentifier = datasetIdentifier.substring(datasetIdentifier.indexOf("://") + 3);
+        //String storageType = datasetIdentifier.substring(0, datasetIdentifier.indexOf("://") + 3);
+        //datasetIdentifier = datasetIdentifier.substring(datasetIdentifier.indexOf("://") + 3);
 
         Thread.sleep(5000);
 
@@ -670,18 +669,26 @@ public class GlobusServiceBean implements java.io.Serializable {
                 JsonArray filesJsonArray = jsonObject.getJsonArray("files");
 
                 if (filesJsonArray != null) {
+                    String datasetIdentifier = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage();
 
                     for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
 
                         // storageIdentifier s3://gcs5-bucket1:1781cfeb8a7-748c270a227c from
                         // externalTool
                         String storageIdentifier = fileJsonObject.getString("storageIdentifier");
-                        String[] bits = storageIdentifier.split(":");
-                        String bucketName = bits[1].replace("/", "");
+                        String[] parts = DataAccess.getDriverIdAndStorageLocation(storageIdentifier);
+                        String storeId = parts[0];
+                        //If this is an S3 store, we need to split out the bucket name
+                        String[] bits = parts[1].split(":");
+                        String bucketName = "";
+                        if(bits.length > 1) {
+                            bucketName = bits[0];
+                        }
                         String fileId = bits[bits.length - 1];
 
                         // fullpath s3://gcs5-bucket1/10.5072/FK2/3S6G2E/1781cfeb8a7-4ad9418a5873
-                        String fullPath = storageType + bucketName + "/" + datasetIdentifier + "/" + fileId;
+                        //or globus:///10.5072/FK2/3S6G2E/1781cfeb8a7-4ad9418a5873
+                        String fullPath = storeId + "://" + bucketName + "/" + datasetIdentifier + "/" + fileId;
                         String fileName = fileJsonObject.getString("fileName");
 
                         inputList.add(fileId + "IDsplit" + fullPath + "IDsplit" + fileName);
@@ -690,7 +697,8 @@ public class GlobusServiceBean implements java.io.Serializable {
                     // calculateMissingMetadataFields: checksum, mimetype
                     JsonObject newfilesJsonObject = calculateMissingMetadataFields(inputList, globusLogger);
                     JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray("files");
-
+logger.info("Size: " + newfilesJsonArray.size());
+logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
                     JsonArrayBuilder jsonDataSecondAPI = Json.createArrayBuilder();
 
                     for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
@@ -699,15 +707,21 @@ public class GlobusServiceBean implements java.io.Serializable {
                         String storageIdentifier = fileJsonObject.getString("storageIdentifier");
                         String fileName = fileJsonObject.getString("fileName");
                         String directoryLabel = fileJsonObject.getString("directoryLabel");
-                        String[] bits = storageIdentifier.split(":");
+                        String[] parts = DataAccess.getDriverIdAndStorageLocation(storageIdentifier);
+                        //If this is an S3 store, we need to split out the bucket name
+                        String[] bits = parts[1].split(":");
+                        String bucketName = "";
+                        if(bits.length > 1) {
+                            bucketName = bits[0];
+                        }
                         String fileId = bits[bits.length - 1];
-
+                        
                         List<JsonObject> newfileJsonObject = IntStream.range(0, newfilesJsonArray.size())
                                 .mapToObj(index -> ((JsonObject) newfilesJsonArray.get(index)).getJsonObject(fileId))
                                 .filter(Objects::nonNull).collect(Collectors.toList());
-
                         if (newfileJsonObject != null) {
-                            if (!newfileJsonObject.get(0).getString("hash").equalsIgnoreCase("null")) {
+                            logger.info("List Size: " + newfileJsonObject.size());
+                            //if (!newfileJsonObject.get(0).getString("hash").equalsIgnoreCase("null")) {
                                 JsonPatch path = Json.createPatchBuilder()
                                         .add("/md5Hash", newfileJsonObject.get(0).getString("hash")).build();
                                 fileJsonObject = path.apply(fileJsonObject);
@@ -716,11 +730,11 @@ public class GlobusServiceBean implements java.io.Serializable {
                                 fileJsonObject = path.apply(fileJsonObject);
                                 jsonDataSecondAPI.add(fileJsonObject);
                                 countSuccess++;
-                            } else {
-                                globusLogger.info(fileName
-                                        + " will be skipped from adding to dataset by second API due to missing values ");
-                                countError++;
-                            }
+                           // } else {
+                           //     globusLogger.info(fileName
+                           //             + " will be skipped from adding to dataset by second API due to missing values ");
+                           //     countError++;
+                           // }
                         } else {
                             globusLogger.info(fileName
                                     + " will be skipped from adding to dataset by second API due to missing values ");
@@ -1045,8 +1059,8 @@ public class GlobusServiceBean implements java.io.Serializable {
             } catch (IOException ioex) {
                 count = 3;
                 logger.info(ioex.getMessage());
-                globusLogger.info("S3AccessIO: DataFile (fullPAth " + fullPath
-                        + ") does not appear to be an S3 object associated with driver: ");
+                globusLogger.info("DataFile (fullPAth " + fullPath
+                        + ") does not appear to be accessible withing Dataverse: ");
             } catch (Exception ex) {
                 count = count + 1;
                 ex.printStackTrace();

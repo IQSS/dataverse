@@ -132,6 +132,8 @@ public class DataAccess {
             return new SwiftAccessIO<>(storageLocation, storageDriverId);
         case REMOTE:
             return new RemoteOverlayAccessIO<>(storageLocation, storageDriverId);
+        case GLOBUS:
+            return new GlobusOverlayAccessIO<>(storageLocation, storageDriverId);
         default:
         	logger.warning("Could not find storage driver for: " + fullStorageLocation);
         	throw new IOException("getDirectStorageIO: Unsupported storage method.");

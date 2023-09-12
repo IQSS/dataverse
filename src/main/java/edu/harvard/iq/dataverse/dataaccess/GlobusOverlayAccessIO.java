@@ -58,46 +58,63 @@ import javax.net.ssl.SSLContext;
 /*
  * Globus Overlay Driver
  * 
- * Remote: 
- *   StorageIdentifier format: <globusDriverId>://<baseStorageIdentifier>//<relativePath>
- *   Storage location: <globusendpointId/basepath>/<relPath>
- * Internal
- *   StorageIdentifier format: <globusDriverId>://<baseStorageIdentifier>//<relativePath>
- *   Storage location: <globusEndpointId/basepath>/<dataset authority>/<dataset identifier>/<baseStorageIdentifier>
+ * Remote: StorageIdentifier format:
+ * <globusDriverId>://<baseStorageIdentifier>//<relativePath> Storage location:
+ * <globusendpointId/basepath>/<relPath> Internal StorageIdentifier format:
+ * <globusDriverId>://<baseStorageIdentifier> Storage location:
+ * <globusEndpointId/basepath>/<dataset authority>/<dataset
+ * identifier>/<baseStorageIdentifier>
  *
  * baseUrl: globus://<globusEndpointId/basePath>
- 
+ * 
  */
 public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAccessIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO");
 
-
-    private String globusAccessToken = null;
+    String globusAccessToken = null;
     /*
-     * If this is set to true, the store supports Globus transfer in and Dataverse/the globus app manage file locations, access controls, deletion, etc.
+     * If this is set to true, the store supports Globus transfer in and
+     * Dataverse/the globus app manage file locations, access controls, deletion,
+     * etc.
      */
-    private boolean isDataverseManaged = false;
+    private boolean dataverseManaged = false;
 
     public GlobusOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
-        this.setIsLocalFile(false);
-        configureStores(req, driverId, null);
-        logger.fine("Parsing storageidentifier: " + dvObject.getStorageIdentifier());
-        path = dvObject.getStorageIdentifier().substring(dvObject.getStorageIdentifier().lastIndexOf("//") + 2);
-        validatePath(path);
+        if (dvObject instanceof DataFile) {
+            globusAccessToken = retrieveGlobusAccessToken();
+        }
+        dataverseManaged = isDataverseManaged(this.driverId);
 
-        logger.fine("Relative path: " + path);
+        logger.info("GAT3: " + globusAccessToken);
     }
 
     public GlobusOverlayAccessIO(String storageLocation, String driverId) throws IOException {
-        super(null, null, driverId);
-        this.setIsLocalFile(false);
-        configureStores(null, driverId, storageLocation);
+        this.driverId = driverId;
+        this.dataverseManaged = isDataverseManaged(this.driverId);
+        if (dataverseManaged) {
+            String[] parts = DataAccess.getDriverIdAndStorageLocation(storageLocation);
+            path = parts[1];
+        } else {
+            this.setIsLocalFile(false);
+            configureStores(null, driverId, storageLocation);
 
-        path = storageLocation.substring(storageLocation.lastIndexOf("//") + 2);
-        validatePath(path);
-        logger.fine("Relative path: " + path);
+            path = storageLocation.substring(storageLocation.lastIndexOf("//") + 2);
+            validatePath(path);
+            logger.fine("Relative path: " + path);
+        }
+//ToDo - only when needed?
+        globusAccessToken = retrieveGlobusAccessToken();
+
+    }
+
+    private String retrieveGlobusAccessToken() {
+        // String globusToken = JvmSettings.GLOBUS_TOKEN.lookup(driverId);
+        String globusToken = System.getProperty("dataverse.files." + this.driverId + ".globus-token");
+
+        AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
+        return accessToken.getOtherTokens().get(0).getAccessToken();
     }
 
     private void validatePath(String relPath) throws IOException {
@@ -114,6 +131,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
     // Call the Globus API to get the file size
     @Override
     long retrieveSize() {
+        logger.info("GAT2: " + globusAccessToken);
         // Construct Globus URL
         URI absoluteURI = null;
         try {
@@ -121,16 +139,16 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
             String endpointWithBasePath = baseUrl.substring(baseUrl.lastIndexOf("://") + 3);
             int pathStart = endpointWithBasePath.indexOf("/");
             logger.info("endpointWithBasePath: " + endpointWithBasePath);
-            String directoryPath = "/" + (pathStart > 0 ? endpointWithBasePath.substring(pathStart+1) : "");
+            String directoryPath = "/" + (pathStart > 0 ? endpointWithBasePath.substring(pathStart + 1) : "");
             logger.info("directoryPath: " + directoryPath);
 
-            if(isDataverseManaged) {
+            if (dataverseManaged && (dvObject!=null)) {
                 Dataset ds = ((DataFile) dvObject).getOwner();
                 directoryPath = directoryPath + "/" + ds.getAuthority() + "/" + ds.getIdentifier();
                 logger.info("directoryPath now: " + directoryPath);
 
             }
-            if(filenameStart > 0) {
+            if (filenameStart > 0) {
                 directoryPath = directoryPath + path.substring(0, filenameStart);
             }
             logger.info("directoryPath finally: " + directoryPath);
@@ -168,12 +186,15 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         return -1;
     }
 
-
-
-
+    
+    @Override
+    public InputStream getInputStream() throws IOException {
+        throw new IOException("Not implemented");
+    }
+    
     @Override
     public void delete() throws IOException {
-        
+
 // Fix
         // Delete is best-effort - we tell the remote server and it may or may not
         // implement this call
@@ -205,9 +226,6 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
 
     }
 
-
-
-
     @Override
     public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName)
             throws IOException {
@@ -218,114 +236,37 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
             if (secretKey == null) {
                 return baseUrl + "/" + path;
             } else {
-                return UrlSignerUtil.signUrl(baseUrl + "/" + path, getUrlExpirationMinutes(), null, "GET",
-                        secretKey);
+                return UrlSignerUtil.signUrl(baseUrl + "/" + path, getUrlExpirationMinutes(), null, "GET", secretKey);
             }
         } else {
             return baseStore.generateTemporaryDownloadUrl(auxiliaryTag, auxiliaryType, auxiliaryFileName);
         }
     }
 
-    private void configureStores(DataAccessRequest req, String driverId, String storageLocation) throws IOException {
-        // String globusToken = JvmSettings.GLOBUS_TOKEN.lookup(driverId);
-        String globusToken = System.getProperty("dataverse.files." + this.driverId + ".globus-token");
-        isDataverseManaged = Boolean.getBoolean("dataverse.files." + this.driverId + ".managed");
-
-        AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
-        globusAccessToken = accessToken.getOtherTokens().get(0).getAccessToken();
-        // endpointWithBasePath = JvmSettings.BASE_URI.lookup(this.driverId);
-        baseUrl = System.getProperty("dataverse.files." + this.driverId + ".base-url");
-        logger.info("base-url is " + baseUrl);
-        if (baseUrl == null) {
-            throw new IOException("dataverse.files." + this.driverId + ".base-url is required");
-        } else {
-            try {
-                new URI(baseUrl);
-            } catch (Exception e) {
-                logger.warning(
-                        "Trouble interpreting base-url for store: " + this.driverId + " : " + e.getLocalizedMessage());
-                throw new IOException("Can't interpret base-url as a URI");
-            }
-
-        }
-
-        if (baseStore == null) {
-            String baseDriverId = getBaseStoreIdFor(driverId);
-            String fullStorageLocation = null;
-            String baseDriverType = System.getProperty("dataverse.files." + baseDriverId + ".type",
-                    DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
-
-            if (dvObject instanceof Dataset) {
-                baseStore = DataAccess.getStorageIO(dvObject, req, baseDriverId);
-            } else {
-                if (this.getDvObject() != null) {
-                    fullStorageLocation = getStoragePath();
-
-                    // S3 expects <id>://<bucketname>/<key>
-                    switch (baseDriverType) {
-                    case DataAccess.S3:
-                        fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".bucket-name") + "/"
-                                + fullStorageLocation;
-                        break;
-                    case DataAccess.FILE:
-                        fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files")
-                                + "/" + fullStorageLocation;
-                        break;
-                    default:
-                        logger.warning("Not Supported: " + this.getClass().getName() + " store with base store type: "
-                                + System.getProperty("dataverse.files." + baseDriverId + ".type"));
-                        throw new IOException("Not supported");
-                    }
-
-                } else if (storageLocation != null) {
-                    // <remoteDriverId>://<baseStorageIdentifier>//<baseUrlPath>
-                    // remoteDriverId:// is removed if coming through directStorageIO
-                    int index = storageLocation.indexOf(DataAccess.SEPARATOR);
-                    if (index > 0) {
-                        storageLocation = storageLocation.substring(index + DataAccess.SEPARATOR.length());
-                    }
-                    // THe base store needs the baseStoreIdentifier and not the relative URL
-                    fullStorageLocation = storageLocation.substring(0, storageLocation.indexOf("//"));
-
-                    switch (baseDriverType) {
-                    case DataAccess.S3:
-                        fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".bucket-name") + "/"
-                                + fullStorageLocation;
-                        break;
-                    case DataAccess.FILE:
-                        fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files")
-                                + "/" + fullStorageLocation;
-                        break;
-                    default:
-                        logger.warning("Not Supported: " + this.getClass().getName() + " store with base store type: "
-                                + System.getProperty("dataverse.files." + baseDriverId + ".type"));
-                        throw new IOException("Not supported");
-                    }
-                }
-                baseStore = DataAccess.getDirectStorageIO(fullStorageLocation);
-            }
-            if (baseDriverType.contentEquals(DataAccess.S3)) {
-                ((S3AccessIO<?>) baseStore).setMainDriver(false);
-            }
-        }
-        remoteStoreName = System.getProperty("dataverse.files." + this.driverId + ".remote-store-name");
-        try {
-            remoteStoreUrl = new URL(System.getProperty("dataverse.files." + this.driverId + ".remote-store-url"));
-        } catch (MalformedURLException mfue) {
-            logger.fine("Unable to read remoteStoreUrl for driver: " + this.driverId);
-        }
+    private static boolean isDataverseManaged(String driverId) {
+        return Boolean.getBoolean("dataverse.files." + driverId + ".managed");
     }
 
-
-    protected static boolean isValidIdentifier(String driverId, String storageId) {
-        String urlPath = storageId.substring(storageId.lastIndexOf("//") + 2);
+    static boolean isValidIdentifier(String driverId, String storageId) {
+        String baseIdentifier = storageId.substring(storageId.lastIndexOf("//") + 2);
         String baseUrl = System.getProperty("dataverse.files." + driverId + ".base-url");
+        if (baseUrl == null) {
+            return false;
+        }
+        // Internally managed endpoints require standard name pattern (submitted via
+        // /addFile(s) api)
+        if (isDataverseManaged(driverId)) {
+            boolean hasStandardName = usesStandardNamePattern(baseIdentifier);
+            if (hasStandardName) {
+                return true;
+            } else {
+                logger.warning("Unacceptable identifier pattern in submitted identifier: " + baseIdentifier);
+                return false;
+            }
+        }
+        // Remote endpoints require a valid URI within the baseUrl
         try {
-            URI absoluteURI = new URI(baseUrl + "/" + urlPath);
+            URI absoluteURI = new URI(baseUrl + "/" + baseIdentifier);
             if (!absoluteURI.normalize().toString().startsWith(baseUrl)) {
                 logger.warning("storageidentifier doesn't start with " + driverId + "'s base-url: " + storageId);
                 return false;
@@ -338,7 +279,6 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         return true;
     }
 
-
     public static void main(String[] args) {
         System.out.println("Running the main method");
         if (args.length > 0) {
@@ -347,15 +287,19 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         // System.setProperty("dataverse.files.globus.globus_client_id",
         // "2791b83e-b989-47c5-a7fa-ce65fd949522");
         System.setProperty("dataverse.files.globus.base-url", "globus://d8c42580-6528-4605-9ad8-116a61982644");
-        System.out.println("Valid: " + isValidIdentifier("globus", "globus://localid//../of/the/hill"));
+        System.out.println("NotValid: " + isValidIdentifier("globus", "globus://localid//../of/the/hill"));
+        System.out.println("ValidRemote: " + isValidIdentifier("globus", "globus://localid//of/the/hill"));
+        System.setProperty("dataverse.files.globus.managed", "true");
+
+        System.out.println("ValidLocal: " + isValidIdentifier("globus", "globus://176e28068b0-1c3f80357c42"));
         // System.setProperty("dataverse.files.globus.globus-token","Mjc5MWI4M2UtYjk4OS00N2M1LWE3ZmEtY2U2NWZkOTQ5NTIyOkt4ZEdndFVDUDVZZG5sRG4rRHEzaVMxTHBtTVRGNlB3RjlwWm9kRTBWNVE9");
         System.setProperty("dataverse.files.globus.globus-token",
                 "YTVlNzFjNzItYWVkYi00Mzg4LTkzNWQtY2NhM2IyODI2MzdmOnErQXRBeWNEMVM3amFWVnB0RlFnRk5zMTc3OFdDa3lGeVZPT3k0RDFpaXM9");
         System.setProperty("dataverse.files.globus.base-store", "file");
         System.setProperty("dataverse.files.file.type", DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
         System.setProperty("dataverse.files.file.directory", "/tmp/files");
-        logger.info(JvmSettings.BASE_URL.lookup("globus"));
-        logger.info(JvmSettings.GLOBUS_TOKEN.lookup("globus"));
+        // logger.info(JvmSettings.BASE_URL.lookup("globus"));
+        // logger.info(JvmSettings.GLOBUS_TOKEN.lookup("globus"));
 
         try {
             GlobusOverlayAccessIO<DvObject> gsio = new GlobusOverlayAccessIO<DvObject>(

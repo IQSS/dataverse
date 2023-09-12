@@ -65,6 +65,8 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.RemoteOverlayAccessIO");
 
+    String globusAccessToken = null;
+    
     protected StorageIO<DvObject> baseStore = null;
     protected String path = null;
     protected String baseUrl = null;
@@ -79,6 +81,9 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     protected static boolean trustCerts = false;
     protected int httpConcurrency = 4;
 
+    public RemoteOverlayAccessIO() {
+    }
+    
     public RemoteOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
         this.setIsLocalFile(false);
@@ -445,7 +450,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         return 60;
     }
 
-    private void configureStores(DataAccessRequest req, String driverId, String storageLocation) throws IOException {
+    protected void configureStores(DataAccessRequest req, String driverId, String storageLocation) throws IOException {
         baseUrl = System.getProperty("dataverse.files." + this.driverId + ".base-url");
         if (baseUrl == null) {
             throw new IOException("dataverse.files." + this.driverId + ".base-url is required");
@@ -616,7 +621,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     }
 
-    protected static boolean isValidIdentifier(String driverId, String storageId) {
+    static boolean isValidIdentifier(String driverId, String storageId) {
         String urlPath = storageId.substring(storageId.lastIndexOf("//") + 2);
         String baseUrl = System.getProperty("dataverse.files." + driverId + ".base-url");
         try {
