@@ -1,47 +1,49 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
-import javax.json.JsonArray;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import jakarta.json.JsonArray;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import org.hamcrest.CoreMatchers;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
 import javax.imageio.ImageIO;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import static org.junit.Assert.assertNotEquals;
-import static java.lang.Thread.sleep;
+
+import jakarta.json.JsonObjectBuilder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SearchIT {
 
     private static final Logger logger = Logger.getLogger(SearchIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
 
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -103,7 +105,7 @@ public class SearchIT {
         assertEquals(200, grantUser2AccessOnDataset.getStatusCode());
 
         String searchPart = "id:dataset_" + datasetId1 + "_draft";        
-        assertTrue("Failed test if search exceeds max duration " + searchPart , UtilIT.sleepForSearch(searchPart, apiToken2, "", UtilIT.MAXIMUM_INGEST_LOCK_DURATION)); 
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken2, "", UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
         
         Response shouldBeVisibleToUser2 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken2);
         shouldBeVisibleToUser2.prettyPrint();
@@ -153,7 +155,7 @@ public class SearchIT {
         Response dataverse47behaviorOfTokensBeingRequired = UtilIT.search("id:dataset_" + datasetId1, nullToken);
         dataverse47behaviorOfTokensBeingRequired.prettyPrint();
         dataverse47behaviorOfTokensBeingRequired.then().assertThat()
-                .body("message", CoreMatchers.equalTo("Please provide a key query parameter (?key=XXX) or via the HTTP header X-Dataverse-key"))
+                .body("message", CoreMatchers.equalTo(AbstractApiBean.RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
         Response reEnableTokenlessSearch = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiRequiresToken);
@@ -309,7 +311,7 @@ public class SearchIT {
         allFieldsFromCitation.then().assertThat()
                 .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
                 // Many fields returned, all of the citation block that has been filled in.
-                .body("data.items[0].metadataBlocks.citation.fields.typeName.size", Matchers.equalTo(5))
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.hasSize(5))
                 .statusCode(OK.getStatusCode());
 
     }
@@ -745,6 +747,7 @@ public class SearchIT {
         System.out.println("identifier: " + identifier);
 
         String searchPart = identifier.replace("FK2/", "");
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublished = UtilIT.search(searchPart, apiToken);
         searchUnpublished.prettyPrint();
         searchUnpublished.then().assertThat()
@@ -760,6 +763,7 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
 
         searchPart = identifier.replace("FK2/", "");
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchTargeted = UtilIT.search("dsPersistentId:" + searchPart, apiToken);
         searchTargeted.prettyPrint();
         searchTargeted.then().assertThat()
@@ -810,7 +814,7 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(4000);
         } catch (InterruptedException ex) {
             /**
              * This sleep is here because dataverseAlias2 is showing with
@@ -911,7 +915,7 @@ public class SearchIT {
         String searchPart = "*"; 
         
         Response searchPublishedSubtreeSuper = UtilIT.search(searchPart, apiTokenSuper, "&subtree="+parentDataverseAlias);
-        assertTrue("Failed test if search exceeds max duration " + searchPart , UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION)); 
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
         searchPublishedSubtreeSuper.prettyPrint();
         searchPublishedSubtreeSuper.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -962,6 +966,9 @@ public class SearchIT {
         Response datasetAsJson2 = UtilIT.nativeGet(datasetId2, apiToken);
         datasetAsJson2.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        
+        // Wait a little while for the index to pick up the datasets, otherwise timing issue with searching for it.
+        UtilIT.sleepForReindex(datasetId2.toString(), apiToken, 2);
 
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         String identifier2 = JsonPath.from(datasetAsJson2.getBody().asString()).getString("data.identifier"); 
@@ -971,12 +978,12 @@ public class SearchIT {
         Response searchFakeSubtree = UtilIT.search(searchPart, apiToken, "&subtree=fake");
         searchFakeSubtree.prettyPrint();
         searchFakeSubtree.then().assertThat()
-                .statusCode(400);
+                .statusCode(BAD_REQUEST.getStatusCode());
         
         Response searchFakeSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree=fake");
         searchFakeSubtreeNoAPI.prettyPrint();
         searchFakeSubtreeNoAPI.then().assertThat()
-                .statusCode(400);
+                .statusCode(BAD_REQUEST.getStatusCode());
 
         Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
         searchUnpublishedSubtree.prettyPrint();
@@ -1004,25 +1011,29 @@ public class SearchIT {
                 // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
 
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedRootSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "&subtree=root");
         searchUnpublishedRootSubtreeForDataset.prettyPrint();
         searchUnpublishedRootSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
 
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedRootSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "&subtree=root");
         searchUnpublishedRootSubtreeForDatasetNoAPI.prettyPrint();
         searchUnpublishedRootSubtreeForDatasetNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
-        
+
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedNoSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "");
         searchUnpublishedNoSubtreeForDataset.prettyPrint();
         searchUnpublishedNoSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
         
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedNoSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "");
         searchUnpublishedNoSubtreeForDatasetNoAPI.prettyPrint();
         searchUnpublishedNoSubtreeForDatasetNoAPI.then().assertThat()
@@ -1072,20 +1083,209 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(2));
         
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchPublishedRootSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "&subtree=root");
         searchPublishedRootSubtreeForDataset.prettyPrint();
         searchPublishedRootSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
+
+        UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchPublishedRootSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "&subtree=root");
         searchPublishedRootSubtreeForDatasetNoAPI.prettyPrint();
         searchPublishedRootSubtreeForDatasetNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
     }
-    
-    @After
+
+    @Test
+    public void testGeospatialSearch() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("geospatial"), apiToken);
+        setMetadataBlocks.prettyPrint();
+        setMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
+
+        JsonObjectBuilder datasetJson = Json.createObjectBuilder()
+                .add("datasetVersion", Json.createObjectBuilder()
+                        .add("metadataBlocks", Json.createObjectBuilder()
+                                .add("citation", Json.createObjectBuilder()
+                                        .add("fields", Json.createArrayBuilder()
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "title")
+                                                        .add("value", "Dataverse HQ")
+                                                        .add("typeClass", "primitive")
+                                                        .add("multiple", false)
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("authorName",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "Simpson, Homer")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "authorName"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "author")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("datasetContactEmail",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "hsimpson@mailinator.com")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "datasetContactEmail"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "datasetContact")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        .add("dsDescriptionValue",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "Headquarters for Dataverse.")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "dsDescriptionValue"))
+                                                                )
+                                                        )
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "dsDescription")
+                                                )
+                                                .add(Json.createObjectBuilder()
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add("Other")
+                                                        )
+                                                        .add("typeClass", "controlledVocabulary")
+                                                        .add("multiple", true)
+                                                        .add("typeName", "subject")
+                                                )
+                                        )
+                                )
+                                .add("geospatial", Json.createObjectBuilder()
+                                        .add("fields", Json.createArrayBuilder()
+                                                .add(Json.createObjectBuilder()
+                                                        .add("typeName", "geographicBoundingBox")
+                                                        .add("typeClass", "compound")
+                                                        .add("multiple", true)
+                                                        .add("value", Json.createArrayBuilder()
+                                                                .add(Json.createObjectBuilder()
+                                                                        // The box is roughly on Cambridge, MA
+                                                                        // See https://linestrings.com/bbox/#-71.187346,42.33661,-71.043056,42.409599
+                                                                        .add("westLongitude",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "-71.187346")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "westLongitude")
+                                                                        )
+                                                                        .add("southLongitude",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "42.33661")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "southLongitude")
+                                                                        )
+                                                                        .add("eastLongitude",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "-71.043056")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "eastLongitude")
+                                                                        )
+                                                                        .add("northLongitude",
+                                                                                Json.createObjectBuilder()
+                                                                                        .add("value", "42.409599")
+                                                                                        .add("typeClass", "primitive")
+                                                                                        .add("multiple", false)
+                                                                                        .add("typeName", "northLongitude")
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        ));
+
+        Response createDatasetResponse = UtilIT.createDataset(dataverseAlias, datasetJson, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
+
+        // Plymouth rock (41.9580775,-70.6621063) is within 50 km of Cambridge. Hit.
+        Response search1 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&show_entity_ids=true&geo_point=41.9580775,-70.6621063&geo_radius=50");
+        search1.prettyPrint();
+        search1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.items[0].entity_id", CoreMatchers.is(datasetId));
+
+        // Plymouth rock (41.9580775,-70.6621063) is not within 1 km of Cambridge. Miss.
+        Response search2 = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken, "&geo_point=41.9580775,-70.6621063&geo_radius=1");
+        search2.prettyPrint();
+        search2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", CoreMatchers.is(0))
+                .body("data.count_in_response", CoreMatchers.is(0));
+
+    }
+
+    @Test
+    public void testGeospatialSearchInvalid() {
+
+        Response noRadius = UtilIT.search("*", null, "&geo_point=40,60");
+        noRadius.prettyPrint();
+        noRadius.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo("If you supply geo_point you must also supply geo_radius."));
+
+        Response noPoint = UtilIT.search("*", null, "&geo_radius=5");
+        noPoint.prettyPrint();
+        noPoint.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo("If you supply geo_radius you must also supply geo_point."));
+
+        Response junkPoint = UtilIT.search("*", null, "&geo_point=junk&geo_radius=5");
+        junkPoint.prettyPrint();
+        junkPoint.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo("Must contain a single comma to separate latitude and longitude."));
+
+        Response pointLatLongTooLarge = UtilIT.search("*", null, "&geo_point=999,999&geo_radius=5");
+        pointLatLongTooLarge.prettyPrint();
+        pointLatLongTooLarge.then().assertThat()
+                // "Search Syntax Error: Error from server at http://localhost:8983/solr/collection1:
+                // Can't parse point '999.0,999.0' because: Bad X value 999.0 is not in boundary Rect(minX=-180.0,maxX=180.0,minY=-90.0,maxY=90.0)"
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        Response junkRadius = UtilIT.search("*", null, "&geo_point=40,60&geo_radius=junk");
+        junkRadius.prettyPrint();
+        junkRadius.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", CoreMatchers.equalTo("Non-number radius supplied."));
+
+    }
+
+    @AfterEach
     public void tearDownDataverse() {
         File treesThumb = new File("scripts/search/data/binary/trees.png.thumb48");
         treesThumb.delete();
@@ -1095,7 +1295,7 @@ public class SearchIT {
         dataverseprojectThumb.delete();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
     }
 

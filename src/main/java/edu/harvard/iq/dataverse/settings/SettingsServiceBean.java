@@ -5,16 +5,16 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -174,7 +174,12 @@ public class SettingsServiceBean {
          *
          */
         SearchRespectPermissionRoot,
-        /** Solr hostname and port, such as "localhost:8983". */
+        /**
+         * Solr hostname and port, such as "localhost:8983".
+         * @deprecated New installations should not use this database setting, but use {@link JvmSettings#SOLR_HOST}
+         *             and {@link JvmSettings#SOLR_PORT}.
+         */
+        @Deprecated(forRemoval = true, since = "2022-12-23")
         SolrHostColonPort,
         /** Enable full-text indexing in solr up to max file size */
         SolrFullTextIndexing, //true or false (default)
@@ -401,9 +406,10 @@ public class SettingsServiceBean {
          */
         InheritParentRoleAssignments,
         
-        /** Make Data Count Logging and Display */
+        /** Make Data Count Logging, Display, and Start Date */
         MDCLogPath, 
         DisplayMDCMetrics,
+        MDCStartDate,
 
         /**
          * Allow CORS flag (true or false). It is true by default
@@ -560,10 +566,40 @@ public class SettingsServiceBean {
          * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
          */
         LDNMessageHosts,
+
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */
-        ControlledVocabularyCustomJavaScript
+        ControlledVocabularyCustomJavaScript, 
+        /**
+         * A compound setting for disabling signup for remote Auth providers:
+         */
+        AllowRemoteAuthSignUp,
+        /**
+         * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
+         */
+        WebloaderUrl,
+        /**
+         * A comma-separated list of CategoryName in the desired order for files to be
+         * sorted in the file table display. If not set, files will be sorted
+         * alphabetically by default. If set, files will be sorted by these categories
+         * and alphabetically within each category.
+         */
+        CategoryOrder,
+        /**
+         * True(default)/false option deciding whether ordering by folder should be applied to the 
+         * dataset listing of datafiles.
+         */
+        OrderByFolder,
+        /**
+         * True/false(default) option deciding whether the dataset file table display should include checkboxes
+         * allowing users to dynamically turn folder and category ordering on/off.
+         */
+        AllowUserManagementOfOrder,
+        /*
+         * True/false(default) option deciding whether file PIDs can be enabled per collection - using the Dataverse/collection set attribute API call.
+         */
+        AllowEnablingFilePIDsPerCollection
         ;
 
         @Override
@@ -668,7 +704,39 @@ public class SettingsServiceBean {
     	   }
 
        }
+       
+    /**
+     * Same, but with Booleans 
+     * (returns null if not set; up to the calling method to decide what that should
+     * default to in each specific case)
+     * Example:
+     * :AllowRemoteAuthSignUp	{"default":"true","google":"false"}
+     */
     
+    public Boolean getValueForCompoundKeyAsBoolean(Key key, String param) {
+
+        String val = this.getValueForKey(key);
+
+        if (val == null) {
+            return null;
+        }
+
+        try (StringReader rdr = new StringReader(val)) {
+            JsonObject settings = Json.createReader(rdr).readObject();
+            if (settings.containsKey(param)) {
+                return Boolean.parseBoolean(settings.getString(param));
+            } else if (settings.containsKey("default")) {
+                return Boolean.parseBoolean(settings.getString("default"));
+            } else {
+                return null;
+            }
+
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to boolean: {2}", new Object[]{val, key.toString(), e.getMessage()});
+            return null;
+        }
+
+    }
     /**
      * Return the value stored, or the default value, in case no setting by that
      * name exists. The main difference between this method and the other {@code get()}s

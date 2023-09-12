@@ -29,6 +29,7 @@ import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderConfigurationRequest;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
@@ -271,5 +272,19 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
         } catch (ParseException ex) {
             throw new OAuth2Exception(-1, ex.getMessage(), BundleUtil.getStringFromBundle("auth.providers.exception.userinfo", Arrays.asList(this.getTitle())));
         }
+    }
+
+    /**
+     * Returns the UserRecordIdentifier corresponding to the given accessToken if valid.
+     * UserRecordIdentifier (same used as in OAuth2UserRecord), i.e. can be used to find a local UserAccount.
+     * @param accessToken
+     * @return Returns the UserRecordIdentifier corresponding to the given accessToken if valid.
+     * @throws IOException
+     * @throws OAuth2Exception
+     */
+    public Optional<UserRecordIdentifier> getUserIdentifierForValidToken(BearerAccessToken accessToken) throws IOException, OAuth2Exception{
+        // Request the UserInfoEndpoint to obtain UserInfo, since this endpoint also validate the Token we can reuse the existing code path.
+        // As an alternative we could use the Introspect Endpoint or assume the Token as some encoded information (i.e. JWT).
+        return  Optional.of(new UserRecordIdentifier(  this.getId(), getUserInfo(accessToken).get().getSubject().getValue()));
     }
 }

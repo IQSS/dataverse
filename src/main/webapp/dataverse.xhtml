@@ -592,7 +592,7 @@
                             <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                             <div class="row margin-bottom" jsf:rendered="#{!empty DataversePage.dataverse.description and !widgetWrapper.widgetView}">
                                 <div id="dataverseDesc" class="col-xs-12">
-                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DataversePage.dataverse.description)}" escape="false"/>
+                                   <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DataversePage.dataverse.description)}" escape="false"/>
                                 </div>
                             </div>
                             <!-- Featured Dataverses Carousel -->
@@ -822,12 +822,14 @@
                     </div>
                     </h:form>
                 </p:dialog>
+                <c:set var="descriptionText" value="#{bundle.description}" />
                 <script>
                     //<![CDATA[
                     var scrollPos=0;
                     $(document).ready(function () {
                         initCarousel();
                         popoverHTML('#{bundle.htmlAllowedTitle}','#{bundle.htmlAllowedTags}');
+                        summarizeDesc();
                     });
                     function initCarousel() {
                         var owl1 = $("#featuredDataversesList");
@@ -852,6 +854,18 @@
                             $("#featuredDataversesBlock .customNavigation a.btn").hide();
                         }
                         $('#featuredDataversesList .item').matchHeight();
+                    }
+                    function summarizeDesc() {
+                        // truncate summary description, contentTruncate function in dv_rebind_bootstrap_ui.js
+                        // add id to pass as selector param
+                        var descId = 'dataverseDesc';
+                        // add metadata dynamic label text, tooltip text from bundle as param
+                        var truncMoreBtn = '#{of:format1(bundle.truncateMoreBtn, descriptionText)}';
+                        var truncMoreTip = '#{of:format1(bundle.truncateMoreTip, descriptionText)}';
+                        var truncLessBtn = '#{of:format1(bundle.truncateLessBtn, descriptionText)}';
+                        var truncLessTip = '#{of:format1(bundle.truncateLessTip, descriptionText)}';
+                        // pass bundle text variables as params to function
+                        contentTruncate(descId, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip);
                     }
                     function callOnError(){
                         window.scrollTo(0, 0);

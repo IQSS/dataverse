@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(OrderAnnotation.class)
@@ -27,7 +27,7 @@ public class MailUtilTest {
     @Mock
     SettingsServiceBean settingsSvc;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         userNotification = new UserNotification();
 
@@ -98,25 +98,25 @@ public class MailUtilTest {
     @Test
     public void testSubjectCreateDataset() {
         userNotification.setType(UserNotification.Type.CREATEDS);
-        assertEquals("LibraScholar: Your dataset has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
+        assertEquals("LibraScholar: Dataset \"\" has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
     
     @Test
     public void testSubjectSubmittedDS() {
         userNotification.setType(UserNotification.Type.SUBMITTEDDS);
-        assertEquals("LibraScholar: Your dataset has been submitted for review", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
+        assertEquals("LibraScholar: Dataset \"\" has been submitted for review", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
     
     @Test
     public void testSubjectPublishedDS() {
         userNotification.setType(UserNotification.Type.PUBLISHEDDS);
-        assertEquals("LibraScholar: Your dataset has been published", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
+        assertEquals("LibraScholar: Dataset \"\" has been published", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
     
     @Test
     public void testSubjectReturnedDS() {
         userNotification.setType(UserNotification.Type.RETURNEDDS);
-        assertEquals("LibraScholar: Your dataset has been returned", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
+        assertEquals("LibraScholar: Dataset \"\" has been returned", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
     
     @Test

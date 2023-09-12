@@ -18,7 +18,7 @@ If you want to learn more about OAI-PMH, you could take a look at
 or the `OAI-PMH protocol definition <https://www.openarchives.org/OAI/openarchivesprotocol.html>`_.
 
 You might consider adding your OAI-enabled Dataverse installation to
-`this shared list <https://docs.google.com/spreadsheets/d/12cxymvXCqP_kCsLKXQD32go79HBWZ1vU_tdG4kvP5S8/>`_
+`this shared list <https://docs.google.com/spreadsheets/d/1bfsw7gnHlHerLXuk7YprUT68liHfcaMxs1rFciA-mEo/>`_
 of such instances.
 
 The email portion of :ref:`systemEmail` will be visible via OAI-PMH (from the "Identify" verb).
@@ -115,10 +115,10 @@ Some useful examples of search queries to define OAI sets:
 
   ``keywordValue:censorship``
 
-Important: New SOLR schema required!
+Important: New Solr schema required!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to be able to define OAI sets, your SOLR server must be upgraded with the search schema that came with release 4.5 (or later), and all your local datasets must be re-indexed, once the new schema is installed. 
+In order to be able to define OAI sets, your Solr server must be upgraded with the search schema that came with release 4.5 (or later), and all your local datasets must be re-indexed, once the new schema is installed. 
 
 OAI Set updates
 ---------------

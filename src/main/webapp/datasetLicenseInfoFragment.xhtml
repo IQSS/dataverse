@@ -30,12 +30,12 @@ xmlns:jsf="http://xmlns.jcp.org/jsf">
         </div>
         <ui:fragment rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
             <div class="form-group"
-                jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}">
+                jsf:rendered="#{!empty DatasetUtil:getLocalizedLicenseDetails(DatasetPage.workingVersion.termsOfUseAndAccess.license,'DESCRIPTION')} }">
                 <label for="metadata_Terms" class="col-sm-3 control-label">
                     #{bundle['dataset.publish.terms.description']}
                 </label>
                 <div class="col-sm-9">
-                    <h:outputText value="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}" />
+                    <h:outputText value="#{DatasetUtil:getLocalizedLicenseDetails(DatasetPage.workingVersion.termsOfUseAndAccess.license,'DESCRIPTION')}" />
                 </div>
             </div>
         </ui:fragment>

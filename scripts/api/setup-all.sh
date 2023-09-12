@@ -3,7 +3,14 @@
 SECURESETUP=1
 DV_SU_PASSWORD="admin"
 
-for opt in $*
+DATAVERSE_URL=${DATAVERSE_URL:-"http://localhost:8080"}
+# Make sure scripts we call from this one also get this env var!
+export DATAVERSE_URL
+
+# scripts/api when called from the root of the source tree
+SCRIPT_PATH="$(dirname "$0")"
+
+for opt in "$@"
 do
   case $opt in
       "--insecure")
@@ -24,12 +31,8 @@ do
   esac
 done
 
+# shellcheck disable=SC2016
 command -v jq >/dev/null 2>&1 || { echo >&2 '`jq` ("sed for JSON") is required, but not installed. Download the binary for your platform from http://stedolan.github.io/jq/ and make sure it is in your $PATH (/usr/bin/jq is fine) and executable with `sudo chmod +x /usr/bin/jq`. On Mac, you can install it with `brew install jq` if you use homebrew: http://brew.sh . Aborting.'; exit 1; }
-
-echo "deleting all data from Solr"
-curl http://localhost:8983/solr/collection1/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"
-
-SERVER=http://localhost:8080/api
 
 # Everything + the kitchen sink, in a single script
 # - Setup the metadata blocks and controlled vocabulary
@@ -41,49 +44,49 @@ SERVER=http://localhost:8080/api
 
 
 echo "Setup the metadata blocks"
-./setup-datasetfields.sh
+"$SCRIPT_PATH"/setup-datasetfields.sh
 
 echo "Setup the builtin roles"
-./setup-builtin-roles.sh
+"$SCRIPT_PATH"/setup-builtin-roles.sh
 
 echo "Setup the authentication providers"
-./setup-identity-providers.sh
+"$SCRIPT_PATH"/setup-identity-providers.sh
 
 echo "Setting up the settings"
 echo  "- Allow internal signup"
-curl -X PUT -d yes "$SERVER/admin/settings/:AllowSignUp"
-curl -X PUT -d /dataverseuser.xhtml?editMode=CREATE "$SERVER/admin/settings/:SignUpUrl"
+curl -X PUT -d yes "${DATAVERSE_URL}/api/admin/settings/:AllowSignUp"
+curl -X PUT -d "/dataverseuser.xhtml?editMode=CREATE" "${DATAVERSE_URL}/api/admin/settings/:SignUpUrl"
 
-curl -X PUT -d doi "$SERVER/admin/settings/:Protocol"
-curl -X PUT -d 10.5072 "$SERVER/admin/settings/:Authority"
-curl -X PUT -d "FK2/" "$SERVER/admin/settings/:Shoulder"
-curl -X PUT -d DataCite "$SERVER/admin/settings/:DoiProvider"
-curl -X PUT -d burrito $SERVER/admin/settings/BuiltinUsers.KEY
-curl -X PUT -d localhost-only $SERVER/admin/settings/:BlockedApiPolicy
-curl -X PUT -d 'native/http' $SERVER/admin/settings/:UploadMethods
+curl -X PUT -d doi "${DATAVERSE_URL}/api/admin/settings/:Protocol"
+curl -X PUT -d 10.5072 "${DATAVERSE_URL}/api/admin/settings/:Authority"
+curl -X PUT -d "FK2/" "${DATAVERSE_URL}/api/admin/settings/:Shoulder"
+curl -X PUT -d DataCite "${DATAVERSE_URL}/api/admin/settings/:DoiProvider"
+curl -X PUT -d burrito "${DATAVERSE_URL}/api/admin/settings/BuiltinUsers.KEY"
+curl -X PUT -d localhost-only "${DATAVERSE_URL}/api/admin/settings/:BlockedApiPolicy"
+curl -X PUT -d 'native/http' "${DATAVERSE_URL}/api/admin/settings/:UploadMethods"
 echo
 
 echo "Setting up the admin user (and as superuser)"
-adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @data/user-admin.json "$SERVER/builtin-users?password=$DV_SU_PASSWORD&key=burrito")
-echo $adminResp
-curl -X POST "$SERVER/admin/superuser/dataverseAdmin"
+adminResp=$(curl -s -H "Content-type:application/json" -X POST -d @"$SCRIPT_PATH"/data/user-admin.json "${DATAVERSE_URL}/api/builtin-users?password=$DV_SU_PASSWORD&key=burrito")
+echo "$adminResp"
+curl -X POST "${DATAVERSE_URL}/api/admin/superuser/dataverseAdmin"
 echo
 
 echo "Setting up the root dataverse"
-adminKey=$(echo $adminResp | jq .data.apiToken | tr -d \")
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-root.json "$SERVER/dataverses/?key=$adminKey"
+adminKey=$(echo "$adminResp" | jq .data.apiToken | tr -d \")
+curl -s -H "Content-type:application/json" -X POST -d @"$SCRIPT_PATH"/data/dv-root.json "${DATAVERSE_URL}/api/dataverses/?key=$adminKey"
 echo
 echo "Set the metadata block for Root"
-curl -s -X POST -H "Content-type:application/json" -d "[\"citation\"]" $SERVER/dataverses/:root/metadatablocks/?key=$adminKey
+curl -s -X POST -H "Content-type:application/json" -d "[\"citation\"]" "${DATAVERSE_URL}/api/dataverses/:root/metadatablocks/?key=$adminKey"
 echo
 echo "Set the default facets for Root"
-curl -s -X POST -H "Content-type:application/json" -d "[\"authorName\",\"subject\",\"keywordValue\",\"dateOfDeposit\"]" $SERVER/dataverses/:root/facets/?key=$adminKey
+curl -s -X POST -H "Content-type:application/json" -d "[\"authorName\",\"subject\",\"keywordValue\",\"dateOfDeposit\"]" "${DATAVERSE_URL}/api/dataverses/:root/facets/?key=$adminKey"
 echo
 
 echo "Set up licenses"
 # Note: CC0 has been added and set as the default license through
 # Flyway script V5.9.0.1__7440-configurable-license-list.sql
-curl -X POST -H 'Content-Type: application/json' -H "X-Dataverse-key:$adminKey" $SERVER/licenses --upload-file data/licenses/licenseCC-BY-4.0.json
+curl -X POST -H 'Content-Type: application/json' -H "X-Dataverse-key:$adminKey" "${DATAVERSE_URL}/api/licenses" --upload-file "$SCRIPT_PATH"/data/licenses/licenseCC-BY-4.0.json
 
 # OPTIONAL USERS AND DATAVERSES
 #./setup-optional.sh
@@ -92,8 +95,8 @@ if [ $SECURESETUP = 1 ]
 then
     # Revoke the "burrito" super-key; 
     # Block sensitive API endpoints;
-    curl -X DELETE $SERVER/admin/settings/BuiltinUsers.KEY
-    curl -X PUT -d 'admin,builtin-users' $SERVER/admin/settings/:BlockedApiEndpoints
+    curl -X DELETE "${DATAVERSE_URL}/api/admin/settings/BuiltinUsers.KEY"
+    curl -X PUT -d 'admin,builtin-users' "${DATAVERSE_URL}/api/admin/settings/:BlockedApiEndpoints"
     echo "Access to the /api/admin and /api/test is now disabled, except for connections from localhost."
 else 
     echo "IMPORTANT!!!"

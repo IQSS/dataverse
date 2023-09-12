@@ -2,10 +2,10 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import java.util.List;
 import java.util.Optional;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * CRUD for {@link OAuth2TokenData}.
