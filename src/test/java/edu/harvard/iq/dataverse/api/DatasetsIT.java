@@ -557,7 +557,7 @@ public class DatasetsIT {
 
     /**
      * The apis (/api/datasets/{id}/versions and /api/datasets/{id}/versions/{vid}
-     * are called from other RestAssured tests, in this class and also FileIT. 
+     * are already called from other RestAssured tests, in this class and also FileIT. 
      * But this test is dedicated to this api specifically, and focuses on the 
      * functionality added to it in 6.1. 
     */
@@ -584,8 +584,6 @@ public class DatasetsIT {
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
-
-        Integer fileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
         
         // Check that the file we just uploaded is shown by the versions api:
         Response unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
@@ -615,13 +613,27 @@ public class DatasetsIT {
         // We should now have a published version, and a draft. 
         
         // Call /versions api, *with the owner api token*, make sure both 
-        // versions are listed        
+        // versions are listed; also check that the correct numbers of files 
+        // are shown in each version (2 in the draft, 1 in the published). 
         Response versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiToken);
         versionsResponse.prettyPrint();
         versionsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.size()", equalTo(2));
+                .body("data.size()", equalTo(2))
+                .body("data[0].files.size()", equalTo(2))
+                .body("data[1].files.size()", equalTo(1));
         
+        // Now call the this api with the new (as of 6.1) pagination parameters
+        Integer offset = 0;
+        Integer howmany = 1;
+        versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiToken, offset, howmany);
+        // (the above should return only one version, the draft)
+        versionsResponse.prettyPrint();
+        versionsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].files.size()", equalTo(2));
+                
         // And now call it with an un-privileged token, to make sure only one 
         // (the published one) version is shown:
         
@@ -630,7 +642,7 @@ public class DatasetsIT {
         versionsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(1));
-
+        
         // And now call the "short", no-files version of the same api
         versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms, skipFiles);
         versionsResponse.prettyPrint();

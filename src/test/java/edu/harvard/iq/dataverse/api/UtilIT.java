@@ -1803,6 +1803,14 @@ public class UtilIT {
     }
     
     static Response getDatasetVersions(String idOrPersistentId, String apiToken, boolean skipFiles) {
+        return getDatasetVersions(idOrPersistentId, apiToken, null, null, skipFiles);
+    }
+    
+    static Response getDatasetVersions(String idOrPersistentId, String apiToken, Integer offset, Integer limit) {
+        return getDatasetVersions(idOrPersistentId, apiToken, offset, limit, false);
+    }
+    
+    static Response getDatasetVersions(String idOrPersistentId, String apiToken, Integer offset, Integer limit, boolean skipFiles) {
         logger.info("Getting Dataset Versions");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -1815,6 +1823,20 @@ public class UtilIT {
                 optionalQueryParam = "?includeFiles=false";
             } else {
                 optionalQueryParam = optionalQueryParam.concat("&includeFiles=false");
+            }
+        }
+        if (offset != null) {
+            if ("".equals(optionalQueryParam)) {
+                optionalQueryParam = "?offset="+offset;
+            } else {
+                optionalQueryParam = optionalQueryParam.concat("&offset="+offset);
+            }
+        }
+        if (limit != null) {
+            if ("".equals(optionalQueryParam)) {
+                optionalQueryParam = "?limit="+limit;
+            } else {
+                optionalQueryParam = optionalQueryParam.concat("&limit="+limit);
             }
         }
         RequestSpecification requestSpecification = given();
