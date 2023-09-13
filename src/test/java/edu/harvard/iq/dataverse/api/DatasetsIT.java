@@ -557,7 +557,7 @@ public class DatasetsIT {
 
     /**
      * The apis (/api/datasets/{id}/versions and /api/datasets/{id}/versions/{vid}
-     * are already called from other RestAssured tests, in this class and also FileIT. 
+     * are already called from other RestAssured tests, in this class and also in FilesIT. 
      * But this test is dedicated to this api specifically, and focuses on the 
      * functionality added to it in 6.1. 
     */
