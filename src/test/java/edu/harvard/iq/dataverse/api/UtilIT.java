@@ -563,7 +563,14 @@ public class UtilIT {
                 .post("/api/datasets/:persistentId/modifyRegistrationMetadata/?persistentId=" + persistentId);
         return response;
     }
-    
+
+    /**
+     * Deprecated because once there are new fields in the database that Solr
+     * doesn't know about, dataset creation could be prevented, or at least
+     * subsequent search operations could fail because the dataset can't be
+     * indexed.
+     */
+    @Deprecated    
     static Response loadMetadataBlock(String apiToken, byte[] body) {
         return given()
           .header(API_TOKEN_HTTP_HEADER, apiToken)
