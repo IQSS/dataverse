@@ -556,6 +556,91 @@ public class DatasetsIT {
     }
 
     /**
+     * The apis (/api/datasets/{id}/versions and /api/datasets/{id}/versions/{vid}
+     * are called from other RestAssured tests, in this class and also FileIT. 
+     * But this test is dedicated to this api specifically, and focuses on the 
+     * functionality added to it in 6.1. 
+    */
+    @Test
+    public void testDatasetVersionsAPI() {
+        // Create user
+        String apiToken = UtilIT.createRandomUserGetToken();
+
+        // Create user with no permission
+        String apiTokenNoPerms = UtilIT.createRandomUserGetToken();
+
+        // Create Collection
+        String collectionAlias = UtilIT.createRandomCollectionGetAlias(apiToken);
+
+        // Create Dataset
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(collectionAlias, apiToken);
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        // Upload file
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Integer fileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        
+        // Check that the file we just uploaded is shown by the versions api:
+        Response unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .body("data.files.size()", equalTo(1))
+                .statusCode(OK.getStatusCode());
+        
+        // Now check that the file is NOT shown, when we ask the versions api to 
+        // skip files: 
+        boolean skipFiles = true; 
+        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken, skipFiles);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .body("data.files", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
+        // Publish collection and dataset
+        UtilIT.publishDataverseViaNativeApi(collectionAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Upload another file: 
+        String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
+        Response uploadResponse2 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, apiToken);
+        uploadResponse2.then().assertThat().statusCode(OK.getStatusCode());
+       
+        // We should now have a published version, and a draft. 
+        
+        // Call /versions api, *with the owner api token*, make sure both 
+        // versions are listed        
+        Response versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiToken);
+        versionsResponse.prettyPrint();
+        versionsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(2));
+        
+        // And now call it with an un-privileged token, to make sure only one 
+        // (the published one) version is shown:
+        
+        versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms);
+        versionsResponse.prettyPrint();
+        versionsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1));
+
+        // And now call the "short", no-files version of the same api
+        versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms, skipFiles);
+        versionsResponse.prettyPrint();
+        versionsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].files", equalTo(null));
+    }
+
+    
+    /**
      * This test requires the root dataverse to be published to pass.
      */
     @Test

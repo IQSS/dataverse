@@ -9,6 +9,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +51,6 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.StringReader;
 import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {
@@ -118,6 +118,16 @@ public class UtilIT {
     public static Response createRandomUser() {
 
         return createRandomUser("user");
+    }
+    
+    /**
+     * A convenience method for creating a random test user, when all you need 
+     * is the api token. 
+     * @return apiToken
+     */
+    public static String createRandomUserGetToken(){
+        Response createUser = createRandomUser();        
+        return getApiTokenFromResponse(createUser);
     }
 
     public static Response createUser(String username, String email) {
@@ -368,6 +378,20 @@ public class UtilIT {
         String alias = "dv" + getRandomIdentifier();
         String category = null;
         return createDataverse(alias, category, apiToken);
+    }
+    
+    /**
+     * A convenience method for creating a random collection and getting its 
+     * alias in one step. 
+     * @param apiToken
+     * @return alias
+     */
+    static String createRandomCollectionGetAlias(String apiToken){
+        
+        Response createCollectionResponse = createRandomDataverse(apiToken);
+        //createDataverseResponse.prettyPrint();
+        createCollectionResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        return UtilIT.getAliasFromResponse(createCollectionResponse);
     }
 
     static Response showDataverseContents(String alias, String apiToken) {
@@ -1403,9 +1427,17 @@ public class UtilIT {
     }
 
     static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken) {
+        return getDatasetVersion(persistentId, versionNumber, apiToken, false);
+    }
+    
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean skipFiles) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/:persistentId/versions/" + versionNumber + "?persistentId=" + persistentId);
+                .get("/api/datasets/:persistentId/versions/" 
+                        + versionNumber 
+                        + "?persistentId=" 
+                        + persistentId
+                        + (skipFiles ? "&includeFiles=false" : ""));
     }
 
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
@@ -1767,12 +1799,23 @@ public class UtilIT {
     }
     
     static Response getDatasetVersions(String idOrPersistentId, String apiToken) {
+        return getDatasetVersions(idOrPersistentId, apiToken, false);
+    }
+    
+    static Response getDatasetVersions(String idOrPersistentId, String apiToken, boolean skipFiles) {
         logger.info("Getting Dataset Versions");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        if (skipFiles) {
+            if ("".equals(optionalQueryParam)) {
+                optionalQueryParam = "?includeFiles=false";
+            } else {
+                optionalQueryParam = optionalQueryParam.concat("&includeFiles=false");
+            }
         }
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
