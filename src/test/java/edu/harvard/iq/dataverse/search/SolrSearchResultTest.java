@@ -4,15 +4,15 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 // ****************************************************************************************
 // The following tests test the setPublicationStatuses method aiming for 100% prime 
@@ -35,7 +35,7 @@ public class SolrSearchResultTest {
 
     SolrSearchResult solrSearchResult;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.unpublishedFlag = IndexServiceBean.getUNPUBLISHED_STRING();
         this.publishedFlag = IndexServiceBean.getPUBLISHED_STRING();
@@ -47,7 +47,7 @@ public class SolrSearchResultTest {
         this.solrSearchResult = new SolrSearchResult("myQuery", "myName");
     }
 
-    @After
+    @AfterEach
     public void after() {
         this.unpublishedFlag = null;
         this.publishedFlag = null;

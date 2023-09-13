@@ -8,6 +8,8 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
+    <ui:fragment rendered="#{DatasetPage.editMode != 'CREATE'}">
+
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <p:focus context="guestbookUIFragment"/>
         <p class="help-block">
@@ -51,6 +53,7 @@
                 </p>
             </div>
         </div>
+        
 
         <ui:fragment rendered="#{empty workingVersion.termsOfUseAndAccess.license}">
             <div class="form-group"
@@ -297,4 +300,5 @@
                 #{bundle.cancel}
             </button>
         </div>
+    </ui:fragment>
 </ui:composition>
