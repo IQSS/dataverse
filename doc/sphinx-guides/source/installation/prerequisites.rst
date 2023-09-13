@@ -124,6 +124,7 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 - If PostgreSQL is running on the same server as Payara, find the localhost (127.0.0.1) entry that's already in the ``pg_hba.conf`` and modify it to look like this::
 
   	host all all 127.0.0.1/32 md5
+  	host all all ::1/128      md5
 
   Once you are done with the prerequisites and run the installer script (documented here: :doc:`installation-main`) it will ask you to enter the address of the Postgres server. Simply accept the default value ``127.0.0.1`` there.
 
@@ -131,6 +132,7 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 - The Dataverse Software installer script will need to connect to PostgreSQL **as the admin user**, in order to create and set up the database that the Dataverse installation will be using. If for whatever reason it is failing to connect (for example, if you don't know/remember what your Postgres admin password is), you may choose to temporarily disable all the access restrictions on localhost connections, by changing the above line to::
 
   	host all all 127.0.0.1/32 trust
+  	host all all ::1/128      trust
 
   Note that this rule opens access to the database server **via localhost only**. Still, in a production environment, this may constitute a security risk. So you will likely want to change it back to "md5" once the installer has finished.
 
