@@ -623,7 +623,7 @@ public class DatasetsIT {
                 .body("data[0].files.size()", equalTo(2))
                 .body("data[1].files.size()", equalTo(1));
         
-        // Now call the this api with the new (as of 6.1) pagination parameters
+        // Now call this api with the new (as of 6.1) pagination parameters
         Integer offset = 0;
         Integer howmany = 1;
         versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiToken, offset, howmany);
@@ -635,7 +635,7 @@ public class DatasetsIT {
                 .body("data[0].files.size()", equalTo(2));
                 
         // And now call it with an un-privileged token, to make sure only one 
-        // (the published one) version is shown:
+        // (the published) version is shown:
         
         versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms);
         versionsResponse.prettyPrint();
