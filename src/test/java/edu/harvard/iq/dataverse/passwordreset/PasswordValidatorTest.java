@@ -1,72 +1,50 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class PasswordValidatorTest {
-
-    public String password;
-    public boolean expected;
-    public boolean mustContainSpecialCharacters;
-    public boolean mustContainCapitalLetters;
-    public boolean mustContainNumbers;
-    public int minLength;
-    public int maxLength;
-
-    public PasswordValidatorTest(String password, boolean expected, boolean mustContainSpecialCharacters,
-            boolean mustContainCapitalLetters, boolean mustContainNumbers, int minLength, int maxLength) {
-        this.password = password;
-        this.expected = expected;
-        this.mustContainSpecialCharacters = mustContainSpecialCharacters;
-        this.mustContainCapitalLetters = mustContainCapitalLetters;
-        this.mustContainNumbers = mustContainNumbers;
-        this.minLength = minLength;
-        this.maxLength = maxLength;
-    }
-
-    @Parameters
-    public static Collection<Object[]> parameters() {
-        return Arrays.asList(
-             new Object[][] {
-                // Check if PasswordValidator correctly validates correct passwords
-                // with all combinations of Special Characters,
-                // Capital Letters and Numbers
-                {"abcdefghabcdefgh", true, false, false, false, 8, 30},    
-                {"@bcdefgh@bcdefgh", true, true, false, false, 8, 30},      
-                {"@bAdefgh@bAdefgh", true, true, true, false, 8, 30},      
-                {"abAdefghabAdefgh", true, false, true, false, 8, 30},     
-                {"a1Adefgha1Adefgh", true, false, true, true, 8, 30},      
-                {"ab1defghab1defgh", true, false, false, true, 8, 30},     
-                {"@1cdefgh@1cdefgh", true, true, false, true, 8, 30},      
-                {"@1Adefgh@1Adefgh", true, true, true, true, 8, 30},      
-                // Check if PasswordValidator correctly rejects wrong passwords
-                // with all combinations of Special Characters,
-                // Capital Letters and Numbers
-                {"abcabc", false, false, false, false, 8, 30},
-                {"abcdabcd", false, true, false, false, 8, 30},       
-                {"@bcd@bcd", false, true, true, false, 8, 30},       
-                {"@bc1@bc1", false, false, true, false, 8, 30},      
-                {"a1cda1cd", false, false, true, true, 8, 30},       
-                {"AbcdAbcd", false, false, false, true, 8, 30},      
-                {"@Bcd@Bcd", false, true, false, true, 8, 30},       
-                {"a1Ada1Ad", false, true, true, true, 8, 30},
-                {"", false, false, false, false, 1, 30},
-                {" ", false, false, false, false, 1, 30},
-                {"?!abcdef", false, true, false, false, 8, 30}
-             }
+    
+    static Stream<Arguments> testCases() {
+        return Stream.of(
+            // Check if PasswordValidator correctly validates correct passwords
+            // with all combinations of Special Characters,
+            // Capital Letters and Numbers
+            Arguments.of("abcdefghabcdefgh", true, false, false, false, 8, 30),
+            Arguments.of("@bcdefgh@bcdefgh", true, true, false, false, 8, 30),
+            Arguments.of("@bAdefgh@bAdefgh", true, true, true, false, 8, 30),
+            Arguments.of("abAdefghabAdefgh", true, false, true, false, 8, 30),
+            Arguments.of("a1Adefgha1Adefgh", true, false, true, true, 8, 30),
+            Arguments.of("ab1defghab1defgh", true, false, false, true, 8, 30),
+            Arguments.of("@1cdefgh@1cdefgh", true, true, false, true, 8, 30),
+            Arguments.of("@1Adefgh@1Adefgh", true, true, true, true, 8, 30),
+            // Check if PasswordValidator correctly rejects wrong passwords
+            // with all combinations of Special Characters,
+            // Capital Letters and Numbers
+            Arguments.of("abcabc", false, false, false, false, 8, 30),
+            Arguments.of("abcdabcd", false, true, false, false, 8, 30),
+            Arguments.of("@bcd@bcd", false, true, true, false, 8, 30),
+            Arguments.of("@bc1@bc1", false, false, true, false, 8, 30),
+            Arguments.of("a1cda1cd", false, false, true, true, 8, 30),
+            Arguments.of("AbcdAbcd", false, false, false, true, 8, 30),
+            Arguments.of("@Bcd@Bcd", false, true, false, true, 8, 30),
+            Arguments.of("a1Ada1Ad", false, true, true, true, 8, 30),
+            Arguments.of("", false, false, false, false, 1, 30),
+            Arguments.of(" ", false, false, false, false, 1, 30),
+            Arguments.of("?!abcdef", false, true, false, false, 8, 30)
         );
     }
     
-    @Test
-    public void testValidatePassword() {
+    @ParameterizedTest
+    @MethodSource("testCases")
+    void testValidatePassword(String password, boolean expected, boolean mustContainSpecialCharacters,
+                              boolean mustContainCapitalLetters, boolean mustContainNumbers, int minLength,
+                              int maxLength) {
         PasswordValidator validator = PasswordValidator.buildValidator(mustContainSpecialCharacters,
                 mustContainCapitalLetters, mustContainNumbers, minLength, maxLength);
         boolean isValidPassword = validator.validatePassword(password);

@@ -7,12 +7,13 @@ package edu.harvard.iq.dataverse.util;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -27,21 +28,21 @@ public class BitSetTest {
 	public BitSetTest() {
 	}
 	
-	@BeforeClass
+	@BeforeAll
 	public static void setUpClass() {
 	}
 	
-	@AfterClass
+	@AfterAll
 	public static void tearDownClass() {
 	}
 	
 	BitSet sut;
-	@Before
+	@BeforeEach
 	public void setUp() {
 		sut = new BitSet();
 	}
 	
-	@After
+	@AfterEach
 	public void tearDown() {
 	}
 
@@ -116,9 +117,9 @@ public class BitSetTest {
 		sut = sut1.copy().intersect(sut2);
 		for ( short i : BitSet.allIndices() ) {
 			if ( sut.isSet(i) ) {
-				assertTrue( "expected true at idx " + i, sut1.isSet(i) && sut2.isSet(i) );
+				assertTrue(sut1.isSet(i) && sut2.isSet(i), "expected true at idx " + i);
 			} else {
-				assertFalse( "expected false at idx " + i, sut1.isSet(i) && sut2.isSet(i) );
+				assertFalse(sut1.isSet(i) && sut2.isSet(i), "expected false at idx " + i);
 			}
 		}
 	}
@@ -133,9 +134,9 @@ public class BitSetTest {
 		sut = sut1.copy().xor(sut2);
 		for ( short i : BitSet.allIndices() ) {
 			if ( sut.isSet(i) ) {
-				assertTrue( "expected true at idx " + i, sut1.isSet(i) ^ sut2.isSet(i) );
+				assertTrue(sut1.isSet(i) ^ sut2.isSet(i), "expected true at idx " + i);
 			} else {
-				assertFalse( "expected false at idx " + i, sut1.isSet(i) ^ sut2.isSet(i) );
+				assertFalse(sut1.isSet(i) ^ sut2.isSet(i), "expected false at idx " + i);
 			}
 		}
 	}

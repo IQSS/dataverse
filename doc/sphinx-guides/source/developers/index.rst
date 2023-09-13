@@ -27,6 +27,7 @@ Developer Guide
    deployment
    containers
    making-releases
+   making-library-releases
    metadataexport
    tools
    unf/index
