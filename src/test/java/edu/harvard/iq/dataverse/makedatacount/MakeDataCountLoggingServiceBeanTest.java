@@ -21,7 +21,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 /**

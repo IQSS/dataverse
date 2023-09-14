@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import jakarta.ejb.EJB;
 import jakarta.enterprise.inject.spi.CDI;
 
 import jakarta.faces.component.UIComponent;

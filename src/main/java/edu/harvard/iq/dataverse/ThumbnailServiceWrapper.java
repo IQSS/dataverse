@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.apache.commons.io.IOUtils;

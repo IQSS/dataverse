@@ -29,7 +29,6 @@ import java.util.stream.Stream;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 /**

@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.export;
 import java.io.OutputStream;
 import java.util.Locale;
 
-import jakarta.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 
 import com.google.auto.service.AutoService;

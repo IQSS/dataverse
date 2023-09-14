@@ -48,7 +48,6 @@ import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
 import static jakarta.ejb.TransactionAttributeType.SUPPORTS;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
 /**

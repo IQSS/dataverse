@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.util.json.JsonParseException;
 
 import jakarta.json.Json;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;

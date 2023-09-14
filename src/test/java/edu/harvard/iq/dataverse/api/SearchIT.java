@@ -25,7 +25,6 @@ import org.hamcrest.CoreMatchers;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import static java.lang.Thread.sleep;
 import javax.imageio.ImageIO;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;

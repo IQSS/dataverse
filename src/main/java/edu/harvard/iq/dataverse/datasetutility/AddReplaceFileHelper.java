@@ -47,7 +47,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;

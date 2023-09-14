@@ -27,13 +27,9 @@ import java.io.IOException;
 
 import java.util.logging.Logger;
 
-import org.apache.commons.io.IOUtils;
-
 import java.util.List; 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.LinkedHashMap; 
 
 import edu.harvard.iq.dataverse.DataFile;
@@ -44,15 +40,11 @@ import edu.harvard.iq.dataverse.rserve.*;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
 
 
 

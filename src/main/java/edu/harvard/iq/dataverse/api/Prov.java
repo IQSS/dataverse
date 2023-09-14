@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonException;
 import jakarta.json.JsonObject;

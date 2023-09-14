@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import java.io.IOException;
-import java.util.concurrent.Future;
 import org.apache.solr.client.solrj.SolrServerException;
 
 /**

@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;

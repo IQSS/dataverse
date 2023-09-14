@@ -20,7 +20,6 @@
 
 package edu.harvard.iq.dataverse.ingest.plugin.spi;
 
-import static java.lang.System.*;
 import java.util.Locale;
 
 /**

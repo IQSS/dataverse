@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;

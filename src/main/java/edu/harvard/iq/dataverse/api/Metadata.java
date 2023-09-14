@@ -10,9 +10,6 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.*;
 
 import jakarta.ws.rs.core.Response;

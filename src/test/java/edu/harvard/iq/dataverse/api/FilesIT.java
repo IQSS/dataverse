@@ -16,8 +16,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
 
-import static java.lang.Thread.sleep;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;

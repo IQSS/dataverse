@@ -5,9 +5,6 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
-import com.google.common.collect.ContiguousSet;
-import com.google.common.collect.DiscreteDomain;
-import com.google.common.collect.Range;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import java.util.ArrayList;
 import java.util.List;

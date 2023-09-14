@@ -1,9 +1,5 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 public class PasswordResetInitResponse {
 
     /**

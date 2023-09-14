@@ -20,9 +20,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import static org.mockito.Mockito.*;
-import static org.mockito.BDDMockito.*;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 

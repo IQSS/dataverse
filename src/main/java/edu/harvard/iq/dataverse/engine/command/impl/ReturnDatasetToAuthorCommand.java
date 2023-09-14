@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -13,10 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
-import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Future;
-import org.apache.solr.client.solrj.SolrServerException;
 
 @RequiredPermissions(Permission.PublishDataset)
 public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset> {

@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import jakarta.persistence.TypedQuery;
 
 /**
  * Update an existing dataverse.

@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.AlternativePersistentIdentifier;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -15,9 +14,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.HandlenetServiceBean;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
-import java.io.IOException;
-import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *

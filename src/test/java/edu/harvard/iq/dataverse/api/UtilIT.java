@@ -39,7 +39,6 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
-import static io.restassured.RestAssured.put;
 import static io.restassured.path.xml.XmlPath.from;
 import static io.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -50,7 +49,6 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.StringReader;
 import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {

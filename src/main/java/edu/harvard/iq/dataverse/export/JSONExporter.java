@@ -10,7 +10,6 @@ import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Optional;
 
-import jakarta.json.JsonObject;
 import jakarta.ws.rs.core.MediaType;
 
 

@@ -37,9 +37,6 @@ import java.util.ArrayList;
 import java.util.concurrent.Future;
 import org.apache.solr.client.solrj.SolrServerException;
 
-import jakarta.ejb.EJB;
-import jakarta.inject.Inject;
-
 
 /**
  *

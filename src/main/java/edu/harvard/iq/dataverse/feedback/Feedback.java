@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.feedback;
 
-import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;

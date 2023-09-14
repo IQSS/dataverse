@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 
 /**

@@ -7,17 +7,13 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
 import java.util.Date;
 
 

@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 
-import jakarta.ws.rs.core.Response;
 import org.apache.solr.client.solrj.SolrServerException;
 
 /**
