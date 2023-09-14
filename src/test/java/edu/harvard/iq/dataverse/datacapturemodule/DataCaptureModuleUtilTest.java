@@ -18,6 +18,7 @@ import org.apache.http.impl.DefaultHttpResponseFactory;
 import org.apache.http.message.BasicStatusLine;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.Test;
 
 public class DataCaptureModuleUtilTest {
@@ -25,13 +26,13 @@ public class DataCaptureModuleUtilTest {
     @Test
     public void testRsyncSupportEnabled() {
         System.out.println("rsyncSupportEnabled");
-        assertEquals(false, DataCaptureModuleUtil.rsyncSupportEnabled(null));
-        assertEquals(true, DataCaptureModuleUtil.rsyncSupportEnabled("dcm/rsync+ssh"));
+        assertFalse(DataCaptureModuleUtil.rsyncSupportEnabled(null));
+        assertTrue(DataCaptureModuleUtil.rsyncSupportEnabled("dcm/rsync+ssh"));
         // Comma sepratated lists of upload methods are supported.
-        assertEquals(false, DataCaptureModuleUtil.rsyncSupportEnabled("native/http:dcm/rsync+ssh"));
-        assertEquals(true, DataCaptureModuleUtil.rsyncSupportEnabled("native/http,dcm/rsync+ssh"));
-        assertEquals(false, DataCaptureModuleUtil.rsyncSupportEnabled("native/http"));
-        assertEquals(false, DataCaptureModuleUtil.rsyncSupportEnabled("junk"));
+        assertFalse(DataCaptureModuleUtil.rsyncSupportEnabled("native/http:dcm/rsync+ssh"));
+        assertTrue(DataCaptureModuleUtil.rsyncSupportEnabled("native/http,dcm/rsync+ssh"));
+        assertFalse(DataCaptureModuleUtil.rsyncSupportEnabled("native/http"));
+        assertFalse(DataCaptureModuleUtil.rsyncSupportEnabled("junk"));
     }
 
     @Test

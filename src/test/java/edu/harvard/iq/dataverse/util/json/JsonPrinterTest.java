@@ -288,7 +288,7 @@ public class JsonPrinterTest {
         assertEquals("42 Inc.", jsonObject.getString("affiliation"));
         assertEquals(0, jsonObject.getJsonArray("dataverseContacts").getJsonObject(0).getInt("displayOrder"));
         assertEquals("dv42@mailinator.com", jsonObject.getJsonArray("dataverseContacts").getJsonObject(0).getString("contactEmail"));
-        assertEquals(false, jsonObject.getBoolean("permissionRoot"));
+        assertFalse(jsonObject.getBoolean("permissionRoot"));
         assertEquals("Description for Dataverse 42.", jsonObject.getString("description"));
         assertEquals("UNCATEGORIZED", jsonObject.getString("dataverseType"));
     }

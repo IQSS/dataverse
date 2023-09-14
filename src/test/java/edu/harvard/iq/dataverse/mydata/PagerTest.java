@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.mydata;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
@@ -171,13 +173,13 @@ public class PagerTest {
         pager1 = new Pager(102, 10, 1);
 
         msgt("Test: 102 results, 10 per page, page 1");
-        assertEquals(true, pager1.isPagerNecessary());
+        assertTrue(pager1.isPagerNecessary());
 
         assertEquals(102, pager1.getNumResults());
         assertEquals(1, pager1.getPreviousPageNumber());
         assertEquals(2, pager1.getNextPageNumber());
-        assertEquals(false, pager1.hasPreviousPageNumber());
-        assertEquals(true, pager1.hasNextPageNumber());
+        assertFalse(pager1.hasPreviousPageNumber());
+        assertTrue(pager1.hasNextPageNumber());
         
         msg("page list: " + Arrays.toString(pager1.getPageNumberList()));
         //assertEquals(new int[]{1, 2, 3, 4, 5}, pager1.getPageNumberList());
@@ -232,13 +234,13 @@ public class PagerTest {
         System.out.println("getNumResults");
         Pager pager1 = new Pager(0, 10, 1);
 
-        assertEquals(false, pager1.isPagerNecessary());
+        assertFalse(pager1.isPagerNecessary());
         
         assertEquals(0, pager1.getNumResults());
         assertEquals(0, pager1.getPreviousPageNumber());
         assertEquals(0, pager1.getNextPageNumber());
-        assertEquals(false, pager1.hasPreviousPageNumber());
-        assertEquals(false, pager1.hasNextPageNumber());
+        assertFalse(pager1.hasPreviousPageNumber());
+        assertFalse(pager1.hasNextPageNumber());
         
         msgt("page list: " + Arrays.toString(pager1.getPageNumberList()));
         //assertEquals(null, pager1.getPageNumberList());

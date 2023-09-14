@@ -89,20 +89,20 @@ public class FileAccessIOTest {
      */
     @Test
     public void testOpen() throws IOException {
-        assertEquals(false, datasetAccess.canRead());
-        assertEquals(false, datasetAccess.canWrite());
+        assertFalse(datasetAccess.canRead());
+        assertFalse(datasetAccess.canWrite());
 
         datasetAccess.open(DataAccessOption.READ_ACCESS);
-        assertEquals(true, datasetAccess.canRead());
-        assertEquals(false, datasetAccess.canWrite());
+        assertTrue(datasetAccess.canRead());
+        assertFalse(datasetAccess.canWrite());
 
         datasetAccess.open(DataAccessOption.WRITE_ACCESS);
-        assertEquals(false, datasetAccess.canRead());
-        assertEquals(true, datasetAccess.canWrite());
+        assertFalse(datasetAccess.canRead());
+        assertTrue(datasetAccess.canWrite());
 
         dataFileAccess.open(DataAccessOption.READ_ACCESS);
-        assertEquals(true, dataFileAccess.canRead());
-        assertEquals(false, dataFileAccess.canWrite());
+        assertTrue(dataFileAccess.canRead());
+        assertFalse(dataFileAccess.canWrite());
     }
 
     /**
@@ -133,7 +133,7 @@ public class FileAccessIOTest {
      */
     @Test
     public void testIsAuxObjectCached() throws IOException {
-        assertEquals(true, datasetAccess.isAuxObjectCached("Dataset"));
+        assertTrue(datasetAccess.isAuxObjectCached("Dataset"));
     }
 
     /**

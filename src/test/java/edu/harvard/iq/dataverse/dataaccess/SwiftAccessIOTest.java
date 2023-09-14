@@ -51,14 +51,14 @@ public class SwiftAccessIOTest {
      */
     @Test
     public void testPerms() throws IOException {
-        assertEquals(false, datasetAccess.canRead());
-        assertEquals(false, datasetAccess.canWrite());
+        assertFalse(datasetAccess.canRead());
+        assertFalse(datasetAccess.canWrite());
     }
     
     @Test
     public void testIsExpiryExpired() {
         long currentTime = 1502221467;
-        assertEquals(false, swiftAccess.isExpiryExpired(60, 1502281, currentTime));
+        assertFalse(swiftAccess.isExpiryExpired(60, 1502281, currentTime));
     }
     
     @Test

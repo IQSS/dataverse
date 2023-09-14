@@ -70,8 +70,8 @@ public class DatasetUtilTest {
      */
     @Test
     public void testDeleteDatasetLogo() {
-        assertEquals(false, DatasetUtil.deleteDatasetLogo(null));
-        assertEquals(false, DatasetUtil.deleteDatasetLogo(new Dataset()));
+        assertFalse(DatasetUtil.deleteDatasetLogo(null));
+        assertFalse(DatasetUtil.deleteDatasetLogo(new Dataset()));
     }
 
     /**
@@ -106,7 +106,7 @@ public class DatasetUtilTest {
     @Test
     public void testIsDatasetLogoPresent() {
         Dataset dataset = MocksFactory.makeDataset();
-        assertEquals(false, DatasetUtil.isDatasetLogoPresent(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
+        assertFalse(DatasetUtil.isDatasetLogoPresent(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
     }
 
     @Test
