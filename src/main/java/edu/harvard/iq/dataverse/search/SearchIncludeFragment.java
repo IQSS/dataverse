@@ -632,25 +632,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
         //return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
     }
 
-    private String getCreatedOrReleasedDate(DvObject dvObject, Date date) {
-        // the hedge is for https://redmine.hmdc.harvard.edu/issues/3806
-        String hedge = "";
-        if (dvObject instanceof Dataverse) {
-            hedge = "";
-        } else if (dvObject instanceof Dataset) {
-            hedge = " maybe";
-        } else if (dvObject instanceof DataFile) {
-            hedge = " maybe";
-        } else {
-            hedge = " what object is this?";
-        }
-        if (dvObject.isReleased()) {
-            return date + " released" + hedge;
-        } else {
-            return date + " created" + hedge;
-        }
-    }
-
     public String getQuery() {
         return query;
     }

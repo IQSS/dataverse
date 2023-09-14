@@ -231,27 +231,6 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             validators.put(ValidatorTypes.StandardValidator, passwordValidator);
         }
     }
-
-    /**
-     * dictionaryRule
-     * <p>
-     * Reads in the getDictionaries from a file.
-     *
-     * @return A rule.
-     */
-    private DictionaryRule dictionaryRule() {
-        DictionaryRule rule = null;
-        try {
-            rule = new DictionaryRule(
-                    new WordListDictionary(WordLists.createFromReader(
-                            getDictionaries(),
-                            false,
-                            new ArraysSort())));
-        } catch (IOException e) {
-            logger.log(Level.CONFIG, e.getMessage());
-        }
-        return rule;
-    }
     
         /**
      * dictionarySubstringRule

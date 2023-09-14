@@ -25,19 +25,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class SolrQueryFormatterTest {
 
     public static class SolrQueryFormatterNoParamTest {
-        private Long[] getRandomListOfLongs(int listCount, int topNumber){
-
-            Random r = new Random();
-
-            Long[] array = new Long[listCount];
-            long last = 0;
-            for (int idx = 0; idx < listCount; idx++) {
-                last = r.nextInt(topNumber);// + 1;
-                array[idx] = last;
-            }
-            return array;
-        }
-
         private Long[] getListOfLongs(int listCount){
             Long[] array = new Long[listCount];
             for (long a = 0; a < array.length; a++) {

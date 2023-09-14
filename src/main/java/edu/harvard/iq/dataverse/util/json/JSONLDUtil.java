@@ -549,26 +549,6 @@ public class JSONLDUtil {
         }
     }
 
-    private static JsonObject recontextualizeJsonLD(JsonObject jsonldObj, MetadataBlockServiceBean metadataBlockSvc) {
-
-        populateContext(metadataBlockSvc);
-
-        // Use JsonLd to expand/compact to localContext
-        JsonDocument doc = JsonDocument.of(jsonldObj);
-        JsonArray array = null;
-        try {
-            array = JsonLd.expand(doc).get();
-
-            jsonldObj = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JSONLDUtil.getContext(localContext)))
-                    .get();
-            logger.fine("Compacted: " + jsonldObj.toString());
-            return jsonldObj;
-        } catch (JsonLdError e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
-    }
-
     public static String prettyPrint(JsonValue val) {
         StringWriter sw = new StringWriter();
         Map<String, Object> properties = new HashMap<>(1);

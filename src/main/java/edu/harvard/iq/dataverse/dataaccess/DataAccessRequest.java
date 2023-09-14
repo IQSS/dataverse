@@ -67,8 +67,4 @@ public class DataAccessRequest {
         }
         return null; 
     }
-
-    private DataAccessRequest(Object object) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }

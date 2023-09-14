@@ -74,11 +74,6 @@ public class SumStatCalculator {
         nx[7] = Math.sqrt(StatUtils.variance(newx));
         logger.fine("calculated stdev: "+nx[7]);
         return nx;
-    }  
-
-    private static double[] prepareForSummaryStats(Number[] x) {
-        Double[] z = numberToDouble(x);
-        return removeInvalidValues(z);
     }
 
     private static double[] prepareForSummaryStatsAlternative(Number[] x, int length) {
@@ -100,36 +95,6 @@ public class SumStatCalculator {
     }
     
     /**
-     * Converts an array of primitive Number types to doubles
-     *
-     */
-    private static Double[] numberToDouble(Number[] x){
-        Double[] z= new Double[x.length];
-        for (int i=0; i<x.length;i++){
-            z[i] = x[i] != null ? new Double( x[i].doubleValue() ) : null;
-        }
-        return z;
-    }
-    
-    /**
-     * Returns a new double array of nulls and non-Double.NaN values only
-     *
-     */
-    // TODO: 
-    // implement this in some way that does not require allocating a new 
-    // ArrayList for the values of every vector. -- L.A. Aug. 11 2014
-    private static double[] removeInvalidValues(Double[] x){
-        List<Double> dl = new ArrayList<Double>();
-        for (Double d : x){
-            if (d != null && !Double.isNaN(d)){
-                dl.add(d);
-            }
-        }
-        return ArrayUtils.toPrimitive(
-            dl.toArray(new Double[dl.size()]));
-    }
-    
-    /**
      * Returns the number of Double.NaNs (or nulls) in a double-type array
      *
      */
@@ -142,23 +107,6 @@ public class SumStatCalculator {
             }
         }
         return counter;
-    }
-    
-    /**
-     * Returns the number of Double.NaNs in a double-type array
-     *
-     * TODO: figure out if this is actually necessary - to count NaNs and
-     * nulls separately;
-     *  -- L.A. 4.0 alpha 1
-     */
-    private static int countNaNs(double[] x){
-        int NaNcounter=0;
-        for (int i=0; i<x.length;i++){
-            if (Double.isNaN(x[i])){
-                NaNcounter++;
-            }
-        }
-        return NaNcounter;
     }
     
     private static double calculateMedian(double[] values) {

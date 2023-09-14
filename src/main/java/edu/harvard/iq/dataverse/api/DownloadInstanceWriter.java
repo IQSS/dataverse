@@ -657,46 +657,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         return -1;
     }
 
-    private long getFileSize(DownloadInstance di) {
-        return getFileSize(di, null);
-    }
-
-    private long getFileSize(DownloadInstance di, String extraHeader) {
-        if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
-            DataFile df = di.getDownloadInfo().getDataFile();
-
-            // For non-tabular files, we probably know the file size: 
-            // (except for when this is a thumbNail rquest on an image file - 
-            // because the size will obviously be different... can still be 
-            // figured out - but perhaps we shouldn't bother; since thumbnails 
-            // are essentially guaranteed to be small)
-            if (!df.isTabularData() && (di.getConversionParam() == null || "".equals(di.getConversionParam()))) {
-                if (df.getFilesize() > 0) {
-                    return df.getFilesize();
-                }
-            }
-
-            // For Tabular files:
-            // If it's just a straight file download, it's pretty easy - we 
-            // already know the size of the file on disk (just like in the 
-            // fragment above); we just need to make sure if we are also supplying
-            // the additional variable name header - then we need to add its 
-            // size to the total... But the cases when it's a format conversion 
-            // and, especially, subsets are of course trickier. (these are not
-            // supported yet).
-            if (df.isTabularData() && (di.getConversionParam() == null || "".equals(di.getConversionParam()))) {
-                long fileSize = df.getFilesize();
-                if (fileSize > 0) {
-                    if (extraHeader != null) {
-                        fileSize += extraHeader.getBytes().length;
-                    }
-                    return fileSize;
-                }
-            }
-        }
-        return -1;
-    }
-
     /**
      * @param range "bytes 0-10" for example. Found in the "Range" HTTP header.
      * @param fileSize File size in bytes.
