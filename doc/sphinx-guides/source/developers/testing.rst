@@ -5,7 +5,7 @@ Testing
 In order to keep our codebase healthy, the Dataverse Project encourages developers to write automated tests in the form of unit tests and integration tests. We also welcome ideas for how to improve our automated testing.
 
 .. contents:: |toctitle|
-	:local:
+    :local:
 
 The Health of a Codebase
 ------------------------
@@ -294,28 +294,30 @@ To run a test with Testcontainers, you will need to write a JUnit 5 test.
 Please make sure to:
 
 1. End your test class with ``IT``
-2. Provide a ``@Tag("testcontainers")`` to be picked up during testing.
+2. Annotate the test class with two tags:
 
-.. code:: java
+   .. code:: java
 
-   /** A very minimal example for a Testcontainers integration test class. */
-   @Testcontainers
-   @Tag("testcontainers")
-   class MyExampleIT { /* ... */ }
+       /** A very minimal example for a Testcontainers integration test class. */
+       @Testcontainers
+       @Tag(edu.harvard.iq.dataverse.util.testing.Tags.INTEGRATION_TEST)
+       @Tag(edu.harvard.iq.dataverse.util.testing.Tags.USES_TESTCONTAINERS)
+       class MyExampleIT { /* ... */ }
 
-If using upstream Modules, e.g. for PostgreSQL or similar, you will need to add
+If using upstream modules, e.g. for PostgreSQL or similar, you will need to add
 a dependency to ``pom.xml`` if not present. `See the PostgreSQL module example. <https://www.testcontainers.org/modules/databases/postgres/>`_
 
 To run these tests, simply call out to Maven:
 
 .. code::
 
-	 mvn -P tc verify
+    mvn verify
 
 .. note::
 
-	 1. Remember to have Docker ready to serve or tests will fail.
-	 2. This will not run any unit tests or API tests.
+    1. Remember to have Docker ready to serve or tests will fail.
+    2. You can skip running unit tests by adding ``-DskipUnitTests``
+    3. You can choose to ignore test with Testcontainers by adding ``-Dit.groups='integration & !testcontainers'``
 
 Measuring Coverage of Integration Tests
 ---------------------------------------
