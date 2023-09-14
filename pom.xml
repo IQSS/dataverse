@@ -745,6 +745,7 @@
                         <configuration>
                             <destFile>${project.build.directory}/coverage-reports/jacoco-unit.exec</destFile>
                             <propertyName>surefire.jacoco.args</propertyName>
+                            <skip>${skipUnitTests}</skip>
                             <includes>
                                 <include>edu/harvard/iq/dataverse/*</include>
                                 <include>io/gdcc/*</include>
@@ -761,6 +762,7 @@
                         <configuration>
                             <dataFile>${project.build.directory}/coverage-reports/jacoco-unit.exec</dataFile>
                             <outputDirectory>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report</outputDirectory>
+                            <skip>${skipUnitTests}</skip>
                         </configuration>
                     </execution>
                     <execution>
