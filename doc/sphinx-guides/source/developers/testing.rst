@@ -316,11 +316,12 @@ To run these tests, simply call out to Maven:
 
     mvn verify
 
-.. note::
+Notes:
 
-    1. Remember to have Docker ready to serve or tests will fail.
-    2. You can skip running unit tests by adding ``-DskipUnitTests``
-    3. You can choose to ignore test with Testcontainers by adding ``-Dit.groups='integration & !testcontainers'``
+1. Remember to have Docker ready to serve or tests will fail.
+2. You can skip running unit tests by adding ``-DskipUnitTests``
+3. You can choose to ignore test with Testcontainers by adding ``-Dit.groups='integration & !testcontainers'``
+   Learn more about `filter expressions in the JUnit 5 guide <https://junit.org/junit5/docs/current/user-guide/#running-tests-tag-expressions>`_.
 
 
 Measuring Coverage of API Tests
