@@ -213,8 +213,6 @@ public class UsersIT {
         createGroup.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
 
-        // String groupIdentifier = JsonPath.from(createGroup.asString()).getString("data.identifier");
-
         List<String> roleAssigneesToAdd = Arrays.asList(user2identifier, target2identifier);
         Response addToGroup = UtilIT.addToGroup(dataverseAlias, aliasInOwner, roleAssigneesToAdd, superuserApiToken);
         addToGroup.prettyPrint();
