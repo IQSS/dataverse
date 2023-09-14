@@ -322,10 +322,11 @@ To run these tests, simply call out to Maven:
     2. You can skip running unit tests by adding ``-DskipUnitTests``
     3. You can choose to ignore test with Testcontainers by adding ``-Dit.groups='integration & !testcontainers'``
 
-Measuring Coverage of Integration Tests
----------------------------------------
 
-Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara6" as the Payara directory and "dataverse" as the Payara Unix user.
+Measuring Coverage of API Tests
+-------------------------------
+
+Measuring the code coverage of API tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara6" as the Payara directory and "dataverse" as the Payara Unix user.
 
 Please note that this was tested under Glassfish 4 but it is hoped that the same steps will work with Payara.
 
@@ -375,8 +376,8 @@ Run this as the "dataverse" user.
 
 Note that after deployment the file "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
 
-Run Integration Tests
-~~~~~~~~~~~~~~~~~~~~~
+Run API Tests
+~~~~~~~~~~~~~
 
 Note that even though you see "docker-aio" in the command below, we assume you are not necessarily running the test suite within Docker. (Some day we'll probably move this script to another directory.) For this reason, we pass the URL with the normal port (8080) that app servers run on to the ``run-test-suite.sh`` script.
 
