@@ -114,7 +114,10 @@ Observing Changes to Code Coverage
 
 Once you've written some tests, you're probably wondering how much you've helped to increase the code coverage. In Netbeans, do a "clean and build." Then, under the "Projects" tab, right-click "dataverse" and click "Code Coverage" -> "Show Report". For each Java file you have open, you should be able to see the percentage of code that is covered by tests and every line in the file should be either green or red. Green indicates that the line is being exercised by a unit test and red indicates that it is not.
 
-In addition to seeing code coverage in Netbeans, you can also see code coverage reports by opening ``target/site/jacoco/index.html`` in your browser.
+In addition to seeing code coverage in Netbeans, you can also see code coverage reports by opening ``target/site/jacoco-X-test-coverage-report/index.html`` in your browser.
+Depending on the report type you want to look at, let ``X`` be one of ``unit``, ``integration`` or ``merged``.
+"Merged" will display combined coverage of both unit and integration test, but does currently not cover API tests.
+
 
 Testing Commands
 ^^^^^^^^^^^^^^^^
