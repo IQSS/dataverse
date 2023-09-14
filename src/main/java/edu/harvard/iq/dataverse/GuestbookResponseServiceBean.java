@@ -544,30 +544,6 @@ public class GuestbookResponseServiceBean {
         return list;
     }
 
-    private String generateTempTableString(List<Long> datasetIds) {
-        // first step: create the temp table with the ids
-
-        em.createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; DROP TABLE IF EXISTS tempid; END;").executeUpdate();
-        em.createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; CREATE TEMPORARY TABLE tempid (tempid integer primary key, orderby integer); END;").executeUpdate();
-        em.createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; INSERT INTO tempid VALUES " + generateIDsforTempInsert(datasetIds) + "; END;").executeUpdate();
-        return "select tempid from tempid";
-    }
-
-    private String generateIDsforTempInsert(List<Long> idList) {
-        int count = 0;
-        StringBuilder sb = new StringBuilder();
-        Iterator<Long> iter = idList.iterator();
-        while (iter.hasNext()) {
-            Long id = iter.next();
-            sb.append("(").append(id).append(",").append(count++).append(")");
-            if (iter.hasNext()) {
-                sb.append(",");
-            }
-        }
-
-        return sb.toString();
-    }
-
 
     public List<Object[]> findCustomResponsePerGuestbookResponse(Long gbrId) {
 

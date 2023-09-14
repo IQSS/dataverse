@@ -208,21 +208,6 @@ public class ShapefileHandler{
             return false;
         }
         return true;
-    } // createDirectory    
-
-    
-    /*
-        Print out the key/value pairs of the Hash of filenames and sizes
-    */
-    private void showFileNamesSizes(){
-        msgt("Hash: file names + sizes");
-        Iterator<String> keySetIterator = this.filesizeHash.keySet().iterator();
-
-        while(keySetIterator.hasNext()){
-          String key = keySetIterator.next();
-          msg("key: [" + key + "] value: [" + this.filesizeHash.get(key)+"]");
-          
-        }
     } // end showFileNamesSizes
     
     

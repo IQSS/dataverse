@@ -196,12 +196,6 @@ public class EjbDataverseEngine {
     public <R> R submitInNewTransaction(Command<R> aCommand) throws CommandException {
         return submit(aCommand);
     }
-    
-    private DvObject getRetType(Object r){
-
-        return (DvObject) r;
-       
-    }
 
 
     @TransactionAttribute(SUPPORTS)

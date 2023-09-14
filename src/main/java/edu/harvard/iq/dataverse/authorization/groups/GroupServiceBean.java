@@ -247,42 +247,6 @@ public class GroupServiceBean {
         return retVal;
     }
     
-    /**
-     * Given a set of groups and a DV object, return all the groups that are
-     * reachable from the set. Effectively, if the initial set has an {@link ExplicitGroup},
-     * recursively add all the groups it contains.
-     * 
-     * @param groups
-     * @param dvo
-     * @return All the groups included in the groups in {@code groups}.
-     */
-    private Set<Group> groupTransitiveClosure(Set<Group> groups, DvObject dvo) {
-        // now, get the explicit group transitive closure.
-        Set<ExplicitGroup> perimeter = new HashSet<>();
-        Set<ExplicitGroup> visited = new HashSet<>();
-        
-        groups.stream()
-              .filter((g) -> ( g instanceof ExplicitGroup ))
-              .forEachOrdered((g) -> perimeter.add((ExplicitGroup) g));
-        visited.addAll(perimeter);
-        
-        while ( ! perimeter.isEmpty() ) {
-            ExplicitGroup g = perimeter.iterator().next();
-            perimeter.remove(g);
-            groups.add(g);
-            
-            Set<ExplicitGroup> discovered = explicitGroupProvider.groupsFor(g, dvo);
-            discovered.removeAll(visited); // Ideally the conjunction is always empty, as we don't allow cycles.
-            // Still, coding defensively here, in case someone gets too
-            // smart on the SQL console.
-            
-            perimeter.addAll(discovered);
-            visited.addAll(discovered);
-        }
-        
-        return groups;
-    }
-    
     public Set<Group> findGlobalGroups() {
         Set<Group> groups = new HashSet<>();
         groupProviders.values().forEach( 

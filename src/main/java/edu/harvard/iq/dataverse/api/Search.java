@@ -252,15 +252,6 @@ public class Search extends AbstractApiBean {
         return tokenLessSearchAllowed;
     }
 
-    private boolean getDataRelatedToMe() {
-        /**
-         * @todo support Data Related To Me:
-         * https://github.com/IQSS/dataverse/issues/1299
-         */
-        boolean dataRelatedToMe = false;
-        return dataRelatedToMe;
-    }
-
     private int getNumberOfResultsPerPage(int numResultsPerPage) {
         /**
          * @todo should maxLimit be configurable?

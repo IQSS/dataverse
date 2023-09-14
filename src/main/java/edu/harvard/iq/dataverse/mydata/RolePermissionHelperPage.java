@@ -54,14 +54,4 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         return this.rolePermissionHelper;
     }
     
-    private void msg(String s){
-        System.out.println(s);
-    }
-    
-    private void msgt(String s){
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
-    }
-    
 }

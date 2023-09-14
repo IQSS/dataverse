@@ -472,14 +472,4 @@ public class Pager {
         Pager pager = new Pager(100, 10, 1);
                
     }
-    
-    private void msg(String s){
-        //System.out.println(s);
-    }
-    
-    private void msgt(String s){
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
-    }
 } 

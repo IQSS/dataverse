@@ -692,27 +692,4 @@ public class ImportServiceBean {
         return null;
     }
 
-
-    private static class MyCustomFormatter extends Formatter {
-
-        @Override
-
-        public String format(LogRecord record) {
-
-            StringBuffer sb = new StringBuffer();
-
-            sb.append("Prefixn");
-
-            sb.append(record.getMessage());
-
-            sb.append("Suffixn");
-
-            sb.append("n");
-
-            return sb.toString();
-
-        }
-
-    }
-
 }

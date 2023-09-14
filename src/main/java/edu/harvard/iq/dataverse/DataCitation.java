@@ -680,49 +680,6 @@ public class DataCitation {
         }
     }
 
-    /** This method flattens html for the textual export formats.
-     * It removes <b> and <i> tags, replaces <br>, <p> and headers <hX> with 
-     * line breaks, converts lists to form where items start with an indented '*  ',
-     * and converts links to simple text showing the label and, if different, 
-     * the url in parenthesis after it. Since these operations may create
-     * multiple line breaks, a final step limits the changes and compacts multiple 
-     * line breaks into one.  
-     *
-     * @param html input string
-     * @return the flattened text output
-     */
-    private String flattenHtml(String html) {
-        html = html.replaceAll("<[pP]>", "\r\n");
-        html = html.replaceAll("<\\/[pP]>", "\r\n");
-        html = html.replaceAll("<[hH]\\d>", "\r\n");
-        html = html.replaceAll("<\\/[hH]\\d>", "\r\n");
-        html = html.replaceAll("<[\\/]?[bB]>", "");
-        html = html.replaceAll("<[\\/]?[iI]>", "\r\n");
-        
-        html = html.replaceAll("<[bB][rR][\\/]?>", "\r\n");
-        html = html.replaceAll("<[uU][lL]>", "\r\n");
-        html = html.replaceAll("<\\/[uU][lL]>", "\r\n");
-        html = html.replaceAll("<[lL][iI]>", "\t*  ");
-        html = html.replaceAll("<\\/[lL][iI]>", "\r\n");
-        Pattern p = Pattern.compile("<a\\W+href=\\\"(.*?)\\\".*?>(.*?)<\\/a>");
-        Matcher m = p.matcher(html);
-        String url = null;
-        String label = null;
-        while(m.find()) {
-            url = m.group(1); // this variable should contain the link URL
-            label = m.group(2); // this variable should contain the label
-            //display either the label or label(url)
-            if(!url.equals(label)) {
-                label = label + "(" + url +")";
-            }
-            html = html.replaceFirst("<a\\W+href=\\\"(.*?)\\\".*?>(.*?)<\\/a>", label);
-        }
-        //Note, this does not affect single '\n' chars originally in the text
-        html=html.replaceAll("(\\r\\n?)+", "\r\n");
-        
-        return html;
-    }
-
     private Date getDateFrom(DatasetVersion dsv) {
         Date citationDate = null;
 

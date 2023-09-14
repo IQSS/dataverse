@@ -616,14 +616,7 @@ public class ImportGenericServiceBean {
             tempString = tempString.trim().replace('\n',' ');
         }
         return tempString;
-     }
-     private String parseDate (XMLStreamReader xmlr, String endTag) throws XMLStreamException {
-        String date = xmlr.getAttributeValue(null, "date");
-        if (date == null) {
-            date = parseText(xmlr);
-        }
-        return date;
-    } 
+     } 
  /* We had to add this method because the ref getElementText has a bug where it
      * would append a null before the text, if there was an escaped apostrophe; it appears
      * that the code finds an null ENTITY_REFERENCE in this case which seems like a bug;
@@ -655,34 +648,6 @@ public class ImportGenericServiceBean {
             eventType = xmlr.next();
         }
         return content.toString();
-    }
-    
-   
-    
-   private Map<String,String> parseCompoundText (XMLStreamReader xmlr, String endTag) throws XMLStreamException {
-        Map<String,String> returnMap = new HashMap<>();
-        String text = "";
-
-        while (true) {
-            int event = xmlr.next();
-            if (event == XMLStreamConstants.CHARACTERS) {
-                if (!text.isEmpty()) {
-                    text += "\n";
-                }
-                text += xmlr.getText().trim().replace('\n',' ');
-            } else if (event == XMLStreamConstants.START_ELEMENT) {
-                if (xmlr.getLocalName().equals("ExtLink")) {
-                    String mapKey  = ("image".equalsIgnoreCase( xmlr.getAttributeValue(null, "role") ) || "logo".equalsIgnoreCase(xmlr.getAttributeValue(null, "title")))? "logo" : "url";
-                    returnMap.put( mapKey, xmlr.getAttributeValue(null, "URI") );
-                    parseText(xmlr, "ExtLink"); // this line effectively just skips though until the end of the tag
-                }
-            } else if (event == XMLStreamConstants.END_ELEMENT) {
-                if (xmlr.getLocalName().equals(endTag)) break;
-            }
-        }
-
-        returnMap.put( "name", text );
-        return returnMap;
     }
    
     private String parseText(XMLStreamReader xmlr, String endTag) throws XMLStreamException {
@@ -735,14 +700,6 @@ public class ImportGenericServiceBean {
       
         // otherwise it's a standard section and just return the String like we always did
         return returnString.trim();
-    }
-     
-    private String parseNoteByType(XMLStreamReader xmlr, String type) throws XMLStreamException {
-        if (type.equalsIgnoreCase(xmlr.getAttributeValue(null, "type"))) {
-            return parseText(xmlr);
-        } else {
-            return null;
-        }
     }
   private String parseText_list (XMLStreamReader xmlr) throws XMLStreamException {
         String listString = null;
@@ -824,14 +781,6 @@ public class ImportGenericServiceBean {
         }
 
         return citation;
-    }
-  
-    private String parseUNF(String unfString) {
-        if (unfString.contains("UNF:")) {
-            return unfString.substring( unfString.indexOf("UNF:") );
-        } else {
-            return null;
-        }
     }
   
     private Map<String, Object> parseDVNCitation(XMLStreamReader xmlr) throws XMLStreamException {

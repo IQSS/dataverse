@@ -60,11 +60,6 @@ public class FileDownloadHelper implements java.io.Serializable {
         this.filesForRequestAccess = new ArrayList<>();
     }
 
-    // See also @Size(max = 255) in GuestbookResponse
-     private boolean testResponseLength(String value) {
-        return !(value != null && value.length() > 255);
-     }
-
     // This helper method is called from the Download terms/guestbook/etc. popup,
     // when the user clicks the "ok" button. We use it, instead of calling
     // downloadServiceBean directly, in order to differentiate between single

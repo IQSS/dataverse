@@ -660,10 +660,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         return null;
     }
 
-    private void msg(String s) {
-        System.out.println(s);
-    }
-
     /**
      * For single file replacement, load the file to replace
      *

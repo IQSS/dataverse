@@ -1087,24 +1087,6 @@ public class IngestServiceBean {
         return ingestSuccessful;
     }
 
-    private BufferedInputStream openFile(DataFile dataFile) throws IOException {
-        BufferedInputStream inputStream;
-        StorageIO<DataFile> storageIO = dataFile.getStorageIO();
-        storageIO.open();
-        if (storageIO.isLocalFile()) {
-            inputStream = new BufferedInputStream(storageIO.getInputStream());
-        } else {
-        	File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
-			try (ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
-					FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();) {
-				tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
-			}
-            inputStream = new BufferedInputStream(new FileInputStream(tempFile));
-            logger.fine("Saved "+storageIO.getSize()+" bytes in a local temp file.");
-        }
-        return inputStream;
-    }
-
     private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {
         dataFile.setDataTables(null);
         if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
@@ -1767,18 +1749,6 @@ public class IngestServiceBean {
             } catch (IOException ioEx) {
             }
         }
-    }
- 
-    private Set<Integer> selectContinuousVariableColumns(DataFile dataFile) {
-        Set<Integer> contVarFields = new LinkedHashSet<Integer>();
-
-        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
-            if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {
-                contVarFields.add(i);
-            }
-        }
-
-        return contVarFields;
     }
     
     private void calculateContinuousSummaryStatistics(DataFile dataFile, int varnum, Number[] dataVector) throws IOException {

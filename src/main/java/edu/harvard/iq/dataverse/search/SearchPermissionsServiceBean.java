@@ -117,60 +117,6 @@ public class SearchPermissionsServiceBean {
         return ra;
     }
 
-    @Deprecated
-    private List<String> findDirectAssignments(DvObject dvObject) {
-        List<String> permStrings = new ArrayList<>();
-        List<RoleAssignee> roleAssignees = findWhoHasDirectAssignments(dvObject);
-        for (RoleAssignee roleAssignee : roleAssignees) {
-            logger.fine("user or group (findDirectAssignments): " + roleAssignee.getIdentifier());
-            String indexableUserOrGroupPermissionString = getIndexableStringForUserOrGroup(roleAssignee);
-            if (indexableUserOrGroupPermissionString != null) {
-                permStrings.add(indexableUserOrGroupPermissionString);
-            }
-        }
-        return permStrings;
-    }
-
-    @Deprecated
-    private List<RoleAssignee> findWhoHasDirectAssignments(DvObject dvObject) {
-        List<RoleAssignee> emptyList = new ArrayList<>();
-        List<RoleAssignee> peopleWhoCanSearch = emptyList;
-        resetRoleAssigneeCache();
-
-        List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dvObject);
-        for (RoleAssignment roleAssignment : assignmentsOn) {
-            if (roleAssignment.getRole().permissions().contains(getRequiredSearchPermission(dvObject))) {
-                RoleAssignee userOrGroup = getRoleAssignee(roleAssignment.getAssigneeIdentifier());
-                if (userOrGroup != null) {
-                    peopleWhoCanSearch.add(userOrGroup);
-                }
-            }
-        }
-        resetRoleAssigneeCache();
-        return peopleWhoCanSearch;
-    }
-
-    @Deprecated
-    private List<String> findImplicitAssignments(DvObject dvObject) {
-        List<String> permStrings = new ArrayList<>();
-        DvObject parent = dvObject.getOwner();
-        while (parent != null) {
-            if (respectPermissionRoot()) {
-                if (parent.isEffectivelyPermissionRoot()) {
-                    return permStrings;
-                }
-            }
-            if (parent.isInstanceofDataverse()) {
-                permStrings.addAll(findDirectAssignments(parent));
-            } else if (parent.isInstanceofDataset()) {
-                // files get discoverability from their parent dataset
-                permStrings.addAll(findDirectAssignments(parent));
-            }
-            parent = parent.getOwner();
-        }
-        return permStrings;
-    }
-
     public Map<DatasetVersion.VersionState, Boolean> getDesiredCards(Dataset dataset) {
         Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
         DatasetVersion latestVersion = dataset.getLatestVersion();
@@ -228,13 +174,6 @@ public class SearchPermissionsServiceBean {
             return Permission.ViewUnpublishedDataset;
         }
 
-    }
-
-    @Deprecated
-    private boolean respectPermissionRoot() {
-        boolean safeDefaultIfKeyNotFound = true;
-        // see javadoc of the key
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.SearchRespectPermissionRoot, safeDefaultIfKeyNotFound);
     }
 
     /**

@@ -827,31 +827,7 @@ public class DataversePage implements java.io.Serializable {
         return arguments;
     }
 
-    @Deprecated
-    private SavedSearch createSavedOfCurrentDataverse(AuthenticatedUser savedSearchCreator) {
-        /**
-         * Please note that we are relying on the fact that the Solr ID of a
-         * dataverse never changes, unlike datasets and files, which will change
-         * from "dataset_10_draft" to "dataset_10" when published, for example.
-         */
-        String queryForCurrentDataverse = SearchFields.ID + ":" + IndexServiceBean.solrDocIdentifierDataverse + dataverse.getId();
-        SavedSearch savedSearchToPersist = new SavedSearch(queryForCurrentDataverse, linkingDataverse, savedSearchCreator);
-        SavedSearch savedSearchCreated = savedSearchService.add(savedSearchToPersist);
-        return savedSearchCreated;
-    }
-
-    private SavedSearch createSavedSearchForChildren(AuthenticatedUser savedSearchCreator) {
-        String wildcardQuery = "*";
-        SavedSearch savedSearchToPersist = new SavedSearch(wildcardQuery, linkingDataverse, savedSearchCreator);
-        String dataversePath = dataverseService.determineDataversePath(dataverse);
-        String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
-        SavedSearchFilterQuery filterDownToSubtreeFilterQuery = new SavedSearchFilterQuery(filterDownToSubtree, savedSearchToPersist);
-        savedSearchToPersist.setSavedSearchFilterQueries(Arrays.asList(filterDownToSubtreeFilterQuery));
-        SavedSearch savedSearchCreated = savedSearchService.add(savedSearchToPersist);
-        return savedSearchCreated;
-    }
-
-     public String saveSavedSearch() {
+    public String saveSavedSearch() {
         if (linkingDataverseId == null) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
             return "";

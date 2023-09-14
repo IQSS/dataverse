@@ -3576,58 +3576,6 @@ public class SAVFileReader  extends TabularDataFileReader{
 	    throw ex; 
         }
         
-    }
-    
-    private List<byte[]> getRT7SubTypefieldData(BufferedInputStream stream) throws IOException {
-        int length_unit_length = 4;
-        int length_number_of_units = 4;
-        int storage_size = length_unit_length + length_number_of_units;
-        List<byte[]> dataList = new ArrayList<byte[]>();
-        int[] headerSection = new int[2];
-        
-        byte[] byteStorage = new byte[storage_size];
-
-        try{
-            int nbytes = stream.read(byteStorage);
-            // to-do check against nbytes
-
-            //printHexDump(byteStorage, "RT7:storage");
-
-            ByteBuffer bb_data_type = ByteBuffer.wrap(byteStorage,
-                       0, length_unit_length);
-            if (isLittleEndian){
-                bb_data_type.order(ByteOrder.LITTLE_ENDIAN);
-            }
-
-            int unitLength = bb_data_type.getInt();
-            dbgLog.fine("parseRT7SubTypefield: unitLength="+unitLength);
-
-            ByteBuffer bb_number_of_units = ByteBuffer.wrap(byteStorage,
-                       length_unit_length, length_number_of_units);
-            if (isLittleEndian){
-                bb_number_of_units.order(ByteOrder.LITTLE_ENDIAN);
-            }
-
-            int numberOfUnits = bb_number_of_units.getInt();
-            dbgLog.fine("parseRT7SubTypefield: numberOfUnits="+numberOfUnits);
-
-            headerSection[0] = unitLength;
-            headerSection[1] = numberOfUnits;
-
-            for (int i=0; i<numberOfUnits; i++){
-
-                byte[] work = new byte[unitLength];
-                int nb = stream.read(work);
-                dbgLog.finer(new String(Hex.encodeHex(work)));
-                dataList.add(work);
-            }
-
-
-        } catch (IOException ex) {
-            //ex.printStackTrace();
-	    throw ex; 
-        }
-        return dataList;
     }    
     
     void print2Darray(Object[][] datatable, String title){

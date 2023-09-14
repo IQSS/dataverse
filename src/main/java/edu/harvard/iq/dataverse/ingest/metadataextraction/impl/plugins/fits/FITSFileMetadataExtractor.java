@@ -999,24 +999,6 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         return summary; 
     }
     
-    private int typeCount (List<String> typeList, String typeToken) {
-        if (typeToken == null || typeToken.equals("")) {
-            return 0;
-        }
-        
-        int count = 0;
-
-        if (typeList != null) {
-            for (int i = 0; i<typeList.size(); i++) {
-                if (typeToken.equals(typeList.get(i))) {
-                    count++; 
-                }
-            }
-        }
-        
-        return count; 
-    }
-    
     @Override
     public String getFormatName() throws IOException {
         if (originatingProvider != null) {

@@ -1684,13 +1684,6 @@ public class PORFileReader  extends TabularDataFileReader{
                 }
             }
         }
-    }
-    
-    private void print2Darray(Object[][] datatable, String title){
-        dbgLog.fine(title);
-        for (Object[] datatable1 : datatable) {
-            dbgLog.fine(StringUtils.join(datatable1, "|"));
-        }
     }    
     
     private Map<String,String> createLabelMap (File extendedLabelsFile) {

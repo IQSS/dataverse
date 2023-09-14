@@ -63,19 +63,6 @@ public class FileVersionRetriever {
         chosenFile = selectedFile;
     }
     
-    /**
-     * (1) Get all of the Dataset Versions
-     * 
-     * 
-     */
-    private void buildFileVersionHistory(){
-        
-        
-        //dataFileService.
-        
-        
-    }
-    
     
    
 }

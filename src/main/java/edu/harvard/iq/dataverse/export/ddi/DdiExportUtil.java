@@ -1121,17 +1121,6 @@ public class DdiExportUtil {
         }
     }
     
-    private static String appendCommaSeparatedValue(String inVal, String next) {
-        if (!next.isEmpty()) {
-            if (!inVal.isEmpty()) {
-                return inVal + ", " + next;
-            } else {
-                return next;
-            }
-        }
-        return inVal;
-    }
-    
     private static void writeAbstractElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String lang) throws XMLStreamException {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
@@ -1656,10 +1645,6 @@ public class DdiExportUtil {
             return true;
         }
         return false;
-    }
-
-    private static void saveJsonToDisk(String datasetVersionAsJson) throws IOException {
-        Files.write(Paths.get("/tmp/out.json"), datasetVersionAsJson.getBytes());
     }
     
     

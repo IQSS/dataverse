@@ -498,12 +498,6 @@ public class DublinCoreExportUtil {
         }
     }
 
-    private static void writeAttribute(XMLStreamWriter xmlw, String name, String value) throws XMLStreamException {
-        if (!StringUtilisEmpty(value)) {
-            xmlw.writeAttribute(name, value);
-        }
-    }
-
     private static boolean StringUtilisEmpty(String str) {
         if (str == null || str.trim().equals("")) {
             return true;

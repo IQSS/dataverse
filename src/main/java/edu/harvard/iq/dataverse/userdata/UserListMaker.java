@@ -142,19 +142,4 @@ public class UserListMaker {
     public String getErrorMessage() {
         return this.errorMessage;
     }
-
-    private void addErrorMessage(String errMsg){
-        this.errorFound = true;
-        this.errorMessage = errMsg;
-    }
-
-    private void msg(String s) {
-        System.out.println(s);
-    }
-
-    private void msgt(String s){
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
-    }
 }

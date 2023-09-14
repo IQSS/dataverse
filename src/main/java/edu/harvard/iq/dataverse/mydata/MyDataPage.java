@@ -65,16 +65,6 @@ public class MyDataPage implements java.io.Serializable {
     private long totalUserFileCount = 0;
     private long totalUserDataverseCount = 0;
     private long totalUserDatasetCount = 0;
-    
-    private void msg(String s){
-        System.out.println(s);
-    }
-    
-    private void msgt(String s){
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
-    }
 
     public void setTotalUserDatasetCount(long cnt){
         this.totalUserDatasetCount = cnt;

@@ -246,16 +246,6 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
         return roleInfoList;
     }
     
-    private void msg(String s){
-        logger.info(s);
-    }
-    
-    private void msgt(String s){
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
-    }
-    
     
     public List<Long> getRoleIdList(){
         

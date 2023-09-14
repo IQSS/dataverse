@@ -440,15 +440,6 @@ public final class DatasetVersionDifference {
             }            
         }               
     }
-    
-    private DifferenceSummaryItem createSummaryItem(){
-        return null;
-    }
-    
-    private List addToSummaryGroup(String displayName, DifferenceSummaryItem differenceSummaryItem){
-        
-        return null;
-    }
 
     private List<String[]> addToTermsChangedList(List<String[]> listIn, String label, String origVal, String newVal) {
         String[] diffArray;
