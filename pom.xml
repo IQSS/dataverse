@@ -20,6 +20,7 @@
     <properties>
         <skipUnitTests>false</skipUnitTests>
         <skipIntegrationTests>false</skipIntegrationTests>
+        <it.groups>integration</it.groups>
         
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
@@ -845,7 +846,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
-                    <groups>testcontainers</groups>
+                    <groups>${it.groups}</groups>
                     <argLine>${failsafe.jacoco.args} ${argLine}</argLine>
                     <skip>${skipIntegrationTests}</skip>
                 </configuration>
