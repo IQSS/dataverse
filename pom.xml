@@ -745,6 +745,11 @@
                         <configuration>
                             <destFile>${project.build.directory}/coverage-reports/jacoco-unit.exec</destFile>
                             <propertyName>surefire.jacoco.args</propertyName>
+                            <includes>
+                                <include>edu/harvard/iq/dataverse/*</include>
+                                <include>io/gdcc/*</include>
+                                <include>org/dataverse/*</include>
+                            </includes>
                         </configuration>
                     </execution>
                     <execution>
@@ -768,6 +773,11 @@
                             <destFile>${project.build.directory}/coverage-reports/jacoco-integration.exec</destFile>
                             <propertyName>failsafe.jacoco.args</propertyName>
                             <skip>${skipIntegrationTests}</skip>
+                            <includes>
+                                <include>edu/harvard/iq/dataverse/*</include>
+                                <include>io/gdcc/*</include>
+                                <include>org/dataverse/*</include>
+                            </includes>
                         </configuration>
                     </execution>
                     <execution>
