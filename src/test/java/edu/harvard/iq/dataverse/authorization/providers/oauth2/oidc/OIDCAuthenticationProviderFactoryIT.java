@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.mocks.MockAuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
+import edu.harvard.iq.dataverse.util.testing.Tags;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebResponse;
@@ -51,7 +52,8 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.when;
 
-@Tag("testcontainers")
+@Tag(Tags.INTEGRATION_TEST)
+@Tag(Tags.USES_TESTCONTAINERS)
 @Testcontainers
 @ExtendWith(MockitoExtension.class)
 // NOTE: order is important here - Testcontainers must be first, otherwise it's not ready when we call getAuthUrl()
