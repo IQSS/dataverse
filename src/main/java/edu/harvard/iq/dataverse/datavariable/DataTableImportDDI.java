@@ -6,15 +6,6 @@
 
 package edu.harvard.iq.dataverse.datavariable;
 
-import edu.harvard.iq.dataverse.DataTable;
-import edu.harvard.iq.dataverse.util.StringUtil;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 /**
  *
  * @author Leonid Andreev

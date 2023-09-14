@@ -23,7 +23,6 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import org.passay.CharacterCharacteristicsRule;
 import org.passay.CharacterRule;
-import org.passay.DictionaryRule;
 import org.passay.DictionarySubstringRule;
 import org.passay.IllegalRegexRule;
 import org.passay.LengthRule;
