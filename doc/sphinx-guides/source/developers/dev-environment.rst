@@ -7,10 +7,20 @@ These instructions are purposefully opinionated and terse to help you get your d
 .. contents:: |toctitle|
 	:local:
 
-Quick Start
------------
+Quick Start (Docker)
+--------------------
 
-The quickest way to get the Dataverse Software running is to use Vagrant as described in the :doc:`tools` section, but for day to day development work, we recommended the following setup.
+The quickest way to get Dataverse running is in Docker as explained in :doc:`../container/dev-usage` section of the Container Guide.
+
+
+Classic Dev Environment
+-----------------------
+
+Since before Docker existed, we have encouraged installing Dataverse and all its dependencies directly on your development machine, as described below. This can be thought of as the "classic" development environment for Dataverse.
+
+However, in 2023 we decided that we'd like to encourage all developers to start using Docker instead and opened https://github.com/IQSS/dataverse/issues/9616 to indicate that we plan to rewrite this page to recommend the use of Docker.
+
+There's nothing wrong with the classic instructions below and we don't plan to simply delete them. They are a valid alternative to running Dataverse in Docker. We will likely move them to another page.
 
 Set Up Dependencies
 -------------------
@@ -20,7 +30,7 @@ Supported Operating Systems
 
 Mac OS X or Linux is required because the setup scripts assume the presence of standard Unix utilities.
 
-Windows is not well supported, unfortunately, but Vagrant and Minishift environments are described in the :doc:`windows` section.
+Windows is gaining support through Docker as described in the :doc:`windows` section.
 
 Install Java
 ~~~~~~~~~~~~
@@ -85,16 +95,21 @@ To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2022.3/payara-5.2022.3.zip``
+``sudo curl -O -L https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/5.2022.3/payara-5.2022.3.zip``
 
 ``sudo unzip payara-5.2022.3.zip``
 
 ``sudo chown -R $USER /usr/local/payara5``
 
-Install PostgreSQL
-~~~~~~~~~~~~~~~~~~
+If nexus.payara.fish is ever down for maintenance, Payara distributions are also available from https://repo1.maven.org/maven2/fish/payara/distributions/payara/
 
-The Dataverse Software has been tested with PostgreSQL versions up to 13. PostgreSQL version 10+ is required. 
+Install Service Dependencies Directly on localhost
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install PostgreSQL
+^^^^^^^^^^^^^^^^^^
+
+The Dataverse Software has been tested with PostgreSQL versions up to 13. PostgreSQL version 10+ is required.
 
 On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 13.5 is used in the command line examples below, but the process should be similar for other versions. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
@@ -115,7 +130,7 @@ Next, to confirm the edit worked, launch the "pgAdmin" application from the same
 On Linux, you should just install PostgreSQL using your favorite package manager, such as ``yum``. (Consult the PostgreSQL section of :doc:`/installation/prerequisites` in the main Installation guide for more info and command line examples). Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
 Install Solr
-~~~~~~~~~~~~
+^^^^^^^^^^^^
 
 `Solr <http://lucene.apache.org/solr/>`_ 8.11.1 is required.
 
@@ -153,6 +168,38 @@ To install Solr, execute the following commands:
 
 ``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
 
+Install Service Dependencies Using Docker Compose
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To avoid having to install service dependencies like PostgreSQL or Solr directly on your localhost, there is the alternative of using the ``docker-compose-dev.yml`` file available in the repository root. For this option you need to have Docker and Docker Compose installed on your machine.
+
+The ``docker-compose-dev.yml`` can be configured to only run the service dependencies necessary to support a Dataverse installation running directly on localhost. In addition to PostgreSQL and Solr, it also runs a SMTP server.
+
+Before running the Docker Compose file, you need to update the value of the ``DATAVERSE_DB_USER`` environment variable to ``postgres``. The variable can be found inside the ``.env`` file in the repository root. This step is required as the Dataverse installation script expects that database user.
+
+To run the Docker Compose file, go to the Dataverse repository root, then run:
+
+``docker-compose -f docker-compose-dev.yml up -d --scale dev_dataverse=0``
+
+Note that this command omits the Dataverse container defined in the Docker Compose file, since Dataverse is going to be installed directly on localhost in the next section.
+
+The command runs the containers in detached mode, but if you want to run them attached and thus view container logs in real time, remove the ``-d`` option from the command.
+
+Data volumes of each dependency will be persisted inside the ``docker-dev-volumes`` folder, inside the repository root.
+
+If you want to stop the containers, then run (for detached mode only, otherwise use ``Ctrl + C``):
+
+``docker-compose -f docker-compose-dev.yml stop``
+
+If you want to remove the containers, then run:
+
+``docker-compose -f docker-compose-dev.yml down``
+
+If you want to run a single container (the mail server, for example) then run:
+
+``docker-compose -f docker-compose-dev.yml up dev_smtp``
+
+For a fresh installation, and before running the Software Installer Script, it is recommended to delete the docker-dev-env folder to avoid installation problems due to existing data in the containers.
+
 Run the Dataverse Software Installer Script
 -------------------------------------------
 
@@ -168,7 +215,7 @@ Create a Python virtual environment, activate it, then install dependencies:
 
 ``pip install psycopg2-binary``
 
-The installer will try to connect to the SMTP server you tell it to use. If you don't have a mail server handy you can run ``nc -l 25`` in another terminal and choose "localhost" (the default) to get past this check.
+The installer will try to connect to the SMTP server you tell it to use. If you haven't used the Docker Compose option for setting up the dependencies, or you don't have a mail server handy, you can run ``nc -l 25`` in another terminal and choose "localhost" (the default) to get past this check.
 
 Finally, run the installer (see also :download:`README_python.txt <../../../../scripts/installer/README_python.txt>` if necessary):
 
@@ -191,6 +238,8 @@ Run the following command:
 ``curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d FAKE``
 
 This will disable DOI registration by using a fake (in-code) DOI provider. Please note that this feature is only available in Dataverse Software 4.10+ and that at present, the UI will give no indication that the DOIs thus minted are fake.
+
+Developers may also wish to consider using :ref:`PermaLinks <permalinks>`
 
 Configure Your Development Environment for GUI Edits
 ----------------------------------------------------

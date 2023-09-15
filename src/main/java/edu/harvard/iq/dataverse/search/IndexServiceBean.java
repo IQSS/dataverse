@@ -20,9 +20,11 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -54,6 +56,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -240,7 +243,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.SOURCE, HARVESTED);
         } else { (this means that all dataverses are "local" - should this be removed? */
         solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-        solrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName()); //rootDataverseName);
+        solrInputDocument.addField(SearchFields.METADATA_SOURCE, rootDataverse.getName()); //rootDataverseName);
         /*}*/
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
@@ -347,48 +350,98 @@ public class IndexServiceBean {
     }
     
     @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDatasetInNewTransaction(Long datasetId) throws  SolrServerException, IOException{ //Dataset dataset) {
+    public void indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
-        Dataset dataset = em.find(Dataset.class, datasetId);
-        // return indexDataset(dataset, doNormalSolrDocCleanUp);
-        Future<String> ret = indexDataset(dataset, doNormalSolrDocCleanUp);
+        Dataset dataset = datasetService.findDeep(datasetId);
+        asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
         dataset = null;
-        return ret;
     }
     
-    @TransactionAttribute(REQUIRES_NEW)
-    public Future<String> indexDatasetObjectInNewTransaction(Dataset dataset) throws  SolrServerException, IOException{ //Dataset dataset) {
-        boolean doNormalSolrDocCleanUp = false;
-        // return indexDataset(dataset, doNormalSolrDocCleanUp);
-        Future<String> ret = indexDataset(dataset, doNormalSolrDocCleanUp);
-        dataset = null;
-        return ret;
+    // The following two variables are only used in the synchronized getNextToIndex method and do not need to be synchronized themselves
+
+    // nextToIndex contains datasets mapped by dataset id that were added for future indexing while the indexing was already ongoing for a given dataset
+    // (if there already was a dataset scheduled for indexing, it is overwritten and only the most recently requested version is kept in the map)
+    private static final Map<Long, Dataset> NEXT_TO_INDEX = new ConcurrentHashMap<>();
+    // indexingNow is a set of dataset ids of datasets being indexed asynchronously right now
+    private static final Map<Long, Boolean> INDEXING_NOW = new ConcurrentHashMap<>();
+
+    // When you pass null as Dataset parameter to this method, it indicates that the indexing of the dataset with "id" has finished
+    // Pass non-null Dataset to schedule it for indexing
+    synchronized private static Dataset getNextToIndex(Long id, Dataset d) {
+        if (d == null) { // -> indexing of the dataset with id has finished
+            Dataset next = NEXT_TO_INDEX.remove(id);
+            if (next == null) { // -> no new indexing jobs were requested while indexing was ongoing
+                // the job can be stopped now
+                INDEXING_NOW.remove(id);
+            }
+            return next;
+        }
+        // index job is requested for a non-null dataset
+        if (INDEXING_NOW.containsKey(id)) { // -> indexing job is already ongoing, and a new job should not be started by the current thread -> return null
+            NEXT_TO_INDEX.put(id, d);
+            return null;
+        }
+        // otherwise, start a new job
+        INDEXING_NOW.put(id, true);
+        return d;
     }
 
+    /**
+     * Indexes a dataset asynchronously.
+     * 
+     * Note that this method implement a synchronized skipping mechanism. When an
+     * indexing job is already running for a given dataset in the background, the
+     * new call will not index that dataset, but will delegate the execution to
+     * the already running job. The running job will pick up the requested indexing
+     * once that it is finished with the ongoing indexing. If another indexing is
+     * requested before the ongoing indexing is finished, only the indexing that is
+     * requested most recently will be picked up for the next indexing.
+     * 
+     * In other words: we can have at most one indexing ongoing for the given
+     * dataset, and at most one (most recent) request for reindexing of the same
+     * dataset. All requests that come between the most recent one and the ongoing
+     * one are skipped for the optimization reasons. For a more in depth discussion,
+     * see the pull request: https://github.com/IQSS/dataverse/pull/9558
+     * 
+     * @param dataset                The dataset to be indexed.
+     * @param doNormalSolrDocCleanUp Flag for normal Solr doc clean up.
+     */
     @Asynchronous
-    public Future<String> asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
-        return indexDataset(dataset, doNormalSolrDocCleanUp);
+    public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+        Long id = dataset.getId();
+        Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
+        while (next != null) {
+            try {
+                indexDataset(next, doNormalSolrDocCleanUp);
+            } catch (Exception e) { // catch all possible exceptions; otherwise when something unexpected happes the dataset wold remain locked and impossible to reindex
+                String failureLogText = "Indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+                failureLogText += "\r\n" + e.getLocalizedMessage();
+                LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+            }
+            next = getNextToIndex(id, null); // if dataset was not changed during the indexing (and no new job was requested), next is null and loop can be stopped
+        }
     }
-    
-    @Asynchronous
-    public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
+
+    public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
         for(Dataset dataset : datasets) {
-            indexDataset(dataset, true);
+            asyncIndexDataset(dataset, true);
         }
     }
     
-    public Future<String> indexDvObject(DvObject objectIn) throws  SolrServerException, IOException {
-        
+    public void indexDvObject(DvObject objectIn) throws  SolrServerException, IOException {
         if (objectIn.isInstanceofDataset() ){
-            return (indexDataset((Dataset)objectIn, true));
+            asyncIndexDataset((Dataset)objectIn, true);
+        } else if (objectIn.isInstanceofDataverse() ){
+            indexDataverse((Dataverse)objectIn);
         }
-        if (objectIn.isInstanceofDataverse() ){
-            return (indexDataverse((Dataverse)objectIn));
-        }
-        return null;
+    }
+
+    private void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
+        doIndexDataset(dataset, doNormalSolrDocCleanUp);
+        updateLastIndexedTime(dataset.getId());
     }
     
-    public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
+    private void doIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         logger.fine("indexing dataset " + dataset.getId());
         /**
          * @todo should we use solrDocIdentifierDataset or
@@ -547,7 +600,6 @@ public class IndexServiceBean {
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.fine(result);
                 indexDatasetPermissions(dataset);
-                return new AsyncResult<>(result);
             } else if (latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
 
                 desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, true);
@@ -594,11 +646,9 @@ public class IndexServiceBean {
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.fine(result);
                 indexDatasetPermissions(dataset);
-                return new AsyncResult<>(result);
             } else {
                 String result = "No-op. Unexpected condition reached: No released version and latest version is neither draft nor deaccessioned";
                 logger.fine(result);
-                return new AsyncResult<>(result);
             }
         } else if (atLeastOnePublishedVersion == true) {
             results.append("Published versions found. ")
@@ -651,7 +701,6 @@ public class IndexServiceBean {
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.fine(result);
                 indexDatasetPermissions(dataset);
-                return new AsyncResult<>(result);
             } else if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
 
                 IndexableDataset indexableDraftVersion = new IndexableDataset(latestVersion);
@@ -705,16 +754,13 @@ public class IndexServiceBean {
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.fine(result);
                 indexDatasetPermissions(dataset);
-                return new AsyncResult<>(result);
             } else {
                 String result = "No-op. Unexpected condition reached: There is at least one published version but the latest version is neither published nor draft";
                 logger.fine(result);
-                return new AsyncResult<>(result);
             }
         } else {
             String result = "No-op. Unexpected condition reached: Has a version been published or not?";
             logger.fine(result);
-            return new AsyncResult<>(result);
         }
     }
     
@@ -740,10 +786,11 @@ public class IndexServiceBean {
     }
 
     private String addOrUpdateDataset(IndexableDataset indexableDataset) throws  SolrServerException, IOException {
-        return addOrUpdateDataset(indexableDataset, null);
+        String result = addOrUpdateDataset(indexableDataset, null);
+        return result;
     }
 
-    public SolrInputDocuments toSolrDocs(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {        
+    public SolrInputDocuments toSolrDocs(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {
         IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
@@ -758,11 +805,27 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.DATASET_PERSISTENT_ID, dataset.getGlobalId().toString());
         solrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
+        boolean valid;
+        if (!indexableDataset.getDatasetVersion().isDraft()) {
+            valid = true;
+        } else {
+            DatasetVersion version = indexableDataset.getDatasetVersion().cloneDatasetVersion();
+            version.setDatasetFields(version.initDatasetFields());
+            valid = version.isValid();
+        }
+        if (JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false)) {
+            solrInputDocument.addField(SearchFields.DATASET_VALID, valid);
+        }
 
+        final Dataverse dataverse = dataset.getDataverseContext();
+        final String dvIndexableCategoryName = dataverse.getIndexableCategoryName();
+        final String dvAlias = dataverse.getAlias();
+        final String dvDisplayName = dataverse.getDisplayName();
+        final String rdvName = findRootDataverseCached().getName();
         //This only grabs the immediate parent dataverse's category. We do the same for dataverses themselves.
-        solrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
-        solrInputDocument.addField(SearchFields.IDENTIFIER_OF_DATAVERSE, dataset.getDataverseContext().getAlias());
-        solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataset.getDataverseContext().getDisplayName());
+        solrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dvIndexableCategoryName);
+        solrInputDocument.addField(SearchFields.IDENTIFIER_OF_DATAVERSE, dvAlias);
+        solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dvDisplayName);
         
         Date datasetSortByDate = new Date();
         Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
@@ -808,7 +871,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
         } else {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName()); //rootDataverseName);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName); //rootDataverseName);
         }
 
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
@@ -827,7 +890,7 @@ public class IndexServiceBean {
             }
 
             Set<String> langs = settingsService.getConfiguredLanguages();
-            Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
+            Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(true);
             Set<String> metadataBlocksWithValue = new HashSet<>();
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
@@ -1069,6 +1132,9 @@ public class IndexServiceBean {
             }
             LocalDate embargoEndDate=null;
             LocalDate end = null;
+            final String datasetCitation = dataset.getCitation();
+            final Long datasetId = dataset.getId();
+            final String datasetGlobalId = dataset.getGlobalId().toString();
             for (FileMetadata fileMetadata : fileMetadatas) {
                
                 Embargo emb= fileMetadata.getDataFile().getEmbargo();
@@ -1106,7 +1172,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
                     datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
-                    datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
+                    datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dvIndexableCategoryName);
                     if(end!=null) {
                         datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, end.toEpochDay()); 
                     }
@@ -1148,12 +1214,15 @@ public class IndexServiceBean {
                                 logger.warning(String.format("Full-text indexing for %s failed",
                                         fileMetadata.getDataFile().getDisplayName()));
                                 e.printStackTrace();
-                                continue;
                             } catch (OutOfMemoryError e) {
                                 textHandler = null;
                                 logger.warning(String.format("Full-text indexing for %s failed due to OutOfMemoryError",
                                         fileMetadata.getDataFile().getDisplayName()));
-                                continue;
+                            } catch(Error e) {
+                                //Catch everything - full-text indexing is complex enough (and using enough 3rd party components) that it can fail
+                                // and we don't want problems here to break other Dataverse functionality (e.g. edits)
+                                logger.severe(String.format("Full-text indexing for %s failed due to Error: %s : %s",
+                                        fileMetadata.getDataFile().getDisplayName(),e.getClass().getCanonicalName(), e.getLocalizedMessage()));
                             } finally {
                                 IOUtils.closeQuietly(instream);
                             }
@@ -1238,7 +1307,7 @@ public class IndexServiceBean {
                             datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
                         } else {
                             datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, false);
-                            datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, findRootDataverseCached().getName());
+                            datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName);
                         }
                     }
                     if (fileSortByDate == null) {
@@ -1296,16 +1365,18 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.FILE_CHECKSUM_VALUE, fileMetadata.getDataFile().getChecksumValue());
                     datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, fileMetadata.getDescription());
                     datafileSolrInputDocument.addField(SearchFields.FILE_DESCRIPTION, fileMetadata.getDescription());
-                    datafileSolrInputDocument.addField(SearchFields.FILE_PERSISTENT_ID, fileMetadata.getDataFile().getGlobalId().toString());
+                    GlobalId filePid = fileMetadata.getDataFile().getGlobalId();
+                    datafileSolrInputDocument.addField(SearchFields.FILE_PERSISTENT_ID,
+                            (filePid != null) ? filePid.toString() : null);
                     datafileSolrInputDocument.addField(SearchFields.UNF, fileMetadata.getDataFile().getUnf());
                     datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
                     // datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE,
                     // dataFile.getOwner().getOwner().getName());
                     // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME,
                     // dataFile.getDataset().getTitle());
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_ID, fileMetadata.getDataFile().getOwner().getId());
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, fileMetadata.getDataFile().getOwner().getGlobalId().toString());
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION, fileMetadata.getDataFile().getOwner().getCitation());
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_ID, datasetId);
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, datasetGlobalId);
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION, datasetCitation);
 
                     datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentDatasetTitle);
 
@@ -1402,17 +1473,27 @@ public class IndexServiceBean {
                 throw new IOException(ex);
             }
         }
+        return docs.getMessage();
+    }
+
+    @Asynchronous
+    private void updateLastIndexedTime(Long id) {
+        // indexing is often in a transaction with update statements
+        // if we flush on query (flush-mode auto), we want to prevent locking
+        // -> update the dataset asynchronously in a new transaction
+        updateLastIndexedTimeInNewTransaction(id);
+    }
+
+    @TransactionAttribute(REQUIRES_NEW)
+    private void updateLastIndexedTimeInNewTransaction(Long id) {
         /// Dataset updatedDataset =
         /// (Dataset)dvObjectService.updateContentIndexTime(dataset);
         /// updatedDataset = null;
         // instead of making a call to dvObjectService, let's try and
         // modify the index time stamp using the local EntityManager:
-        DvObject dvObjectToModify = em.find(DvObject.class, docs.getDatasetId());
+        DvObject dvObjectToModify = em.find(DvObject.class, id);
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
         dvObjectToModify = em.merge(dvObjectToModify);
-        dvObjectToModify = null;
-
-        return docs.getMessage();
     }
 
     /**
@@ -1616,7 +1697,11 @@ public class IndexServiceBean {
                 sid.addField(fieldName, doc.getFieldValue(fieldName));
             }
 
-            List<String> paths =  object.isInstanceofDataset() ? retrieveDVOPaths(datasetService.find(object.getId())) 
+            Dataset dataset = null;
+            if (object.isInstanceofDataset()) {
+                dataset = datasetService.findDeep(object.getId());
+            }
+            List<String> paths = object.isInstanceofDataset() ? retrieveDVOPaths(dataset)
                     : retrieveDVOPaths(dataverseService.find(object.getId()));
 
             sid.removeField(SearchFields.SUBTREE);
@@ -1624,7 +1709,7 @@ public class IndexServiceBean {
             UpdateResponse addResponse = solrClientService.getSolrClient().add(sid);
             UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
             if (object.isInstanceofDataset()) {
-                for (DataFile df : datasetService.find(object.getId()).getFiles()) {
+                for (DataFile df : dataset.getFiles()) {
                     solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, df.getId().toString()));
                     res = solrClientService.getSolrClient().query(solrQuery);
                     if (!res.getResults().isEmpty()) {

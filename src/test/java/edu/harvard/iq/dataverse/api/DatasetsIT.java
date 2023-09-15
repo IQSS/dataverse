@@ -1,13 +1,16 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
+
 import static com.jayway.restassured.RestAssured.given;
+
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
+
 import java.util.logging.Logger;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.Ignore;
 import com.jayway.restassured.path.json.JsonPath;
@@ -15,6 +18,7 @@ import com.jayway.restassured.path.json.JsonPath;
 import java.util.List;
 import java.util.Map;
 import javax.json.JsonObject;
+
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -22,21 +26,30 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static javax.ws.rs.core.Response.Status.CONFLICT;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
+
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.jayway.restassured.parsing.Parser;
+
 import static com.jayway.restassured.path.json.JsonPath.with;
+
 import com.jayway.restassured.path.xml.XmlPath;
+
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
+
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
@@ -58,25 +71,29 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.Response.Status;
-import static javax.ws.rs.core.Response.Status.CONFLICT;
-
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
 import static org.junit.Assert.assertEquals;
+
 import org.hamcrest.CoreMatchers;
+
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.contains;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
+
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertFalse;
 
 
 public class DatasetsIT {
@@ -98,6 +115,11 @@ public class DatasetsIT {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
                 .statusCode(200);
+
+        Response removeAnonymizedFieldTypeNames = UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+        removeAnonymizedFieldTypeNames.then().assertThat()
+                .statusCode(200);
+        
         /* With Dual mode, we can no longer mess with upload methods since native is now required for anything to work
                
         Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
@@ -120,6 +142,11 @@ public class DatasetsIT {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
                 .statusCode(200);
+
+        Response removeAnonymizedFieldTypeNames = UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+        removeAnonymizedFieldTypeNames.then().assertThat()
+                .statusCode(200);
+        
         /* See above
         Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
         removeDcmUrl.then().assertThat()
@@ -859,7 +886,7 @@ public class DatasetsIT {
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
-        Response failToCreateWhenDatasetIdNotFound = UtilIT.privateUrlCreate(Integer.MAX_VALUE, apiToken);
+        Response failToCreateWhenDatasetIdNotFound = UtilIT.privateUrlCreate(Integer.MAX_VALUE, apiToken, false);
         failToCreateWhenDatasetIdNotFound.prettyPrint();
         assertEquals(NOT_FOUND.getStatusCode(), failToCreateWhenDatasetIdNotFound.getStatusCode());
 
@@ -889,7 +916,7 @@ public class DatasetsIT {
         grantRole.prettyPrint();
         assertEquals(OK.getStatusCode(), grantRole.getStatusCode());
         UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, apiToken).prettyPrint();
-        Response contributorDoesNotHavePermissionToCreatePrivateUrl = UtilIT.privateUrlCreate(datasetId, contributorApiToken);
+        Response contributorDoesNotHavePermissionToCreatePrivateUrl = UtilIT.privateUrlCreate(datasetId, contributorApiToken, false);
         contributorDoesNotHavePermissionToCreatePrivateUrl.prettyPrint();
         assertEquals(UNAUTHORIZED.getStatusCode(), contributorDoesNotHavePermissionToCreatePrivateUrl.getStatusCode());
 
@@ -917,7 +944,7 @@ public class DatasetsIT {
         pristine.prettyPrint();
         assertEquals(NOT_FOUND.getStatusCode(), pristine.getStatusCode());
 
-        Response createPrivateUrl = UtilIT.privateUrlCreate(datasetId, apiToken);
+        Response createPrivateUrl = UtilIT.privateUrlCreate(datasetId, apiToken, false);
         createPrivateUrl.prettyPrint();
         assertEquals(OK.getStatusCode(), createPrivateUrl.getStatusCode());
 
@@ -1052,7 +1079,7 @@ public class DatasetsIT {
         Response downloadFile = UtilIT.downloadFile(fileId, tokenForPrivateUrlUser);
         assertEquals(OK.getStatusCode(), downloadFile.getStatusCode());
         Response downloadFileBadToken = UtilIT.downloadFile(fileId, "junk");
-        assertEquals(FORBIDDEN.getStatusCode(), downloadFileBadToken.getStatusCode());
+        assertEquals(UNAUTHORIZED.getStatusCode(), downloadFileBadToken.getStatusCode());
         Response notPermittedToListRoleAssignment = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, userWithNoRolesApiToken);
         assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignment.getStatusCode());
         Response roleAssignments = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, apiToken);
@@ -1077,11 +1104,11 @@ public class DatasetsIT {
         shouldNoLongerExist.prettyPrint();
         assertEquals(NOT_FOUND.getStatusCode(), shouldNoLongerExist.getStatusCode());
 
-        Response createPrivateUrlUnauth = UtilIT.privateUrlCreate(datasetId, userWithNoRolesApiToken);
+        Response createPrivateUrlUnauth = UtilIT.privateUrlCreate(datasetId, userWithNoRolesApiToken, false);
         createPrivateUrlUnauth.prettyPrint();
         assertEquals(UNAUTHORIZED.getStatusCode(), createPrivateUrlUnauth.getStatusCode());
 
-        Response createPrivateUrlAgain = UtilIT.privateUrlCreate(datasetId, apiToken);
+        Response createPrivateUrlAgain = UtilIT.privateUrlCreate(datasetId, apiToken, false);
         createPrivateUrlAgain.prettyPrint();
         assertEquals(OK.getStatusCode(), createPrivateUrlAgain.getStatusCode());
 
@@ -1097,11 +1124,11 @@ public class DatasetsIT {
         tryToDeleteAlreadyDeletedPrivateUrl.prettyPrint();
         assertEquals(NOT_FOUND.getStatusCode(), tryToDeleteAlreadyDeletedPrivateUrl.getStatusCode());
 
-        Response createPrivateUrlOnceAgain = UtilIT.privateUrlCreate(datasetId, apiToken);
+        Response createPrivateUrlOnceAgain = UtilIT.privateUrlCreate(datasetId, apiToken, false);
         createPrivateUrlOnceAgain.prettyPrint();
         assertEquals(OK.getStatusCode(), createPrivateUrlOnceAgain.getStatusCode());
 
-        Response tryToCreatePrivateUrlWhenExisting = UtilIT.privateUrlCreate(datasetId, apiToken);
+        Response tryToCreatePrivateUrlWhenExisting = UtilIT.privateUrlCreate(datasetId, apiToken, false);
         tryToCreatePrivateUrlWhenExisting.prettyPrint();
         assertEquals(FORBIDDEN.getStatusCode(), tryToCreatePrivateUrlWhenExisting.getStatusCode());
 
@@ -1120,7 +1147,7 @@ public class DatasetsIT {
         List<JsonObject> noAssignmentsForPrivateUrlUser = with(publishingShouldHaveRemovedRoleAssignmentForPrivateUrlUser.body().asString()).param("member", "member").getJsonObject("data.findAll { data -> data._roleAlias == member }");
         assertEquals(0, noAssignmentsForPrivateUrlUser.size());
 
-        Response tryToCreatePrivateUrlToPublishedVersion = UtilIT.privateUrlCreate(datasetId, apiToken);
+        Response tryToCreatePrivateUrlToPublishedVersion = UtilIT.privateUrlCreate(datasetId, apiToken, false);
         tryToCreatePrivateUrlToPublishedVersion.prettyPrint();
         assertEquals(FORBIDDEN.getStatusCode(), tryToCreatePrivateUrlToPublishedVersion.getStatusCode());
 
@@ -1129,7 +1156,7 @@ public class DatasetsIT {
         updatedMetadataResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), updatedMetadataResponse.getStatusCode());
 
-        Response createPrivateUrlForPostVersionOneDraft = UtilIT.privateUrlCreate(datasetId, apiToken);
+        Response createPrivateUrlForPostVersionOneDraft = UtilIT.privateUrlCreate(datasetId, apiToken, false);
         createPrivateUrlForPostVersionOneDraft.prettyPrint();
         assertEquals(OK.getStatusCode(), createPrivateUrlForPostVersionOneDraft.getStatusCode());
 
@@ -1156,7 +1183,7 @@ public class DatasetsIT {
          * a dataset is destroy. Still, we'll keep this test in here in case we
          * switch Private URL back to being its own table in the future.
          */
-        Response createPrivateUrlToMakeSureItIsDeletedWithDestructionOfDataset = UtilIT.privateUrlCreate(datasetId, apiToken);
+        Response createPrivateUrlToMakeSureItIsDeletedWithDestructionOfDataset = UtilIT.privateUrlCreate(datasetId, apiToken, false);
         createPrivateUrlToMakeSureItIsDeletedWithDestructionOfDataset.prettyPrint();
         assertEquals(OK.getStatusCode(), createPrivateUrlToMakeSureItIsDeletedWithDestructionOfDataset.getStatusCode());
 
@@ -1475,7 +1502,7 @@ public class DatasetsIT {
         getRsyncScriptPermErrorGuest.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode())
                 .contentType(ContentType.JSON)
-                .body("message", equalTo("Please provide a key query parameter (?key=XXX) or via the HTTP header X-Dataverse-key"));
+                .body("message", equalTo(AbstractApiBean.RESPONSE_MESSAGE_AUTHENTICATED_USER_REQUIRED));
 
         Response createNoPermsUser = UtilIT.createRandomUser();
         String noPermsUsername = UtilIT.getUsernameFromResponse(createNoPermsUser);
@@ -2250,6 +2277,71 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     /**
+     * This tests the "DDI export" and verifies that variable metadata is included for an unrestricted file.
+     */
+    @Test
+    public void testUnrestrictedFileExportDdi() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String authorUsername = UtilIT.getUsernameFromResponse(createUser);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(authorApiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        Path pathToFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species\n"
+                + "Marshall,40,dog\n"
+                + "Tiger,17,cat\n"
+                + "Panther,21,cat\n";
+        java.nio.file.Files.write(pathToFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile.toString(), authorApiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, authorApiToken);
+        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", authorApiToken);
+        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+        // We're testing export here, which is at dataset level.
+        // Guest/public version
+        Response exportByGuest = UtilIT.exportDataset(datasetPid, "ddi");
+        exportByGuest.prettyPrint();
+        exportByGuest.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("data.tab"))
+                .body("codeBook.fileDscr.fileTxt.dimensns.caseQnty", equalTo("3"))
+                .body("codeBook.fileDscr.fileTxt.dimensns.varQnty", equalTo("3"))
+                .body("codeBook.dataDscr", CoreMatchers.not(equalTo(null)))
+                .body("codeBook.dataDscr.var[0].@name", equalTo("name"))
+                .body("codeBook.dataDscr.var[1].@name", equalTo("pounds"))
+                // This is an example of a summary stat (max) that should be visible.
+                .body("codeBook.dataDscr.var[1].sumStat.find { it.@type == 'max' }", equalTo("40.0"))
+                .body("codeBook.dataDscr.var[2].@name", equalTo("species"));
+    }
+        
+    /**
      * In this test we are restricting a file and testing "export DDI" at the
      * dataset level as well as getting the DDI at the file level.
      *
@@ -2380,7 +2472,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
         // Create a dataset using native api
-        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        // (this test requires that we create a dataset without the license set; note the extra boolean arg.:)
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken, true);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
@@ -3050,4 +3143,128 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
     }
 
+    @Test
+    public void testGetDatasetSummaryFieldNames() {
+        Response summaryFieldNamesResponse = UtilIT.getDatasetSummaryFieldNames();
+        summaryFieldNamesResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // check for any order
+                .body("data", hasItems("dsDescription", "subject", "keyword", "publication", "notesText"))
+                // check for exact order
+                .body("data", contains("dsDescription", "subject", "keyword", "publication", "notesText"));
+    }
+
+    @Test
+    public void getPrivateUrlDatasetVersion() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Non-anonymized test
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        UtilIT.privateUrlCreate(datasetId, apiToken, false).then().assertThat().statusCode(OK.getStatusCode());
+        Response privateUrlGet = UtilIT.privateUrlGet(datasetId, apiToken);
+        privateUrlGet.then().assertThat().statusCode(OK.getStatusCode());
+        String tokenForPrivateUrlUser = JsonPath.from(privateUrlGet.body().asString()).getString("data.token");
+
+        // We verify that the response contains the dataset associated to the private URL token
+        Response getPrivateUrlDatasetVersionResponse = UtilIT.getPrivateUrlDatasetVersion(tokenForPrivateUrlUser);
+        getPrivateUrlDatasetVersionResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.datasetId", equalTo(datasetId));
+
+        // Test anonymized
+        Response setAnonymizedFieldsSettingResponse = UtilIT.setSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames, "author");
+        setAnonymizedFieldsSettingResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        UtilIT.privateUrlCreate(datasetId, apiToken, true).then().assertThat().statusCode(OK.getStatusCode());
+        privateUrlGet = UtilIT.privateUrlGet(datasetId, apiToken);
+        privateUrlGet.then().assertThat().statusCode(OK.getStatusCode());
+        tokenForPrivateUrlUser = JsonPath.from(privateUrlGet.body().asString()).getString("data.token");
+
+        Response getPrivateUrlDatasetVersionAnonymizedResponse = UtilIT.getPrivateUrlDatasetVersion(tokenForPrivateUrlUser);
+        getPrivateUrlDatasetVersionAnonymizedResponse.prettyPrint();
+
+        // We verify that the response is anonymized for the author field
+        getPrivateUrlDatasetVersionAnonymizedResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.datasetId", equalTo(datasetId))
+                .body("data.metadataBlocks.citation.fields[1].value", equalTo(BundleUtil.getStringFromBundle("dataset.anonymized.withheld")))
+                .body("data.metadataBlocks.citation.fields[1].typeClass", equalTo("primitive"))
+                .body("data.metadataBlocks.citation.fields[1].multiple", equalTo(false));
+
+        // Similar to the check above but doesn't rely on fields[1]
+        List<JsonObject> authors = with(getPrivateUrlDatasetVersionAnonymizedResponse.body().asString()).param("fieldToFind", "author")
+                .getJsonObject("data.metadataBlocks.citation.fields.findAll { fields -> fields.typeName == fieldToFind }");
+        Map firstAuthor = authors.get(0);
+        String value = (String) firstAuthor.get("value");
+        assertEquals(BundleUtil.getStringFromBundle("dataset.anonymized.withheld"), value);
+
+        UtilIT.deleteSetting(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
+
+        // Test invalid token
+        getPrivateUrlDatasetVersionAnonymizedResponse = UtilIT.getPrivateUrlDatasetVersion("invalidToken");
+        getPrivateUrlDatasetVersionAnonymizedResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    public void getPrivateUrlDatasetVersionCitation() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        UtilIT.privateUrlCreate(datasetId, apiToken, false).then().assertThat().statusCode(OK.getStatusCode());
+        Response privateUrlGet = UtilIT.privateUrlGet(datasetId, apiToken);
+        String tokenForPrivateUrlUser = JsonPath.from(privateUrlGet.body().asString()).getString("data.token");
+
+        Response getPrivateUrlDatasetVersionCitation = UtilIT.getPrivateUrlDatasetVersionCitation(tokenForPrivateUrlUser);
+        getPrivateUrlDatasetVersionCitation.prettyPrint();
+
+        getPrivateUrlDatasetVersionCitation.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // We check that the returned message contains information expected for the citation string
+                .body("data.message", containsString("DRAFT VERSION"));
+    }
+
+    @Test
+    public void getDatasetVersionCitation() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        Response getDatasetVersionCitationResponse = UtilIT.getDatasetVersionCitation(datasetId, ":draft", apiToken);
+        getDatasetVersionCitationResponse.prettyPrint();
+
+        getDatasetVersionCitationResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // We check that the returned message contains information expected for the citation string
+                .body("data.message", containsString("DRAFT VERSION"));
+    }
 }

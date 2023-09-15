@@ -29,6 +29,7 @@
                 <f:metadata>
                     <o:viewParam name="fileId" value="#{FilePage.fileId}"/>
                     <f:viewParam name="version" value="#{FilePage.version}"/>
+                    <o:viewParam name="toolType" value="#{FilePage.toolType}"/>
                     <f:viewParam name="persistentId" value="#{FilePage.persistentId}"/>
                     <f:viewParam name="datasetVersionId" value="#{FilePage.datasetVersionId}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
@@ -75,6 +76,7 @@
                                         <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>   
                                         <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
                                         <h:outputText value="#{FilePage.fileMetadata.datasetVersion.externalStatusLabel}" styleClass="label label-info" rendered="#{FilePage.fileMetadata.datasetVersion.externalStatusLabel!=null  and FilePage.canPublishDataset()}"/>
+                                        <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.draft and !FilePage.fileMetadata.datasetVersion.valid}"/>
                                         <!-- DATASET VERSION NUMBER -->
                                         <h:outputText styleClass="label label-default" rendered="#{FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"
                                                       value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionNumber}.#{FilePage.fileMetadata.datasetVersion.minorVersionNumber}"/> 
@@ -204,6 +206,7 @@
                                                                 <ui:param name="isFilePg" value="true"/>
                                                                 <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                                                                 <ui:param name="exploreTools" value="#{FilePage.exploreTools}"/>
+                                                                <ui:param name="queryTools" value="#{FilePage.queryTools}"/>
                                                                 <ui:param name="anonymized" value="#{FilePage.anonymizedAccess}"/>
                                                             </ui:include>
                                                         </ui:fragment>
@@ -283,6 +286,7 @@
                                                     data-trigger="focus" data-html="true" data-content="#{bundle['metrics.file.tip.makedatacount']}"></a>
                                             </ui:fragment>
                                         </div>
+                                        <!-- END DATASET CITATION -->
                                         <div id="metrics-body">
                                             <!-- Classic downloads -->
                                             <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">
@@ -298,7 +302,7 @@
                                                     <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
                                                 </h:outputFormat>
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                        data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span>
+                                                        data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.nonmdc.tip']}"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -340,11 +344,11 @@
                                     <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                                 </ui:include>
                             </p:tab>
-                            <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" 
-                                   rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                            <p:tab id="previewTab" title="#{FilePage.toolTabTitle}" 
+                                   rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                 <!-- PREVIEW TERMS/GUESTBOOK FORM -->
-                                <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.termsMet}">
-                                    <ui:include src="file-download-popup-fragment.xhtml">
+                                <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.termsMet and (FilePage.getSelectedTool().previewTool or FilePage.getSelectedTool().queryTool)}">
+                                    <ui:include id="previewGB" src="file-download-popup-fragment.xhtml">
                                         <ui:param name="popupContext" value="previewTab"/>
                                         <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                                         <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
@@ -354,17 +358,19 @@
                                         <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                                         <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                                     </ui:include>
-                                </ui:fragment>
+                                </ui:fragment>   
                                 <!-- PREVIEW EXTERNAL TOOL -->
                                 <ui:fragment rendered="#{(!FilePage.downloadPopupRequired) or (FilePage.downloadPopupRequired and FilePage.termsMet)}">
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
-                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                    <div class="btn-group" jsf:rendered="#{FilePage.allAvailableTools.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                         <button type="button" id="selectTool" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
+                                             #{bundle['file.toolsTab.button.label']} <span class="caret"></span>
                                         </button>
+                                        
+                                        <ui:fragment rendered="#{FilePage.allAvailableTools.size() > 1}">
                                         <ul class="dropdown-menu">
-                                            <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool">
+                                            <ui:repeat value="#{FilePage.allAvailableTools}" var="tool">
                                                 <li>
                                                     <h:commandLink action="#{FilePage.setSelectedTool(tool)}">
                                                         <h:outputText value="#{tool.getDisplayNameLang()}"/>
@@ -372,9 +378,10 @@
                                                 </li>
                                             </ui:repeat>
                                         </ul>
+                                        </ui:fragment>                                        
                                     </div>
                                     <!-- END: Preview Button Group -->
-                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                    <div class="btn-group" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                         <!-- Modular/Configured Explore Tool -->
                                         <h:commandLink rendered="#{!downloadPopupRequired}" 
                                                          type="submit"
@@ -404,7 +411,7 @@
                                     </div>
                                 </div>
                                 <!-- FRAME EXTERNAL TOOL EMBED -->
-                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0  or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                     <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
                                 </div>
                                 </ui:fragment>
@@ -609,7 +616,7 @@
                     </ui:include> 
                     <p:dialog id="shareDialog" header="#{bundle['file.share.title']}" widgetVar="shareDialog" modal="true" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                         <p class="help-block">#{bundle['file.share.tip']}</p>
-                        <div id="sharrre-widget" data-text="#{bundle['file.share.text']}" data-url="#{systemConfig.dataverseSiteUrl}/file.xhtml?#{empty FilePage.fileMetadata.dataFile.globalIdString ? 'fileId' : 'persistentId'}=#{empty FilePage.fileMetadata.dataFile.globalIdString ? FilePage.fileMetadata.dataFile.id : FilePage.fileMetadata.dataFile.globalIdString}&amp;version=#{FilePage.fileMetadata.datasetVersion.friendlyVersionNumber}"></div>
+                        <div id="sharrre-widget" data-text="#{bundle['file.share.text']}" data-url="#{systemConfig.dataverseSiteUrl}/file.xhtml?#{empty FilePage.fileMetadata.dataFile.globalId ? 'fileId' : 'persistentId'}=#{empty FilePage.fileMetadata.dataFile.globalId ? FilePage.fileMetadata.dataFile.id : FilePage.fileMetadata.dataFile.globalId.asString()}&amp;version=#{FilePage.fileMetadata.datasetVersion.friendlyVersionNumber}"></div>
                         <div class="button-block">
                             <button class="btn btn-default" onclick="PF('shareDialog').hide()" type="button">
                                 #{bundle.close}

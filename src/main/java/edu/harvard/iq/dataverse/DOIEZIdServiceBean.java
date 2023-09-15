@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
-import edu.ucsb.nceas.ezid.EZIDServiceRequest;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.ejb.Stateless;
 
 /**
@@ -13,32 +14,44 @@ import javax.ejb.Stateless;
  * @author skraffmiller
  */
 @Stateless
-public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
-
+public class DOIEZIdServiceBean extends DOIServiceBean {
+    
+    private static final Logger logger = Logger.getLogger(DOIEZIdServiceBean.class.getCanonicalName());
+    
     EZIDService ezidService;
-    EZIDServiceRequest ezidServiceRequest;
-    String baseURLString = "https://ezid.cdlib.org";
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dvn.core.index.DOIEZIdServiceBean");
-
-    // get username and password from system properties
-    private String USERNAME = "";
-    private String PASSWORD = "";
-
+    
+    // This has a sane default in microprofile-config.properties
+    private final String baseUrl = JvmSettings.EZID_API_URL.lookup();
+    
     public DOIEZIdServiceBean() {
-        logger.log(Level.FINE,"Constructor");
-        baseURLString = System.getProperty("doi.baseurlstring");
-        ezidService = new EZIDService(baseURLString);
-        USERNAME = System.getProperty("doi.username");
-        PASSWORD = System.getProperty("doi.password");
-        logger.log(Level.FINE, "Using baseURLString {0}", baseURLString);
+        // Creating the service doesn't do any harm, just initializing some object data here.
+        // Makes sure we don't run into NPEs from the other methods, but will obviously fail if the
+        // login below does not work.
+        this.ezidService = new EZIDService(this.baseUrl);
+        
         try {
-            ezidService.login(USERNAME, PASSWORD);
+            // These have (obviously) no default, but still are optional to make the provider optional
+            String username = JvmSettings.EZID_USERNAME.lookupOptional().orElse(null);
+            String password = JvmSettings.EZID_PASSWORD.lookupOptional().orElse(null);
+            
+            if (username != null ^ password != null) {
+                logger.log(Level.WARNING, "You must give both username and password. Will not try to login.");
+            }
+            
+            if (username != null && password != null) {
+                this.ezidService.login(username, password);
+                this.configured = true;
+            }
         } catch (EZIDException e) {
-            logger.log(Level.WARNING, "login failed ");
+            // We only do the warnings here, but the object still needs to be created.
+            // The EJB stateless thing expects this to go through, and it is requested on any
+            // global id parsing.
+            logger.log(Level.WARNING, "Login failed to {0}", this.baseUrl);
             logger.log(Level.WARNING, "Exception String: {0}", e.toString());
-            logger.log(Level.WARNING, "localized message: {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause: ", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            logger.log(Level.WARNING, "Localized message: {0}", e.getLocalizedMessage());
+            logger.log(Level.WARNING, "Cause:", e.getCause());
+            logger.log(Level.WARNING, "Message {0}", e.getMessage());
+        // TODO: is this antipattern really necessary?
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Other Error on ezidService.login(USERNAME, PASSWORD) - not EZIDException ", e.getMessage());
         }
@@ -50,19 +63,10 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
     }
 
     @Override
-    public boolean alreadyExists(DvObject dvObject) throws Exception {
-        if(dvObject==null) {
-            logger.severe("Null DvObject sent to alreadyExists().");
-            return false;
-        }
-        return alreadyExists(dvObject.getGlobalId());
-    }
-    
-    @Override
-    public boolean alreadyExists(GlobalId pid) throws Exception {
-        logger.log(Level.FINE,"alreadyExists");
+    public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) throws Exception {
+        logger.log(Level.FINE,"alreadyRegistered");
         try {
-            HashMap<String, String> result = ezidService.getMetadata(pid.asString());            
+            HashMap<String, String> result = ezidService.getMetadata(pid.asString());
             return result != null && !result.isEmpty();
             // TODO just check for HTTP status code 200/404, sadly the status code is swept under the carpet
         } catch (EZIDException e ){
@@ -74,7 +78,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
             if (e.getLocalizedMessage().contains("no such identifier")){
                 return false;
             }
-            logger.log(Level.WARNING, "alreadyExists failed");
+            logger.log(Level.WARNING, "alreadyRegistered failed");
             logger.log(Level.WARNING, "getIdentifier(dvObject) {0}", pid.asString());
             logger.log(Level.WARNING, "String {0}", e.toString());
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
@@ -97,32 +101,6 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
             logger.log(Level.WARNING, "cause", e.getCause());
             logger.log(Level.WARNING, "message {0}", e.getMessage());
-            return metadata;
-        }
-        return metadata;
-    }
-
-    /**
-     * Looks up the metadata for a Global Identifier
-     *
-     * @param protocol the identifier system, e.g. "doi"
-     * @param authority the namespace that the authority manages in the
-     * identifier system
-     * identifier part
-     * @param identifier the local identifier part
-     * @return a Map of metadata. It is empty when the lookup failed, e.g. when
-     * the identifier does not exist.
-     */
-    @Override
-    public HashMap<String, String> lookupMetadataFromIdentifier(String protocol, String authority, String identifier) {
-        logger.log(Level.FINE,"lookupMetadataFromIdentifier");
-        String identifierOut = getIdentifierForLookup(protocol, authority, identifier);
-        HashMap<String, String> metadata = new HashMap<>();
-        try {
-            metadata = ezidService.getMetadata(identifierOut);
-        } catch (EZIDException e) {
-            logger.log(Level.FINE, "None existing so we can use this identifier");
-            logger.log(Level.FINE, "identifier: {0}", identifierOut);
             return metadata;
         }
         return metadata;
@@ -249,12 +227,7 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
     
     @Override
     public List<String> getProviderInformation(){
-        ArrayList <String> providerInfo = new ArrayList<>();
-        String providerName = "EZID";
-        String providerLink = baseURLString;
-        providerInfo.add(providerName);
-        providerInfo.add(providerLink);
-        return providerInfo;
+        return List.of("EZID", this.baseUrl);
     }
 
     @Override
@@ -299,6 +272,11 @@ public class DOIEZIdServiceBean extends AbstractGlobalIdServiceBean {
      */
     private <T> HashMap<T,T> asHashMap(Map<T,T> map) {
         return (map instanceof HashMap) ? (HashMap)map : new HashMap<>(map);
+    }
+
+    @Override
+    protected String getProviderKeyName() {
+        return "EZID";
     }
 
 }

@@ -36,7 +36,9 @@ If you would like to read more about the Dataverse Project's use of GitHub, plea
 Building the Guides with Sphinx
 -------------------------------
 
-The Dataverse guides are written using Sphinx (http://sphinx-doc.org). We recommend installing Sphinx and building the guides locally so you can get an accurate preview of your changes.
+The Dataverse guides are written using Sphinx (http://sphinx-doc.org). We recommend installing Sphinx on your localhost or using a Sphinx Docker container to build the guides locally so you can get an accurate preview of your changes.
+
+In case you decide to use a Sphinx Docker container to build the guides, you can skip the next two installation sections, but you will need to have Docker installed.
 
 Installing Sphinx
 ~~~~~~~~~~~~~~~~~
@@ -72,7 +74,12 @@ To edit the existing documentation:
 - In ``doc/sphinx-guides/source`` you will find the .rst files that correspond to http://guides.dataverse.org.
 - Using your preferred text editor, open and edit the necessary files, or create new ones.
 
-Once you are done, open a terminal, change directories to ``doc/sphinx-guides``, activate (or reactivate) your Python virtual environment, and build the guides.
+Once you are done, you can preview the changes by building the guides locally. As explained, you can build the guides with Sphinx locally installed, or with a Docker container.
+
+Building the Guides with Sphinx Locally Installed
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Open a terminal, change directories to ``doc/sphinx-guides``, activate (or reactivate) your Python virtual environment, and build the guides.
 
 ``cd doc/sphinx-guides``
 
@@ -81,6 +88,16 @@ Once you are done, open a terminal, change directories to ``doc/sphinx-guides``,
 ``make clean``
 
 ``make html``
+
+Building the Guides with a Sphinx Docker Container
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want to build the guides using a Docker container, execute the following command in the repository root:
+
+``docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:3.5.4 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"``
+
+Previewing the Guides
+^^^^^^^^^^^^^^^^^^^^^
 
 After Sphinx is done processing the files you should notice that the ``html`` folder in ``doc/sphinx-guides/build`` directory has been updated.
 You can click on the files in the ``html`` folder to preview the changes.
@@ -123,6 +140,25 @@ In order to make it clear to the crawlers that we only want the latest version d
         User-agent: *
         Allow: /en/latest/
         Disallow: /en/
+
+PDF Version of the Guides
+-------------------------
+
+The HTML version of the guides is the official one. Any other formats are maintained on a best effort basis.
+
+If you would like to build a PDF version of the guides and have Docker installed, please try the command below from the root of the git repo:
+
+``docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx-latexpdf:3.5.4 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make latexpdf LATEXMKOPTS=\"-interaction=nonstopmode\"; cd ../.. && ls -1 doc/sphinx-guides/build/latex/Dataverse.pdf"``
+
+A few notes about the command above:
+
+- Hopefully the PDF was created at ``doc/sphinx-guides/build/latex/Dataverse.pdf``.
+- For now, we are using "nonstopmode" but this masks some errors.
+- See requirements.txt for a note regarding the version of Sphinx we are using.
+
+Also, as of this writing we have enabled PDF builds from the "develop" branch. You download the PDF from http://preview.guides.gdcc.io/_/downloads/en/develop/pdf/
+
+If you would like to help improve the PDF version of the guides, please get in touch! Please see :ref:`getting-help-developers` for ways to contact the developer community.
 
 ----
 

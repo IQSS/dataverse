@@ -71,6 +71,7 @@ public class JsonParser {
     MetadataBlockServiceBean blockService;
     SettingsServiceBean settingsService;
     LicenseServiceBean licenseService;
+    HarvestingClient harvestingClient = null; 
     
     /**
      * if lenient, we will accept alternate spellings for controlled vocabulary values
@@ -85,10 +86,15 @@ public class JsonParser {
     }
 
     public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService) {
+        this(datasetFieldSvc, blockService, settingsService, licenseService, null);
+    }
+    
+    public JsonParser(DatasetFieldServiceBean datasetFieldSvc, MetadataBlockServiceBean blockService, SettingsServiceBean settingsService, LicenseServiceBean licenseService, HarvestingClient harvestingClient) {
         this.datasetFieldSvc = datasetFieldSvc;
         this.blockService = blockService;
         this.settingsService = settingsService;
         this.licenseService = licenseService;
+        this.harvestingClient = harvestingClient;
     }
 
     public JsonParser() {
@@ -146,6 +152,10 @@ public class JsonParser {
                     dv.setDataverseType(dvtype);
                 }
             }
+        }
+        
+        if (jobj.containsKey("filePIDsEnabled")) {
+            dv.setFilePIDsEnabled(jobj.getBoolean("filePIDsEnabled"));
         }
 
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
@@ -363,7 +373,28 @@ public class JsonParser {
             dsv.setUNF(obj.getString("UNF", null));
             // Terms of Use related fields
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            License license = parseLicense(obj.getString("license", null));
+
+            License license = null; 
+            
+            try {
+                // This method will attempt to parse the license in the format 
+                // in which it appears in our json exports, as a compound
+                // field, for ex.:
+                // "license": {
+                //    "name": "CC0 1.0",
+                //    "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+                // }
+                license = parseLicense(obj.getJsonObject("license"));
+            } catch (ClassCastException cce) {
+                logger.fine("class cast exception parsing the license section (will try parsing as a string)");
+                // attempt to parse as string: 
+                // i.e. this is for backward compatibility, after the bug in #9155
+                // was fixed, with the old style of encoding the license info 
+                // in input json, for ex.: 
+                // "license" : "CC0 1.0"
+                license = parseLicense(obj.getString("license", null));
+            }
+            
             if (license == null) {
                 terms.setLicense(license);
                 terms.setTermsOfUse(obj.getString("termsOfUse", null));
@@ -419,6 +450,48 @@ public class JsonParser {
         }
         License license = licenseService.getByNameOrUri(licenseNameOrUri);
         if (license == null) throw new JsonParseException("Invalid license: " + licenseNameOrUri);
+        return license;
+    }
+    
+    private edu.harvard.iq.dataverse.license.License parseLicense(JsonObject licenseObj) throws JsonParseException {
+        if (licenseObj == null){
+            boolean safeDefaultIfKeyNotFound = true;
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound)){
+                return null;
+            } else {
+                return licenseService.getDefault();
+            }
+        }
+        
+        String licenseName = licenseObj.getString("name", null);
+        String licenseUri = licenseObj.getString("uri", null);
+        
+        License license = null; 
+        
+        // If uri is provided, we'll try that first. This is an easier lookup
+        // method; the uri is always the same. The name may have been customized
+        // (translated) on this instance, so we may be dealing with such translated
+        // name, if this is exported json that we are processing. Meaning, unlike 
+        // the uri, we cannot simply check it against the name in the License
+        // database table. 
+        if (licenseUri != null) {
+            license = licenseService.getByNameOrUri(licenseUri);
+        }
+        
+        if (license != null) {
+            return license;
+        }
+        
+        if (licenseName == null) {
+            String exMsg = "Invalid or unsupported license section submitted" 
+                    + (licenseUri != null ? ": " + licenseUri : ".");
+            throw new JsonParseException("Invalid or unsupported license section submitted."); 
+        }
+        
+        license = licenseService.getByPotentiallyLocalizedName(licenseName);
+        if (license == null) {
+            throw new JsonParseException("Invalid or unsupported license: " + licenseName);
+        }
         return license;
     }
 
@@ -522,7 +595,29 @@ public class JsonParser {
         if (contentType == null) {
             contentType = "application/octet-stream";
         }
-        String storageIdentifier = datafileJson.getString("storageIdentifier", " ");
+        String storageIdentifier = null;
+        /**
+         * When harvesting from other Dataverses using this json format, we 
+         * don't want to import their storageidentifiers verbatim. Instead, we 
+         * will modify them to point to the access API location on the remote
+         * archive side.
+         */
+        if (harvestingClient != null && datafileJson.containsKey("id")) {
+            String remoteId = datafileJson.getJsonNumber("id").toString();
+            storageIdentifier = harvestingClient.getArchiveUrl()
+                    + "/api/access/datafile/"
+                    + remoteId;
+            /**
+             * Note that we don't have any practical use for these urls as 
+             * of now. We used to, in the past, perform some tasks on harvested
+             * content that involved trying to access the files. In any event, it
+             * makes more sense to collect these urls, than the storage 
+             * identifiers imported as is, which become completely meaningless 
+             * on the local system.
+             */
+        } else {
+            storageIdentifier = datafileJson.getString("storageIdentifier", null);
+        }
         JsonObject checksum = datafileJson.getJsonObject("checksum");
         if (checksum != null) {
             // newer style that allows for SHA-1 rather than MD5

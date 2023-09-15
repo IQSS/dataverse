@@ -75,11 +75,11 @@ public class HarvestingClientsIT {
     }
 
     @Test
-    public void testCreateEditDeleteClient() {
+    public void testCreateEditDeleteClient() throws InterruptedException {
         // This method focuses on testing the native Dataverse harvesting client
         // API. 
         
-        String nickName = UtilIT.getRandomString(6);
+        String nickName = "h" + UtilIT.getRandomString(6);
         
 
         String clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
@@ -130,7 +130,7 @@ public class HarvestingClientsIT {
         // ... and validate the values:
         
         getClientResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("status", equalTo(ApiConstants.STATUS_OK))
                 .body("data.type", equalTo("oai"))
                 .body("data.nickName", equalTo(nickName))
                 .body("data.archiveDescription", equalTo(ARCHIVE_DESCRIPTION))
@@ -166,7 +166,7 @@ public class HarvestingClientsIT {
         // method, we don't need to pay too much attention to this method, aside 
         // from confirming the expected HTTP status code.
         
-        String nickName = UtilIT.getRandomString(6);
+        String nickName = "h" + UtilIT.getRandomString(6);
 
         String clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
         String clientJson = String.format("{\"dataverseAlias\":\"%s\","
@@ -176,7 +176,7 @@ public class HarvestingClientsIT {
                 + "\"set\":\"%s\","
                 + "\"metadataFormat\":\"%s\"}", 
                 harvestCollectionAlias, HARVEST_URL, ARCHIVE_URL, CONTROL_OAI_SET, HARVEST_METADATA_FORMAT);
-                
+        
         Response createResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(clientJson)
@@ -215,7 +215,7 @@ public class HarvestingClientsIT {
             assertEquals(OK.getStatusCode(), getClientResponse.getStatusCode());
             JsonPath responseJsonPath = getClientResponse.body().jsonPath();
             assertNotNull("Invalid JSON in GET client response", responseJsonPath);
-            assertEquals(AbstractApiBean.STATUS_OK, responseJsonPath.getString("status")); 
+            assertEquals(ApiConstants.STATUS_OK, responseJsonPath.getString("status"));
             
             String clientStatus = responseJsonPath.getString("data.status");
             assertNotNull(clientStatus);

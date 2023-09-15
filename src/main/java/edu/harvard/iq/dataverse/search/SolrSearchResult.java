@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetRelPublication;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -121,6 +122,8 @@ public class SolrSearchResult {
 	private String filePersistentId = null;
 
 	private Long embargoEndDate;
+
+	private boolean datasetValid;
 
 	public String getDvTree() {
 		return dvTree;
@@ -422,6 +425,7 @@ public class SolrSearchResult {
 				.add("is_draft_state", this.isDraftState()).add("is_in_review_state", this.isInReviewState())
 				.add("is_unpublished_state", this.isUnpublishedState()).add("is_published", this.isPublishedState())
 				.add("is_deaccesioned", this.isDeaccessionedState())
+				.add("is_valid", this.isValid())
 				.add("date_to_display_on_card", getDateToDisplayOnCard());
 
 		// Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
@@ -1129,9 +1133,10 @@ public class SolrSearchResult {
 		 * if (entity != null && entity instanceof DataFile && this.isHarvested()) { String remoteArchiveUrl = ((DataFile) entity).getRemoteArchiveURL(); if
 		 * (remoteArchiveUrl != null) { return remoteArchiveUrl; } return null; }
 		 */
-		if (entity.getIdentifier() != null) {
-			return "/file.xhtml?persistentId=" + entity.getGlobalIdString();
-		}
+        if (entity.getIdentifier() != null) {
+            GlobalId entityPid = entity.getGlobalId();
+            return "/file.xhtml?persistentId=" + ((entityPid != null) ? entityPid.asString() : null);
+        }
 
 		return "/file.xhtml?fileId=" + entity.getId() + "&datasetVersionId=" + datasetVersionId;
 
@@ -1255,4 +1260,12 @@ public class SolrSearchResult {
 	public void setEmbargoEndDate(Long embargoEndDate) {
 		this.embargoEndDate = embargoEndDate;
 	}
+
+	public void setDatasetValid(Boolean datasetValid) {
+		this.datasetValid = datasetValid == null || Boolean.valueOf(datasetValid);
+	}
+
+	public boolean isValid() {
+		return datasetValid;
+    }
 }

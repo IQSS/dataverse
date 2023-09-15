@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionDifference;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -13,16 +14,24 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
+
+import javax.json.JsonObject;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 /**
  *
@@ -150,19 +159,16 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         if (!theDataset.isIdentifierRegistered()) {
             GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
             if ( globalIdServiceBean != null ) {
-                if (globalIdServiceBean instanceof FakePidProviderServiceBean) {
-                    retry=false; //No reason to allow a retry with the FakeProvider, so set false for efficiency
-                }
                 try {
-                    if (globalIdServiceBean.alreadyExists(theDataset)) {
+                    if (globalIdServiceBean.alreadyRegistered(theDataset)) {
                         int attempts = 0;
                         if(retry) {
                             do  {
-                                theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, globalIdServiceBean));
+                                theDataset.setIdentifier(globalIdServiceBean.generateDatasetIdentifier(theDataset));
                                 logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
                                     new Object[]{theDataset.getId(), theDataset.getIdentifier()});
                                 attempts++;
-                            } while (globalIdServiceBean.alreadyExists(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
+                            } while (globalIdServiceBean.alreadyRegistered(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
                         }
                         if(!retry) {
                             logger.warning("Reserving PID for: "  + getDataset().getId() + " during publication failed.");
@@ -211,5 +217,22 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected Timestamp getTimestamp() {
         return timestamp;
+    }
+
+    protected void checkSystemMetadataKeyIfNeeded(DatasetVersion newVersion, DatasetVersion persistedVersion) throws IllegalCommandException {
+        Set<MetadataBlock> changedMDBs = DatasetVersionDifference.getBlocksWithChanges(newVersion, persistedVersion);
+        for (MetadataBlock mdb : changedMDBs) {
+            logger.fine(mdb.getName() + " has been changed");
+            String smdbString = JvmSettings.MDB_SYSTEM_KEY_FOR.lookupOptional(mdb.getName())
+                    .orElse(null);
+            if (smdbString != null) {
+                logger.fine("Found key: " + smdbString);
+                String mdKey = getRequest().getSystemMetadataBlockKeyFor(mdb.getName());
+                logger.fine("Found supplied key: " + mdKey);
+                if (mdKey == null || !mdKey.equalsIgnoreCase(smdbString)) {
+                    throw new IllegalCommandException("Updating system metadata in block " + mdb.getName() + " requires a valid key", this);
+                }
+            }
+        }
     }
 }

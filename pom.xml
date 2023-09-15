@@ -15,10 +15,16 @@
     doc/sphinx-guides/source/developers/dependencies.rst
     -->
     <artifactId>dataverse</artifactId>
-    <packaging>war</packaging>
+    <packaging>${packaging.type}</packaging>
     <name>dataverse</name>
     <properties>
         <skipUnitTests>false</skipUnitTests>
+        <skipIntegrationTests>false</skipIntegrationTests>
+        
+        <!-- By default, this module will produce a WAR file. -->
+        <!-- This will be switched within the container profile! -->
+        <packaging.type>war</packaging.type>
+        
         <reload4j.version>1.2.18.4</reload4j.version>
         <flyway.version>8.5.10</flyway.version>
         <jhove.version>1.20.1</jhove.version>
@@ -63,7 +69,7 @@
             <scope>runtime</scope>
         </dependency>
         
-	    <dependency>
+        <dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>
             <version>1.6.0</version>
@@ -177,6 +183,11 @@
             <artifactId>jakarta.json</artifactId>
             <scope>provided</scope>
             <!-- no version here as managed by Payara BOM above! -->
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
@@ -381,7 +392,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>9.41.1</version>
+            <version>10.7.1</version>
         </dependency>
         <!-- New and Improved GDCC XOAI library! --> 
         <dependency>
@@ -499,7 +510,11 @@
             <artifactId>cdm-core</artifactId>
             <version>${netcdf.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>io.gdcc</groupId>
+            <artifactId>dataverse-spi</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -754,22 +769,128 @@
         </profile>
         <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
         <profile>
-            <id>tc</id>
+            <id>ct</id>
             <properties>
+                <!-- Let's go FAST here - building the image should be quick to do by default. -->
                 <skipUnitTests>true</skipUnitTests>
-                <postgresql.server.version>9.6</postgresql.server.version>
+                <skipIntegrationTests>true</skipIntegrationTests>
+                <!-- Once we truly run tests with Testcontainers, this should be switch to "docker", activating ITs -->
+                <packaging.type>docker-build</packaging.type>
+                <postgresql.server.version>13</postgresql.server.version>
+            
+                <app.image>gdcc/dataverse:${app.image.tag}</app.image>
+                <app.image.tag>unstable</app.image.tag>
+                <base.image>gdcc/base:${base.image.tag}</base.image>
+                <base.image.tag>unstable</base.image.tag>
+                <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
+                <conf.image.tag>${app.image.tag}</conf.image.tag>
+    
+                <docker.platforms></docker.platforms>
+            
+                <!-- Variables as used in docker-compose.yml -->
+                <APP_IMAGE>${app.image}</APP_IMAGE>
+                <POSTGRES_VERSION>${postgresql.server.version}</POSTGRES_VERSION>
+                <SOLR_VERSION>${solr.version}</SOLR_VERSION>
+                <DATAVERSE_DB_USER>dataverse</DATAVERSE_DB_USER>
             </properties>
+        
             <build>
                 <plugins>
+                    <!-- Build the exploded WAR target directory -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>exploded</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                        </configuration>
+                    </plugin>
+                
+                    <!-- Build image via Docker Maven Plugin -->
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <images>
+                                <!-- Dataverse Application image -->
+                                <image>
+                                    <alias>dev_dataverse</alias>
+                                    <name>${app.image}</name>
+                                    <build>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>${docker.platforms}</platform>
+                                            </platforms>
+                                        </buildx>
+                                        <dockerFile>Dockerfile</dockerFile>
+                                        <args>
+                                            <BASE_IMAGE>${base.image}</BASE_IMAGE>
+                                        </args>
+                                        <filter>@</filter>
+                                        <assembly>
+                                            <descriptor>assembly.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                    
+                                    <run>
+                                    </run>
+                                    
+                                    <external>
+                                        <type>compose</type>
+                                        <basedir>${project.basedir}</basedir>
+                                        <composeFile>docker-compose-dev.yml</composeFile>
+                                    </external>
+                                </image>
+                                
+                                <image>
+                                    <alias>dev_bootstrap</alias>
+                                    <name>${conf.image}</name>
+                                    <build>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>${docker.platforms}</platform>
+                                            </platforms>
+                                        </buildx>
+                                        <dockerFile>${project.basedir}/modules/container-configbaker/Dockerfile</dockerFile>
+                                        <args>
+                                            <SOLR_VERSION>${SOLR_VERSION}</SOLR_VERSION>
+                                        </args>
+                                        <filter>@</filter>
+                                        <assembly>
+                                            <descriptor>${project.basedir}/modules/container-configbaker/assembly.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                    
+                                    <!--
+                                        We skip the run here as it is already included in the external run config
+                                        above for the main image via the docker-compose file. Even if using
+                                        -Ddocker.filter=dev_bootstrap, the run config from above is still enforced.
+                                    -->
+                                    <run>
+                                        <skip>true</skip>
+                                    </run>
+                                </image>
+                            </images>
+                            <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <version>${maven-failsafe-plugin.version}</version>
                         <configuration>
-                            <groups>testcontainers</groups>
+                            <groups>end2end</groups>
                             <systemPropertyVariables>
                                 <postgresql.server.version>${postgresql.server.version}</postgresql.server.version>
                             </systemPropertyVariables>
+                            <skip>${skipIntegrationTests}</skip>
                         </configuration>
                         <executions>
                             <execution>

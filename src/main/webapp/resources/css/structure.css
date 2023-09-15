@@ -578,7 +578,8 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #metrics-content {color:#333;background:#fff;padding:8px 10px;}
 /* -- NEW LAYOUT, DATASET + FILE -- */
 #metrics-block {border:0; margin-top:6px;}
-#metrics-body {border:1px solid #EEE;border-width:1px 0 0 0;padding:8px 0;}
+#metrics-heading-subtitle {font-weight:normal;font-size:smaller;}
+#metrics-body {border:1px solid #EEE;border-top-width:0;padding:8px 10px;}
 #metrics-block .metrics-count-block:not(:last-child) {margin-bottom:.5em;padding-bottom:.5em;border-bottom:1px solid #EEE}
 
 /* -------- SHARRRE -------- */
@@ -1048,6 +1049,10 @@ progress::-webkit-progress-value {
 
 /*External vocabulary support*/
 
+.select2-container {
+    display:block!important;
+}
+
 .select2-container .select2-selection--single {
         border:1px solid #cccccc;
         border-radius: 3px;
@@ -1058,7 +1063,8 @@ progress::-webkit-progress-value {
 
 .select2-container .select2-selection--single .select2-selection__rendered {
         display:inline-block!important;
-        max-width:90%
+        max-width:80%;
+        padding-right:5px!important;
 }
 .select2-selection__clear, .select2-selection__rendered {
         vertical-align: -webkit-baseline-middle;
@@ -1122,6 +1128,10 @@ padding-right:0px;
 a {
     color:#3174AF;
 }
+
+.label-warning a, .bg-citation a, .terms .help-block a, #panelCollapseTOU .help-block a {
+  text-decoration: underline;
+}
 .pagination>.disabled>a {
     color:#767676;
 }
@@ -1136,4 +1146,19 @@ span.label-default { background-color: #757575 }
 /*Template Instructions Editing*/
 .ui-inplace .ui-inputfield {
     width:60%
+}
+/*File sorting*/
+#datasetForm .file-sort {
+	max-width: 255px;
+	float: right;
+	padding-right:21px;
+}
+
+#datasetForm .file-sort .btn-group {
+	padding-top: 4px;
+}
+
+#datasetForm .file-group-by {
+	min-width: 130px;
+	padding: 0px;
 }

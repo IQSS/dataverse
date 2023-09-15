@@ -173,6 +173,11 @@ Finally, run the script:
 Running the full API test suite using Docker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. note::
+    Sunsetting of this module is imminent.** There is no schedule yet, but expect it to go away.
+    Please let the `Dataverse Containerization Working Group <https://ct.gdcc.io>`_ know if you are a user and
+    what should be preserved.
+
 To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.md`` in the root of the repo.
 
 Alternatively, you can run tests against the app server running on your laptop by following the "getting set up" steps below.

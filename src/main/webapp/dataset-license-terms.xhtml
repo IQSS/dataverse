@@ -52,6 +52,7 @@
                                            <f:selectItem itemLabel="#{bundle['license.custom']}" itemValue="#{null}"/>
                                        </c:if>
                                        <p:ajax update="touFragment" />
+                                       <f:passThroughAttribute name="aria-label" value="#{bundle['file.dataFilesTab.terms.list.license']}"/>
                                    </p:selectOneMenu>
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty termsOfUseAndAccess.license}">

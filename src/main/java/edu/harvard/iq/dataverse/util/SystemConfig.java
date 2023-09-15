@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -995,9 +996,29 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound);
     }
 
-    public boolean isFilePIDsEnabled() {
-        boolean safeDefaultIfKeyNotFound = true;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);
+    public boolean isFilePIDsEnabledForCollection(Dataverse collection) {
+        if (collection == null) {
+            return false;
+        }
+        
+        Dataverse thisCollection = collection; 
+        
+        // If neither enabled nor disabled specifically for this collection,
+        // the parent collection setting is inhereted (recursively): 
+        while (thisCollection.getFilePIDsEnabled() == null) {
+            if (thisCollection.getOwner() == null) {
+                // We've reached the root collection, and file PIDs registration
+                // hasn't been explicitly enabled, therefore we presume that it is
+                // subject to how the registration is configured for the 
+                // entire instance:
+                return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, false); 
+            }
+            thisCollection = thisCollection.getOwner();
+        }
+        
+        // If present, the setting of the first direct ancestor collection 
+        // takes precedent:
+        return thisCollection.getFilePIDsEnabled();
     }
     
     public boolean isIndependentHandleService() {
@@ -1023,11 +1044,6 @@ public class SystemConfig {
 
 	public boolean directUploadEnabled(DvObjectContainer container) {
     	return Boolean.getBoolean("dataverse.files." + container.getEffectiveStorageDriverId() + ".upload-redirect");
-	}
-	
-	public String getDataCiteRestApiUrlString() {
-		//As of 5.0 the 'doi.dataciterestapiurlstring' is the documented jvm option. Prior versions used 'doi.mdcbaseurlstring' or were hardcoded to api.datacite.org, so the defaults are for backward compatibility.
-        return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
 	}
         
     public boolean isExternalDataverseValidationEnabled() {
@@ -1102,9 +1118,8 @@ public class SystemConfig {
         Map<String, String[]> labelMap = new HashMap<String, String[]>();
         String setting = settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
         if (!setting.isEmpty()) {
-            try {
-                JsonReader jsonReader = Json.createReader(new StringReader(setting));
-
+            try (JsonReader jsonReader = Json.createReader(new StringReader(setting))){
+                
                 Pattern pattern = Pattern.compile("(^[\\w ]+$)"); // alphanumeric, underscore and whitespace allowed
 
                 JsonObject labelSets = jsonReader.readObject();
