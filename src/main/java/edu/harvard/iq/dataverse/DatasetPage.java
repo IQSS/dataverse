@@ -391,6 +391,7 @@ public class DatasetPage implements java.io.Serializable {
     Map<Long, List<ExternalTool>> fileQueryToolsByFileId = new HashMap<>();
     List<ExternalTool> fileQueryTools = new ArrayList<>();
     private List<ExternalTool> datasetExploreTools;
+    private List<ExternalTool> datasetConfigureTools;
 
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -2153,6 +2154,7 @@ public class DatasetPage implements java.io.Serializable {
         previewTools = externalToolService.findFileToolsByType(ExternalTool.Type.PREVIEW);
         fileQueryTools = externalToolService.findFileToolsByType(ExternalTool.Type.QUERY);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
+        datasetConfigureTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.CONFIGURE);
         rowsPerPage = 10;
         if (dataset.getId() != null && canUpdateDataset()) {
             hasRestrictedFiles = workingVersion.isHasRestrictedFile();
@@ -5572,6 +5574,10 @@ public class DatasetPage implements java.io.Serializable {
         return datasetExploreTools;
     }
 
+    public List<ExternalTool> getDatasetConfigureTools() {
+        return datasetConfigureTools;
+    }
+
     Boolean thisLatestReleasedVersion = null;
 
     public boolean isThisLatestReleasedVersion() {
@@ -5787,6 +5793,16 @@ public class DatasetPage implements java.io.Serializable {
         }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
         PrimeFaces.current().executeScript(externalToolHandler.getExploreScript());
+    }
+
+    public void configure(ExternalTool externalTool) {
+        ApiToken apiToken = null;
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        }
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
+        PrimeFaces.current().executeScript(externalToolHandler.getConfigureScript());
     }
 
     private FileMetadata fileMetadataForAction;
