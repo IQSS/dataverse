@@ -303,7 +303,7 @@ public class OREMap {
             
             //Start with a reference to the Dataverse software
             JsonObjectBuilder dvSoftwareBuilder = Json.createObjectBuilder()
-                    .add("@type", JsonLDTerm.ore("SoftwareApplication").getLabel())
+                    .add("@type", JsonLDTerm.schemaOrg("SoftwareApplication").getLabel())
                     .add(JsonLDTerm.schemaOrg("name").getLabel(), DATAVERSE_SOFTWARE_NAME)
                     .add(JsonLDTerm.schemaOrg("version").getLabel(), systemConfig.getVersion(true))
                     .add(JsonLDTerm.schemaOrg("url").getLabel(), DATAVERSE_SOFTWARE_URL);
