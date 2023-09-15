@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse;
 
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test that the DataFileServiceBean classifies DataFiles correctly.
@@ -27,7 +28,7 @@ public class DataFileServiceBeanTest {
     private DataFileServiceBean dataFileServiceBean;
             
     
-    @Before
+    @BeforeEach
     public void setUp() {
         fileWoContentType = createDataFile(null);
         fileWithBogusContentType = createDataFile("foo/bar");

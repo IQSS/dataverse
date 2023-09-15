@@ -1,9 +1,10 @@
 package edu.harvard.iq.dataverse.util;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -13,12 +14,12 @@ public class LruCacheTest {
     
     LruCache<Long, String> sut;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         sut = new LruCache<>();
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
         sut = null;
     }
@@ -65,9 +66,9 @@ public class LruCacheTest {
         
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testSetMaxSizeWithException() {
-        sut.setMaxSize(0l);
+    @Test
+    void testSetMaxSizeWithException() {
+        assertThrows(IllegalArgumentException.class, () -> sut.setMaxSize(0l));
     }
 
     @Test
@@ -75,14 +76,14 @@ public class LruCacheTest {
         // prepare cache
         Long key = 0l;
         String value = "x";
-        assertEquals("put value", value, sut.put(key, value));
-        assertEquals("get value", value, sut.get(key));
+        assertEquals(value, sut.put(key, value), "put value");
+        assertEquals(value, sut.get(key), "get value");
 
         // invalidate cache
         sut.invalidate();
 
         // verify invalidation
-        assertEquals("verify that value is no longer here", null, sut.get(key));
+        assertNull(sut.get(key), "verify that value is no longer here");
     }
 
     @Test
@@ -90,19 +91,19 @@ public class LruCacheTest {
         // prepare cache
         Long key1 = 0l;
         String value1 = "x";
-        assertEquals("put value 1", value1, sut.put(key1, value1));
-        assertEquals("get value 1", value1, sut.get(key1));
+        assertEquals(value1, sut.put(key1, value1), "put value 1");
+        assertEquals(value1, sut.get(key1), "get value 1");
 
         Long key2 = 1l;
         String value2 = "y";
-        assertEquals("put value 2", value2, sut.put(key2, value2));
-        assertEquals("get value 2", value2, sut.get(key2));
+        assertEquals(value2, sut.put(key2, value2), "put value 2");
+        assertEquals(value2, sut.get(key2), "get value 2");
 
         // invalidate cache
         sut.invalidate(key1);
 
         // verify invalidation
-        assertEquals("verify that value 1 is no longer here", null, sut.get(key1));
-        assertEquals("verify that value 2 still exists", value2, sut.get(key2));
+        assertNull(sut.get(key1), "verify that value 1 is no longer here");
+        assertEquals(value2, sut.get(key2), "verify that value 2 still exists");
     }
 }
