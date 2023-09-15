@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.util.bagit.data.FileDataProvider;
 import edu.harvard.iq.dataverse.util.bagit.data.FileDataProviderFactory;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.nio.file.Path;

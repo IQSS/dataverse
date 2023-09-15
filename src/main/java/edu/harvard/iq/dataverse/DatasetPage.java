@@ -58,7 +58,6 @@ import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.WebloaderUtil;
 import edu.harvard.iq.dataverse.validation.URLValidator;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -84,27 +83,27 @@ import java.util.Collection;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ActionEvent;
+import jakarta.faces.event.ValueChangeEvent;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
-import javax.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 //import org.primefaces.context.RequestContext;
 import java.util.Arrays;
 import java.util.HashSet;
-import javax.faces.model.SelectItem;
-import javax.faces.validator.ValidatorException;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.validator.ValidatorException;
 
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -125,12 +124,12 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.util.Collections;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
 
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.faces.event.AjaxBehaviorEvent;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;

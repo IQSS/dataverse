@@ -22,18 +22,19 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Response;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +44,7 @@ import java.util.UUID;
  *
  * @author adaybujeda
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DataversesTest {
     // From AbstractApiBean class
     @Mock
@@ -78,7 +79,7 @@ public class DataversesTest {
 
     private Dataverse VALID_DATAVERSE;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         VALID_DATAVERSE = new Dataverse();
         VALID_DATAVERSE.setId(MocksFactory.nextId());
@@ -225,7 +226,7 @@ public class DataversesTest {
         Response result = target.updateMetadataBlockFacetsRoot(containerRequestContext, VALID_DATAVERSE.getAlias(), "true");
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(200));
-        Mockito.verifyZeroInteractions(engineSvc);
+        Mockito.verifyNoInteractions(engineSvc);
     }
 
     @Test

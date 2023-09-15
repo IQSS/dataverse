@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.util.bagit.data;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;

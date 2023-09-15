@@ -19,6 +19,7 @@ Developer Guide
    sql-upgrade-scripts
    testing
    documentation
+   api-design
    security
    dependencies
    debugging
@@ -27,6 +28,7 @@ Developer Guide
    deployment
    containers
    making-releases
+   making-library-releases
    metadataexport
    tools
    unf/index
@@ -41,4 +43,5 @@ Developer Guide
    dataset-migration-api 
    workflows
    fontcustom
+   classic-dev-env
    

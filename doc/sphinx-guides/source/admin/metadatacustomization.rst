@@ -413,12 +413,9 @@ Setting Up a Dev Environment for Testing
 
 You have several options for setting up a dev environment for testing metadata block changes:
 
-- Vagrant: See the :doc:`/developers/tools` section of the Developer Guide.
-- docker-aio: See https://github.com/IQSS/dataverse/tree/develop/conf/docker-aio
+- Docker: See :doc:`/container/index`.
 - AWS deployment: See the :doc:`/developers/deployment` section of the Developer Guide.
 - Full dev environment: See the :doc:`/developers/dev-environment` section of the Developer Guide.
-
-To get a clean environment in Vagrant, you'll be running ``vagrant destroy``. In Docker, you'll use ``docker rm``. For a full dev environment or AWS installation, you might find ``rebuild`` and related scripts at ``scripts/deploy/phoenix.dataverse.org`` useful.
 
 Editing TSV files
 ~~~~~~~~~~~~~~~~~
@@ -516,7 +513,7 @@ the Solr schema configuration, including any enabled metadata schemas:
 
 ``curl "http://localhost:8080/api/admin/index/solr/schema"``
 
-You can use :download:`update-fields.sh <../../../../conf/solr/8.11.1/update-fields.sh>` to easily add these to the
+You can use :download:`update-fields.sh <../../../../conf/solr/9.3.0/update-fields.sh>` to easily add these to the
 Solr schema you installed for your Dataverse installation.
 
 The script needs a target XML file containing your Solr schema. (See the :doc:`/installation/prerequisites/` section of
@@ -540,7 +537,7 @@ from some place else than your Dataverse installation).
 Please note that reconfigurations of your Solr index might require a re-index. Usually release notes indicate
 a necessary re-index, but for your custom metadata you will need to keep track on your own.
 
-Please note also that if you are going to make a pull request updating ``conf/solr/8.11.1/schema.xml`` with fields you have
+Please note also that if you are going to make a pull request updating ``conf/solr/9.3.0/schema.xml`` with fields you have
 added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you
 don't care about) to create a complete list of fields. (This might change in the future.)
 

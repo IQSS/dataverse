@@ -110,19 +110,22 @@
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                         <li>
-                                                            <a jsf:id="endNoteLink-2" jsf:action="#{FilePage.fileDownloadService.downloadCitationXML(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" >
-                                                                #{bundle['dataset.cite.downloadBtn.xml']}
-                                                            </a>
+                                                            <h:commandLink
+                                                                id="endNoteLink-2" value="#{bundle['dataset.cite.downloadBtn.xml']}"
+                                                                action="#{FilePage.fileDownloadService.downloadCitationXML(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}"
+                                                            />
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="risLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadCitationRIS(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}">
-                                                                #{bundle['dataset.cite.downloadBtn.ris']}
-                                                            </a>
+                                                            <h:commandLink
+                                                                id="risLink-2" value="#{bundle['dataset.cite.downloadBtn.ris']}"
+                                                                action="#{FilePage.fileDownloadService.downloadCitationRIS(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}"
+                                                            />
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="bibLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadCitationBibtex(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" target="_blank">
-                                                                #{bundle['dataset.cite.downloadBtn.bib']}
-                                                            </a>
+                                                            <h:commandLink
+                                                                id="bibLink-2" value="#{bundle['dataset.cite.downloadBtn.bib']}" target="_blank"
+                                                                action="#{FilePage.fileDownloadService.downloadCitationBibtex(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}"
+                                                            />
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -156,19 +159,22 @@
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                         <li>
-                                                            <a jsf:id="endNoteLink" jsf:action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}" >
-                                                                #{bundle['dataset.cite.downloadBtn.xml']}
-                                                            </a>
+                                                            <h:commandLink
+                                                                id="endNoteLink" value="#{bundle['dataset.cite.downloadBtn.xml']}"
+                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}"
+                                                            />
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="risLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}">
-                                                                #{bundle['dataset.cite.downloadBtn.ris']}
-                                                            </a>
+                                                            <h:commandLink
+                                                                id="risLink" value="#{bundle['dataset.cite.downloadBtn.ris']}"
+                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}"
+                                                            />
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="bibLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}" target="_blank">
-                                                                #{bundle['dataset.cite.downloadBtn.bib']}
-                                                            </a>
+                                                            <h:commandLink
+                                                                id="bibLink" value="#{bundle['dataset.cite.downloadBtn.bib']}" target="_blank"
+                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}"
+                                                            />
                                                         </li>
                                                     </ul>
                                                 </div>

@@ -1,17 +1,17 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.locality.StorageSite;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class StorageSitesIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

@@ -1,32 +1,32 @@
 package edu.harvard.iq.dataverse.search;
 
 import java.util.Arrays;
-import java.util.List;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IndexUtilTest {
 
     public IndexUtilTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
     }
 

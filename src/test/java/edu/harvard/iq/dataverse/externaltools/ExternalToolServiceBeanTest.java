@@ -11,12 +11,11 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import java.util.ArrayList;
 import java.util.List;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import org.junit.Test;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class ExternalToolServiceBeanTest {
 

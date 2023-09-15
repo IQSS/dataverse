@@ -5,8 +5,8 @@
  */
 package edu.harvard.iq.dataverse.util;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 
 /**
  *

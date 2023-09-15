@@ -2,55 +2,26 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.globus.AccessToken;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.channels.Channel;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.nio.file.Path;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustAllStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 
-import javax.json.JsonObject;
-import javax.net.ssl.SSLContext;
+import jakarta.json.JsonObject;
 
 /**
  * @author qqmyers
@@ -284,17 +255,14 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         if (args.length > 0) {
             System.out.printf("List of arguments: {}", Arrays.toString(args));
         }
-        // System.setProperty("dataverse.files.globus.globus_client_id",
-        // "2791b83e-b989-47c5-a7fa-ce65fd949522");
         System.setProperty("dataverse.files.globus.base-url", "globus://d8c42580-6528-4605-9ad8-116a61982644");
         System.out.println("NotValid: " + isValidIdentifier("globus", "globus://localid//../of/the/hill"));
         System.out.println("ValidRemote: " + isValidIdentifier("globus", "globus://localid//of/the/hill"));
         System.setProperty("dataverse.files.globus.managed", "true");
 
         System.out.println("ValidLocal: " + isValidIdentifier("globus", "globus://176e28068b0-1c3f80357c42"));
-        // System.setProperty("dataverse.files.globus.globus-token","Mjc5MWI4M2UtYjk4OS00N2M1LWE3ZmEtY2U2NWZkOTQ5NTIyOkt4ZEdndFVDUDVZZG5sRG4rRHEzaVMxTHBtTVRGNlB3RjlwWm9kRTBWNVE9");
         System.setProperty("dataverse.files.globus.globus-token",
-                "YTVlNzFjNzItYWVkYi00Mzg4LTkzNWQtY2NhM2IyODI2MzdmOnErQXRBeWNEMVM3amFWVnB0RlFnRk5zMTc3OFdDa3lGeVZPT3k0RDFpaXM9");
+                "");
         System.setProperty("dataverse.files.globus.base-store", "file");
         System.setProperty("dataverse.files.file.type", DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
         System.setProperty("dataverse.files.file.directory", "/tmp/files");

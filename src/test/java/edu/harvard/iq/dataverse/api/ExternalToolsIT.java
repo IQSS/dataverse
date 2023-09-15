@@ -1,31 +1,31 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.OK;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.assertTrue;
-import org.junit.Ignore;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Disabled;
 
 public class ExternalToolsIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
@@ -89,7 +89,7 @@ public class ExternalToolsIT {
         uploadTabularFile.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToTabularFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToTabularFile);
         Integer tabularFileId = JsonPath.from(uploadTabularFile.getBody().asString()).getInt("data.files[0].dataFile.id");
 
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -309,7 +309,7 @@ public class ExternalToolsIT {
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void deleteTools() {
 
@@ -330,7 +330,7 @@ public class ExternalToolsIT {
     }
 
     // preview only
-    @Ignore
+    @Disabled
     @Test
     public void createToolShellScript() {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -370,7 +370,7 @@ public class ExternalToolsIT {
     }
 
     // explore only
-    @Ignore
+    @Disabled
     @Test
     public void createToolDataExplorer() {
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -403,7 +403,7 @@ public class ExternalToolsIT {
     }
 
     // both preview and explore
-    @Ignore
+    @Disabled
     @Test
     public void createToolSpreadsheetViewer() {
         JsonObjectBuilder job = Json.createObjectBuilder();

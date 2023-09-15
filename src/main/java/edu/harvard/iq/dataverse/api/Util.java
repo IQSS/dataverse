@@ -7,9 +7,9 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonReader;
 
 public class Util {
 
