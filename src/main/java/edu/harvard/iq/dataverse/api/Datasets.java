@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CuratePublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetLinkingDataverseCommand;
@@ -525,9 +526,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/files/counts")
-    public Response getVersionFileCounts(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersionFileCounts(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("includeDeaccessioned") boolean includeDeaccessioned, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response(req -> {
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned);
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
             jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion));
             jsonObjectBuilder.add("perContentType", json(datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion)));
@@ -3921,5 +3922,33 @@ public class Datasets extends AbstractApiBean {
     public Response getDatasetVersionCitation(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response(req -> ok(
                 getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getCitation(true, false)), getRequestUser(crc));
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/deaccession")
+    public Response deaccessionDataset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String jsonBody, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        if (":draft".equals(versionId) || ":latest".equals(versionId)) {
+            return badRequest("Only :latest-published or a specific version can be deaccessioned");
+        }
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, false);
+            try (StringReader stringReader = new StringReader(jsonBody)) {
+                JsonObject jsonObject = Json.createReader(stringReader).readObject();
+                datasetVersion.setVersionNote(jsonObject.getString("deaccessionReason"));
+                String deaccessionForwardURL = jsonObject.getString("deaccessionForwardURL", null);
+                if (deaccessionForwardURL != null) {
+                    try {
+                        datasetVersion.setArchiveNote(deaccessionForwardURL);
+                    } catch (IllegalArgumentException iae) {
+                        return error(Response.Status.BAD_REQUEST, "Invalid deaccession forward URL: " + iae.getMessage());
+                    }
+                }
+                execCommand(new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), datasetVersion, false));
+                return ok("Dataset " + datasetId + " deaccessioned for version " + versionId);
+            } catch (JsonParsingException jpe) {
+                return error(Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
+            }
+        }, getRequestUser(crc));
     }
 }

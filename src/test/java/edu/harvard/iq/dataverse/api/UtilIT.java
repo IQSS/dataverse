@@ -3386,4 +3386,14 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/files/" + dataFileId + "/hasBeenDeleted");
     }
+
+    static Response deaccessionDataset(Integer datasetId, String version, String apiToken) {
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("deaccessionReason", "Test deaccession.");
+        String jsonString = jsonObjectBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .put("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
+    }
 }
