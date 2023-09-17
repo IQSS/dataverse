@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
@@ -60,13 +61,17 @@ public class JsonUtil {
     
     public static jakarta.json.JsonObject getJsonObject(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
-            return Json.createReader(rdr).readObject();
+            try (JsonReader jsonReader = Json.createReader(rdr)) {
+                return jsonReader.readObject();
+            }
         }
     }
     
     public static jakarta.json.JsonArray getJsonArray(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
-            return Json.createReader(rdr).readArray();
+            try (JsonReader jsonReader = Json.createReader(rdr)) {
+                return jsonReader.readArray();
+            }
         }
     }
 }
