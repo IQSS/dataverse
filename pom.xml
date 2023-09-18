@@ -26,7 +26,7 @@
         <packaging.type>war</packaging.type>
         
         <reload4j.version>1.2.18.4</reload4j.version>
-        <flyway.version>9.21.2</flyway.version>
+        <flyway.version>9.22.1</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <jacoco.version>0.8.7</jacoco.version>
         <poi.version>5.2.1</poi.version>
@@ -790,7 +790,7 @@
                 <skipIntegrationTests>true</skipIntegrationTests>
                 <!-- Once we truly run tests with Testcontainers, this should be switch to "docker", activating ITs -->
                 <packaging.type>docker-build</packaging.type>
-                <postgresql.server.version>13</postgresql.server.version>
+                <postgresql.server.version>16</postgresql.server.version>
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
                 <app.image.tag>unstable</app.image.tag>
