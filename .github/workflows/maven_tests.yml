@@ -54,7 +54,8 @@ jobs:
 
           # Upload the built war file. For download, it will be wrapped in a ZIP by GitHub.
           # See also https://github.com/actions/upload-artifact#zipped-artifact-downloads
-          - uses: actions/upload-artifact@v3
+          - name: "Upload built WAR file for testing and QA processes"
+            uses: actions/upload-artifact@v3
             with:
                 name: dataverse-java${{ matrix.jdk }}.war
                 path: target/dataverse*.war
@@ -64,7 +65,8 @@ jobs:
           - run: |
                 tar -cvf java-builddir.tar target
                 tar -cvf java-m2-selection.tar ~/.m2/repository/io/gdcc/dataverse-*
-          - uses: actions/upload-artifact@v3
+          - name: "Upload coverage and submodules"
+            uses: actions/upload-artifact@v3
             with:
                 name: java-artifacts
                 path: |
@@ -111,11 +113,13 @@ jobs:
                 tar -xvf java-m2-selection.tar -C /
 
             # Run integration tests (but not unit tests again)
-            - run: mvn -DskipUnitTests -Dtarget.java.version=${{ matrix.jdk }} verify
+            - name: "Build with Maven and run integration tests"
+              run: mvn -DskipUnitTests -Dtarget.java.version=${{ matrix.jdk }} verify
 
             # Wrap up and send to coverage job
             - run: tar -cvf java-reportdir.tar target/site
-            - uses: actions/upload-artifact@v3
+            - name: "Upload coverage report"
+              uses: actions/upload-artifact@v3
               with:
                   name: java-reportdir
                   path: java-reportdir.tar
