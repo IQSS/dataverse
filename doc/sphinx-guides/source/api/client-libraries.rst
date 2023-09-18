@@ -50,11 +50,11 @@ Python
 
 There are multiple Python modules for interacting with Dataverse APIs.
 
-`UBC's Dataverse Utilities <https://ubc-library-rc.github.io/dataverse_utils/>`_ are a set of Python console utilities which allow one to upload datasets from a tab-separated-value spreadsheet, bulk release multiple datasets, bulk delete unpublished datasets, quickly duplicate records. replace licenses, and more. For additional information see their `PyPi page <https://pypi.org/project/dataverse-utils/>`_.
-
 `EasyDataverse <https://github.com/gdcc/easyDataverse>`_ is a Python library designed to simplify the management of Dataverse datasets in an object-oriented way, giving users the ability to upload, download, and update datasets with ease. By utilizing metadata block configurations, EasyDataverse automatically generates Python objects that contain all the necessary details required to create the native Dataverse JSON format used to create or edit datasets. Adding files and directories is also possible with EasyDataverse and requires no additional API calls. This library is particularly well-suited for client applications such as workflows and scripts as it minimizes technical complexities and facilitates swift development.
 
 `pyDataverse <https://github.com/gdcc/pyDataverse>`_ primarily allows developers to manage Dataverse collections, datasets and datafiles. Its intention is to help with data migrations and DevOps activities such as testing and configuration management. The module is developed by `Stefan Kasberger <http://stefankasberger.at>`_ from `AUSSDA - The Austrian Social Science Data Archive <https://aussda.at>`_.  
+
+`UBC's Dataverse Utilities <https://ubc-library-rc.github.io/dataverse_utils/>`_ are a set of Python console utilities which allow one to upload datasets from a tab-separated-value spreadsheet, bulk release multiple datasets, bulk delete unpublished datasets, quickly duplicate records. replace licenses, and more. For additional information see their `PyPi page <https://pypi.org/project/dataverse-utils/>`_.
 
 `dataverse-client-python <https://github.com/IQSS/dataverse-client-python>`_ had its initial release in 2015. `Robert Liebowitz <https://github.com/rliebz>`_ created this library while at the `Center for Open Science (COS) <https://centerforopenscience.org>`_ and the COS uses it to integrate the `Open Science Framework (OSF) <https://osf.io>`_ with Dataverse installations via an add-on which itself is open source and listed on the :doc:`/api/apps` page.
 
