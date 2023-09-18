@@ -30,12 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import org.swordapp.server.AuthCredentials;

@@ -5,10 +5,12 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.*;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -17,16 +19,18 @@ import static org.junit.Assert.*;
 public class AbstractDatasetCommandTest {
     
    
-    @Test(expected=IllegalArgumentException.class)
-    @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    public void testNullDataset() {
-        new AbstractDatasetCommandImpl(makeRequest(), null);
+    @Test
+    void testNullDataset() {
+        DataverseRequest request = makeRequest();
+        assertThrows(IllegalArgumentException.class, () -> new AbstractDatasetCommandImpl(request, null));
     }
     
-    @Test(expected=IllegalArgumentException.class)
-    @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    public void testNullDatasetNonNullParent() {
-        new AbstractDatasetCommandImpl(makeRequest(), null, makeDataverse());
+    @Test
+    void testNullDatasetNonNullParent() {
+        DataverseRequest request = makeRequest();
+        Dataverse dataverse = makeDataverse();
+        assertThrows(IllegalArgumentException.class,
+            () -> new AbstractDatasetCommandImpl(request, null, dataverse));
     }
     
     /**

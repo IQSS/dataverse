@@ -4,21 +4,17 @@ import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
-import java.lang.StackWalker.StackFrame;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Stateless;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Stateless;
 
 /**
  * PermaLink provider
@@ -69,10 +65,13 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
     }
     
     @Override
-    public boolean alreadyExists(GlobalId globalId) throws Exception {
-        return ! dvObjectService.isGlobalIdLocallyUnique(globalId);
+    public boolean alreadyRegistered(GlobalId globalId, boolean noProviderDefault) {
+        // Perma doesn't manage registration, so we assume all local PIDs can be treated
+        // as registered
+        boolean existsLocally = !dvObjectService.isGlobalIdLocallyUnique(globalId);
+        return existsLocally ? existsLocally : noProviderDefault;
     }
-
+    
     @Override
     public boolean registerWhenPublished() {
         return false;

@@ -64,8 +64,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.FileChannel;
-import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -87,11 +85,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.activation.MimetypesFileTypeMap;
-import javax.ejb.EJBException;
-import javax.enterprise.inject.spi.CDI;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.activation.MimetypesFileTypeMap;
+import jakarta.ejb.EJBException;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -176,6 +174,10 @@ public class FileUtil implements java.io.Serializable  {
     
     //Todo - this is the same as MIME_TYPE_TSV_ALT
     public static final String MIME_TYPE_INGESTED_FILE = "text/tab-separated-values";
+
+    public static final String MIME_TYPE_NETCDF = "application/netcdf";
+    public static final String MIME_TYPE_XNETCDF = "application/x-netcdf";
+    public static final String MIME_TYPE_HDF5 = "application/x-hdf5";
 
     // File type "thumbnail classes" tags:
     

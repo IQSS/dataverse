@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Developer Guide
-=======================================================
+===============
 
 **Contents:**
 
@@ -19,6 +19,7 @@ Developer Guide
    sql-upgrade-scripts
    testing
    documentation
+   api-design
    security
    dependencies
    debugging
@@ -27,6 +28,8 @@ Developer Guide
    deployment
    containers
    making-releases
+   making-library-releases
+   metadataexport
    tools
    unf/index
    make-data-count
@@ -40,4 +43,5 @@ Developer Guide
    dataset-migration-api 
    workflows
    fontcustom
+   classic-dev-env
    

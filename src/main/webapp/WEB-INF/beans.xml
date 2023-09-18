@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://java.sun.com/xml/ns/javaee"
+<beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
+       xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
+       bean-discovery-mode="all">
+    <!-- 2023-06: Note that if you change bean-discovery-mode from "all" to "allocated", SWORD APIs do not work. -->
 </beans>

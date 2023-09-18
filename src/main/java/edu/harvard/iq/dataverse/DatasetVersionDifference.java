@@ -2,28 +2,29 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
-import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
-
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  *
  * @author skraffmiller
  */
 public final class DatasetVersionDifference {
+    private static final Logger logger = Logger.getLogger(DatasetVersionDifference.class.getCanonicalName());
 
     private DatasetVersion newVersion;
     private DatasetVersion originalVersion;
@@ -1713,4 +1714,109 @@ public final class DatasetVersionDifference {
         this.datasetFilesDiffList = datasetFilesDiffList;
     }
 
+    /*
+     * Static methods to compute which blocks have changes between the two
+     * DatasetVersions. Currently used to assess whether 'system metadatablocks'
+     * (protected by a separate key) have changed. (Simplified from the methods
+     * above that track all the individual changes)
+     * 
+     */
+    public static Set<MetadataBlock> getBlocksWithChanges(DatasetVersion newVersion, DatasetVersion originalVersion) {
+        Set<MetadataBlock> changedBlockSet = new HashSet<MetadataBlock>();
+
+        // Compare Data
+        List<DatasetField> newDatasetFields = new LinkedList<DatasetField>(newVersion.getDatasetFields());
+        if (originalVersion == null) {
+            // Every field is new, just list blocks used
+            Iterator<DatasetField> dsfnIter = newDatasetFields.listIterator();
+            while (dsfnIter.hasNext()) {
+                DatasetField dsfn = dsfnIter.next();
+                if (!changedBlockSet.contains(dsfn.getDatasetFieldType().getMetadataBlock())) {
+                    changedBlockSet.add(dsfn.getDatasetFieldType().getMetadataBlock());
+                }
+            }
+
+        } else {
+            List<DatasetField> originalDatasetFields = new LinkedList<DatasetField>(originalVersion.getDatasetFields());
+            Iterator<DatasetField> dsfoIter = originalDatasetFields.listIterator();
+            while (dsfoIter.hasNext()) {
+                DatasetField dsfo = dsfoIter.next();
+                boolean deleted = true;
+                Iterator<DatasetField> dsfnIter = newDatasetFields.listIterator();
+
+                while (dsfnIter.hasNext()) {
+                    DatasetField dsfn = dsfnIter.next();
+                    if (dsfo.getDatasetFieldType().equals(dsfn.getDatasetFieldType())) {
+                        deleted = false;
+                        if (!changedBlockSet.contains(dsfo.getDatasetFieldType().getMetadataBlock())) {
+                            logger.fine("Checking " + dsfo.getDatasetFieldType().getName());
+                            if (dsfo.getDatasetFieldType().isPrimitive()) {
+                                if (fieldsAreDifferent(dsfo, dsfn, false)) {
+                                    logger.fine("Adding block for " + dsfo.getDatasetFieldType().getName());
+                                    changedBlockSet.add(dsfo.getDatasetFieldType().getMetadataBlock());
+                                }
+                            } else {
+                                if (fieldsAreDifferent(dsfo, dsfn, true)) {
+                                    logger.fine("Adding block for " + dsfo.getDatasetFieldType().getName());
+                                    changedBlockSet.add(dsfo.getDatasetFieldType().getMetadataBlock());
+                                }
+                            }
+                        }
+                        dsfnIter.remove();
+                        break; // if found go to next dataset field
+                    }
+                }
+
+                if (deleted) {
+                    logger.fine("Adding block for deleted " + dsfo.getDatasetFieldType().getName());
+                    changedBlockSet.add(dsfo.getDatasetFieldType().getMetadataBlock());
+                }
+                dsfoIter.remove();
+            }
+            // Only fields left are non-matching ones but they may be empty
+            for (DatasetField dsfn : newDatasetFields) {
+                if (!dsfn.isEmpty()) {
+                    logger.fine("Adding block for added " + dsfn.getDatasetFieldType().getName());
+                    changedBlockSet.add(dsfn.getDatasetFieldType().getMetadataBlock());
+                }
+            }
+        }
+        return changedBlockSet;
+    }
+
+    private static boolean fieldsAreDifferent(DatasetField originalField, DatasetField newField, boolean compound) {
+        String originalValue = "";
+        String newValue = "";
+
+        if (compound) {
+            for (DatasetFieldCompoundValue datasetFieldCompoundValueOriginal : originalField
+                    .getDatasetFieldCompoundValues()) {
+                int loopIndex = 0;
+                if (newField.getDatasetFieldCompoundValues().size() >= loopIndex + 1) {
+                    for (DatasetField dsfo : datasetFieldCompoundValueOriginal.getChildDatasetFields()) {
+                        if (!dsfo.getDisplayValue().isEmpty()) {
+                            originalValue += dsfo.getDisplayValue() + ", ";
+                        }
+                    }
+                    for (DatasetField dsfn : newField.getDatasetFieldCompoundValues().get(loopIndex)
+                            .getChildDatasetFields()) {
+                        if (!dsfn.getDisplayValue().isEmpty()) {
+                            newValue += dsfn.getDisplayValue() + ", ";
+                        }
+                    }
+                    if (!originalValue.trim().equals(newValue.trim())) {
+                        return true;
+                    }
+                }
+                loopIndex++;
+            }
+        } else {
+            originalValue = originalField.getDisplayValue();
+            newValue = newField.getDisplayValue();
+            if (!originalValue.equalsIgnoreCase(newValue)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

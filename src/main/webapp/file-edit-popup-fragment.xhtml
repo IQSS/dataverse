@@ -76,6 +76,7 @@
                     <p:inputTextarea id="termsAccessInput" 
                                      value="#{bean.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa">
                      <p:ajax event="keyup" update="restrictFileButton"/>
+                      <f:passThroughAttribute name="aria-label" value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}"/>
                     </p:inputTextarea> 
                 </div>
             </div>

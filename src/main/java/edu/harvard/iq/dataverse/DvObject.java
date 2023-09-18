@@ -5,14 +5,13 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Base of the object hierarchy for "anything that can be inside a dataverse".
@@ -30,9 +29,13 @@ import javax.persistence.*;
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",
             query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
+    @NamedQuery(name = "DvObject.findIdByGlobalId",
+            query = "SELECT o.id FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByAlternativeGlobalId",
             query = "SELECT o FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
+    @NamedQuery(name = "DvObject.findIdByAlternativeGlobalId",
+            query = "SELECT o.id FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByProtocolIdentifierAuthority",
             query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol"),

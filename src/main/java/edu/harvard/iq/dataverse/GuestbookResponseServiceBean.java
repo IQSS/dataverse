@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -20,17 +21,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.faces.model.SelectItem;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.StoredProcedureQuery;
-import javax.persistence.TypedQuery;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.StoredProcedureQuery;
+import jakarta.persistence.TypedQuery;
 import org.apache.commons.text.StringEscapeUtils;
 /**
  *
@@ -910,8 +911,17 @@ public class GuestbookResponseServiceBean {
     }
     
     public Long getCountGuestbookResponsesByDatasetId(Long datasetId) {
+        return getCountGuestbookResponsesByDatasetId(datasetId, null);
+    }
+    
+    public Long getCountGuestbookResponsesByDatasetId(Long datasetId, LocalDate date) {
         // dataset id is null, will return 0        
-        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId);
+        Query query;
+        if(date != null) {
+            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsetime < '" + date.toString() + "'");
+        }else {
+            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId);
+        }
         return (Long) query.getSingleResult();
     }    
 

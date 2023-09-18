@@ -54,7 +54,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.enterprise.inject.spi.CDI;
+import jakarta.enterprise.inject.spi.CDI;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 

@@ -5,9 +5,9 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class IndexAsync {

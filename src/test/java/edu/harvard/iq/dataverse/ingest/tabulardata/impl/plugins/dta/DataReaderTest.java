@@ -4,8 +4,8 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author oscardssmith
@@ -39,12 +39,12 @@ public class DataReaderTest {
     }
     
     // This should throw until we figure out what to do with uLongs that are large
-    @Test(expected = IOException.class)
-    public void testReadULong() throws IOException {
+    @Test
+    void testReadULong() throws IOException {
         byte[] bytes = {-1,-1,-1,-1,-1,-1,-1,-1,};
         BufferedInputStream stream = new BufferedInputStream(new ByteArrayInputStream(bytes));
         DataReader reader = new DataReader(stream);
         reader.setLSF(true);
-        assertEquals(-1, reader.readULong());
+        assertThrows(IOException.class, () -> reader.readULong());
     }
 }

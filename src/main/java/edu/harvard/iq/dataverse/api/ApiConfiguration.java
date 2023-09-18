@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import javax.ws.rs.ApplicationPath;
+import jakarta.ws.rs.ApplicationPath;
 
 import edu.harvard.iq.dataverse.api.auth.AuthFilter;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
