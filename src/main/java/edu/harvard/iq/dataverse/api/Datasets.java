@@ -3393,6 +3393,65 @@ public class Datasets extends AbstractApiBean {
 
     }
 
+    /** Requests permissions for a given globus user to upload to the dataset
+     * 
+     * @param crc
+     * @param datasetId
+     * @param jsonData
+     * @return
+     * @throws IOException
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    @POST
+    @AuthRequired
+    @Path("{id}/allowGlobusUpload")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response allowGlobusUpload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, String jsonBody
+    ) throws IOException, ExecutionException, InterruptedException {
+
+
+        logger.info(" ====  (api allowGlobusUpload) jsonBody   ====== " + jsonBody);
+
+
+        if (!systemConfig.isGlobusUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
+        }
+
+        // -------------------------------------
+        // (1) Get the user from the ContainerRequestContext
+        // -------------------------------------
+        User authUser;
+        authUser = getRequestUser(crc);
+
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        // Async Call
+        globusService.givePermission(jsonBody, jsonBody, jsonBody, null, datasetId, jsonBody).globusDownload(jsonData, dataset, authUser);
+
+        return ok("Async call to Globus Download started");
+
+    }
+
+    /** Monitors a globus download and removes permissions on the dir/dataset when done
+     * 
+     * @param crc
+     * @param datasetId
+     * @param jsonData
+     * @return
+     * @throws IOException
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
     @POST
     @AuthRequired
     @Path("{id}/deleteglobusRule")
@@ -3404,8 +3463,8 @@ public class Datasets extends AbstractApiBean {
         logger.info(" ====  (api deleteglobusRule) jsonData   ====== " + jsonData);
 
 
-        if (!systemConfig.isHTTPUpload()) {
-            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        if (!systemConfig.isGlobusDownload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
         }
 
         // -------------------------------------
