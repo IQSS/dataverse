@@ -327,11 +327,7 @@ public class OREMap {
                             aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())
                                     .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
                     // and finally add the context
-                    .add("@context", contextBuilder.build())
-                    ;
-            
-            
-            
+                    .add("@context", contextBuilder.build());
             return oremapBuilder;
         }
     }
