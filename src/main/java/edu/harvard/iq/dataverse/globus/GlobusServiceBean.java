@@ -130,7 +130,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         return ids;
     }
-
+/*
     public void updatePermision(AccessToken clientTokenUser, String directory, String principalType, String perm)
             throws MalformedURLException {
         if (directory != null && !directory.equals("")) {
@@ -163,8 +163,8 @@ public class GlobusServiceBean implements java.io.Serializable {
             count++;
         }
     }
-
-    public void deletePermision(String ruleId, Logger globusLogger) throws MalformedURLException {
+*/
+    public void deletePermission(String ruleId, Logger globusLogger) throws MalformedURLException {
 
         if (ruleId.length() > 0) {
             AccessToken clientTokenUser = getClientToken(settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, ""));
@@ -554,7 +554,9 @@ public class GlobusServiceBean implements java.io.Serializable {
                         + rawStorageId + "&fileName=" + df.getCurrentName();
             }
         }
-        return tokenUtil.replaceTokensWithValues(appUrl) + "&storePrefix=" + storePrefix;
+        String finalUrl = tokenUtil.replaceTokensWithValues(appUrl) + "&storePrefix=" + storePrefix;
+        logger.info("Calling app: " + finalUrl);
+        return finalUrl;
     }
 
     public String getGlobusDownloadScript(Dataset dataset, ApiToken apiToken) {
@@ -624,7 +626,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         String taskStatus = getTaskStatus(task);
 
         if (ruleId.length() > 0) {
-            deletePermision(ruleId, globusLogger);
+            deletePermission(ruleId, globusLogger);
         }
 
         // If success, switch to an EditInProgress lock - do this before removing the
@@ -897,7 +899,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
         String taskStatus = getTaskStatus(task);
 
         if (ruleId.length() > 0) {
-            deletePermision(ruleId, globusLogger);
+            deletePermission(ruleId, globusLogger);
         }
 
         if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
