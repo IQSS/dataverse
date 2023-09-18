@@ -305,6 +305,8 @@ Here are the configuration options for PermaLinks:
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 - :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to false)
 
+You must restart Payara after making changes to these settings.
+
 .. _auth-modes:
 
 Auth Modes: Local vs. Remote vs. Both
@@ -2984,6 +2986,8 @@ Notes:
 This setting controls the number of files that can be uploaded through the UI at once. The default is 1000. It should be set to 1 or higher since 0 has no effect. To limit the number of files in a zip file, see ``:ZipUploadFilesLimit``.
 
 ``curl -X PUT -d 500 http://localhost:8080/api/admin/settings/:MultipleUploadFilesLimit``
+
+.. _:ZipDownloadLimit:
 
 :ZipDownloadLimit
 +++++++++++++++++
