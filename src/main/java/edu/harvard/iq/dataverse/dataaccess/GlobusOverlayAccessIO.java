@@ -214,7 +214,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         }
     }
 
-    private static boolean isDataverseManaged(String driverId) {
+    public static boolean isDataverseManaged(String driverId) {
         return Boolean.getBoolean("dataverse.files." + driverId + ".managed");
     }
 

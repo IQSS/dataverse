@@ -46,6 +46,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -106,23 +107,23 @@ public class GlobusServiceBean implements java.io.Serializable {
         this.userTransferToken = userTransferToken;
     }
 
-    ArrayList<String> checkPermisions(AccessToken clientTokenUser, String directory, String globusEndpoint,
-            String principalType, String principal) throws MalformedURLException {
-        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access_list");
+    private ArrayList<String> checkPermissions(GlobusEndpoint endpoint, String principalType, String principal) throws MalformedURLException {
+       
+        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access_list");
         MakeRequestResponse result = makeRequest(url, "Bearer",
-                clientTokenUser.getOtherTokens().get(0).getAccessToken(), "GET", null);
+                endpoint.getClientToken(), "GET", null);
         ArrayList<String> ids = new ArrayList<String>();
         if (result.status == 200) {
             AccessList al = parseJson(result.jsonResponse, AccessList.class, false);
 
             for (int i = 0; i < al.getDATA().size(); i++) {
                 Permissions pr = al.getDATA().get(i);
-                if ((pr.getPath().equals(directory + "/") || pr.getPath().equals(directory))
+                if ((pr.getPath().equals(endpoint.getBasePath() + "/") || pr.getPath().equals(endpoint.getBasePath()))
                         && pr.getPrincipalType().equals(principalType)
                         && ((principal == null) || (principal != null && pr.getPrincipal().equals(principal)))) {
                     ids.add(pr.getId());
                 } else {
-                    logger.info(pr.getPath() + " === " + directory + " == " + pr.getPrincipalType());
+                    logger.info(pr.getPath() + " === " + endpoint.getBasePath() + " == " + pr.getPrincipalType());
                     continue;
                 }
             }
@@ -185,24 +186,24 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     }
 
-    public int givePermission(String principalType, String principal, String perm, AccessToken clientTokenUser,
-            String directory, String globusEndpoint) throws MalformedURLException {
+    public int givePermission(String principalType, String principal, String perm, Dataset dataset) throws MalformedURLException {
 
-        ArrayList<?> rules = checkPermisions(clientTokenUser, directory, globusEndpoint, principalType, principal);
+        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+        ArrayList<?> rules = checkPermissions(endpoint, principalType, principal);
 
         Permissions permissions = new Permissions();
         permissions.setDATA_TYPE("access");
         permissions.setPrincipalType(principalType);
         permissions.setPrincipal(principal);
-        permissions.setPath(directory + "/");
+        permissions.setPath(endpoint.getBasePath() + "/");
         permissions.setPermissions(perm);
 
         Gson gson = new GsonBuilder().create();
         MakeRequestResponse result = null;
         if (rules.size() == 0) {
             logger.info("Start creating the rule");
-            URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access");
-            result = makeRequest(url, "Bearer", clientTokenUser.getOtherTokens().get(0).getAccessToken(), "POST",
+            URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access");
+            result = makeRequest(url, "Bearer", endpoint.getClientToken(), "POST",
                     gson.toJson(permissions));
 
             if (result.status == 400) {
@@ -214,9 +215,9 @@ public class GlobusServiceBean implements java.io.Serializable {
             return result.status;
         } else {
             logger.info("Start Updating the rule");
-            URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/"
+            URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access/"
                     + rules.get(0));
-            result = makeRequest(url, "Bearer", clientTokenUser.getOtherTokens().get(0).getAccessToken(), "PUT",
+            result = makeRequest(url, "Bearer", endpoint.getClientToken(), "PUT",
                     gson.toJson(permissions));
 
             if (result.status == 400) {
@@ -438,36 +439,25 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     }
 
-    private MakeRequestResponse findDirectory(String directory, AccessToken clientTokenUser, String globusEndpoint)
+    private MakeRequestResponse findDirectory(String directory, String clientToken, String globusEndpoint)
             throws MalformedURLException {
         URL url = new URL(" https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/ls?path="
                 + directory + "/");
 
         MakeRequestResponse result = makeRequest(url, "Bearer",
-                clientTokenUser.getOtherTokens().get(0).getAccessToken(), "GET", null);
+                clientToken, "GET", null);
         logger.info("find directory status:" + result.status);
 
         return result;
     }
 
-    public boolean giveGlobusPublicPermissions(String datasetId)
+    public boolean giveGlobusPublicPermissions(Dataset dataset)
             throws UnsupportedEncodingException, MalformedURLException {
 
-        String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
-        String globusBasicToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, "");
-        if (globusEndpoint.equals("") || globusBasicToken.equals("")) {
-            return false;
-        }
-        AccessToken clientTokenUser = getClientToken(settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, ""));
-        if (clientTokenUser == null) {
-            logger.severe("Cannot get client token ");
-            return false;
-        }
+        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
 
-        String directory = getDirectory(datasetId);
-        logger.info(directory);
 
-        MakeRequestResponse status = findDirectory(directory, clientTokenUser, globusEndpoint);
+        MakeRequestResponse status = findDirectory(endpoint.getBasePath(), endpoint.getClientToken(), endpoint.getId());
 
         if (status.status == 200) {
 
@@ -485,8 +475,7 @@ public class GlobusServiceBean implements java.io.Serializable {
              * 201) { logger.info("Cannot get permission for " + file.getName()); } } } }
              */
 
-            int perStatus = givePermission("all_authenticated_users", "", "r", clientTokenUser, directory,
-                    globusEndpoint);
+            int perStatus = givePermission("all_authenticated_users", "", "r", dataset);
             logger.info("givePermission status " + perStatus);
             if (perStatus == 409) {
                 logger.info("Permissions already exist or limit was reached");
@@ -1287,4 +1276,55 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
      * updatePermision(clientTokenUser, directory, "identity", "r"); return true; }
      * 
      */
+    
+    GlobusEndpoint getGlobusEndpoint(DvObject dvObject) {
+        Dataset dataset = null;
+        if (dvObject instanceof Dataset) {
+            dataset = (Dataset) dvObject;
+        } else if (dvObject instanceof DataFile) {
+            dataset = (Dataset) dvObject.getOwner();
+        } else {
+            throw new IllegalArgumentException("Unsupported DvObject type: " + dvObject.getClass().getName());
+        }
+        String driverId = dataset.getEffectiveStorageDriverId();
+        GlobusEndpoint endpoint = null;
+        String baseUrl = System.getProperty("dataverse.files." + driverId + ".base-url");
+
+        String endpointWithBasePath = baseUrl.substring(baseUrl.lastIndexOf("://") + 3);
+        int pathStart = endpointWithBasePath.indexOf("/");
+        logger.info("endpointWithBasePath: " + endpointWithBasePath);
+        String directoryPath = "/" + (pathStart > 0 ? endpointWithBasePath.substring(pathStart + 1) : "");
+        logger.info("directoryPath: " + directoryPath);
+
+        if (GlobusOverlayAccessIO.isDataverseManaged(driverId) && (dataset!=null)) {
+            directoryPath = directoryPath + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage();
+            logger.info("directoryPath now: " + directoryPath);
+
+        } else {
+            //remote store - may have path in file storageidentifier
+            String relPath = dvObject.getStorageIdentifier().substring(dvObject.getStorageIdentifier().lastIndexOf("//") + 2);
+            int filenameStart = relPath.lastIndexOf("/") + 1;
+            if (filenameStart > 0) {
+                directoryPath = directoryPath + relPath.substring(0, filenameStart);
+            }
+        }
+        logger.info("directoryPath finally: " + directoryPath);
+        
+        String endpointId = pathStart > 0 ? endpointWithBasePath.substring(0, pathStart) : endpointWithBasePath;
+        
+        logger.info("endpointId: " + endpointId);
+        
+        String globusToken = System.getProperty("dataverse.files." + driverId + ".globus-token");
+
+        AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
+        String clientToken = accessToken.getOtherTokens().get(0).getAccessToken();
+
+        endpoint = new GlobusEndpoint(endpointId, clientToken, directoryPath);
+
+        return endpoint;
+    }
+    
+    private static boolean isDataverseManaged(String driverId) {
+        return Boolean.getBoolean("dataverse.files." + driverId + ".managed");
+    }
 }

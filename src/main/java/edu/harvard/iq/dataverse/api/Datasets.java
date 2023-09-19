@@ -3434,11 +3434,14 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+        
+        JsonObject params = JsonUtil.getJsonObject(jsonBody);
+        String principal = params.getString("principal");
 
         // Async Call
-        globusService.givePermission(jsonBody, jsonBody, jsonBody, null, datasetId, jsonBody).globusDownload(jsonData, dataset, authUser);
+        globusService.givePermission("identity", principal, "rw", dataset);
 
-        return ok("Async call to Globus Download started");
+        return ok("Permission Granted");
 
     }
 
