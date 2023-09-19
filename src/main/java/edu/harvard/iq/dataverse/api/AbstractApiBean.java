@@ -71,6 +71,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
@@ -526,16 +527,20 @@ public abstract class AbstractApiBean {
      * with that alias. If that fails, tries to get a {@link Dataset} with that global id.
      * @param id a value identifying the DvObject, either numeric of textual.
      * @return A DvObject, or {@code null}
+     * @throws WrappedResponse
      */
-	protected DvObject findDvo( String id ) {
-        if ( isNumeric(id) ) {
-            return findDvo( Long.valueOf(id)) ;
+    @NotNull
+	protected DvObject findDvo(@NotNull final String id) throws WrappedResponse {
+        DvObject d = null;
+        if (isNumeric(id)) {
+            d = findDvo(Long.valueOf(id));
         } else {
-            Dataverse d = dataverseSvc.findByAlias(id);
-            return ( d != null ) ?
-                    d : datasetSvc.findByGlobalId(id);
-
+            d = dataverseSvc.findByAlias(id);
         }
+        if (d == null) {
+            return findDatasetOrDie(id);
+        }
+        return d;
 	}
 
     protected <T> T failIfNull( T t, String errorMessage ) throws WrappedResponse {

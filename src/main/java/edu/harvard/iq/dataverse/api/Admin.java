@@ -64,7 +64,6 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 
 import java.io.InputStream;
 import java.io.StringReader;
-import java.net.URLDecoder;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -1331,22 +1330,17 @@ public class Admin extends AbstractApiBean {
 	@Path("permissions/{dvo}")
 	@AuthRequired
 	@GET
-	public Response findPermissonsOn(@Context ContainerRequestContext crc, @PathParam("dvo") String dvo) {
+	public Response findPermissonsOn(@Context final ContainerRequestContext crc, @PathParam("dvo") final String dvo) {
 		try {
-			DvObject dvObj = findDvo(dvo);
-			if (dvObj == null) {
-				dvObj = findDatasetOrDie(dvo);
-				if (dvObj == null) {
-					return notFound("DvObject " + dvo + " not found");
-				}
-			}
-			User aUser = getRequestUser(crc);
-			JsonObjectBuilder bld = Json.createObjectBuilder();
+			final DvObject dvObj = findDvo(dvo);
+			final User aUser = getRequestUser(crc);
+			final JsonObjectBuilder bld = Json.createObjectBuilder();
 			bld.add("user", aUser.getIdentifier());
 			bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
 			return ok(bld);
-
-		} catch (Exception e) {
+		} catch (WrappedResponse r) {
+            return r.getResponse();
+        } catch (Exception e) {
 			logger.log(Level.SEVERE, "Error while testing permissions", e);
 			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
 		}
