@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
@@ -41,6 +42,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -390,6 +392,11 @@ public abstract class AbstractApiBean {
     }
 
     protected Dataset findDatasetOrDie(String id) throws WrappedResponse {
+        return findDatasetOrDie(id, false);
+    }
+
+    protected Dataset findDatasetOrDie(String id, boolean deep) throws WrappedResponse {
+        Long datasetId;
         Dataset dataset;
         if (id.equals(PERSISTENT_ID_KEY)) {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
@@ -397,24 +404,36 @@ public abstract class AbstractApiBean {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
-            dataset = datasetSvc.findByGlobalId(persistentId);
-            if (dataset == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
+            GlobalId globalId;
+            try {
+                globalId = PidUtil.parseAsGlobalID(persistentId);
+            } catch (IllegalArgumentException e) {
+                throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(persistentId))));
             }
-            return dataset;
-
+            datasetId = dvObjSvc.findIdByGlobalId(globalId, DvObject.DType.Dataset);
+            if (datasetId == null) {
+                throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+            }
         } else {
             try {
-                dataset = datasetSvc.find(Long.parseLong(id));
-                if (dataset == null) {
-                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
-                }
-                return dataset;
+                datasetId = Long.parseLong(id);
             } catch (NumberFormatException nfe) {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
             }
         }
+
+        if (deep) {
+            dataset = datasetSvc.findDeep(datasetId);
+        } else {
+            dataset = datasetSvc.find(datasetId);
+        }
+        if (dataset == null) {
+            throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
+        }
+        return dataset;
     }
     
     protected DataFile findDataFileOrDie(String id) throws WrappedResponse {

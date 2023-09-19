@@ -127,7 +127,8 @@ public class DatasetServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
             .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
             .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
-            //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses")
+            .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.varGroups")
+            //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses
             .setHint("eclipselink.left-join-fetch", "o.files.embargo")
             .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
             .setHint("eclipselink.left-join-fetch", "o.files.owner")
