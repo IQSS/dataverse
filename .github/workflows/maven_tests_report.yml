@@ -2,7 +2,7 @@ name: report
 on:
     workflow_run:
         workflows:
-          - "Maven Test"
+          - "Maven Tests"
         types:
           - completed
 
