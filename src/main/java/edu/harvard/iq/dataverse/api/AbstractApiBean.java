@@ -524,9 +524,7 @@ public abstract class AbstractApiBean {
     /**
      * Tries to find a DvObject. If the passed id can be interpreted as a number,
      * it tries to get the DvObject by its id. Else, it tries to get a {@link Dataverse}
-     * with that alias. If that fails, tries to get a {@link Dataset} with that
-     * global id.
-     * 
+     * with that alias. If that fails, tries to get a {@link Dataset} with that global id.
      * @param id a value identifying the DvObject, either numeric of textual.
      * @return A DvObject, or {@code null}
      * @throws WrappedResponse
