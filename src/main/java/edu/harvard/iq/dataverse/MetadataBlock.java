@@ -29,10 +29,13 @@ import jakarta.persistence.Transient;
  * @author skraffmiller
  */
 @Table(indexes = {@Index(columnList="name")
-		, @Index(columnList="owner_id")})
+		, @Index(columnList="owner_id"),})
 @NamedQueries({
     @NamedQuery( name="MetadataBlock.listAll", query = "SELECT mdb FROM MetadataBlock mdb"),
-    @NamedQuery( name="MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name")
+    @NamedQuery( name="MetadataBlock.listSystem", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.owner_id=null"),
+    @NamedQuery( name="MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name"),
+    @NamedQuery( name="MetadataBlock.findByDataverseId", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.owner_id=:dataverse_id"),
+
 })
 @Entity
 public class MetadataBlock implements Serializable, Comparable {

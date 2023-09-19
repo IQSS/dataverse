@@ -21,10 +21,10 @@ import jakarta.faces.convert.FacesConverter;
 public class MetadataBlockConverter implements Converter {
 
     //@EJB
-    DataverseServiceBean dataverseService = CDI.current().select(DataverseServiceBean.class).get();
+    MetadataBlockServiceBean dataverseService = CDI.current().select(MetadataBlockServiceBean.class).get();
 
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        MetadataBlock mdb = dataverseService.findMDB(new Long(submittedValue));
+        MetadataBlock mdb = dataverseService.findById(new Long(submittedValue));
         return mdb;
     }
 
