@@ -523,14 +523,17 @@ public abstract class AbstractApiBean {
 
     /**
      * Tries to find a DvObject. If the passed id can be interpreted as a number,
-     * it tries to get the DvObject by its id. Else, it tries to get a {@link Dataverse}
-     * with that alias. If that fails, tries to get a {@link Dataset} with that global id.
+     * it tries to get the DvObject by its id. Else, it tries to get a
+     * {@link Dataverse}
+     * with that alias. If that fails, tries to get a {@link Dataset} with that
+     * global id.
+     * 
      * @param id a value identifying the DvObject, either numeric of textual.
      * @return A DvObject, or {@code null}
      * @throws WrappedResponse
      */
     @NotNull
-	protected DvObject findDvo(@NotNull final String id) throws WrappedResponse {
+    protected DvObject findDvo(@NotNull final String id) throws WrappedResponse {
         DvObject d = null;
         if (isNumeric(id)) {
             d = findDvo(Long.valueOf(id));
@@ -541,7 +544,7 @@ public abstract class AbstractApiBean {
             return findDatasetOrDie(id);
         }
         return d;
-	}
+    }
 
     protected <T> T failIfNull( T t, String errorMessage ) throws WrappedResponse {
         if ( t != null ) return t;
