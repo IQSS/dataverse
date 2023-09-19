@@ -123,6 +123,15 @@ public enum JvmSettings {
     SCOPE_MAIL(PREFIX, "mail"),
     SUPPORT_EMAIL(SCOPE_MAIL, "support-email"),
     CC_SUPPORT_ON_CONTACT_EMAIL(SCOPE_MAIL, "cc-support-on-contact-email"),
+    MAIL_DEBUG(SCOPE_MAIL, "debug"),
+    // Mail Transfer Agent settings
+    SCOPE_MAIL_MTA(SCOPE_MAIL, "mta"),
+    MAIL_MTA_HOST(SCOPE_MAIL_MTA, "host"),
+    MAIL_MTA_AUTH(SCOPE_MAIL_MTA, "auth"),
+    MAIL_MTA_USER(SCOPE_MAIL_MTA, "user"),
+    MAIL_MTA_PASSWORD(SCOPE_MAIL_MTA, "password"),
+    // Placeholder setting for a large list of extra settings
+    MAIL_MTA_SETTING(SCOPE_MAIL_MTA),
 
     // UI SETTINGS
     SCOPE_UI(PREFIX, "ui"),
