@@ -517,17 +517,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.datasetFields = datasetFieldValues;
     }
 
-    @OneToMany(mappedBy = "datasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DatasetFieldDefaultValue> datasetFieldDefaultValues;
-
-    public List<DatasetFieldDefaultValue> getDatasetFieldDefaultValues() {
-        return datasetFieldDefaultValues;
-    }
-
-    public void setDatasetFieldDefaultValues(List<DatasetFieldDefaultValue> datasetFieldDefaultValues) {
-        this.datasetFieldDefaultValues = datasetFieldDefaultValues;
-    }
-
     @Override
     public int compareTo(DatasetFieldType o) {
         return Integer.compare(this.getDisplayOrder(), (o.getDisplayOrder()));

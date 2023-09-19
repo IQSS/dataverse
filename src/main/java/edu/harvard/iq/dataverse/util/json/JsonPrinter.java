@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetDistributor;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
@@ -480,16 +479,6 @@ public class JsonPrinter {
         return filesArr;
     }
 
-    public static JsonObjectBuilder json(DatasetDistributor dist) {
-        return jsonObjectBuilder()
-                .add("displayOrder", dist.getDisplayOrder())
-                .add("version", dist.getVersion())
-                .add("abbreviation", JsonPrinter.json(dist.getAbbreviation()))
-                .add("affiliation", JsonPrinter.json(dist.getAffiliation()))
-                .add("logo", JsonPrinter.json(dist.getLogo()))
-                .add("name", JsonPrinter.json(dist.getName()))
-                .add("url", JsonPrinter.json(dist.getUrl()));
-    }
 
     public static JsonObjectBuilder jsonByBlocks(List<DatasetField> fields) {
         return jsonByBlocks(fields, null);
