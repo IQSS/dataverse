@@ -25,7 +25,7 @@ function usage() {
 
 # Set some defaults as documented
 DATAVERSE_URL=${DATAVERSE_URL:-"http://dataverse:8080"}
-TIMEOUT=${TIMEOUT:-"2m"}
+TIMEOUT=${TIMEOUT:-"3m"}
 TARGET_ENV_FILE=${TARGET_ENV_FILE:-""}
 
 while getopts "u:t:e:h" OPTION
