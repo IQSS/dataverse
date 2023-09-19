@@ -727,6 +727,12 @@ public abstract class AbstractApiBean {
             .add("data", value).build() ).build();
     }
 
+    protected Response ok(long value) {
+        return Response.ok().entity(Json.createObjectBuilder()
+                .add("status", ApiConstants.STATUS_OK)
+                .add("data", value).build()).build();
+    }
+
     /**
      * @param data Payload to return.
      * @param mediaType Non-JSON media type.

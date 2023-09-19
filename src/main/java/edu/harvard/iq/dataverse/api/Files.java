@@ -726,6 +726,11 @@ public class Files extends AbstractApiBean {
     public Response redetectDatafile(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("dryRun") boolean dryRun) {
         try {
             DataFile dataFileIn = findDataFileOrDie(id);
+            // Ingested Files have mimetype = text/tab-separated-values
+            // No need to redetect
+            if (dataFileIn.isTabularData()) {
+                return error(Response.Status.BAD_REQUEST, "The file is an ingested tabular file.");
+            }
             String originalContentType = dataFileIn.getContentType();
             DataFile dataFileOut = execCommand(new RedetectFileTypeCommand(createDataverseRequest(getRequestUser(crc)), dataFileIn, dryRun));
             NullSafeJsonBuilder result = NullSafeJsonBuilder.jsonObjectBuilder()
