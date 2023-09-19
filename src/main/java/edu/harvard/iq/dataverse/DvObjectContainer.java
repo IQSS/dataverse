@@ -120,15 +120,9 @@ public abstract class DvObjectContainer extends DvObject {
         return guestbookAtRequest;
     }
 
-    public void setGuestbookEntryAtRequest(String gbAtRequest) {
-        if (gbAtRequest != null && gbAtRequest.equals(UNDEFINED_CODE)) {
-            this.guestbookAtRequest = null;
-        } else {
-            //Force to true or false
-            this.guestbookAtRequest = Boolean.valueOf(Boolean.parseBoolean(gbAtRequest));
-        }
+    public void setGuestbookEntryAtRequest(Boolean gbAtRequest) {
+        this.guestbookAtRequest = gbAtRequest;
     }
-    
 
     /* Dataverse collections can be configured to allow use of Curation labels and have this inheritable value to decide which set of labels to use.
      * This mechanism is similar to that for the storageDriver except that there is an addition option to disable use of labels. 

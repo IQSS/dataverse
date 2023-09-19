@@ -1286,7 +1286,7 @@ public class DataversePage implements java.io.Serializable {
         return setName;
     }
 
-    public Set<Entry<String, String>> getGuestbookEntryOptions() {
+    public Set<Entry<Boolean, String>> getGuestbookEntryOptions() {
         return settingsWrapper.getGuestbookEntryOptions(this.dataverse).entrySet();
     }
 }
