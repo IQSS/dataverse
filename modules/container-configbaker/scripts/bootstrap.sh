@@ -13,7 +13,7 @@ function usage() {
   echo ""
   echo "Parameters:"
   echo "instanceUrl - Location on container network where to reach your instance. Default: 'http://dataverse:8080'"
-  echo "    timeout - Provide how long to wait for the instance to become available (using wait4x). Default: '2m'"
+  echo "    timeout - Provide how long to wait for the instance to become available (using wait4x). Default: '3m'"
   echo "    persona - Configure persona to execute. Calls ${BOOTSTRAP_DIR}/<persona>/init.sh. Default: 'base'"
   echo ""
   echo "Note: This script will wait for the Dataverse instance to be available before executing the bootstrapping."
@@ -24,7 +24,7 @@ function usage() {
 
 # Set some defaults as documented
 DATAVERSE_URL=${DATAVERSE_URL:-"http://dataverse:8080"}
-TIMEOUT=${TIMEOUT:-"2m"}
+TIMEOUT=${TIMEOUT:-"3m"}
 
 while getopts "u:t:h" OPTION
 do
