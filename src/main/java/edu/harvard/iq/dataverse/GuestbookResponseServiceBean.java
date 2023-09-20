@@ -63,15 +63,14 @@ public class GuestbookResponseServiceBean {
                 + " and r.dataset_id = o.id "
                 + " and r.guestbook_id = g.id ";*/
     
-    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, o.id, r.responsetime, f.downloadtype,"
+    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, o.id, r.responsetime, r.downloadtype,"
                 + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position,"
                 + " o.protocol, o.authority, o.identifier, d.protocol, d.authority, d.identifier "
-                + "from guestbookresponse r, filedownload f, filemetadata m, dvobject o, guestbook g, dvobject d "
+                + "from guestbookresponse r, filemetadata m, dvobject o, guestbook g, dvobject d "
                 + "where "  
                 + "m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
                 + " and m.datafile_id = r.datafile_id "
                 + " and d.id = r.datafile_id "
-                + " and r.id = f.guestbookresponse_id "
                 + " and r.dataset_id = o.id "
                 + " and r.guestbook_id = g.id ";
     
@@ -79,14 +78,13 @@ public class GuestbookResponseServiceBean {
     // on the guestbook-results.xhtml page (the info we show on the page is 
     // less detailed than what we let the users download as CSV files, so this 
     // query has fewer fields than the one above). -- L.A.
-    private static final String BASE_QUERY_STRING_FOR_PAGE_DISPLAY = "select  r.id, v.value, r.responsetime, f.downloadtype,  m.label, r.name "
-                + "from guestbookresponse r, filedownload f, datasetfieldvalue v, filemetadata m , dvobject o "
+    private static final String BASE_QUERY_STRING_FOR_PAGE_DISPLAY = "select  r.id, v.value, r.responsetime, r.downloadtype,  m.label, r.name "
+                + "from guestbookresponse r, datasetfieldvalue v, filemetadata m , dvobject o "
                 + "where "  
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
                 + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
                 + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
                 + " and m.datafile_id = r.datafile_id "
-                + " and r.id = f.guestbookresponse_id "
                 + " and r.dataset_id = o.id ";
     
     // And a custom query for retrieving *all* the custom question responses, for 

@@ -67,9 +67,6 @@ public class GuestbookResponse implements Serializable {
     @JoinColumn(nullable=true)
     private AuthenticatedUser authenticatedUser;
 
-    @OneToOne(cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},mappedBy="guestbookResponse",fetch = FetchType.LAZY)
-    private FileDownload fileDownload;
-
     @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},fetch = FetchType.LAZY)
     //private FileAccessRequest fileAccessRequest;
     private List<FileAccessRequest> fileAccessRequests;
@@ -94,14 +91,34 @@ public class GuestbookResponse implements Serializable {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date responseTime;
     
+    /**
+     * Possible values for downloadType include "Download", "Subset",
+     * or the displayName of an ExternalTool.
+     *
+     * TODO: Types like "Download" and "Subset" should
+     * be defined once as constants (likely an enum) rather than having these
+     * strings duplicated in various places when setDownloadtype() is called.
+     */
+    private String downloadtype;
+    private String sessionId;
+    
     /*
     Transient Values carry non-written information 
     that will assist in the download process
     - writeResponse is set to false when dataset version is draft.
+    - selected file ids is a comma delimited list that contains the file ids for multiple download
+    - fileFormat tells the download api which format a subsettable file should be downloaded as
+
     */
       
     @Transient 
     private boolean writeResponse = true;
+
+    @Transient
+    private String selectedFileIds;
+    
+    @Transient 
+    private String fileFormat;
 
     /**
      * This transient variable is a place to temporarily retrieve the
@@ -110,6 +127,7 @@ public class GuestbookResponse implements Serializable {
      */
     @Transient
     private ExternalTool externalTool;
+    
 
     public boolean isWriteResponse() {
         return writeResponse;
@@ -120,19 +138,19 @@ public class GuestbookResponse implements Serializable {
     }
 
     public String getSelectedFileIds(){
-        return this.fileDownload.getSelectedFileIds();
+        return this.getSelectedFileIds();
     }
     
     public void setSelectedFileIds(String selectedFileIds) {
-        this.fileDownload.setSelectedFileIds(selectedFileIds);
+        this.setSelectedFileIds(selectedFileIds);
     }
     
     public String getFileFormat() {
-        return this.fileDownload.getFileFormat();
+        return this.getFileFormat();
     }
 
     public void setFileFormat(String downloadFormat) {
-        this.fileDownload.setFileFormat(downloadFormat);
+        this.setFileFormat(downloadFormat);
     }
     
     public ExternalTool getExternalTool() {
@@ -144,10 +162,6 @@ public class GuestbookResponse implements Serializable {
     }
 
     public GuestbookResponse(){
-        if(this.getFileDownload() == null){
-            this.fileDownload = new FileDownload();
-            this.fileDownload.setGuestbookResponse(this);
-        }
     }
     
     public GuestbookResponse(GuestbookResponse source){
@@ -160,7 +174,7 @@ public class GuestbookResponse implements Serializable {
         this.setDataset(source.getDataset());
         this.setDatasetVersion(source.getDatasetVersion());
         this.setAuthenticatedUser(source.getAuthenticatedUser());
-   
+        this.setSessionId(source.getSessionId());
         List <CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
         if (!source.getCustomQuestionResponses().isEmpty()){
             for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponses() ){
@@ -173,7 +187,6 @@ public class GuestbookResponse implements Serializable {
         }
         this.setCustomQuestionResponses(customQuestionResponses);
         this.setGuestbook(source.getGuestbook());
-        this.setFileDownload(source.getFileDownload());
     }
     
     
@@ -231,7 +244,6 @@ public class GuestbookResponse implements Serializable {
 
     public void setResponseTime(Date responseTime) {
         this.responseTime = responseTime;
-        this.getFileDownload().setDownloadTimestamp(responseTime);
     }
 
     public String getResponseDate() {
@@ -244,14 +256,6 @@ public class GuestbookResponse implements Serializable {
 
     public void setCustomQuestionResponses(List<CustomQuestionResponse> customQuestionResponses) {
         this.customQuestionResponses = customQuestionResponses;
-    }
-    
-    public FileDownload getFileDownload(){
-        return fileDownload;
-    }
-    
-    public void setFileDownload(FileDownload fDownload){
-        this.fileDownload = fDownload;
     }
     
     public List<FileAccessRequest> getFileAccessRequests(){
@@ -295,21 +299,21 @@ public class GuestbookResponse implements Serializable {
     }
     
     public String getDownloadtype() {
-        return this.fileDownload.getDownloadtype();
+        return this.getDownloadtype();
     }
 
     public void setDownloadtype(String downloadtype) {
-        this.fileDownload.setDownloadtype(downloadtype);
+        this.setDownloadtype(downloadtype);
         
     }
     
     public String getSessionId() {
-        return this.fileDownload.getSessionId();
+        return this.getSessionId();
     }
 
     public void setSessionId(String sessionId) {
         
-        this.fileDownload.setSessionId(sessionId);
+        this.setSessionId(sessionId);
     }
     
     public String toHtmlFormattedResponse() {
