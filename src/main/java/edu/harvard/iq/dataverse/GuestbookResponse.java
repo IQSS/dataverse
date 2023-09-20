@@ -99,7 +99,7 @@ public class GuestbookResponse implements Serializable {
      * be defined once as constants (likely an enum) rather than having these
      * strings duplicated in various places when setDownloadtype() is called.
      */
-    private String downloadtype;
+    private String eventType;
     private String sessionId;
     
     /*
@@ -298,22 +298,22 @@ public class GuestbookResponse implements Serializable {
         this.authenticatedUser = authenticatedUser;
     }
     
-    public String getDownloadtype() {
-        return this.getDownloadtype();
+    public String getEventType() {
+        return this.eventType;
     }
 
-    public void setDownloadtype(String downloadtype) {
-        this.setDownloadtype(downloadtype);
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
         
     }
     
     public String getSessionId() {
-        return this.getSessionId();
+        return this.sessionId;
     }
 
     public void setSessionId(String sessionId) {
         
-        this.setSessionId(sessionId);
+        this.sessionId= sessionId;
     }
     
     public String toHtmlFormattedResponse() {

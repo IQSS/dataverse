@@ -72,7 +72,7 @@ public class FileDownloadHelper implements java.io.Serializable {
     // terms/etc. popup.
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
-        guestbookResponse.setDownloadtype("Download");
+        guestbookResponse.setEventType("Download");
          // Note that this method is only ever called from the file-download-popup -
          // meaning we know for the fact that we DO want to save this
          // guestbookResponse permanently in the database.
@@ -93,7 +93,7 @@ public class FileDownloadHelper implements java.io.Serializable {
 
              PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
              PrimeFaces.current().executeScript("PF('downloadDataSubsetPopup').show()");
-             guestbookResponse.setDownloadtype("Subset");
+             guestbookResponse.setEventType("Subset");
              fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
 
      }
@@ -158,7 +158,7 @@ public class FileDownloadHelper implements java.io.Serializable {
       * Writes a guestbook entry for either popup scenario: guestbook or terms.
       */
      public boolean writeGuestbookAndShowPreview(GuestbookResponse guestbookResponse) {
-         guestbookResponse.setDownloadtype("Explore");
+         guestbookResponse.setEventType("Explore");
          fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
          return true;
      }

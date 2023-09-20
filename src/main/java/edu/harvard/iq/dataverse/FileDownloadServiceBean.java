@@ -201,6 +201,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             return;
         }
 
+        guestbookResponse.setEventType("AccessRequest");
+
         List <DataFile> selectedDataFiles = new ArrayList<>(); //always make sure it's at least an empty List
 
         if(guestbookResponse.getDataFile() != null ){ //one file 'selected' by 'Request Access' button click
@@ -362,7 +364,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         String localeCode = session.getLocaleCode();
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, localeCode);
         // Persist the name of the tool (i.e. "Data Explorer", etc.)
-        guestbookResponse.setDownloadtype(externalTool.getDisplayName());
+        guestbookResponse.setEventType(externalTool.getDisplayName());
         PrimeFaces.current().executeScript(externalToolHandler.getExploreScript());
         // This is the old logic from TwoRavens, null checks and all.
         if (guestbookResponse != null && guestbookResponse.isWriteResponse()

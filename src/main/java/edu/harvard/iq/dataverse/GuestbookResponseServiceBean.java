@@ -668,7 +668,7 @@ public class GuestbookResponseServiceBean {
         if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
             initCustomQuestions(guestbookResponse, dataset);
         }
-        guestbookResponse.setDownloadtype("Download");
+        guestbookResponse.setEventType("Download");
 
         guestbookResponse.setDataset(dataset);
         
@@ -722,9 +722,9 @@ public class GuestbookResponseServiceBean {
         if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
             initCustomQuestions(guestbookResponse, dataset);
         }
-        guestbookResponse.setDownloadtype("Download");
+        guestbookResponse.setEventType("Download");
         if(downloadFormat.toLowerCase().equals("subset")){
-            guestbookResponse.setDownloadtype("Subset");
+            guestbookResponse.setEventType("Subset");
         }
         if(downloadFormat.toLowerCase().equals("explore")){
             /**
@@ -740,7 +740,7 @@ public class GuestbookResponseServiceBean {
              * over in the "explore" method of FileDownloadServiceBean just
              * before the guestbookResponse is written.
              */
-            guestbookResponse.setDownloadtype("Explore");
+            guestbookResponse.setEventType("Explore");
         }
         guestbookResponse.setDataset(dataset);
         
@@ -819,7 +819,7 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setDataset(dataset);
         guestbookResponse.setResponseTime(new Date());
         guestbookResponse.setSessionId(session.toString());
-        guestbookResponse.setDownloadtype("Download");
+        guestbookResponse.setEventType("Download");
         setUserDefaultResponses(guestbookResponse, session);
         return guestbookResponse;
     }
@@ -840,7 +840,7 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setDataset(dataset);
         guestbookResponse.setResponseTime(new Date());
         guestbookResponse.setSessionId(session.toString());
-        guestbookResponse.setDownloadtype("Download");
+        guestbookResponse.setEventType("Download");
         setUserDefaultResponses(guestbookResponse, session, user);
         return guestbookResponse;
     }
