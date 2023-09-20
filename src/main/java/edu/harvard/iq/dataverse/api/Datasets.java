@@ -3924,9 +3924,10 @@ public class Datasets extends AbstractApiBean {
         if (!gbAtRequestOpt.isPresent()) {
             return error(Response.Status.FORBIDDEN, "Guestbook Entry At Request cannot be set. This server is not configured to allow it.");
         }
-        dataset.setGuestbookEntryAtRequest(gbAtRequest);
+        String choice = Boolean.valueOf(gbAtRequest).toString();
+        dataset.setGuestbookEntryAtRequest(choice);
         datasetService.merge(dataset);
-        return ok("Guestbook Entry At Request set to: " + gbAtRequest);
+        return ok("Guestbook Entry At Request set to: " + choice);
     }
     
     @DELETE
@@ -3954,7 +3955,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
         
-        dataset.setGuestbookEntryAtRequest(null);
+        dataset.setGuestbookEntryAtRequest(DvObjectContainer.UNDEFINED_CODE);
         datasetService.merge(dataset);
         return ok("Guestbook Entry At Request reset to default: " + dataset.getEffectiveGuestbookEntryAtRequest());
     }

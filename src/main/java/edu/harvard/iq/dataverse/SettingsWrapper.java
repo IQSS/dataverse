@@ -632,8 +632,8 @@ public class SettingsWrapper implements java.io.Serializable {
         }
     }
     
-    public Map<Boolean, String> getGuestbookEntryOptions(DvObjectContainer target) {
-        Map<Boolean, String> currentMap = new HashMap<Boolean, String>();
+    public Map<String, String> getGuestbookEntryOptions(DvObjectContainer target) {
+        Map<String, String> currentMap = new HashMap<String, String>();
         String atDownload = BundleUtil.getStringFromBundle("dataverse.guestbookentry.atdownload");
         String atRequest = BundleUtil.getStringFromBundle("dataverse.guestbookentry.atrequest");
         Optional<Boolean> gbDefault = JvmSettings.GUESTBOOK_AT_REQUEST.lookupOptional(Boolean.class);
@@ -649,9 +649,9 @@ public class SettingsWrapper implements java.io.Serializable {
                 useDefault = (defaultOption ? atRequest : atDownload)
                         + BundleUtil.getStringFromBundle("dataverse.inherited");
             }
-            currentMap.put(null, useDefault);
-            currentMap.put(Boolean.TRUE, atRequest);
-            currentMap.put(Boolean.FALSE, atDownload);
+            currentMap.put("null", useDefault);
+            currentMap.put(Boolean.toString(true), atRequest);
+            currentMap.put(Boolean.toString(false), atDownload);
         } else {
             // Setting not defined - leave empty
         }
