@@ -3276,10 +3276,21 @@ public class UtilIT {
         return response;
     }
 
-    static Response getVersionFiles(Integer datasetId, String version, Integer limit, Integer offset, String contentType, String accessStatus, String categoryName, String searchText, String orderCriteria, String apiToken) {
+    static Response getVersionFiles(Integer datasetId,
+                                    String version,
+                                    Integer limit,
+                                    Integer offset,
+                                    String contentType,
+                                    String accessStatus,
+                                    String categoryName,
+                                    String searchText,
+                                    String orderCriteria,
+                                    boolean includeDeaccessioned,
+                                    String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/json");
+                .contentType("application/json")
+                .queryParam("includeDeaccessioned", includeDeaccessioned);
         if (limit != null) {
             requestSpecification = requestSpecification.queryParam("limit", limit);
         }
@@ -3355,9 +3366,10 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
     }
 
-    static Response getVersionFileCounts(Integer datasetId, String version, String apiToken) {
+    static Response getVersionFileCounts(Integer datasetId, String version, boolean includeDeaccessioned, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/files/counts");
     }
 

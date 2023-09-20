@@ -3944,7 +3944,7 @@ public class Datasets extends AbstractApiBean {
                         return error(Response.Status.BAD_REQUEST, "Invalid deaccession forward URL: " + iae.getMessage());
                     }
                 }
-                execCommand(new DeaccessionDatasetVersionCommand(dvRequestService.getDataverseRequest(), datasetVersion, false));
+                execCommand(new DeaccessionDatasetVersionCommand(req, datasetVersion, false));
                 return ok("Dataset " + datasetId + " deaccessioned for version " + versionId);
             } catch (JsonParsingException jpe) {
                 return error(Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
