@@ -134,19 +134,6 @@ In addition, the application image provides the following tunables:
 
         1. Simply pick a JVM option from the list and replace any ``.`` with ``_``.
         2. Replace any ``-`` in the option name with ``__``.
-    * - ``DATAVERSE_MAIL_HOST``
-      - ``smtp``
-      - String
-      - A hostname (w/o port!) where to reach a Mail MTA on port 25.
-    * - ``DATAVERSE_MAIL_USER``
-      - ``dataversenotify``
-      - String
-      - A username to use with the Mail MTA
-    * - ``DATAVERSE_MAIL_FROM``
-      - ``dataverse@localhost``
-      - Mail address
-      - The "From" field for all outbound mail. Make sure to set :ref:`systemEmail` to the same value or no mail will
-        be sent.
 
 
 Note that the script ``init_2_configure.sh`` will apply a few very important defaults to enable quick usage
