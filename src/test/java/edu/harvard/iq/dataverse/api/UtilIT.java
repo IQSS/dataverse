@@ -38,6 +38,7 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
+import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static io.restassured.path.xml.XmlPath.from;
 import static io.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -515,7 +516,7 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
                 .contentType("application/json")
-                .put("/api/datasets/:persistentId/versions/:draft?persistentId=" + persistentId);
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + persistentId);
         return response;
     }
     
@@ -791,7 +792,7 @@ public class UtilIT {
     static Response getCrawlableFileAccess(String datasetId, String folderName, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
-        String apiPath = "/api/datasets/" + datasetId + "/dirindex?version=:draft";
+        String apiPath = "/api/datasets/" + datasetId + "/dirindex?version=" + DS_VERSION_DRAFT;
         if (StringUtil.nonEmpty(folderName)) {
             apiPath = apiPath.concat("&folder="+folderName);
         }
@@ -1407,7 +1408,7 @@ public class UtilIT {
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/:persistentId/versions/:latest-published/metadata/citation?persistentId=" + persistentId);
+                .get("/api/datasets/:persistentId/versions/" + DS_VERSION_LATEST_PUBLISHED + "/metadata/citation?persistentId=" + persistentId);
     }
 
     static Response makeSuperUser(String username) {
@@ -2922,7 +2923,7 @@ public class UtilIT {
     
     static Response findDatasetDownloadSize(String datasetId) {
         return given()
-                .get("/api/datasets/" + datasetId + "/versions/:latest/downloadsize");
+                .get("/api/datasets/" + datasetId + "/versions/" + DS_VERSION_LATEST + "/downloadsize");
     }
     
     static Response findDatasetDownloadSize(String datasetId, String version,  String apiToken) {

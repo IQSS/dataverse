@@ -98,6 +98,7 @@ import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 
+import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -391,8 +392,8 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions/{versionId}")
     public Response deleteDraftVersion(@Context ContainerRequestContext crc, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
-        if ( ! ":draft".equals(versionId) ) {
-            return badRequest("Only the :draft version can be deleted");
+        if (!DS_VERSION_DRAFT.equals(versionId)) {
+            return badRequest("Only the " + DS_VERSION_DRAFT + " version can be deleted");
         }
 
         return response( req -> {
@@ -545,7 +546,7 @@ public class Datasets extends AbstractApiBean {
     public Response getFileAccessFolderView(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @QueryParam("version") String versionId, @QueryParam("folder") String folderName, @QueryParam("original") Boolean originals, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         folderName = folderName == null ? "" : folderName;
-        versionId = versionId == null ? ":latest-published" : versionId;
+        versionId = versionId == null ? DS_VERSION_LATEST_PUBLISHED : versionId;
         
         DatasetVersion version;
         try {
@@ -620,8 +621,8 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions/{versionId}/linkset")
     public Response getLinkset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        if ( ":draft".equals(versionId) ) {
-            return badRequest("Signposting is not supported on the :draft version");
+        if (DS_VERSION_DRAFT.equals(versionId)) {
+            return badRequest("Signposting is not supported on the " + DS_VERSION_DRAFT + " version");
         }
         User user = getRequestUser(crc);
         return response(req -> {
@@ -706,10 +707,9 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions/{versionId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateDraftVersion(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId){
-      
-        if ( ! ":draft".equals(versionId) ) {
-            return error( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
+    public Response updateDraftVersion(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id, @PathParam("versionId") String versionId) {
+        if (!DS_VERSION_DRAFT.equals(versionId)) {
+            return error( Response.Status.BAD_REQUEST, "Only the " + DS_VERSION_DRAFT + " version can be updated");
         }
         
         try ( StringReader rdr = new StringReader(jsonBody) ) {
@@ -792,7 +792,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/metadata")
     @Produces("application/ld+json, application/json-ld")
     public Response getVersionJsonLDMetadata(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return getVersionJsonLDMetadata(crc, id, ":draft", uriInfo, headers);
+        return getVersionJsonLDMetadata(crc, id, DS_VERSION_DRAFT, uriInfo, headers);
     }
 
     @PUT
@@ -1726,7 +1726,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Status.NOT_FOUND, "This Dataset has no custom license");
             }
             persistentId = getRequestParameter(":persistentId".substring(1));
-            if (versionId.equals(":draft")) {
+            if (versionId.equals(DS_VERSION_DRAFT)) {
                 versionId = "DRAFT";
             }
         } catch (WrappedResponse wrappedResponse) {
@@ -2687,11 +2687,11 @@ public class Datasets extends AbstractApiBean {
     public static <T> T handleVersion(String versionId, DsVersionHandler<T> hdl)
             throws WrappedResponse {
         switch (versionId) {
-            case ":latest":
+            case DS_VERSION_LATEST:
                 return hdl.handleLatest();
-            case ":draft":
+            case DS_VERSION_DRAFT:
                 return hdl.handleDraft();
-            case ":latest-published":
+            case DS_VERSION_LATEST_PUBLISHED:
                 return hdl.handleLatestPublished();
             default:
                 try {
@@ -3928,8 +3928,8 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions/{versionId}/deaccession")
     public Response deaccessionDataset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String jsonBody, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        if (":draft".equals(versionId) || ":latest".equals(versionId)) {
-            return badRequest("Only :latest-published or a specific version can be deaccessioned");
+        if (DS_VERSION_DRAFT.equals(versionId) || DS_VERSION_LATEST.equals(versionId)) {
+            return badRequest("Only " + DS_VERSION_LATEST_PUBLISHED + " or a specific version can be deaccessioned");
         }
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, false);
