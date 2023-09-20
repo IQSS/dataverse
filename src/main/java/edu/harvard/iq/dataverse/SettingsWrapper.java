@@ -649,7 +649,7 @@ public class SettingsWrapper implements java.io.Serializable {
                 useDefault = (defaultOption ? atRequest : atDownload)
                         + BundleUtil.getStringFromBundle("dataverse.inherited");
             }
-            currentMap.put("null", useDefault);
+            currentMap.put(DvObjectContainer.UNDEFINED_CODE, useDefault);
             currentMap.put(Boolean.toString(true), atRequest);
             currentMap.put(Boolean.toString(false), atDownload);
         } else {

@@ -116,12 +116,15 @@ public abstract class DvObjectContainer extends DvObject {
         return gbAtRequest;
     }
     
-    public Boolean getGuestbookEntryAtRequest() {
-        return guestbookAtRequest;
+    public String getGuestbookEntryAtRequest() {
+        if(guestbookAtRequest==null) {
+            return UNDEFINED_CODE;
+        }
+        return Boolean.valueOf(guestbookAtRequest).toString();
     }
 
     public void setGuestbookEntryAtRequest(String gbAtRequest) {
-        if (gbAtRequest != null && gbAtRequest.equals(UNDEFINED_CODE)) {
+        if (gbAtRequest == null || gbAtRequest.equals(UNDEFINED_CODE)) {
             this.guestbookAtRequest = null;
         } else {
             //Force to true or false
