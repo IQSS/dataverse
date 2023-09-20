@@ -26,9 +26,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import jakarta.annotation.Resource;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.mail.Address;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
@@ -79,7 +80,8 @@ public class MailServiceBean implements java.io.Serializable {
     public MailServiceBean() {
     }
 
-    @Resource(name = "mail/notifyMailSession")
+    @Inject
+    @Named("mail/systemSession")
     private Session session;
 
     public boolean sendSystemEmail(String to, String subject, String messageText) {
