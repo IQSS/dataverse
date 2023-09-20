@@ -3598,4 +3598,41 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         responseJsonPath = getVersionFileCountsResponseDeaccessioned.jsonPath();
         assertEquals(4, (Integer) responseJsonPath.get("data.total"));
     }
+
+    @Test
+    public void deaccessionDataset() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Test that :draft and :latest are not allowed
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, ":draft", apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, ":latest", apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Test that a not found error occurs when there is no published version available
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, ":latest-published", apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // Test that the dataset is successfully deaccessioned when published
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, ":latest-published", apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Test that a not found error occurs when the only published version has already been deaccessioned
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, ":latest-published", apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+    }
 }
