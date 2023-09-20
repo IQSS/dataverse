@@ -33,7 +33,7 @@ public class MailSessionProducer {
         "starttls.required", "userset", "noop.strict"
     );
     
-    private static final String PREFIX = "mail.stmp.";
+    private static final String PREFIX = "mail.smtp.";
     
     Session systemMailSession;
     
@@ -66,9 +66,9 @@ public class MailSessionProducer {
         configuration.put("mail.transport.protocol", "smtp");
         configuration.put("mail.debug", JvmSettings.MAIL_DEBUG.lookupOptional(Boolean.class).orElse(false).toString());
         
-        configuration.put("mail.smtp.host", JvmSettings.MAIL_MTA_HOST.lookup());
+        configuration.put(PREFIX + "host", JvmSettings.MAIL_MTA_HOST.lookup());
         // default = false from microprofile-config.properties
-        configuration.put("mail.smtp.auth", JvmSettings.MAIL_MTA_AUTH.lookup(Boolean.class).toString());
+        configuration.put(PREFIX + "auth", JvmSettings.MAIL_MTA_AUTH.lookup(Boolean.class).toString());
         
         // Map properties 1:1 to mail.smtp properties for the mail session.
         smtpStringProps.forEach(
