@@ -79,6 +79,14 @@ public class MailServiceBean implements java.io.Serializable {
      */
     public MailServiceBean() {
     }
+    
+    /**
+     * Creates a new instance of MailServiceBean with explicit injection, as used during testing.
+     */
+    public MailServiceBean(Session session, SettingsServiceBean settingsService) {
+        this.session = session;
+        this.settingsService = settingsService;
+    }
 
     @Inject
     @Named("mail/systemSession")
