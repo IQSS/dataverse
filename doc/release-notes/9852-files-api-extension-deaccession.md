@@ -8,3 +8,5 @@ The above endpoints now accept a new boolean optional query parameter "includeDe
 Additionally, a new endpoint has been developed to support version deaccessioning through API (Given a dataset and a version).
 
 - deaccessionDataset (/api/datasets/{id}/versions/{versionId}/deaccession)
+
+Finally, the DataFile API payload has been extended to add the field "friendlyType"

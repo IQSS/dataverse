@@ -665,6 +665,7 @@ public class JsonPrinter {
                 .add("pidURL", pidURL)
                 .add("filename", fileName)
                 .add("contentType", df.getContentType())
+                .add("friendlyType", df.getFriendlyType())
                 .add("filesize", df.getFilesize())
                 .add("description", fileMetadata.getDescription())
                 .add("categories", getFileCategories(fileMetadata))
