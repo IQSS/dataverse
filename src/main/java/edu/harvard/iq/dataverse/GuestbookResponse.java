@@ -147,19 +147,19 @@ public class GuestbookResponse implements Serializable {
     }
 
     public String getSelectedFileIds(){
-        return this.getSelectedFileIds();
+        return this.selectedFileIds;
     }
     
     public void setSelectedFileIds(String selectedFileIds) {
-        this.setSelectedFileIds(selectedFileIds);
+        this.selectedFileIds = selectedFileIds;
     }
     
     public String getFileFormat() {
-        return this.getFileFormat();
+        return this.fileFormat;
     }
 
     public void setFileFormat(String downloadFormat) {
-        this.setFileFormat(downloadFormat);
+        this.fileFormat = downloadFormat;
     }
     
     public ExternalTool getExternalTool() {
