@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -77,6 +78,8 @@ import jakarta.ws.rs.core.Response;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonDT;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+
 import jakarta.ws.rs.core.UriInfo;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -731,6 +734,11 @@ public class Files extends AbstractApiBean {
     public Response redetectDatafile(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("dryRun") boolean dryRun) {
         try {
             DataFile dataFileIn = findDataFileOrDie(id);
+            // Ingested Files have mimetype = text/tab-separated-values
+            // No need to redetect
+            if (dataFileIn.isTabularData()) {
+                return error(Response.Status.BAD_REQUEST, "The file is an ingested tabular file.");
+            }
             String originalContentType = dataFileIn.getContentType();
             DataFile dataFileOut = execCommand(new RedetectFileTypeCommand(createDataverseRequest(getRequestUser(crc)), dataFileIn, dryRun));
             NullSafeJsonBuilder result = NullSafeJsonBuilder.jsonObjectBuilder()
@@ -838,13 +846,23 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/dataTables")
     public Response getFileDataTables(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
-        return response(req -> {
-            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
-            if (!dataFile.isTabularData()) {
-                return error(BAD_REQUEST, "This operation is only available for tabular files.");
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+        } catch (WrappedResponse e) {
+            return error(Response.Status.NOT_FOUND, "File not found for given id.");
+        }
+        if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
+            DataverseRequest dataverseRequest = createDataverseRequest(getRequestUser(crc));
+            boolean hasPermissionToDownloadFile = permissionSvc.requestOn(dataverseRequest, dataFile).has(Permission.DownloadFile);
+            if (!hasPermissionToDownloadFile) {
+                return error(FORBIDDEN, "Insufficient permissions to access the requested information.");
             }
-            return ok(jsonDT(dataFile.getDataTables()));
-        }, getRequestUser(crc));
+        }
+        if (!dataFile.isTabularData()) {
+            return error(BAD_REQUEST, "This operation is only available for tabular files.");
+        }
+        return ok(jsonDT(dataFile.getDataTables()));
     }
 
     @POST

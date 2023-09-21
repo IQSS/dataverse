@@ -2191,12 +2191,26 @@ public class FilesIT {
         // Ensure tabular file is ingested
         sleep(2000);
 
+        String testTabularFileId = Integer.toString(JsonPath.from(uploadTabularFileResponse.body().asString()).getInt("data.files[0].dataFile.id"));
+
         // Get file data tables for the tabular file and assert data is obtained
-        int testTabularFileId = JsonPath.from(uploadTabularFileResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        Response getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(Integer.toString(testTabularFileId), apiToken);
+        Response getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(testTabularFileId, apiToken);
         getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
         int dataTablesNumber = JsonPath.from(getFileDataTablesForTabularFileResponse.body().asString()).getList("data").size();
         assertTrue(dataTablesNumber > 0);
+
+        // Get file data tables for a restricted tabular file as the owner and assert data is obtained
+        Response restrictFileResponse = UtilIT.restrictFile(testTabularFileId, true, apiToken);
+        restrictFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(testTabularFileId, apiToken);
+        getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get file data tables for a restricted tabular file as other user and assert forbidden error is thrown
+        Response createRandomUser = UtilIT.createRandomUser();
+        createRandomUser.then().assertThat().statusCode(OK.getStatusCode());
+        String randomUserApiToken = UtilIT.getApiTokenFromResponse(createRandomUser);
+        getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(testTabularFileId, randomUserApiToken);
+        getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test
