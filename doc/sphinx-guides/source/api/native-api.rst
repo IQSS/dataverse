@@ -3573,6 +3573,8 @@ Show Support Of Incomplete Metadata Deposition
 Learn if an instance has been configured to allow deposition of incomplete datasets via the API.
 See also :ref:`create-dataset-command` and :ref:`dataverse.api.allow-incomplete-metadata`
 
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
@@ -3585,6 +3587,45 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/settings/incompleteMetadataViaApi"
 
+Get Zip File Download Limit
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get the configured zip file download limit. The response contains the long value of the limit in bytes.
+
+This limit comes from the database setting :ref:`:ZipDownloadLimit` if set, or the default value if the database setting is not set, which is 104857600 (100MB).
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/zipDownloadLimit"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/zipDownloadLimit"
+
+Get Maximum Embargo Duration In Months
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get the maximum embargo duration in months, if available, configured through the database setting :ref:`:MaxEmbargoDurationInMonths` from the Configuration section of the Installation Guide.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/settings/:MaxEmbargoDurationInMonths"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/settings/:MaxEmbargoDurationInMonths"
 
 .. _metadata-blocks-api:
 
