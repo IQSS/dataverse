@@ -668,7 +668,7 @@ public class GuestbookResponseServiceBean {
         if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
             initCustomQuestions(guestbookResponse, dataset);
         }
-        guestbookResponse.setEventType("Download");
+        guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
 
         guestbookResponse.setDataset(dataset);
         
@@ -722,7 +722,7 @@ public class GuestbookResponseServiceBean {
         if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
             initCustomQuestions(guestbookResponse, dataset);
         }
-        guestbookResponse.setEventType("Download");
+        guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
         if(downloadFormat.toLowerCase().equals("subset")){
             guestbookResponse.setEventType("Subset");
         }
@@ -819,7 +819,7 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setDataset(dataset);
         guestbookResponse.setResponseTime(new Date());
         guestbookResponse.setSessionId(session.toString());
-        guestbookResponse.setEventType("Download");
+        guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
         setUserDefaultResponses(guestbookResponse, session);
         return guestbookResponse;
     }
@@ -840,7 +840,7 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setDataset(dataset);
         guestbookResponse.setResponseTime(new Date());
         guestbookResponse.setSessionId(session.toString());
-        guestbookResponse.setEventType("Download");
+        guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
         setUserDefaultResponses(guestbookResponse, session, user);
         return guestbookResponse;
     }

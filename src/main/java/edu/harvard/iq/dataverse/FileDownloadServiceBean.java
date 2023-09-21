@@ -201,7 +201,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             return;
         }
 
-        guestbookResponse.setEventType("AccessRequest");
+        guestbookResponse.setEventType(GuestbookResponse.ACCESS_REQUEST);
 
         List <DataFile> selectedDataFiles = new ArrayList<>(); //always make sure it's at least an empty List
 

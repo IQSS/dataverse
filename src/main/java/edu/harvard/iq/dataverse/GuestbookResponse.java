@@ -127,8 +127,17 @@ public class GuestbookResponse implements Serializable {
      */
     @Transient
     private ExternalTool externalTool;
-    
 
+    /* Event Types - there are four pre-defined values in use.
+     * The type can also be the name of a previewer/explore tool
+     */
+    
+    static final String ACCESS_REQUEST = "AccessRequest";
+    static final String DOWNLOAD = "Download";
+    static final String SUBSET = "Subset";
+    static final String EXPLORE = "Explore";
+
+    
     public boolean isWriteResponse() {
         return writeResponse;
     }
