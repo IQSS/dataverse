@@ -1020,7 +1020,17 @@ Usage example:
 
 Please note that both filtering and ordering criteria values are case sensitive and must be correctly typed for the endpoint to recognize them.
 
-Keep in mind that you can combine all of the above query params depending on the results you are looking for.
+By default, deaccessioned dataset versions are not supported by this endpoint and will be ignored in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a not found error if the version is deaccessioned and you do not enable the option described below.
+
+If you want to consider deaccessioned dataset versions, you must specify this through the ``includeDeaccessioned`` query parameter.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?includeDeaccessioned=true"
+
+.. note:: Keep in mind that you can combine all of the above query params depending on the results you are looking for.
 
 Get File Counts in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1047,6 +1057,16 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files/counts"
+
+By default, deaccessioned dataset versions are not supported by this endpoint and will be ignored in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a not found error if the version is deaccessioned and you do not enable the option described below.
+
+If you want to consider deaccessioned dataset versions, you must specify this through the ``includeDeaccessioned`` query parameter.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files/counts?includeDeaccessioned=true"
 
 View Dataset Files and Folders as a Directory Index
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1343,6 +1363,26 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/versions/:draft"
+
+Deaccession Dataset
+~~~~~~~~~~~~~~~~~~~
+
+Given a version of a dataset, updates its status to deaccessioned.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSIONID=1.0
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/datasets/$ID/versions/$VERSIONID/deaccession"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/24/versions/1.0/deaccession"
 
 Set Citation Date Field Type for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
