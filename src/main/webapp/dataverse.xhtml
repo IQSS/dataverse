@@ -458,7 +458,7 @@
                                     </div>
                                     <div id="metrics-content" class="col-xs-8 small text-center">
                                         <h:outputFormat styleClass="metrics-downloads" value="{0} #{bundle['metrics.downloads']}">
-                                            <f:param value="#{guestbookResponseServiceBean.getCountOfAllGuestbookResponses()}"/>
+                                            <f:param value="#{guestbookResponseServiceBean.getTotalDownloadCount()}"/>
                                         </h:outputFormat>
                                     </div>
                                 </div>

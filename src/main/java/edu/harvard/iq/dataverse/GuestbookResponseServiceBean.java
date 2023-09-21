@@ -724,7 +724,7 @@ public class GuestbookResponseServiceBean {
         }
         guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
         if(downloadFormat.toLowerCase().equals("subset")){
-            guestbookResponse.setEventType("Subset");
+            guestbookResponse.setEventType(GuestbookResponse.SUBSET);
         }
         if(downloadFormat.toLowerCase().equals("explore")){
             /**
@@ -740,7 +740,7 @@ public class GuestbookResponseServiceBean {
              * over in the "explore" method of FileDownloadServiceBean just
              * before the guestbookResponse is written.
              */
-            guestbookResponse.setEventType("Explore");
+            guestbookResponse.setEventType(GuestbookResponse.EXPLORE);
         }
         guestbookResponse.setDataset(dataset);
         
@@ -904,29 +904,36 @@ public class GuestbookResponseServiceBean {
         em.persist(guestbookResponse);
     }
     
+    
+    /*
+     * Metrics - download counts from GuestbookResponses: Any GuestbookResponse that
+     * is not of eventtype=='AccessRequest' is considered a download. This includes
+     * actual 'Download's, downloads of 'Subset's, and use by 'Explore' tools and
+     * previewers (where eventtype is the previewer name)
+     */
         
-    public Long getCountGuestbookResponsesByDataFileId(Long dataFileId) {
+    public Long getDownloadCountByDataFileId(Long dataFileId) {
         // datafile id is null, will return 0
-        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId);
+        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId + "and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
         return (Long) query.getSingleResult();
     }
     
-    public Long getCountGuestbookResponsesByDatasetId(Long datasetId) {
-        return getCountGuestbookResponsesByDatasetId(datasetId, null);
+    public Long getDownloadCountByDatasetId(Long datasetId) {
+        return getDownloadCountByDatasetId(datasetId, null);
     }
     
-    public Long getCountGuestbookResponsesByDatasetId(Long datasetId, LocalDate date) {
+    public Long getDownloadCountByDatasetId(Long datasetId, LocalDate date) {
         // dataset id is null, will return 0        
         Query query;
         if(date != null) {
-            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsetime < '" + date.toString() + "'");
+            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsetime < '" + date.toString() + "' and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
         }else {
-            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId);
+            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId+ "and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
         }
         return (Long) query.getSingleResult();
     }    
 
-    public Long getCountOfAllGuestbookResponses() {
+    public Long getTotalDownloadCount() {
         // dataset id is null, will return 0  
         
         // "SELECT COUNT(*)" is notoriously expensive in PostgresQL for large 
@@ -955,9 +962,11 @@ public class GuestbookResponseServiceBean {
         } catch (IllegalArgumentException iae) {
             // Don't do anything, we'll fall back to using "SELECT COUNT()"
         }
-        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o;");
+        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o where eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"';");
         return (Long) query.getSingleResult();
     }
+    
+    //End Metrics/download counts
     
     public List<GuestbookResponse> findByAuthenticatedUserId(AuthenticatedUser user) {
         Query query = em.createNamedQuery("GuestbookResponse.findByAuthenticatedUserId"); 
