@@ -17,7 +17,12 @@ DO $$
 -- This creates a function that ESTIMATES the size of the
 -- GuestbookResponse table (for the metrics display), instead
 -- of relying on straight "SELECT COUNT(*) ..."
+-- It uses statistics to estimate the number of guestbook entries
+-- and the fraction of them related to downloads,
+-- i.e. those that weren't created for 'AccessRequest' events.
 -- Significant potential savings for an active installation.
+-- See https://github.com/IQSS/dataverse/issues/8840 and 
+-- https://github.com/IQSS/dataverse/pull/8972 for more details
 
 CREATE OR REPLACE FUNCTION estimateGuestBookResponseTableSize()
 RETURNS bigint AS $$
