@@ -34,7 +34,6 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import org.apache.commons.validator.routines.DomainValidator;
 
-import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -53,7 +52,6 @@ import java.util.stream.Collectors;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
@@ -682,8 +680,7 @@ public class JsonParser {
         // convert DTO to datasetField so we can back valid values.
         Gson gson = new Gson();
         String jsonString = gson.toJson(geoCoverageDTO);
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonString));
-        JsonObject obj = jsonReader.readObject();
+        JsonObject obj = JsonUtil.getJsonObject(jsonString);
         DatasetField geoCoverageField = parseField(obj);
 
         // add back valid values
