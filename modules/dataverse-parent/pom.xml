@@ -199,6 +199,10 @@
         
         <!-- Container related -->
         <fabric8-dmp.version>0.43.0</fabric8-dmp.version>
+        
+        <!-- Sonar -->
+        <sonar.organization>iqss</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
     
     <pluginRepositories>
