@@ -90,18 +90,19 @@ public class GuestbookResponse implements Serializable {
     
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date responseTime;
-    
-    /**
-     * Possible values for downloadType include "Download", "Subset",
-     * or the displayName of an ExternalTool.
-     *
-     * TODO: Types like "Download" and "Subset" should
-     * be defined once as constants (likely an enum) rather than having these
-     * strings duplicated in various places when setDownloadtype() is called.
-     */
-    private String eventType;
+
     private String sessionId;
+    private String eventType;
+
+    /** Event Types - there are four pre-defined values in use.
+     * The type can also be the name of a previewer/explore tool
+     */
     
+    static final String ACCESS_REQUEST = "AccessRequest";
+    static final String DOWNLOAD = "Download";
+    static final String SUBSET = "Subset";
+    static final String EXPLORE = "Explore";
+
     /*
     Transient Values carry non-written information 
     that will assist in the download process
@@ -128,14 +129,6 @@ public class GuestbookResponse implements Serializable {
     @Transient
     private ExternalTool externalTool;
 
-    /* Event Types - there are four pre-defined values in use.
-     * The type can also be the name of a previewer/explore tool
-     */
-    
-    static final String ACCESS_REQUEST = "AccessRequest";
-    static final String DOWNLOAD = "Download";
-    static final String SUBSET = "Subset";
-    static final String EXPLORE = "Explore";
 
     
     public boolean isWriteResponse() {
