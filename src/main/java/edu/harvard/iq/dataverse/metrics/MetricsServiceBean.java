@@ -425,7 +425,7 @@ public class MetricsServiceBean implements Serializable {
                 + "select  distinct COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "') as date, count(id)\n"
                 + "from guestbookresponse\n"
                 + ((d == null) ? "" : "where dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")")
-                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
+                + ((d == null) ? "where ":" and ") + "eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + " group by COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "') order by  COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
