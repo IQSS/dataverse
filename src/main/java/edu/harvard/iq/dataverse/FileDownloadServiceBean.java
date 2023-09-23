@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
@@ -571,5 +572,15 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             
         return null; 
     }
-    
+
+    /**
+     *  Checks if the DataverseRequest, which contains IP Groups, has permission to download the file
+     *
+     * @param dataverseRequest the DataverseRequest
+     * @param dataFile the DataFile to check permissions
+     * @return boolean
+     */
+    public boolean canDownloadFile(DataverseRequest dataverseRequest, DataFile dataFile) {
+        return permissionService.requestOn(dataverseRequest, dataFile).has(Permission.DownloadFile);
+    }
 }
