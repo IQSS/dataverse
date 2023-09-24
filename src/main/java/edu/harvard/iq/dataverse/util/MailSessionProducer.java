@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import jakarta.annotation.Resource;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Named;
@@ -10,6 +11,7 @@ import jakarta.mail.Session;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 @ApplicationScoped
 public class MailSessionProducer {
@@ -34,12 +36,29 @@ public class MailSessionProducer {
     );
     
     private static final String PREFIX = "mail.smtp.";
+    private static final Logger logger = Logger.getLogger(MailSessionProducer.class.getCanonicalName());
     
     Session systemMailSession;
+    
+    /**
+     * Inject the application server provided (user defined) javamail resource to enable backwards compatibility.
+     * @deprecated This should be removed with the next major release of Dataverse, as it would be a breaking change.
+     */
+    @Deprecated(forRemoval = true, since = "6.1")
+    @Resource(name = "mail/notifyMailSession")
+    Session appserverProvidedSession;
+    
     
     @Produces
     @Named("mail/systemSession")
     public Session getSession() {
+        //  For backward compatibility, prefer to return the mail resource configured on the appserver.
+        if (appserverProvidedSession != null) {
+            logger.warning("The configuration of mail transfer agents using asadmin create-javamail-resource is" +
+                " deprecated. Please migrate to using JVM options, see Dataverse guides for details");
+            return appserverProvidedSession;
+        }
+        
         if (systemMailSession == null) {
             // Initialize with null (= no authenticator) is a valid argument for the session factory method.
             Authenticator authenticator = null;
