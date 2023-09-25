@@ -78,7 +78,7 @@ public class SignpostingResources {
         type = "<https://schema.org/AboutPage>;rel=\"type\",<" + defaultFileTypeValue + ">;rel=\"type\"";
         valueList.add(type);
 
-        String licenseString = DatasetUtil.getLicenseURI(workingDatasetVersion) + ";rel=\"license\"";
+        String licenseString = "<" + DatasetUtil.getLicenseURI(workingDatasetVersion) + ">;rel=\"license\"";
         valueList.add(licenseString);
 
         String linkset = "<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/"
