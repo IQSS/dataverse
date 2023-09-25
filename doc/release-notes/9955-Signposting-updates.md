@@ -1,0 +1,1 @@
+This release fixes two issues (#9952, #9953) where the Signposting output did not match the Signposting specification.
