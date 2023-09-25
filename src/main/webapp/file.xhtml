@@ -364,12 +364,12 @@
                                         <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                                         <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                                         <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
-                                        <ui:param name="termsGuestbookPopupAction" value="#{FilePage.termsGuestbookPopupAction}"/>
+                                        <ui:param name="termsGuestbookPopupAction" value="#{bundle.download}"/>
                                         <ui:param name="guestbookPopupRequiredAtDownload" value="#{FilePage.guestbookPopupRequiredAtDownload}"/>
                                     </ui:include>
                                 </ui:fragment>
                                 <!-- PREVIEW EXTERNAL TOOL -->
-                                <ui:fragment rendered="#{(!FilePage.guestbookAndTermsPopupRequired) or (FilePage.guestbookAndTermsPopupRequired and FilePage.termsMet)}">
+                                <ui:fragment rendered="#{(!FilePage.guestbookAndTermsPopupRequired) or FilePage.termsMet}">
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.allAvailableTools.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
@@ -392,7 +392,9 @@
                                     <!-- END: Preview Button Group -->
                                     <div class="btn-group" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                         <!-- Modular/Configured Explore Tool -->
-                                        <h:commandLink rendered="#{!guestbookAndTermsPopupRequired}" 
+                                        <ui:remove><!-- Not sure this div will ever be rendered when terms are required and FilePage.termsMet isn't true. Leaving this logic in in case that is incorrect or changes going forward --></ui:remove>
+                            
+                                        <h:commandLink rendered="#{(!FilePage.guestbookAndTermsPopupRequired) or FilePage.termsMet}" 
                                                          type="submit"
                                                          styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
@@ -403,7 +405,7 @@
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </h:commandLink>
-                                        <p:commandLink rendered="#{guestbookAndTermsPopupRequired}"
+                                        <p:commandLink rendered="#{FilePage.guestbookAndTermsPopupRequired and !FilePage.termsMet}"
                                                          action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'externalTool', FilePage.selectedTool)}"
                                                          styleClass="btn btn-default"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
@@ -411,6 +413,7 @@
                                                          process="@this"
                                                          update="@widgetVar(guestbookAndTermsPopup)"
                                                          oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
+                                            <f:actionListener binding="#{FilePage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                             <span class="glyphicon glyphicon-#{FilePage.selectedTool.exploreTool ? 'equalizer' : 'new-window'}"></span>
                                             <h:outputFormat value="#{FilePage.selectedTool.exploreTool ? bundle['file.previewTab.exploreBtn'] : bundle['file.previewTab.openBtn']}">
                                                 <f:param value="#{bundle.explore}"/>
