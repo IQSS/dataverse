@@ -63,7 +63,7 @@ public class GuestbookResponseServiceBean {
                 + " and r.dataset_id = o.id "
                 + " and r.guestbook_id = g.id ";*/
     
-    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, o.id, r.responsetime, r.downloadtype,"
+    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, o.id, r.responsetime, r.eventtype,"
                 + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position,"
                 + " o.protocol, o.authority, o.identifier, d.protocol, d.authority, d.identifier "
                 + "from guestbookresponse r, filemetadata m, dvobject o, guestbook g, dvobject d "
@@ -78,7 +78,7 @@ public class GuestbookResponseServiceBean {
     // on the guestbook-results.xhtml page (the info we show on the page is 
     // less detailed than what we let the users download as CSV files, so this 
     // query has fewer fields than the one above). -- L.A.
-    private static final String BASE_QUERY_STRING_FOR_PAGE_DISPLAY = "select  r.id, v.value, r.responsetime, r.downloadtype,  m.label, r.name "
+    private static final String BASE_QUERY_STRING_FOR_PAGE_DISPLAY = "select  r.id, v.value, r.responsetime, r.eventtype,  m.label, r.name "
                 + "from guestbookresponse r, datasetfieldvalue v, filemetadata m , dvobject o "
                 + "where "  
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
@@ -735,8 +735,8 @@ public class GuestbookResponseServiceBean {
              * "externalTool" for all external tools, including TwoRavens. When
              * clicking "Explore" and then the name of the tool, we want the
              * name of the exploration tool (i.e. "Data Explorer",
-             * etc.) to be persisted as the downloadType. We execute
-             * guestbookResponse.setDownloadtype(externalTool.getDisplayName())
+             * etc.) to be persisted as the eventType. We execute
+             * guestbookResponse.setEventType(externalTool.getDisplayName())
              * over in the "explore" method of FileDownloadServiceBean just
              * before the guestbookResponse is written.
              */
