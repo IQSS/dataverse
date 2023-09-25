@@ -458,9 +458,9 @@
                                                             <!-- Configure tool links -->
                                                             <ui:repeat var="tool" value="#{DatasetPage.datasetConfigureTools}">
                                                                 <li>
-                                                                    <h:commandLink styleClass="btn-explore" action="#{DatasetPage.explore(tool)}">
+                                                                    <p:commandLink styleClass="btn-explore" actionListener="#{DatasetPage.setDatasetConfigureTool(tool)}" oncomplete="PF('configureToolDialog').show();">
                                                                         <h:outputText value="#{tool.getDisplayNameLang()}"/>
-                                                                    </h:commandLink>
+                                                                    </p:commandLink>
                                                                 </li>
                                                             </ui:repeat>
                                                         </ui:fragment>
@@ -1000,6 +1000,12 @@
                                 #{bundle.close}
                             </button>
                         </div>
+                    </p:dialog>
+                    <p:dialog id="configureToolDialog" styleClass="smallPopUp" header="#{DatasetPage.datasetConfigureTool.displayNameLang}" widgetVar="configureToolDialog" modal="true">
+                        <p class="help-block">
+                            <h:outputFormat value="#{DatasetPage.datasetConfigureTool.description}" escape="false"/>
+                            <p:commandLink styleClass="btn-explore" action="#{DatasetPage.explore(DatasetPage.datasetConfigureTool)}" oncomplete="PF('configureToolDialog').hide();"/>
+                        </p>
                     </p:dialog>
                     <p:dialog id="citationsDialog" styleClass="smallPopUp" header="#{bundle['metrics.citations.dialog.header']}" widgetVar="citationsDialog" modal="true">
                         <p class="help-block">

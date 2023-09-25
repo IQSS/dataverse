@@ -392,6 +392,8 @@ public class DatasetPage implements java.io.Serializable {
     List<ExternalTool> fileQueryTools = new ArrayList<>();
     private List<ExternalTool> datasetExploreTools;
     private List<ExternalTool> datasetConfigureTools;
+    // The selected dataset-level configure tool
+    private ExternalTool datasetConfigureTool;
 
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -5576,6 +5578,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public List<ExternalTool> getDatasetConfigureTools() {
         return datasetConfigureTools;
+    }
+
+    public ExternalTool getDatasetConfigureTool() {
+        return datasetConfigureTool;
+    }
+
+    public void setDatasetConfigureTool(ExternalTool datasetConfigureTool) {
+        this.datasetConfigureTool = datasetConfigureTool;
     }
 
     Boolean thisLatestReleasedVersion = null;
