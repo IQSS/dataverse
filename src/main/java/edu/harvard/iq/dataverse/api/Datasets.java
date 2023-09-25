@@ -580,26 +580,27 @@ public class Datasets extends AbstractApiBean {
      * @return
      */
     @GET
-    @AuthRequired
     @Path("{id}/versions/{versionId}/linkset")
-    public Response getLinkset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        if ( ":draft".equals(versionId) ) {
+    public Response getLinkset(@PathParam("id") String datasetId, @PathParam("versionId") String versionId,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        if (":draft".equals(versionId)) {
             return badRequest("Signposting is not supported on the :draft version");
         }
-        User user = getRequestUser(crc);
-        return response(req -> {
+        DataverseRequest req = createDataverseRequest(null);
+        try {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            return ok(Json.createObjectBuilder().add(
-                    "linkset",
-                    new SignpostingResources(
-                            systemConfig,
-                            dsv,
-                            JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
-                            JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse("")
-                    ).getJsonLinkset()
-            )
-            );
-        }, user);
+            return Response
+                    .ok(Json.createObjectBuilder()
+                            .add("linkset",
+                                    new SignpostingResources(systemConfig, dsv,
+                                            JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
+                                            JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""))
+                                                    .getJsonLinkset())
+                            .build())
+                    .type(MediaType.APPLICATION_JSON).build();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 
     @GET
