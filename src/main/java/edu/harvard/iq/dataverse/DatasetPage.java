@@ -6144,7 +6144,7 @@ public class DatasetPage implements java.io.Serializable {
     String signpostingLinkHeader = null;
 
     public String getSignpostingLinkHeader() {
-        if (!workingVersion.isReleased()) {
+        if ((workingVersion==null) || (!workingVersion.isReleased())) {
             return null;
         }
         if (signpostingLinkHeader == null) {
