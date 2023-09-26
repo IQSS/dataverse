@@ -71,7 +71,7 @@ public class SignpostingResources {
 
         String describedby = "<" + ds.getGlobalId().asURL().toString() + ">;rel=\"describedby\"" + ";type=\"" + "application/vnd.citationstyles.csl+json\"";
         describedby += ",<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId="
-                + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"application/json+ld\"";
+                + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"application/ld+json\"";
         valueList.add(describedby);
 
         String type = "<https://schema.org/AboutPage>;rel=\"type\"";
@@ -116,7 +116,7 @@ public class SignpostingResources {
                         systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier()
                 ).add(
                         "type",
-                        "application/json+ld"
+                        "application/ld+json"
                 )
         );
         JsonArrayBuilder linksetJsonObj = Json.createArrayBuilder();
