@@ -673,7 +673,8 @@ public class JsonPrinter {
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
                 .add("tabularTags", getTabularFileTags(df))
-                .add("creationDate", df.getCreateDateFormattedYYYYMMDD());
+                .add("creationDate", df.getCreateDateFormattedYYYYMMDD())
+                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD());
         /*
          * The restricted state was not included prior to #9175 so to avoid backward
          * incompatability, it is now only added when generating json for the
@@ -740,7 +741,7 @@ public class JsonPrinter {
             .add("variableMetadata",jsonVarMetadata(dv.getVariableMetadatas()))
             .add("invalidRanges", dv.getInvalidRanges().isEmpty() ? null : JsonPrinter.jsonInvalidRanges(dv.getInvalidRanges()))
             .add("summaryStatistics", dv.getSummaryStatistics().isEmpty() ? null : JsonPrinter.jsonSumStat(dv.getSummaryStatistics()))
-            .add("variableCategories", dv.getCategories().isEmpty() ? null : JsonPrinter.jsonCatStat(dv.getCategories())) 
+            .add("variableCategories", dv.getCategories().isEmpty() ? null : JsonPrinter.jsonCatStat(dv.getCategories()))
             ;
     }
 
