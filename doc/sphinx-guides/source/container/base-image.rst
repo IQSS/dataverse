@@ -217,7 +217,9 @@ provides. These are mostly based on environment variables (very common with cont
       - ``0``
       - Bool, ``0|1``
       - Enable the dynamic "hot" reloads of files when changed in a deployment. Useful for development,
-        when new artifacts are copied into the running domain.
+        when new artifacts are copied into the running domain. Also, export Dataverse specific environment variables
+        ``DATAVERSE_JSF_PROJECT_STAGE=Development`` and ``DATAVERSE_JSF_REFRESH_PERIOD=0`` to enable dynamic JSF page
+        reloads.
     * - ``DATAVERSE_HTTP_TIMEOUT``
       - ``900``
       - Seconds
