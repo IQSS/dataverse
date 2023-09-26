@@ -277,13 +277,13 @@ public class ExternalToolsIT {
 
         String toolManifest = """
 {
-   "displayName": "Turbo Dataset Config",
-   "description": "Read/write access.",
+   "displayName": "Dataset Configurator",
+   "description": "Slices! Dices! <a href='https://docs.datasetconfigurator.com'>More info</a>.",
    "types": [
      "configure"
    ],
    "scope": "dataset",
-   "toolUrl": "http://datasettool1.com",
+   "toolUrl": "https://datasetconfigurator.com",
    "toolParameters": {
      "queryParameters": [
        {
@@ -301,15 +301,15 @@ public class ExternalToolsIT {
         addExternalTool.prettyPrint();
         addExternalTool.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.displayName", CoreMatchers.equalTo("Turbo Dataset Config"));
+                .body("data.displayName", CoreMatchers.equalTo("Dataset Configurator"));
 
         Response getExternalToolsByDatasetId = UtilIT.getExternalToolsForDataset(datasetId.toString(), "configure", apiToken);
         getExternalToolsByDatasetId.prettyPrint();
         getExternalToolsByDatasetId.then().assertThat()
-                .body("data[0].displayName", CoreMatchers.equalTo("Turbo Dataset Config"))
+                .body("data[0].displayName", CoreMatchers.equalTo("Dataset Configurator"))
                 .body("data[0].scope", CoreMatchers.equalTo("dataset"))
                 .body("data[0].types[0]", CoreMatchers.equalTo("configure"))
-                .body("data[0].toolUrlWithQueryParams", CoreMatchers.equalTo("http://datasettool1.com?datasetPid=" + datasetPid))
+                .body("data[0].toolUrlWithQueryParams", CoreMatchers.equalTo("https://datasetconfigurator.com?datasetPid=" + datasetPid))
                 .statusCode(OK.getStatusCode());
 
     }
