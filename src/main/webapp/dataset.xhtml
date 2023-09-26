@@ -1004,8 +1004,15 @@
                     <p:dialog id="configureToolDialog" styleClass="smallPopUp" header="#{DatasetPage.datasetConfigureTool.displayNameLang}" widgetVar="configureToolDialog" modal="true">
                         <p class="help-block">
                             <h:outputFormat value="#{DatasetPage.datasetConfigureTool.description}" escape="false"/>
-                            <p:commandLink styleClass="btn-explore" action="#{DatasetPage.explore(DatasetPage.datasetConfigureTool)}" oncomplete="PF('configureToolDialog').hide();"/>
                         </p>
+                        <div class="button-block">
+                            <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.explore(DatasetPage.datasetConfigureTool)}" oncomplete="PF('configureToolDialog').hide();">
+                                <h:outputFormat value="#{bundle['continue']}"/>
+                            </p:commandLink>
+                            <button class="btn btn-link" onclick="PF('configureToolDialog').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
+                        </div>
                     </p:dialog>
                     <p:dialog id="citationsDialog" styleClass="smallPopUp" header="#{bundle['metrics.citations.dialog.header']}" widgetVar="citationsDialog" modal="true">
                         <p class="help-block">
