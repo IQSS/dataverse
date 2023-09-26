@@ -88,7 +88,7 @@ Terminology
 
     displayName                  The **name** of the tool in the Dataverse installation web interface. For example, "Data Explorer".
 
-    description                  The **description** of the tool, which appears in a popup (for configure tools only) so the user who clicked the tool can learn about the tool before being redirected the tool in a new tab in their browser. HTML is supported.
+    description                  The **description** of the tool, which appears in a popup (for configure tools only) so the user who clicked the tool can learn about the tool before being redirected to the tool in a new tab in their browser. HTML is supported.
 
     scope                        Whether the external tool appears and operates at the **file** level or the **dataset** level. Note that a file level tool much also specify the type of file it operates on (see "contentType" below).
 
