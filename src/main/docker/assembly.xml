@@ -3,7 +3,7 @@
     <fileSets>
         <!-- Get our app, but exclude deps -->
         <fileSet>
-            <directory>target/${project.artifactId}-${project.version}</directory>
+            <directory>target/${project.artifactId}</directory>
             <outputDirectory>app</outputDirectory>
             <excludes>
                 <exclude>WEB-INF/lib/**/*</exclude>
@@ -11,7 +11,7 @@
         </fileSet>
         <!-- Get our dependencies in a seperate folder (image layer cache!) -->
         <fileSet>
-            <directory>target/${project.artifactId}-${project.version}/WEB-INF/lib</directory>
+            <directory>target/${project.artifactId}/WEB-INF/lib</directory>
             <outputDirectory>deps</outputDirectory>
         </fileSet>
         <!-- Supplemental data (configs, metadata, ...) -->
