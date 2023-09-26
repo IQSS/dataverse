@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -11,10 +12,13 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -73,7 +77,11 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonDT;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+
 import jakarta.ws.rs.core.UriInfo;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -102,7 +110,9 @@ public class Files extends AbstractApiBean {
     SettingsServiceBean settingsService;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
-    
+    @Inject
+    GuestbookResponseServiceBean guestbookResponseService;
+
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
     
@@ -822,5 +832,38 @@ public class Files extends AbstractApiBean {
     @Path("fixityAlgorithm")
     public Response getFixityAlgorithm() {
         return ok(systemConfig.getFileFixityChecksumAlgorithm().toString());
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/downloadCount")
+    public Response getFileDownloadCount(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFile.getId()).toString());
+        }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/dataTables")
+    public Response getFileDataTables(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+        } catch (WrappedResponse e) {
+            return error(Response.Status.NOT_FOUND, "File not found for given id.");
+        }
+        if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
+            DataverseRequest dataverseRequest = createDataverseRequest(getRequestUser(crc));
+            boolean hasPermissionToDownloadFile = permissionSvc.requestOn(dataverseRequest, dataFile).has(Permission.DownloadFile);
+            if (!hasPermissionToDownloadFile) {
+                return error(FORBIDDEN, "Insufficient permissions to access the requested information.");
+            }
+        }
+        if (!dataFile.isTabularData()) {
+            return error(BAD_REQUEST, "This operation is only available for tabular files.");
+        }
+        return ok(jsonDT(dataFile.getDataTables()));
     }
 }
