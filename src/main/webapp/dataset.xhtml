@@ -458,7 +458,7 @@
                                                             <!-- Configure tool links -->
                                                             <ui:repeat var="tool" value="#{DatasetPage.datasetConfigureTools}">
                                                                 <li>
-                                                                    <p:commandLink styleClass="btn-explore" actionListener="#{DatasetPage.setDatasetConfigureTool(tool)}" oncomplete="PF('configureToolDialog').show();">
+                                                                    <p:commandLink styleClass="btn-explore" actionListener="#{DatasetPage.setDatasetConfigureTool(tool)}" process="@this" update="datasetForm:configureToolDialog" oncomplete="PF('configureToolDialog').show();">
                                                                         <h:outputText value="#{tool.getDisplayNameLang()}"/>
                                                                     </p:commandLink>
                                                                 </li>
