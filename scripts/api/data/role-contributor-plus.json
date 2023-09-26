@@ -1,0 +1,12 @@
+{
+    "alias":"contributorPlus",
+    "name":"ContributorPlus",
+    "description":"For datasets, a person who can edit License + Terms, then submit them for review, and add collaborators.",
+    "permissions":[
+        "ViewUnpublishedDataset",
+        "EditDataset",
+        "DownloadFile",
+        "DeleteDatasetDraft",
+        "ManageDatasetPermissions"
+    ]
+}
