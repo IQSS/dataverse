@@ -2947,25 +2947,32 @@ public class Datasets extends AbstractApiBean {
         String nullCurrentMonth = null;
         return getMakeDataCountMetric(idSupplied, metricSupplied, nullCurrentMonth, country);
     }
-    
+
     @GET
     @AuthRequired
     @Path("{identifier}/storagesize")
-    public Response getStorageSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached,
-                                   @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
-
+    public Response getStorageSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached) {
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.storage"),
-                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), includeCached, GetDatasetStorageSizeCommand.Mode.STORAGE, null)))), getRequestUser(crc));
+                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), includeCached, true, GetDatasetStorageSizeCommand.Mode.STORAGE, null)))), getRequestUser(crc));
     }
-    
+
     @GET
     @AuthRequired
     @Path("{identifier}/versions/{versionId}/downloadsize")
-    public Response getDownloadSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("versionId") String version,
-                                    @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
-
-        return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"),
-                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), false, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers))))), getRequestUser(crc));
+    public Response getDownloadSize(@Context ContainerRequestContext crc,
+                                    @PathParam("identifier") String dvIdtf,
+                                    @PathParam("versionId") String version,
+                                    @QueryParam("ignoreOriginalTabularSize") boolean ignoreOriginalTabularSize,
+                                    @Context UriInfo uriInfo,
+                                    @Context HttpHeaders headers) {
+        return response(req -> {
+            Long datasetStorageSize = execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), false, !ignoreOriginalTabularSize, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers)));
+            String message = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), datasetStorageSize);
+            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            jsonObjectBuilder.add("message", message);
+            jsonObjectBuilder.add("storageSize", datasetStorageSize);
+            return ok(jsonObjectBuilder);
+        }, getRequestUser(crc));
     }
 
     @GET

@@ -3630,4 +3630,59 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, apiToken);
         deaccessionDatasetResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
     }
+
+    @Test
+    public void getDownloadSize() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Creating test text files
+        String testFileName1 = "test_1.txt";
+        String testFileName2 = "test_2.txt";
+
+        int testFileSize1 = 50;
+        int testFileSize2 = 200;
+
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName1, new byte[testFileSize1], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName2, new byte[testFileSize2], apiToken);
+
+        int expectedTextFilesStorageSize = testFileSize1 + testFileSize2;
+
+        Response getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, false, apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.storageSize", equalTo(expectedTextFilesStorageSize));
+
+        // Upload test tabular file
+        String pathToTabularTestFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get the original tabular file size
+        int tabularOriginalSize = Integer.parseInt(uploadTabularFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.filesize"));
+
+        // Get the size ignoring the original tabular file sizes
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, true, apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        int actualSizeIgnoringOriginalTabularSizes = Integer.parseInt(getDownloadSizeResponse.getBody().jsonPath().getString("data.storageSize"));
+        // Assert that the size has been incremented with the last uploaded file
+        assertTrue(actualSizeIgnoringOriginalTabularSizes > expectedTextFilesStorageSize);
+
+        // Get the size including the original tabular file sizes
+        int expectedSizeIncludingOriginalTabularSizes = tabularOriginalSize + actualSizeIgnoringOriginalTabularSizes;
+
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, false, apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.storageSize", equalTo(expectedSizeIncludingOriginalTabularSizes));
+    }
 }

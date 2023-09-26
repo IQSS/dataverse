@@ -788,13 +788,13 @@ public class DatasetServiceBean implements java.io.Serializable {
                 }
             }
         }
-        
+
     }
 
     //get a string to add to save success message
     //depends on page (dataset/file) and user privleges
     public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage, boolean isValid) {
-       
+
         String reminderString;
 
         if (canPublishDataset) {
@@ -1015,12 +1015,12 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     public long findStorageSize(Dataset dataset) throws IOException {
-        return findStorageSize(dataset, false, GetDatasetStorageSizeCommand.Mode.STORAGE, null);
+        return findStorageSize(dataset, false, true, GetDatasetStorageSizeCommand.Mode.STORAGE, null);
     }
 
 
     public long findStorageSize(Dataset dataset, boolean countCachedExtras) throws IOException {
-        return findStorageSize(dataset, countCachedExtras, GetDatasetStorageSizeCommand.Mode.STORAGE, null);
+        return findStorageSize(dataset, countCachedExtras, true, GetDatasetStorageSizeCommand.Mode.STORAGE, null);
     }
 
     /**
@@ -1028,6 +1028,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      *
      * @param dataset
      * @param countCachedExtras boolean indicating if the cached disposable extras should also be counted
+     * @param countOriginalTabularSize boolean indicating if the size of the stored original tabular files should also be counted, in addition to the main tab-delimited file size
      * @param mode String indicating whether we are getting the result for storage (entire dataset) or download version based
      * @param version optional param for dataset version
      * @return total size
@@ -1036,7 +1037,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * default mode, the method doesn't need to access the storage system, as the
      * sizes of the main files are recorded in the database)
      */
-    public long findStorageSize(Dataset dataset, boolean countCachedExtras, GetDatasetStorageSizeCommand.Mode mode, DatasetVersion version) throws IOException {
+    public long findStorageSize(Dataset dataset, boolean countCachedExtras, boolean countOriginalTabularSize, GetDatasetStorageSizeCommand.Mode mode, DatasetVersion version) throws IOException {
         long total = 0L;
 
         if (dataset.isHarvested()) {
@@ -1062,7 +1063,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                 total += datafile.getFilesize();
 
                 if (!countCachedExtras) {
-                    if (datafile.isTabularData()) {
+                    if (datafile.isTabularData() && countOriginalTabularSize) {
                         // count the size of the stored original, in addition to the main tab-delimited file:
                         Long originalFileSize = datafile.getDataTable().getOriginalFileSize();
                         if (originalFileSize != null) {
