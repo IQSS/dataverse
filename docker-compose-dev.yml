@@ -13,6 +13,7 @@ services:
       - DATAVERSE_DB_PASSWORD=secret
       - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
       - ENABLE_JDWP=1
+      - ENABLE_RELOAD=1
       - DATAVERSE_FEATURE_API_BEARER_AUTH=1
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
