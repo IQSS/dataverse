@@ -278,7 +278,7 @@ public class ExternalToolsIT {
         String toolManifest = """
 {
    "displayName": "Dataset Configurator",
-   "description": "Slices! Dices! <a href='https://docs.datasetconfigurator.com'>More info</a>.",
+   "description": "Slices! Dices! <a href='https://docs.datasetconfigurator.com' target='_blank'>More info</a>.",
    "types": [
      "configure"
    ],
