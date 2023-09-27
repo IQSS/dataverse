@@ -2114,4 +2114,101 @@ public class FilesIT {
             UtilIT.deleteSetting(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection);
         }
     }
+
+    @Test
+    public void testGetFileDownloadCount() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload test file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Publish collection and dataset
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Download test file
+        int testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        Response downloadResponse = UtilIT.downloadFile(testFileId, apiToken);
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Ensure download count is updated
+        sleep(2000);
+
+        // Get download count and assert it is 1
+        Response getFileDownloadCountResponse = UtilIT.getFileDownloadCount(Integer.toString(testFileId), apiToken);
+        getFileDownloadCountResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("1"));
+
+        // Call with invalid file id
+        Response getFileDownloadCountInvalidIdResponse = UtilIT.getFileDownloadCount("testInvalidId", apiToken);
+        getFileDownloadCountInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testGetFileDataTables() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload non-tabular file
+        String pathToNonTabularTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadNonTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToNonTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadNonTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that getting data tables for non-tabular file fails
+        int testNonTabularFileId = JsonPath.from(uploadNonTabularFileResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Response getFileDataTablesForNonTabularFileResponse = UtilIT.getFileDataTables(Integer.toString(testNonTabularFileId), apiToken);
+        getFileDataTablesForNonTabularFileResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Upload tabular file
+        String pathToTabularTestFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Ensure tabular file is ingested
+        sleep(2000);
+
+        String testTabularFileId = Integer.toString(JsonPath.from(uploadTabularFileResponse.body().asString()).getInt("data.files[0].dataFile.id"));
+
+        // Get file data tables for the tabular file and assert data is obtained
+        Response getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(testTabularFileId, apiToken);
+        getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        int dataTablesNumber = JsonPath.from(getFileDataTablesForTabularFileResponse.body().asString()).getList("data").size();
+        assertTrue(dataTablesNumber > 0);
+
+        // Get file data tables for a restricted tabular file as the owner and assert data is obtained
+        Response restrictFileResponse = UtilIT.restrictFile(testTabularFileId, true, apiToken);
+        restrictFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(testTabularFileId, apiToken);
+        getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get file data tables for a restricted tabular file as other user and assert forbidden error is thrown
+        Response createRandomUser = UtilIT.createRandomUser();
+        createRandomUser.then().assertThat().statusCode(OK.getStatusCode());
+        String randomUserApiToken = UtilIT.getApiTokenFromResponse(createRandomUser);
+        getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(testTabularFileId, randomUserApiToken);
+        getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+    }
 }
