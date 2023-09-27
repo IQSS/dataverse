@@ -3679,7 +3679,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertTrue(actualSizeIgnoringOriginalTabularSizes > expectedTextFilesStorageSize);
 
         // Get the size including the original tabular file sizes
-        int expectedSizeIncludingOriginalTabularSizes = tabularOriginalSize + actualSizeIgnoringOriginalTabularSizes;
+        int tabularProcessedSize = actualSizeIgnoringOriginalTabularSizes - expectedTextFilesStorageSize;
+        int expectedSizeIncludingOriginalTabularSizes = tabularOriginalSize + tabularProcessedSize + expectedTextFilesStorageSize;
 
         getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
