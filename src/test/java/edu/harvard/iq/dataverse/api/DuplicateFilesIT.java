@@ -16,8 +16,8 @@ import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Make assertions about duplicate file names (and maybe in the future,
@@ -25,7 +25,7 @@ import org.junit.Test;
  */
 public class DuplicateFilesIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }

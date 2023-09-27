@@ -95,8 +95,7 @@
             <p:commandLink      update="@([id$=fileEmbargoPopup])" 
                                 onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                             return false;" 
-                                oncomplete="PF('fileEmbargoPopup').show();"
-                                action="#{bean[refreshEmbargoPopoupAction]()}">
+                                oncomplete="PF('fileEmbargoPopup').show();">
                                 <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                 <h:outputText value="#{bundle['file.embargo']}"/>
             </p:commandLink> 

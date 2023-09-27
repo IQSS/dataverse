@@ -5,8 +5,8 @@ import io.restassured.response.Response;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
-import org.junit.Test;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 import io.restassured.path.json.JsonPath;
 import static io.restassured.path.json.JsonPath.with;
 import io.restassured.path.xml.XmlPath;
@@ -29,24 +29,34 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
 import static jakarta.ws.rs.core.Response.Status.*;
-import static junit.framework.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterAll;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FilesIT {
 
     private static final Logger logger = Logger.getLogger(FilesIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+
+        Response removePublicInstall = UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
+        removePublicInstall.then().assertThat().statusCode(200);
+
+    }
+
+    @AfterAll
+    public static void tearDownClass() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.PublicInstall);
     }
 
     /**
@@ -502,7 +512,7 @@ public class FilesIT {
 
         // give file time to ingest
        // sleep(10000);
-       assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+       assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Response ddi = UtilIT.getFileMetadata(origFileId.toString(), "ddi", apiToken);
 //        ddi.prettyPrint();
@@ -1095,6 +1105,9 @@ public class FilesIT {
         msg("Add initial file");
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        
+        // Wait a little while for the index to pick up the file, otherwise timing issue with searching for it.
+        UtilIT.sleepForReindex(datasetId.toString(), apiToken, 4);
 
         String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
@@ -1105,9 +1118,9 @@ public class FilesIT {
 
         long fileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
 
-        Response searchShouldFindNothingBecauseUnpublished = UtilIT.search("id:datafile_" + fileId + "_draft", apiToken);
-        searchShouldFindNothingBecauseUnpublished.prettyPrint();
-        searchShouldFindNothingBecauseUnpublished.then().assertThat()
+        Response searchShouldFindBecauseAuthorApiTokenSupplied = UtilIT.search("id:datafile_" + fileId + "_draft", apiToken);
+        searchShouldFindBecauseAuthorApiTokenSupplied.prettyPrint();
+        searchShouldFindBecauseAuthorApiTokenSupplied.then().assertThat()
                 .body("data.total_count", equalTo(1))
                 .statusCode(OK.getStatusCode());
 
@@ -1203,7 +1216,7 @@ public class FilesIT {
         assertNotNull(origFileId);    // If checkOut fails, display message
        // sleep(10000);
         
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
         Response uningestFileResponse = UtilIT.uningestFile(origFileId, apiToken);
         assertEquals(200, uningestFileResponse.getStatusCode());       
     }
@@ -1237,7 +1250,7 @@ public class FilesIT {
         Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
         
         //sleep(2000); //ensure tsv is consumed
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
         msg("Publish dataverse and dataset");
         Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataversetResp.then().assertThat()
@@ -1335,7 +1348,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         
         // wait for it to ingest... 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, 5));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, 5), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
      //   sleep(10000);
      
         Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
@@ -1399,8 +1412,8 @@ public class FilesIT {
         createUser = UtilIT.createRandomUser();
         String apiTokenRegular = UtilIT.getApiTokenFromResponse(createUser);
 
-        msg("Add tabular file");
-        String pathToFile = "scripts/search/data/tabular/stata13-auto-withstrls.dta";
+        msg("Add a non-tabular file");
+        String pathToFile = "scripts/search/data/binary/trees.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
@@ -1412,10 +1425,12 @@ public class FilesIT {
 
         getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
-                .body("data.label", equalTo("stata13-auto-withstrls.dta"))
-                .body("data.dataFile.filename", equalTo("stata13-auto-withstrls.dta"))
+                .body("data.label", equalTo("trees.png"))
+                .body("data.dataFile.filename", equalTo("trees.png"))
+                .body("data.dataFile.contentType", equalTo("image/png"))
+                .body("data.dataFile.filesize", equalTo(8361))
                 .statusCode(OK.getStatusCode());
-
+        
         getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular);
         getFileDataResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
@@ -1477,7 +1492,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
 
         // give file time to ingest
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
        // sleep(10000);
 
         Response ddi = UtilIT.getFileMetadata(origFileId.toString(), "ddi", apiToken);
@@ -1732,7 +1747,7 @@ public class FilesIT {
 
         Integer fileIdCsv = JsonPath.from(uploadFileCsv.body().asString()).getInt("data.files[0].dataFile.id");
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToCsv, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToCsv);
 
         // Just the tabular file, not the original, no byte range. Vanilla.
         Response downloadFileNoArgs = UtilIT.downloadFile(fileIdCsv, null, null, null, authorApiToken);
@@ -1865,7 +1880,7 @@ public class FilesIT {
         logger.info(r.prettyPrint());
         assertEquals(200, r.getStatusCode());
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Long dataFileId = JsonPath.from(r.body().asString()).getLong("data.files[0].dataFile.id");
         Response fileMeta = UtilIT.getDataFileMetadataDraft(dataFileId, apiToken);
@@ -1878,7 +1893,7 @@ public class FilesIT {
         logger.info(rTabIngest.prettyPrint());
         assertEquals(200, rTabIngest.getStatusCode());
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetIdInt, "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile);
 
         Long ingDataFileId = JsonPath.from(rTabIngest.body().asString()).getLong("data.files[0].dataFile.id");
         Response ingFileMeta = UtilIT.getDataFileMetadataDraft(ingDataFileId, apiToken);
@@ -2092,11 +2107,108 @@ public class FilesIT {
             fileInfoResponseString = fileInfoResponse.body().asString();
             msg(fileInfoResponseString);
 
-            org.junit.Assert.assertEquals("The file was NOT supposed to be issued a PID", "",
-                    JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId"));
+            assertEquals("", JsonPath.from(fileInfoResponseString).getString("data.dataFile.persistentId"),
+                "The file was NOT supposed to be issued a PID");
         } finally {
             UtilIT.deleteSetting(SettingsServiceBean.Key.FilePIDsEnabled);
             UtilIT.deleteSetting(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection);
         }
+    }
+
+    @Test
+    public void testGetFileDownloadCount() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload test file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Publish collection and dataset
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Download test file
+        int testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        Response downloadResponse = UtilIT.downloadFile(testFileId, apiToken);
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Ensure download count is updated
+        sleep(2000);
+
+        // Get download count and assert it is 1
+        Response getFileDownloadCountResponse = UtilIT.getFileDownloadCount(Integer.toString(testFileId), apiToken);
+        getFileDownloadCountResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("1"));
+
+        // Call with invalid file id
+        Response getFileDownloadCountInvalidIdResponse = UtilIT.getFileDownloadCount("testInvalidId", apiToken);
+        getFileDownloadCountInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testGetFileDataTables() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload non-tabular file
+        String pathToNonTabularTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadNonTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToNonTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadNonTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that getting data tables for non-tabular file fails
+        int testNonTabularFileId = JsonPath.from(uploadNonTabularFileResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Response getFileDataTablesForNonTabularFileResponse = UtilIT.getFileDataTables(Integer.toString(testNonTabularFileId), apiToken);
+        getFileDataTablesForNonTabularFileResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Upload tabular file
+        String pathToTabularTestFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Ensure tabular file is ingested
+        sleep(2000);
+
+        String testTabularFileId = Integer.toString(JsonPath.from(uploadTabularFileResponse.body().asString()).getInt("data.files[0].dataFile.id"));
+
+        // Get file data tables for the tabular file and assert data is obtained
+        Response getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(testTabularFileId, apiToken);
+        getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        int dataTablesNumber = JsonPath.from(getFileDataTablesForTabularFileResponse.body().asString()).getList("data").size();
+        assertTrue(dataTablesNumber > 0);
+
+        // Get file data tables for a restricted tabular file as the owner and assert data is obtained
+        Response restrictFileResponse = UtilIT.restrictFile(testTabularFileId, true, apiToken);
+        restrictFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(testTabularFileId, apiToken);
+        getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get file data tables for a restricted tabular file as other user and assert forbidden error is thrown
+        Response createRandomUser = UtilIT.createRandomUser();
+        createRandomUser.then().assertThat().statusCode(OK.getStatusCode());
+        String randomUserApiToken = UtilIT.getApiTokenFromResponse(createRandomUser);
+        getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(testTabularFileId, randomUserApiToken);
+        getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
     }
 }

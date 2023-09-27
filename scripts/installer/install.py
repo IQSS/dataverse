@@ -380,12 +380,13 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       print("Can't connect to PostgresQL as the admin user.\n")
       sys.exit("Is the server running, have you adjusted pg_hba.conf, etc?")
 
-   # 3b. get the Postgres version (do we need it still?)
+   # 3b. get the Postgres version for new permissions model in versions 15+
    try:
-      pg_full_version = conn.server_version
-      print("PostgresQL version: "+str(pg_full_version))
+      pg_full_version = str(conn.server_version)
+      pg_major_version = pg_full_version[0:2]
+      print("PostgreSQL version: "+pg_major_version)
    except:
-      print("Warning: Couldn't determine PostgresQL version.")
+      print("Warning: Couldn't determine PostgreSQL version.")
    conn.close()
 
    # 3c. create role:
@@ -410,6 +411,8 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       else:
          sys.exit("Couldn't create database or database already exists.\n")
 
+   # 3e. set permissions:
+
    conn_cmd = "GRANT ALL PRIVILEGES on DATABASE "+pgDb+" to "+pgUser+";"
    try:
       cur.execute(conn_cmd)
@@ -417,6 +420,19 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       sys.exit("Couldn't grant privileges on "+pgDb+" to "+pgUser)
    cur.close()
    conn.close()
+
+   if int(pg_major_version) >= 15:
+      conn_cmd = "GRANT CREATE ON SCHEMA public TO "+pgUser+";"
+      print("PostgreSQL 15 or higher detected. Running " + conn_cmd)
+      try:
+         cur.execute(conn_cmd)
+      except:
+         if force:
+            print("WARNING: failed to grant permissions on schema public - continuing, since the --force option was specified")
+         else:
+            sys.exit("Couldn't grant privileges on schema public to "+pgUser)
+      cur.close()
+      conn.close()
 
    print("Database and role created!")
    if pgOnly:
