@@ -1797,6 +1797,8 @@ The fully expanded example above (without environment variables) looks like this
 The size of all files available for download will be returned. 
 If :draft is passed as versionId the token supplied must have permission to view unpublished drafts. A token is not required for published datasets. Also restricted files will be included in this total regardless of whether the user has access to download the restricted file(s).
 
+There is an optional query parameter ``ignoreOriginalTabularSize`` which, if set to true, the endpoint will return the download size ignoring the sizes of the original tabular files. Otherwise, both the original and the processed size will be included in the count for tabular files.
+
 Submit a Dataset for Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
