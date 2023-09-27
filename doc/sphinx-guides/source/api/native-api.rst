@@ -1799,6 +1799,12 @@ If :draft is passed as versionId the token supplied must have permission to view
 
 There is an optional query parameter ``ignoreOriginalTabularSize`` which, if set to true, the endpoint will return the download size ignoring the sizes of the original tabular files. Otherwise, both the original and the processed size will be included in the count for tabular files.
 
+Usage example:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/24/versions/1.0/downloadsize?ignoreOriginalTabularSize=true"
+
 Submit a Dataset for Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
