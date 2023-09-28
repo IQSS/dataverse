@@ -3329,6 +3329,12 @@ public class UtilIT {
                 .get("/api/files/" + dataFileId + "/dataTables");
     }
 
+    static Response getUserFileAccessRequested(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + dataFileId + "/userFileAccessRequested");
+    }
+
     static Response getUserPermissionsOnFile(String dataFileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -3367,5 +3373,17 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
                 .post("/api/files/" + dataFileId + "/metadata/categories");
+    }
+
+    static Response deleteFileInDataset(Integer fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/files/" + fileId);
+    }
+
+    static Response getHasBeenDeleted(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + dataFileId + "/hasBeenDeleted");
     }
 }
