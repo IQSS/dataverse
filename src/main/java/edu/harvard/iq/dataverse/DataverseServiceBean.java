@@ -79,7 +79,9 @@ public class DataverseServiceBean implements java.io.Serializable {
     
     @EJB
     PermissionServiceBean permissionService;
-    
+
+    @EJB
+    MetadataBlockServiceBean metadataBlockServiceBean;
     @EJB
     SystemConfig systemConfig;
 
@@ -275,29 +277,48 @@ public class DataverseServiceBean implements java.io.Serializable {
         return dataversePath.toString();
     }
 
+    /**
+     * Use MetadataBlockServiceBean#findById()
+     * @return
+     */
+    @Deprecated
     public MetadataBlock findMDB(Long id) {
-        return em.find(MetadataBlock.class, id);
+        return metadataBlockServiceBean.findById(id);
     }
 
+    /**
+     * Use MetadataBlockServiceBean#findByName()
+     * @return
+     */
+    @Deprecated
     public MetadataBlock findMDBByName(String name) {
-        return em.createQuery("select m from MetadataBlock m WHERE m.name=:name", MetadataBlock.class)
-                .setParameter("name", name)
-                .getSingleResult();
+        return metadataBlockServiceBean.findByName(name);
     }
 
+    /**
+     * Use MetadataBlockServiceBean#listMetadataBlocks()
+     * @return
+     */
+    @Deprecated
     public List<MetadataBlock> findAllMetadataBlocks() {
-        return em.createQuery("select object(o) from MetadataBlock as o order by o.id", MetadataBlock.class).getResultList();
+        return metadataBlockServiceBean.listMetadataBlocks();
     }
-    
+    /**
+     * Use MetadataBlockServiceBean#findSystemMetadataBlocks()
+     * @return
+     */
+    @Deprecated
     public List<MetadataBlock> findSystemMetadataBlocks(){
-        String qr = "select object(o) from MetadataBlock as o where o.owner.id=null  order by o.id";
-        return em.createQuery(qr, MetadataBlock.class).getResultList();
+        return metadataBlockServiceBean.findSystemMetadataBlocks();
     }
-    
+
+    /**
+     * Use MetadataBlockServiceBean#findMetadataBlocksByDataverseId()
+     * @return
+     */
+    @Deprecated
     public List<MetadataBlock> findMetadataBlocksByDataverseId(Long dataverse_id) {
-        String qr = "select object(o) from MetadataBlock as o where o.owner.id=:dataverse_id order by o.id";
-        return em.createQuery(qr, MetadataBlock.class)
-                .setParameter("dataverse_id", dataverse_id).getResultList();
+        return metadataBlockServiceBean.findMetadataBlocksByDataverseId(dataverse_id);
     }
     
     public DataverseFacet findFacet(Long id) {
