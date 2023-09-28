@@ -57,10 +57,11 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * @param contentType    for retrieving only files with this content type
      * @param accessStatus   for retrieving only files with this DataFileAccessStatus
      * @param categoryName   for retrieving only files categorized with this category name
+     * @param searchText     for retrieving only files that contain the specified text within their labels or descriptions
      * @param orderCriteria  a FileMetadatasOrderCriteria to order the results
      * @return a FileMetadata list from the specified DatasetVersion
      */
-    public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, String contentType, DataFileAccessStatus accessStatus, String categoryName, FileMetadatasOrderCriteria orderCriteria) {
+    public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, String contentType, DataFileAccessStatus accessStatus, String categoryName, String searchText, FileMetadatasOrderCriteria orderCriteria) {
         JPAQuery<FileMetadata> baseQuery = createBaseQuery(datasetVersion, orderCriteria);
 
         if (contentType != null) {
@@ -71,6 +72,10 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         }
         if (categoryName != null) {
             baseQuery.from(dataFileCategory).where(dataFileCategory.name.eq(categoryName).and(fileMetadata.fileCategories.contains(dataFileCategory)));
+        }
+        if (searchText != null && !searchText.isEmpty()) {
+            searchText = searchText.trim().toLowerCase();
+            baseQuery.where(fileMetadata.label.lower().contains(searchText).or(fileMetadata.description.lower().contains(searchText)));
         }
 
         applyOrderCriteriaToQuery(baseQuery, orderCriteria);
