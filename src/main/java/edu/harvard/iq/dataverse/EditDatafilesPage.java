@@ -2187,16 +2187,10 @@ public class EditDatafilesPage implements java.io.Serializable {
                 List<DataFile> datafiles = new ArrayList<>();
 
                 // -----------------------------------------------------------
-                // Send it through the ingest service
+                // Execute the CreateNewDataFiles command:
                 // -----------------------------------------------------------
                 try {
-
-                    // Note: A single uploaded file may produce multiple datafiles - 
-                    // for example, multiple files can be extracted from an uncompressed
-                    // zip file.
-                    //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                    ///CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType, systemConfig);
-                    
+  
                     Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, null, fileName, contentType, fullStorageIdentifier, userStorageQuota, checksumValue, checksumType);
                     CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
                     datafiles = createDataFilesResult.getDataFiles();

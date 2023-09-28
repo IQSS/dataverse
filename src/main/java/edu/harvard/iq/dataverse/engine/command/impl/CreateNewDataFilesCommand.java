@@ -648,15 +648,19 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         // if we were unable to unpack an uploaded file, etc.), we'll just 
         // create and return a single DataFile:
         File newFile = null;
+        long fileSize = -1; 
+        
         if (tempFile != null) {
             newFile = tempFile.toFile();
+            fileSize = newFile.length();
+        } else {
+            // @todo! What do we do if this is direct upload?? where does the size come from? 
         }
         
         // We have already checked that this file does not exceed the individual size limit; 
         // but if we are processing it as is, as a single file, we need to check if 
         // its size does not go beyond the allocated storage quota (if specified):
         
-        long fileSize = newFile.length();
         
         if (storageQuotaLimit != null && fileSize > storageQuotaLimit) {
             try {
