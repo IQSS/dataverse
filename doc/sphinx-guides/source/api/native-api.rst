@@ -525,10 +525,16 @@ Submit Incomplete Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Note:** This feature requires :ref:`dataverse.api.allow-incomplete-metadata` to be enabled and your Solr
-Schema to be up-to-date with the ``datasetValid`` field.
+Schema to be up-to-date with the ``datasetValid`` field. If not done yet with the version upgrade, you will
+also need to reindex all dataset after enabling the :ref:`dataverse.api.allow-incomplete-metadata` feature.
 
 Providing a ``.../datasets?doNotValidate=true`` query parameter turns off the validation of metadata.
-In this case, only the "Author Name" is required. For example, a minimal JSON file would look like this:
+In this situation, only the "Author Name" is required, except for the case when the setting :ref:`:MetadataLanguages`
+is configured and the value of "Dataset Metadata Language" setting of a collection is left with the default
+"Chosen at Dataset Creation" value. In that case, a language that is a part of the :ref:`:MetadataLanguages` list must be
+declared in the incomplete dataset.
+
+For example, a minimal JSON file, without the language specification, would look like this:
 
 .. code-block:: json
   :name: dataset-incomplete.json
