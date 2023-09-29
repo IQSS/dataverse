@@ -322,7 +322,7 @@
                                 <o:importFunctions type="java.util.Arrays" />
                                 <p:dataTable id="restrictedFilesForAccess" var="file"
                                              value="#{empty manageFilePermissionsPage.fileRequester ? Arrays:asList(manageFilePermissionsPage.fileMap.keySet().toArray()) :
-                                                      manageFilePermissionsPage.fileAccessRequestMap.get(manageFilePermissionsPage.fileRequester)}"
+                                                      manageFilePermissionsPage.dataFilesForRequestor}"
                                              selection="#{manageFilePermissionsPage.selectedFiles}" rowKey="#{file.id}" sortBy="#{file.displayName}"
                                              scrollable="true" scrollHeight="300">
 
