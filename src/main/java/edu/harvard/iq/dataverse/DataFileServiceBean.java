@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -62,6 +63,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     IngestServiceBean ingestService;
 
     @EJB EmbargoServiceBean embargoService;
+    
+    @EJB SystemConfig systemConfig;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -135,6 +138,39 @@ public class DataFileServiceBean implements java.io.Serializable {
      * the page URL above.
      */
     public static final String MIME_TYPE_PACKAGE_FILE = "application/vnd.dataverse.file-package";
+    
+    public class UserStorageQuota {
+        private Long totalAllocatedInBytes = 0L; 
+        private Long totalUsageInBytes = 0L;
+        
+        public UserStorageQuota(Long allocated, Long used) {
+            this.totalAllocatedInBytes = allocated;
+            this.totalUsageInBytes = used; 
+        }
+        
+        public Long getTotalAllocatedInBytes() {
+            return totalAllocatedInBytes;
+        }
+        
+        public void setTotalAllocatedInBytes(Long totalAllocatedInBytes) {
+            this.totalAllocatedInBytes = totalAllocatedInBytes;
+        }
+        
+        public Long getTotalUsageInBytes() {
+            return totalUsageInBytes;
+        }
+        
+        public void setTotalUsageInBytes(Long totalUsageInBytes) {
+            this.totalUsageInBytes = totalUsageInBytes;
+        }
+        
+        public Long getRemainingQuotaInBytes() {
+            if (totalUsageInBytes > totalAllocatedInBytes) {
+                return 0L; 
+            }
+            return totalAllocatedInBytes - totalUsageInBytes;
+        }
+    }
     
     public DataFile find(Object pk) {
         return em.find(DataFile.class, pk);
@@ -1358,5 +1394,30 @@ public class DataFileServiceBean implements java.io.Serializable {
     public Embargo findEmbargo(Long id) {
         DataFile d = find(id);
         return d.getEmbargo();
+    }
+    
+    public Long getStorageUsageByCreator(AuthenticatedUser user) {
+        Query query = em.createQuery("SELECT SUM(o.filesize) FROM DataFile o WHERE o.creator.id=:creatorId");
+        
+        try {
+            Long totalSize = (Long)query.setParameter("creatorId", user.getId()).getSingleResult();
+            logger.info("total size for user: "+totalSize);
+            return totalSize == null ? 0L : totalSize; 
+        } catch (NoResultException nre) { // ?
+            logger.info("NoResultException, returning 0L");
+            return 0L;
+        }
+    }
+    
+    public UserStorageQuota getUserStorageQuota(AuthenticatedUser user, Dataset dataset) {
+        // this is for testing only - one pre-set, installation-wide quota limit
+        // for everybody:
+        Long totalAllocated = systemConfig.getTestStorageQuotaLimit();
+        // again, this is for testing only - we are only counting the total size
+        // of all the files created by this user; it will likely be a much more 
+        // complex calculation in real life applications:
+        Long totalUsed = getStorageUsageByCreator(user); 
+        
+        return new UserStorageQuota(totalAllocated, totalUsed);
     }
 }
