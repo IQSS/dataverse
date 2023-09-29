@@ -548,7 +548,7 @@ public class AccessIT {
         assertEquals(200, revokeFileAccessResponse.getStatusCode());
 
         listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
-        assertEquals(400, listAccessRequestResponse.getStatusCode());
+        assertEquals(404, listAccessRequestResponse.getStatusCode());
     }
 
     // This is a round trip test of uploading a zipped archive, with some folder
