@@ -2068,7 +2068,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // dataset that does not yet exist in the database. We must 
                 // use the version of the Create New Files constructor that takes
                 // the parent Dataverse as the extra argument:
-                cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, userStorageQuota, null, null, workingVersion.getDataset().getOwner());
+                cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, userStorageQuota, null, null, null, workingVersion.getDataset().getOwner());
             } else {
                 cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, userStorageQuota, null);
             }
@@ -2168,6 +2168,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                 - Max size NOT specified in db: default is unlimited
                 - Max size specified in db: check too make sure file is within limits
             // ---------------------------- */
+            /**
+             * @todo: this size check is probably redundant here, since the new
+             * CreateNewFilesCommand is going to perform it (and the quota 
+             * checks too, if enabled
+             */
             if ((!this.isUnlimitedUploadFileSize()) && (fileSize > this.getMaxFileUploadSizeInBytes())) {
                 String warningMessage = "Uploaded file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
                 sio.delete();
@@ -2189,9 +2194,21 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // -----------------------------------------------------------
                 // Execute the CreateNewDataFiles command:
                 // -----------------------------------------------------------
+                
+                Dataverse parent = null; 
+                
+                if (mode == FileEditMode.CREATE) {
+                    // This is a file upload in the context of creating a brand new
+                    // dataset that does not yet exist in the database. We must 
+                    // pass the parent Dataverse to the CreateNewFiles command
+                    // constructor. The RequiredPermission on the command in this 
+                    // scenario = Permission.AddDataset on the parent dataverse.
+                    parent = workingVersion.getDataset().getOwner();
+                }
+                
                 try {
   
-                    Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, null, fileName, contentType, fullStorageIdentifier, userStorageQuota, checksumValue, checksumType);
+                    Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, null, fileName, contentType, fullStorageIdentifier, userStorageQuota, checksumValue, checksumType, fileSize, parent);
                     CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
                     datafiles = createDataFilesResult.getDataFiles();
                     Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));

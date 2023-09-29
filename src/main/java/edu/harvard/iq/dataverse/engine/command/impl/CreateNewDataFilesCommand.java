@@ -74,34 +74,29 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
     private final InputStream inputStream;
     private final String fileName;
     private final String suppliedContentType; 
+    private final UserStorageQuota quota;
+    // parent Dataverse must be specified when the command is called on Create 
+    // of a new dataset that does not exist in the database yet (for the purposes
+    // of authorization - see getRequiredPermissions() below):
+    private final Dataverse parentDataverse;
+    // With Direct Upload the following values already exist and are passed to the command:
     private final String newStorageIdentifier; 
     private final String newCheckSum; 
     private DataFile.ChecksumType newCheckSumType;
-    private final Dataverse dataverse;
-    private final UserStorageQuota quota;
+    private final Long newFileSize;
 
     public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum) {
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, null);
     }
     
     public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum, DataFile.ChecksumType newCheckSumType) {
-        super(aRequest, version.getDataset());
-        
-        this.version = version;
-        this.inputStream = inputStream;
-        this.fileName = fileName;
-        this.suppliedContentType = suppliedContentType; 
-        this.newStorageIdentifier = newStorageIdentifier; 
-        this.newCheckSum = newCheckSum; 
-        this.newCheckSumType = newCheckSumType;
-        this.dataverse = null; 
-        this.quota = quota;
+        this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, null, null);
     }
     
     // This version of the command must be used when files are created in the 
     // context of creating a brand new dataset (from the Add Dataset page):
     
-    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Dataverse dataverse) {
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize, Dataverse dataverse) {
         super(aRequest, dataverse);
         
         this.version = version;
@@ -111,8 +106,9 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         this.newStorageIdentifier = newStorageIdentifier; 
         this.newCheckSum = newCheckSum; 
         this.newCheckSumType = newCheckSumType;
-        this.dataverse = dataverse;
-        this.quota = quota; 
+        this.parentDataverse = dataverse;
+        this.quota = quota;
+        this.newFileSize = newFileSize;
     }
     
 
@@ -654,7 +650,15 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
             newFile = tempFile.toFile();
             fileSize = newFile.length();
         } else {
-            // @todo! What do we do if this is direct upload?? where does the size come from? 
+            // If this is a direct upload, and therefore no temp file associated 
+            // with it, the file size must be explicitly passed to the command 
+            // (note that direct upload relies on knowing the size of the file 
+            // that's being uploaded in advance).
+            if (newFileSize != null) {
+                fileSize = newFileSize;
+            } else {
+                throw new CommandExecutionException("File size must be explicitly specified when creating DataFiles with Direct Upload", this);
+            }
         }
         
         // We have already checked that this file does not exceed the individual size limit; 
@@ -663,25 +667,31 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         
         
         if (storageQuotaLimit != null && fileSize > storageQuotaLimit) {
-            try {
-                tempFile.toFile().delete();
-            } catch (Exception ex) {
-                // ignore - but log a warning
-                logger.warning("Could not remove temp file " + tempFile.getFileName());
+            if (newFile != null) {
+                // Remove the temp. file, if this is a non-direct upload. 
+                // If this is a direct upload, it will be a responsibility of the 
+                // component calling the command to remove the file that may have
+                // already been saved in the S3 volume. 
+                try {
+                    newFile.delete();
+                } catch (Exception ex) {
+                    // ignore - but log a warning
+                    logger.warning("Could not remove temp file " + tempFile.getFileName());
+                }
             }
             throw new CommandExecutionException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(fileSize), bytesToHumanReadable(storageQuotaLimit)), this);
         } 
         
         DataFile datafile = FileUtil.createSingleDataFile(version, newFile, newStorageIdentifier, fileName, finalType, newCheckSumType, newCheckSum);
-        File f = null;
-        if (tempFile != null) {
-            f = tempFile.toFile();
-        }
-        if (datafile != null && ((f != null) || (newStorageIdentifier != null))) {
+
+        if (datafile != null && ((newFile != null) || (newStorageIdentifier != null))) {
 
             if (warningMessage != null) {
                 createIngestFailureReport(datafile, warningMessage);
                 datafile.SetIngestProblem();
+            }
+            if (datafile.getFilesize() < 0) {
+                datafile.setFilesize(fileSize);
             }
             datafiles.add(datafile);
 
@@ -701,7 +711,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
 
         ret.put("", new HashSet<>());
         
-        if (dataverse != null) {
+        if (parentDataverse != null) {
             // The command is called in the context of uploading files on 
             // create of a new dataset
             ret.get("").add(Permission.AddDataset);
