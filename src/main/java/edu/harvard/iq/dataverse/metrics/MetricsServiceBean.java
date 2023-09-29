@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil.MetricType;
 
@@ -424,6 +425,7 @@ public class MetricsServiceBean implements Serializable {
                 + "select  distinct COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "') as date, count(id)\n"
                 + "from guestbookresponse\n"
                 + ((d == null) ? "" : "where dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")")
+                + ((d == null) ? "where ":" and ") + "eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + " group by COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "') order by  COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -456,6 +458,7 @@ public class MetricsServiceBean implements Serializable {
                         + "from guestbookresponse\n"
                         + "where (date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
                         + "or responsetime is NULL)\n" // includes historic guestbook records without date
+                        + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                     + ((d==null) ? ";": "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");") 
                 );
                 logger.log(Level.FINE, "Metric query: {0}", query);
@@ -477,6 +480,7 @@ public class MetricsServiceBean implements Serializable {
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
                 + "where responsetime > current_date - interval '" + days + "' day\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + ((d==null) ? ";": "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");")
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -489,6 +493,7 @@ public class MetricsServiceBean implements Serializable {
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.datafile_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier, to_char(gb.responsetime, 'YYYY-MM') order by to_char(gb.responsetime, 'YYYY-MM');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -503,6 +508,7 @@ public class MetricsServiceBean implements Serializable {
                 + " where ob.id = gb.datafile_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
                 + " and date_trunc('month', gb.responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier order by count desc;");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -529,6 +535,7 @@ public class MetricsServiceBean implements Serializable {
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.dataset_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier, to_char(gb.responsetime, 'YYYY-MM') order by to_char(gb.responsetime, 'YYYY-MM');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -546,6 +553,7 @@ public class MetricsServiceBean implements Serializable {
                 + " where ob.id = gb.dataset_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
                 + " and date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier order by count(distinct email) desc;");
         JsonArrayBuilder jab = Json.createArrayBuilder();
         try {
