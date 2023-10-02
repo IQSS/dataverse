@@ -1008,7 +1008,7 @@
                             <h:outputFormat value="#{DatasetPage.datasetConfigureTool.description}" escape="false"/>
                         </p>
                         <div class="button-block">
-                            <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.explore(DatasetPage.datasetConfigureTool)}" oncomplete="PF('configureToolDialog').hide();">
+                            <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.configure(DatasetPage.datasetConfigureTool)}" oncomplete="PF('configureToolDialog').hide();">
                                 <h:outputFormat value="#{bundle['continue']}"/>
                             </p:commandLink>
                             <button class="btn btn-link" onclick="PF('configureToolDialog').hide();" type="button">
