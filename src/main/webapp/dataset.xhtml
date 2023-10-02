@@ -1599,12 +1599,8 @@
                             </div>
                         </div>
                         <div>
-                            <p:outputLabel rendered="#{!empty DatasetPage.alreadyLinkedDataverses }" >
-                         #{bundle.dataset.linking.popop.already.linked.note}
-                            </p:outputLabel>
-                            <h:outputText rendered="#{!empty DatasetPage.alreadyLinkedDataverses }">
-                            #{DatasetPage.alreadyLinkedDataverses}
-                            </h:outputText>
+                            <h:outputLabel rendered="#{!empty DatasetPage.alreadyLinkedDataverses }" value="#{bundle['dataset.linking.popop.already.linked.note']} "/>
+                            <h:outputText rendered="#{!empty DatasetPage.alreadyLinkedDataverses }" value="#{DatasetPage.alreadyLinkedDataverses}"/>
                         </div>
                         <div class="button-block">
                             <p:commandButton id="saveLinkButton" styleClass="btn btn-default"    
