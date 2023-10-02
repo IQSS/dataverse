@@ -48,7 +48,23 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetVersionServiceBean.class.getCanonicalName());
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-    
+
+    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL = "SELECT fm FROM FileMetadata fm"
+            + " WHERE fm.datasetVersion.id=:datasetVersionId"
+            + " ORDER BY fm.label";
+    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE = "SELECT fm FROM FileMetadata fm, DvObject dvo"
+            + " WHERE fm.datasetVersion.id = :datasetVersionId"
+            + " AND fm.dataFile.id = dvo.id"
+            + " ORDER BY CASE WHEN dvo.publicationDate IS NOT NULL THEN dvo.publicationDate ELSE dvo.createDate END";
+    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_SIZE = "SELECT fm FROM FileMetadata fm, DataFile df"
+            + " WHERE fm.datasetVersion.id = :datasetVersionId"
+            + " AND fm.dataFile.id = df.id"
+            + " ORDER BY df.filesize";
+    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_TYPE = "SELECT fm FROM FileMetadata fm, DataFile df"
+            + " WHERE fm.datasetVersion.id = :datasetVersionId"
+            + " AND fm.dataFile.id = df.id"
+            + " ORDER BY df.contentType";
+
     @EJB
     DatasetServiceBean datasetService;
     
@@ -149,7 +165,19 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             return this.datasetVersionForResponse;
         }                
     } // end RetrieveDatasetVersionResponse
-    
+
+    /**
+     *  Different criteria to sort the results of FileMetadata queries used in {@link DatasetVersionServiceBean#getFileMetadatas}
+     */
+    public enum FileMetadatasOrderCriteria {
+        NameAZ,
+        NameZA,
+        Newest,
+        Oldest,
+        Size,
+        Type
+    }
+
     public DatasetVersion find(Object pk) {
         return em.find(DatasetVersion.class, pk);
     }
@@ -1224,4 +1252,50 @@ w
             return null;
         }
     } // end getUnarchivedDatasetVersions
+
+    /**
+     * Returns a FileMetadata list of files in the specified DatasetVersion
+     *
+     * @param datasetVersion the DatasetVersion to access
+     * @param limit for pagination, can be null
+     * @param offset for pagination, can be null
+     * @param orderCriteria a FileMetadatasOrderCriteria to order the results
+     * @return a FileMetadata list of the specified DatasetVersion
+     */
+    public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, FileMetadatasOrderCriteria orderCriteria) {
+        TypedQuery<FileMetadata> query = em.createQuery(getQueryStringFromFileMetadatasOrderCriteria(orderCriteria), FileMetadata.class)
+                .setParameter("datasetVersionId", datasetVersion.getId());
+        if (limit != null) {
+            query.setMaxResults(limit);
+        }
+        if (offset != null) {
+            query.setFirstResult(offset);
+        }
+        return query.getResultList();
+    }
+
+    private String getQueryStringFromFileMetadatasOrderCriteria(FileMetadatasOrderCriteria orderCriteria) {
+        String queryString;
+        switch (orderCriteria) {
+            case NameZA:
+                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL + " DESC";
+                break;
+            case Newest:
+                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE + " DESC";
+                break;
+            case Oldest:
+                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE;
+                break;
+            case Size:
+                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_SIZE;
+                break;
+            case Type:
+                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_TYPE;
+                break;
+            default:
+                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL;
+                break;
+        }
+        return queryString;
+    }
 } // end class

@@ -1,4 +1,3 @@
-=============
 Configuration
 =============
 
@@ -305,6 +304,8 @@ Here are the configuration options for PermaLinks:
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 - :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to false)
 
+You must restart Payara after making changes to these settings.
+
 .. _auth-modes:
 
 Auth Modes: Local vs. Remote vs. Both
@@ -506,6 +507,10 @@ By default, a Dataverse installation stores all data files (files uploaded by en
 A Dataverse installation can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
 
 A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web-accessible trusted remote store.
+
+A Dataverse installation can be configured to allow out of band upload by setting the ``dataverse.files.\<id\>.upload-out-of-band`` JVM option to ``true``.
+By default, Dataverse supports uploading files via the :ref:`add-file-api`. With S3 stores, a direct upload process can be enabled to allow sending the file directly to the S3 store (without any intermediate copies on the Dataverse server).
+With the upload-out-of-band option enabled, it is also possible for file upload to be managed manually or via third-party tools, with the :ref:`Adding the Uploaded file to the Dataset <direct-add-to-dataset-api>` API call (described in the :doc:`/developers/s3-direct-upload-api` page) used to add metadata and inform Dataverse that a new file has been added to the relevant store.
 
 The following sections describe how to set up various types of stores and how to configure for multiple stores.
 
@@ -799,27 +804,28 @@ List of S3 Storage Options
 .. table::
     :align: left
 
-    ===========================================  ==================  ==========================================================================  =============
-    JVM Option                                   Value               Description                                                                 Default value
-    ===========================================  ==================  ==========================================================================  =============
-    dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                  ``file``
-    dataverse.files.<id>.type                    ``s3``              **Required** to mark this storage as S3 based.                              (none)
-    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                   (none)
-    dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
-    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
-    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
-    dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
-    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
-    dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
-    dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
-    dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
-    dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
-    dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
-    dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
-    dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
-    dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
-    dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
-    ===========================================  ==================  ==========================================================================  =============
+    ===========================================  ==================  ===================================================================================  =============
+    JVM Option                                   Value               Description                                                                          Default value
+    ===========================================  ==================  ===================================================================================  =============
+    dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                           ``file``
+    dataverse.files.<id>.type                    ``s3``              **Required** to mark this storage as S3 based.                                       (none)
+    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                            (none)
+    dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                          (none)
+    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                                   ``false``
+    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset in the S3 store.                    ``false``
+    dataverse.files.<id>.upload-out-of-band      ``true``/``false``  Allow upload of files by out-of-band methods (using some tool other than Dataverse)  ``false``
+    dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                           (none)
+    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.                      60
+    dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.            ``1024**3``
+    dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.                   (none)
+    dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                                      ``dataverse``
+    dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.           (none)
+    dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                                    (none)
+    dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                              ``false``
+    dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                                     ``false``
+    dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                                   ``true``
+    dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                              ``256``
+    ===========================================  ==================  ===================================================================================  =============
 
 .. table::
     :align: left
@@ -1425,24 +1431,25 @@ BagIt file handler configuration settings:
 BagIt Export
 ------------
 
-Your Dataverse installation may be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ archival Bags (sometimes called BagPacks) to `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_ or alternately to any folder on the local filesystem.
+Your Dataverse installation may be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ archival Bags (sometimes called BagPacks) to one of several supported storage services.
+Supported services include `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_, Google's Cloud, and any service that can provide an S3 interface or handle files transferred to a folder on the local filesystem.
 
-These archival Bags include all of the files and metadata in a given dataset version and are sufficient to recreate the dataset, e.g. in a new Dataverse instance, or postentially in another RDA-conformant repository.
+These archival Bags include all of the files and metadata in a given dataset version and are sufficient to recreate the dataset, e.g. in a new Dataverse instance, or potentially in another RDA-conformant repository. The `DVUploader <https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader>`_ includes functionality to recreate a Dataset from an archival Bag produced by Dataverse. (Note that this functionality is distinct from the :ref:`BagIt File Handler` upload files to an existing Dataset via the Dataverse user interface.)
 
 The Dataverse Software offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse Software web interface.
 
 At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and use the configurable mechanisms discussed below. (A DRSSubmitToArchiveCommand, which works with Harvard's DRS also exists and, while specific to DRS, is a useful example of how Archivers can support single-version-only semantics and support archiving only from specified collections (with collection specific parameters)). 
 
-All current options support the archival status APIs and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
+All current options support the :ref:`Archival Status API` calls and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
 
 .. _Duracloud Configuration:
 
 Duracloud Configuration
 +++++++++++++++++++++++
 
-Also note that while the current Chronopolis implementation generates the archival Bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the archival Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
+The current Chronopolis implementation generates the archival Bag and submits it to the archive's DuraCloud interface. The step to make a 'snapshot' of the space containing the archival Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
 
-The minimal configuration to support an archiver integration involves adding a minimum of two Dataverse Software Keys and any required Payara jvm options. The example instructions here are specific to the DuraCloud Archiver\:
+The minimal configuration to support archiver integration involves adding a minimum of two Dataverse Software settings. Individual archivers may require additional settings and/or Payara jvm options and micro-profile settings. The example instructions here are specific to the DuraCloud Archiver\:
 
 \:ArchiverClassName - the fully qualified class to be used for archiving. For example:
 
@@ -1452,7 +1459,7 @@ The minimal configuration to support an archiver integration involves adding a m
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext, :BagGeneratorThreads"``
 
-The DPN archiver defines three custom settings, one of which is required (the others have defaults):
+The DuraCloud archiver defines three custom settings, one of which is required (the others have defaults):
 
 \:DuraCloudHost - the URL for your organization's Duracloud site. For example:
 
@@ -2454,6 +2461,16 @@ dataverse.auth.oidc.*
 Provision a single :doc:`OpenID Connect authentication provider <oidc>` using MicroProfile Config. You can find a list of
 all available options at :ref:`oidc-mpconfig`.
 
+.. _dataverse.files.guestbook-at-request:
+
+dataverse.files.guestbook-at-request
+++++++++++++++++++++++++++++++++++++
+
+This setting enables functionality to allow guestbooks to be displayed when a user requests access to a restricted data file(s) or when a file is downloaded (the historic default). Providing a true/false value for this setting enables the functionality and provides a global default. The behavior can also be changed at the collection level via the user interface and by a superuser for a give dataset using the API.
+
+See also :ref:`guestbook-at-request-api` in the API Guide, and .
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_GUESTBOOK_AT_REQUEST``.
 
 .. _feature-flags:
 
@@ -2986,6 +3003,8 @@ Notes:
 This setting controls the number of files that can be uploaded through the UI at once. The default is 1000. It should be set to 1 or higher since 0 has no effect. To limit the number of files in a zip file, see ``:ZipUploadFilesLimit``.
 
 ``curl -X PUT -d 500 http://localhost:8080/api/admin/settings/:MultipleUploadFilesLimit``
+
+.. _:ZipDownloadLimit:
 
 :ZipDownloadLimit
 +++++++++++++++++

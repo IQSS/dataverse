@@ -238,6 +238,20 @@ If ``dataverse.siteUrl`` is absent, you can add it with:
 
 ``./asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8080"``
 
+dataverse.oai.server.maxidentifiers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The OAI Harvesting tests require that the paging limit for ListIdentifiers must be set to 2, in order to be able to trigger this paging behavior without having to create and export too many datasets:
+
+``./asadmin create-jvm-options "-Ddataverse.oai.server.maxidentifiers=2"``
+
+dataverse.oai.server.maxrecords
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The OAI Harvesting tests require that the paging limit for ListRecords must be set to 2, in order to be able to trigger this paging behavior without having to create and export too many datasets:
+
+``./asadmin create-jvm-options "-Ddataverse.oai.server.maxrecords=2"``
+
 Identifier Generation
 ^^^^^^^^^^^^^^^^^^^^^
 

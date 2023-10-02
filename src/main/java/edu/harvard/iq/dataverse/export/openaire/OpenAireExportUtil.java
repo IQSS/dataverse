@@ -1,11 +1,7 @@
 package edu.harvard.iq.dataverse.export.openaire;
 
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 import jakarta.json.JsonObject;
@@ -325,10 +321,32 @@ public class OpenAireExportUtil {
         String subtitle = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.subTitle);
         title_check = writeTitleElement(xmlw, "Subtitle", subtitle, title_check, language);
 
-        String alternativeTitle = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.alternativeTitle);
-        title_check = writeTitleElement(xmlw, "AlternativeTitle", alternativeTitle, title_check, language);
-
+        title_check = writeMultipleTitleElement(xmlw, "AlternativeTitle", datasetVersionDTO, "citation", title_check, language);
         writeEndTag(xmlw, title_check);
+    }
+
+    private static boolean writeMultipleTitleElement(XMLStreamWriter xmlw, String titleType, DatasetVersionDTO datasetVersionDTO, String metadataBlockName, boolean title_check, String language) throws XMLStreamException {
+        MetadataBlockDTO block = datasetVersionDTO.getMetadataBlocks().get(metadataBlockName);
+        if (block != null) {
+            logger.fine("Block is not empty");
+            List<FieldDTO> fieldsBlock =  block.getFields();
+            if (fieldsBlock != null) {
+                for (FieldDTO fieldDTO : fieldsBlock) {
+                    logger.fine(titleType + " " + fieldDTO.getTypeName());
+                    if (titleType.toLowerCase().equals(fieldDTO.getTypeName().toLowerCase())) {
+                        logger.fine("Found Alt title");
+                        List<String> fields = fieldDTO.getMultiplePrimitive();
+                        for (String value : fields) {
+                            if (!writeTitleElement(xmlw, titleType, value, title_check, language))
+                                title_check = false;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        return title_check;
     }
 
     /**

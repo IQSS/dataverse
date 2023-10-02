@@ -488,6 +488,7 @@ public class DataverseUserPage implements java.io.Serializable {
                     break;
 
                 case REQUESTFILEACCESS:
+                case REQUESTEDFILEACCESS:
                     DataFile file = fileService.find(userNotification.getObjectId());
                     if (file != null) {
                         userNotification.setTheObject(file.getOwner());

@@ -47,6 +47,7 @@ public enum JvmSettings {
     // FILES SETTINGS
     SCOPE_FILES(PREFIX, "files"),
     FILES_DIRECTORY(SCOPE_FILES, "directory"),
+    GUESTBOOK_AT_REQUEST(SCOPE_FILES, "guestbook-at-request"),
     
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),
