@@ -3632,7 +3632,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void getDownloadSize() throws IOException {
+    public void getDownloadSize() throws IOException, InterruptedException {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -3658,7 +3658,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         int expectedTextFilesStorageSize = testFileSize1 + testFileSize2;
 
-        Response getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, false, apiToken);
+        // Get the total size when there are no tabular files
+        Response getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedTextFilesStorageSize));
 
@@ -3670,20 +3671,31 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Get the original tabular file size
         int tabularOriginalSize = Integer.parseInt(uploadTabularFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.filesize"));
 
-        // Get the size ignoring the original tabular file sizes
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, true, apiToken);
+        // Ensure tabular file is ingested
+        Thread.sleep(2000);
+
+        // Get the total size ignoring the original tabular file sizes
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Archival.toString(), apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         int actualSizeIgnoringOriginalTabularSizes = Integer.parseInt(getDownloadSizeResponse.getBody().jsonPath().getString("data.storageSize"));
+
         // Assert that the size has been incremented with the last uploaded file
         assertTrue(actualSizeIgnoringOriginalTabularSizes > expectedTextFilesStorageSize);
 
-        // Get the size including the original tabular file sizes
-        int tabularProcessedSize = actualSizeIgnoringOriginalTabularSizes - expectedTextFilesStorageSize;
-        int expectedSizeIncludingOriginalTabularSizes = tabularOriginalSize + tabularProcessedSize + expectedTextFilesStorageSize;
+        // Get the total size including only original sizes and ignoring archival sizes for tabular files
+        int expectedSizeIncludingOnlyOriginalForTabular = tabularOriginalSize + expectedTextFilesStorageSize;
 
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, false, apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Original.toString(), apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
-                .body("data.storageSize", equalTo(expectedSizeIncludingOriginalTabularSizes));
+                .body("data.storageSize", equalTo(expectedSizeIncludingOnlyOriginalForTabular));
+
+        // Get the total size including both the original and archival tabular file sizes
+        int tabularArchivalSize = actualSizeIgnoringOriginalTabularSizes - expectedTextFilesStorageSize;
+        int expectedSizeIncludingAllSizes = tabularArchivalSize + tabularOriginalSize + expectedTextFilesStorageSize;
+
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.storageSize", equalTo(expectedSizeIncludingAllSizes));
     }
 }

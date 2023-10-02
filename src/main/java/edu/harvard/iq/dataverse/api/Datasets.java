@@ -2962,13 +2962,19 @@ public class Datasets extends AbstractApiBean {
     public Response getDownloadSize(@Context ContainerRequestContext crc,
                                     @PathParam("identifier") String dvIdtf,
                                     @PathParam("versionId") String version,
-                                    @QueryParam("ignoreOriginalTabularSize") boolean ignoreOriginalTabularSize,
+                                    @QueryParam("mode") String mode,
                                     @Context UriInfo uriInfo,
                                     @Context HttpHeaders headers) {
+
         return response(req -> {
+            DatasetVersionFilesServiceBean.FileDownloadSizeMode fileDownloadSizeMode;
+            try {
+                fileDownloadSizeMode = mode != null ? DatasetVersionFilesServiceBean.FileDownloadSizeMode.valueOf(mode) : DatasetVersionFilesServiceBean.FileDownloadSizeMode.All;
+            } catch (IllegalArgumentException e) {
+                return error(Response.Status.BAD_REQUEST, "Invalid mode: " + mode);
+            }
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers);
-            Long datasetStorageSize = ignoreOriginalTabularSize ? DatasetUtil.getDownloadSizeNumeric(datasetVersion, false)
-                    : execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), false, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, datasetVersion));
+            long datasetStorageSize = datasetVersionFilesServiceBean.getFilesDownloadSize(datasetVersion, fileDownloadSizeMode);
             String message = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), datasetStorageSize);
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
             jsonObjectBuilder.add("message", message);

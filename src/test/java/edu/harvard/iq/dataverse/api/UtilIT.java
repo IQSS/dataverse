@@ -3410,10 +3410,10 @@ public class UtilIT {
                 .put("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
     }
 
-    static Response getDownloadSize(Integer datasetId, String version, boolean ignoreOriginalTabularSize, String apiToken) {
+    static Response getDownloadSize(Integer datasetId, String version, String mode, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .queryParam("ignoreOriginalTabularSize", ignoreOriginalTabularSize)
+                .queryParam("mode", mode)
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
     }
 }
