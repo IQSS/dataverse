@@ -95,18 +95,11 @@ Provision via REST API
 Note: you may omit the PKCE related settings from ``factoryData`` below if you don't plan on using PKCE - default is
 disabled.
 
-Please create a ``my-oidc-provider.json`` file like this, replacing every ``<...>`` with your values:
+Please create a :download:`my-oidc-provider.json <../_static/installation/files/root/auth-providers/oidc.json>` file, replacing every ``<...>`` with your values:
 
-.. code-block:: json
-
-    {
-        "id":"<a unique id>",
-        "factoryAlias":"oidc",
-        "title":"<a title - shown in UI>",
-        "subtitle":"<a subtitle - currently unused in UI>",
-        "factoryData":"type: oidc | issuer: <issuer url> | clientId: <client id> | clientSecret: <client secret> | pkceEnabled: <true/false> | pkceMethod: <PLAIN/S256/...>",
-        "enabled":true
-    }
+.. literalinclude:: /_static/installation/files/root/auth-providers/oidc.json
+    :name: oidc-provider-example
+    :language: json
 
 Now load the configuration into your Dataverse installation using the same API as with :doc:`oauth2`:
 
