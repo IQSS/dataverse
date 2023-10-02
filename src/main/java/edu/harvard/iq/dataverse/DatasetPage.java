@@ -376,6 +376,19 @@ public class DatasetPage implements java.io.Serializable {
         this.showIngestSuccess = showIngestSuccess;
     }
 
+    private String termsGuestbookPopupAction = "";
+
+    public void setTermsGuestbookPopupAction(String popupAction){
+        if(popupAction != null && popupAction.length() > 0){
+            this.termsGuestbookPopupAction = popupAction;
+        }
+
+    }
+
+    public String getTermsGuestbookPopupAction(){
+        return termsGuestbookPopupAction;
+    }
+    
     // TODO: Consider renaming "configureTools" to "fileConfigureTools".
     List<ExternalTool> configureTools = new ArrayList<>();
     // TODO: Consider renaming "exploreTools" to "fileExploreTools".
@@ -3147,7 +3160,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private void startDownload(boolean downloadOriginal){
         boolean guestbookRequired = isDownloadPopupRequired();
-        boolean validate = validateFilesForDownload(guestbookRequired, downloadOriginal);
+        boolean validate = validateFilesForDownload(downloadOriginal);
         if (validate) {
             updateGuestbookResponse(guestbookRequired, downloadOriginal);
             if(!guestbookRequired && !getValidateFilesOutcome().equals("Mixed")){
@@ -3170,9 +3183,14 @@ public class DatasetPage implements java.io.Serializable {
         this.validateFilesOutcome = validateFilesOutcome;
     }
 
-    public boolean validateFilesForDownload(boolean guestbookRequired, boolean downloadOriginal) {
-        setSelectedDownloadableFiles(new ArrayList<>());
-        setSelectedNonDownloadableFiles(new ArrayList<>());
+    public boolean validateFilesForDownload(boolean downloadOriginal){ 
+        if (this.selectedFiles.isEmpty()) {
+            PrimeFaces.current().executeScript("PF('selectFilesForDownload').show()");
+            return false;
+        } else {
+            this.filterSelectedFiles();
+        }
+        
         //assume Pass unless something bad happens
         setValidateFilesOutcome("Pass");
         Long bytes = (long) 0;
@@ -3182,17 +3200,12 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
-        for (FileMetadata fmd : this.selectedFiles) {
-            if (this.fileDownloadHelper.canDownloadFile(fmd)) {
-                getSelectedDownloadableFiles().add(fmd);
-                DataFile dataFile = fmd.getDataFile();
-                if (downloadOriginal && dataFile.isTabularData()) {
-                    bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
-                } else {
-                    bytes += dataFile.getFilesize();
-                }
+        for (FileMetadata fmd : getSelectedDownloadableFiles()) {
+            DataFile dataFile = fmd.getDataFile();
+            if (downloadOriginal && dataFile.isTabularData()) {
+                bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
             } else {
-                getSelectedNonDownloadableFiles().add(fmd);
+                bytes += dataFile.getFilesize();
             }
         }
 
@@ -3216,10 +3229,9 @@ public class DatasetPage implements java.io.Serializable {
             return true;
         }
 
-        if (guestbookRequired) {
+        if (isTermsPopupRequired() || isGuestbookPopupRequiredAtDownload()) {
             setValidateFilesOutcome("GuestbookRequired");
         }
-
         return true;
 
     }
@@ -3238,9 +3250,68 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             guestbookResponse.setFileFormat("");
         }
-        guestbookResponse.setDownloadtype("Download");
+        guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
     }
 
+    /*helper function to filter the selected files into <selected downloadable>, 
+    and <selected, non downloadable> and <selected restricted> for reuse*/
+
+    /*helper function to filter the selected files into <selected downloadable>, 
+    and <selected, non downloadable> and <selected restricted> for reuse*/
+
+    private boolean filterSelectedFiles(){
+        setSelectedDownloadableFiles(new ArrayList<>());
+        setSelectedNonDownloadableFiles(new ArrayList<>());
+        setSelectedRestrictedFiles(new ArrayList<>());
+        setSelectedUnrestrictedFiles(new ArrayList<>());
+
+        boolean someFiles = false;
+        for (FileMetadata fmd : this.selectedFiles){
+            if(this.fileDownloadHelper.canDownloadFile(fmd)){
+                getSelectedDownloadableFiles().add(fmd);
+                someFiles=true;
+            } else {
+                getSelectedNonDownloadableFiles().add(fmd);
+            }
+            if(fmd.isRestricted()){
+                getSelectedRestrictedFiles().add(fmd); //might be downloadable to user or not
+                someFiles=true;
+            } else {
+                getSelectedUnrestrictedFiles().add(fmd);
+                someFiles=true;
+            }
+
+        }
+        return someFiles;
+    }
+
+    public void validateFilesForRequestAccess(){
+        this.filterSelectedFiles();
+
+        if(!dataset.isFileAccessRequest()){ //is this needed? wouldn't be able to click Request Access if this !isFileAccessRequest()
+            return;
+        }
+
+        if(!this.selectedRestrictedFiles.isEmpty()){
+            ArrayList<FileMetadata> nonDownloadableRestrictedFiles = new ArrayList<>();
+
+            List<DataFile> userRequestedDataFiles = ((AuthenticatedUser) session.getUser()).getRequestedDataFiles();
+
+            for(FileMetadata fmd : this.selectedRestrictedFiles){
+                if(!this.fileDownloadHelper.canDownloadFile(fmd) && !userRequestedDataFiles.contains(fmd.getDataFile())){
+                    nonDownloadableRestrictedFiles.add(fmd);
+                }
+            }
+
+            if(!nonDownloadableRestrictedFiles.isEmpty()){
+                guestbookResponse.setDataFile(null);
+                guestbookResponse.setSelectedFileIds(this.getFilesIdsString(nonDownloadableRestrictedFiles));
+                this.requestAccessMultipleFiles();
+            } else {
+                //popup select data files
+            }
+        }
+    }
 
     private boolean selectAllFiles;
 
@@ -3266,26 +3337,23 @@ public class DatasetPage implements java.io.Serializable {
 
     // helper Method
     public String getSelectedFilesIdsString() {
-        String downloadIdString = "";
-        for (FileMetadata fmd : this.selectedFiles){
-            if (!StringUtil.isEmpty(downloadIdString)) {
-                downloadIdString += ",";
-            }
-            downloadIdString += fmd.getDataFile().getId();
-        }
-        return downloadIdString;
+        return this.getFilesIdsString(this.selectedFiles);
     }
-
+    
     // helper Method
     public String getSelectedDownloadableFilesIdsString() {
-        String downloadIdString = "";
-        for (FileMetadata fmd : this.selectedDownloadableFiles){
-            if (!StringUtil.isEmpty(downloadIdString)) {
-                downloadIdString += ",";
+        return this.getFilesIdsString(this.selectedDownloadableFiles);
+    }
+    
+    public String getFilesIdsString(List<FileMetadata> fileMetadatas){ //for reuse
+        String idString = "";
+        for (FileMetadata fmd : fileMetadatas){
+            if (!StringUtil.isEmpty(idString)) {
+                idString += ",";
             }
-            downloadIdString += fmd.getDataFile().getId();
+            idString += fmd.getDataFile().getId();
         }
-        return downloadIdString;
+        return idString;
     }
 
 
@@ -5101,7 +5169,7 @@ public class DatasetPage implements java.io.Serializable {
         for (FileMetadata fmd : workingVersion.getFileMetadatas()){
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) session.getUser();
             //Change here so that if all restricted files have pending requests there's no Request Button
-            if ((!this.fileDownloadHelper.canDownloadFile(fmd) && !fmd.getDataFile().containsFileAccessRequestFromUser(authenticatedUser))) {
+            if ((!this.fileDownloadHelper.canDownloadFile(fmd) && !fmd.getDataFile().containsActiveFileAccessRequestFromUser(authenticatedUser))) {
                 return true;
             }
         }
@@ -5112,6 +5180,9 @@ public class DatasetPage implements java.io.Serializable {
         if (!isSessionUserAuthenticated() || !dataset.isFileAccessRequest()){
             return false;
         }
+        //populate file lists
+        filterSelectedFiles();
+        
         if( this.selectedRestrictedFiles == null || this.selectedRestrictedFiles.isEmpty() ){
             return false;
         }
@@ -5194,7 +5265,24 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isRequestAccessPopupRequired() {
         return FileUtil.isRequestAccessPopupRequired(workingVersion);
     }
+    
+    public boolean isGuestbookAndTermsPopupRequired() {  
+        return FileUtil.isGuestbookAndTermsPopupRequired(workingVersion);
+    }
 
+    public boolean isGuestbookPopupRequired(){
+        return FileUtil.isGuestbookPopupRequired(workingVersion);
+    }
+    
+    public boolean isTermsPopupRequired(){
+        return FileUtil.isTermsPopupRequired(workingVersion);
+    }
+    
+    public boolean isGuestbookPopupRequiredAtDownload(){
+        // Only show guestbookAtDownload if guestbook at request is disabled (legacy behavior)
+        return isGuestbookPopupRequired() && !workingVersion.getDataset().getEffectiveGuestbookEntryAtRequest();
+    }
+    
     public String requestAccessMultipleFiles() {
 
         if (selectedFiles.isEmpty()) {
@@ -5209,11 +5297,11 @@ public class DatasetPage implements java.io.Serializable {
             for (FileMetadata fmd : selectedFiles){
                  fileDownloadHelper.addMultipleFilesForRequestAccess(fmd.getDataFile());
             }
-            if (isRequestAccessPopupRequired()) {
+            if (isGuestbookAndTermsPopupRequired()) {
                 //RequestContext requestContext = RequestContext.getCurrentInstance();
-                PrimeFaces.current().executeScript("PF('requestAccessPopup').show()");
+                PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show()"); //the popup will call writeGuestbookAndRequestAccess();
                 return "";
-            } else {
+            }else {
                 //No popup required
                 fileDownloadHelper.requestAccessIndirect();
                 return "";
@@ -5397,6 +5485,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setFileDownloadService(FileDownloadServiceBean fileDownloadService) {
         this.fileDownloadService = fileDownloadService;
+    }
+    
+    public FileDownloadHelper getFileDownloadHelper() {
+        return fileDownloadHelper;
+    }
+
+    public void setFileDownloadHelper(FileDownloadHelper fileDownloadHelper) {
+        this.fileDownloadHelper = fileDownloadHelper;
     }
 
 
@@ -5858,7 +5954,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     public String getEffectiveMetadataLanguage(boolean ofParent) {
         String mdLang = ofParent ? dataset.getOwner().getEffectiveMetadataLanguage() : dataset.getEffectiveMetadataLanguage();
-        if (mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+        if (mdLang.equals(DvObjectContainer.UNDEFINED_CODE)) {
             mdLang = settingsWrapper.getDefaultMetadataLanguage();
         }
         return mdLang;
@@ -5866,7 +5962,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getLocaleDisplayName(String code) {
         String displayName = settingsWrapper.getBaseMetadataLanguageMap(false).get(code);
-        if(displayName==null && !code.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+        if(displayName==null && !code.equals(DvObjectContainer.UNDEFINED_CODE)) {
             //Default (for cases such as :when a Dataset has a metadatalanguage code but :MetadataLanguages is no longer defined).
             displayName = new Locale(code).getDisplayName();
         }

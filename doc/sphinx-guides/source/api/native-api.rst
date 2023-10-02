@@ -525,10 +525,16 @@ Submit Incomplete Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Note:** This feature requires :ref:`dataverse.api.allow-incomplete-metadata` to be enabled and your Solr
-Schema to be up-to-date with the ``datasetValid`` field.
+Schema to be up-to-date with the ``datasetValid`` field. If not done yet with the version upgrade, you will
+also need to reindex all dataset after enabling the :ref:`dataverse.api.allow-incomplete-metadata` feature.
 
 Providing a ``.../datasets?doNotValidate=true`` query parameter turns off the validation of metadata.
-In this case, only the "Author Name" is required. For example, a minimal JSON file would look like this:
+In this situation, only the "Author Name" is required, except for the case when the setting :ref:`:MetadataLanguages`
+is configured and the value of "Dataset Metadata Language" setting of a collection is left with the default
+"Chosen at Dataset Creation" value. In that case, a language that is a part of the :ref:`:MetadataLanguages` list must be
+declared in the incomplete dataset.
+
+For example, a minimal JSON file, without the language specification, would look like this:
 
 .. code-block:: json
   :name: dataset-incomplete.json
@@ -2254,6 +2260,51 @@ See :ref:`:CustomDatasetSummaryFields` in the Installation Guide for how the lis
   export SERVER_URL=https://demo.dataverse.org
 
   curl "$SERVER_URL/api/datasets/summaryFieldNames"
+
+.. _guestbook-at-request-api:
+  
+Configure When a Dataset Guestbook Appears (If Enabled)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, users are asked to fill out a configured Guestbook when they down download files from a dataset. If enabled for a given Dataverse instance (see XYZ), users may instead be asked to fill out a Guestbook only when they request access to restricted files.
+This is configured by a global default, collection-level settings, or directly at the dataset level via these API calls (superuser access is required to make changes).
+
+To see the current choice for this dataset:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+
+  curl "$SERVER_URL/api/datasets/:persistentId/guestbookEntryAtRequest?persistentId=$PERSISTENT_IDENTIFIER"
+  
+  
+  The response will be true (guestbook displays when making a request), false (guestbook displays at download), or will indicate that the dataset inherits one of these settings.
+
+To set the behavior for this dataset:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -H Content-type:application/json -d true "$SERVER_URL/api/datasets/:persistentId/guestbookEntryAtRequest?persistentId=$PERSISTENT_IDENTIFIER"
+
+
+  This example uses true to set the behavior to guestbook at request. Note that this call will return a 403/Forbidden response if guestbook at request functionality is not enabled for this Dataverse instance.
+  
+The API can also be used to reset the dataset to use the default/inherited value:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+
+  curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" -H Content-type:application/json "$SERVER_URL/api/datasets/:persistentId/guestbookEntryAtRequest?persistentId=$PERSISTENT_IDENTIFIER"
+
+
 
 Files
 -----
