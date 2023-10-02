@@ -3708,6 +3708,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
         uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
 
+        // Ensure tabular file is ingested
+        Thread.sleep(2000);
+
         // Get the total size including only original sizes and ignoring archival sizes for tabular files
         expectedSizeIncludingOnlyOriginalForTabular = tabularOriginalSize + expectedSizeIncludingOnlyOriginalForTabular;
 
