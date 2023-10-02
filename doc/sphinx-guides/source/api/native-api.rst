@@ -1022,7 +1022,7 @@ Please note that both filtering and ordering criteria values are case sensitive 
 
 By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
 
-If you want to consider deaccessioned dataset versions, you must specify this through the ``includeDeaccessioned`` query parameter.
+If you want to consider deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
 
 Usage example:
 
