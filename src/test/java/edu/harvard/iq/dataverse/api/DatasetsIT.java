@@ -3697,5 +3697,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingAllSizes));
+
+        // Get the total size sending invalid file download size mode
+        String invalidMode = "invalidMode";
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, invalidMode, apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Invalid mode: " + invalidMode));
     }
 }
