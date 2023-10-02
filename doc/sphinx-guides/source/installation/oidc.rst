@@ -78,14 +78,14 @@ Enabling PKCE Security
 Many providers these days support or even require the usage of `PKCE <https://oauth.net/2/pkce/>`_ to safeguard against
 some attacks and enable public clients that cannot have a secure secret to still use OpenID Connect (or OAuth2).
 
-The Dataverse built OIDC client can be enabled to use PKCE and which method to use when creating the code challenge.
+The Dataverse-built OIDC client can be configured to use PKCE and the method to use when creating the code challenge can be specified.
 See also `this explanation of the flow <https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow-with-proof-key-for-code-exchange-pkce>`_
 for details on how this works.
 
 As we are using the `Nimbus SDK <https://connect2id.com/products/nimbus-oauth-openid-connect-sdk>`_ as our client
-library, we support the standard ``PLAIN`` and ``S256`` code challenge methods. "SHA-256 method" is the default
+library, we support the standard ``PLAIN`` and ``S256`` (SHA-256) code challenge methods. "SHA-256 method" is the default
 as recommend in `RFC7636 <https://datatracker.ietf.org/doc/html/rfc7636#section-4.2>`_. If your provider needs some
-other method (unlikely), please open an issue.
+other method, please open an issue.
 
 The provisioning sections below contain in the example the parameters you may use to configure PKCE.
 
@@ -169,11 +169,11 @@ The following options are available:
     - N
     - ``OpenID Connect``
   * - ``dataverse.auth.oidc.pkce.max-cache-size``
-    - Tune the maximum size of all OIDC providers' verifier cache (= number of outstanding PKCE-enabled auth responses).
+    - Tune the maximum size of all OIDC providers' verifier cache (the number of outstanding PKCE-enabled auth responses).
     - N
     - 10000
   * - ``dataverse.auth.oidc.pkce.max-cache-age``
-    - Tune the maximum age of all OIDC providers' verifier cache entries. Default is 5 minutes, equivalent to lifetime
+    - Tune the maximum age, in seconds, of all OIDC providers' verifier cache entries. Default is 5 minutes, equivalent to lifetime
       of many OIDC access tokens.
     - N
     - 300

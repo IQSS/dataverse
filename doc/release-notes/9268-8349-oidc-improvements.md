@@ -5,7 +5,7 @@
 With this release it is possible to provision a single OIDC-based authentication provider
 by using MicroProfile Config instead of or in addition to the classic Admin API provisioning.
 
-If you are using an external OIDC provider component as identity management system and/or broker
+If you are using an external OIDC provider component as an identity management system and/or broker
 to other authentication providers such as Google, eduGain SAML and so on, this might make your
 life easier during instance setups and reconfiguration. You no longer need to generate the
 necessary JSON file.
@@ -26,3 +26,16 @@ The testing and development Keycloak realm has been updated with more users and 
 The support for setting JVM options during testing has been improved for developers. You now may add the
 `@JvmSetting` annotation to classes (also inner classes) and reference factory methods for values. This improvement is
 also paving the way to enable manipulating JVM options during end-to-end tests on remote ends.
+
+## New Configuration Options
+
+- dataverse.auth.oidc.enabled
+- dataverse.auth.oidc.client-id
+- dataverse.auth.oidc.client-secret
+- dataverse.auth.oidc.auth-server-url
+- dataverse.auth.oidc.pkce.enabled
+- dataverse.auth.oidc.pkce.method
+- dataverse.auth.oidc.title
+- dataverse.auth.oidc.subtitle
+- dataverse.auth.oidc.pkce.max-cache-size
+- dataverse.auth.oidc.pkce.max-cache-age
