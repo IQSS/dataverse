@@ -1022,7 +1022,7 @@ Please note that both filtering and ordering criteria values are case sensitive 
 
 By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
 
-If you want to consider deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
+If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
 
 Usage example:
 
@@ -1060,7 +1060,7 @@ The fully expanded example above (without environment variables) looks like this
 
 By default, deaccessioned dataset versions are not supported by this endpoint and will be ignored in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a not found error if the version is deaccessioned and you do not enable the option described below.
 
-If you want to consider deaccessioned dataset versions, you must specify this through the ``includeDeaccessioned`` query parameter.
+If you want to include deaccessioned dataset versions, you must specify this through the ``includeDeaccessioned`` query parameter.
 
 Usage example:
 
@@ -1385,7 +1385,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/versions/1.0/deaccession" -d '{"deaccessionReason":"Description of the deaccession reason.", "deaccessionForwardURL":"https://demo.dataverse.org"}'
 
-.. note:: You cannot deaccession a dataset more than once. If you call this endpoint twice for the same dataset version, you will get a not found error on the second call, since the dataset you are looking for will no longer be public since it is already deaccessioned.
+.. note:: You cannot deaccession a dataset more than once. If you call this endpoint twice for the same dataset version, you will get a not found error on the second call, since the dataset you are looking for will no longer be published since it is already deaccessioned.
 
 Set Citation Date Field Type for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
