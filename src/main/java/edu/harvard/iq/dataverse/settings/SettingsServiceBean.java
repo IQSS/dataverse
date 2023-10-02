@@ -578,7 +578,16 @@ public class SettingsServiceBean {
         /**
          * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
          */
-        WebloaderUrl,
+        WebloaderUrl, 
+        /**
+         * Enforce storage quotas:
+         */
+        UseStorageQuotas, 
+        /** 
+         * Placeholder storage quota (defines the same quota setting for every user; used to test the concept of a quota.
+         */
+        StorageQuotaSizeInBytes,
+
         /**
          * A comma-separated list of CategoryName in the desired order for files to be
          * sorted in the file table display. If not set, files will be sorted
