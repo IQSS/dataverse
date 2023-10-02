@@ -3388,7 +3388,7 @@ public class DatasetPage implements java.io.Serializable {
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), linkingDataverseErrorMessage);
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
-
+        alreadyLinkedDataverses = null; //force update to list of linked dataverses
     }
 
     private String linkingDataverseErrorMessage = "";
