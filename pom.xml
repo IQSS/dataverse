@@ -609,7 +609,7 @@
         <dependency>
             <groupId>com.github.dasniko</groupId>
             <artifactId>testcontainers-keycloak</artifactId>
-            <version>2.5.0</version>
+            <version>3.0.0</version>
             <scope>test</scope>
         </dependency>
         <!--

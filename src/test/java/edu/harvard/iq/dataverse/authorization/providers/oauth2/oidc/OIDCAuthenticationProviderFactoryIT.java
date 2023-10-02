@@ -74,14 +74,14 @@ class OIDCAuthenticationProviderFactoryIT {
     
     // The realm JSON resides in conf/keycloak/test-realm.json and gets avail here using <testResources> in pom.xml
     @Container
-    static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:21.0")
+    static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:22.0")
         .withRealmImportFile("keycloak/test-realm.json")
         .withAdminUsername(adminUser)
         .withAdminPassword(adminPassword);
     
     // simple method to retrieve the issuer URL, referenced to by @JvmSetting annotations (do no delete)
     private static String getAuthUrl() {
-        return keycloakContainer.getAuthServerUrl() + "realms/" + realm;
+        return keycloakContainer.getAuthServerUrl() + "/realms/" + realm;
     }
     
     OIDCAuthProvider getProvider() throws Exception {
