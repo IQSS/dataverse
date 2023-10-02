@@ -89,6 +89,20 @@ other method, please open an issue.
 
 The provisioning sections below contain in the example the parameters you may use to configure PKCE.
 
+Provision a provider
+--------------------
+
+Depending on your use case, you can choose different ways to setup one or multiple OIDC identity providers.
+
+Using MicroProfile Config has the advantage of being consistent and does not require additional calls to the API.
+It can only configure one provider though, yet you can mix with other provider definitions via API.
+
+Using the REST API has the advantage of provisioning multiple, different OIDC providers.
+Depending on your use case, it has the drawback of needing additional API calls.
+
+If you only need one single provider in your installation and it is using OIDC, use the MPCONFIG option, as it requires
+fewer extra steps and allows you to keep more configuration in a single source.
+
 Provision via REST API
 ^^^^^^^^^^^^^^^^^^^^^^
 
