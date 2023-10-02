@@ -61,6 +61,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.WebloaderUtil;
 import edu.harvard.iq.dataverse.validation.URLValidator;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
+import edu.harvard.iq.dataverse.Dataverse;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -3423,7 +3424,23 @@ public class DatasetPage implements java.io.Serializable {
         }
         return retVal;
     }
-
+        
+    private String alreadyLinkedDataverses = null;
+    
+    public String getAlreadyLinkedDataverses(){
+        if (alreadyLinkedDataverses != null) {           
+            return alreadyLinkedDataverses;
+        }
+        List<Dataverse> dataverseList = dataverseService.findDataversesThatLinkToThisDatasetId(dataset.getId());
+        for (Dataverse dv: dataverseList){
+            if (alreadyLinkedDataverses == null){
+                alreadyLinkedDataverses = dv.getCurrentName();
+            } else {
+                alreadyLinkedDataverses = alreadyLinkedDataverses + ", " + dv.getCurrentName();
+            }
+        }
+        return alreadyLinkedDataverses;
+    }
 
     public List<Dataverse> completeLinkingDataverse(String query) {
         dataset = datasetService.find(dataset.getId());
