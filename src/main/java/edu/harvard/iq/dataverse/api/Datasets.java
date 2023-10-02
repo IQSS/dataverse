@@ -3924,12 +3924,12 @@ public class Datasets extends AbstractApiBean {
                 getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getCitation(true, false)), getRequestUser(crc));
     }
 
-    @PUT
+    @POST
     @AuthRequired
     @Path("{id}/versions/{versionId}/deaccession")
     public Response deaccessionDataset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String jsonBody, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         if (DS_VERSION_DRAFT.equals(versionId) || DS_VERSION_LATEST.equals(versionId)) {
-            return badRequest("Only " + DS_VERSION_LATEST_PUBLISHED + " or a specific version can be deaccessioned");
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.deaccessionDataset.invalid.version.identifier.error", List.of(DS_VERSION_LATEST_PUBLISHED)));
         }
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, false);
@@ -3941,7 +3941,7 @@ public class Datasets extends AbstractApiBean {
                     try {
                         datasetVersion.setArchiveNote(deaccessionForwardURL);
                     } catch (IllegalArgumentException iae) {
-                        return error(Response.Status.BAD_REQUEST, "Invalid deaccession forward URL: " + iae.getMessage());
+                        return badRequest(BundleUtil.getStringFromBundle("datasets.api.deaccessionDataset.invalid.forward.url", List.of(iae.getMessage())));
                     }
                 }
                 execCommand(new DeaccessionDatasetVersionCommand(req, datasetVersion, false));

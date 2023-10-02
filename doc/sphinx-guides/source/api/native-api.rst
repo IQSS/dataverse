@@ -1377,13 +1377,13 @@ Given a version of a dataset, updates its status to deaccessioned.
   export VERSIONID=1.0
   export JSON='{"deaccessionReason":"Description of the deaccession reason.", "deaccessionForwardURL":"https://demo.dataverse.org"}'
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/datasets/$ID/versions/$VERSIONID/deaccession" -d "$JSON"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/$ID/versions/$VERSIONID/deaccession" -d "$JSON"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/datasets/24/versions/1.0/deaccession" -d '{"deaccessionReason":"Description of the deaccession reason.", "deaccessionForwardURL":"https://demo.dataverse.org"}'
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/versions/1.0/deaccession" -d '{"deaccessionReason":"Description of the deaccession reason.", "deaccessionForwardURL":"https://demo.dataverse.org"}'
 
 .. note:: You cannot deaccession a dataset more than once. If you call this endpoint twice for the same dataset version, you will get a not found error on the second call, since the dataset you are looking for will no longer be public since it is already deaccessioned.
 
