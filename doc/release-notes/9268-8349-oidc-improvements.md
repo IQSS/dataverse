@@ -27,6 +27,8 @@ The support for setting JVM options during testing has been improved for develop
 `@JvmSetting` annotation to classes (also inner classes) and reference factory methods for values. This improvement is
 also paving the way to enable manipulating JVM options during end-to-end tests on remote ends.
 
+As part of these testing improvements, the code coverage report file for unit tests has moved from `target/jacoco.exec` to `target/coverage-reports/jacoco-unit.exec`.
+
 ## New Configuration Options
 
 - dataverse.auth.oidc.enabled
