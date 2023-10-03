@@ -11,6 +11,7 @@ import io.restassured.response.Response;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.logging.Logger;
 
 import org.junit.jupiter.api.AfterAll;
@@ -19,8 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.jupiter.api.Disabled;
 
-import java.util.List;
-import java.util.Map;
 import jakarta.json.JsonObject;
 
 import static jakarta.ws.rs.core.Response.Status.CREATED;
@@ -40,8 +39,6 @@ import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-
-import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -69,8 +66,7 @@ import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
+
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
@@ -3327,8 +3323,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         fileMetadatasCount = getVersionFilesResponsePaginated.jsonPath().getList("data").size();
         assertEquals(testPageSize, fileMetadatasCount);
 
-        String testFileId3 = JsonPath.from(getVersionFilesResponsePaginated.body().asString()).getString("data[0].dataFile.id");
-
         // Test page 3 (last)
         getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, testDatasetVersion, testPageSize, testPageSize * 2, null, null, null, null, null, apiToken);
 
@@ -3412,13 +3406,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(1, fileMetadatasCount);
 
         // Test Category Name
-        Response getVersionFilesResponseCategoryName = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, "image/png", null, "nonExistentCategory", null, null, apiToken);
+        String testCategory = "testCategory";
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(testFileId1, apiToken, List.of(testCategory));
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+        setFileCategoriesResponse = UtilIT.setFileCategories(testFileId2, apiToken, List.of(testCategory));
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getVersionFilesResponseCategoryName = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, testCategory, null, null, apiToken);
 
         getVersionFilesResponseCategoryName.then().assertThat()
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName1))
+                .body("data[1].label", equalTo(testFileName2));
 
         fileMetadatasCount = getVersionFilesResponseCategoryName.jsonPath().getList("data").size();
-        assertEquals(0, fileMetadatasCount);
+        assertEquals(2, fileMetadatasCount);
 
         // Test Access Status Restricted
         Response restrictFileResponse = UtilIT.restrictFile(String.valueOf(testFileId1), true, apiToken);
@@ -3434,18 +3436,18 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         fileMetadatasCount = getVersionFilesResponseRestricted.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
 
-        // Test Access Status Embargoed Then Public
+        // Test Access Status Embargoed
         UtilIT.setSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths, "12");
         String activeEmbargoDate = LocalDate.now().plusMonths(6).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-        // Create embargo for test file 1 (Embargo and Restricted)
-        Response createExpiredFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(testFileId1), activeEmbargoDate, apiToken);
+        // Create embargo for test file 1 (Embargoed and Restricted)
+        Response createActiveFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(testFileId1), activeEmbargoDate, apiToken);
 
-        createExpiredFileEmbargoResponse.then().assertThat()
+        createActiveFileEmbargoResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // Create embargo for test file 2 (Embargo and Public)
-        Response createActiveFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(testFileId2), activeEmbargoDate, apiToken);
+        // Create embargo for test file 2 (Embargoed and Public)
+        createActiveFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(testFileId2), activeEmbargoDate, apiToken);
 
         createActiveFileEmbargoResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -3489,5 +3491,62 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         fileMetadatasCount = getVersionFilesResponseSearchText.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
+    }
+
+    @Test
+    public void getVersionFileCounts() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Creating test files
+        String testFileName1 = "test_1.txt";
+        String testFileName2 = "test_2.txt";
+        String testFileName3 = "test_3.png";
+
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName1, new byte[50], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName2, new byte[200], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName3, new byte[100], apiToken);
+
+        // Creating a categorized test file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+        String testCategory = "testCategory";
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, List.of(testCategory));
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Setting embargo for file (Embargo and Public)
+        UtilIT.setSetting(SettingsServiceBean.Key.MaxEmbargoDurationInMonths, "12");
+        String activeEmbargoDate = LocalDate.now().plusMonths(6).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        Response createFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(dataFileId), activeEmbargoDate, apiToken);
+        createFileEmbargoResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Getting the file counts and assert each count
+        Response getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, ":latest", apiToken);
+
+        getVersionFileCountsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        JsonPath responseJsonPath = getVersionFileCountsResponse.jsonPath();
+        LinkedHashMap<String, Integer> responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
+        LinkedHashMap<String, Integer> responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        LinkedHashMap<String, Integer> responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
+
+        assertEquals(4, (Integer) responseJsonPath.get("data.total"));
+        assertEquals(2, responseCountPerContentTypeMap.get("image/png"));
+        assertEquals(2, responseCountPerContentTypeMap.get("text/plain"));
+        assertEquals(1, responseCountPerCategoryNameMap.get(testCategory));
+        assertEquals(3, responseCountPerAccessStatusMap.get(DatasetVersionFilesServiceBean.DataFileAccessStatus.Public.toString()));
+        assertEquals(1, responseCountPerAccessStatusMap.get(DatasetVersionFilesServiceBean.DataFileAccessStatus.EmbargoedThenPublic.toString()));
     }
 }

@@ -520,7 +520,22 @@ public class Datasets extends AbstractApiBean {
             return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, contentType, dataFileAccessStatus, categoryName, searchText, fileMetadatasOrderCriteria)));
         }, getRequestUser(crc));
     }
-    
+
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/files/counts")
+    public Response getVersionFileCounts(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion));
+            jsonObjectBuilder.add("perContentType", json(datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion)));
+            jsonObjectBuilder.add("perCategoryName", json(datasetVersionFilesServiceBean.getFileMetadataCountPerCategoryName(datasetVersion)));
+            jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion)));
+            return ok(jsonObjectBuilder);
+        }, getRequestUser(crc));
+    }
+
     @GET
     @AuthRequired
     @Path("{id}/dirindex")

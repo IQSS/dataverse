@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.QDvObject;
 import edu.harvard.iq.dataverse.QEmbargo;
 import edu.harvard.iq.dataverse.QFileMetadata;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.DateExpression;
@@ -21,7 +22,9 @@ import jakarta.persistence.PersistenceContext;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Stateless
 @Named
@@ -49,6 +52,72 @@ public class DatasetVersionFilesServiceBean implements Serializable {
     }
 
     /**
+     * Given a DatasetVersion, returns its total file metadata count
+     *
+     * @param datasetVersion the DatasetVersion to access
+     * @return long value of total file metadata count
+     */
+    public long getFileMetadataCount(DatasetVersion datasetVersion) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        return queryFactory.selectFrom(fileMetadata).where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId())).stream().count();
+    }
+
+    /**
+     * Given a DatasetVersion, returns its file metadata count per content type
+     *
+     * @param datasetVersion the DatasetVersion to access
+     * @return Map<String, Long> of file metadata counts per content type
+     */
+    public Map<String, Long> getFileMetadataCountPerContentType(DatasetVersion datasetVersion) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        List<Tuple> contentTypeOccurrences = queryFactory
+                .select(fileMetadata.dataFile.contentType, fileMetadata.count())
+                .from(fileMetadata)
+                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
+                .groupBy(fileMetadata.dataFile.contentType).fetch();
+        Map<String, Long> result = new HashMap<>();
+        for (Tuple occurrence : contentTypeOccurrences) {
+            result.put(occurrence.get(fileMetadata.dataFile.contentType), occurrence.get(fileMetadata.count()));
+        }
+        return result;
+    }
+
+    /**
+     * Given a DatasetVersion, returns its file metadata count per category name
+     *
+     * @param datasetVersion the DatasetVersion to access
+     * @return Map<String, Long> of file metadata counts per category name
+     */
+    public Map<String, Long> getFileMetadataCountPerCategoryName(DatasetVersion datasetVersion) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        List<Tuple> categoryNameOccurrences = queryFactory
+                .select(dataFileCategory.name, fileMetadata.count())
+                .from(dataFileCategory, fileMetadata)
+                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()).and(fileMetadata.fileCategories.contains(dataFileCategory)))
+                .groupBy(dataFileCategory.name).fetch();
+        Map<String, Long> result = new HashMap<>();
+        for (Tuple occurrence : categoryNameOccurrences) {
+            result.put(occurrence.get(dataFileCategory.name), occurrence.get(fileMetadata.count()));
+        }
+        return result;
+    }
+
+    /**
+     * Given a DatasetVersion, returns its file metadata count per DataFileAccessStatus
+     *
+     * @param datasetVersion the DatasetVersion to access
+     * @return Map<DataFileAccessStatus, Long> of file metadata counts per DataFileAccessStatus
+     */
+    public Map<DataFileAccessStatus, Long> getFileMetadataCountPerAccessStatus(DatasetVersion datasetVersion) {
+        Map<DataFileAccessStatus, Long> allCounts = new HashMap<>();
+        addAccessStatusCountToTotal(datasetVersion, allCounts, DataFileAccessStatus.Public);
+        addAccessStatusCountToTotal(datasetVersion, allCounts, DataFileAccessStatus.Restricted);
+        addAccessStatusCountToTotal(datasetVersion, allCounts, DataFileAccessStatus.EmbargoedThenPublic);
+        addAccessStatusCountToTotal(datasetVersion, allCounts, DataFileAccessStatus.EmbargoedThenRestricted);
+        return allCounts;
+    }
+
+    /**
      * Returns a FileMetadata list of files in the specified DatasetVersion
      *
      * @param datasetVersion the DatasetVersion to access
@@ -62,13 +131,13 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * @return a FileMetadata list from the specified DatasetVersion
      */
     public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, String contentType, DataFileAccessStatus accessStatus, String categoryName, String searchText, FileMetadatasOrderCriteria orderCriteria) {
-        JPAQuery<FileMetadata> baseQuery = createBaseQuery(datasetVersion, orderCriteria);
+        JPAQuery<FileMetadata> baseQuery = createGetFileMetadatasBaseQuery(datasetVersion, orderCriteria);
 
         if (contentType != null) {
             baseQuery.where(fileMetadata.dataFile.contentType.eq(contentType));
         }
         if (accessStatus != null) {
-            baseQuery.where(createAccessStatusExpression(accessStatus));
+            baseQuery.where(createGetFileMetadatasAccessStatusExpression(accessStatus));
         }
         if (categoryName != null) {
             baseQuery.from(dataFileCategory).where(dataFileCategory.name.eq(categoryName).and(fileMetadata.fileCategories.contains(dataFileCategory)));
@@ -78,7 +147,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
             baseQuery.where(fileMetadata.label.lower().contains(searchText).or(fileMetadata.description.lower().contains(searchText)));
         }
 
-        applyOrderCriteriaToQuery(baseQuery, orderCriteria);
+        applyOrderCriteriaToGetFileMetadatasQuery(baseQuery, orderCriteria);
 
         if (limit != null) {
             baseQuery.limit(limit);
@@ -90,7 +159,22 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         return baseQuery.fetch();
     }
 
-    private JPAQuery<FileMetadata> createBaseQuery(DatasetVersion datasetVersion, FileMetadatasOrderCriteria orderCriteria) {
+    private void addAccessStatusCountToTotal(DatasetVersion datasetVersion, Map<DataFileAccessStatus, Long> totalCounts, DataFileAccessStatus dataFileAccessStatus) {
+        long fileMetadataCount = getFileMetadataCountByAccessStatus(datasetVersion, dataFileAccessStatus);
+        if (fileMetadataCount > 0) {
+            totalCounts.put(dataFileAccessStatus, fileMetadataCount);
+        }
+    }
+
+    private long getFileMetadataCountByAccessStatus(DatasetVersion datasetVersion, DataFileAccessStatus accessStatus) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        return queryFactory
+                .selectFrom(fileMetadata)
+                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()).and(createGetFileMetadatasAccessStatusExpression(accessStatus)))
+                .stream().count();
+    }
+
+    private JPAQuery<FileMetadata> createGetFileMetadatasBaseQuery(DatasetVersion datasetVersion, FileMetadatasOrderCriteria orderCriteria) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(em);
         JPAQuery<FileMetadata> baseQuery = queryFactory.selectFrom(fileMetadata).where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()));
         if (orderCriteria == FileMetadatasOrderCriteria.Newest || orderCriteria == FileMetadatasOrderCriteria.Oldest) {
@@ -99,7 +183,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         return baseQuery;
     }
 
-    private BooleanExpression createAccessStatusExpression(DataFileAccessStatus accessStatus) {
+    private BooleanExpression createGetFileMetadatasAccessStatusExpression(DataFileAccessStatus accessStatus) {
         QEmbargo embargo = fileMetadata.dataFile.embargo;
         BooleanExpression activelyEmbargoedExpression = embargo.dateAvailable.goe(DateExpression.currentDate(LocalDate.class));
         BooleanExpression inactivelyEmbargoedExpression = embargo.isNull();
@@ -123,7 +207,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         return accessStatusExpression;
     }
 
-    private void applyOrderCriteriaToQuery(JPAQuery<FileMetadata> query, FileMetadatasOrderCriteria orderCriteria) {
+    private void applyOrderCriteriaToGetFileMetadatasQuery(JPAQuery<FileMetadata> query, FileMetadatasOrderCriteria orderCriteria) {
         DateTimeExpression<Timestamp> orderByLifetimeExpression = new CaseBuilder().when(dvObject.publicationDate.isNotNull()).then(dvObject.publicationDate).otherwise(dvObject.createDate);
         switch (orderCriteria) {
             case NameZA:

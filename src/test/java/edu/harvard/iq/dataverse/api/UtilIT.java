@@ -3329,6 +3329,12 @@ public class UtilIT {
                 .get("/api/files/" + dataFileId + "/dataTables");
     }
 
+    static Response getUserFileAccessRequested(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + dataFileId + "/userFileAccessRequested");
+    }
+
     static Response getUserPermissionsOnFile(String dataFileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -3347,5 +3353,37 @@ public class UtilIT {
                 .contentType("application/json")
                 .urlEncodingEnabled(false)
                 .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
+    }
+
+    static Response getVersionFileCounts(Integer datasetId, String version, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/files/counts");
+    }
+
+    static Response setFileCategories(String dataFileId, String apiToken, List<String> categories) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (String category : categories) {
+            jsonArrayBuilder.add(category);
+        }
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("categories", jsonArrayBuilder);
+        String jsonString = jsonObjectBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/files/" + dataFileId + "/metadata/categories");
+    }
+
+    static Response deleteFileInDataset(Integer fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/files/" + fileId);
+    }
+
+    static Response getHasBeenDeleted(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + dataFileId + "/hasBeenDeleted");
     }
 }
