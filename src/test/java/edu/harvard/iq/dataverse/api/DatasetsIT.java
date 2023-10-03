@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
 import io.restassured.RestAssured;
 
+import static edu.harvard.iq.dataverse.DatasetVersion.ARCHIVE_NOTE_MAX_LENGTH;
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static io.restassured.RestAssured.given;
 
@@ -15,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -3608,27 +3610,55 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
-        // Test that draft and latest version constants are not allowed
-        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_DRAFT, apiToken);
-        deaccessionDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
-        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST, apiToken);
-        deaccessionDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        String testDeaccessionReason = "Test deaccession reason.";
+        String testDeaccessionForwardURL = "http://demo.dataverse.org";
+
+        // Test that draft and latest version constants are not allowed and a bad request error is received
+        String expectedInvalidVersionIdentifierError = BundleUtil.getStringFromBundle("datasets.api.deaccessionDataset.invalid.version.identifier.error", List.of(DS_VERSION_LATEST_PUBLISHED));
+
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_DRAFT, testDeaccessionReason, testDeaccessionForwardURL, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(expectedInvalidVersionIdentifierError));
+
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST, testDeaccessionReason, testDeaccessionForwardURL, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(expectedInvalidVersionIdentifierError));
 
         // Test that a not found error occurs when there is no published version available
-        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, testDeaccessionReason, testDeaccessionForwardURL, apiToken);
         deaccessionDatasetResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
-        // Test that the dataset is successfully deaccessioned when published
+        // Publish test dataset
         Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
         Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
-        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, apiToken);
+
+        // Test that a bad request error is received when the forward URL exceeds ARCHIVE_NOTE_MAX_LENGTH
+        String testInvalidDeaccessionForwardURL = RandomStringUtils.randomAlphabetic(ARCHIVE_NOTE_MAX_LENGTH + 1);
+
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, testDeaccessionReason, testInvalidDeaccessionForwardURL, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", containsString(testInvalidDeaccessionForwardURL));
+
+        // Test that the dataset is successfully deaccessioned when published and valid deaccession params are sent
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, testDeaccessionReason, testDeaccessionForwardURL, apiToken);
         deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Test that a not found error occurs when the only published version has already been deaccessioned
-        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, testDeaccessionReason, testDeaccessionForwardURL, apiToken);
         deaccessionDatasetResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // Test that a dataset can be deaccessioned without forward URL
+        createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, testDeaccessionReason, null, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     @Test

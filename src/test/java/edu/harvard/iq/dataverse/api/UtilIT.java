@@ -3400,14 +3400,17 @@ public class UtilIT {
                 .get("/api/files/" + dataFileId + "/hasBeenDeleted");
     }
 
-    static Response deaccessionDataset(Integer datasetId, String version, String apiToken) {
+    static Response deaccessionDataset(Integer datasetId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        jsonObjectBuilder.add("deaccessionReason", "Test deaccession.");
+        jsonObjectBuilder.add("deaccessionReason", deaccessionReason);
+        if (deaccessionForwardURL != null) {
+            jsonObjectBuilder.add("deaccessionForwardURL", deaccessionForwardURL);
+        }
         String jsonString = jsonObjectBuilder.build().toString();
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
-                .put("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
+                .post("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
     }
 
     static Response getDownloadSize(Integer datasetId, String version, String mode, String apiToken) {
