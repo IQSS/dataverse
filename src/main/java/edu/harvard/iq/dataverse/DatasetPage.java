@@ -61,7 +61,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.WebloaderUtil;
 import edu.harvard.iq.dataverse.validation.URLValidator;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
-import edu.harvard.iq.dataverse.Dataverse;
 
 import java.io.File;
 import java.io.FileOutputStream;
