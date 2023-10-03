@@ -206,10 +206,21 @@ public class GlobusServiceBean implements java.io.Serializable {
             result = makeRequest(url, "Bearer", endpoint.getClientToken(), "POST",
                     gson.toJson(permissions));
 
-            if (result.status == 400) {
+            switch (result.status) {
+            case 400:
+
                 logger.severe("Path " + permissions.getPath() + " is not valid");
-            } else if (result.status == 409) {
+                break;
+            case 409:
                 logger.warning("ACL already exists or Endpoint ACL already has the maximum number of access rules");
+                break;
+            case 201:
+                JsonObject response = JsonUtil.getJsonObject(result.jsonResponse);
+                if (response != null && response.containsKey("access_id")) {
+                    permissions.setId(response.getString("access_id"));
+                    monitorTemporaryPermissions(permissions, endpoint);
+                    logger.info("Access rule " + permissions.getId() + " was created successfully");
+                }
             }
 
             return result.status;
@@ -226,9 +237,13 @@ public class GlobusServiceBean implements java.io.Serializable {
                 logger.warning("ACL already exists or Endpoint ACL already has the maximum number of access rules");
             }
             logger.info("Result status " + result.status);
+            return result.status;
         }
+    }
 
-        return result.status;
+    private void monitorTemporaryPermissions(Permissions permissions, GlobusEndpoint endpoint) {
+        // TODO Auto-generated method stub
+        
     }
 
     public boolean getSuccessfulTransfers(AccessToken clientTokenUser, String taskId) throws MalformedURLException {
@@ -324,6 +339,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             // Basic
             // NThjMGYxNDQtN2QzMy00ZTYzLTk3MmUtMjljNjY5YzJjNGJiOktzSUVDMDZtTUxlRHNKTDBsTmRibXBIbjZvaWpQNGkwWVVuRmQyVDZRSnc9
             logger.info(authType + " " + authCode);
+            logger.info("For URL: " + url.toString());
             connection.setRequestProperty("Authorization", authType + " " + authCode);
             // connection.setRequestProperty("Content-Type",
             // "application/x-www-form-urlencoded");
@@ -333,6 +349,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                 connection.setRequestProperty("Accept", "application/json");
                 logger.info(jsonString);
                 connection.setDoOutput(true);
+
                 OutputStreamWriter wr = new OutputStreamWriter(connection.getOutputStream());
                 wr.write(jsonString);
                 wr.flush();
@@ -1318,7 +1335,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
 
         AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
         String clientToken = accessToken.getOtherTokens().get(0).getAccessToken();
-
+logger.info("clientToken: " + clientToken);
         endpoint = new GlobusEndpoint(endpointId, clientToken, directoryPath);
 
         return endpoint;
