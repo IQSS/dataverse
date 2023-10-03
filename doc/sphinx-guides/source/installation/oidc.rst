@@ -26,7 +26,7 @@ You can also either host an OpenID Connect identity management on your own or us
 - `Keycloak <https://www.keycloak.org>`_ is an open source solution for an IDM/IAM
 - `Unity IDM <https://www.unity-idm.eu>`_ is another open source IDM/IAM solution
 
-Other use cases and combinations
+Other Use Cases and Combinations
 --------------------------------
 
 - Using your custom identity management solution might be a workaround when you seek for LDAP support, but
@@ -41,7 +41,7 @@ Other use cases and combinations
 - In the future, OpenID Connect might become a successor to the large scale R&E SAML federations we have nowadays.
   See also `OpenID Connect Federation Standard <https://openid.net/specs/openid-connect-federation-1_0.html>`_ (in development)
 
-How to use
+How to Use
 ----------
 
 Just like with :doc:`oauth2` you need to obtain a *Client ID* and a *Client Secret* from your provider(s).
@@ -89,7 +89,7 @@ other method, please open an issue.
 
 The provisioning sections below contain in the example the parameters you may use to configure PKCE.
 
-Provision a provider
+Provision a Provider
 --------------------
 
 Depending on your use case, you can choose different ways to setup one or multiple OIDC identity providers.
