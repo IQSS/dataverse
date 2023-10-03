@@ -168,7 +168,7 @@ The following options are available:
     - N
     - ``false``
   * - ``dataverse.auth.oidc.pkce.method``
-    - Set code challenge method. Default equals best practice.
+    - Set code challenge method. The default value is the current best practice in the literature.
     - N
     - ``S256``
   * - ``dataverse.auth.oidc.title``
