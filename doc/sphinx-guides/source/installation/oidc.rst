@@ -94,14 +94,14 @@ Provision a Provider
 
 Depending on your use case, you can choose different ways to setup one or multiple OIDC identity providers.
 
-Using MicroProfile Config has the advantage of being consistent and does not require additional calls to the API.
+Using :ref:`jvm-options` has the advantage of being consistent and does not require additional calls to the API.
 It can only configure one provider though, yet you can mix with other provider definitions via API.
 
 Using the REST API has the advantage of provisioning multiple, different OIDC providers.
 Depending on your use case, it has the drawback of needing additional API calls.
 
-If you only need one single provider in your installation and it is using OIDC, use the MPCONFIG option, as it requires
-fewer extra steps and allows you to keep more configuration in a single source.
+If you only need one single provider in your installation and it is using OIDC, use the JVM options, as it
+requires fewer extra steps and allows you to keep more configuration in a single source.
 
 Provision via REST API
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -125,12 +125,16 @@ section of the User Guide.
 
 .. _oidc-mpconfig:
 
-Provision via MPCONFIG
-^^^^^^^^^^^^^^^^^^^^^^
+Provision via JVM Options
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In case you only require a single OIDC provider, you can also provision an OIDC based provider using MicroProfile Config
-sources. Note that this provider will only be deployed at startup time and (currently) cannot be reconfigured without
-a restart.
+A single provider may be provisioned using :ref:`jvm-options`.
+It may be accompanied by more providers configured via REST API.
+Note that this provider will only be deployed at startup time and (currently) cannot be reconfigured without a restart.
+
+All options below may be set via *MicroProfile Config API* sources. Examples: use environment variable
+``DATAVERSE_AUTH_OIDC_ENABLED`` for the ``dataverse.auth.oidc.enabled`` option or ``DATAVERSE_AUTH_OIDC_CLIENT_ID``
+for the ``dataverse.auth.oidc.client-id`` option.
 
 The following options are available:
 
