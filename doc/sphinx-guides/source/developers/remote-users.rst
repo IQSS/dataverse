@@ -61,19 +61,14 @@ You should be able to log into Keycloak with the one of the following credential
 
   * - Username
     - Password
-    - Group
   * - admin
     - admin
-    - admins
   * - curator
     - curator
-    - curators
   * - user
     - user
-    - members
   * - affiliate
     - affiliate
-    - \-
 
 In case you want to stop and remove the Keycloak container, just run the other available bash script:
 
