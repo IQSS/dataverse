@@ -269,7 +269,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
                 .from(fileMetadata)
                 .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
                 .from(dataTable)
-                .where(fileMetadata.dataFile.dataTables.isNotEmpty().and(dataTable.dataFile.eq(fileMetadata.dataFile)))
+                .where(dataTable.dataFile.eq(fileMetadata.dataFile))
                 .select(dataTable.originalFileSize.sum()).fetchFirst();
         return (result == null) ? 0 : result;
     }
