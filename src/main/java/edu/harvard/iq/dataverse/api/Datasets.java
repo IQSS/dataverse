@@ -65,6 +65,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -3429,8 +3430,12 @@ public class Datasets extends AbstractApiBean {
         // -------------------------------------
         // (1) Get the user from the ContainerRequestContext
         // -------------------------------------
-        User authUser;
-        authUser = getRequestUser(crc);
+        AuthenticatedUser authUser;
+        try {
+            authUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
 
         // -------------------------------------
         // (2) Get the Dataset Id
@@ -3442,14 +3447,32 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        
-        JsonObject params = JsonUtil.getJsonObject(jsonBody);
-        String principal = params.getString("principal");
 
-        // Async Call
-        globusService.givePermission("identity", principal, "rw", dataset);
+        if(!GlobusOverlayAccessIO.isDataverseManaged(dataset.getEffectiveStorageDriverId())) {
+            return badRequest("This dataset does not have managed Globus storage");
+        }
+            
+        if (permissionSvc.requestOn(createDataverseRequest(authUser), dataset)
+                .canIssue(UpdateDatasetVersionCommand.class)) {
 
-        return ok("Permission Granted");
+            JsonObject params = JsonUtil.getJsonObject(jsonBody);
+            String principal = params.getString("principal");
+
+            // Async Call
+            int status = globusService.givePermission("identity", principal, "rw", dataset);
+            switch (status) {
+            case 201:
+                return ok("Permission Granted");
+            case 400:
+                return badRequest("Unable to grant permission");
+            case 409:
+                return conflict("Permission already exists");
+            default:
+                return error(null, "Unexpected error when granting permission");
+            }
+        } else {
+            return forbidden("User doesn't have permission to upload to this dataset");
+        }
 
     }
 
