@@ -580,13 +580,14 @@ public class Datasets extends AbstractApiBean {
      * @return
      */
     @GET
+    @AuthRequired
     @Path("{id}/versions/{versionId}/linkset")
-    public Response getLinkset(@PathParam("id") String datasetId, @PathParam("versionId") String versionId,
+    public Response getLinkset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         if (":draft".equals(versionId)) {
             return badRequest("Signposting is not supported on the :draft version");
         }
-        DataverseRequest req = createDataverseRequest(null);
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
         try {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             return Response
