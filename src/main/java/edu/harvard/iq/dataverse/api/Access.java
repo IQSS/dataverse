@@ -1697,7 +1697,7 @@ public class Access extends AbstractApiBean {
         boolean fileAccessRequested = false;
         List<FileAccessRequest> requests = dataFile.getFileAccessRequests();
         for (FileAccessRequest fileAccessRequest : requests) {
-            if (fileAccessRequest.getAuthenticatedUser().getId().equals(requestAuthenticatedUser.getId())) {
+            if (fileAccessRequest.getRequester().getId().equals(requestAuthenticatedUser.getId())) {
                 fileAccessRequested = true;
                 break;
             }
