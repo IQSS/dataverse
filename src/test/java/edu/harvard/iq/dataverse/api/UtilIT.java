@@ -3276,7 +3276,7 @@ public class UtilIT {
         return response;
     }
 
-    static Response getVersionFiles(Integer datasetId, String version, Integer limit, Integer offset, String orderCriteria, String apiToken) {
+    static Response getVersionFiles(Integer datasetId, String version, Integer limit, Integer offset, String contentType, String accessStatus, String categoryName, String tabularTagName, String searchText, String orderCriteria, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json");
@@ -3285,6 +3285,21 @@ public class UtilIT {
         }
         if (offset != null) {
             requestSpecification = requestSpecification.queryParam("offset", offset);
+        }
+        if (contentType != null) {
+            requestSpecification = requestSpecification.queryParam("contentType", contentType);
+        }
+        if (accessStatus != null) {
+            requestSpecification = requestSpecification.queryParam("accessStatus", accessStatus);
+        }
+        if (categoryName != null) {
+            requestSpecification = requestSpecification.queryParam("categoryName", categoryName);
+        }
+        if (tabularTagName != null) {
+            requestSpecification = requestSpecification.queryParam("tabularTagName", tabularTagName);
+        }
+        if (searchText != null) {
+            requestSpecification = requestSpecification.queryParam("searchText", searchText);
         }
         if (orderCriteria != null) {
             requestSpecification = requestSpecification.queryParam("orderCriteria", orderCriteria);
@@ -3317,9 +3332,75 @@ public class UtilIT {
                 .get("/api/files/" + dataFileId + "/dataTables");
     }
 
+    static Response getUserFileAccessRequested(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + dataFileId + "/userFileAccessRequested");
+    }
+
     static Response getUserPermissionsOnFile(String dataFileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + dataFileId + "/userPermissions");
+    }
+
+    static Response createFileEmbargo(Integer datasetId, Integer fileId, String dateAvailable, String apiToken) {
+        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("dateAvailable", dateAvailable);
+        jsonBuilder.add("reason", "This is a test embargo");
+        jsonBuilder.add("fileIds", Json.createArrayBuilder().add(fileId));
+        String jsonString = jsonBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .contentType("application/json")
+                .urlEncodingEnabled(false)
+                .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
+    }
+
+    static Response getVersionFileCounts(Integer datasetId, String version, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/files/counts");
+    }
+
+    static Response setFileCategories(String dataFileId, String apiToken, List<String> categories) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (String category : categories) {
+            jsonArrayBuilder.add(category);
+        }
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("categories", jsonArrayBuilder);
+        String jsonString = jsonObjectBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/files/" + dataFileId + "/metadata/categories");
+    }
+
+    static Response setFileTabularTags(String dataFileId, String apiToken, List<String> tabularTags) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (String tabularTag : tabularTags) {
+            jsonArrayBuilder.add(tabularTag);
+        }
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("tabularTags", jsonArrayBuilder);
+        String jsonString = jsonObjectBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/files/" + dataFileId + "/metadata/tabularTags");
+    }
+
+    static Response deleteFileInDataset(Integer fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/files/" + fileId);
+    }
+
+    static Response getHasBeenDeleted(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + dataFileId + "/hasBeenDeleted");
     }
 }
