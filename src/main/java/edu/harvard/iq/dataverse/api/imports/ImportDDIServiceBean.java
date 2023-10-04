@@ -1338,6 +1338,7 @@ public class ImportDDIServiceBean {
         List<HashSet<FieldDTO>> producers = new ArrayList<>();
         List<HashSet<FieldDTO>> grants = new ArrayList<>();
         List<HashSet<FieldDTO>> software = new ArrayList<>();
+        List<String> prodPlac = new ArrayList<>();
 
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
@@ -1353,9 +1354,7 @@ public class ImportDDIServiceBean {
                 } else if (xmlr.getLocalName().equals("prodDate")) {
                     citation.getFields().add(FieldDTO.createPrimitiveFieldDTO("productionDate", parseDate(xmlr, "prodDate")));
                 } else if (xmlr.getLocalName().equals("prodPlac")) {
-                    List<String> prodPlac = new ArrayList<>();
-                    prodPlac.add(parseText(xmlr, "prodPlac"));
-                    citation.getFields().add(FieldDTO.createMultiplePrimitiveFieldDTO(DatasetFieldConstant.productionPlace, prodPlac));
+                    prodPlac.add(parseText(xmlr));
                 } else if (xmlr.getLocalName().equals("software")) {
                     HashSet<FieldDTO> set = new HashSet<>();
                     addToSet(set,"softwareVersion", xmlr.getAttributeValue(null, "version"));
@@ -1388,6 +1387,9 @@ public class ImportDDIServiceBean {
                     if (producers.size()>0) {
                         citation.getFields().add(FieldDTO.createMultipleCompoundFieldDTO("producer", producers));
                     }
+                    if (prodPlac.size() > 0) {
+                        citation.getFields().add(FieldDTO.createMultiplePrimitiveFieldDTO(DatasetFieldConstant.productionPlace, prodPlac));
+                    }
                     return;
                 }
             }
@@ -1397,6 +1399,7 @@ public class ImportDDIServiceBean {
    private void processTitlStmt(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
        MetadataBlockDTO citation = datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation");
        List<HashSet<FieldDTO>> otherIds = new ArrayList<>();
+       List<String> altTitles = new ArrayList<>();
        
        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
@@ -1407,8 +1410,7 @@ public class ImportDDIServiceBean {
                   FieldDTO field = FieldDTO.createPrimitiveFieldDTO("subtitle", parseText(xmlr));
                    citation.getFields().add(field);
                 } else if (xmlr.getLocalName().equals("altTitl")) {
-                  FieldDTO field = FieldDTO.createPrimitiveFieldDTO("alternativeTitle", parseText(xmlr));
-                   citation.getFields().add(field);
+                    altTitles.add(parseText(xmlr));
                 } else if (xmlr.getLocalName().equals("IDNo")) {
                     if ( AGENCY_HANDLE.equals( xmlr.getAttributeValue(null, "agency") ) || AGENCY_DOI.equals( xmlr.getAttributeValue(null, "agency") ) ) {
                         importGenericService.reassignIdentifierAsGlobalId(parseText(xmlr), datasetDTO);
@@ -1435,6 +1437,10 @@ public class ImportDDIServiceBean {
                 if (xmlr.getLocalName().equals("titlStmt")) {
                     if (otherIds.size()>0) {
                         citation.addField(FieldDTO.createMultipleCompoundFieldDTO("otherId", otherIds));
+                    }
+                    if (!altTitles.isEmpty()) {
+                        FieldDTO field = FieldDTO.createMultiplePrimitiveFieldDTO(DatasetFieldConstant.alternativeTitle, altTitles);
+                        citation.getFields().add(field);
                     }
                     return;
                 }

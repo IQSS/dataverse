@@ -100,7 +100,7 @@ public class OAuth2LoginBackingBean implements Serializable {
 
             if (oIdp.isPresent() && code.isPresent()) {
                 AbstractOAuth2AuthenticationProvider idp = oIdp.get();
-                oauthUser = idp.getUserRecord(code.get(), systemConfig.getOAuth2CallbackUrl());
+                oauthUser = idp.getUserRecord(code.get(), req.getParameter("state"), systemConfig.getOAuth2CallbackUrl());
                 
                 // Throw an error if this authentication method is disabled:
                 // (it's not clear if it's possible at all, for somebody to get here with 

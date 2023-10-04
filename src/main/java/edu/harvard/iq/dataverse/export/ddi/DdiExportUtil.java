@@ -183,7 +183,10 @@ public class DdiExportUtil {
        
         writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title), datasetDto.getMetadataLanguage());
         writeFullElement(xmlw, "subTitl", dto2Primitive(version, DatasetFieldConstant.subTitle));
-        writeFullElement(xmlw, "altTitl", dto2Primitive(version, DatasetFieldConstant.alternativeTitle));
+        FieldDTO altField = dto2FieldDTO( version, DatasetFieldConstant.alternativeTitle, "citation"  );
+        if (altField != null) {
+            writeMultipleElement(xmlw, "altTitl", altField, datasetDto.getMetadataLanguage());
+        }
         
         xmlw.writeStartElement("IDNo");
         writeAttribute(xmlw, "agency", persistentAgency);
@@ -983,7 +986,11 @@ public class DdiExportUtil {
         // productionPlace was made multiple as of 5.14:
         // (a quick backward compatibility check was added to dto2PrimitiveList(),
         // see the method for details)
-        writeFullElementList(xmlw, "prodPlac", dto2PrimitiveList(version, DatasetFieldConstant.productionPlace));        
+
+        FieldDTO  prodPlac = dto2FieldDTO( version, DatasetFieldConstant.productionPlace, "citation"  );
+        if (prodPlac != null) {
+            writeMultipleElement(xmlw, "prodPlac", prodPlac, null);
+        }
         writeSoftwareElement(xmlw, version);
   
         writeGrantElement(xmlw, version);

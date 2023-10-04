@@ -1262,4 +1262,7 @@ public class DataversePage implements java.io.Serializable {
         return setName;
     }
 
+    public Set<Entry<String, String>> getGuestbookEntryOptions() {
+        return settingsWrapper.getGuestbookEntryOptions(this.dataverse).entrySet();
+    }
 }
