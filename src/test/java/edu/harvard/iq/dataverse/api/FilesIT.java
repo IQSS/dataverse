@@ -2304,6 +2304,16 @@ public class FilesIT {
 
         actualTabularTagsCount = getFileDataResponse.jsonPath().getList("data.dataFile.tabularTags").size();
         assertEquals(2, actualTabularTagsCount);
+
+        // Should receive an error when calling the endpoint for a non-tabular file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String nonTabularFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        setFileTabularTagsResponse = UtilIT.setFileTabularTags(nonTabularFileId, apiToken, List.of(testInvalidTabularTag));
+        setFileTabularTagsResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
     @Test
