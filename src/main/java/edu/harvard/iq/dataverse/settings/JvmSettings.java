@@ -2,8 +2,6 @@ package edu.harvard.iq.dataverse.settings;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
-import edu.harvard.iq.dataverse.util.StringUtil;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -124,6 +122,22 @@ public enum JvmSettings {
     SCOPE_MAIL(PREFIX, "mail"),
     SUPPORT_EMAIL(SCOPE_MAIL, "support-email"),
     CC_SUPPORT_ON_CONTACT_EMAIL(SCOPE_MAIL, "cc-support-on-contact-email"),
+    
+    // AUTH SETTINGS
+    SCOPE_AUTH(PREFIX, "auth"),
+    // AUTH: OIDC SETTINGS
+    SCOPE_OIDC(SCOPE_AUTH, "oidc"),
+    OIDC_ENABLED(SCOPE_OIDC, "enabled"),
+    OIDC_TITLE(SCOPE_OIDC, "title"),
+    OIDC_SUBTITLE(SCOPE_OIDC, "subtitle"),
+    OIDC_AUTH_SERVER_URL(SCOPE_OIDC, "auth-server-url"),
+    OIDC_CLIENT_ID(SCOPE_OIDC, "client-id"),
+    OIDC_CLIENT_SECRET(SCOPE_OIDC, "client-secret"),
+    SCOPE_OIDC_PKCE(SCOPE_OIDC, "pkce"),
+    OIDC_PKCE_ENABLED(SCOPE_OIDC_PKCE, "enabled"),
+    OIDC_PKCE_METHOD(SCOPE_OIDC_PKCE, "method"),
+    OIDC_PKCE_CACHE_MAXSIZE(SCOPE_OIDC_PKCE, "max-cache-size"),
+    OIDC_PKCE_CACHE_MAXAGE(SCOPE_OIDC_PKCE, "max-cache-age"),
 
     // UI SETTINGS
     SCOPE_UI(PREFIX, "ui"),
@@ -133,6 +147,7 @@ public enum JvmSettings {
     // NetCDF SETTINGS
     SCOPE_NETCDF(PREFIX, "netcdf"),
     GEO_EXTRACT_S3_DIRECT_UPLOAD(SCOPE_NETCDF, "geo-extract-s3-direct-upload"),
+
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
