@@ -236,9 +236,6 @@ public class Datasets extends AbstractApiBean {
     @Inject
     PrivateUrlServiceBean privateUrlService;
 
-    @Inject
-    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
-
     /**
      * Used to consolidate the way we parse and handle dataset versions.
      * @param <T> 
@@ -487,56 +484,23 @@ public class Datasets extends AbstractApiBean {
                     : ok(json(dsv));
         }, getRequestUser(crc));
     }
-
+    
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/files")
-    public Response getVersionFiles(@Context ContainerRequestContext crc,
-                                    @PathParam("id") String datasetId,
-                                    @PathParam("versionId") String versionId,
-                                    @QueryParam("limit") Integer limit,
-                                    @QueryParam("offset") Integer offset,
-                                    @QueryParam("contentType") String contentType,
-                                    @QueryParam("accessStatus") String accessStatus,
-                                    @QueryParam("categoryName") String categoryName,
-                                    @QueryParam("tabularTagName") String tabularTagName,
-                                    @QueryParam("searchText") String searchText,
-                                    @QueryParam("orderCriteria") String orderCriteria,
-                                    @Context UriInfo uriInfo,
-                                    @Context HttpHeaders headers) {
-        return response(req -> {
+    public Response getVersionFiles(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset, @QueryParam("orderCriteria") String orderCriteria, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return response( req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
+            DatasetVersionServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
             try {
-                fileMetadatasOrderCriteria = orderCriteria != null ? DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.valueOf(orderCriteria) : DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.NameAZ;
+                fileMetadatasOrderCriteria = orderCriteria != null ? DatasetVersionServiceBean.FileMetadatasOrderCriteria.valueOf(orderCriteria) : DatasetVersionServiceBean.FileMetadatasOrderCriteria.NameAZ;
             } catch (IllegalArgumentException e) {
                 return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
             }
-            DatasetVersionFilesServiceBean.DataFileAccessStatus dataFileAccessStatus;
-            try {
-                dataFileAccessStatus = accessStatus != null ? DatasetVersionFilesServiceBean.DataFileAccessStatus.valueOf(accessStatus) : null;
-            } catch (IllegalArgumentException e) {
-                return error(Response.Status.BAD_REQUEST, "Invalid access status: " + accessStatus);
-            }
-            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, contentType, dataFileAccessStatus, categoryName, tabularTagName, searchText, fileMetadatasOrderCriteria)));
+            return ok(jsonFileMetadatas(datasetversionService.getFileMetadatas(datasetVersion, limit, offset, fileMetadatasOrderCriteria)));
         }, getRequestUser(crc));
     }
-
-    @GET
-    @AuthRequired
-    @Path("{id}/versions/{versionId}/files/counts")
-    public Response getVersionFileCounts(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return response(req -> {
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-            jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion));
-            jsonObjectBuilder.add("perContentType", json(datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion)));
-            jsonObjectBuilder.add("perCategoryName", json(datasetVersionFilesServiceBean.getFileMetadataCountPerCategoryName(datasetVersion)));
-            jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion)));
-            return ok(jsonObjectBuilder);
-        }, getRequestUser(crc));
-    }
-
+    
     @GET
     @AuthRequired
     @Path("{id}/dirindex")
