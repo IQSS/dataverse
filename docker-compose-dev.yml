@@ -32,7 +32,7 @@ services:
     volumes:
       - ./docker-dev-volumes/app/data:/dv
       - ./docker-dev-volumes/app/secrets:/secrets
-      # Uncomment for changes to xhtml in Netbeans to be deployed immediately.
+      # Uncomment for changes to xhtml to be deployed immediately (if supported your IDE or toolchain).
       # Replace 6.0 with the current version.
       # - ./target/dataverse-6.0:/opt/payara/deployments/dataverse
     tmpfs:
