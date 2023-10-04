@@ -2274,28 +2274,36 @@ public class FilesIT {
         // Set tabular tags
         String testTabularTag1 = "Survey";
         String testTabularTag2 = "Genomics";
-        List<String> testTabularTags = List.of(testTabularTag1, testTabularTag2);
+        // We repeat one to test that it is not duplicated
+        String testTabularTag3 = "Genomics";
+        List<String> testTabularTags = List.of(testTabularTag1, testTabularTag2, testTabularTag3);
         Response setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, testTabularTags);
         setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Get file data and check for new categories
+        // Get file data and check for new tabular tags
         Response getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
         getFileDataResponse.then().assertThat()
                 .body("data.dataFile.tabularTags", hasItem(testTabularTag1))
                 .body("data.dataFile.tabularTags", hasItem(testTabularTag2))
                 .statusCode(OK.getStatusCode());
 
+        int actualTabularTagsCount = getFileDataResponse.jsonPath().getList("data.dataFile.tabularTags").size();
+        assertEquals(2, actualTabularTagsCount);
+
         // Set invalid tabular tag
         String testInvalidTabularTag = "Invalid";
         setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, List.of(testInvalidTabularTag));
         setFileTabularTagsResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
-        // Get file data and check categories are unaltered
+        // Get file data and check tabular tags are unaltered
         getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
         getFileDataResponse.then().assertThat()
                 .body("data.dataFile.tabularTags", hasItem(testTabularTag1))
                 .body("data.dataFile.tabularTags", hasItem(testTabularTag2))
                 .statusCode(OK.getStatusCode());
+
+        actualTabularTagsCount = getFileDataResponse.jsonPath().getList("data.dataFile.tabularTags").size();
+        assertEquals(2, actualTabularTagsCount);
     }
 
     @Test

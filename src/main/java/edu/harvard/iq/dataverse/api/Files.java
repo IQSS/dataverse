@@ -908,14 +908,11 @@ public class Files extends AbstractApiBean {
                 JsonArray requestedTabularTagsJson = jsonObject.getJsonArray("tabularTags");
                 for (JsonValue jsonValue : requestedTabularTagsJson) {
                     JsonString jsonString = (JsonString) jsonValue;
-                    DataFileTag tag = new DataFileTag();
                     try {
-                        tag.setTypeByLabel(jsonString.getString());
-                    } catch (IllegalArgumentException iax) {
+                        dataFile.addUniqueTagByLabel(jsonString.getString());
+                    } catch (IllegalArgumentException iax){
                         return badRequest(iax.getMessage());
                     }
-                    tag.setDataFile(dataFile);
-                    dataFile.addTag(tag);
                 }
                 execCommand(new UpdateDatasetVersionCommand(dataFile.getOwner(), req));
                 return ok("Tabular tags of file " + dataFileId + " updated.");

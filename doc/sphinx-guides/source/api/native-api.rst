@@ -3060,6 +3060,61 @@ The fully expanded example above (without environment variables) looks like this
 
 Note that if the specified categories do not exist, they will be created.
 
+Updating File Tabular Tags
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the tabular tags for an existing tabular file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the tabular tag names.
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    -F 'jsonData={"tabularTags":["Survey","Genomics"]}' \
+    "$SERVER_URL/api/files/$ID/metadata/tabularTags"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    -F 'jsonData={"tabularTags":["Survey","Genomics"]}' \
+    "http://demo.dataverse.org/api/files/24/metadata/tabularTags"
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    -F 'jsonData={"tabularTags":["Survey","Genomics"]}' \
+    "$SERVER_URL/api/files/:persistentId/metadata/tabularTags?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    -F 'jsonData={"tabularTags":["Survey","Genomics"]}' \
+    "https://demo.dataverse.org/api/files/:persistentId/metadata/tabularTags?persistentId=doi:10.5072/FK2/AAA000"
+
+Note that the specified tabular tags must be valid. The supported tags are:
+
+* ``Survey``
+* ``Time Series``
+* ``Panel``
+* ``Event``
+* ``Genomics``
+* ``Network``
+* ``Geospatial``
+
 Editing Variable Level Metadata
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
