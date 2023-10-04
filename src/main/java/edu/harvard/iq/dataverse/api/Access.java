@@ -1681,7 +1681,47 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.rejectFailure.noRequest", args));
         }
     }
-    
+
+    @GET
+    @AuthRequired
+    @Path("/datafile/{id}/userFileAccessRequested")
+    public Response getUserFileAccessRequested(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        DataFile dataFile;
+        AuthenticatedUser requestAuthenticatedUser;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+            requestAuthenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        boolean fileAccessRequested = false;
+        List<FileAccessRequest> requests = dataFile.getFileAccessRequests();
+        for (FileAccessRequest fileAccessRequest : requests) {
+            if (fileAccessRequest.getRequester().getId().equals(requestAuthenticatedUser.getId())) {
+                fileAccessRequested = true;
+                break;
+            }
+        }
+        return ok(fileAccessRequested);
+    }
+
+    @GET
+    @AuthRequired
+    @Path("/datafile/{id}/userPermissions")
+    public Response getUserPermissionsOnFile(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        User requestUser = getRequestUser(crc);
+        jsonObjectBuilder.add("canDownloadFile", fileDownloadService.canDownloadFile(createDataverseRequest(requestUser), dataFile));
+        jsonObjectBuilder.add("canEditOwnerDataset", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
+        return ok(jsonObjectBuilder);
+    }
+
     // checkAuthorization is a convenience method; it calls the boolean method
     // isAccessAuthorized(), the actual workhorse, tand throws a 403 exception if not.
     
@@ -1948,22 +1988,5 @@ public class Access extends AbstractApiBean {
             throw new BadRequestException(); 
         }
         return redirectUri;
-    }
-
-    @GET
-    @AuthRequired
-    @Path("/datafile/{id}/userPermissions")
-    public Response getUserPermissionsOnFile(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
-        DataFile dataFile;
-        try {
-            dataFile = findDataFileOrDie(dataFileId);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        User requestUser = getRequestUser(crc);
-        jsonObjectBuilder.add("canDownloadFile", fileDownloadService.canDownloadFile(createDataverseRequest(requestUser), dataFile));
-        jsonObjectBuilder.add("canEditOwnerDataset", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
-        return ok(jsonObjectBuilder);
     }
 }
