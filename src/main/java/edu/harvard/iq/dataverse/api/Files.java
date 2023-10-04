@@ -840,7 +840,7 @@ public class Files extends AbstractApiBean {
     public Response getFileDownloadCount(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
         return response(req -> {
             DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
-            return ok(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFile.getId()).toString());
+            return ok(guestbookResponseService.getDownloadCountByDataFileId(dataFile.getId()).toString());
         }, getRequestUser(crc));
     }
 

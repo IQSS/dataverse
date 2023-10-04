@@ -25,6 +25,8 @@ Creating a Dataverse collection is easy but first you must be a registered user 
     * **Category**: Select a category that best describes the type of Dataverse collection this will be. For example, if this is a Dataverse collection for an individual researcher's datasets, select *Researcher*. If this is a Dataverse collection for an institution, select *Organization or Institution*.
     * **Email**: This is the email address that will be used as the contact for this particular Dataverse collection. You can have more than one contact email address for your Dataverse collection.
     * **Description**: Provide a description of this Dataverse collection. This will display on the landing page of your Dataverse collection and in the search result list. The description field supports certain HTML tags, if you'd like to format your text (<a>, <b>, <blockquote>, <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, <strong>, <strike>, <u>, <ul>).
+    * **Dataset Metadata Langauge**: (If enabled) Select which language should be used when entering dataset metadata, or leave that choice to dataset creators. 
+    * **Guestbook Entry Option**: (If enabled) Select whether guestbooks are displayed when a user requests access to restricted file(s) or when they initiate a download.
 #. **Choose the sets of Metadata Fields for datasets in this Dataverse collection**:
     * By default the metadata elements will be from the host Dataverse collection that this new Dataverse collection is created in.
     * The Dataverse Software offers metadata standards for multiple domains. To learn more about the metadata standards in the Dataverse Software please check out the :doc:`/user/appendix`.
