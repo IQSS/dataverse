@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -9,15 +10,19 @@ import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +63,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     IngestServiceBean ingestService;
 
     @EJB EmbargoServiceBean embargoService;
+    
+    @EJB SystemConfig systemConfig;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -132,6 +139,39 @@ public class DataFileServiceBean implements java.io.Serializable {
      */
     public static final String MIME_TYPE_PACKAGE_FILE = "application/vnd.dataverse.file-package";
     
+    public class UserStorageQuota {
+        private Long totalAllocatedInBytes = 0L; 
+        private Long totalUsageInBytes = 0L;
+        
+        public UserStorageQuota(Long allocated, Long used) {
+            this.totalAllocatedInBytes = allocated;
+            this.totalUsageInBytes = used; 
+        }
+        
+        public Long getTotalAllocatedInBytes() {
+            return totalAllocatedInBytes;
+        }
+        
+        public void setTotalAllocatedInBytes(Long totalAllocatedInBytes) {
+            this.totalAllocatedInBytes = totalAllocatedInBytes;
+        }
+        
+        public Long getTotalUsageInBytes() {
+            return totalUsageInBytes;
+        }
+        
+        public void setTotalUsageInBytes(Long totalUsageInBytes) {
+            this.totalUsageInBytes = totalUsageInBytes;
+        }
+        
+        public Long getRemainingQuotaInBytes() {
+            if (totalUsageInBytes > totalAllocatedInBytes) {
+                return 0L; 
+            }
+            return totalAllocatedInBytes - totalUsageInBytes;
+        }
+    }
+    
     public DataFile find(Object pk) {
         return em.find(DataFile.class, pk);
     }   
@@ -145,6 +185,27 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (DataFile)query.getSingleResult();
         
     }*/
+    
+    public List<DataFile> findAll(List<Long> fileIds){
+        List<DataFile> dataFiles = new ArrayList<>();
+
+         for (Long fileId : fileIds){
+             dataFiles.add(find(fileId));
+         }
+
+        return dataFiles;
+    }
+
+    public List<DataFile> findAll(String fileIdsAsString){
+        ArrayList<Long> dataFileIds = new ArrayList<>();
+
+        String[] fileIds = fileIdsAsString.split(",");
+        for (String fId : fileIds){
+            dataFileIds.add(Long.parseLong(fId));
+        }
+
+        return findAll(dataFileIds);
+    }
     
     public DataFile findByGlobalId(String globalId) {
             return (DataFile) dvObjectService.findByGlobalId(globalId, DvObject.DType.DataFile);
@@ -353,6 +414,18 @@ public class DataFileServiceBean implements java.io.Serializable {
         } else {
             return fileMetadatas.get(0);
         }
+    }
+    
+    public List<DataFile> findAllCheapAndEasy(String fileIdsAsString){ 
+        //assumption is that the fileIds are separated by ','
+        ArrayList <DataFile> dataFilesFound = new ArrayList<>();
+        String[] fileIds = fileIdsAsString.split(",");
+        DataFile df = this.findCheapAndEasy(Long.parseLong(fileIds[0]));
+        if(df != null){
+            dataFilesFound.add(df);
+        }
+
+        return dataFilesFound;
     }
 
     public DataFile findCheapAndEasy(Long id) {
@@ -564,6 +637,125 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         return dataFile;
+    }
+    
+    private List<AuthenticatedUser> retrieveFileAccessRequesters(DataFile fileIn) {
+        List<AuthenticatedUser> retList = new ArrayList<>();
+
+        // List<Object> requesters = em.createNativeQuery("select authenticated_user_id
+        // from fileaccessrequests where datafile_id =
+        // "+fileIn.getId()).getResultList();
+        TypedQuery<Long> typedQuery = em.createQuery("select f.user.id from FileAccessRequest f where f.dataFile.id = :file_id and f.requestState= :requestState", Long.class);
+        typedQuery.setParameter("file_id", fileIn.getId());
+        typedQuery.setParameter("requestState", FileAccessRequest.RequestState.CREATED);
+        List<Long> requesters = typedQuery.getResultList();
+        for (Long userId : requesters) {
+            AuthenticatedUser user = userService.find(userId);
+            if (user != null) {
+                retList.add(user);
+            }
+        }
+
+        return retList;
+    }
+    
+    private List<FileMetadata> retrieveFileMetadataForVersion(Dataset dataset, DatasetVersion version, List<DataFile> dataFiles, Map<Long, Integer> filesMap, Map<Long, Integer> categoryMap) {
+        List<FileMetadata> retList = new ArrayList<>();
+        Map<Long, Set<Long>> categoryMetaMap = new HashMap<>();
+        
+        List<Object[]> categoryResults = em.createNativeQuery("select t0.filecategories_id, t0.filemetadatas_id from filemetadata_datafilecategory t0, filemetadata t1 where (t0.filemetadatas_id = t1.id) AND (t1.datasetversion_id = "+version.getId()+")").getResultList();
+        int i = 0;
+        for (Object[] result : categoryResults) {
+            Long category_id = (Long) result[0];
+            Long filemeta_id = (Long) result[1];
+            if (categoryMetaMap.get(filemeta_id) == null) {
+                categoryMetaMap.put(filemeta_id, new HashSet<>());
+            }
+            categoryMetaMap.get(filemeta_id).add(category_id);
+            i++;
+        }
+        logger.fine("Retrieved and mapped "+i+" file categories attached to files in the version "+version.getId());
+        
+        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL, prov_freeform from FileMetadata where datasetversion_id = "+version.getId() + " ORDER BY LABEL").getResultList();
+        
+        for (Object[] result : metadataResults) {
+            Integer filemeta_id = (Integer) result[0];
+            
+            if (filemeta_id == null) {
+                continue;
+            }
+            
+            Long file_id = (Long) result[1];
+            if (file_id == null) {
+                continue;
+            }
+            
+            Integer file_list_id = filesMap.get(file_id);
+            if (file_list_id == null) {
+                continue;
+            }
+            FileMetadata fileMetadata = new FileMetadata();
+            fileMetadata.setId(filemeta_id.longValue());
+            fileMetadata.setCategories(new LinkedList<>());
+
+            if (categoryMetaMap.get(fileMetadata.getId()) != null) {
+                for (Long cat_id : categoryMetaMap.get(fileMetadata.getId())) {
+                    if (categoryMap.get(cat_id) != null) {
+                        fileMetadata.getCategories().add(dataset.getCategories().get(categoryMap.get(cat_id)));
+                    }
+                }
+            }
+
+            fileMetadata.setDatasetVersion(version);
+            
+            // Link the FileMetadata object to the DataFile:
+            fileMetadata.setDataFile(dataFiles.get(file_list_id));
+            // ... and the DataFile back to the FileMetadata:
+            fileMetadata.getDataFile().getFileMetadatas().add(fileMetadata);
+            
+            String description = (String) result[2]; 
+            
+            if (description != null) {
+                fileMetadata.setDescription(description);
+            }
+            
+            String label = (String) result[3];
+            
+            if (label != null) {
+                fileMetadata.setLabel(label);
+            }
+                        
+            Boolean restricted = (Boolean) result[4];
+            if (restricted != null) {
+                fileMetadata.setRestricted(restricted);
+            }
+            
+            String dirLabel = (String) result[5];
+            if (dirLabel != null){
+                fileMetadata.setDirectoryLabel(dirLabel);
+            }
+            
+            String provFreeForm = (String) result[6];
+            if (provFreeForm != null){
+                fileMetadata.setProvFreeForm(provFreeForm);
+            }
+                        
+            retList.add(fileMetadata);
+        }
+        
+        logger.fine("Retrieved "+retList.size()+" file metadatas for version "+version.getId()+" (inside the retrieveFileMetadataForVersion method).");
+                
+        
+        /* 
+            We no longer perform this sort here, just to keep this filemetadata
+            list as identical as possible to when it's produced by the "traditional"
+            EJB method. When it's necessary to have the filemetadatas sorted by 
+            FileMetadata.compareByLabel, the DatasetVersion.getFileMetadatasSorted()
+            method should be called. 
+        
+        Collections.sort(retList, FileMetadata.compareByLabel); */
+        
+        return retList; 
     }
     
     public List<DataFile> findIngestsInProgress() {
@@ -1202,5 +1394,30 @@ public class DataFileServiceBean implements java.io.Serializable {
     public Embargo findEmbargo(Long id) {
         DataFile d = find(id);
         return d.getEmbargo();
+    }
+    
+    public Long getStorageUsageByCreator(AuthenticatedUser user) {
+        Query query = em.createQuery("SELECT SUM(o.filesize) FROM DataFile o WHERE o.creator.id=:creatorId");
+        
+        try {
+            Long totalSize = (Long)query.setParameter("creatorId", user.getId()).getSingleResult();
+            logger.info("total size for user: "+totalSize);
+            return totalSize == null ? 0L : totalSize; 
+        } catch (NoResultException nre) { // ?
+            logger.info("NoResultException, returning 0L");
+            return 0L;
+        }
+    }
+    
+    public UserStorageQuota getUserStorageQuota(AuthenticatedUser user, Dataset dataset) {
+        // this is for testing only - one pre-set, installation-wide quota limit
+        // for everybody:
+        Long totalAllocated = systemConfig.getTestStorageQuotaLimit();
+        // again, this is for testing only - we are only counting the total size
+        // of all the files created by this user; it will likely be a much more 
+        // complex calculation in real life applications:
+        Long totalUsed = getStorageUsageByCreator(user); 
+        
+        return new UserStorageQuota(totalAllocated, totalUsed);
     }
 }
