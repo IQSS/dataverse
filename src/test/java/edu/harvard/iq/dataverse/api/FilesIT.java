@@ -2248,6 +2248,57 @@ public class FilesIT {
     }
 
     @Test
+    public void testSetFileTabularTags() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload tabular file
+        String pathToTabularTestFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String tabularFileId = uploadTabularFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Ensure tabular file is ingested
+        sleep(2000);
+
+        // Set tabular tags
+        String testTabularTag1 = "Survey";
+        String testTabularTag2 = "Genomics";
+        List<String> testTabularTags = List.of(testTabularTag1, testTabularTag2);
+        Response setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, testTabularTags);
+        setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get file data and check for new categories
+        Response getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
+        getFileDataResponse.then().assertThat()
+                .body("data.dataFile.tabularTags", hasItem(testTabularTag1))
+                .body("data.dataFile.tabularTags", hasItem(testTabularTag2))
+                .statusCode(OK.getStatusCode());
+
+        // Set invalid tabular tag
+        String testInvalidTabularTag = "Invalid";
+        setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, List.of(testInvalidTabularTag));
+        setFileTabularTagsResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Get file data and check categories are unaltered
+        getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
+        getFileDataResponse.then().assertThat()
+                .body("data.dataFile.tabularTags", hasItem(testTabularTag1))
+                .body("data.dataFile.tabularTags", hasItem(testTabularTag2))
+                .statusCode(OK.getStatusCode());
+    }
+
+    @Test
     public void testGetHasBeenDeleted() {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
