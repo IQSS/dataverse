@@ -5,7 +5,7 @@ Testing
 In order to keep our codebase healthy, the Dataverse Project encourages developers to write automated tests in the form of unit tests and integration tests. We also welcome ideas for how to improve our automated testing.
 
 .. contents:: |toctitle|
-	:local:
+    :local:
 
 The Health of a Codebase
 ------------------------
@@ -89,22 +89,35 @@ JUnit 5 Test Helper Extensions
 Our codebase provides little helpers to ease dealing with state during tests.
 Some tests might need to change something which should be restored after the test ran.
 
-For unit tests, the most interesting part is to set a JVM setting just for the current test.
-Please use the ``@JvmSetting(key = JvmSettings.XXX, value = "")`` annotation on a test method or
-a test class to set and clear the property automatically.
+For unit tests, the most interesting part is to set a JVM setting just for the current test or a whole test class.
+(Which might be an inner class, too!). Please make use of the ``@JvmSetting(key = JvmSettings.XXX, value = "")``
+annotation and also make sure to annotate the test class with ``@LocalJvmSettings``.
 
-To set arbitrary system properties for the current test, a similar extension
-``@SystemProperty(key = "", value = "")`` has been added.
+Inspired by JUnit's ``@MethodSource`` annotation, you may use ``@JvmSetting(key = JvmSettings.XXX, method = "zzz")``
+to reference a static method located in the same test class by name (i. e. ``private static String zzz() {}``) to allow
+retrieving dynamic data instead of String constants only. (Note the requirement for a *static* method!)
+
+If you want to delete a setting, simply provide a ``null`` value. This can be used to override a class-wide setting
+or some other default that is present for some reason.
+
+To set arbitrary system properties for the current test, a similar extension ``@SystemProperty(key = "", value = "")``
+has been added. (Note: it does not support method references.)
 
 Both extensions will ensure the global state of system properties is non-interfering for
 test executions. Tests using these extensions will be executed in serial.
+
+This settings helper may be extended at a later time to manipulate settings in a remote instance during integration
+or end-to-end testing. Stay tuned!
 
 Observing Changes to Code Coverage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Once you've written some tests, you're probably wondering how much you've helped to increase the code coverage. In Netbeans, do a "clean and build." Then, under the "Projects" tab, right-click "dataverse" and click "Code Coverage" -> "Show Report". For each Java file you have open, you should be able to see the percentage of code that is covered by tests and every line in the file should be either green or red. Green indicates that the line is being exercised by a unit test and red indicates that it is not.
 
-In addition to seeing code coverage in Netbeans, you can also see code coverage reports by opening ``target/site/jacoco/index.html`` in your browser.
+In addition to seeing code coverage in Netbeans, you can also see code coverage reports by opening ``target/site/jacoco-X-test-coverage-report/index.html`` in your browser.
+Depending on the report type you want to look at, let ``X`` be one of ``unit``, ``integration`` or ``merged``.
+"Merged" will display combined coverage of both unit and integration test, but does currently not cover API tests.
+
 
 Testing Commands
 ^^^^^^^^^^^^^^^^
@@ -298,33 +311,37 @@ To run a test with Testcontainers, you will need to write a JUnit 5 test.
 Please make sure to:
 
 1. End your test class with ``IT``
-2. Provide a ``@Tag("testcontainers")`` to be picked up during testing.
+2. Annotate the test class with two tags:
 
-.. code:: java
+   .. code:: java
 
-   /** A very minimal example for a Testcontainers integration test class. */
-   @Testcontainers
-   @Tag("testcontainers")
-   class MyExampleIT { /* ... */ }
+       /** A very minimal example for a Testcontainers integration test class. */
+       @Testcontainers
+       @Tag(edu.harvard.iq.dataverse.util.testing.Tags.INTEGRATION_TEST)
+       @Tag(edu.harvard.iq.dataverse.util.testing.Tags.USES_TESTCONTAINERS)
+       class MyExampleIT { /* ... */ }
 
-If using upstream Modules, e.g. for PostgreSQL or similar, you will need to add
+If using upstream modules, e.g. for PostgreSQL or similar, you will need to add
 a dependency to ``pom.xml`` if not present. `See the PostgreSQL module example. <https://www.testcontainers.org/modules/databases/postgres/>`_
 
 To run these tests, simply call out to Maven:
 
 .. code::
 
-	 mvn -P tc verify
+    mvn verify
 
-.. note::
+Notes:
 
-	 1. Remember to have Docker ready to serve or tests will fail.
-	 2. This will not run any unit tests or API tests.
+1. Remember to have Docker ready to serve or tests will fail.
+2. You can skip running unit tests by adding ``-DskipUnitTests``
+3. You can choose to ignore test with Testcontainers by adding ``-Dit.groups='integration & !testcontainers'``
+   Learn more about `filter expressions in the JUnit 5 guide <https://junit.org/junit5/docs/current/user-guide/#running-tests-tag-expressions>`_.
 
-Measuring Coverage of Integration Tests
----------------------------------------
 
-Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara6" as the Payara directory and "dataverse" as the Payara Unix user.
+Measuring Coverage of API Tests
+-------------------------------
+
+Measuring the code coverage of API tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara6" as the Payara directory and "dataverse" as the Payara Unix user.
 
 Please note that this was tested under Glassfish 4 but it is hoped that the same steps will work with Payara.
 
@@ -374,8 +391,8 @@ Run this as the "dataverse" user.
 
 Note that after deployment the file "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
 
-Run Integration Tests
-~~~~~~~~~~~~~~~~~~~~~
+Run API Tests
+~~~~~~~~~~~~~
 
 Note that even though you see "docker-aio" in the command below, we assume you are not necessarily running the test suite within Docker. (Some day we'll probably move this script to another directory.) For this reason, we pass the URL with the normal port (8080) that app servers run on to the ``run-test-suite.sh`` script.
 
