@@ -3276,7 +3276,7 @@ public class UtilIT {
         return response;
     }
 
-    static Response getVersionFiles(Integer datasetId, String version, Integer limit, Integer offset, String contentType, String accessStatus, String categoryName, String searchText, String orderCriteria, String apiToken) {
+    static Response getVersionFiles(Integer datasetId, String version, Integer limit, Integer offset, String contentType, String accessStatus, String categoryName, String tabularTagName, String searchText, String orderCriteria, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json");
@@ -3294,6 +3294,9 @@ public class UtilIT {
         }
         if (categoryName != null) {
             requestSpecification = requestSpecification.queryParam("categoryName", categoryName);
+        }
+        if (tabularTagName != null) {
+            requestSpecification = requestSpecification.queryParam("tabularTagName", tabularTagName);
         }
         if (searchText != null) {
             requestSpecification = requestSpecification.queryParam("searchText", searchText);
@@ -3373,6 +3376,20 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
                 .post("/api/files/" + dataFileId + "/metadata/categories");
+    }
+
+    static Response setFileTabularTags(String dataFileId, String apiToken, List<String> tabularTags) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (String tabularTag : tabularTags) {
+            jsonArrayBuilder.add(tabularTag);
+        }
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("tabularTags", jsonArrayBuilder);
+        String jsonString = jsonObjectBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/files/" + dataFileId + "/metadata/tabularTags");
     }
 
     static Response deleteFileInDataset(Integer fileId, String apiToken) {

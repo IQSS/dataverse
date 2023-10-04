@@ -499,6 +499,7 @@ public class Datasets extends AbstractApiBean {
                                     @QueryParam("contentType") String contentType,
                                     @QueryParam("accessStatus") String accessStatus,
                                     @QueryParam("categoryName") String categoryName,
+                                    @QueryParam("tabularTagName") String tabularTagName,
                                     @QueryParam("searchText") String searchText,
                                     @QueryParam("orderCriteria") String orderCriteria,
                                     @Context UriInfo uriInfo,
@@ -517,7 +518,7 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException e) {
                 return error(Response.Status.BAD_REQUEST, "Invalid access status: " + accessStatus);
             }
-            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, contentType, dataFileAccessStatus, categoryName, searchText, fileMetadatasOrderCriteria)));
+            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, contentType, dataFileAccessStatus, categoryName, tabularTagName, searchText, fileMetadatasOrderCriteria)));
         }, getRequestUser(crc));
     }
 

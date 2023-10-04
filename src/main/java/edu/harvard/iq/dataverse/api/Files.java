@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -887,6 +888,39 @@ public class Files extends AbstractApiBean {
                 return ok("Categories of file " + dataFileId + " updated.");
             } catch (JsonParsingException jpe) {
                 return error(Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
+            }
+        }, getRequestUser(crc));
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{id}/metadata/tabularTags")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setFileTabularTags(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            if (!dataFile.isTabularData()) {
+                return badRequest("This operation is only available for tabular files.");
+            }
+            jakarta.json.JsonObject jsonObject;
+            try (StringReader stringReader = new StringReader(jsonBody)) {
+                jsonObject = Json.createReader(stringReader).readObject();
+                JsonArray requestedTabularTagsJson = jsonObject.getJsonArray("tabularTags");
+                for (JsonValue jsonValue : requestedTabularTagsJson) {
+                    JsonString jsonString = (JsonString) jsonValue;
+                    DataFileTag tag = new DataFileTag();
+                    try {
+                        tag.setTypeByLabel(jsonString.getString());
+                    } catch (IllegalArgumentException iax) {
+                        return badRequest(iax.getMessage());
+                    }
+                    tag.setDataFile(dataFile);
+                    dataFile.addTag(tag);
+                }
+                execCommand(new UpdateDatasetVersionCommand(dataFile.getOwner(), req));
+                return ok("Tabular tags of file " + dataFileId + " updated.");
+            } catch (JsonParsingException jpe) {
+                return badRequest("Error parsing Json: " + jpe.getMessage());
             }
         }, getRequestUser(crc));
     }
