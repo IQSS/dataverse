@@ -978,6 +978,14 @@ Usage example:
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?categoryName=Data"
 
+Tabular tag name filtering is also optionally supported. To return files to which the requested tabular tag has been added.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?tabularTagName=Survey"
+
 Content type filtering is also optionally supported. To return files matching the requested content type.
 
 Usage example:
