@@ -92,6 +92,7 @@ import jakarta.inject.Inject;
 import jakarta.json.Json;
 import java.net.URI;
 import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.TypedQuery;
 
 import jakarta.ws.rs.GET;
