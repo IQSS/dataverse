@@ -1699,6 +1699,11 @@ When changing values these values with ``asadmin``, you'll need to delete the ol
 
 It's also possible to change these values by stopping Payara, editing ``payara6/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
 
+In addition, JVM options enabled for "MicroProfile Config" (see docs of any option), can be used with any
+`supported MicroProfile Config API source`_ to provide their values. The most notable source are environment variables;
+many examples are given in detail documentation of enabled options.
+
+
 .. _dataverse.fqdn:
 
 dataverse.fqdn
@@ -2481,6 +2486,12 @@ dataverse.netcdf.geo-extract-s3-direct-upload
 This setting was added to keep S3 direct upload lightweight. When that feature is enabled and you still want NetCDF and HDF5 files to go through metadata extraction of a Geospatial Bounding Box (see :ref:`netcdf-and-hdf5`), which requires the file to be downloaded from S3 in this scenario, make this setting true.
 
 See also :ref:`s3-direct-upload-features-disabled`.
+
+dataverse.auth.oidc.*
++++++++++++++++++++++
+
+Provision a single :doc:`OpenID Connect authentication provider <oidc>` using MicroProfile Config. You can find a list of
+all available options at :ref:`oidc-mpconfig`.
 
 .. _dataverse.files.guestbook-at-request:
 
