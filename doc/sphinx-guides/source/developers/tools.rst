@@ -96,7 +96,7 @@ Download SonarQube from https://www.sonarqube.org and start look in the `bin` di
     -Dsonar.test.exclusions='src/test/**,src/main/webapp/resources/**' \
     -Dsonar.issuesReport.html.enable=true \
     -Dsonar.issuesReport.html.location='sonar-issues-report.html' \
-    -Dsonar.jacoco.reportPath=target/jacoco.exec
+    -Dsonar.jacoco.reportPath=target/coverage-reports/jacoco-unit.exec
 
 Once the analysis is complete, you should be able to access http://localhost:9000/dashboard?id=edu.harvard.iq%3Adataverse to see the report. To learn about resource leaks, for example, click on "Bugs", the "Tag", then "leak" or "Rule", then "Resources should be closed".
 

@@ -86,7 +86,7 @@ Maven modules packaging target with activated "container" profile from the proje
 
 If you specifically want to build a config baker image *only*, try
 
-``mvn -Pct package -Ddocker.filter=dev_bootstrap``
+``mvn -Pct docker:build -Ddocker.filter=dev_bootstrap``
 
 The build of config baker involves copying Solr configset files. The Solr version used is inherited from Maven,
 acting as the single source of truth. Also, the tag of the image should correspond the application image, as

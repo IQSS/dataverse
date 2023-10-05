@@ -40,7 +40,7 @@ How External Tools Are Presented to Users
 An external tool can appear in your Dataverse installation in a variety of ways:
 
 - as an explore, preview, query or configure option for a file
-- as an explore option for a dataset
+- as an explore or configure option for a dataset
 - as an embedded preview on the file landing page
 
 See also the :ref:`testing-external-tools` section of the Admin Guide for some perspective on how Dataverse installations will expect to test your tool before announcing it to their users.
@@ -88,11 +88,11 @@ Terminology
 
     displayName                  The **name** of the tool in the Dataverse installation web interface. For example, "Data Explorer".
 
-    description                  The **description** of the tool, which appears in a popup (for configure tools only) so the user who clicked the tool can learn about the tool before being redirected the tool in a new tab in their browser. HTML is supported.
+    description                  The **description** of the tool, which appears in a popup (for configure tools only) so the user who clicked the tool can learn about the tool before being redirected to the tool in a new tab in their browser. HTML is supported.
 
     scope                        Whether the external tool appears and operates at the **file** level or the **dataset** level. Note that a file level tool much also specify the type of file it operates on (see "contentType" below).
 
-    types                        Whether the external tool is an **explore** tool, a **preview** tool, a **query** tool, a **configure** tool or any combination of these (multiple types are supported for a single tool). Configure tools require an API token because they make changes to data files (files within datasets). Configure tools are currently not supported at the dataset level. The older "type" keyword that allows you to pass a single type as a string is deprecated but still supported.
+    types                        Whether the external tool is an **explore** tool, a **preview** tool, a **query** tool, a **configure** tool or any combination of these (multiple types are supported for a single tool). Configure tools require an API token because they make changes to data files (files within datasets). The older "type" keyword that allows you to pass a single type as a string is deprecated but still supported.
 
     toolUrl                      The **base URL** of the tool before query parameters are added.
     
