@@ -7,10 +7,12 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
+import edu.harvard.iq.dataverse.util.testing.Tags;
 import io.restassured.RestAssured;
 import jakarta.mail.Session;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -32,7 +34,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *             works, as it is not running within a servlet container. This would require usage of Arquillian
  *             or and end-to-end API test with a deployed application.
  */
-@Testcontainers
+
+@Tag(Tags.INTEGRATION_TEST)
+@Tag(Tags.USES_TESTCONTAINERS)
+@Testcontainers(disabledWithoutDocker = true)
 @ExtendWith(MockitoExtension.class)
 @LocalJvmSettings
 @JvmSetting(key = JvmSettings.MAIL_MTA_HOST, method = "tcSmtpHost")
