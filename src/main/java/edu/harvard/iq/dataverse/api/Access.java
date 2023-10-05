@@ -1149,42 +1149,6 @@ public class Access extends AbstractApiBean {
     
     // helper methods:
     
-    // What the method below does - going through all the files in the version -
-    // is too expensive! Instead we are now selecting an available thumbnail and
-    // giving the dataset card a direct link to that file thumbnail. -- L.A., 4.2.2
-    /*
-    private StorageIO getThumbnailForDatasetVersion(DatasetVersion datasetVersion) {
-        logger.info("entering getThumbnailForDatasetVersion()");
-        StorageIO thumbnailDataAccess = null;
-        if (datasetVersion != null) {
-            List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
-
-            for (FileMetadata fileMetadata : fileMetadatas) {
-                DataFile dataFile = fileMetadata.getDataFile();
-                logger.info("looking at file "+fileMetadata.getLabel()+" , file type "+dataFile.getContentType());
-
-                if (dataFile != null && dataFile.isImage()) {
-
-                    try {
-                        StorageIO dataAccess = dataFile.getStorageIO();
-                        if (dataAccess != null && dataAccess.isLocalFile()) {
-                            dataAccess.open();
-
-                            thumbnailDataAccess = ImageThumbConverter.getImageThumb((FileAccessIO) dataAccess, 48);
-                        }
-                    } catch (IOException ioEx) {
-                        thumbnailDataAccess = null;
-                    }
-                }
-                if (thumbnailDataAccess != null) {
-                    logger.info("successfully generated thumbnail, returning.");
-                    break;
-                }
-            }
-        }
-        return thumbnailDataAccess;
-    }
-    */
     // TODO: 
     // put this method into the dataverseservice; use it there
     // -- L.A. 4.0 beta14
@@ -1210,29 +1174,6 @@ public class Access extends AbstractApiBean {
             
         return null;         
     }
-    
-    /* 
-        removing: 
-    private String getWebappImageResource(String imageName) {
-        String imageFilePath = null;
-        String persistenceFilePath = null;
-        java.net.URL persistenceFileUrl = Thread.currentThread().getContextClassLoader().getResource("META-INF/persistence.xml");
-        
-        if (persistenceFileUrl != null) {
-            persistenceFilePath = persistenceFileUrl.getDataFile();
-            if (persistenceFilePath != null) {
-                persistenceFilePath = persistenceFilePath.replaceFirst("/[^/]*$", "/");
-                imageFilePath = persistenceFilePath + "../../../resources/images/" + imageName;
-                return imageFilePath; 
-            }
-            logger.warning("Null file path representation of the location of persistence.xml in the webapp root directory!"); 
-        } else {
-            logger.warning("Could not find the location of persistence.xml in the webapp root directory!");
-        }
-
-        return null;
-    }
-    */
     
     /**
      * 
