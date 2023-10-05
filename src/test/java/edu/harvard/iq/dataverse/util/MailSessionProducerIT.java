@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import io.restassured.RestAssured;
 import jakarta.mail.Session;
 import org.junit.jupiter.api.AfterEach;
@@ -32,13 +34,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @Testcontainers
 @ExtendWith(MockitoExtension.class)
+@LocalJvmSettings
+@JvmSetting(key = JvmSettings.MAIL_MTA_HOST, method = "tcSmtpHost")
+@JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpPort", varArgs = "port")
 class MailSessionProducerIT {
     
     private static final Integer PORT_SMTP = 1025;
     private static final Integer PORT_HTTP = 1080;
-    
-    Integer smtpPort;
-    String smtpHost;
     
     @Mock
     SettingsServiceBean settingsServiceBean;
@@ -49,30 +51,23 @@ class MailSessionProducerIT {
     static GenericContainer<?> maildev = new GenericContainer<>("maildev/maildev:2.1.0")
         .withExposedPorts(PORT_HTTP, PORT_SMTP)
         .waitingFor(Wait.forHttp("/"));
+    
+    static String tcSmtpHost() {
+        return maildev.getHost();
+    }
+    
+    static String tcSmtpPort() {
+        return maildev.getMappedPort(PORT_SMTP).toString();
+    }
 
     @BeforeEach
     void setUp() {
-        smtpHost = maildev.getHost();
-        smtpPort = maildev.getMappedPort(PORT_SMTP);
-        Integer httpPort = maildev.getMappedPort(PORT_HTTP);
-        
-        RestAssured.baseURI = "http://" + smtpHost;
-        RestAssured.port = httpPort;
+        RestAssured.baseURI = "http://" + tcSmtpHost();
+        RestAssured.port = maildev.getMappedPort(PORT_HTTP);;
         
         // Setup mocks
         Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.SystemEmail)).thenReturn("noreply@example.org");
         BrandingUtil.injectServices(dataverseServiceBean, settingsServiceBean);
-        
-        // TODO: Once we merge PR 9273 (https://github.com/IQSS/dataverse/pull/9273),
-        //       we can use methods to inject the settings in @JvmSetting
-        System.setProperty(JvmSettings.MAIL_MTA_HOST.getScopedKey(), smtpHost);
-        System.setProperty(JvmSettings.MAIL_MTA_SETTING.insert("port"), smtpPort.toString());
-    }
-    
-    @AfterEach
-    void tearDown() {
-        System.clearProperty(JvmSettings.MAIL_MTA_HOST.getScopedKey());
-        System.clearProperty(JvmSettings.MAIL_MTA_SETTING.insert("port"));
     }
     
     @Test
