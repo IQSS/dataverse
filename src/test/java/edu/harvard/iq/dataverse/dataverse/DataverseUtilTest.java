@@ -33,9 +33,9 @@ public class DataverseUtilTest {
         mLangSettingMap.put("en", "English");
         mLangSettingMap.put("fr", "French");
         Dataverse undefinedParent = new Dataverse();
-        undefinedParent.setMetadataLanguage(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE);
+        undefinedParent.setMetadataLanguage(DvObjectContainer.UNDEFINED_CODE);
         Dataset undefinedD = new Dataset();
-        undefinedD.setMetadataLanguage(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE);
+        undefinedD.setMetadataLanguage(DvObjectContainer.UNDEFINED_CODE);
         Dataverse definedParent = new Dataverse();
         definedParent.setMetadataLanguage("en");
         Dataset definedEnglishD = new Dataset();

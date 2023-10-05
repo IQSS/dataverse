@@ -488,9 +488,17 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/files")
-    public Response getVersionFiles(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return response( req -> ok( jsonFileMetadatas(
-                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas())), getRequestUser(crc));
+    public Response getVersionFiles(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset, @QueryParam("orderCriteria") String orderCriteria, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return response( req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            DatasetVersionServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
+            try {
+                fileMetadatasOrderCriteria = orderCriteria != null ? DatasetVersionServiceBean.FileMetadatasOrderCriteria.valueOf(orderCriteria) : DatasetVersionServiceBean.FileMetadatasOrderCriteria.NameAZ;
+            } catch (IllegalArgumentException e) {
+                return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
+            }
+            return ok(jsonFileMetadatas(datasetversionService.getFileMetadatas(datasetVersion, limit, offset, fileMetadatasOrderCriteria)));
+        }, getRequestUser(crc));
     }
     
     @GET
@@ -3874,4 +3882,90 @@ public class Datasets extends AbstractApiBean {
         return response(req -> ok(
                 getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getCitation(true, false)), getRequestUser(crc));
     }
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/guestbookEntryAtRequest")
+    public Response getGuestbookEntryOption(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
+        
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        String gbAtRequest = dataset.getGuestbookEntryAtRequest();
+        if(gbAtRequest == null || gbAtRequest.equals(DvObjectContainer.UNDEFINED_CODE)) {
+            return ok("Not set on dataset, using the default: " + dataset.getEffectiveGuestbookEntryAtRequest());
+        }
+        return ok(dataset.getEffectiveGuestbookEntryAtRequest());
+    }
+    
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/guestbookEntryAtRequest")
+    public Response setguestbookEntryAtRequest(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+            boolean gbAtRequest,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+        
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        Optional<Boolean> gbAtRequestOpt = JvmSettings.GUESTBOOK_AT_REQUEST.lookupOptional(Boolean.class);
+        if (!gbAtRequestOpt.isPresent()) {
+            return error(Response.Status.FORBIDDEN, "Guestbook Entry At Request cannot be set. This server is not configured to allow it.");
+        }
+        String choice = Boolean.valueOf(gbAtRequest).toString();
+        dataset.setGuestbookEntryAtRequest(choice);
+        datasetService.merge(dataset);
+        return ok("Guestbook Entry At Request set to: " + choice);
+    }
+    
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/guestbookEntryAtRequest")
+    public Response resetGuestbookEntryAtRequest(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+        
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        
+        dataset.setGuestbookEntryAtRequest(DvObjectContainer.UNDEFINED_CODE);
+        datasetService.merge(dataset);
+        return ok("Guestbook Entry At Request reset to default: " + dataset.getEffectiveGuestbookEntryAtRequest());
+    }
+
 }
