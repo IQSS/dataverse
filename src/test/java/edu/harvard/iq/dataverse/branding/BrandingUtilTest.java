@@ -41,8 +41,8 @@ public class BrandingUtilTest {
         BrandingUtil.injectServices(dataverseSvc, settingsSvc);
         
         // initial values (needed here for other tests where this method is reused!)
-        Mockito.when(settingsSvc.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn(DEFAULT_NAME);
-        Mockito.when(dataverseSvc.getRootDataverseName()).thenReturn(DEFAULT_NAME);
+        Mockito.lenient().when(settingsSvc.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn(DEFAULT_NAME);
+        Mockito.lenient().when(dataverseSvc.getRootDataverseName()).thenReturn(DEFAULT_NAME);
     }
     
     /**
@@ -50,7 +50,7 @@ public class BrandingUtilTest {
      * @param installationName
      */
     public static void setInstallationName(String installationName) {
-        Mockito.when(settingsSvc.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn(installationName);
+        Mockito.lenient().when(settingsSvc.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn(installationName);
     }
     
     /**
@@ -58,7 +58,7 @@ public class BrandingUtilTest {
      * @param rootDataverseName
      */
     public static void setRootDataverseName(String rootDataverseName) {
-        Mockito.when(dataverseSvc.getRootDataverseName()).thenReturn(rootDataverseName);
+        Mockito.lenient().when(dataverseSvc.getRootDataverseName()).thenReturn(rootDataverseName);
     }
     
     /**
