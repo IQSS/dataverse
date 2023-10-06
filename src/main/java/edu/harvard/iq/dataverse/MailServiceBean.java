@@ -101,9 +101,14 @@ public class MailServiceBean implements java.io.Serializable {
     }
 
     public boolean sendSystemEmail(String to, String subject, String messageText, boolean isHtmlContent) {
+        Optional<InternetAddress> optionalAddress = getSystemAddress();
+        if (optionalAddress.isEmpty()) {
+            logger.fine(() -> "Skipping sending mail to " + to + ", because no system address has been set.");
+            return false;
+        }
+        InternetAddress systemAddress = optionalAddress.get();
 
         boolean sent = false;
-        InternetAddress systemAddress = getSystemAddress(); 
 
         String body = messageText
                 + (isHtmlContent ? BundleUtil.getStringFromBundle("notification.email.closing.html", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress)))
@@ -186,10 +191,17 @@ public class MailServiceBean implements java.io.Serializable {
 
     //@Resource(name="mail/notifyMailSession")
     public void sendMail(String reply, String to, String cc, String subject, String messageText) {
+        Optional<InternetAddress> optionalAddress = getSystemAddress();
+        if (optionalAddress.isEmpty()) {
+            logger.fine(() -> "Skipping sending mail to " + to + ", because no system address has been set.");
+            return;
+        }
+        // Always send from system address to avoid email being blocked
+        InternetAddress fromAddress = optionalAddress.get();
+        
         try {
             MimeMessage msg = new MimeMessage(session);
-            // Always send from system address to avoid email being blocked
-            InternetAddress fromAddress = getSystemAddress();
+            
             try {
                 setContactDelegation(reply, fromAddress);
             } catch (UnsupportedEncodingException ex) {
