@@ -63,6 +63,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     @EJB
     MetadataBlockServiceBean mdbService;
+    
+    @EJB
+    MailServiceBean mailServiceBean;
 
     private Map<String, String> settingsMap;
     
@@ -388,14 +391,14 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public String getSupportTeamName() {
-        String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
-        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
+        // TODO: should this be replaced with mailServiceBean.getSupportAddress() to expose a configured support team?
+        InternetAddress systemAddress = mailServiceBean.getSystemAddress().orElse(null);
         return BrandingUtil.getSupportTeamName(systemAddress);
     }
     
     public String getSupportTeamEmail() {
-        String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
-        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);        
+        // TODO: should this be replaced with mailServiceBean.getSupportAddress() to expose a configured support team?
+        InternetAddress systemAddress = mailServiceBean.getSystemAddress().orElse(null);
         return BrandingUtil.getSupportTeamEmailAddress(systemAddress) != null ? BrandingUtil.getSupportTeamEmailAddress(systemAddress) : BrandingUtil.getSupportTeamName(systemAddress);
     }
     
