@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -24,7 +25,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -147,10 +151,37 @@ public class MailServiceBean implements java.io.Serializable {
         }
         return sent;
     }
-
-    public InternetAddress getSystemAddress() {
-       String systemEmail = settingsService.getValueForKey(Key.SystemEmail);
-       return MailUtil.parseSystemAddress(systemEmail);
+    
+    /**
+     * Lookup the system mail address ({@code InternetAddress} may contain personal and actual address).
+     * @return The system mail address or an empty {@code Optional} if not configured.
+     */
+    public Optional<InternetAddress> getSystemAddress() {
+        boolean providedByDB = false;
+        String mailAddress = JvmSettings.SYSTEM_EMAIL.lookupOptional().orElse(null);
+        
+        // Try lookup of (deprecated) database setting only if not configured via MPCONFIG
+        if (mailAddress == null) {
+            mailAddress = settingsService.getValueForKey(Key.SystemEmail);
+            // Encourage people to migrate from deprecated setting
+            if (mailAddress != null) {
+                providedByDB = true;
+                logger.warning("The :SystemMail DB setting has been deprecated, please reconfigure using JVM option " + JvmSettings.SYSTEM_EMAIL.getScopedKey());
+            }
+        }
+        
+        try {
+            // Parse and return.
+            return Optional.of(new InternetAddress(Objects.requireNonNull(mailAddress), true));
+        } catch (AddressException e) {
+            logger.log(Level.WARNING, "Could not parse system mail address '%s' provided by %s: "
+                .formatted(providedByDB ? "DB setting" : "JVM option", mailAddress), e);
+        } catch (NullPointerException e) {
+            logger.warning("Could not find a system mail setting in database (key :SystemEmail, deprecated) or JVM option '" + JvmSettings.SYSTEM_EMAIL.getScopedKey() + "'");
+        }
+        // We define the system email address as an optional setting, in case people do not want to enable mail
+        // notifications (like in a development context, but might be useful elsewhere, too).
+        return Optional.empty();
     }
 
     //@Resource(name="mail/notifyMailSession")
@@ -515,13 +546,12 @@ public class MailServiceBean implements java.io.Serializable {
                 messageText += MessageFormat.format(pattern, paramArrayStatus);
                 return messageText;
             case CREATEACC:
-                InternetAddress systemAddress = getSystemAddress();
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
                         BrandingUtil.getInstallationBrandName(),
                         systemConfig.getGuidesBaseUrl(),
                         systemConfig.getGuidesVersion(),
-                        BrandingUtil.getSupportTeamName(systemAddress),
-                        BrandingUtil.getSupportTeamEmailAddress(systemAddress)
+                        BrandingUtil.getSupportTeamName(getSystemAddress().orElse(null)),
+                        BrandingUtil.getSupportTeamEmailAddress(getSystemAddress().orElse(null))
                 ));
                 String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser());
                 accountCreatedMessage += optionalConfirmEmailAddon;
