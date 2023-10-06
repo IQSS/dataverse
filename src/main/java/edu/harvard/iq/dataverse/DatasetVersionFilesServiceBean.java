@@ -54,26 +54,32 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * Given a DatasetVersion, returns its total file metadata count
      *
      * @param datasetVersion the DatasetVersion to access
+     * @param searchCriteria for counting only files matching this criteria
      * @return long value of total file metadata count
      */
-    public long getFileMetadataCount(DatasetVersion datasetVersion) {
+    public long getFileMetadataCount(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        return queryFactory.selectFrom(fileMetadata).where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId())).stream().count();
+        JPAQuery<FileMetadata> baseQuery = queryFactory.selectFrom(fileMetadata).where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()));
+        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
+        return baseQuery.stream().count();
     }
 
     /**
      * Given a DatasetVersion, returns its file metadata count per content type
      *
      * @param datasetVersion the DatasetVersion to access
+     * @param searchCriteria for counting only files matching this criteria
      * @return Map<String, Long> of file metadata counts per content type
      */
-    public Map<String, Long> getFileMetadataCountPerContentType(DatasetVersion datasetVersion) {
+    public Map<String, Long> getFileMetadataCountPerContentType(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        List<Tuple> contentTypeOccurrences = queryFactory
+        JPAQuery<Tuple> baseQuery = queryFactory
                 .select(fileMetadata.dataFile.contentType, fileMetadata.count())
                 .from(fileMetadata)
                 .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
-                .groupBy(fileMetadata.dataFile.contentType).fetch();
+                .groupBy(fileMetadata.dataFile.contentType);
+        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
+        List<Tuple> contentTypeOccurrences = baseQuery.fetch();
         Map<String, Long> result = new HashMap<>();
         for (Tuple occurrence : contentTypeOccurrences) {
             result.put(occurrence.get(fileMetadata.dataFile.contentType), occurrence.get(fileMetadata.count()));
@@ -85,15 +91,18 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * Given a DatasetVersion, returns its file metadata count per category name
      *
      * @param datasetVersion the DatasetVersion to access
+     * @param searchCriteria for counting only files matching this criteria
      * @return Map<String, Long> of file metadata counts per category name
      */
-    public Map<String, Long> getFileMetadataCountPerCategoryName(DatasetVersion datasetVersion) {
+    public Map<String, Long> getFileMetadataCountPerCategoryName(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        List<Tuple> categoryNameOccurrences = queryFactory
+        JPAQuery<Tuple> baseQuery = queryFactory
                 .select(dataFileCategory.name, fileMetadata.count())
                 .from(dataFileCategory, fileMetadata)
                 .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()).and(fileMetadata.fileCategories.contains(dataFileCategory)))
-                .groupBy(dataFileCategory.name).fetch();
+                .groupBy(dataFileCategory.name);
+        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
+        List<Tuple> categoryNameOccurrences = baseQuery.fetch();
         Map<String, Long> result = new HashMap<>();
         for (Tuple occurrence : categoryNameOccurrences) {
             result.put(occurrence.get(dataFileCategory.name), occurrence.get(fileMetadata.count()));
@@ -105,14 +114,15 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * Given a DatasetVersion, returns its file metadata count per FileAccessStatus
      *
      * @param datasetVersion the DatasetVersion to access
+     * @param searchCriteria for counting only files matching this criteria
      * @return Map<FileAccessStatus, Long> of file metadata counts per FileAccessStatus
      */
-    public Map<FileAccessStatus, Long> getFileMetadataCountPerAccessStatus(DatasetVersion datasetVersion) {
+    public Map<FileAccessStatus, Long> getFileMetadataCountPerAccessStatus(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {
         Map<FileAccessStatus, Long> allCounts = new HashMap<>();
-        addAccessStatusCountToTotal(datasetVersion, allCounts, FileAccessStatus.Public);
-        addAccessStatusCountToTotal(datasetVersion, allCounts, FileAccessStatus.Restricted);
-        addAccessStatusCountToTotal(datasetVersion, allCounts, FileAccessStatus.EmbargoedThenPublic);
-        addAccessStatusCountToTotal(datasetVersion, allCounts, FileAccessStatus.EmbargoedThenRestricted);
+        addAccessStatusCountToTotal(datasetVersion, allCounts, FileAccessStatus.Public, searchCriteria);
+        addAccessStatusCountToTotal(datasetVersion, allCounts, FileAccessStatus.Restricted, searchCriteria);
+        addAccessStatusCountToTotal(datasetVersion, allCounts, FileAccessStatus.EmbargoedThenPublic, searchCriteria);
+        addAccessStatusCountToTotal(datasetVersion, allCounts, FileAccessStatus.EmbargoedThenRestricted, searchCriteria);
         return allCounts;
     }
 
@@ -128,54 +138,31 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      */
     public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, FileSearchCriteria searchCriteria, FileOrderCriteria orderCriteria) {
         JPAQuery<FileMetadata> baseQuery = createGetFileMetadatasBaseQuery(datasetVersion, orderCriteria);
-
-        String contentType = searchCriteria.getContentType();
-        if (contentType != null) {
-            baseQuery.where(fileMetadata.dataFile.contentType.eq(contentType));
-        }
-        FileAccessStatus accessStatus = searchCriteria.getAccessStatus();
-        if (accessStatus != null) {
-            baseQuery.where(createGetFileMetadatasAccessStatusExpression(accessStatus));
-        }
-        String categoryName = searchCriteria.getCategoryName();
-        if (categoryName != null) {
-            baseQuery.from(dataFileCategory).where(dataFileCategory.name.eq(categoryName).and(fileMetadata.fileCategories.contains(dataFileCategory)));
-        }
-        String tabularTagName = searchCriteria.getTabularTagName();
-        if (tabularTagName != null) {
-            baseQuery.from(dataFileTag).where(dataFileTag.type.eq(TagLabelToTypes.get(tabularTagName)).and(fileMetadata.dataFile.dataFileTags.contains(dataFileTag)));
-        }
-        String searchText = searchCriteria.getSearchText();
-        if (searchText != null && !searchText.isEmpty()) {
-            searchText = searchText.trim().toLowerCase();
-            baseQuery.where(fileMetadata.label.lower().contains(searchText).or(fileMetadata.description.lower().contains(searchText)));
-        }
-
+        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
         applyOrderCriteriaToGetFileMetadatasQuery(baseQuery, orderCriteria);
-
         if (limit != null) {
             baseQuery.limit(limit);
         }
         if (offset != null) {
             baseQuery.offset(offset);
         }
-
         return baseQuery.fetch();
     }
 
-    private void addAccessStatusCountToTotal(DatasetVersion datasetVersion, Map<FileAccessStatus, Long> totalCounts, FileAccessStatus dataFileAccessStatus) {
-        long fileMetadataCount = getFileMetadataCountByAccessStatus(datasetVersion, dataFileAccessStatus);
+    private void addAccessStatusCountToTotal(DatasetVersion datasetVersion, Map<FileAccessStatus, Long> totalCounts, FileAccessStatus dataFileAccessStatus, FileSearchCriteria searchCriteria) {
+        long fileMetadataCount = getFileMetadataCountByAccessStatus(datasetVersion, dataFileAccessStatus, searchCriteria);
         if (fileMetadataCount > 0) {
             totalCounts.put(dataFileAccessStatus, fileMetadataCount);
         }
     }
 
-    private long getFileMetadataCountByAccessStatus(DatasetVersion datasetVersion, FileAccessStatus accessStatus) {
+    private long getFileMetadataCountByAccessStatus(DatasetVersion datasetVersion, FileAccessStatus accessStatus, FileSearchCriteria searchCriteria) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        return queryFactory
+        JPAQuery<FileMetadata> baseQuery = queryFactory
                 .selectFrom(fileMetadata)
-                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()).and(createGetFileMetadatasAccessStatusExpression(accessStatus)))
-                .stream().count();
+                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()).and(createGetFileMetadatasAccessStatusExpression(accessStatus)));
+        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
+        return baseQuery.stream().count();
     }
 
     private JPAQuery<FileMetadata> createGetFileMetadatasBaseQuery(DatasetVersion datasetVersion, FileOrderCriteria orderCriteria) {
@@ -209,6 +196,30 @@ public class DatasetVersionFilesServiceBean implements Serializable {
                 throw new IllegalStateException("Unexpected value: " + accessStatus);
         }
         return accessStatusExpression;
+    }
+
+    private void applyFileSearchCriteriaToQuery(JPAQuery<?> baseQuery, FileSearchCriteria searchCriteria) {
+        String contentType = searchCriteria.getContentType();
+        if (contentType != null) {
+            baseQuery.where(fileMetadata.dataFile.contentType.eq(contentType));
+        }
+        FileAccessStatus accessStatus = searchCriteria.getAccessStatus();
+        if (accessStatus != null) {
+            baseQuery.where(createGetFileMetadatasAccessStatusExpression(accessStatus));
+        }
+        String categoryName = searchCriteria.getCategoryName();
+        if (categoryName != null) {
+            baseQuery.from(dataFileCategory).where(dataFileCategory.name.eq(categoryName).and(fileMetadata.fileCategories.contains(dataFileCategory)));
+        }
+        String tabularTagName = searchCriteria.getTabularTagName();
+        if (tabularTagName != null) {
+            baseQuery.from(dataFileTag).where(dataFileTag.type.eq(TagLabelToTypes.get(tabularTagName)).and(fileMetadata.dataFile.dataFileTags.contains(dataFileTag)));
+        }
+        String searchText = searchCriteria.getSearchText();
+        if (searchText != null && !searchText.isEmpty()) {
+            searchText = searchText.trim().toLowerCase();
+            baseQuery.where(fileMetadata.label.lower().contains(searchText).or(fileMetadata.description.lower().contains(searchText)));
+        }
     }
 
     private void applyOrderCriteriaToGetFileMetadatasQuery(JPAQuery<FileMetadata> query, FileOrderCriteria orderCriteria) {
