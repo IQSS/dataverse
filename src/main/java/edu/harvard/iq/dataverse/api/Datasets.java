@@ -506,19 +506,26 @@ public class Datasets extends AbstractApiBean {
                                     @Context HttpHeaders headers) {
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
+            DatasetVersionFilesServiceBean.FileOrderCriteria fileOrderCriteria;
             try {
-                fileMetadatasOrderCriteria = orderCriteria != null ? DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.valueOf(orderCriteria) : DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.NameAZ;
+                fileOrderCriteria = orderCriteria != null ? DatasetVersionFilesServiceBean.FileOrderCriteria.valueOf(orderCriteria) : DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ;
             } catch (IllegalArgumentException e) {
                 return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
             }
-            DatasetVersionFilesServiceBean.DataFileAccessStatus dataFileAccessStatus;
+            FileSearchCriteria.FileAccessStatus dataFileAccessStatus;
             try {
-                dataFileAccessStatus = accessStatus != null ? DatasetVersionFilesServiceBean.DataFileAccessStatus.valueOf(accessStatus) : null;
+                dataFileAccessStatus = accessStatus != null ? FileSearchCriteria.FileAccessStatus.valueOf(accessStatus) : null;
             } catch (IllegalArgumentException e) {
                 return error(Response.Status.BAD_REQUEST, "Invalid access status: " + accessStatus);
             }
-            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, contentType, dataFileAccessStatus, categoryName, tabularTagName, searchText, fileMetadatasOrderCriteria)));
+            FileSearchCriteria fileSearchCriteria = new FileSearchCriteria(
+                    contentType,
+                    dataFileAccessStatus,
+                    categoryName,
+                    tabularTagName,
+                    searchText
+            );
+            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, fileSearchCriteria, fileOrderCriteria)));
         }, getRequestUser(crc));
     }
 
