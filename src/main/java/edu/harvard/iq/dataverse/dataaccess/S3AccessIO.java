@@ -108,14 +108,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             if(!StringUtil.isEmpty(proxy)&&StringUtil.isEmpty(endpoint)) {
                 logger.severe(driverId + " config error: Must specify a custom-endpoint-url if proxy-url is specified");
             }
-            //Not sure this is needed but moving it from the open method for now since it definitely doesn't need to run every time an object is opened.
-            try {
-                if (bucketName == null || !s3.doesBucketExistV2(bucketName)) {
-                    throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
-                }
-            } catch (SdkClientException sce) {
-                throw new IOException("ERROR: S3AccessIO - Failed to look up bucket "+bucketName+" (is AWS properly configured?): " + sce.getMessage());
-            }
+
+            // FWIW: There used to be a check here to see if the bucket exists.
+            // It was very redundant (checking every time we access any file) and didn't do
+            // much but potentially make the failure (in the unlikely case a bucket doesn't
+            // exist/just disappeared) happen slightly earlier (here versus at the first
+            // file/metadata access).
+                    
         } catch (Exception e) {
             throw new AmazonClientException(
                         "Cannot instantiate a S3 client; check your AWS credentials and region",
