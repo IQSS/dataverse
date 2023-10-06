@@ -510,7 +510,7 @@ public class Datasets extends AbstractApiBean {
             try {
                 fileOrderCriteria = orderCriteria != null ? DatasetVersionFilesServiceBean.FileOrderCriteria.valueOf(orderCriteria) : DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ;
             } catch (IllegalArgumentException e) {
-                return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.order.criteria", List.of(orderCriteria)));
             }
             FileSearchCriteria fileSearchCriteria;
             try {
@@ -522,7 +522,7 @@ public class Datasets extends AbstractApiBean {
                         searchText
                 );
             } catch (IllegalArgumentException e) {
-                return error(Response.Status.BAD_REQUEST, "Invalid access status: " + accessStatus);
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
             }
             return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, fileSearchCriteria, fileOrderCriteria)));
         }, getRequestUser(crc));
@@ -552,7 +552,7 @@ public class Datasets extends AbstractApiBean {
                         searchText
                 );
             } catch (IllegalArgumentException e) {
-                return error(Response.Status.BAD_REQUEST, "Invalid access status: " + accessStatus);
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
             }
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
