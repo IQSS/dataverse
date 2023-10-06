@@ -54,12 +54,12 @@ class MailSessionProducerIT {
     @BeforeAll
     static void setUp() {
         // Setup mocks behavior, inject as deps
-        Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.SystemEmail)).thenReturn("noreply@example.org");
         BrandingUtil.injectServices(dataverseServiceBean, settingsServiceBean);
     }
     
     @Nested
     @LocalJvmSettings
+    @JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = "test@test.com")
     @JvmSetting(key = JvmSettings.MAIL_MTA_HOST, method = "tcSmtpHost")
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpPort", varArgs = "port")
     class WithoutAuthentication {
@@ -113,6 +113,7 @@ class MailSessionProducerIT {
     
     @Nested
     @LocalJvmSettings
+    @JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = "test@test.com")
     @JvmSetting(key = JvmSettings.MAIL_MTA_HOST, method = "tcSmtpHost")
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpPort", varArgs = "port")
     @JvmSetting(key = JvmSettings.MAIL_MTA_AUTH, value = "yes")
