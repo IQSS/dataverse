@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
-import edu.harvard.iq.dataverse.util.MailUtil;
+import jakarta.mail.internet.AddressException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,11 +39,11 @@ class MailServiceBeanTest {
         // without name, without root dataverse name, without installation name -> default to bundle string.
         "dataverse@dataverse.org, NULL, NULL, Dataverse Installation Admin"
     }, nullValues = {"NULL"})
-    void setContactDelegation(String fromMail, String rootDataverseName, String installationName, String expectedStartsWith) {
+    void setContactDelegation(String fromMail, String rootDataverseName, String installationName, String expectedStartsWith) throws AddressException {
         BrandingUtilTest.setRootDataverseName(rootDataverseName);
         BrandingUtilTest.setInstallationName(installationName);
         
-        InternetAddress fromAddress = MailUtil.parseSystemAddress(fromMail);
+        InternetAddress fromAddress = new InternetAddress(fromMail);
         MailServiceBean mailServiceBean = new MailServiceBean();
         try {
             mailServiceBean.setContactDelegation("user@example.edu", fromAddress);
