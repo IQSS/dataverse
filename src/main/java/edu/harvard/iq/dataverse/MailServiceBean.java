@@ -188,6 +188,23 @@ public class MailServiceBean implements java.io.Serializable {
         // notifications (like in a development context, but might be useful elsewhere, too).
         return Optional.empty();
     }
+    
+    /**
+     * Lookup the support team mail address ({@code InternetAddress} may contain personal and actual address).
+     * Will default to return {@code #getSystemAddress} if not configured.
+     * @return Support team mail address
+     */
+    public Optional<InternetAddress> getSupportAddress() {
+        Optional<String> supportMailAddress = JvmSettings.SUPPORT_EMAIL.lookupOptional();
+        if (supportMailAddress.isPresent()) {
+            try {
+                return Optional.of(new InternetAddress(supportMailAddress.get(), true));
+            } catch (AddressException e) {
+                logger.log(Level.WARNING, "Could not parse support mail address '%s', defaulting to system address: ".formatted(supportMailAddress.get()), e);
+            }
+        }
+        return getSystemAddress();
+    }
 
     //@Resource(name="mail/notifyMailSession")
     public void sendMail(String reply, String to, String cc, String subject, String messageText) {
