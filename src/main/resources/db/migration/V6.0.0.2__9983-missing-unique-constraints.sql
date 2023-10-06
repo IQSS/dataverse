@@ -2,7 +2,6 @@ DO $$
 BEGIN
 
   BEGIN
-    TRUNCATE externalvocabularyvalue
     ALTER TABLE externalvocabularyvalue ADD CONSTRAINT externalvocabularvalue_uri_key UNIQUE(uri);
   EXCEPTION
     WHEN duplicate_table THEN RAISE NOTICE 'Table unique constraint externalvocabularvalue_uri_key already exists';
