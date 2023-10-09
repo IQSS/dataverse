@@ -3636,7 +3636,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(invalidStatus))));
 
         // Test category name criteria
-        getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, testDatasetVersion, null, null, "testCategory", null, null, apiToken);
+        getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, testDatasetVersion, null, null, testCategory, null, null, apiToken);
 
         getVersionFileCountsResponse.then().assertThat().statusCode(OK.getStatusCode());
 
