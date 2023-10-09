@@ -99,7 +99,17 @@ public class MailServiceBean implements java.io.Serializable {
     public boolean sendSystemEmail(String to, String subject, String messageText) {
         return sendSystemEmail(to, subject, messageText, false);
     }
-
+    
+    /**
+     * Send a system notification to one or multiple recipients by email.
+     * Will skip sending when {@link #getSystemAddress()} doesn't return a configured "from" address.
+     * @param to A comma separated list of one or multiple recipients' addresses. May contain a "personal name" and
+     *           the recipients address in &lt;&gt;. See also {@link InternetAddress}.
+     * @param subject The message's subject
+     * @param messageText The message's text
+     * @param isHtmlContent Determine if the message text is formatted using HTML or plain text.
+     * @return Status: true if sent successfully, false otherwise
+     */
     public boolean sendSystemEmail(String to, String subject, String messageText, boolean isHtmlContent) {
         Optional<InternetAddress> optionalAddress = getSystemAddress();
         if (optionalAddress.isEmpty()) {
@@ -108,53 +118,32 @@ public class MailServiceBean implements java.io.Serializable {
         }
         InternetAddress systemAddress = optionalAddress.get();
 
-        boolean sent = false;
+        String body = messageText +
+            BundleUtil.getStringFromBundle(isHtmlContent ? "notification.email.closing.html" : "notification.email.closing",
+                List.of(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress)));
 
-        String body = messageText
-                + (isHtmlContent ? BundleUtil.getStringFromBundle("notification.email.closing.html", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress)))
-                        : BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress))));
-
-        logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
+        logger.fine(() -> "Sending email to %s. Subject: <<<%s>>>. Body: %s".formatted(to, subject, body));
         try {
+            // Since JavaMail 1.6, we have support for UTF-8 mail addresses and do not need to handle these ourselves.
+            InternetAddress[] recipients = InternetAddress.parse(to);
+            
             MimeMessage msg = new MimeMessage(session);
-            if (systemAddress != null) {
-                msg.setFrom(systemAddress);
-                msg.setSentDate(new Date());
-                String[] recipientStrings = to.split(",");
-                InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
-                for (int i = 0; i < recipients.length; i++) {
-                    try {
-                        recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
-                    } catch (UnsupportedEncodingException ex) {
-                        logger.severe(ex.getMessage());
-                    }
-                }
-                msg.setRecipients(Message.RecipientType.TO, recipients);
-                msg.setSubject(subject, charset);
-                if (isHtmlContent) {
-                    msg.setText(body, charset, "html");
-                } else {
-                    msg.setText(body, charset);
-                }
-
-                try {
-                    Transport.send(msg, recipients);
-                    sent = true;
-                } catch (MessagingException ssfe) {
-                    logger.warning("Failed to send mail to: " + to);
-                    logger.warning("MessagingException Message: " + ssfe);
-                }
+            msg.setFrom(systemAddress);
+            msg.setSentDate(new Date());
+            msg.setRecipients(Message.RecipientType.TO, recipients);
+            msg.setSubject(subject, charset);
+            if (isHtmlContent) {
+                msg.setText(body, charset, "html");
             } else {
-                logger.fine("Skipping sending mail to " + to + ", because the \"no-reply\" address not set (" + Key.SystemEmail + " setting).");
+                msg.setText(body, charset);
             }
-        } catch (AddressException ae) {
-            logger.warning("Failed to send mail to " + to);
-            ae.printStackTrace(System.out);
-        } catch (MessagingException me) {
-            logger.warning("Failed to send mail to " + to);
-            me.printStackTrace(System.out);
+            
+            Transport.send(msg, recipients);
+            return true;
+        } catch (MessagingException ae) {
+            logger.log(Level.WARNING, "Failed to send mail to %s: %s".formatted(to, ae.getMessage()), ae);
         }
-        return sent;
+        return false;
     }
     
     /**

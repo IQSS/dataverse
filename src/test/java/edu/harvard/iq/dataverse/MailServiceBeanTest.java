@@ -24,6 +24,7 @@ import java.io.UnsupportedEncodingException;
 
 import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
@@ -130,6 +131,19 @@ class MailServiceBeanTest {
         void lookupSupportSetWithSystemPresent() {
             assertEquals(email, mailServiceBean.getSystemAddress().get().getAddress());
             assertEquals("support@example.org", mailServiceBean.getSupportAddress().get().getAddress());
+        }
+    }
+    
+    @Nested
+    @LocalJvmSettings
+    class SendSystemMail {
+        @InjectMocks
+        MailServiceBean mailServiceBean = new MailServiceBean();
+        
+        @Test
+        @JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = "")
+        void skipIfNoSystemAddress() {
+            assertFalse(mailServiceBean.sendSystemEmail("target@example.org", "Test", "Test", false));
         }
         
     }
