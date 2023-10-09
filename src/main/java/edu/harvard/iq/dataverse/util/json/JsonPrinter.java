@@ -1115,6 +1115,14 @@ public class JsonPrinter {
         return jsonObjectBuilder;
     }
 
+    public static JsonObjectBuilder jsonFileCountPerTabularTagNameMap(Map<DataFileTag.TagType, Long> map) {
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        for (Map.Entry<DataFileTag.TagType, Long> mapEntry : map.entrySet()) {
+            jsonObjectBuilder.add(mapEntry.getKey().toString(), mapEntry.getValue());
+        }
+        return jsonObjectBuilder;
+    }
+
     public static Collector<JsonObjectBuilder, ArrayList<JsonObjectBuilder>, JsonArrayBuilder> toJsonArray() {
         return new Collector<JsonObjectBuilder, ArrayList<JsonObjectBuilder>, JsonArrayBuilder>() {
 

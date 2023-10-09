@@ -111,6 +111,29 @@ public class DatasetVersionFilesServiceBean implements Serializable {
     }
 
     /**
+     * Given a DatasetVersion, returns its file metadata count per DataFileTag.TagType
+     *
+     * @param datasetVersion the DatasetVersion to access
+     * @param searchCriteria for counting only files matching this criteria
+     * @return Map<DataFileTag.TagType, Long> of file metadata counts per DataFileTag.TagType
+     */
+    public Map<DataFileTag.TagType, Long> getFileMetadataCountPerTabularTagName(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        JPAQuery<Tuple> baseQuery = queryFactory
+                .select(dataFileTag.type, fileMetadata.count())
+                .from(dataFileTag, fileMetadata)
+                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()).and(fileMetadata.dataFile.dataFileTags.contains(dataFileTag)))
+                .groupBy(dataFileTag.type);
+        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
+        List<Tuple> tagNameOccurrences = baseQuery.fetch();
+        Map<DataFileTag.TagType, Long> result = new HashMap<>();
+        for (Tuple occurrence : tagNameOccurrences) {
+            result.put(occurrence.get(dataFileTag.type), occurrence.get(fileMetadata.count()));
+        }
+        return result;
+    }
+
+    /**
      * Given a DatasetVersion, returns its file metadata count per FileAccessStatus
      *
      * @param datasetVersion the DatasetVersion to access

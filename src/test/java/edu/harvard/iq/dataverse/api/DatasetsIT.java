@@ -3574,6 +3574,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         JsonPath responseJsonPath = getVersionFileCountsResponse.jsonPath();
         LinkedHashMap<String, Integer> responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
         LinkedHashMap<String, Integer> responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        LinkedHashMap<String, Integer> responseCountPerTabularTagNameMap = responseJsonPath.get("data.perTabularTagName");
         LinkedHashMap<String, Integer> responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
 
         assertEquals(4, (Integer) responseJsonPath.get("data.total"));
@@ -3581,6 +3582,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(2, responseCountPerContentTypeMap.get("text/plain"));
         assertEquals(2, responseCountPerContentTypeMap.size());
         assertEquals(1, responseCountPerCategoryNameMap.get(testCategory));
+        assertEquals(0, responseCountPerTabularTagNameMap.size());
         assertEquals(2, responseCountPerAccessStatusMap.size());
         assertEquals(3, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.Public.toString()));
         assertEquals(1, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.EmbargoedThenPublic.toString()));
@@ -3593,6 +3595,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         responseJsonPath = getVersionFileCountsResponse.jsonPath();
         responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
         responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        responseCountPerTabularTagNameMap = responseJsonPath.get("data.perTabularTagName");
         responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
 
         assertEquals(2, (Integer) responseJsonPath.get("data.total"));
@@ -3600,6 +3603,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(1, responseCountPerContentTypeMap.size());
         assertEquals(1, responseCountPerCategoryNameMap.size());
         assertEquals(1, responseCountPerCategoryNameMap.get(testCategory));
+        assertEquals(0, responseCountPerTabularTagNameMap.size());
         assertEquals(2, responseCountPerAccessStatusMap.size());
         assertEquals(1, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.Public.toString()));
         assertEquals(1, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.EmbargoedThenPublic.toString()));
@@ -3612,6 +3616,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         responseJsonPath = getVersionFileCountsResponse.jsonPath();
         responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
         responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        responseCountPerTabularTagNameMap = responseJsonPath.get("data.perTabularTagName");
         responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
 
         assertEquals(3, (Integer) responseJsonPath.get("data.total"));
@@ -3619,6 +3624,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(2, responseCountPerContentTypeMap.get("text/plain"));
         assertEquals(2, responseCountPerContentTypeMap.size());
         assertEquals(0, responseCountPerCategoryNameMap.size());
+        assertEquals(0, responseCountPerTabularTagNameMap.size());
         assertEquals(1, responseCountPerAccessStatusMap.size());
         assertEquals(3, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.Public.toString()));
 
@@ -3637,6 +3643,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         responseJsonPath = getVersionFileCountsResponse.jsonPath();
         responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
         responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        responseCountPerTabularTagNameMap = responseJsonPath.get("data.perTabularTagName");
         responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
 
         assertEquals(1, (Integer) responseJsonPath.get("data.total"));
@@ -3644,6 +3651,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(1, responseCountPerContentTypeMap.size());
         assertEquals(1, responseCountPerCategoryNameMap.size());
         assertEquals(1, responseCountPerCategoryNameMap.get(testCategory));
+        assertEquals(0, responseCountPerTabularTagNameMap.size());
         assertEquals(1, responseCountPerAccessStatusMap.size());
         assertEquals(1, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.EmbargoedThenPublic.toString()));
 
@@ -3655,6 +3663,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         responseJsonPath = getVersionFileCountsResponse.jsonPath();
         responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
         responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        responseCountPerTabularTagNameMap = responseJsonPath.get("data.perTabularTagName");
         responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
 
         assertEquals(3, (Integer) responseJsonPath.get("data.total"));
@@ -3662,6 +3671,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(2, responseCountPerContentTypeMap.get("text/plain"));
         assertEquals(2, responseCountPerContentTypeMap.size());
         assertEquals(0, responseCountPerCategoryNameMap.size());
+        assertEquals(0, responseCountPerTabularTagNameMap.size());
         assertEquals(1, responseCountPerAccessStatusMap.size());
         assertEquals(3, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.Public.toString()));
 
@@ -3686,12 +3696,15 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         responseJsonPath = getVersionFileCountsResponse.jsonPath();
         responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
         responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        responseCountPerTabularTagNameMap = responseJsonPath.get("data.perTabularTagName");
         responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
 
         assertEquals(1, (Integer) responseJsonPath.get("data.total"));
         assertEquals(1, responseCountPerContentTypeMap.get("text/tab-separated-values"));
         assertEquals(1, responseCountPerContentTypeMap.size());
         assertEquals(0, responseCountPerCategoryNameMap.size());
+        assertEquals(1, responseCountPerTabularTagNameMap.size());
+        assertEquals(1, responseCountPerTabularTagNameMap.get(tabularTagName));
         assertEquals(1, responseCountPerAccessStatusMap.size());
         assertEquals(1, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.Public.toString()));
     }

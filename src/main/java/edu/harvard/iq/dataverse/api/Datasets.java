@@ -559,6 +559,7 @@ public class Datasets extends AbstractApiBean {
             jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion, fileSearchCriteria));
             jsonObjectBuilder.add("perContentType", json(datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion, fileSearchCriteria)));
             jsonObjectBuilder.add("perCategoryName", json(datasetVersionFilesServiceBean.getFileMetadataCountPerCategoryName(datasetVersion, fileSearchCriteria)));
+            jsonObjectBuilder.add("perTabularTagName", jsonFileCountPerTabularTagNameMap(datasetVersionFilesServiceBean.getFileMetadataCountPerTabularTagName(datasetVersion, fileSearchCriteria)));
             jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion, fileSearchCriteria)));
             return ok(jsonObjectBuilder);
         }, getRequestUser(crc));
