@@ -200,7 +200,7 @@ Previewers are available for the following file types:
 
 - Text
 - PDF
-- Markdown (MD)
+- Markdown
 - Tabular (CSV, Excel, etc., see :doc:`tabulardataingest/index`)
 - Code (R, etc.)
 - Images (PNG, GIF, JPG)
