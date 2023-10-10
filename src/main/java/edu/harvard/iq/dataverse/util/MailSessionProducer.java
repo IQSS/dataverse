@@ -21,7 +21,7 @@ public class MailSessionProducer {
     //       classify as spam.
     // NOTE: Complete list including descriptions at https://eclipse-ee4j.github.io/angus-mail/docs/api/org.eclipse.angus.mail/org/eclipse/angus/mail/smtp/package-summary.html
     static final List<String> smtpStringProps = List.of(
-        "localhost", "localaddress", "auth.mechanisms", "auth.ntlm.domain", "submitter", "dsn.notify", "dsn.ret",
+        "host", "localhost", "localaddress", "auth.mechanisms", "auth.ntlm.domain", "submitter", "dsn.notify", "dsn.ret",
         "sasl.mechanisms", "sasl.authorizationid", "sasl.realm", "ssl.trust", "ssl.protocols", "ssl.ciphersuites",
         "proxy.host", "proxy.port", "proxy.user", "proxy.password", "socks.host", "socks.port", "mailextension"
     );
@@ -29,7 +29,7 @@ public class MailSessionProducer {
         "port", "connectiontimeout", "timeout", "writetimeout", "localport", "auth.ntlm.flag"
     );
     static final List<String> smtpBoolProps = List.of(
-        "ehlo", "auth.login.disable", "auth.plain.disable", "auth.digest-md5.disable", "auth.ntlm.disable",
+        "auth", "ehlo", "auth.login.disable", "auth.plain.disable", "auth.digest-md5.disable", "auth.ntlm.disable",
         "auth.xoauth2.disable", "allow8bitmime", "sendpartial", "sasl.enable", "sasl.usecanonicalhostname",
         "quitwait", "quitonsessionreject", "ssl.enable", "ssl.checkserveridentity", "starttls.enable",
         "starttls.required", "userset", "noop.strict"
@@ -89,10 +89,6 @@ public class MailSessionProducer {
         // Now, make it proper, but make it possible to disable it - see also EMailValidator.
         // Default = true from microprofile-config.properties as most MTAs these days support SMTPUTF8 extension
         configuration.put("mail.mime.allowutf8", JvmSettings.MAIL_MTA_SUPPORT_UTF8.lookup(Boolean.class).toString());
-        
-        configuration.put(PREFIX + "host", JvmSettings.MAIL_MTA_HOST.lookup());
-        // default = false from microprofile-config.properties
-        configuration.put(PREFIX + "auth", JvmSettings.MAIL_MTA_AUTH.lookup(Boolean.class).toString());
         
         // Map properties 1:1 to mail.smtp properties for the mail session.
         smtpStringProps.forEach(

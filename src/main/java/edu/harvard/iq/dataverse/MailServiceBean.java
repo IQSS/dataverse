@@ -172,7 +172,8 @@ public class MailServiceBean implements java.io.Serializable {
             logger.log(Level.WARNING, "Could not parse system mail address '%s' provided by %s: "
                 .formatted(providedByDB ? "DB setting" : "JVM option", mailAddress), e);
         } catch (NullPointerException e) {
-            logger.warning("Could not find a system mail setting in database (key :SystemEmail, deprecated) or JVM option '" + JvmSettings.SYSTEM_EMAIL.getScopedKey() + "'");
+            // Do not pester the logs - no configuration may mean someone wants to disable mail notifications
+            logger.fine("Could not find a system mail setting in database (key :SystemEmail, deprecated) or JVM option '" + JvmSettings.SYSTEM_EMAIL.getScopedKey() + "'");
         }
         // We define the system email address as an optional setting, in case people do not want to enable mail
         // notifications (like in a development context, but might be useful elsewhere, too).
