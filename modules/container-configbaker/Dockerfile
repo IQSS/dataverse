@@ -40,8 +40,6 @@ COPY maven/solr/*.xml ${SOLR_TEMPLATE}/conf/
 RUN rm ${SOLR_TEMPLATE}/conf/managed-schema.xml
 
 
-
-
 # Set the entrypoint to tini (as a process supervisor)
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 # By default run a script that will print a help message and terminate
