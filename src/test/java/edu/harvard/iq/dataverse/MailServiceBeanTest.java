@@ -136,6 +136,8 @@ class MailServiceBeanTest {
     @Nested
     @LocalJvmSettings
     class SendSystemMail {
+        @Mock
+        SettingsServiceBean settingsServiceBean;
         @InjectMocks
         MailServiceBean mailServiceBean = new MailServiceBean();
         
