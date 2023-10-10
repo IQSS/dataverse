@@ -84,6 +84,11 @@ public class MailSessionProducer {
         // See https://jakarta.ee/specifications/mail/2.1/apidocs/jakarta.mail/jakarta/mail/package-summary
         configuration.put("mail.transport.protocol", "smtp");
         configuration.put("mail.debug", JvmSettings.MAIL_DEBUG.lookupOptional(Boolean.class).orElse(false).toString());
+        // Only enable if your MTA properly supports UTF-8 mail addresses following RFC 6530/6531/6532.
+        // Before, we used a hack to put the raw UTF-8 mail address into the system.
+        // Now, make it proper, but make it possible to disable it - see also EMailValidator.
+        // Default = true from microprofile-config.properties as most MTAs these days support SMTPUTF8 extension
+        configuration.put("mail.mime.allowutf8", JvmSettings.MAIL_MTA_SUPPORT_UTF8.lookup(Boolean.class).toString());
         
         configuration.put(PREFIX + "host", JvmSettings.MAIL_MTA_HOST.lookup());
         // default = false from microprofile-config.properties

@@ -142,6 +142,7 @@ public class MailServiceBean implements java.io.Serializable {
             return true;
         } catch (MessagingException ae) {
             logger.log(Level.WARNING, "Failed to send mail to %s: %s".formatted(to, ae.getMessage()), ae);
+            logger.info("When UTF-8 characters in recipients: make sure MTA supports it and JVM option " + JvmSettings.MAIL_MTA_SUPPORT_UTF8.getScopedKey() + "=true");
         }
         return false;
     }

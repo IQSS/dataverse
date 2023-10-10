@@ -130,6 +130,7 @@ public enum JvmSettings {
     MAIL_MTA_AUTH(SCOPE_MAIL_MTA, "auth"),
     MAIL_MTA_USER(SCOPE_MAIL_MTA, "user"),
     MAIL_MTA_PASSWORD(SCOPE_MAIL_MTA, "password"),
+    MAIL_MTA_SUPPORT_UTF8(SCOPE_MAIL_MTA, "allow-utf8-addresses"),
     // Placeholder setting for a large list of extra settings
     MAIL_MTA_SETTING(SCOPE_MAIL_MTA),
     

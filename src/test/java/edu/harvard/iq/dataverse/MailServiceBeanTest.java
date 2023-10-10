@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -13,8 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-
-import jakarta.mail.internet.InternetAddress;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -22,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.UnsupportedEncodingException;
 
-import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.*;
+import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -145,7 +144,6 @@ class MailServiceBeanTest {
         void skipIfNoSystemAddress() {
             assertFalse(mailServiceBean.sendSystemEmail("target@example.org", "Test", "Test", false));
         }
-        
     }
     
 }
