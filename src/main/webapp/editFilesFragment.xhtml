@@ -91,6 +91,11 @@
                                                     rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()}">
                                         <f:param value="#{EditDatafilesPage.getHumanMaxFileUploadSizeInBytes()}"/>
                                     </h:outputFormat>
+                                    
+                                    <h:outputFormat value=" #{bundle['file.selectToAdd.tipQuotaRemaining']}" escape="false" 
+                                                    rendered="#{EditDatafilesPage.isStorageQuotaEnforced()}">
+                                        <f:param value="#{EditDatafilesPage.getHumanMaxTotalUploadSizeInBytes()}"/>
+                                    </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipTabularLimit']}" escape="false"
                                                     rendered="#{EditDatafilesPage.maxIngestSizeInBytes != -1}">
                                         <f:param value="#{systemConfig.guidesBaseUrl}"/>
@@ -154,7 +159,7 @@
                                   dragDropSupport="true"
                                   auto="#{!(systemConfig.directUploadEnabled(EditDatafilesPage.dataset))}"
                                   multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
-                                  disabled="#{lockedFromEdits ||  !(datasetPage || EditDatafilesPage.showFileUploadComponent()) }"
+                                  disabled="#{lockedFromEdits ||  !(datasetPage || EditDatafilesPage.showFileUploadComponent()) || EditDatafilesPage.isQuotaExceeded()}"
                                   listener="#{EditDatafilesPage.handleFileUpload}" 
                                   process="filesTable" 
                                   update=":datasetForm:filesTable, @([id$=filesButtons])"
@@ -166,6 +171,7 @@
                                   fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}" 
                                   invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}" 
                                   sequential="true"
+                                  previewWidth="-1"
                                   widgetVar="fileUploadWidget">
                         <f:passThroughAttribute name="aria-label" value="#{bundle['file.uploadFiles']}"/>
                     </p:fileUpload>

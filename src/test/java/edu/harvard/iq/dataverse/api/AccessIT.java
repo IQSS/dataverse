@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import io.restassured.RestAssured;
-import static io.restassured.RestAssured.given;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.DataFile;
@@ -14,7 +13,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.util.zip.ZipInputStream;
 
-import org.hamcrest.MatcherAssert;
+import jakarta.json.Json;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,15 +21,14 @@ import java.util.zip.ZipEntry;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
-import static jakarta.ws.rs.core.Response.Status.OK;
+
 import org.hamcrest.collection.IsMapContaining;
 
+import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.MatcherAssert.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -548,7 +546,7 @@ public class AccessIT {
         assertEquals(200, revokeFileAccessResponse.getStatusCode());
 
         listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
-        assertEquals(400, listAccessRequestResponse.getStatusCode());
+        assertEquals(404, listAccessRequestResponse.getStatusCode());
     }
 
     // This is a round trip test of uploading a zipped archive, with some folder
@@ -629,7 +627,48 @@ public class AccessIT {
         System.out.println("MD5 checksums of the unzipped file streams are correct.");
         
         System.out.println("Zip upload-and-download round trip test: success!");
-        
     }
 
+    @Test
+    public void testGetUserFileAccessRequested() {
+        // Create new user
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String newUserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        String dataFileId = Integer.toString(tabFile3IdRestricted);
+
+        // Call with new user and unrequested access file
+        Response getUserFileAccessRequestedResponse = UtilIT.getUserFileAccessRequested(dataFileId, newUserApiToken);
+        getUserFileAccessRequestedResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        boolean userFileAccessRequested = JsonPath.from(getUserFileAccessRequestedResponse.body().asString()).getBoolean("data");
+        assertFalse(userFileAccessRequested);
+
+        // Request file access for the new user
+        Response requestFileAccessResponse = UtilIT.requestFileAccess(dataFileId, newUserApiToken);
+        requestFileAccessResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Call with new user and requested access file
+        getUserFileAccessRequestedResponse = UtilIT.getUserFileAccessRequested(dataFileId, newUserApiToken);
+        getUserFileAccessRequestedResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        userFileAccessRequested = JsonPath.from(getUserFileAccessRequestedResponse.body().asString()).getBoolean("data");
+        assertTrue(userFileAccessRequested);
+    }
+
+    @Test
+    public void testGetUserPermissionsOnFile() {
+        // Call with valid file id
+        Response getUserPermissionsOnFileResponse = UtilIT.getUserPermissionsOnFile(Integer.toString(basicFileId), apiToken);
+        getUserPermissionsOnFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        boolean canDownloadFile = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canDownloadFile");
+        assertTrue(canDownloadFile);
+        boolean canEditOwnerDataset = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canEditOwnerDataset");
+        assertTrue(canEditOwnerDataset);
+
+        // Call with invalid file id
+        Response getUserPermissionsOnFileInvalidIdResponse = UtilIT.getUserPermissionsOnFile("testInvalidId", apiToken);
+        getUserPermissionsOnFileInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
 }

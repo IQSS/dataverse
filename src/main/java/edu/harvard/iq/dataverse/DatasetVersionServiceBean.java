@@ -48,7 +48,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetVersionServiceBean.class.getCanonicalName());
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-    
+
     @EJB
     DatasetServiceBean datasetService;
     
@@ -149,7 +149,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             return this.datasetVersionForResponse;
         }                
     } // end RetrieveDatasetVersionResponse
-    
+
     public DatasetVersion find(Object pk) {
         return em.find(DatasetVersion.class, pk);
     }

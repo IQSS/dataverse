@@ -51,4 +51,6 @@ LABEL org.opencontainers.image.created="@git.build.time@" \
       org.opencontainers.image.vendor="Global Dataverse Community Consortium" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.title="Dataverse Application Image" \
-      org.opencontainers.image.description="This container image provides the research data repository software Dataverse in a box."
+      org.opencontainers.image.description="This container image provides the research data repository software Dataverse in a box." \
+      org.dataverse.deps.postgresql.version="@postgresql.server.version@" \
+      org.dataverse.deps.solr.version="@solr.version@"

@@ -212,7 +212,7 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                         try {
                             JsonObjectBuilder gbe = Json.createObjectBuilder()
                                     .add("id", guestbookResponse.getId())
-                                    .add("downloadType", guestbookResponse.getDownloadtype())
+                                    .add("eventType", guestbookResponse.getEventType())
                                     .add("filename", guestbookResponse.getDataFile().getCurrentName())
                                     .add("date", guestbookResponse.getResponseDate())
                                     .add("guestbookName", guestbookResponse.getGuestbook().getName());
