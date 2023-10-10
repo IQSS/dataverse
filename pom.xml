@@ -252,14 +252,7 @@
             <artifactId>expressly</artifactId>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>com.querydsl</groupId>
-            <artifactId>querydsl-apt</artifactId>
-            <version>${querydsl.version}</version>
-            <classifier>jakarta</classifier>
-            <scope>provided</scope>
-        </dependency>
+        
         <dependency>
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-jpa</artifactId>
@@ -709,7 +702,29 @@
                 <configuration>
                     <release>${target.java.version}</release>
                     <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                    <compilerArgument>${compilerArgument}</compilerArgument>
+                    <compilerArgs>
+                        <arg>${compilerArgument}</arg>
+                        <!--
+                            See APT options table for more:
+                            https://querydsl.com/static/querydsl/latest/reference/html/ch03s03.html
+                        -->
+                        <arg>-Aquerydsl.generatedAnnotationClass=com.querydsl.core.annotations.Generated</arg>
+                    </compilerArgs>
+                    <!-- Extracted from https://github.com/querydsl/querydsl/issues/3131#issuecomment-1549255382 -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.querydsl</groupId>
+                            <artifactId>querydsl-apt</artifactId>
+                            <version>${querydsl.version}</version>
+                            <classifier>jakarta</classifier>
+                        </path>
+                        <path>
+                            <groupId>jakarta.persistence</groupId>
+                            <artifactId>jakarta.persistence-api</artifactId>
+                            <!-- Cannot be inherited from Payara BOM. Needs manual adaption. -->
+                            <version>3.1.0</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
