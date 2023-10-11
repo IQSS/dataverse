@@ -693,31 +693,12 @@ public class Dataset extends DvObjectContainer {
         Timestamp citationDate = null;
         //Only calculate if this dataset doesn't use an alternate date field for publication date
         if (citationDateDatasetFieldType == null) {
-            // @todo: remove this commented-out code once/if the PR passes review - L.A. 
-            //List<DatasetVersion> versions = this.versions;
-            // TODo - is this ever not version 1.0 (or draft if not published yet)
-            //DatasetVersion oldest = versions.get(versions.size() - 1);
-            // - I believe the answer is yes, the oldest versions will always be 
-            // either 1.0 or draft - L.A. 
             citationDate = super.getPublicationDate();
             if (embargoCitationDate != null) {
                 if (citationDate.compareTo(embargoCitationDate) < 0) {
                     return embargoCitationDate;
                 }
             }
-            // @todo: remove this commented-out code once/if the PR passes review - L.A. 
-            /*if (oldest.isPublished()) {
-                List<FileMetadata> fms = oldest.getFileMetadatas();
-                for (FileMetadata fm : fms) {
-                    Embargo embargo = fm.getDataFile().getEmbargo();
-                    if (embargo != null) {
-                        Timestamp embDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
-                        if (citationDate.compareTo(embDate) < 0) {
-                            citationDate = embDate;
-                        }
-                    }
-                }
-            }*/
         }
         return citationDate;
     }
