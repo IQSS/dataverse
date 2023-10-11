@@ -217,7 +217,14 @@ Sponsored by the `Ontario Council of University Libraries (OCUL) <https://ocul.o
 RDA BagIt (BagPack) Archiving
 +++++++++++++++++++++++++++++
 
-A Dataverse installation can be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to the `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_, to a local file system, or to `Google Cloud Storage <https://cloud.google.com/storage>`_.
+A Dataverse installation can be configured to submit a copy of published Dataset versions, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_, a local file system, any S3 store, or to `Google Cloud Storage <https://cloud.google.com/storage>`_.
+Submission can be automated to occur upon publication, or can be done periodically (via external scripting).
+The archival status of each Dataset version can be seen in the Dataset page version table and queried via API.
+
+The archival Bags include all of the files and metadata in a given dataset version and are sufficient to recreate the dataset, e.g. in a new Dataverse instance, or potentially in another RDA-conformant repository.
+Specifically, the archival Bags include an OAI-ORE Map serialized as JSON-LD that describe the dataset and it's files, as well as information about the version of Dataverse used to export the archival Bag.
+
+The `DVUploader <https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader>`_ includes functionality to recreate a Dataset from an archival Bag produced by Dataverse (using the Dataverse API to do so).
 
 For details on how to configure this integration, see :ref:`BagIt Export` in the :doc:`/installation/config` section of the Installation Guide.
 

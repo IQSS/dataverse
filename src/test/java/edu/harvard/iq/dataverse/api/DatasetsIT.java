@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import io.restassured.RestAssured;
 
 import static io.restassured.RestAssured.given;
@@ -3358,5 +3359,132 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 // We check that the returned message contains information expected for the citation string
                 .body("data.message", containsString("DRAFT VERSION"));
+    }
+
+    @Test
+    public void getVersionFiles() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        String testFileName1 = "test_1.txt";
+        String testFileName2 = "test_2.txt";
+        String testFileName3 = "test_3.txt";
+        String testFileName4 = "test_4.txt";
+        String testFileName5 = "test_5.png";
+
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName1, new byte[50], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName2, new byte[200], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName3, new byte[100], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName5, new byte[300], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName4, new byte[400], apiToken);
+
+        String testDatasetVersion = ":latest";
+
+        // Test pagination and NameAZ order criteria (the default criteria)
+        int testPageSize = 2;
+
+        // Test page 1
+        Response getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, testDatasetVersion, testPageSize, null, null, apiToken);
+
+        int fileMetadatasCount = getVersionFilesResponsePaginated.jsonPath().getList("data").size();
+        assertEquals(testPageSize, fileMetadatasCount);
+
+        getVersionFilesResponsePaginated.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName1))
+                .body("data[1].label", equalTo(testFileName2));
+
+        // Test page 2
+        getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, testDatasetVersion, testPageSize, testPageSize, null, apiToken);
+
+        fileMetadatasCount = getVersionFilesResponsePaginated.jsonPath().getList("data").size();
+        assertEquals(testPageSize, fileMetadatasCount);
+
+        getVersionFilesResponsePaginated.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName3))
+                .body("data[1].label", equalTo(testFileName4));
+
+        // Test page 3 (last)
+        getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, testDatasetVersion, testPageSize, testPageSize * 2, null, apiToken);
+
+        fileMetadatasCount = getVersionFilesResponsePaginated.jsonPath().getList("data").size();
+        assertEquals(1, fileMetadatasCount);
+
+        getVersionFilesResponsePaginated.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName5));
+
+        // Test NameZA order criteria
+        Response getVersionFilesResponseNameZACriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, DatasetVersionServiceBean.FileMetadatasOrderCriteria.NameZA.toString(), apiToken);
+
+        getVersionFilesResponseNameZACriteria.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName5))
+                .body("data[1].label", equalTo(testFileName4))
+                .body("data[2].label", equalTo(testFileName3))
+                .body("data[3].label", equalTo(testFileName2))
+                .body("data[4].label", equalTo(testFileName1));
+
+        // Test Newest order criteria
+        Response getVersionFilesResponseNewestCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, DatasetVersionServiceBean.FileMetadatasOrderCriteria.Newest.toString(), apiToken);
+
+        getVersionFilesResponseNewestCriteria.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName4))
+                .body("data[1].label", equalTo(testFileName5))
+                .body("data[2].label", equalTo(testFileName3))
+                .body("data[3].label", equalTo(testFileName2))
+                .body("data[4].label", equalTo(testFileName1));
+
+        // Test Oldest order criteria
+        Response getVersionFilesResponseOldestCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, DatasetVersionServiceBean.FileMetadatasOrderCriteria.Oldest.toString(), apiToken);
+
+        getVersionFilesResponseOldestCriteria.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName1))
+                .body("data[1].label", equalTo(testFileName2))
+                .body("data[2].label", equalTo(testFileName3))
+                .body("data[3].label", equalTo(testFileName5))
+                .body("data[4].label", equalTo(testFileName4));
+
+        // Test Size order criteria
+        Response getVersionFilesResponseSizeCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, DatasetVersionServiceBean.FileMetadatasOrderCriteria.Size.toString(), apiToken);
+
+        getVersionFilesResponseSizeCriteria.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName1))
+                .body("data[1].label", equalTo(testFileName3))
+                .body("data[2].label", equalTo(testFileName2))
+                .body("data[3].label", equalTo(testFileName5))
+                .body("data[4].label", equalTo(testFileName4));
+
+        // Test Type order criteria
+        Response getVersionFilesResponseTypeCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, DatasetVersionServiceBean.FileMetadatasOrderCriteria.Type.toString(), apiToken);
+
+        getVersionFilesResponseTypeCriteria.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo(testFileName5))
+                .body("data[1].label", equalTo(testFileName1))
+                .body("data[2].label", equalTo(testFileName2))
+                .body("data[3].label", equalTo(testFileName3))
+                .body("data[4].label", equalTo(testFileName4));
+
+        // Test invalid order criteria
+        String invalidOrderCriteria = "invalidOrderCriteria";
+        Response getVersionFilesResponseInvalidOrderCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, invalidOrderCriteria, apiToken);
+        getVersionFilesResponseInvalidOrderCriteria.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Invalid order criteria: " + invalidOrderCriteria));
     }
 }
