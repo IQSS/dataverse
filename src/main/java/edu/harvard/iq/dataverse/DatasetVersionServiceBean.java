@@ -1322,31 +1322,6 @@ w
         }
         return query.getResultList();
     }
-    
-    public List<FileMetadata> getFileMetadatasByDbId(Long versionId, Integer limit, Integer offset, FileMetadatasOrderCriteria orderCriteria) {
-        TypedQuery<FileMetadata> query = em.createQuery(getQueryStringFromFileMetadatasOrderCriteria(orderCriteria), FileMetadata.class)
-                .setParameter("datasetVersionId", versionId);
-        
-        if (limit == null && offset == null) {
-            query = query.setHint("eclipselink.left-join-fetch", "fm.dataFile.ingestRequest")
-                    .setHint("eclipselink.left-join-fetch", "fm.dataFile.thumbnailForDataset")
-                    .setHint("eclipselink.left-join-fetch", "fm.dataFile.dataTables")
-                    .setHint("eclipselink.left-join-fetch", "fm.fileCategories")
-                    .setHint("eclipselink.left-join-fetch", "fm.dataFile.embargo")
-                    .setHint("eclipselink.left-join-fetch", "fm.datasetVersion")
-                    .setHint("eclipselink.left-join-fetch", "fm.dataFile.releaseUser")
-                    .setHint("eclipselink.left-join-fetch", "fm.dataFile.creator");
-        } else {
-            // @todo: is there really no way to use offset-limit with left join hints?
-            if (limit != null) {
-                query = query.setMaxResults(limit);
-            }
-            if (offset != null) {
-                query = query.setFirstResult(offset);
-            }
-        }
-        return query.getResultList();
-    }
 
     private String getQueryStringFromFileMetadatasOrderCriteria(FileMetadatasOrderCriteria orderCriteria) {
         String queryString;
