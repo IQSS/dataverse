@@ -4,6 +4,7 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -57,9 +58,11 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -1180,29 +1183,59 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             // Boolean is inverted, otherwise setting dataverse.files.<id>.chunked-encoding=false would result in leaving Chunked Encoding enabled
             s3CB.setChunkedEncodingDisabled(!s3chunkedEncoding);
 
-            /**
-             * Pass in a string value if this storage driver should use a non-default AWS S3 profile.
-             * The default is "default" which should work when only one profile exists.
+            /** Configure credentials for the S3 client. There are multiple mechanisms available. 
+             * Role-based/instance credentials are globally defined while the other mechanisms (profile, static)
+             * are defined per store. The logic below assures that 
+             * * if a store specific profile or static credentials are explicitly set, they will be used in preference to the global role-based credentials. 
+             * * if a store specific role-based credentials are explicitly set, they will be used in preference to the global instance credentials,
+             * * if a profile and static credentials are both explicitly set, the profile will be used preferentially, and 
+             * * if no store-specific credentials are set, the global credentials will be preferred over using any "default" profile credentials that are found.
              */
-            String s3profile = System.getProperty("dataverse.files." + driverId + ".profile","default");
-            ProfileCredentialsProvider profileCredentials = new ProfileCredentialsProvider(s3profile);
-    
-            // Try to retrieve credentials via Microprofile Config API, too. For production use, you should not use env
-            // vars or system properties to provide these, but use the secrets config source provided by Payara.
-            AWSStaticCredentialsProvider staticCredentials = new AWSStaticCredentialsProvider(
-                new BasicAWSCredentials(
-                    config.getOptionalValue("dataverse.files." + driverId + ".access-key", String.class).orElse(""),
-                    config.getOptionalValue("dataverse.files." + driverId + ".secret-key", String.class).orElse("")
-                ));
-            
-            //Add role-based provider as in the default provider chain
-            InstanceProfileCredentialsProvider instanceCredentials = InstanceProfileCredentialsProvider.getInstance();
+            ArrayList<AWSCredentialsProvider> providers = new ArrayList<>();
+
+            String s3profile = System.getProperty("dataverse.files." + driverId + ".profile");
+            boolean allowInstanceCredentials = true;
+            // Assume that instance credentials should not be used if the profile is
+            // actually set for this store or if static creds are provided (below).
+            if (s3profile != null) {
+                allowInstanceCredentials = false;
+            }
+            // Try to retrieve credentials via Microprofile Config API, too. For production
+            // use, you should not use env vars or system properties to provide these, but 
+            // use the secrets config source provided by Payara.
+            Optional<String> accessKey = config.getOptionalValue("dataverse.files." + driverId + ".access-key", String.class);
+            Optional<String> secretKey = config.getOptionalValue("dataverse.files." + driverId + ".secret-key", String.class);
+            if (accessKey.isPresent() && secretKey.isPresent()) {
+                allowInstanceCredentials = false;
+                AWSStaticCredentialsProvider staticCredentials = new AWSStaticCredentialsProvider(
+                        new BasicAWSCredentials(
+                                accessKey.orElse(""),
+                                secretKey.orElse("")));
+                providers.add(staticCredentials);
+            } else if (s3profile == null) {
+                //Only use the default profile when it isn't explicitly set for this store when there are no static creds (otherwise it will be preferred).
+                s3profile = "default";
+            }
+            if (s3profile != null) {
+                ProfileCredentialsProvider profileCredentials = new ProfileCredentialsProvider(s3profile);
+                providers.add(profileCredentials);
+            }
+
+            if (allowInstanceCredentials) {
+                // Add role-based provider as in the default provider chain
+                InstanceProfileCredentialsProvider instanceCredentials = InstanceProfileCredentialsProvider.getInstance();
+                providers.add(instanceCredentials);
+            }
             // Add all providers to chain - the first working provider will be used
-            // (role-based is first in the default cred provider chain, so we're just
+            // (role-based is first in the default cred provider chain (if no profile or
+            // static creds are explicitly set for the store), so we're just
             // reproducing that, then profile, then static credentials as the fallback)
-            AWSCredentialsProviderChain providerChain = new AWSCredentialsProviderChain(instanceCredentials, profileCredentials, staticCredentials);
+
+            // As the order is the reverse of how we added providers, we reverse the list here
+            Collections.reverse(providers);
+            AWSCredentialsProviderChain providerChain = new AWSCredentialsProviderChain(providers);
             s3CB.setCredentials(providerChain);
-            
+
             // let's build the client :-)
             AmazonS3 client =  s3CB.build();
             driverClientMap.put(driverId,  client);
