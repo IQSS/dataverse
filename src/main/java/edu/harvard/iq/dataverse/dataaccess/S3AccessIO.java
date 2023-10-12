@@ -1209,22 +1209,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 allowInstanceCredentials = false;
                 AWSStaticCredentialsProvider staticCredentials = new AWSStaticCredentialsProvider(
                         new BasicAWSCredentials(
-                                accessKey.orElse(""),
-                                secretKey.orElse("")));
+                                accessKey.get(),
+                                secretKey.get()));
                 providers.add(staticCredentials);
             } else if (s3profile == null) {
                 //Only use the default profile when it isn't explicitly set for this store when there are no static creds (otherwise it will be preferred).
                 s3profile = "default";
             }
             if (s3profile != null) {
-                ProfileCredentialsProvider profileCredentials = new ProfileCredentialsProvider(s3profile);
-                providers.add(profileCredentials);
+                providers.add(new ProfileCredentialsProvider(s3profile));
             }
 
             if (allowInstanceCredentials) {
                 // Add role-based provider as in the default provider chain
-                InstanceProfileCredentialsProvider instanceCredentials = InstanceProfileCredentialsProvider.getInstance();
-                providers.add(instanceCredentials);
+                providers.add(InstanceProfileCredentialsProvider.getInstance());
             }
             // Add all providers to chain - the first working provider will be used
             // (role-based is first in the default cred provider chain (if no profile or
