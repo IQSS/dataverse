@@ -113,7 +113,7 @@ public class DatasetFieldDefaultValue implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof DatasetField)) {
+        if (!(object instanceof DatasetFieldDefaultValue)) {
             return false;
         }
         DatasetFieldDefaultValue other = (DatasetFieldDefaultValue) object;

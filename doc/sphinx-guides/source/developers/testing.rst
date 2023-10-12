@@ -316,7 +316,7 @@ Please make sure to:
    .. code:: java
 
        /** A very minimal example for a Testcontainers integration test class. */
-       @Testcontainers
+       @Testcontainers(disabledWithoutDocker = true)
        @Tag(edu.harvard.iq.dataverse.util.testing.Tags.INTEGRATION_TEST)
        @Tag(edu.harvard.iq.dataverse.util.testing.Tags.USES_TESTCONTAINERS)
        class MyExampleIT { /* ... */ }
