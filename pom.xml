@@ -480,7 +480,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>common</artifactId>
-            <version>7.1.1</version>
+            <version>7.1.4</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -495,7 +495,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>storeclient</artifactId>
-            <version>7.1.1</version>
+            <version>7.1.4</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
