@@ -3660,4 +3660,98 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, testDeaccessionReason, null, apiToken);
         deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
     }
+
+    @Test
+    public void getDownloadSize() throws IOException, InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Creating test text files
+        String testFileName1 = "test_1.txt";
+        String testFileName2 = "test_2.txt";
+
+        int testFileSize1 = 50;
+        int testFileSize2 = 200;
+
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName1, new byte[testFileSize1], apiToken);
+        UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName2, new byte[testFileSize2], apiToken);
+
+        int expectedTextFilesStorageSize = testFileSize1 + testFileSize2;
+
+        // Get the total size when there are no tabular files
+        Response getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.storageSize", equalTo(expectedTextFilesStorageSize));
+
+        // Upload test tabular file
+        String pathToTabularTestFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        int tabularOriginalSize = 157;
+
+        // Ensure tabular file is ingested
+        Thread.sleep(2000);
+
+        // Get the total size ignoring the original tabular file sizes
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Archival.toString(), apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        int actualSizeIgnoringOriginalTabularSizes = Integer.parseInt(getDownloadSizeResponse.getBody().jsonPath().getString("data.storageSize"));
+
+        // Assert that the size has been incremented with the last uploaded file
+        assertTrue(actualSizeIgnoringOriginalTabularSizes > expectedTextFilesStorageSize);
+
+        // Get the total size including only original sizes and ignoring archival sizes for tabular files
+        int expectedSizeIncludingOnlyOriginalForTabular = tabularOriginalSize + expectedTextFilesStorageSize;
+
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Original.toString(), apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.storageSize", equalTo(expectedSizeIncludingOnlyOriginalForTabular));
+
+        // Get the total size including both the original and archival tabular file sizes
+        int tabularArchivalSize = actualSizeIgnoringOriginalTabularSizes - expectedTextFilesStorageSize;
+        int expectedSizeIncludingAllSizes = tabularArchivalSize + tabularOriginalSize + expectedTextFilesStorageSize;
+
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.storageSize", equalTo(expectedSizeIncludingAllSizes));
+
+        // Get the total size sending invalid file download size mode
+        String invalidMode = "invalidMode";
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, invalidMode, apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Invalid mode: " + invalidMode));
+
+        // Upload second test tabular file (same source as before)
+        uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Ensure tabular file is ingested
+        Thread.sleep(2000);
+
+        // Get the total size including only original sizes and ignoring archival sizes for tabular files
+        expectedSizeIncludingOnlyOriginalForTabular = tabularOriginalSize + expectedSizeIncludingOnlyOriginalForTabular;
+
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Original.toString(), apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.storageSize", equalTo(expectedSizeIncludingOnlyOriginalForTabular));
+
+        // Get the total size including both the original and archival tabular file sizes
+        expectedSizeIncludingAllSizes = tabularArchivalSize + tabularOriginalSize + expectedSizeIncludingAllSizes;
+
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.storageSize", equalTo(expectedSizeIncludingAllSizes));
+    }
 }

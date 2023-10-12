@@ -3412,4 +3412,11 @@ public class UtilIT {
                 .body(jsonString)
                 .post("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
     }
+
+    static Response getDownloadSize(Integer datasetId, String version, String mode, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("mode", mode)
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
+    }
 }

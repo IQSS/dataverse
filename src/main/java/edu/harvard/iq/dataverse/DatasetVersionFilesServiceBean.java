@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.QDataFileCategory;
+import edu.harvard.iq.dataverse.QDataTable;
 import edu.harvard.iq.dataverse.QDvObject;
 import edu.harvard.iq.dataverse.QEmbargo;
 import edu.harvard.iq.dataverse.QFileMetadata;
@@ -36,6 +37,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
     private final QFileMetadata fileMetadata = QFileMetadata.fileMetadata;
     private final QDvObject dvObject = QDvObject.dvObject;
     private final QDataFileCategory dataFileCategory = QDataFileCategory.dataFileCategory;
+    private final QDataTable dataTable = QDataTable.dataTable;
 
     /**
      * Different criteria to sort the results of FileMetadata queries used in {@link DatasetVersionFilesServiceBean#getFileMetadatas}
@@ -49,6 +51,19 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      */
     public enum DataFileAccessStatus {
         Public, Restricted, EmbargoedThenRestricted, EmbargoedThenPublic
+    }
+
+    /**
+     * Mode to base the search in {@link DatasetVersionFilesServiceBean#getFilesDownloadSize(DatasetVersion, FileDownloadSizeMode)}
+     * <p>
+     * All: Includes both archival and original sizes for tabular files
+     * Archival: Includes only the archival size for tabular files
+     * Original: Includes only the original size for tabular files
+     * <p>
+     * All the modes include archival sizes for non-tabular files
+     */
+    public enum FileDownloadSizeMode {
+        All, Original, Archival
     }
 
     /**
@@ -159,6 +174,23 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         return baseQuery.fetch();
     }
 
+    /**
+     * Returns the total download size of all files for a particular DatasetVersion
+     *
+     * @param datasetVersion the DatasetVersion to access
+     * @param mode           a FileDownloadSizeMode to base the search on
+     * @return long value of total file download size
+     */
+    public long getFilesDownloadSize(DatasetVersion datasetVersion, FileDownloadSizeMode mode) {
+        return switch (mode) {
+            case All ->
+                    Long.sum(getOriginalTabularFilesSize(datasetVersion), getArchivalFilesSize(datasetVersion, false));
+            case Original ->
+                    Long.sum(getOriginalTabularFilesSize(datasetVersion), getArchivalFilesSize(datasetVersion, true));
+            case Archival -> getArchivalFilesSize(datasetVersion, false);
+        };
+    }
+
     private void addAccessStatusCountToTotal(DatasetVersion datasetVersion, Map<DataFileAccessStatus, Long> totalCounts, DataFileAccessStatus dataFileAccessStatus) {
         long fileMetadataCount = getFileMetadataCountByAccessStatus(datasetVersion, dataFileAccessStatus);
         if (fileMetadataCount > 0) {
@@ -229,5 +261,30 @@ public class DatasetVersionFilesServiceBean implements Serializable {
                 query.orderBy(fileMetadata.label.asc());
                 break;
         }
+    }
+
+    private long getOriginalTabularFilesSize(DatasetVersion datasetVersion) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        Long result = queryFactory
+                .from(fileMetadata)
+                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
+                .from(dataTable)
+                .where(dataTable.dataFile.eq(fileMetadata.dataFile))
+                .select(dataTable.originalFileSize.sum()).fetchFirst();
+        return (result == null) ? 0 : result;
+    }
+
+    private long getArchivalFilesSize(DatasetVersion datasetVersion, boolean ignoreTabular) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        JPAQuery<?> baseQuery = queryFactory
+                .from(fileMetadata)
+                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()));
+        Long result;
+        if (ignoreTabular) {
+            result = baseQuery.where(fileMetadata.dataFile.dataTables.isEmpty()).select(fileMetadata.dataFile.filesize.sum()).fetchFirst();
+        } else {
+            result = baseQuery.select(fileMetadata.dataFile.filesize.sum()).fetchFirst();
+        }
+        return (result == null) ? 0 : result;
     }
 }
