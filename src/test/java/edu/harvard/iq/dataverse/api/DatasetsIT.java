@@ -78,6 +78,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.hamcrest.CoreMatchers;
@@ -3270,7 +3271,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void getVersionFiles() throws IOException {
+    public void getVersionFiles() throws IOException, InterruptedException {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -3296,11 +3297,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName5, new byte[300], apiToken);
         UtilIT.createAndUploadTestFile(datasetPersistentId, testFileName4, new byte[400], apiToken);
 
+        String testDatasetVersion = ":latest";
+
         // Test pagination and NameAZ order criteria (the default criteria)
         int testPageSize = 2;
 
         // Test page 1
-        Response getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, testPageSize, null, null, null, null, null, null, false, apiToken);
+        Response getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, testPageSize, null, null, null, null, null, null, null, false, apiToken);
 
         getVersionFilesResponsePaginated.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3314,7 +3317,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String testFileId2 = JsonPath.from(getVersionFilesResponsePaginated.body().asString()).getString("data[1].dataFile.id");
 
         // Test page 2
-        getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, testPageSize, testPageSize, null, null, null, null, null, false, apiToken);
+        getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, testPageSize, testPageSize, null, null, null, null, null, null, false, apiToken);
 
         getVersionFilesResponsePaginated.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3325,7 +3328,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(testPageSize, fileMetadatasCount);
 
         // Test page 3 (last)
-        getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, testPageSize, testPageSize * 2, null, null, null, null, null, false, apiToken);
+        getVersionFilesResponsePaginated = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, testPageSize, testPageSize * 2, null, null, null, null, null, null, false, apiToken);
 
         getVersionFilesResponsePaginated.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3335,7 +3338,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(1, fileMetadatasCount);
 
         // Test NameZA order criteria
-        Response getVersionFilesResponseNameZACriteria = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.NameZA.toString(), false, apiToken);
+        Response getVersionFilesResponseNameZACriteria = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.NameZA.toString(), false, apiToken);
 
         getVersionFilesResponseNameZACriteria.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3346,7 +3349,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[4].label", equalTo(testFileName1));
 
         // Test Newest order criteria
-        Response getVersionFilesResponseNewestCriteria = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.Newest.toString(), false, apiToken);
+        Response getVersionFilesResponseNewestCriteria = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.Newest.toString(), false, apiToken);
 
         getVersionFilesResponseNewestCriteria.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3357,7 +3360,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[4].label", equalTo(testFileName1));
 
         // Test Oldest order criteria
-        Response getVersionFilesResponseOldestCriteria = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.Oldest.toString(), false, apiToken);
+        Response getVersionFilesResponseOldestCriteria = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.Oldest.toString(), false, apiToken);
 
         getVersionFilesResponseOldestCriteria.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3368,7 +3371,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[4].label", equalTo(testFileName4));
 
         // Test Size order criteria
-        Response getVersionFilesResponseSizeCriteria = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.Size.toString(), false, apiToken);
+        Response getVersionFilesResponseSizeCriteria = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.Size.toString(), false, apiToken);
 
         getVersionFilesResponseSizeCriteria.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3379,7 +3382,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[4].label", equalTo(testFileName4));
 
         // Test Type order criteria
-        Response getVersionFilesResponseTypeCriteria = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.Type.toString(), false, apiToken);
+        Response getVersionFilesResponseTypeCriteria = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.Type.toString(), false, apiToken);
 
         getVersionFilesResponseTypeCriteria.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3391,13 +3394,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         // Test invalid order criteria
         String invalidOrderCriteria = "invalidOrderCriteria";
-        Response getVersionFilesResponseInvalidOrderCriteria = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, invalidOrderCriteria, false, apiToken);
+        Response getVersionFilesResponseInvalidOrderCriteria = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, null, invalidOrderCriteria, false, apiToken);
         getVersionFilesResponseInvalidOrderCriteria.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Invalid order criteria: " + invalidOrderCriteria));
 
         // Test Content Type
-        Response getVersionFilesResponseContentType = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, "image/png", null, null, null, null, false, apiToken);
+        Response getVersionFilesResponseContentType = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, "image/png", null, null, null, null, null, false, apiToken);
 
         getVersionFilesResponseContentType.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3413,7 +3416,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         setFileCategoriesResponse = UtilIT.setFileCategories(testFileId2, apiToken, List.of(testCategory));
         setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        Response getVersionFilesResponseCategoryName = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, testCategory, null, null, false, apiToken);
+        Response getVersionFilesResponseCategoryName = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, testCategory, null, null, null, false, apiToken);
 
         getVersionFilesResponseCategoryName.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3428,7 +3431,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         restrictFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response getVersionFilesResponseRestricted = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.Restricted.toString(), null, null, null, false, apiToken);
+        Response getVersionFilesResponseRestricted = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.Restricted.toString(), null, null, null, null, false, apiToken);
 
         getVersionFilesResponseRestricted.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3453,7 +3456,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createActiveFileEmbargoResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response getVersionFilesResponseEmbargoedThenPublic = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.EmbargoedThenPublic.toString(), null, null, null, false, apiToken);
+        Response getVersionFilesResponseEmbargoedThenPublic = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.EmbargoedThenPublic.toString(), null, null, null, null, false, apiToken);
 
         getVersionFilesResponseEmbargoedThenPublic.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3462,7 +3465,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         fileMetadatasCount = getVersionFilesResponseEmbargoedThenPublic.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
 
-        Response getVersionFilesResponseEmbargoedThenRestricted = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.EmbargoedThenRestricted.toString(), null, null, null, false, apiToken);
+        Response getVersionFilesResponseEmbargoedThenRestricted = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.EmbargoedThenRestricted.toString(), null, null, null, null, false, apiToken);
 
         getVersionFilesResponseEmbargoedThenRestricted.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3472,7 +3475,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(1, fileMetadatasCount);
 
         // Test Access Status Public
-        Response getVersionFilesResponsePublic = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.Public.toString(), null, null, null, false, apiToken);
+        Response getVersionFilesResponsePublic = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.Public.toString(), null, null, null, null, false, apiToken);
 
         getVersionFilesResponsePublic.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3484,7 +3487,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(3, fileMetadatasCount);
 
         // Test Search Text
-        Response getVersionFilesResponseSearchText = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, "test_1", null, false, apiToken);
+        Response getVersionFilesResponseSearchText = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, null, null, null, "test_1", null, false, apiToken);
 
         getVersionFilesResponseSearchText.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3503,11 +3506,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // includeDeaccessioned false
-        Response getVersionFilesResponseNoDeaccessioned = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, null, null, false, apiToken);
+        Response getVersionFilesResponseNoDeaccessioned = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, null, null, null, false, apiToken);
         getVersionFilesResponseNoDeaccessioned.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
         // includeDeaccessioned true
-        Response getVersionFilesResponseDeaccessioned = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, null, null, true, apiToken);
+        Response getVersionFilesResponseDeaccessioned = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, null, null, null, true, apiToken);
         getVersionFilesResponseDeaccessioned.then().assertThat().statusCode(OK.getStatusCode());
 
         getVersionFilesResponseDeaccessioned.then().assertThat()
@@ -3517,6 +3520,29 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[2].label", equalTo(testFileName3))
                 .body("data[3].label", equalTo(testFileName4))
                 .body("data[4].label", equalTo(testFileName5));
+
+        // Test Tabular Tag Name
+        String pathToTabularTestFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String tabularFileId = uploadTabularFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Ensure tabular file is ingested
+        sleep(2000);
+
+        String tabularTagName = "Survey";
+        Response setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, List.of(tabularTagName));
+        setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getVersionFilesResponseTabularTagName = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, null, tabularTagName, null, null, false, apiToken);
+
+        getVersionFilesResponseTabularTagName.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].label", equalTo("test.tab"));
+
+        fileMetadatasCount = getVersionFilesResponseTabularTagName.jsonPath().getList("data").size();
+        assertEquals(1, fileMetadatasCount);
     }
 
     @Test

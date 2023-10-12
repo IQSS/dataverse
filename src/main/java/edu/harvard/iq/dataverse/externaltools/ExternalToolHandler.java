@@ -255,4 +255,11 @@ public class ExternalToolHandler extends URLTokenUtil {
         logger.fine("Exploring with " + toolUrl);
         return getScriptForUrl(toolUrl);
     }
+
+    // TODO: Consider merging with getExploreScript
+    public String getConfigureScript() {
+        String toolUrl = this.getToolUrlWithQueryParams();
+        logger.fine("Configuring with " + toolUrl);
+        return getScriptForUrl(toolUrl);
+    }
 }

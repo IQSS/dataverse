@@ -2250,6 +2250,75 @@ public class FilesIT {
     }
 
     @Test
+    public void testSetFileTabularTags() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload tabular file
+        String pathToTabularTestFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String tabularFileId = uploadTabularFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Ensure tabular file is ingested
+        sleep(2000);
+
+        // Set tabular tags
+        String testTabularTag1 = "Survey";
+        String testTabularTag2 = "Genomics";
+        // We repeat one to test that it is not duplicated
+        String testTabularTag3 = "Genomics";
+        List<String> testTabularTags = List.of(testTabularTag1, testTabularTag2, testTabularTag3);
+        Response setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, testTabularTags);
+        setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get file data and check for new tabular tags
+        Response getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
+        getFileDataResponse.then().assertThat()
+                .body("data.dataFile.tabularTags", hasItem(testTabularTag1))
+                .body("data.dataFile.tabularTags", hasItem(testTabularTag2))
+                .statusCode(OK.getStatusCode());
+
+        int actualTabularTagsCount = getFileDataResponse.jsonPath().getList("data.dataFile.tabularTags").size();
+        assertEquals(2, actualTabularTagsCount);
+
+        // Set invalid tabular tag
+        String testInvalidTabularTag = "Invalid";
+        setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, List.of(testInvalidTabularTag));
+        setFileTabularTagsResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Get file data and check tabular tags are unaltered
+        getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
+        getFileDataResponse.then().assertThat()
+                .body("data.dataFile.tabularTags", hasItem(testTabularTag1))
+                .body("data.dataFile.tabularTags", hasItem(testTabularTag2))
+                .statusCode(OK.getStatusCode());
+
+        actualTabularTagsCount = getFileDataResponse.jsonPath().getList("data.dataFile.tabularTags").size();
+        assertEquals(2, actualTabularTagsCount);
+
+        // Should receive an error when calling the endpoint for a non-tabular file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String nonTabularFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        setFileTabularTagsResponse = UtilIT.setFileTabularTags(nonTabularFileId, apiToken, List.of(testInvalidTabularTag));
+        setFileTabularTagsResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
     public void testGetHasBeenDeleted() {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());

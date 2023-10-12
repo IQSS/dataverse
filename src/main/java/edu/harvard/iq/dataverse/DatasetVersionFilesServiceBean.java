@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.QDataFileCategory;
+import edu.harvard.iq.dataverse.QDataFileTag;
 import edu.harvard.iq.dataverse.QDataTable;
 import edu.harvard.iq.dataverse.QDvObject;
 import edu.harvard.iq.dataverse.QEmbargo;
@@ -27,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static edu.harvard.iq.dataverse.DataFileTag.TagLabelToTypes;
+
 @Stateless
 @Named
 public class DatasetVersionFilesServiceBean implements Serializable {
@@ -37,6 +40,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
     private final QFileMetadata fileMetadata = QFileMetadata.fileMetadata;
     private final QDvObject dvObject = QDvObject.dvObject;
     private final QDataFileCategory dataFileCategory = QDataFileCategory.dataFileCategory;
+    private final QDataFileTag dataFileTag = QDataFileTag.dataFileTag;
     private final QDataTable dataTable = QDataTable.dataTable;
 
     /**
@@ -141,11 +145,12 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * @param contentType    for retrieving only files with this content type
      * @param accessStatus   for retrieving only files with this DataFileAccessStatus
      * @param categoryName   for retrieving only files categorized with this category name
+     * @param tabularTagName for retrieving only files categorized with this tabular tag name
      * @param searchText     for retrieving only files that contain the specified text within their labels or descriptions
      * @param orderCriteria  a FileMetadatasOrderCriteria to order the results
      * @return a FileMetadata list from the specified DatasetVersion
      */
-    public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, String contentType, DataFileAccessStatus accessStatus, String categoryName, String searchText, FileMetadatasOrderCriteria orderCriteria) {
+    public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, String contentType, DataFileAccessStatus accessStatus, String categoryName, String tabularTagName, String searchText, FileMetadatasOrderCriteria orderCriteria) {
         JPAQuery<FileMetadata> baseQuery = createGetFileMetadatasBaseQuery(datasetVersion, orderCriteria);
 
         if (contentType != null) {
@@ -156,6 +161,9 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         }
         if (categoryName != null) {
             baseQuery.from(dataFileCategory).where(dataFileCategory.name.eq(categoryName).and(fileMetadata.fileCategories.contains(dataFileCategory)));
+        }
+        if (tabularTagName != null) {
+            baseQuery.from(dataFileTag).where(dataFileTag.type.eq(TagLabelToTypes.get(tabularTagName)).and(fileMetadata.dataFile.dataFileTags.contains(dataFileTag)));
         }
         if (searchText != null && !searchText.isEmpty()) {
             searchText = searchText.trim().toLowerCase();

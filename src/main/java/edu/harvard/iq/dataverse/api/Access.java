@@ -1427,7 +1427,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.invalidRequest"));
         }
 
-        if (dataFile.containsFileAccessRequestFromUser(requestor)) {
+        if (dataFile.containsActiveFileAccessRequestFromUser(requestor)) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.requestExists"));
         }
 
@@ -1478,17 +1478,17 @@ public class Access extends AbstractApiBean {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
-        List<FileAccessRequest> requests = dataFile.getFileAccessRequests();
+        List<FileAccessRequest> requests = dataFile.getFileAccessRequests(FileAccessRequest.RequestState.CREATED);
 
         if (requests == null || requests.isEmpty()) {
             List<String> args = Arrays.asList(dataFile.getDisplayName());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
+            return error(Response.Status.NOT_FOUND, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
         }
 
         JsonArrayBuilder userArray = Json.createArrayBuilder();
 
         for (FileAccessRequest fileAccessRequest : requests) {
-            userArray.add(json(fileAccessRequest.getAuthenticatedUser()));
+            userArray.add(json(fileAccessRequest.getRequester()));
         }
 
         return ok(userArray);
@@ -1534,7 +1534,9 @@ public class Access extends AbstractApiBean {
 
         try {
             engineSvc.submit(new AssignRoleCommand(ra, fileDownloaderRole, dataFile, dataverseRequest, null));
-            if (dataFile.removeFileAccessRequester(ra)) {
+            FileAccessRequest far = dataFile.getAccessRequestForAssignee(ra);
+            if(far!=null) {
+                far.setStateGranted();
                 dataFileService.save(dataFile);
             }
 
@@ -1659,20 +1661,21 @@ public class Access extends AbstractApiBean {
         if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
-
-        if (dataFile.removeFileAccessRequester(ra)) {
+        FileAccessRequest far = dataFile.getAccessRequestForAssignee(ra);
+        if (far != null) {
+            far.setStateRejected();
             dataFileService.save(dataFile);
 
             try {
                 AuthenticatedUser au = (AuthenticatedUser) ra;
-                userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REJECTFILEACCESS, dataFile.getOwner().getId());
+                userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()),
+                        UserNotification.Type.REJECTFILEACCESS, dataFile.getOwner().getId());
             } catch (ClassCastException e) {
-                //nothing to do here - can only send a notification to an authenticated user
+                // nothing to do here - can only send a notification to an authenticated user
             }
 
             List<String> args = Arrays.asList(dataFile.getDisplayName());
             return ok(BundleUtil.getStringFromBundle("access.api.rejectAccess.success.for.single.file", args));
-
         } else {
             List<String> args = Arrays.asList(dataFile.getDisplayName(), ra.getDisplayInfo().getTitle());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.rejectFailure.noRequest", args));
@@ -1694,7 +1697,7 @@ public class Access extends AbstractApiBean {
         boolean fileAccessRequested = false;
         List<FileAccessRequest> requests = dataFile.getFileAccessRequests();
         for (FileAccessRequest fileAccessRequest : requests) {
-            if (fileAccessRequest.getAuthenticatedUser().getId().equals(requestAuthenticatedUser.getId())) {
+            if (fileAccessRequest.getRequester().getId().equals(requestAuthenticatedUser.getId())) {
                 fileAccessRequested = true;
                 break;
             }

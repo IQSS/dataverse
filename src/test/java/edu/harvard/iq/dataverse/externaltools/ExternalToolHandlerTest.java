@@ -1,26 +1,31 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.Test;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@LocalJvmSettings
 public class ExternalToolHandlerTest {
 
     // TODO: It would probably be better to split these into individual tests.
@@ -234,4 +239,43 @@ public class ExternalToolHandlerTest {
         assertTrue(signedUrl.contains("&token="));
         System.out.println(JsonUtil.prettyPrint(jo));
     }
+
+    @Test
+    @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
+    public void testDatasetConfigureTool() {
+        List<ExternalToolType> externalToolTypes = new ArrayList<>();
+        var externalToolType = new ExternalToolType();
+        externalToolType.setType(ExternalTool.Type.CONFIGURE);
+        externalToolTypes.add(externalToolType);
+        var scope = ExternalTool.Scope.DATASET;
+        String toolUrl = "http://example.com";
+        var externalTool = new ExternalTool("displayName", "toolName", "description", externalToolTypes, scope, toolUrl, "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
+
+        externalTool.setToolParameters(Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("siteUrl", "{siteUrl}")
+                        )
+                        .add(Json.createObjectBuilder()
+                                .add("datasetPid", "{datasetPid}")
+                        )
+                        .add(Json.createObjectBuilder()
+                                .add("localeCode", "{localeCode}")
+                        )
+                )
+                .build().toString());
+
+        var dataset = new Dataset();
+        dataset.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, "10.5072", "ABC123", null, DOIServiceBean.DOI_RESOLVER_URL, null));
+        ApiToken nullApiToken = null;
+        String nullLocaleCode = "en";
+        var externalToolHandler = new ExternalToolHandler(externalTool, dataset, nullApiToken, nullLocaleCode);
+        System.out.println("tool: " + externalToolHandler.getToolUrlWithQueryParams());
+        assertEquals("http://example.com?siteUrl=https://librascholar.org&datasetPid=doi:10.5072/ABC123&localeCode=en", externalToolHandler.getToolUrlWithQueryParams());
+        assertFalse(externalToolHandler.getExternalTool().isExploreTool());
+        assertEquals("configure", externalToolHandler.getExternalTool().getExternalToolTypes().get(0).getType().toString());
+        assertEquals("dataset", externalToolHandler.getExternalTool().getScope().toString());
+
+    }
+
 }

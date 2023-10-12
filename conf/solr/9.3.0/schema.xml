@@ -246,7 +246,7 @@
     <!-- SCHEMA-FIELDS::BEGIN -->
     <field name="accessToSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="actionsToMinimizeLoss" type="text_en" multiValued="false" stored="true" indexed="true"/>
-    <field name="alternativeTitle" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="alternativeTitle" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="alternativeURL" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="astroFacility" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="astroInstrument" type="text_en" multiValued="true" stored="true" indexed="true"/>
