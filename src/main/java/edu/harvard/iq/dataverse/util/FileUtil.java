@@ -35,6 +35,8 @@ import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -1745,7 +1747,7 @@ public class FileUtil implements java.io.Serializable  {
     private static String getFolderAccessUrl(DatasetVersion version, String currentFolder, String subFolder, String apiLocation, boolean originals) {
         String datasetId = version.getDataset().getId().toString();
         String versionTag = version.getFriendlyVersionNumber();
-        versionTag = versionTag.replace("DRAFT", ":draft");
+        versionTag = versionTag.replace("DRAFT", DS_VERSION_DRAFT);
         if (!"".equals(currentFolder)) {
             subFolder = currentFolder + "/" + subFolder;
         }

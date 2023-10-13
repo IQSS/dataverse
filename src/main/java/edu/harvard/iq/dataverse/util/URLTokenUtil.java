@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
+
 public class URLTokenUtil {
 
     protected static final Logger logger = Logger.getLogger(URLTokenUtil.class.getCanonicalName());
@@ -177,8 +179,7 @@ public class URLTokenUtil {
                 }
             }
             if (("DRAFT").equals(versionString)) {
-                versionString = ":draft"; // send the token needed in api calls that can be substituted for a numeric
-                                          // version.
+                versionString = DS_VERSION_DRAFT; // send the token needed in api calls that can be substituted for a numeric version.
             }
             return versionString;
         case FILE_METADATA_ID:
