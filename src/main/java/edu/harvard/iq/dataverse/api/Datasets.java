@@ -506,33 +506,61 @@ public class Datasets extends AbstractApiBean {
                                     @Context HttpHeaders headers) {
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria fileMetadatasOrderCriteria;
+            DatasetVersionFilesServiceBean.FileOrderCriteria fileOrderCriteria;
             try {
-                fileMetadatasOrderCriteria = orderCriteria != null ? DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.valueOf(orderCriteria) : DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.NameAZ;
+                fileOrderCriteria = orderCriteria != null ? DatasetVersionFilesServiceBean.FileOrderCriteria.valueOf(orderCriteria) : DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ;
             } catch (IllegalArgumentException e) {
-                return error(Response.Status.BAD_REQUEST, "Invalid order criteria: " + orderCriteria);
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.order.criteria", List.of(orderCriteria)));
             }
-            DatasetVersionFilesServiceBean.DataFileAccessStatus dataFileAccessStatus;
+            FileSearchCriteria fileSearchCriteria;
             try {
-                dataFileAccessStatus = accessStatus != null ? DatasetVersionFilesServiceBean.DataFileAccessStatus.valueOf(accessStatus) : null;
+                fileSearchCriteria = new FileSearchCriteria(
+                        contentType,
+                        accessStatus != null ? FileSearchCriteria.FileAccessStatus.valueOf(accessStatus) : null,
+                        categoryName,
+                        tabularTagName,
+                        searchText
+                );
             } catch (IllegalArgumentException e) {
-                return error(Response.Status.BAD_REQUEST, "Invalid access status: " + accessStatus);
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
             }
-            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, contentType, dataFileAccessStatus, categoryName, tabularTagName, searchText, fileMetadatasOrderCriteria)));
+            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, fileSearchCriteria, fileOrderCriteria)));
         }, getRequestUser(crc));
     }
 
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/files/counts")
-    public Response getVersionFileCounts(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersionFileCounts(@Context ContainerRequestContext crc,
+                                         @PathParam("id") String datasetId,
+                                         @PathParam("versionId") String versionId,
+                                         @QueryParam("contentType") String contentType,
+                                         @QueryParam("accessStatus") String accessStatus,
+                                         @QueryParam("categoryName") String categoryName,
+                                         @QueryParam("tabularTagName") String tabularTagName,
+                                         @QueryParam("searchText") String searchText,
+                                         @Context UriInfo uriInfo,
+                                         @Context HttpHeaders headers) {
         return response(req -> {
+            FileSearchCriteria fileSearchCriteria;
+            try {
+                fileSearchCriteria = new FileSearchCriteria(
+                        contentType,
+                        accessStatus != null ? FileSearchCriteria.FileAccessStatus.valueOf(accessStatus) : null,
+                        categoryName,
+                        tabularTagName,
+                        searchText
+                );
+            } catch (IllegalArgumentException e) {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
+            }
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-            jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion));
-            jsonObjectBuilder.add("perContentType", json(datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion)));
-            jsonObjectBuilder.add("perCategoryName", json(datasetVersionFilesServiceBean.getFileMetadataCountPerCategoryName(datasetVersion)));
-            jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion)));
+            jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion, fileSearchCriteria));
+            jsonObjectBuilder.add("perContentType", json(datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion, fileSearchCriteria)));
+            jsonObjectBuilder.add("perCategoryName", json(datasetVersionFilesServiceBean.getFileMetadataCountPerCategoryName(datasetVersion, fileSearchCriteria)));
+            jsonObjectBuilder.add("perTabularTagName", jsonFileCountPerTabularTagNameMap(datasetVersionFilesServiceBean.getFileMetadataCountPerTabularTagName(datasetVersion, fileSearchCriteria)));
+            jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion, fileSearchCriteria)));
             return ok(jsonObjectBuilder);
         }, getRequestUser(crc));
     }

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
+import edu.harvard.iq.dataverse.FileSearchCriteria;
 import io.restassured.RestAssured;
 
 import static io.restassured.RestAssured.given;
@@ -3335,7 +3336,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(1, fileMetadatasCount);
 
         // Test NameZA order criteria
-        Response getVersionFilesResponseNameZACriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.NameZA.toString(), apiToken);
+        Response getVersionFilesResponseNameZACriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileOrderCriteria.NameZA.toString(), apiToken);
 
         getVersionFilesResponseNameZACriteria.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3346,7 +3347,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[4].label", equalTo(testFileName1));
 
         // Test Newest order criteria
-        Response getVersionFilesResponseNewestCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.Newest.toString(), apiToken);
+        Response getVersionFilesResponseNewestCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileOrderCriteria.Newest.toString(), apiToken);
 
         getVersionFilesResponseNewestCriteria.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3357,7 +3358,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[4].label", equalTo(testFileName1));
 
         // Test Oldest order criteria
-        Response getVersionFilesResponseOldestCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.Oldest.toString(), apiToken);
+        Response getVersionFilesResponseOldestCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileOrderCriteria.Oldest.toString(), apiToken);
 
         getVersionFilesResponseOldestCriteria.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3368,7 +3369,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[4].label", equalTo(testFileName4));
 
         // Test Size order criteria
-        Response getVersionFilesResponseSizeCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.Size.toString(), apiToken);
+        Response getVersionFilesResponseSizeCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileOrderCriteria.Size.toString(), apiToken);
 
         getVersionFilesResponseSizeCriteria.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3379,7 +3380,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .body("data[4].label", equalTo(testFileName4));
 
         // Test Type order criteria
-        Response getVersionFilesResponseTypeCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileMetadatasOrderCriteria.Type.toString(), apiToken);
+        Response getVersionFilesResponseTypeCriteria = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, null, null, null, DatasetVersionFilesServiceBean.FileOrderCriteria.Type.toString(), apiToken);
 
         getVersionFilesResponseTypeCriteria.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3428,7 +3429,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         restrictFileResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response getVersionFilesResponseRestricted = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.Restricted.toString(), null, null, null, null, apiToken);
+        Response getVersionFilesResponseRestricted = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, FileSearchCriteria.FileAccessStatus.Restricted.toString(), null, null, null, null, apiToken);
 
         getVersionFilesResponseRestricted.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3453,7 +3454,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createActiveFileEmbargoResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response getVersionFilesResponseEmbargoedThenPublic = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.EmbargoedThenPublic.toString(), null, null, null, null, apiToken);
+        Response getVersionFilesResponseEmbargoedThenPublic = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, FileSearchCriteria.FileAccessStatus.EmbargoedThenPublic.toString(), null, null, null, null, apiToken);
 
         getVersionFilesResponseEmbargoedThenPublic.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3462,7 +3463,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         fileMetadatasCount = getVersionFilesResponseEmbargoedThenPublic.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
 
-        Response getVersionFilesResponseEmbargoedThenRestricted = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.EmbargoedThenRestricted.toString(), null, null, null, null, apiToken);
+        Response getVersionFilesResponseEmbargoedThenRestricted = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, FileSearchCriteria.FileAccessStatus.EmbargoedThenRestricted.toString(), null, null, null, null, apiToken);
 
         getVersionFilesResponseEmbargoedThenRestricted.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3472,7 +3473,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(1, fileMetadatasCount);
 
         // Test Access Status Public
-        Response getVersionFilesResponsePublic = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, DatasetVersionFilesServiceBean.DataFileAccessStatus.Public.toString(), null, null, null, null, apiToken);
+        Response getVersionFilesResponsePublic = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, FileSearchCriteria.FileAccessStatus.Public.toString(), null, null, null, null, apiToken);
 
         getVersionFilesResponsePublic.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -3482,6 +3483,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         fileMetadatasCount = getVersionFilesResponsePublic.jsonPath().getList("data").size();
         assertEquals(3, fileMetadatasCount);
+
+        // Test invalid access status
+        String invalidStatus = "invalidStatus";
+        Response getVersionFilesResponseInvalidStatus = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, invalidStatus, null, null, null, null, apiToken);
+        getVersionFilesResponseInvalidStatus.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(invalidStatus))));
 
         // Test Search Text
         Response getVersionFilesResponseSearchText = UtilIT.getVersionFiles(datasetId, testDatasetVersion, null, null, null, null, null, null, "test_1", null, apiToken);
@@ -3518,7 +3526,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void getVersionFileCounts() throws IOException {
+    public void getVersionFileCounts() throws IOException, InterruptedException {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -3556,21 +3564,148 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response createFileEmbargoResponse = UtilIT.createFileEmbargo(datasetId, Integer.parseInt(dataFileId), activeEmbargoDate, apiToken);
         createFileEmbargoResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Getting the file counts and assert each count
-        Response getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, ":latest", apiToken);
+        String testDatasetVersion = ":latest";
+
+        // Getting the file counts without criteria and assert each count is correct
+        Response getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, testDatasetVersion, null, null, null, null, null, apiToken);
 
         getVersionFileCountsResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         JsonPath responseJsonPath = getVersionFileCountsResponse.jsonPath();
         LinkedHashMap<String, Integer> responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
         LinkedHashMap<String, Integer> responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        LinkedHashMap<String, Integer> responseCountPerTabularTagNameMap = responseJsonPath.get("data.perTabularTagName");
         LinkedHashMap<String, Integer> responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
 
         assertEquals(4, (Integer) responseJsonPath.get("data.total"));
         assertEquals(2, responseCountPerContentTypeMap.get("image/png"));
         assertEquals(2, responseCountPerContentTypeMap.get("text/plain"));
+        assertEquals(2, responseCountPerContentTypeMap.size());
         assertEquals(1, responseCountPerCategoryNameMap.get(testCategory));
-        assertEquals(3, responseCountPerAccessStatusMap.get(DatasetVersionFilesServiceBean.DataFileAccessStatus.Public.toString()));
-        assertEquals(1, responseCountPerAccessStatusMap.get(DatasetVersionFilesServiceBean.DataFileAccessStatus.EmbargoedThenPublic.toString()));
+        assertEquals(0, responseCountPerTabularTagNameMap.size());
+        assertEquals(2, responseCountPerAccessStatusMap.size());
+        assertEquals(3, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.Public.toString()));
+        assertEquals(1, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.EmbargoedThenPublic.toString()));
+
+        // Test content type criteria
+        getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, testDatasetVersion, "image/png", null, null, null, null, apiToken);
+
+        getVersionFileCountsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        responseJsonPath = getVersionFileCountsResponse.jsonPath();
+        responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
+        responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        responseCountPerTabularTagNameMap = responseJsonPath.get("data.perTabularTagName");
+        responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
+
+        assertEquals(2, (Integer) responseJsonPath.get("data.total"));
+        assertEquals(2, responseCountPerContentTypeMap.get("image/png"));
+        assertEquals(1, responseCountPerContentTypeMap.size());
+        assertEquals(1, responseCountPerCategoryNameMap.size());
+        assertEquals(1, responseCountPerCategoryNameMap.get(testCategory));
+        assertEquals(0, responseCountPerTabularTagNameMap.size());
+        assertEquals(2, responseCountPerAccessStatusMap.size());
+        assertEquals(1, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.Public.toString()));
+        assertEquals(1, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.EmbargoedThenPublic.toString()));
+
+        // Test access status criteria
+        getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, testDatasetVersion, null, FileSearchCriteria.FileAccessStatus.Public.toString(), null, null, null, apiToken);
+
+        getVersionFileCountsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        responseJsonPath = getVersionFileCountsResponse.jsonPath();
+        responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
+        responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        responseCountPerTabularTagNameMap = responseJsonPath.get("data.perTabularTagName");
+        responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
+
+        assertEquals(3, (Integer) responseJsonPath.get("data.total"));
+        assertEquals(1, responseCountPerContentTypeMap.get("image/png"));
+        assertEquals(2, responseCountPerContentTypeMap.get("text/plain"));
+        assertEquals(2, responseCountPerContentTypeMap.size());
+        assertEquals(0, responseCountPerCategoryNameMap.size());
+        assertEquals(0, responseCountPerTabularTagNameMap.size());
+        assertEquals(1, responseCountPerAccessStatusMap.size());
+        assertEquals(3, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.Public.toString()));
+
+        // Test invalid access status
+        String invalidStatus = "invalidStatus";
+        Response getVersionFilesResponseInvalidStatus = UtilIT.getVersionFileCounts(datasetId, testDatasetVersion, null, invalidStatus, null, null, null, apiToken);
+        getVersionFilesResponseInvalidStatus.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(invalidStatus))));
+
+        // Test category name criteria
+        getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, testDatasetVersion, null, null, testCategory, null, null, apiToken);
+
+        getVersionFileCountsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        responseJsonPath = getVersionFileCountsResponse.jsonPath();
+        responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
+        responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        responseCountPerTabularTagNameMap = responseJsonPath.get("data.perTabularTagName");
+        responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
+
+        assertEquals(1, (Integer) responseJsonPath.get("data.total"));
+        assertEquals(1, responseCountPerContentTypeMap.get("image/png"));
+        assertEquals(1, responseCountPerContentTypeMap.size());
+        assertEquals(1, responseCountPerCategoryNameMap.size());
+        assertEquals(1, responseCountPerCategoryNameMap.get(testCategory));
+        assertEquals(0, responseCountPerTabularTagNameMap.size());
+        assertEquals(1, responseCountPerAccessStatusMap.size());
+        assertEquals(1, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.EmbargoedThenPublic.toString()));
+
+        // Test search text criteria
+        getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, testDatasetVersion, null, null, null, null, "test", apiToken);
+
+        getVersionFileCountsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        responseJsonPath = getVersionFileCountsResponse.jsonPath();
+        responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
+        responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        responseCountPerTabularTagNameMap = responseJsonPath.get("data.perTabularTagName");
+        responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
+
+        assertEquals(3, (Integer) responseJsonPath.get("data.total"));
+        assertEquals(1, responseCountPerContentTypeMap.get("image/png"));
+        assertEquals(2, responseCountPerContentTypeMap.get("text/plain"));
+        assertEquals(2, responseCountPerContentTypeMap.size());
+        assertEquals(0, responseCountPerCategoryNameMap.size());
+        assertEquals(0, responseCountPerTabularTagNameMap.size());
+        assertEquals(1, responseCountPerAccessStatusMap.size());
+        assertEquals(3, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.Public.toString()));
+
+        // Test tabular tag name criteria
+        String pathToTabularTestFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String tabularFileId = uploadTabularFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Ensure tabular file is ingested
+        sleep(2000);
+
+        String tabularTagName = "Survey";
+        Response setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, List.of(tabularTagName));
+        setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, testDatasetVersion, null, null, null, tabularTagName, null, apiToken);
+
+        getVersionFileCountsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        responseJsonPath = getVersionFileCountsResponse.jsonPath();
+        responseCountPerContentTypeMap = responseJsonPath.get("data.perContentType");
+        responseCountPerCategoryNameMap = responseJsonPath.get("data.perCategoryName");
+        responseCountPerTabularTagNameMap = responseJsonPath.get("data.perTabularTagName");
+        responseCountPerAccessStatusMap = responseJsonPath.get("data.perAccessStatus");
+
+        assertEquals(1, (Integer) responseJsonPath.get("data.total"));
+        assertEquals(1, responseCountPerContentTypeMap.get("text/tab-separated-values"));
+        assertEquals(1, responseCountPerContentTypeMap.size());
+        assertEquals(0, responseCountPerCategoryNameMap.size());
+        assertEquals(1, responseCountPerTabularTagNameMap.size());
+        assertEquals(1, responseCountPerTabularTagNameMap.get(tabularTagName));
+        assertEquals(1, responseCountPerAccessStatusMap.size());
+        assertEquals(1, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.Public.toString()));
     }
 }
