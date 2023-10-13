@@ -3424,10 +3424,26 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
     }
 
-    static Response getVersionFileCounts(Integer datasetId, String version, String apiToken) {
-        return given()
+    static Response getVersionFileCounts(Integer datasetId, String version, String contentType, String accessStatus, String categoryName, String tabularTagName, String searchText, String apiToken) {
+        RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/" + datasetId + "/versions/" + version + "/files/counts");
+                .contentType("application/json");
+        if (contentType != null) {
+            requestSpecification = requestSpecification.queryParam("contentType", contentType);
+        }
+        if (accessStatus != null) {
+            requestSpecification = requestSpecification.queryParam("accessStatus", accessStatus);
+        }
+        if (categoryName != null) {
+            requestSpecification = requestSpecification.queryParam("categoryName", categoryName);
+        }
+        if (tabularTagName != null) {
+            requestSpecification = requestSpecification.queryParam("tabularTagName", tabularTagName);
+        }
+        if (searchText != null) {
+            requestSpecification = requestSpecification.queryParam("searchText", searchText);
+        }
+        return requestSpecification.get("/api/datasets/" + datasetId + "/versions/" + version + "/files/counts");
     }
 
     static Response setFileCategories(String dataFileId, String apiToken, List<String> categories) {
