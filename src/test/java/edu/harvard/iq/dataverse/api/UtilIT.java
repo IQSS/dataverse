@@ -3290,9 +3290,11 @@ public class UtilIT {
                                     boolean includeDeaccessioned,
                                     String apiToken) {
         RequestSpecification requestSpecification = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json")
                 .queryParam("includeDeaccessioned", includeDeaccessioned);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
         if (limit != null) {
             requestSpecification = requestSpecification.queryParam("limit", limit);
         }
@@ -3372,10 +3374,12 @@ public class UtilIT {
     }
 
     static Response getVersionFileCounts(Integer datasetId, String version, boolean includeDeaccessioned, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .queryParam("includeDeaccessioned", includeDeaccessioned)
-                .get("/api/datasets/" + datasetId + "/versions/" + version + "/files/counts");
+        RequestSpecification requestSpecification = given()
+                .queryParam("includeDeaccessioned", includeDeaccessioned);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/" + datasetId + "/versions/" + version + "/files/counts");
     }
 
     static Response setFileCategories(String dataFileId, String apiToken, List<String> categories) {

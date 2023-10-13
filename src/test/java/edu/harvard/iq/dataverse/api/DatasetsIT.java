@@ -3543,6 +3543,14 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         fileMetadatasCount = getVersionFilesResponseTabularTagName.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
+
+        // Test that the dataset files for a deaccessioned dataset cannot be accessed by a guest
+        // By latest published version
+        Response getDatasetVersionResponse = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, null, null, null, true, null);
+        getDatasetVersionResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        // By specific version 1.0
+        getDatasetVersionResponse = UtilIT.getVersionFiles(datasetId, "1.0", null, null, null, null, null, null, null, null, true, null);
+        getDatasetVersionResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
     }
 
     @Test
@@ -3620,6 +3628,14 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         responseJsonPath = getVersionFileCountsResponseDeaccessioned.jsonPath();
         assertEquals(4, (Integer) responseJsonPath.get("data.total"));
+
+        // Test that the dataset file counts for a deaccessioned dataset cannot be accessed by a guest
+        // By latest published version
+        Response getDatasetVersionResponse = UtilIT.getVersionFileCounts(datasetId, DS_VERSION_LATEST_PUBLISHED, true, null);
+        getDatasetVersionResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        // By specific version 1.0
+        getDatasetVersionResponse = UtilIT.getVersionFileCounts(datasetId, "1.0", true, null);
+        getDatasetVersionResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
     }
 
     @Test
