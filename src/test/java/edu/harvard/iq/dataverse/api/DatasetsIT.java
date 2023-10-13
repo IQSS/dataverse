@@ -3622,8 +3622,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(1, responseCountPerAccessStatusMap.get(FileSearchCriteria.FileAccessStatus.EmbargoedThenPublic.toString()));
 
         // Test content type criteria
-        getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, DS_VERSION_LATEST_PUBLISHED, "image/png", null, null, null, null, false, apiToken);
-
+        getVersionFileCountsResponse = UtilIT.getVersionFileCounts(datasetId, DS_VERSION_LATEST, "image/png", null, null, null, null, false, apiToken);
         getVersionFileCountsResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         responseJsonPath = getVersionFileCountsResponse.jsonPath();
@@ -3760,7 +3759,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getVersionFileCountsResponseDeaccessioned.then().assertThat().statusCode(OK.getStatusCode());
 
         responseJsonPath = getVersionFileCountsResponseDeaccessioned.jsonPath();
-        assertEquals(4, (Integer) responseJsonPath.get("data.total"));
+        assertEquals(5, (Integer) responseJsonPath.get("data.total"));
 
         // Test that the dataset file counts for a deaccessioned dataset cannot be accessed by a guest
         // By latest published version
