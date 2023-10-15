@@ -1041,7 +1041,17 @@ Usage example:
 
 Please note that both filtering and ordering criteria values are case sensitive and must be correctly typed for the endpoint to recognize them.
 
-Keep in mind that you can combine all of the above query params depending on the results you are looking for.
+By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+
+If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?includeDeaccessioned=true"
+
+.. note:: Keep in mind that you can combine all of the above query params depending on the results you are looking for.
 
 Get File Counts in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1116,6 +1126,16 @@ Usage example:
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files/counts?accessStatus=Public"
+
+By default, deaccessioned dataset versions are not supported by this endpoint and will be ignored in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a not found error if the version is deaccessioned and you do not enable the option described below.
+
+If you want to include deaccessioned dataset versions, you must specify this through the ``includeDeaccessioned`` query parameter.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files/counts?includeDeaccessioned=true"
 
 Please note that filtering values are case sensitive and must be correctly typed for the endpoint to recognize them.
 
@@ -1416,6 +1436,39 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/versions/:draft"
+
+Deaccession Dataset
+~~~~~~~~~~~~~~~~~~~
+
+Given a version of a dataset, updates its status to deaccessioned.
+
+The JSON body required to deaccession a dataset (``deaccession.json``) looks like this::
+
+  {
+    "deaccessionReason": "Description of the deaccession reason.",
+    "deaccessionForwardURL": "https://demo.dataverse.org"
+  }
+
+
+Note that the field ``deaccessionForwardURL`` is optional.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSIONID=1.0
+  export FILE_PATH=deaccession.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/$ID/versions/$VERSIONID/deaccession" -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/versions/1.0/deaccession" -H "Content-type:application/json" --upload-file deaccession.json
+
+.. note:: You cannot deaccession a dataset more than once. If you call this endpoint twice for the same dataset version, you will get a not found error on the second call, since the dataset you are looking for will no longer be published since it is already deaccessioned.
 
 Set Citation Date Field Type for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1829,6 +1882,18 @@ The fully expanded example above (without environment variables) looks like this
 
 The size of all files available for download will be returned. 
 If :draft is passed as versionId the token supplied must have permission to view unpublished drafts. A token is not required for published datasets. Also restricted files will be included in this total regardless of whether the user has access to download the restricted file(s).
+
+There is an optional query parameter ``mode`` which applies a filter criteria to the operation. This parameter supports the following values:
+
+* ``All`` (Default): Includes both archival and original sizes for tabular files
+* ``Archival``: Includes only the archival size for tabular files
+* ``Original``: Includes only the original size for tabular files
+
+Usage example:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/24/versions/1.0/downloadsize?mode=Archival"
 
 Submit a Dataset for Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

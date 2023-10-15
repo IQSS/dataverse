@@ -1771,8 +1771,8 @@ protocol, host, and port number and should not include a trailing slash.
 dataverse.files.directory
 +++++++++++++++++++++++++
 
-Please provide an absolute path to a directory backed by some mounted file system. This directory is used for a number
-of purposes:
+Providing an explicit location here makes it easier to reuse some mounted filesystem and we recommend doing so
+to avoid filled up disks, aid in performance, etc. This directory is used for a number of purposes:
 
 1. ``<dataverse.files.directory>/temp`` after uploading, data is temporarily stored here for ingest and/or before
    shipping to the final storage destination.
@@ -1785,24 +1785,51 @@ of purposes:
    under certain conditions. This directory may also be used by file stores for :ref:`permanent file storage <storage-files-dir>`,
    but this is controlled by other, store-specific settings.
 
-Defaults to ``/tmp/dataverse``. Can also be set via *MicroProfile Config API* sources, e.g. the environment variable
-``DATAVERSE_FILES_DIRECTORY``. Defaults to ``${STORAGE_DIR}`` for profile ``ct``, important for the
-:ref:`Dataverse Application Image <app-locations>`.
+Notes:
+
+- Please provide an absolute path to a directory backed by some mounted file system.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_DIRECTORY``.
+- Defaults to ``/tmp/dataverse`` in a :doc:`default installation <installation-main>`.
+- Defaults to ``${STORAGE_DIR}`` using our :ref:`Dataverse container <app-locations>` (resolving to ``/dv``).
+- During startup, this directory will be checked for existence and write access. It will be created for you
+  if missing. If it cannot be created or does not have proper write access, application deployment will fail.
 
 .. _dataverse.files.uploads:
 
 dataverse.files.uploads
 +++++++++++++++++++++++
 
-Configure a folder to store the incoming file stream during uploads (before transfering to `${dataverse.files.directory}/temp`).
+Configure a folder to store the incoming file stream during uploads (before transfering to ``${dataverse.files.directory}/temp``).
+Providing an explicit location here makes it easier to reuse some mounted filesystem.
 Please also see :ref:`temporary-file-storage` for more details.
-You can use an absolute path or a relative, which is relative to the application server domain directory.
 
-Defaults to ``./uploads``, which resolves to ``/usr/local/payara6/glassfish/domains/domain1/uploads`` in a default
-installation.
+Notes:
 
-Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
-Defaults to ``${STORAGE_DIR}/uploads`` for profile ``ct``, important for the :ref:`Dataverse Application Image <app-locations>`.
+- Please provide an absolute path to a directory backed by some mounted file system.
+- Defaults to ``${com.sun.aas.instanceRoot}/uploads`` in a :doc:`default installation <installation-main>`
+  (resolving to ``/usr/local/payara6/glassfish/domains/domain1/uploads``).
+- Defaults to ``${STORAGE_DIR}/uploads`` using our :ref:`Dataverse container <app-locations>` (resolving to ``/dv/uploads``).
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
+- During startup, this directory will be checked for existence and write access. It will be created for you
+  if missing. If it cannot be created or does not have proper write access, application deployment will fail.
+
+.. _dataverse.files.docroot:
+
+dataverse.files.docroot
++++++++++++++++++++++++
+
+Configure a folder to store and retrieve additional materials like user uploaded collection logos, generated sitemaps,
+and so on. Providing an explicit location here makes it easier to reuse some mounted filesystem.
+See also logo customization above.
+
+Notes:
+
+- Defaults to ``${com.sun.aas.instanceRoot}/docroot`` in a :doc:`default installation <installation-main>`
+  (resolves to ``/usr/local/payara6/glassfish/domains/domain1/docroot``).
+- Defaults to ``${STORAGE_DIR}/docroot`` using our :ref:`Dataverse container <app-locations>` (resolving to ``/dv/docroot``).
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_DOCROOT``.
+- During startup, this directory will be checked for existence and write access. It will be created for you
+  if missing. If it cannot be created or does not have proper write access, application deployment will fail.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++

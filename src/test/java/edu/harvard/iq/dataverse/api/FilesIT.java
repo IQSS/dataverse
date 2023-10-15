@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import io.restassured.path.json.JsonPath;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 import static io.restassured.path.json.JsonPath.with;
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -1354,7 +1356,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         String apiTokenRando = createUserGetToken();
         
-        Response datasetStorageSizeResponseDraft = UtilIT.findDatasetDownloadSize(datasetId.toString(), ":draft", apiTokenRando);
+        Response datasetStorageSizeResponseDraft = UtilIT.findDatasetDownloadSize(datasetId.toString(), DS_VERSION_DRAFT, apiTokenRando);
         datasetStorageSizeResponseDraft.prettyPrint();
         assertEquals(UNAUTHORIZED.getStatusCode(), datasetStorageSizeResponseDraft.getStatusCode());  
         Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
@@ -1607,7 +1609,7 @@ public class FilesIT {
         // Expected values in the output: 
         String expectedTitleTopFolder = "Index of folder /";
         String expectedLinkTopFolder = folderName + "/";
-        String expectedLinkAhrefTopFolder = "/api/datasets/"+datasetId+"/dirindex/?version=:draft&folder=subfolder";
+        String expectedLinkAhrefTopFolder = "/api/datasets/"+datasetId+"/dirindex/?version=" + DS_VERSION_DRAFT + "&folder=subfolder";
         
         String expectedTitleSubFolder = "Index of folder /" + folderName;
         String expectedLinkAhrefSubFolder = "/api/access/datafile/" + folderName + "/" + dataFileId;
@@ -1987,7 +1989,7 @@ public class FilesIT {
         deleteResponse2.then().assertThat().statusCode(OK.getStatusCode());
 
         // Check file 2 deleted from post v1.0 draft
-        Response postv1draft = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
+        Response postv1draft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
         postv1draft.prettyPrint();
         postv1draft.then().assertThat()
                 .body("data.files.size()", equalTo(1))
@@ -2009,7 +2011,7 @@ public class FilesIT {
         downloadResponse2.then().assertThat().statusCode(OK.getStatusCode());
 
         // Check file 3 still in post v1.0 draft
-        Response postv1draft2 = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
+        Response postv1draft2 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
         postv1draft2.prettyPrint();
         postv1draft2.then().assertThat()
                 .body("data.files[0].dataFile.filename", equalTo("orcid_16x16.png"))
@@ -2024,7 +2026,7 @@ public class FilesIT {
         deleteResponse3.then().assertThat().statusCode(OK.getStatusCode());
 
         // Check file 3 deleted from post v1.0 draft
-        Response postv1draft3 = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
+        Response postv1draft3 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
         postv1draft3.prettyPrint();
         postv1draft3.then().assertThat()
                 .body("data.files[0]", equalTo(null))
