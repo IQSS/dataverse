@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.ThemeWidgetFragment;
 
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 
@@ -1196,16 +1197,7 @@ public class Access extends AbstractApiBean {
         
         DataverseTheme theme = dataverse.getDataverseTheme(); 
         if (theme != null && theme.getLogo() != null && !theme.getLogo().equals("")) {
-            Properties p = System.getProperties();
-            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-  
-            if (domainRoot != null && !"".equals(domainRoot)) {
-                return new File (domainRoot + File.separator + 
-                    "docroot" + File.separator + 
-                    "logos" + File.separator + 
-                    dataverse.getLogoOwnerId() + File.separator + 
-                    theme.getLogo());
-            }
+            return ThemeWidgetFragment.getLogoDir(dataverse.getLogoOwnerId()).resolve(theme.getLogo()).toFile();
         }
             
         return null;         
