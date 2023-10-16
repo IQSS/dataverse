@@ -99,7 +99,7 @@ public class DataverseContact implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof DatasetFieldType)) {
+        if (!(object instanceof DataverseContact)) {
             return false;
         }
         DataverseContact other = (DataverseContact) object;
