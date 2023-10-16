@@ -500,7 +500,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         .setRetryHandler(new DefaultHttpRequestRetryHandler(3, false))
                         .build()) {
                     HttpGet httpGet = new HttpGet(retrievalUri);
-                    httpGet.addHeader("Accept", "application/json+ld, application/json");
+                    //application/json+ld is for backward compatibility
+                    httpGet.addHeader("Accept", "application/ld+json, application/json+ld, application/json");
 
                     HttpResponse response = httpClient.execute(httpGet);
                     String data = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);

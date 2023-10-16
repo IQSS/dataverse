@@ -277,7 +277,7 @@ public class Datasets extends AbstractApiBean {
     
     @GET
     @Path("/export")
-    @Produces({"application/xml", "application/json", "application/html" })
+    @Produces({"application/xml", "application/json", "application/html", "application/ld+json" })
     public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         try {
@@ -650,24 +650,26 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/linkset")
-    public Response getLinkset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getLinkset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, 
+           @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         if (DS_VERSION_DRAFT.equals(versionId)) {
             return badRequest("Signposting is not supported on the " + DS_VERSION_DRAFT + " version");
         }
-        User user = getRequestUser(crc);
-        return response(req -> {
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+        try {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            return ok(Json.createObjectBuilder().add(
-                    "linkset",
-                    new SignpostingResources(
-                            systemConfig,
-                            dsv,
-                            JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
-                            JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse("")
-                    ).getJsonLinkset()
-            )
-            );
-        }, user);
+            return Response
+                    .ok(Json.createObjectBuilder()
+                            .add("linkset",
+                                    new SignpostingResources(systemConfig, dsv,
+                                            JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
+                                            JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""))
+                                                    .getJsonLinkset())
+                            .build())
+                    .type(MediaType.APPLICATION_JSON).build();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 
     @GET
