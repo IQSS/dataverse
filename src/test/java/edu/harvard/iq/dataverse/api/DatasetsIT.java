@@ -3863,7 +3863,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         int expectedTextFilesStorageSize = testFileSize1 + testFileSize2;
 
         // Get the total size when there are no tabular files
-        Response getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
+        Response getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedTextFilesStorageSize));
 
@@ -3878,7 +3878,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Thread.sleep(2000);
 
         // Get the total size ignoring the original tabular file sizes
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Archival.toString(), apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Archival.toString(), false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         int actualSizeIgnoringOriginalTabularSizes = Integer.parseInt(getDownloadSizeResponse.getBody().jsonPath().getString("data.storageSize"));
@@ -3889,7 +3889,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Get the total size including only original sizes and ignoring archival sizes for tabular files
         int expectedSizeIncludingOnlyOriginalForTabular = tabularOriginalSize + expectedTextFilesStorageSize;
 
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Original.toString(), apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Original.toString(), false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingOnlyOriginalForTabular));
 
@@ -3897,13 +3897,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         int tabularArchivalSize = actualSizeIgnoringOriginalTabularSizes - expectedTextFilesStorageSize;
         int expectedSizeIncludingAllSizes = tabularArchivalSize + tabularOriginalSize + expectedTextFilesStorageSize;
 
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingAllSizes));
 
         // Get the total size sending invalid file download size mode
         String invalidMode = "invalidMode";
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, invalidMode, apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, invalidMode, false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Invalid mode: " + invalidMode));
 
@@ -3917,22 +3917,47 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Get the total size including only original sizes and ignoring archival sizes for tabular files
         expectedSizeIncludingOnlyOriginalForTabular = tabularOriginalSize + expectedSizeIncludingOnlyOriginalForTabular;
 
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Original.toString(), apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Original.toString(), false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingOnlyOriginalForTabular));
 
         // Get the total size including both the original and archival tabular file sizes
         expectedSizeIncludingAllSizes = tabularArchivalSize + tabularOriginalSize + expectedSizeIncludingAllSizes;
 
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingAllSizes));
 
         // Get the total size including both the original and archival tabular file sizes with search criteria
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, "text/plain", FileSearchCriteria.FileAccessStatus.Public.toString(), null, null, "test_", DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, "text/plain", FileSearchCriteria.FileAccessStatus.Public.toString(), null, null, "test_", DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
         // We exclude tabular sizes from the expected result since the search criteria filters by content type "text/plain" and search text "test_"
         int expectedSizeIncludingAllSizesAndApplyingCriteria = testFileSize1 + testFileSize2;
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingAllSizesAndApplyingCriteria));
+
+        // Test Deaccessioned
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // includeDeaccessioned false
+        Response getVersionFileCountsResponseNoDeaccessioned = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
+        getVersionFileCountsResponseNoDeaccessioned.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // includeDeaccessioned true
+        Response getVersionFileCountsResponseDeaccessioned = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, apiToken);
+        getVersionFileCountsResponseDeaccessioned.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Test that the dataset file counts for a deaccessioned dataset cannot be accessed by a guest
+        // By latest published version
+        Response getVersionFileCountsGuestUserResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
+        getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        // By specific version 1.0
+        getVersionFileCountsGuestUserResponse = UtilIT.getDownloadSize(datasetId, "1.0", null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
+        getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
     }
 }
