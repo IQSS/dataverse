@@ -120,7 +120,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private Long facetCountDatasets = 0L;
     private Long facetCountFiles = 0L;
     Map<String, Long> previewCountbyType = new HashMap<>();
-    private SolrQueryResponse solrQueryResponseAllTypes;
     private String sortField;
     private SortOrder sortOrder;
     private String currentSort;
@@ -132,6 +131,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
     Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
     private boolean solrIsDown = false;
+    private boolean solrIsOverloaded = false; 
     private Map<String, Integer> numberOfFacets = new HashMap<>();
 //    private boolean showUnpublished;
     List<String> filterQueriesDebug = new ArrayList<>();
@@ -279,6 +279,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
 
         SolrQueryResponse solrQueryResponse = null;
+        SolrQueryResponse solrQueryResponseSecondPass = null;
 
         List<String> filterQueriesFinal = new ArrayList<>();
         
@@ -311,18 +312,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
         String[] parts = selectedTypesString.split(":");
         selectedTypesList.addAll(Arrays.asList(parts));
 
-        List<String> filterQueriesFinalAllTypes = new ArrayList<>();
-        String[] arr = selectedTypesList.toArray(new String[selectedTypesList.size()]);
-        selectedTypesHumanReadable = combine(arr, " OR ");
-        if (!selectedTypesHumanReadable.isEmpty()) {
-            typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
-        }
+        
         
         filterQueriesFinal.addAll(filterQueries);
-        filterQueriesFinalAllTypes.addAll(filterQueriesFinal); 
 
-        String allTypesFilterQuery = SearchFields.TYPE + ":(dataverses OR datasets OR files)";
-        filterQueriesFinalAllTypes.add(allTypesFilterQuery);
+        
         filterQueriesFinal.add(typeFilterQuery);
 
         if (page <= 1) {
@@ -363,10 +357,60 @@ public class SearchIncludeFragment implements java.io.Serializable {
             // This 2nd search() is for populating the "type" ("dataverse", "dataset", "file") facets: -- L.A. 
             // (why exactly do we need it, again?)
             // To get the counts we display in the types facets particulary for unselected types - SEK 08/25/2021
-            solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null);
-            if (solrQueryResponse.hasError()){
-                logger.info(solrQueryResponse.getError());
-                setSolrErrorEncountered(true);
+            // Sure, but we should not waste resources here. We will try to save 
+            // solr some extra work and a) only run this second query IF there is 
+            // one or more unselected type facets; and b) drop all the extra 
+            // parameters from this second query - such as facets and highlights -
+            // that we do not actually need for the purposes of finding these 
+            // extra numbers. -- L.A. 10/16/2023
+            
+            // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
+            previewCountbyType.put(BundleUtil.getStringFromBundle("dataverses"), -1L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("datasets"), -1L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("files"), -1L);
+            
+            
+            // This will populate the type facet counts for the types that are 
+            // currently selected on the collection page:
+            for (FacetCategory facetCategory : solrQueryResponse.getTypeFacetCategories()) {
+                for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                    previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
+                }
+            }
+            
+            if (selectedTypesList.size() < 3) {
+                // If some types are NOT currently selected, we will need to 
+                // run another query to obtain the numbers of the unselected types:
+                
+                List<String> filterQueriesFinalSecondPass = new ArrayList<>();
+                filterQueriesFinalSecondPass.addAll(filterQueriesFinal);
+                
+                List<String> selectedTypesListSecondPass = new ArrayList<>();
+                
+                for (String dvObjectType : previewCountbyType.keySet()) {
+                    if (previewCountbyType.get(dvObjectType) == -1) {
+                        selectedTypesListSecondPass.add(dvObjectType);
+                    }
+                }
+                
+                String[] arr = selectedTypesListSecondPass.toArray(new String[selectedTypesListSecondPass.size()]);
+                filterQueriesFinalSecondPass.add(SearchFields.TYPE + ":(" + combine(arr, " OR ") + ")");
+                
+                if (solrQueryResponseSecondPass != null) {
+
+                    solrQueryResponseSecondPass = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalSecondPass, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null);
+                    if (solrQueryResponseSecondPass.hasError()) {
+                        logger.info(solrQueryResponse.getError());
+                        setSolrErrorEncountered(true);
+                    }
+
+                    // And now populate the remaining type facets:
+                    for (FacetCategory facetCategory : solrQueryResponseSecondPass.getTypeFacetCategories()) {
+                        for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                            previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
+                        }
+                    }
+                }
             }
             
         } catch (SearchException ex) {
@@ -446,17 +490,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
             }
 
-            // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
-            previewCountbyType.put(BundleUtil.getStringFromBundle("dataverses"), 0L);
-            previewCountbyType.put(BundleUtil.getStringFromBundle("datasets"), 0L);
-            previewCountbyType.put(BundleUtil.getStringFromBundle("files"), 0L);
-            if (solrQueryResponseAllTypes != null) {
-                for (FacetCategory facetCategory : solrQueryResponseAllTypes.getTypeFacetCategories()) {
-                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                        previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
-                    }
-                }
-            }
             
             setDisplayCardValues();
             
@@ -1019,6 +1052,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public void setSolrIsDown(boolean solrIsDown) {
         this.solrIsDown = solrIsDown;
+    }
+    
+    public boolean isSolrOverloaded() {
+        return solrIsOverloaded;
+    }
+    
+    public void setSolrIsOverloaded(boolean solrIsOverloaded) {
+        this.solrIsOverloaded = solrIsOverloaded; 
     }
 
     public boolean isRootDv() {
