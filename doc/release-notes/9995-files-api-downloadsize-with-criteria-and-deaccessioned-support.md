@@ -1,4 +1,4 @@
-Extended the getDownloadSize endpoint (/api/datasets/{id}/versions/{versionId}/files/downloadsize), including the following new features:
+Extended the getDownloadSize endpoint (/api/datasets/{id}/versions/{versionId}/downloadsize), including the following new features:
 
 - The endpoint now accepts a new boolean optional query parameter "includeDeaccessioned", which, if enabled, causes the endpoint to consider deaccessioned dataset versions when searching for versions to obtain the file total download size.
 
