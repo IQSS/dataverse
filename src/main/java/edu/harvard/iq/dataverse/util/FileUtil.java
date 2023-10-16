@@ -86,6 +86,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -182,6 +183,7 @@ public class FileUtil implements java.io.Serializable  {
     public static final String MIME_TYPE_NETCDF = "application/netcdf";
     public static final String MIME_TYPE_XNETCDF = "application/x-netcdf";
     public static final String MIME_TYPE_HDF5 = "application/x-hdf5";
+    public static final String MIME_TYPE_RO_CRATE = "application/ld+json; profile=\"http://www.w3.org/ns/json-ld#flattened http://www.w3.org/ns/json-ld#compacted https://w3id.org/ro/crate\"";
 
     // File type "thumbnail classes" tags:
     
@@ -421,6 +423,11 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static String determineFileType(File f, String fileName) throws IOException{
+        final ResourceBundle bundle = BundleUtil.getResourceBundle("MimeTypeDetectionByFileName");
+        if (bundle.keySet().contains(fileName)) {
+            return bundle.getString(fileName);
+        }
+
         String fileType = null;
         String fileExtension = getFileExtension(fileName);
         
@@ -545,6 +552,11 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static String determineFileTypeByNameAndExtension(String fileName) {
+        final ResourceBundle bundle = BundleUtil.getResourceBundle("MimeTypeDetectionByFileName");
+        if (bundle.keySet().contains(fileName)) {
+            return bundle.getString(fileName);
+        }
+        
         String mimetypesFileTypeMapResult = MIME_TYPE_MAP.getContentType(fileName);
         logger.fine("MimetypesFileTypeMap type by extension, for " + fileName + ": " + mimetypesFileTypeMapResult);
         if (mimetypesFileTypeMapResult != null) {
@@ -825,7 +837,8 @@ public class FileUtil implements java.io.Serializable  {
 				|| canIngestAsTabular(recognizedType) || recognizedType.equals("application/fits-gzipped")
 				|| recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
 				|| recognizedType.equalsIgnoreCase(BagItFileHandler.FILE_TYPE)
-				|| recognizedType.equals(MIME_TYPE_ZIP)) {
+				|| recognizedType.equals(MIME_TYPE_ZIP)
+                || recognizedType.equals(MIME_TYPE_RO_CRATE)) {
 			return true;
 		}
 		return false;
