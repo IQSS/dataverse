@@ -3391,7 +3391,7 @@ public class DatasetPage implements java.io.Serializable {
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), linkingDataverseErrorMessage);
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
-
+        alreadyLinkedDataverses = null; //force update to list of linked dataverses
     }
 
     private String linkingDataverseErrorMessage = "";
@@ -3427,7 +3427,23 @@ public class DatasetPage implements java.io.Serializable {
         }
         return retVal;
     }
-
+        
+    private String alreadyLinkedDataverses = null;
+    
+    public String getAlreadyLinkedDataverses(){
+        if (alreadyLinkedDataverses != null) {           
+            return alreadyLinkedDataverses;
+        }
+        List<Dataverse> dataverseList = dataverseService.findDataversesThatLinkToThisDatasetId(dataset.getId());
+        for (Dataverse dv: dataverseList){
+            if (alreadyLinkedDataverses == null){
+                alreadyLinkedDataverses = dv.getCurrentName();
+            } else {
+                alreadyLinkedDataverses = alreadyLinkedDataverses + ", " + dv.getCurrentName();
+            }
+        }
+        return alreadyLinkedDataverses;
+    }
 
     public List<Dataverse> completeLinkingDataverse(String query) {
         dataset = datasetService.find(dataset.getId());
