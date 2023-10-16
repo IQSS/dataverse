@@ -3363,6 +3363,15 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+        
+        JsonObject jsonObject = null;
+        try {
+            jsonObject = JsonUtil.getJsonObject(jsonData);
+        } catch (Exception ex) {
+            logger.fine("Error parsing json: " + jsonData + " " + ex.getMessage());
+            return badRequest("Error parsing json body");
+
+        }
 
         //------------------------------------
         // (2b) Make sure dataset does not have package file
@@ -3396,7 +3405,7 @@ public class Datasets extends AbstractApiBean {
         String requestUrl = SystemConfig.getDataverseSiteUrlStatic();
         
         // Async Call
-        globusService.globusUpload(jsonData, token, dataset, requestUrl, authUser);
+        globusService.globusUpload(jsonObject, token, dataset, requestUrl, authUser);
 
         return ok("Async call to Globus Upload started ");
 
@@ -3414,9 +3423,10 @@ public class Datasets extends AbstractApiBean {
      */
     @POST
     @AuthRequired
-    @Path("{id}/allowGlobusUpload")
+    @Path("{id}/requestGlobusTransferPaths")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response allowGlobusUpload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, String jsonBody
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response requestGlobusUpload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, String jsonBody
     ) throws IOException, ExecutionException, InterruptedException {
 
 
@@ -3454,21 +3464,28 @@ public class Datasets extends AbstractApiBean {
             
         if (permissionSvc.requestOn(createDataverseRequest(authUser), dataset)
                 .canIssue(UpdateDatasetVersionCommand.class)) {
-
+            try {
             JsonObject params = JsonUtil.getJsonObject(jsonBody);
             String principal = params.getString("principal");
+            int numberOfPaths = params.getInt("numberOfFiles");
+            if(numberOfPaths <=0) {
+                return badRequest("numberOfFiles must be positive");
+            }
 
-            // Async Call
-            int status = globusService.givePermission("identity", principal, "rw", dataset);
-            switch (status) {
+            JsonObject response = globusService.requestAccessiblePaths(principal, dataset, numberOfPaths);
+            switch (response.getInt("status")) {
             case 201:
-                return ok("Permission Granted");
+                return ok(response.getJsonArray("paths"));
             case 400:
                 return badRequest("Unable to grant permission");
             case 409:
                 return conflict("Permission already exists");
             default:
                 return error(null, "Unexpected error when granting permission");
+            }
+            } catch (NullPointerException|ClassCastException e) {
+                return badRequest("Error retrieving principal and numberOfFiles from JSON request body");
+                
             }
         } else {
             return forbidden("User doesn't have permission to upload to this dataset");

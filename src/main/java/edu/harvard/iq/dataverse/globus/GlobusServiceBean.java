@@ -1,7 +1,11 @@
 package edu.harvard.iq.dataverse.globus;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
+import com.nimbusds.oauth2.sdk.pkce.CodeVerifier;
+
 import edu.harvard.iq.dataverse.*;
 
 import jakarta.ejb.Asynchronous;
@@ -15,7 +19,9 @@ import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonPatch;
+import jakarta.json.JsonValue;
 import jakarta.servlet.http.HttpServletRequest;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
@@ -29,6 +35,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -48,6 +56,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -107,8 +116,10 @@ public class GlobusServiceBean implements java.io.Serializable {
         this.userTransferToken = userTransferToken;
     }
 
-    private ArrayList<String> checkPermissions(GlobusEndpoint endpoint, String principalType, String principal) throws MalformedURLException {
+    private String getRuleId(GlobusEndpoint endpoint, String principal, String permissions) throws MalformedURLException {
        
+        String principalType="identity";
+        
         URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access_list");
         MakeRequestResponse result = makeRequest(url, "Bearer",
                 endpoint.getClientToken(), "GET", null);
@@ -118,20 +129,22 @@ public class GlobusServiceBean implements java.io.Serializable {
 
             for (int i = 0; i < al.getDATA().size(); i++) {
                 Permissions pr = al.getDATA().get(i);
+                
                 if ((pr.getPath().equals(endpoint.getBasePath() + "/") || pr.getPath().equals(endpoint.getBasePath()))
                         && pr.getPrincipalType().equals(principalType)
-                        && ((principal == null) || (principal != null && pr.getPrincipal().equals(principal)))) {
-                    ids.add(pr.getId());
+                        && ((principal == null) || (principal != null && pr.getPrincipal().equals(principal)))
+                        &&pr.getPermissions().equals(permissions)) {
+                    return pr.getId();
                 } else {
-                    logger.info(pr.getPath() + " === " + endpoint.getBasePath() + " == " + pr.getPrincipalType());
+                    logger.fine(pr.getPath() + " === " + endpoint.getBasePath() + " == " + pr.getPrincipalType());
                     continue;
                 }
             }
         }
-
-        return ids;
+        return null;
     }
-/*
+
+    /*
     public void updatePermision(AccessToken clientTokenUser, String directory, String principalType, String perm)
             throws MalformedURLException {
         if (directory != null && !directory.equals("")) {
@@ -165,47 +178,71 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
     }
 */
-    public void deletePermission(String ruleId, Logger globusLogger) throws MalformedURLException {
+    
+/** Call to delete a globus rule related to the specified dataset.
+ * 
+ * @param ruleId - Globus rule id - assumed to be associated with the dataset's file path (should not be called with a user specified rule id w/o further checking)
+ * @param datasetId - the id of the dataset associated with the rule
+ * @param globusLogger - a separate logger instance, may be null
+ */
+public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger) {
 
-        if (ruleId.length() > 0) {
-            AccessToken clientTokenUser = getClientToken(settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, ""));
-
-            globusLogger.info("Start deleting permissions.");
-            String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
-
-            URL url = new URL(
-                    "https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/" + ruleId);
-            MakeRequestResponse result = makeRequest(url, "Bearer",
-                    clientTokenUser.getOtherTokens().get(0).getAccessToken(), "DELETE", null);
-            if (result.status != 200) {
-                globusLogger.warning("Cannot delete access rule " + ruleId);
-            } else {
-                globusLogger.info("Access rule " + ruleId + " was deleted successfully");
+    if (ruleId.length() > 0) {
+        if (dataset != null) {
+            GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+            if (endpoint != null) {
+                String accessToken = endpoint.getClientToken();
+                if (globusLogger != null) {
+                    globusLogger.info("Start deleting permissions.");
+                }
+                try {
+                    URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId()
+                            + "/access/" + ruleId);
+                    MakeRequestResponse result = makeRequest(url, "Bearer", accessToken, "DELETE", null);
+                    if (result.status != 200) {
+                        if (globusLogger != null) {
+                            globusLogger.warning("Cannot delete access rule " + ruleId);
+                        } else {
+                            // When removed due to a cache ejection, we don't have a globusLogger
+                            logger.warning("Cannot delete access rule " + ruleId);
+                        }
+                    } else {
+                        if (globusLogger != null) {
+                            globusLogger.info("Access rule " + ruleId + " was deleted successfully");
+                        }
+                    }
+                } catch (MalformedURLException ex) {
+                    logger.log(Level.WARNING,
+                            "Failed to delete access rule " + ruleId + " on endpoint " + endpoint.getId(), ex);
+                }
             }
         }
-
     }
+}
 
-    public int givePermission(String principalType, String principal, String perm, Dataset dataset) throws MalformedURLException {
+    public JsonObject requestAccessiblePaths(String principal, Dataset dataset, int numberOfPaths) {
 
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
-        ArrayList<?> rules = checkPermissions(endpoint, principalType, principal);
+        String principalType= "identity";
 
         Permissions permissions = new Permissions();
         permissions.setDATA_TYPE("access");
         permissions.setPrincipalType(principalType);
         permissions.setPrincipal(principal);
         permissions.setPath(endpoint.getBasePath() + "/");
-        permissions.setPermissions(perm);
+        permissions.setPermissions("rw");
 
         Gson gson = new GsonBuilder().create();
         MakeRequestResponse result = null;
-        if (rules.size() == 0) {
             logger.info("Start creating the rule");
+            JsonObjectBuilder response = Json.createObjectBuilder();
+
+            try {
             URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access");
             result = makeRequest(url, "Bearer", endpoint.getClientToken(), "POST",
                     gson.toJson(permissions));
 
+            response.add("status", result.status);
             switch (result.status) {
             case 400:
 
@@ -215,35 +252,50 @@ public class GlobusServiceBean implements java.io.Serializable {
                 logger.warning("ACL already exists or Endpoint ACL already has the maximum number of access rules");
                 break;
             case 201:
-                JsonObject response = JsonUtil.getJsonObject(result.jsonResponse);
-                if (response != null && response.containsKey("access_id")) {
-                    permissions.setId(response.getString("access_id"));
-                    monitorTemporaryPermissions(permissions, endpoint);
+                JsonObject globusResponse = JsonUtil.getJsonObject(result.jsonResponse);
+                if (globusResponse != null && globusResponse.containsKey("access_id")) {
+                    permissions.setId(globusResponse.getString("access_id"));
+                    monitorTemporaryPermissions(permissions.getId(), dataset.getId());
                     logger.info("Access rule " + permissions.getId() + " was created successfully");
+                    JsonArrayBuilder pathArray = Json.createArrayBuilder();
+                    for(int i=0;i<numberOfPaths;i++) {
+                        pathArray.add(getUniqueFilePath(endpoint));
+                    
+                    }
+                    response.add("paths", pathArray.build());
+                    
+                } else {
+                    //Shouldn't happen!
+                    logger.warning("Access rule id not returned for dataset " + dataset.getId());
                 }
             }
-
-            return result.status;
-        } else {
-            logger.info("Start Updating the rule");
-            URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access/"
-                    + rules.get(0));
-            result = makeRequest(url, "Bearer", endpoint.getClientToken(), "PUT",
-                    gson.toJson(permissions));
-
-            if (result.status == 400) {
-                logger.severe("Path " + permissions.getPath() + " is not valid");
-            } else if (result.status == 409) {
-                logger.warning("ACL already exists or Endpoint ACL already has the maximum number of access rules");
+            } catch (MalformedURLException ex) {
+                //Misconfiguration
+                logger.warning("Failed to create access rule URL for " + endpoint.getId());
+                response.add("status", 500);
             }
-            logger.info("Result status " + result.status);
-            return result.status;
-        }
+            return response.build();
     }
 
-    private void monitorTemporaryPermissions(Permissions permissions, GlobusEndpoint endpoint) {
-        // TODO Auto-generated method stub
-        
+    private String getUniqueFilePath(GlobusEndpoint endpoint) {
+        // TODO See if generated identifier exists at globus endpoint
+        return endpoint.getBasePath() + "/" + FileUtil.generateStorageIdentifier();
+    }
+
+    //Single cache of open rules/permission requests
+    private final Cache<String, Long> rulesCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.of(JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.MINUTES))
+            .removalListener((ruleId, datasetId, cause) -> {
+                //Delete rules that expire
+                Dataset dataset = datasetSvc.find(datasetId);
+                deletePermission((String) ruleId, dataset, null);
+              })
+            
+            .build();
+    
+    
+    private void monitorTemporaryPermissions(String ruleId, long datasetId) {
+        rulesCache.put(ruleId, datasetId);
     }
 
     public boolean getSuccessfulTransfers(AccessToken clientTokenUser, String taskId) throws MalformedURLException {
@@ -468,6 +520,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         return result;
     }
 
+    /*
     public boolean giveGlobusPublicPermissions(Dataset dataset)
             throws UnsupportedEncodingException, MalformedURLException {
 
@@ -477,20 +530,6 @@ public class GlobusServiceBean implements java.io.Serializable {
         MakeRequestResponse status = findDirectory(endpoint.getBasePath(), endpoint.getClientToken(), endpoint.getId());
 
         if (status.status == 200) {
-
-            /*
-             * FilesList fl = parseJson(status.jsonResponse, FilesList.class, false);
-             * ArrayList<FileG> files = fl.getDATA(); if (files != null) { for (FileG file:
-             * files) { if (!file.getName().contains("cached") &&
-             * !file.getName().contains(".thumb")) { int perStatus =
-             * givePermission("all_authenticated_users", "", "r", clientTokenUser, directory
-             * + "/" + file.getName(), globusEndpoint); logger.info("givePermission status "
-             * + perStatus + " for " + file.getName()); if (perStatus == 409) {
-             * logger.info("Permissions already exist or limit was reached for " +
-             * file.getName()); } else if (perStatus == 400) {
-             * logger.info("No file in Globus " + file.getName()); } else if (perStatus !=
-             * 201) { logger.info("Cannot get permission for " + file.getName()); } } } }
-             */
 
             int perStatus = givePermission("all_authenticated_users", "", "r", dataset);
             logger.info("givePermission status " + perStatus);
@@ -512,7 +551,8 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         return true;
     }
-
+*/
+    
     // Generates the URL to launch the Globus app
     public String getGlobusAppUrlForDataset(Dataset d) {
         return getGlobusAppUrlForDataset(d, true, null);
@@ -572,7 +612,7 @@ public class GlobusServiceBean implements java.io.Serializable {
     
     @Asynchronous
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void globusUpload(String jsonData, ApiToken token, Dataset dataset, String httpRequestUrl,
+    public void globusUpload(JsonObject jsonData, ApiToken token, Dataset dataset, String httpRequestUrl,
             AuthenticatedUser authUser) throws ExecutionException, InterruptedException, MalformedURLException {
 
         Integer countAll = 0;
@@ -606,33 +646,33 @@ public class GlobusServiceBean implements java.io.Serializable {
         // ToDo - use DataAccess methods?
         //String storageType = datasetIdentifier.substring(0, datasetIdentifier.indexOf("://") + 3);
         //datasetIdentifier = datasetIdentifier.substring(datasetIdentifier.indexOf("://") + 3);
+        
+        logger.fine("json: " + JsonUtil.prettyPrint(jsonData));
+
+        String taskIdentifier = jsonData.getString("taskIdentifier");
+
+        String ruleId = null;
 
         Thread.sleep(5000);
-
-        JsonObject jsonObject = null;
-        try (StringReader rdr = new StringReader(jsonData)) {
-            jsonObject = Json.createReader(rdr).readObject();
-        } catch (Exception jpe) {
-            jpe.printStackTrace();
-            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}");
-        }
-        logger.info("json: " + JsonUtil.prettyPrint(jsonObject));
-
-        String taskIdentifier = jsonObject.getString("taskIdentifier");
-
-        String ruleId = "";
-        try {
-            ruleId = jsonObject.getString("ruleId");
-        } catch (NullPointerException npe) {
-            logger.warning("NPE for jsonData object");
-        }
-
+        
         // globus task status check
         GlobusTask task = globusStatusCheck(taskIdentifier, globusLogger);
         String taskStatus = getTaskStatus(task);
 
-        if (ruleId.length() > 0) {
-            deletePermission(ruleId, globusLogger);
+        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+        
+        ruleId = getRuleId(endpoint, task.getOwner_id(), "rw");
+        if(ruleId!=null) {
+            Long datasetId = rulesCache.getIfPresent(ruleId);
+            if(datasetId!=null) {
+             
+            //Will delete rule
+            rulesCache.invalidate(ruleId);
+            } else {
+                //The cache already expired this rule, in which case it's delay not long enough, or we have some other problem
+                logger.warning("Rule " + ruleId + " not found in rulesCache");
+                deletePermission(ruleId, dataset, globusLogger);
+            }
         }
 
         // If success, switch to an EditInProgress lock - do this before removing the
@@ -674,7 +714,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                 //
 
                 List<String> inputList = new ArrayList<String>();
-                JsonArray filesJsonArray = jsonObject.getJsonArray("files");
+                JsonArray filesJsonArray = jsonData.getJsonArray("files");
 
                 if (filesJsonArray != null) {
                     String datasetIdentifier = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage();
@@ -905,7 +945,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
         String taskStatus = getTaskStatus(task);
 
         if (ruleId.length() > 0) {
-            deletePermission(ruleId, globusLogger);
+            deletePermission(ruleId, dataset, globusLogger);
         }
 
         if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
