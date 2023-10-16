@@ -3450,10 +3450,26 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
     }
 
-    static Response getDownloadSize(Integer datasetId, String version, String mode, String apiToken) {
-        return given()
+    static Response getDownloadSize(Integer datasetId, String version, String contentType, String accessStatus, String categoryName, String tabularTagName, String searchText, String mode, String apiToken) {
+        RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .queryParam("mode", mode)
+                .queryParam("mode", mode);
+        if (contentType != null) {
+            requestSpecification = requestSpecification.queryParam("contentType", contentType);
+        }
+        if (accessStatus != null) {
+            requestSpecification = requestSpecification.queryParam("accessStatus", accessStatus);
+        }
+        if (categoryName != null) {
+            requestSpecification = requestSpecification.queryParam("categoryName", categoryName);
+        }
+        if (tabularTagName != null) {
+            requestSpecification = requestSpecification.queryParam("tabularTagName", tabularTagName);
+        }
+        if (searchText != null) {
+            requestSpecification = requestSpecification.queryParam("searchText", searchText);
+        }
+        return requestSpecification
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
     }
 }

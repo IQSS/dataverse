@@ -53,7 +53,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
     }
 
     /**
-     * Mode to base the search in {@link DatasetVersionFilesServiceBean#getFilesDownloadSize(DatasetVersion, FileDownloadSizeMode)}
+     * Mode to base the search in {@link DatasetVersionFilesServiceBean#getFilesDownloadSize(DatasetVersion, FileSearchCriteria, FileDownloadSizeMode)}
      * <p>
      * All: Includes both archival and original sizes for tabular files
      * Archival: Includes only the archival size for tabular files
@@ -191,16 +191,17 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * Returns the total download size of all files for a particular DatasetVersion
      *
      * @param datasetVersion the DatasetVersion to access
+     * @param searchCriteria for retrieving only files matching this criteria
      * @param mode           a FileDownloadSizeMode to base the search on
      * @return long value of total file download size
      */
-    public long getFilesDownloadSize(DatasetVersion datasetVersion, FileDownloadSizeMode mode) {
+    public long getFilesDownloadSize(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria, FileDownloadSizeMode mode) {
         return switch (mode) {
             case All ->
-                    Long.sum(getOriginalTabularFilesSize(datasetVersion), getArchivalFilesSize(datasetVersion, false));
+                    Long.sum(getOriginalTabularFilesSize(datasetVersion, searchCriteria), getArchivalFilesSize(datasetVersion, false, searchCriteria));
             case Original ->
-                    Long.sum(getOriginalTabularFilesSize(datasetVersion), getArchivalFilesSize(datasetVersion, true));
-            case Archival -> getArchivalFilesSize(datasetVersion, false);
+                    Long.sum(getOriginalTabularFilesSize(datasetVersion, searchCriteria), getArchivalFilesSize(datasetVersion, true, searchCriteria));
+            case Archival -> getArchivalFilesSize(datasetVersion, false, searchCriteria);
         };
     }
 
@@ -301,22 +302,24 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         }
     }
 
-    private long getOriginalTabularFilesSize(DatasetVersion datasetVersion) {
+    private long getOriginalTabularFilesSize(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        Long result = queryFactory
+        JPAQuery<?> baseQuery = queryFactory
                 .from(fileMetadata)
                 .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
                 .from(dataTable)
-                .where(dataTable.dataFile.eq(fileMetadata.dataFile))
-                .select(dataTable.originalFileSize.sum()).fetchFirst();
+                .where(dataTable.dataFile.eq(fileMetadata.dataFile));
+        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
+        Long result = baseQuery.select(dataTable.originalFileSize.sum()).fetchFirst();
         return (result == null) ? 0 : result;
     }
 
-    private long getArchivalFilesSize(DatasetVersion datasetVersion, boolean ignoreTabular) {
+    private long getArchivalFilesSize(DatasetVersion datasetVersion, boolean ignoreTabular, FileSearchCriteria searchCriteria) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(em);
         JPAQuery<?> baseQuery = queryFactory
                 .from(fileMetadata)
                 .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()));
+        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
         Long result;
         if (ignoreTabular) {
             result = baseQuery.where(fileMetadata.dataFile.dataTables.isEmpty()).select(fileMetadata.dataFile.filesize.sum()).fetchFirst();
