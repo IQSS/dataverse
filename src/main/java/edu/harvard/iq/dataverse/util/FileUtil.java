@@ -280,6 +280,11 @@ public class FileUtil implements java.io.Serializable  {
             if (fileType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)){
                 return ShapefileHandler.SHAPEFILE_FILE_TYPE_FRIENDLY_NAME;
             }
+            try {
+                return BundleUtil.getStringFromPropertyFile(fileType,"MimeTypeDisplay" );
+            } catch (MissingResourceException e) {
+                //NOOP: we will try again after trimming ";"
+            }
             if (fileType.contains(";")) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
@@ -294,6 +299,11 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static String getIndexableFacetFileType(DataFile dataFile) {
+        try {
+            return BundleUtil.getStringFromDefaultPropertyFile(dataFile.getContentType(),"MimeTypeFacets" );
+        } catch (MissingResourceException e) {
+            //NOOP: we will try again after trimming ";"
+        }
         String fileType = getFileType(dataFile);
         try {
             return BundleUtil.getStringFromDefaultPropertyFile(fileType,"MimeTypeFacets"  );
