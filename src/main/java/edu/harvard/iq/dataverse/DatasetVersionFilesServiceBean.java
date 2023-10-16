@@ -293,7 +293,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
                 query.orderBy(fileMetadata.dataFile.filesize.asc());
                 break;
             case Type:
-                query.orderBy(fileMetadata.dataFile.contentType.asc());
+                query.orderBy(fileMetadata.dataFile.contentType.asc(), fileMetadata.label.asc());
                 break;
             default:
                 query.orderBy(fileMetadata.label.asc());
