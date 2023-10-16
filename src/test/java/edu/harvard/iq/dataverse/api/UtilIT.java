@@ -38,6 +38,7 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
+import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static io.restassured.path.xml.XmlPath.from;
 import static io.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -515,7 +516,7 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
                 .contentType("application/json")
-                .put("/api/datasets/:persistentId/versions/:draft?persistentId=" + persistentId);
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + persistentId);
         return response;
     }
     
@@ -791,7 +792,7 @@ public class UtilIT {
     static Response getCrawlableFileAccess(String datasetId, String folderName, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
-        String apiPath = "/api/datasets/" + datasetId + "/dirindex?version=:draft";
+        String apiPath = "/api/datasets/" + datasetId + "/dirindex?version=" + DS_VERSION_DRAFT;
         if (StringUtil.nonEmpty(folderName)) {
             apiPath = apiPath.concat("&folder="+folderName);
         }
@@ -1407,7 +1408,7 @@ public class UtilIT {
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/:persistentId/versions/:latest-published/metadata/citation?persistentId=" + persistentId);
+                .get("/api/datasets/:persistentId/versions/" + DS_VERSION_LATEST_PUBLISHED + "/metadata/citation?persistentId=" + persistentId);
     }
 
     static Response makeSuperUser(String username) {
@@ -2922,7 +2923,7 @@ public class UtilIT {
     
     static Response findDatasetDownloadSize(String datasetId) {
         return given()
-                .get("/api/datasets/" + datasetId + "/versions/:latest/downloadsize");
+                .get("/api/datasets/" + datasetId + "/versions/" + DS_VERSION_LATEST + "/downloadsize");
     }
     
     static Response findDatasetDownloadSize(String datasetId, String version,  String apiToken) {
@@ -3276,10 +3277,24 @@ public class UtilIT {
         return response;
     }
 
-    static Response getVersionFiles(Integer datasetId, String version, Integer limit, Integer offset, String contentType, String accessStatus, String categoryName, String tabularTagName, String searchText, String orderCriteria, String apiToken) {
+    static Response getVersionFiles(Integer datasetId,
+                                    String version,
+                                    Integer limit,
+                                    Integer offset,
+                                    String contentType,
+                                    String accessStatus,
+                                    String categoryName,
+                                    String tabularTagName,
+                                    String searchText,
+                                    String orderCriteria,
+                                    boolean includeDeaccessioned,
+                                    String apiToken) {
         RequestSpecification requestSpecification = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/json");
+                .contentType("application/json")
+                .queryParam("includeDeaccessioned", includeDeaccessioned);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
         if (limit != null) {
             requestSpecification = requestSpecification.queryParam("limit", limit);
         }
@@ -3358,10 +3373,28 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
     }
 
-    static Response getVersionFileCounts(Integer datasetId, String version, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/" + datasetId + "/versions/" + version + "/files/counts");
+    static Response getVersionFileCounts(Integer datasetId, String version, String contentType, String accessStatus, String categoryName, String tabularTagName, String searchText, boolean includeDeaccessioned, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .queryParam("includeDeaccessioned", includeDeaccessioned);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (contentType != null) {
+            requestSpecification = requestSpecification.queryParam("contentType", contentType);
+        }
+        if (accessStatus != null) {
+            requestSpecification = requestSpecification.queryParam("accessStatus", accessStatus);
+        }
+        if (categoryName != null) {
+            requestSpecification = requestSpecification.queryParam("categoryName", categoryName);
+        }
+        if (tabularTagName != null) {
+            requestSpecification = requestSpecification.queryParam("tabularTagName", tabularTagName);
+        }
+        if (searchText != null) {
+            requestSpecification = requestSpecification.queryParam("searchText", searchText);
+        }
+        return requestSpecification.get("/api/datasets/" + datasetId + "/versions/" + version + "/files/counts");
     }
 
     static Response setFileCategories(String dataFileId, String apiToken, List<String> categories) {
@@ -3402,5 +3435,25 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/files/" + dataFileId + "/hasBeenDeleted");
+    }
+
+    static Response deaccessionDataset(Integer datasetId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("deaccessionReason", deaccessionReason);
+        if (deaccessionForwardURL != null) {
+            jsonObjectBuilder.add("deaccessionForwardURL", deaccessionForwardURL);
+        }
+        String jsonString = jsonObjectBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
+    }
+
+    static Response getDownloadSize(Integer datasetId, String version, String mode, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("mode", mode)
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
     }
 }

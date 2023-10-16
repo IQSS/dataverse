@@ -41,7 +41,6 @@ import java.util.*;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonValue;
 
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -649,6 +648,7 @@ public class JsonPrinter {
                 .add("pidURL", pidURL)
                 .add("filename", fileName)
                 .add("contentType", df.getContentType())
+                .add("friendlyType", df.getFriendlyType())
                 .add("filesize", df.getFilesize())
                 .add("description", fileMetadata.getDescription())
                 .add("categories", getFileCategories(fileMetadata))
@@ -1108,9 +1108,17 @@ public class JsonPrinter {
         return jsonObjectBuilder;
     }
 
-    public static JsonObjectBuilder jsonFileCountPerAccessStatusMap(Map<DatasetVersionFilesServiceBean.DataFileAccessStatus, Long> map) {
+    public static JsonObjectBuilder jsonFileCountPerAccessStatusMap(Map<FileSearchCriteria.FileAccessStatus, Long> map) {
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        for (Map.Entry<DatasetVersionFilesServiceBean.DataFileAccessStatus, Long> mapEntry : map.entrySet()) {
+        for (Map.Entry<FileSearchCriteria.FileAccessStatus, Long> mapEntry : map.entrySet()) {
+            jsonObjectBuilder.add(mapEntry.getKey().toString(), mapEntry.getValue());
+        }
+        return jsonObjectBuilder;
+    }
+
+    public static JsonObjectBuilder jsonFileCountPerTabularTagNameMap(Map<DataFileTag.TagType, Long> map) {
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        for (Map.Entry<DataFileTag.TagType, Long> mapEntry : map.entrySet()) {
             jsonObjectBuilder.add(mapEntry.getKey().toString(), mapEntry.getValue());
         }
         return jsonObjectBuilder;
