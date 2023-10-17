@@ -145,6 +145,25 @@ public class DataversesIT {
     }
 
     @Test
+    public void testGetGuestbookResponses() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        // Create a Dataverse
+        Response create = UtilIT.createRandomDataverse(apiToken);
+        create.prettyPrint();
+        create.then().assertThat().statusCode(CREATED.getStatusCode());
+        String alias = UtilIT.getAliasFromResponse(create);
+        Integer dvId = UtilIT.getDataverseIdFromResponse(create);
+        // Get GuestbookResponses by Dataverse alias
+        Response getResponsesByAlias = UtilIT.getGuestbookResponses(alias, null, apiToken);
+        getResponsesByAlias.then().assertThat().statusCode(OK.getStatusCode());
+        // Get GuestbookResponses by Dataverse ID
+        Response getResponsesById = UtilIT.getGuestbookResponses(dvId.toString(), null, apiToken);
+        getResponsesById.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
+    @Test
     public void testNotEnoughJson() {
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();

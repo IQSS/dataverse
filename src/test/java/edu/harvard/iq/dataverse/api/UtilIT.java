@@ -372,7 +372,16 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .when().get("/api/dataverses/" + alias + "/contents");
     }
-    
+
+    static Response getGuestbookResponses(String dataverseAlias, Long guestbookId, String apiToken) {
+        RequestSpecification requestSpec = given()
+                .auth().basic(apiToken, EMPTY_STRING);
+        if (guestbookId != null) {
+            requestSpec.queryParam("guestbookId", guestbookId);
+        }
+        return requestSpec.get("/api/dataverses/" + dataverseAlias + "/guestbookResponses/");
+    }
+
     static Response createRandomDatasetViaNativeApi(String dataverseAlias, String apiToken) {
         return createRandomDatasetViaNativeApi(dataverseAlias, apiToken, false);
     }
