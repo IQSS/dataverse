@@ -1173,8 +1173,9 @@ public class Dataverses extends AbstractApiBean {
     public Response getGuestbookResponsesByDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
 
+        Dataverse dv;
         try {
-            Dataverse dv = findDataverseOrDie(dvIdtf);
+            dv = findDataverseOrDie(dvIdtf);
             User u = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(u);
             if (permissionSvc.request(req)
@@ -1194,12 +1195,6 @@ public class Dataverses extends AbstractApiBean {
             public void write(OutputStream os) throws IOException,
                     WebApplicationException {
 
-                Dataverse dv;
-                try {
-                    dv = findDataverseOrDie(dvIdtf);
-                } catch (WrappedResponse wr) {
-                    throw new WebApplicationException(wr.getResponse());
-                }
                 Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
                 Map<Integer, String> datasetTitles = guestbookResponseService.mapDatasetTitles(dv.getId());
 
@@ -1208,7 +1203,6 @@ public class Dataverses extends AbstractApiBean {
                 for (Object[] result : guestbookResults) {
                     StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, datasetTitles, result);
                     os.write(sb.toString().getBytes());
-
                 }
             }
         };
