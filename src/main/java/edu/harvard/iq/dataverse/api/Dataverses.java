@@ -1194,10 +1194,15 @@ public class Dataverses extends AbstractApiBean {
             public void write(OutputStream os) throws IOException,
                     WebApplicationException {
 
-                Dataverse dv = dataverseService.findByAlias(dvIdtf);
+                Dataverse dv;
+                try {
+                    dv = findDataverseOrDie(dvIdtf);
+                } catch (WrappedResponse wr) {
+                    throw new WebApplicationException(wr.getResponse());
+                }
                 Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
                 Map<Integer, String> datasetTitles = guestbookResponseService.mapDatasetTitles(dv.getId());
-                
+
                 List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
                 os.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
                 for (Object[] result : guestbookResults) {
