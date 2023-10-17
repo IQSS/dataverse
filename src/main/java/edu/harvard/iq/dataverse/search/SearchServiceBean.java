@@ -423,6 +423,7 @@ public class SearchServiceBean {
         int statusCode = queryResponse.getStatus();
         
         logger.info("status code of the query response: "+statusCode);
+        ///logger.info("number of hits: "+queryResponse._size());
 
         SolrDocumentList docs = queryResponse.getResults();
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
@@ -823,6 +824,7 @@ public class SearchServiceBean {
             facetCategory.setFacetLabel(facetLabelList);
             if (!facetLabelList.isEmpty()) {
                 if (facetCategory.getName().equals(SearchFields.TYPE)) {
+                    logger.info("type facet encountered");
                     // the "type" facet is special, these are not
                     typeFacetCategories.add(facetCategory);
                 } else if (facetCategory.getName().equals(SearchFields.PUBLICATION_STATUS)) {

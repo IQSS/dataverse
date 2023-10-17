@@ -395,9 +395,23 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 
                 List<String> selectedTypesListSecondPass = new ArrayList<>();
                 
-                for (String dvObjectType : previewCountbyType.keySet()) {
-                    if (previewCountbyType.get(dvObjectType) == -1) {
-                        selectedTypesListSecondPass.add(dvObjectType);
+                // @todo: simplify this!
+                for (String dvObjectTypeLabel : previewCountbyType.keySet()) {
+                    if (previewCountbyType.get(dvObjectTypeLabel) == -1) {
+                        String dvObjectType = null;
+                        
+                        if (dvObjectTypeLabel.equals(BundleUtil.getStringFromBundle("dataverses"))) {
+                            dvObjectType = "dataverses";
+                        } else if (dvObjectTypeLabel.equals(BundleUtil.getStringFromBundle("datasets"))) {
+                            dvObjectType = "datasets";
+                        } else if (dvObjectTypeLabel.equals(BundleUtil.getStringFromBundle("files"))) {
+                            dvObjectType = "files";
+                        }
+                    
+                        if (dvObjectType != null) {
+                            logger.info("adding object type to the second pass query: "+dvObjectType);
+                            selectedTypesListSecondPass.add(dvObjectType);
+                        }
                     }
                 }
                 
@@ -409,13 +423,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (solrQueryResponseSecondPass != null) {
 
                     if (solrQueryResponseSecondPass.hasError()) {
-                        logger.info(solrQueryResponse.getError());
+                        logger.info(solrQueryResponseSecondPass.getError());
                         setSolrErrorEncountered(true);
                     }
 
                     // And now populate the remaining type facets:
                     for (FacetCategory facetCategory : solrQueryResponseSecondPass.getTypeFacetCategories()) {
+                        logger.info("facet category: "+facetCategory.getName());
                         for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                            logger.info("facet label: "+facetLabel.getName());
                             previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
                         }
                     }
