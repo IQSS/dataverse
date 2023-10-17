@@ -308,15 +308,23 @@ public class SearchIncludeFragment implements java.io.Serializable {
             this.setRootDv(true);
         }
 
+        filterQueriesFinal.addAll(filterQueries);
+
+        /**
+         * Add type queries, for the types (Dataverses, Datasets, Datafiles) 
+         * currently selected:
+         */
         selectedTypesList = new ArrayList<>();
         String[] parts = selectedTypesString.split(":");
         selectedTypesList.addAll(Arrays.asList(parts));
-
         
+        logger.info("selected types list size: "+selectedTypesList.size());
         
-        filterQueriesFinal.addAll(filterQueries);
-
-        
+        String[] arr = selectedTypesList.toArray(new String[selectedTypesList.size()]);
+        selectedTypesHumanReadable = combine(arr, " OR ");
+        if (!selectedTypesHumanReadable.isEmpty()) {
+            typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
+        }        
         filterQueriesFinal.add(typeFilterQuery);
 
         if (page <= 1) {
@@ -383,7 +391,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 // run another query to obtain the numbers of the unselected types:
                 
                 List<String> filterQueriesFinalSecondPass = new ArrayList<>();
-                filterQueriesFinalSecondPass.addAll(filterQueriesFinal);
+                filterQueriesFinalSecondPass.addAll(filterQueries);
                 
                 List<String> selectedTypesListSecondPass = new ArrayList<>();
                 
@@ -393,12 +401,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                 }
                 
-                String[] arr = selectedTypesListSecondPass.toArray(new String[selectedTypesListSecondPass.size()]);
+                arr = selectedTypesListSecondPass.toArray(new String[selectedTypesListSecondPass.size()]);
                 filterQueriesFinalSecondPass.add(SearchFields.TYPE + ":(" + combine(arr, " OR ") + ")");
-                
+
+                solrQueryResponseSecondPass = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalSecondPass, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null, false, false);
+
                 if (solrQueryResponseSecondPass != null) {
 
-                    solrQueryResponseSecondPass = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalSecondPass, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null);
                     if (solrQueryResponseSecondPass.hasError()) {
                         logger.info(solrQueryResponse.getError());
                         setSolrErrorEncountered(true);
@@ -410,6 +419,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
                             previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
                         }
                     }
+                } else {
+                    logger.warning("null solr response from the second pass type query");
                 }
             }
             

@@ -195,64 +195,11 @@ public class SearchServiceBean {
 //        }
 //        solrQuery.setSort(sortClause);
 
-        List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
-        Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
-        if (addHighlights) {
-            solrQuery.setHighlight(true).setHighlightSnippets(1);
-            Integer fragSize = systemConfig.getSearchHighlightFragmentSize();
-            if (fragSize != null) {
-                solrQuery.setHighlightFragsize(fragSize);
-            }
-            solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
-            solrQuery.setHighlightSimplePost("</span>");
-
-            // TODO: Do not hard code "Name" etc as English here.
-            solrFieldsToHightlightOnMap.put(SearchFields.NAME, "Name");
-            solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
-            solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_FRIENDLY, "File Type");
-            solrFieldsToHightlightOnMap.put(SearchFields.DESCRIPTION, "Description");
-            solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_NAME, "Variable Name");
-            solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_LABEL, "Variable Label");
-            solrFieldsToHightlightOnMap.put(SearchFields.LITERAL_QUESTION, BundleUtil.getStringFromBundle("search.datasets.literalquestion"));
-            solrFieldsToHightlightOnMap.put(SearchFields.INTERVIEW_INSTRUCTIONS, BundleUtil.getStringFromBundle("search.datasets.interviewinstructions"));
-            solrFieldsToHightlightOnMap.put(SearchFields.POST_QUESTION, BundleUtil.getStringFromBundle("search.datasets.postquestion"));
-            solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_UNIVERSE, BundleUtil.getStringFromBundle("search.datasets.variableuniverse"));
-            solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_NOTES, BundleUtil.getStringFromBundle("search.datasets.variableNotes"));
-
-            solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_SEARCHABLE, "File Type");
-            solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, "Publication Year");
-            solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_ID, BundleUtil.getStringFromBundle("advanced.search.datasets.persistentId"));
-            solrFieldsToHightlightOnMap.put(SearchFields.FILE_PERSISTENT_ID, BundleUtil.getStringFromBundle("advanced.search.files.persistentId"));
-            /**
-             * @todo Dataverse subject and affiliation should be highlighted but
-             * this is commented out right now because the "friendly" names are
-             * not being shown on the dataverse cards. See also
-             * https://github.com/IQSS/dataverse/issues/1431
-             */
-//        solrFieldsToHightlightOnMap.put(SearchFields.DATAVERSE_SUBJECT, "Subject");
-//        solrFieldsToHightlightOnMap.put(SearchFields.DATAVERSE_AFFILIATION, "Affiliation");
-            /**
-             * @todo: show highlight on file card?
-             * https://redmine.hmdc.harvard.edu/issues/3848
-             */
-            solrFieldsToHightlightOnMap.put(SearchFields.FILENAME_WITHOUT_EXTENSION, "Filename Without Extension");
-            solrFieldsToHightlightOnMap.put(SearchFields.FILE_TAG_SEARCHABLE, "File Tag");
-
-            for (DatasetFieldType datasetFieldType : datasetFields) {
-                String solrField = datasetFieldType.getSolrField().getNameSearchable();
-                String displayName = datasetFieldType.getDisplayName();
-                solrFieldsToHightlightOnMap.put(solrField, displayName);
-            }
-            for (Map.Entry<String, String> entry : solrFieldsToHightlightOnMap.entrySet()) {
-                String solrField = entry.getKey();
-                // String displayName = entry.getValue();
-                solrQuery.addHighlightField(solrField);
-            }
-        }
         
         solrQuery.setParam("fl", "*,score");
         solrQuery.setParam("qt", "/select");
         solrQuery.setParam("facet", "true");
+        
         /**
          * @todo: do we need facet.query?
          */
@@ -315,7 +262,61 @@ public class SearchServiceBean {
             }
         }
 
-        
+        List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
+        Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
+        if (addHighlights) {
+            solrQuery.setHighlight(true).setHighlightSnippets(1);
+            Integer fragSize = systemConfig.getSearchHighlightFragmentSize();
+            if (fragSize != null) {
+                solrQuery.setHighlightFragsize(fragSize);
+            }
+            solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
+            solrQuery.setHighlightSimplePost("</span>");
+
+            // TODO: Do not hard code "Name" etc as English here.
+            solrFieldsToHightlightOnMap.put(SearchFields.NAME, "Name");
+            solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
+            solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_FRIENDLY, "File Type");
+            solrFieldsToHightlightOnMap.put(SearchFields.DESCRIPTION, "Description");
+            solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_NAME, "Variable Name");
+            solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_LABEL, "Variable Label");
+            solrFieldsToHightlightOnMap.put(SearchFields.LITERAL_QUESTION, BundleUtil.getStringFromBundle("search.datasets.literalquestion"));
+            solrFieldsToHightlightOnMap.put(SearchFields.INTERVIEW_INSTRUCTIONS, BundleUtil.getStringFromBundle("search.datasets.interviewinstructions"));
+            solrFieldsToHightlightOnMap.put(SearchFields.POST_QUESTION, BundleUtil.getStringFromBundle("search.datasets.postquestion"));
+            solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_UNIVERSE, BundleUtil.getStringFromBundle("search.datasets.variableuniverse"));
+            solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_NOTES, BundleUtil.getStringFromBundle("search.datasets.variableNotes"));
+
+            solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_SEARCHABLE, "File Type");
+            solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, "Publication Year");
+            solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_ID, BundleUtil.getStringFromBundle("advanced.search.datasets.persistentId"));
+            solrFieldsToHightlightOnMap.put(SearchFields.FILE_PERSISTENT_ID, BundleUtil.getStringFromBundle("advanced.search.files.persistentId"));
+            /**
+             * @todo Dataverse subject and affiliation should be highlighted but
+             * this is commented out right now because the "friendly" names are
+             * not being shown on the dataverse cards. See also
+             * https://github.com/IQSS/dataverse/issues/1431
+             */
+//        solrFieldsToHightlightOnMap.put(SearchFields.DATAVERSE_SUBJECT, "Subject");
+//        solrFieldsToHightlightOnMap.put(SearchFields.DATAVERSE_AFFILIATION, "Affiliation");
+            /**
+             * @todo: show highlight on file card?
+             * https://redmine.hmdc.harvard.edu/issues/3848
+             */
+            solrFieldsToHightlightOnMap.put(SearchFields.FILENAME_WITHOUT_EXTENSION, "Filename Without Extension");
+            solrFieldsToHightlightOnMap.put(SearchFields.FILE_TAG_SEARCHABLE, "File Tag");
+
+            for (DatasetFieldType datasetFieldType : datasetFields) {
+                String solrField = datasetFieldType.getSolrField().getNameSearchable();
+                String displayName = datasetFieldType.getDisplayName();
+                solrFieldsToHightlightOnMap.put(solrField, displayName);
+            }
+            for (Map.Entry<String, String> entry : solrFieldsToHightlightOnMap.entrySet()) {
+                String solrField = entry.getKey();
+                // String displayName = entry.getValue();
+                solrQuery.addHighlightField(solrField);
+            }
+        }
+
         //I'm not sure if just adding null here is good for hte permissions system... i think it needs something
         if(dataverses != null) {
             for(Dataverse dataverse : dataverses) {
@@ -370,7 +371,7 @@ public class SearchServiceBean {
 //        solrQuery.addNumericRangeFacet(SearchFields.PRODUCTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
 //        solrQuery.addNumericRangeFacet(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
         solrQuery.setRows(numResultsPerPage);
-        logger.fine("Solr query:" + solrQuery);
+        logger.info("Solr query:" + solrQuery);
 
         // -----------------------------------
         // Make the solr query
@@ -378,8 +379,12 @@ public class SearchServiceBean {
         QueryResponse queryResponse = null;
         try {
             queryResponse = solrClientService.getSolrClient().query(solrQuery);
+
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
+            
+            logger.info("message from solr exception: "+messageFromSolr);
+            
             String error = "Search Syntax Error: ";
             String stringToHide = "org.apache.solr.search.SyntaxError: ";
             if (messageFromSolr.startsWith(stringToHide)) {
@@ -393,6 +398,12 @@ public class SearchServiceBean {
             exceptionSolrQueryResponse.setError(error);
 
             // we can't show anything because of the search syntax error
+            
+            // We probably shouldn't be assuming that this is necessarily a 
+            // "search syntax error" - could be anything else too - ? 
+            
+            
+            
             long zeroNumResultsFound = 0;
             long zeroGetResultsStart = 0;
             List<SolrSearchResult> emptySolrSearchResults = new ArrayList<>();
@@ -408,6 +419,10 @@ public class SearchServiceBean {
         } catch (SolrServerException | IOException ex) {
             throw new SearchException("Internal Dataverse Search Engine Error", ex);
         }
+        
+        int statusCode = queryResponse.getStatus();
+        
+        logger.info("status code of the query response: "+statusCode);
 
         SolrDocumentList docs = queryResponse.getResults();
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
