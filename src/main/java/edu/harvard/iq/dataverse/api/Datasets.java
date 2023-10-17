@@ -3974,8 +3974,8 @@ public class Datasets extends AbstractApiBean {
         }
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, false);
-            try (StringReader stringReader = new StringReader(jsonBody)) {
-                JsonObject jsonObject = Json.createReader(stringReader).readObject();
+            try {
+                JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
                 datasetVersion.setVersionNote(jsonObject.getString("deaccessionReason"));
                 String deaccessionForwardURL = jsonObject.getString("deaccessionForwardURL", null);
                 if (deaccessionForwardURL != null) {
