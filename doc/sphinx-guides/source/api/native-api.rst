@@ -970,6 +970,53 @@ This endpoint supports optional pagination, through the ``limit`` and ``offset``
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?limit=10&offset=20"
 
+Category name filtering is also optionally supported. To return files to which the requested category has been added.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?categoryName=Data"
+
+Tabular tag name filtering is also optionally supported. To return files to which the requested tabular tag has been added.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?tabularTagName=Survey"
+
+Content type filtering is also optionally supported. To return files matching the requested content type.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?contentType=image/png"
+
+Filtering by search text is also optionally supported. The search will be applied to the labels and descriptions of the dataset files, to return the files that contain the text searched in one of such fields.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?searchText=word"
+
+File access filtering is also optionally supported. In particular, by the following possible values:
+
+* ``Public``
+* ``Restricted``
+* ``EmbargoedThenRestricted``
+* ``EmbargoedThenPublic``
+
+If no filter is specified, the files will match all of the above categories.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?accessStatus=Public"
+
 Ordering criteria for sorting the results is also optionally supported. In particular, by the following possible values:
 
 * ``NameAZ`` (Default)
@@ -979,13 +1026,113 @@ Ordering criteria for sorting the results is also optionally supported. In parti
 * ``Size``
 * ``Type``
 
-Please note that these values are case sensitive and must be correctly typed for the endpoint to recognize them.
-
 Usage example:
 
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?orderCriteria=Newest"
+
+Please note that both filtering and ordering criteria values are case sensitive and must be correctly typed for the endpoint to recognize them.
+
+By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+
+If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?includeDeaccessioned=true"
+
+.. note:: Keep in mind that you can combine all of the above query params depending on the results you are looking for.
+
+Get File Counts in a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get file counts, for the given dataset and version.
+
+The returned file counts are based on different criteria:
+
+- Total (The total file count)
+- Per content type
+- Per category name
+- Per tabular tag name
+- Per access status (Possible values: Public, Restricted, EmbargoedThenRestricted, EmbargoedThenPublic)
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION=1.0
+
+  curl "$SERVER_URL/api/datasets/$ID/versions/$VERSION/files/counts"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files/counts"
+
+Category name filtering is optionally supported. To return counts only for files to which the requested category has been added.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files/counts?categoryName=Data"
+
+Tabular tag name filtering is also optionally supported. To return counts only for files to which the requested tabular tag has been added.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files/counts?tabularTagName=Survey"
+
+Content type filtering is also optionally supported. To return counts only for files matching the requested content type.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files/counts?contentType=image/png"
+
+Filtering by search text is also optionally supported. The search will be applied to the labels and descriptions of the dataset files, to return counts only for files that contain the text searched in one of such fields.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files/counts?searchText=word"
+
+File access filtering is also optionally supported. In particular, by the following possible values:
+
+* ``Public``
+* ``Restricted``
+* ``EmbargoedThenRestricted``
+* ``EmbargoedThenPublic``
+
+If no filter is specified, the files will match all of the above categories.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files/counts?accessStatus=Public"
+
+By default, deaccessioned dataset versions are not supported by this endpoint and will be ignored in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a not found error if the version is deaccessioned and you do not enable the option described below.
+
+If you want to include deaccessioned dataset versions, you must specify this through the ``includeDeaccessioned`` query parameter.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files/counts?includeDeaccessioned=true"
+
+Please note that filtering values are case sensitive and must be correctly typed for the endpoint to recognize them.
+
+Keep in mind that you can combine all of the above query params depending on the results you are looking for.
 
 View Dataset Files and Folders as a Directory Index
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1282,6 +1429,39 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/24/versions/:draft"
+
+Deaccession Dataset
+~~~~~~~~~~~~~~~~~~~
+
+Given a version of a dataset, updates its status to deaccessioned.
+
+The JSON body required to deaccession a dataset (``deaccession.json``) looks like this::
+
+  {
+    "deaccessionReason": "Description of the deaccession reason.",
+    "deaccessionForwardURL": "https://demo.dataverse.org"
+  }
+
+
+Note that the field ``deaccessionForwardURL`` is optional.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSIONID=1.0
+  export FILE_PATH=deaccession.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/datasets/$ID/versions/$VERSIONID/deaccession" -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/datasets/24/versions/1.0/deaccession" -H "Content-type:application/json" --upload-file deaccession.json
+
+.. note:: You cannot deaccession a dataset more than once. If you call this endpoint twice for the same dataset version, you will get a not found error on the second call, since the dataset you are looking for will no longer be published since it is already deaccessioned.
 
 Set Citation Date Field Type for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1695,6 +1875,18 @@ The fully expanded example above (without environment variables) looks like this
 
 The size of all files available for download will be returned. 
 If :draft is passed as versionId the token supplied must have permission to view unpublished drafts. A token is not required for published datasets. Also restricted files will be included in this total regardless of whether the user has access to download the restricted file(s).
+
+There is an optional query parameter ``mode`` which applies a filter criteria to the operation. This parameter supports the following values:
+
+* ``All`` (Default): Includes both archival and original sizes for tabular files
+* ``Archival``: Includes only the archival size for tabular files
+* ``Original``: Includes only the original size for tabular files
+
+Usage example:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/24/versions/1.0/downloadsize?mode=Archival"
 
 Submit a Dataset for Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2202,11 +2394,11 @@ Signposting involves the addition of a `Link <https://tools.ietf.org/html/rfc598
 
 Here is an example of a "Link" header:
 
-``Link: <https://doi.org/10.5072/FK2/YD5QDG>;rel="cite-as", <https://doi.org/10.5072/FK2/YD5QDG>;rel="describedby";type="application/vnd.citationstyles.csl+json",<https://demo.dataverse.org/api/datasets/export?exporter=schema.org&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/json+ld", <https://schema.org/AboutPage>;rel="type",<https://schema.org/Dataset>;rel="type", https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/customlicense?persistentId=doi:10.5072/FK2/YD5QDG;rel="license", <https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/linkset?persistentId=doi:10.5072/FK2/YD5QDG> ; rel="linkset";type="application/linkset+json"``
+``Link: <https://doi.org/10.5072/FK2/YD5QDG>;rel="cite-as", <https://doi.org/10.5072/FK2/YD5QDG>;rel="describedby";type="application/vnd.citationstyles.csl+json",<https://demo.dataverse.org/api/datasets/export?exporter=schema.org&persistentId=doi:10.5072/FK2/YD5QDG>;rel="describedby";type="application/ld+json", <https://schema.org/AboutPage>;rel="type",<https://schema.org/Dataset>;rel="type", <https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/customlicense?persistentId=doi:10.5072/FK2/YD5QDG>;rel="license", <https://demo.dataverse.org/api/datasets/:persistentId/versions/1.0/linkset?persistentId=doi:10.5072/FK2/YD5QDG> ; rel="linkset";type="application/linkset+json"``
 
 The URL for linkset information is discoverable under the ``rel="linkset";type="application/linkset+json`` entry in the "Link" header, such as in the example above.
 
-The reponse includes a JSON object conforming to the `Signposting <https://signposting.org>`__ specification.
+The reponse includes a JSON object conforming to the `Signposting <https://signposting.org>`__ specification. As part of this conformance, unlike most Dataverse API responses, the output is not wrapped in a ``{"status":"OK","data":{`` object.
 Signposting is not supported for draft dataset versions.
 
 .. code-block:: bash
@@ -2832,13 +3024,13 @@ A curl example using an ``ID``
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl "$SERVER_URL/api/files/$ID/downloadCount"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/files/$ID/downloadCount"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/files/24/downloadCount"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/files/24/downloadCount"
 
 A curl example using a ``PERSISTENT_ID``
 
@@ -2848,15 +3040,52 @@ A curl example using a ``PERSISTENT_ID``
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_ID=doi:10.5072/FK2/AAA000
 
-  curl "$SERVER_URL/api/files/:persistentId/downloadCount?persistentId=$PERSISTENT_ID"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/files/:persistentId/downloadCount?persistentId=$PERSISTENT_ID"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/files/:persistentId/downloadCount?persistentId=doi:10.5072/FK2/AAA000"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/files/:persistentId/downloadCount?persistentId=doi:10.5072/FK2/AAA000"
 
 If you are interested in download counts for multiple files, see :doc:`/api/metrics`.
+
+File Has Been Deleted
+~~~~~~~~~~~~~~~~~~~~~
+
+Know if a particular file that existed in a previous version of the dataset no longer exists in the latest version.
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/files/$ID/hasBeenDeleted"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/files/24/hasBeenDeleted"
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/files/:persistentId/hasBeenDeleted?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET  "https://demo.dataverse.org/api/files/:persistentId/hasBeenDeleted?persistentId=doi:10.5072/FK2/AAA000"
 
 Updating File Metadata
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -2906,6 +3135,132 @@ The fully expanded example above (without environment variables) looks like this
 Also note that dataFileTags are not versioned and changes to these will update the published version of the file.
 
 .. _EditingVariableMetadata:
+
+Updating File Metadata Categories
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the categories for an existing file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the category names.
+
+Although updating categories can also be done with the previous endpoint, this has been created to be more practical when it is only necessary to update categories and not other metadata fields.
+
+The JSON representation of file categories (``categories.json``) looks like this::
+
+  {
+    "categories": [
+      "Data",
+      "Custom"
+    ]
+  }
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export FILE_PATH=categories.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    "$SERVER_URL/api/files/$ID/metadata/categories" \
+    -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    "http://demo.dataverse.org/api/files/24/metadata/categories" \
+    -H "Content-type:application/json" --upload-file categories.json
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+  export FILE_PATH=categories.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    "$SERVER_URL/api/files/:persistentId/metadata/categories?persistentId=$PERSISTENT_ID" \
+    -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    "https://demo.dataverse.org/api/files/:persistentId/metadata/categories?persistentId=doi:10.5072/FK2/AAA000" \
+    -H "Content-type:application/json" --upload-file categories.json
+
+Note that if the specified categories do not exist, they will be created.
+
+Updating File Tabular Tags
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the tabular tags for an existing tabular file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the tabular tag names.
+
+The JSON representation of tabular tags (``tags.json``) looks like this::
+
+  {
+    "tabularTags": [
+      "Survey",
+      "Genomics"
+    ]
+  }
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export FILE_PATH=tags.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    "$SERVER_URL/api/files/$ID/metadata/tabularTags" \
+    -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    "http://demo.dataverse.org/api/files/24/metadata/tabularTags" \
+    -H "Content-type:application/json" --upload-file tags.json
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+  export FILE_PATH=tags.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    "$SERVER_URL/api/files/:persistentId/metadata/tabularTags?persistentId=$PERSISTENT_ID" \
+    -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    "https://demo.dataverse.org/api/files/:persistentId/metadata/tabularTags?persistentId=doi:10.5072/FK2/AAA000" \
+    -H "Content-type:application/json" --upload-file tags.json
+
+Note that the specified tabular tags must be valid. The supported tags are:
+
+* ``Survey``
+* ``Time Series``
+* ``Panel``
+* ``Event``
+* ``Genomics``
+* ``Network``
+* ``Geospatial``
 
 Editing Variable Level Metadata
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
