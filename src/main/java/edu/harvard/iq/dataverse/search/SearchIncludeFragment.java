@@ -418,7 +418,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 arr = selectedTypesListSecondPass.toArray(new String[selectedTypesListSecondPass.size()]);
                 filterQueriesFinalSecondPass.add(SearchFields.TYPE + ":(" + combine(arr, " OR ") + ")");
 
-                solrQueryResponseSecondPass = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalSecondPass, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null, false, false);
+                solrQueryResponseSecondPass = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalSecondPass, null, sortOrder.toString(), 0, onlyDataRelatedToMe, 1, false, null, null, false, false);
 
                 if (solrQueryResponseSecondPass != null) {
 
@@ -429,9 +429,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
                     // And now populate the remaining type facets:
                     for (FacetCategory facetCategory : solrQueryResponseSecondPass.getTypeFacetCategories()) {
-                        logger.info("facet category: "+facetCategory.getName());
                         for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                            logger.info("facet label: "+facetLabel.getName());
                             previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
                         }
                     }

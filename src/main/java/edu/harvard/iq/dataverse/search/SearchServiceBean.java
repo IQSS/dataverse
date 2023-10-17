@@ -165,7 +165,8 @@ public class SearchServiceBean {
             List<Dataverse> dataverses,
             String query,
             List<String> filterQueries,
-            String sortField, String sortOrder,
+            String sortField, 
+            String sortOrder,
             int paginationStart,
             boolean onlyDatatRelatedToMe,
             int numResultsPerPage,
@@ -189,7 +190,11 @@ public class SearchServiceBean {
 //        SortClause foo = new SortClause("name", SolrQuery.ORDER.desc);
 //        if (query.equals("*") || query.equals("*:*")) {
 //            solrQuery.setSort(new SortClause(SearchFields.NAME_SORT, SolrQuery.ORDER.asc));
-        solrQuery.setSort(new SortClause(sortField, sortOrder));
+        if (sortField != null) {
+            // is it ok not to specify any sort? - there are cases where we 
+            // don't care, and it must cost some extra cycles -- L.A.
+            solrQuery.setSort(new SortClause(sortField, sortOrder));
+        }
 //        } else {
 //            solrQuery.setSort(sortClause);
 //        }
@@ -423,7 +428,8 @@ public class SearchServiceBean {
         int statusCode = queryResponse.getStatus();
         
         logger.info("status code of the query response: "+statusCode);
-        ///logger.info("number of hits: "+queryResponse._size());
+        logger.info("_size from query response: "+queryResponse._size());
+        logger.info("qtime: "+queryResponse.getQTime());
 
         SolrDocumentList docs = queryResponse.getResults();
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
@@ -824,7 +830,6 @@ public class SearchServiceBean {
             facetCategory.setFacetLabel(facetLabelList);
             if (!facetLabelList.isEmpty()) {
                 if (facetCategory.getName().equals(SearchFields.TYPE)) {
-                    logger.info("type facet encountered");
                     // the "type" facet is special, these are not
                     typeFacetCategories.add(facetCategory);
                 } else if (facetCategory.getName().equals(SearchFields.PUBLICATION_STATUS)) {
