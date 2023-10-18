@@ -1,22 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
-import edu.harvard.iq.dataverse.AuxiliaryFile;
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileTag;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetDistributor;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseFacet;
-import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -57,7 +41,6 @@ import java.util.*;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonValue;
 
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -665,6 +648,7 @@ public class JsonPrinter {
                 .add("pidURL", pidURL)
                 .add("filename", fileName)
                 .add("contentType", df.getContentType())
+                .add("friendlyType", df.getFriendlyType())
                 .add("filesize", df.getFilesize())
                 .add("description", fileMetadata.getDescription())
                 .add("categories", getFileCategories(fileMetadata))
@@ -688,9 +672,14 @@ public class JsonPrinter {
                 //---------------------------------------------
                 .add("md5", getMd5IfItExists(df.getChecksumType(), df.getChecksumValue()))
                 .add("checksum", getChecksumTypeAndValue(df.getChecksumType(), df.getChecksumValue()))
+                .add("tabularData", df.isTabularData())
                 .add("tabularTags", getTabularFileTags(df))
                 .add("creationDate", df.getCreateDateFormattedYYYYMMDD())
                 .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD());
+        Dataset dfOwner = df.getOwner();
+        if (dfOwner != null) {
+            builder.add("fileAccessRequest", dfOwner.isFileAccessRequest());
+        }
         /*
          * The restricted state was not included prior to #9175 so to avoid backward
          * incompatability, it is now only added when generating json for the
@@ -1109,6 +1098,30 @@ public class JsonPrinter {
                 return EnumSet.of(Collector.Characteristics.IDENTITY_FINISH);
             }
         };
+    }
+
+    public static JsonObjectBuilder json(Map<String, Long> map) {
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        for (Map.Entry<String, Long> mapEntry : map.entrySet()) {
+            jsonObjectBuilder.add(mapEntry.getKey(), mapEntry.getValue());
+        }
+        return jsonObjectBuilder;
+    }
+
+    public static JsonObjectBuilder jsonFileCountPerAccessStatusMap(Map<FileSearchCriteria.FileAccessStatus, Long> map) {
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        for (Map.Entry<FileSearchCriteria.FileAccessStatus, Long> mapEntry : map.entrySet()) {
+            jsonObjectBuilder.add(mapEntry.getKey().toString(), mapEntry.getValue());
+        }
+        return jsonObjectBuilder;
+    }
+
+    public static JsonObjectBuilder jsonFileCountPerTabularTagNameMap(Map<DataFileTag.TagType, Long> map) {
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        for (Map.Entry<DataFileTag.TagType, Long> mapEntry : map.entrySet()) {
+            jsonObjectBuilder.add(mapEntry.getKey().toString(), mapEntry.getValue());
+        }
+        return jsonObjectBuilder;
     }
 
     public static Collector<JsonObjectBuilder, ArrayList<JsonObjectBuilder>, JsonArrayBuilder> toJsonArray() {

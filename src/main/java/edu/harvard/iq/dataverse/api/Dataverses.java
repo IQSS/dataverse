@@ -976,6 +976,8 @@ public class Dataverses extends AbstractApiBean {
      */
 //    File tempDir;
 //
+//    TODO: Code duplicate in ThemeWidgetFragment. Maybe extract, make static and put some place else?
+//          Important: at least use JvmSettings.DOCROOT_DIRECTORY and not the hardcoded location!
 //    private void createTempDir(Dataverse editDv) {
 //        try {
 //            File tempRoot = java.nio.file.Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();

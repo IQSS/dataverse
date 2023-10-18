@@ -404,6 +404,18 @@ A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X GET http://$SERVER/api/access/datafile/{id}/listRequests
 
+User Has Requested Access to a File:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``/api/access/datafile/{id}/userFileAccessRequested``
+
+This method returns true or false depending on whether or not the calling user has requested access to a particular file.
+
+A curl example using an ``id``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "http://$SERVER/api/access/datafile/{id}/userFileAccessRequested"
+
+
 Get User Permissions on a File:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
