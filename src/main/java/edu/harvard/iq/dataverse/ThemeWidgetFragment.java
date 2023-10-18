@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.io.File;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.logging.Level;
@@ -49,6 +51,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     static final String DEFAULT_TEXT_COLOR = "888888";
     private static final Logger logger = Logger.getLogger(ThemeWidgetFragment.class.getCanonicalName());   
 
+    public static final String LOGOS_SUBDIR = "logos";
+    public static final String LOGOS_TEMP_SUBDIR = LOGOS_SUBDIR + File.separator + "temp";
 
     private File tempDir;
     private File uploadedFile;
@@ -86,12 +90,18 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
 
  
-   
+    public static Path getLogoDir(String ownerId) {
+        return Path.of(JvmSettings.DOCROOT_DIRECTORY.lookup(), LOGOS_SUBDIR, ownerId);
+    }
     
-    private  void createTempDir() {
+    private void createTempDir() {
           try {
-            File tempRoot = Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();
-            tempDir = Files.createTempDirectory(tempRoot.toPath(),editDv.getId().toString()).toFile();
+            // Create the temporary space if not yet existing (will silently ignore preexisting)
+            // Note that the docroot directory is checked within ConfigCheckService for presence and write access.
+            Path tempRoot = Path.of(JvmSettings.DOCROOT_DIRECTORY.lookup(), LOGOS_TEMP_SUBDIR);
+            Files.createDirectories(tempRoot);
+            
+            this.tempDir = Files.createTempDirectory(tempRoot, editDv.getId().toString()).toFile();
         } catch (IOException e) {
             throw new RuntimeException("Error creating temp directory", e); // improve error handling
         }
