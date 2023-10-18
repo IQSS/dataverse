@@ -298,7 +298,7 @@ public class UtilIT {
     static Integer getDataverseIdFromResponse(Response createDataverseResponse) {
         JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
         int dataverseId = createdDataverse.getInt("data.id");
-        logger.info("Id found in create dataverse response: " + createdDataverse);
+        logger.info("Id found in create dataverse response: " + dataverseId);
         return dataverseId;
     }
 
@@ -397,7 +397,16 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .when().get("/api/dataverses/" + alias + "/contents");
     }
-    
+
+    static Response getGuestbookResponses(String dataverseAlias, Long guestbookId, String apiToken) {
+        RequestSpecification requestSpec = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        if (guestbookId != null) {
+            requestSpec.queryParam("guestbookId", guestbookId);
+        }
+        return requestSpec.get("/api/dataverses/" + dataverseAlias + "/guestbookResponses/");
+    }
+
     static Response createRandomDatasetViaNativeApi(String dataverseAlias, String apiToken) {
         return createRandomDatasetViaNativeApi(dataverseAlias, apiToken, false);
     }
