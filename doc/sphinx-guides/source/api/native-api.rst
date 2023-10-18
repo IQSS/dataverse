@@ -2511,7 +2511,7 @@ Get User Permissions on a Dataset
 
 This API call returns the permissions that the calling user has on a particular dataset.
 
-In particular, the user permissions that this method checks, returned as booleans, are the following:
+In particular, the user permissions that this API call checks, returned as booleans, are the following:
 
 * Can view the unpublished dataset
 * Can edit the dataset
