@@ -375,7 +375,7 @@ public class UtilIT {
 
     static Response getGuestbookResponses(String dataverseAlias, Long guestbookId, String apiToken) {
         RequestSpecification requestSpec = given()
-                .auth().basic(apiToken, EMPTY_STRING);
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
         if (guestbookId != null) {
             requestSpec.queryParam("guestbookId", guestbookId);
         }
