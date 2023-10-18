@@ -265,7 +265,7 @@ public class Datasets extends AbstractApiBean {
                 MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
                 mdcLogService.logEntry(entry);
             }
-            return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
+            return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest, true) : null));
         }, getRequestUser(crc));
     }
     
@@ -471,22 +471,33 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions")
-    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id ) {
-        return response( req ->
-             ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id)) )
+    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("includeFiles") Boolean includeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+        
+        return response( req -> {
+            Dataset dataset = findDatasetOrDie(id); 
+
+            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, (includeFiles == null ? true : includeFiles)) )
                                 .stream()
-                                .map( d -> json(d) )
-                                .collect(toJsonArray())), getRequestUser(crc));
+                                .map( d -> json(d, includeFiles == null ? true : includeFiles) )
+                                .collect(toJsonArray()));
+        }, getRequestUser(crc));
     }
     
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}")
-    public Response getVersion(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersion(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("includeFiles") Boolean includeFiles, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                    : ok(json(dsv));
+            
+            if (dsv == null || dsv.getId() == null) {
+                return notFound("Dataset version not found");
+            }
+            
+            if (includeFiles == null ? true : includeFiles) {
+                dsv = datasetversionService.findDeep(dsv.getId());
+            }
+            return ok(json(dsv, includeFiles == null ? true : includeFiles));
         }, getRequestUser(crc));
     }
 
@@ -785,7 +796,7 @@ public class Datasets extends AbstractApiBean {
                 }
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
             }
-            return ok( json(managedVersion) );
+            return ok( json(managedVersion, true) );
                     
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
@@ -1020,7 +1031,7 @@ public class Datasets extends AbstractApiBean {
 
 
             DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getLatestVersion();
-            return ok(json(managedVersion));
+            return ok(json(managedVersion, true));
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
@@ -1169,7 +1180,7 @@ public class Datasets extends AbstractApiBean {
             }
             DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getLatestVersion();
 
-            return ok(json(managedVersion));
+            return ok(json(managedVersion, true));
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
@@ -3944,9 +3955,9 @@ public class Datasets extends AbstractApiBean {
         JsonObjectBuilder responseJson;
         if (isAnonymizedAccess) {
             List<String> anonymizedFieldTypeNamesList = new ArrayList<>(Arrays.asList(anonymizedFieldTypeNames.split(",\\s")));
-            responseJson = json(dsv, anonymizedFieldTypeNamesList);
+            responseJson = json(dsv, anonymizedFieldTypeNamesList, true);
         } else {
-            responseJson = json(dsv);
+            responseJson = json(dsv, true);
         }
         return ok(responseJson);
     }
