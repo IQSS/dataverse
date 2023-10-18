@@ -3359,6 +3359,12 @@ public class UtilIT {
                 .get("/api/access/datafile/" + dataFileId + "/userPermissions");
     }
 
+    static Response getUserPermissionsOnDataset(String datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/userPermissions");
+    }
+
     static Response createFileEmbargo(Integer datasetId, Integer fileId, String dateAvailable, String apiToken) {
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         jsonBuilder.add("dateAvailable", dateAvailable);

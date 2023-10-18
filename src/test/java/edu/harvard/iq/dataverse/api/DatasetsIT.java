@@ -3928,4 +3928,37 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingAllSizes));
     }
+
+    @Test
+    public void testGetUserPermissionsOnDataset() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Call with valid dataset id
+        Response getUserPermissionsOnDatasetResponse = UtilIT.getUserPermissionsOnDataset(Integer.toString(datasetId), apiToken);
+        getUserPermissionsOnDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        boolean canViewUnpublishedDataset = JsonPath.from(getUserPermissionsOnDatasetResponse.body().asString()).getBoolean("data.canViewUnpublishedDataset");
+        assertTrue(canViewUnpublishedDataset);
+        boolean canEditDataset = JsonPath.from(getUserPermissionsOnDatasetResponse.body().asString()).getBoolean("data.canEditDataset");
+        assertTrue(canEditDataset);
+        boolean canPublishDataset = JsonPath.from(getUserPermissionsOnDatasetResponse.body().asString()).getBoolean("data.canPublishDataset");
+        assertTrue(canPublishDataset);
+        boolean canManageDatasetPermissions = JsonPath.from(getUserPermissionsOnDatasetResponse.body().asString()).getBoolean("data.canManageDatasetPermissions");
+        assertTrue(canManageDatasetPermissions);
+        boolean canDeleteDatasetDraft = JsonPath.from(getUserPermissionsOnDatasetResponse.body().asString()).getBoolean("data.canDeleteDatasetDraft");
+        assertTrue(canDeleteDatasetDraft);
+
+        // Call with invalid dataset id
+        Response getUserPermissionsOnDatasetInvalidIdResponse = UtilIT.getUserPermissionsOnDataset("testInvalidId", apiToken);
+        getUserPermissionsOnDatasetInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
 }
