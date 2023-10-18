@@ -287,7 +287,7 @@ public class UtilIT {
     static Integer getDataverseIdFromResponse(Response createDataverseResponse) {
         JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
         int dataverseId = createdDataverse.getInt("data.id");
-        logger.info("Id found in create dataverse response: " + createdDataverse);
+        logger.info("Id found in create dataverse response: " + dataverseId);
         return dataverseId;
     }
 
