@@ -1276,6 +1276,8 @@ The list below depicts a set of tools that can be used to ease the amount of wor
 
 - `easyTranslationHelper <https://github.com/universidadeaveiro/easyTranslationHelper>`_, a tool developed by `University of Aveiro <https://www.ua.pt/>`_.
 
+- `Dataverse General User Interface Translation Guide for Weblate <https://doi.org/10.5281/zenodo.4807371>`_, a guide produced as part of the `SSHOC Dataverse Translation <https://www.sshopencloud.eu/news/workshop-notes-sshoc-dataverse-translation-follow-event/>`_ event.
+
 .. _Web-Analytics-Code:
 
 Web Analytics Code
