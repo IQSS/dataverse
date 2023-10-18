@@ -382,13 +382,35 @@ public class SearchServiceBean {
         // Make the solr query
         // -----------------------------------
         QueryResponse queryResponse = null;
+        boolean solrTemporarilyUnavailable = false; 
+        
         try {
             queryResponse = solrClientService.getSolrClient().query(solrQuery);
 
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
             
-            logger.info("message from solr exception: "+messageFromSolr);
+            logger.info("message from tye solr exception: "+messageFromSolr);
+            logger.info("code from the solr exception: "+ex.code());
+            
+            if (queryResponse != null) {
+                logger.info("return code: "+queryResponse.getStatus());
+            }
+            
+            // We probably shouldn't be assuming that this is necessarily a 
+            // "search syntax error", as the code below implies - could be 
+            // something else too - ? 
+            
+            // Specifically, we now rely on the Solr "circuit breaker" mechanism
+            // to start dropping requests with 503, when the service is 
+            // overwhelmed with requests load (with the assumption that this is
+            // a transient condition): 
+            
+            if (ex.code() == 503) {
+                solrTemporarilyUnavailable = true;
+                // actual logic for communicating this state back to the local 
+                // client code TBD (@todo)
+            }
             
             String error = "Search Syntax Error: ";
             String stringToHide = "org.apache.solr.search.SyntaxError: ";
@@ -403,12 +425,7 @@ public class SearchServiceBean {
             exceptionSolrQueryResponse.setError(error);
 
             // we can't show anything because of the search syntax error
-            
-            // We probably shouldn't be assuming that this is necessarily a 
-            // "search syntax error" - could be anything else too - ? 
-            
-            
-            
+                        
             long zeroNumResultsFound = 0;
             long zeroGetResultsStart = 0;
             List<SolrSearchResult> emptySolrSearchResults = new ArrayList<>();
