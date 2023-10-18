@@ -1989,14 +1989,14 @@ public class FilesIT {
         deleteResponse2.then().assertThat().statusCode(OK.getStatusCode());
 
         // Check file 2 deleted from post v1.0 draft
-        Response postv1draft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+        Response postv1draft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, false, apiToken);
         postv1draft.prettyPrint();
         postv1draft.then().assertThat()
                 .body("data.files.size()", equalTo(1))
                 .statusCode(OK.getStatusCode());
 
         // Check file 2 still in v1.0
-        Response v1 = UtilIT.getDatasetVersion(datasetPid, "1.0", apiToken);
+        Response v1 = UtilIT.getDatasetVersion(datasetPid, "1.0", false, apiToken);
         v1.prettyPrint();
         v1.then().assertThat()
                 .body("data.files[0].dataFile.filename", equalTo("cc0.png"))
@@ -2011,7 +2011,7 @@ public class FilesIT {
         downloadResponse2.then().assertThat().statusCode(OK.getStatusCode());
 
         // Check file 3 still in post v1.0 draft
-        Response postv1draft2 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+        Response postv1draft2 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, false, apiToken);
         postv1draft2.prettyPrint();
         postv1draft2.then().assertThat()
                 .body("data.files[0].dataFile.filename", equalTo("orcid_16x16.png"))
@@ -2026,7 +2026,7 @@ public class FilesIT {
         deleteResponse3.then().assertThat().statusCode(OK.getStatusCode());
 
         // Check file 3 deleted from post v1.0 draft
-        Response postv1draft3 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
+        Response postv1draft3 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, false, apiToken);
         postv1draft3.prettyPrint();
         postv1draft3.then().assertThat()
                 .body("data.files[0]", equalTo(null))

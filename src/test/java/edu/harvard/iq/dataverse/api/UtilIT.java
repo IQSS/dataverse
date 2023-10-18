@@ -1399,9 +1399,10 @@ public class UtilIT {
         return response;
     }
 
-    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken) {
+    static Response getDatasetVersion(String persistentId, String versionNumber, boolean includeDeaccessioned, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
                 .get("/api/datasets/:persistentId/versions/" + versionNumber + "?persistentId=" + persistentId);
     }
 

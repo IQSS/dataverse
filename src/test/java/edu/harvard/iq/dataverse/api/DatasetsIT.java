@@ -505,7 +505,7 @@ public class DatasetsIT {
         assertTrue(datasetContactFromExport.toString().contains("finch@mailinator.com"));
         assertTrue(firstValue.toString().contains("finch@mailinator.com"));
 
-        Response getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST_PUBLISHED, apiToken);
+        Response getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST_PUBLISHED, false, apiToken);
         getDatasetVersion.prettyPrint();
         getDatasetVersion.then().assertThat()
                 .body("data.datasetId", equalTo(datasetId))
@@ -548,6 +548,18 @@ public class DatasetsIT {
             assertEquals("finch@mailinator.com", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@email"));
         }
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
+
+        // Test includeDeaccessioned option
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // includeDeaccessioned false
+        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST_PUBLISHED, false, apiToken);
+        getDatasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // includeDeaccessioned true
+        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST_PUBLISHED, true, apiToken);
+        getDatasetVersion.then().assertThat().statusCode(OK.getStatusCode());
 
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
