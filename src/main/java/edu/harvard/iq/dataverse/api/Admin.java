@@ -96,7 +96,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
@@ -105,6 +104,7 @@ import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
 import java.io.IOException;
@@ -2418,12 +2418,12 @@ public class Admin extends AbstractApiBean {
         }
         
         String baseUrl = urlInfo.getString("url");
-        int timeout = urlInfo.getInt(ExternalToolHandler.TIMEOUT, 10);
-        String method = urlInfo.getString(ExternalToolHandler.HTTP_METHOD, "GET");
+        int timeout = urlInfo.getInt(URLTokenUtil.TIMEOUT, 10);
+        String method = urlInfo.getString(URLTokenUtil.HTTP_METHOD, "GET");
         
         String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
         
-        return ok(Json.createObjectBuilder().add(ExternalToolHandler.SIGNED_URL, signedUrl));
+        return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
  
 }

@@ -20,6 +20,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonPatch;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.HttpMethod;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
@@ -45,6 +46,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.codec.binary.StringUtils;
+
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -58,6 +61,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
+import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 @Stateless
@@ -120,7 +124,6 @@ public class GlobusServiceBean implements java.io.Serializable {
         URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access_list");
         MakeRequestResponse result = makeRequest(url, "Bearer",
                 endpoint.getClientToken(), "GET", null);
-        ArrayList<String> ids = new ArrayList<String>();
         if (result.status == 200) {
             AccessList al = parseJson(result.jsonResponse, AccessList.class, false);
 
@@ -282,7 +285,7 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
     //Single cache of open rules/permission requests
     private final Cache<String, Long> rulesCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.of(JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.MINUTES))
-            .removalListener((ruleId, datasetId, cause) -> {
+            .evictionListener((ruleId, datasetId, cause) -> {
                 //Delete rules that expire
                 Dataset dataset = datasetSvc.find(datasetId);
                 deletePermission((String) ruleId, dataset, null);
@@ -575,12 +578,23 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
         } catch (Exception e) {
             logger.warning("GlobusAppUrlForDataset: Failed to get storePrefix for " + driverId);
         }
-        //Use URLTokenUtil for params currently in common with external tools. 
+        // Use URLTokenUtil for params currently in common with external tools.
         URLTokenUtil tokenUtil = new URLTokenUtil(d, df, apiToken, localeCode);
         String appUrl;
         if (upload) {
             appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
-                    + "/upload?datasetPid={datasetPid}&siteUrl={siteUrl}&apiToken={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}";
+                    + "/upload?datasetPid={datasetPid}&siteUrl={siteUrl}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}";
+            String callback = SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/datasets/" + d.getId()
+                    + "/globusUploadParameters?locale=" + localeCode;
+            if (apiToken != null) {
+                callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                        HttpMethod.GET,
+                        JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + apiToken.getTokenString());
+            } else {
+                // Shouldn't happen
+                logger.warning("unable to get api token for user: " + user.getIdentifier());
+            }
+            appUrl = appUrl + "&callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
         } else {
             if (df == null) {
                 appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
@@ -637,39 +651,27 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
             globusLogger = logger;
         }
 
-        globusLogger.info("Starting an globusUpload ");
+        Thread.sleep(5000);
 
-        
-        // ToDo - use DataAccess methods?
-        //String storageType = datasetIdentifier.substring(0, datasetIdentifier.indexOf("://") + 3);
-        //datasetIdentifier = datasetIdentifier.substring(datasetIdentifier.indexOf("://") + 3);
-        
         logger.fine("json: " + JsonUtil.prettyPrint(jsonData));
 
         String taskIdentifier = jsonData.getString("taskIdentifier");
 
-        String ruleId = null;
-
-        Thread.sleep(5000);
-        
         // globus task status check
         GlobusTask task = globusStatusCheck(taskIdentifier, globusLogger);
         String taskStatus = getTaskStatus(task);
 
+        globusLogger.info("Starting an globusUpload ");
+
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
-        
-        ruleId = getRuleId(endpoint, task.getOwner_id(), "rw");
-        
-        if(ruleId!=null) {
+        String ruleId = getRuleId(endpoint, task.getOwner_id(), "rw");
+        logger.info("Found rule: " + ruleId);
+        if (ruleId != null) {
             Long datasetId = rulesCache.getIfPresent(ruleId);
-            if(datasetId!=null) {
-             
-            //Will delete rule
-            rulesCache.invalidate(ruleId);
-            } else {
-                //The cache already expired this rule, in which case it's delay not long enough, or we have some other problem
-                logger.warning("Rule " + ruleId + " not found in rulesCache");
-                deletePermission(ruleId, dataset, globusLogger);
+            if (datasetId != null) {
+
+                // Will delete rule
+                rulesCache.invalidate(ruleId);
             }
         }
 
@@ -835,6 +837,10 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
                 globusLogger.info("Exception from globusUpload call " + e.getMessage());
                 datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
             }
+        }
+        if (ruleId != null) {
+            deletePermission(ruleId, dataset, globusLogger);
+            globusLogger.info("Removed upload permission: " + ruleId);
         }
     }
 

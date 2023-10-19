@@ -90,6 +90,7 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -3328,7 +3329,7 @@ public class Datasets extends AbstractApiBean {
 
     @POST
     @AuthRequired
-    @Path("{id}/addglobusFiles")
+    @Path("{id}/addGlobusFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response addGlobusFilesToDataset(@Context ContainerRequestContext crc,
                                             @PathParam("id") String datasetId,
@@ -3411,6 +3412,74 @@ public class Datasets extends AbstractApiBean {
 
     }
 
+    /**
+     * Retrieve the parameters and signed URLs required to perform a globus
+     * transfer. This api endpoint is expected to be called as a signed callback
+     * after the globus-dataverse app/other app is launched, but it will accept
+     * other forms of authentication.
+     * 
+     * @param crc
+     * @param datasetId
+     */
+    @GET
+    @AuthRequired
+    @Path("{id}/globusUploadParameters")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getGlobusUploadParams(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @QueryParam(value = "locale") String locale)
+    {
+        // -------------------------------------
+        // (1) Get the user from the ContainerRequestContext
+        // -------------------------------------
+        AuthenticatedUser authUser;
+        try {
+            authUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        String storeId = dataset.getEffectiveStorageDriverId();
+        if(!DataAccess.getDriverType(storeId).equals(DataAccess.GLOBUS)) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.globusuploaddisabled"));
+        }
+        boolean managed = GlobusOverlayAccessIO.isDataverseManaged(storeId);
+        
+        JsonObjectBuilder queryParams = Json.createObjectBuilder();
+        queryParams.add("queryParameters",
+                Json.createArrayBuilder().add(Json.createObjectBuilder().add("datasetId", "{datasetId}"))
+                        .add(Json.createObjectBuilder().add("siteUrl", "{siteUrl}"))
+                        .add(Json.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
+                        .add(Json.createObjectBuilder().add("dvLocale", "{localeCode}"))
+                        .add(Json.createObjectBuilder().add("datasetPid", "{datasetPid}").add("managed", managed)));
+
+        JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
+        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "requestGlobusTransferPaths")
+                .add(URLTokenUtil.HTTP_METHOD, "POST")
+                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/requestGlobusTransferPaths")
+                .add(URLTokenUtil.TIMEOUT, 300));
+        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "addGlobusFiles")
+                .add(URLTokenUtil.HTTP_METHOD, "POST")
+                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addGlobusFiles")
+                .add(URLTokenUtil.TIMEOUT, 300));
+        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing")
+                .add(URLTokenUtil.HTTP_METHOD, "GET")
+                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
+                .add(URLTokenUtil.TIMEOUT, 300));
+        
+
+        URLTokenUtil tokenUtil = new URLTokenUtil(dataset, authSvc.findApiTokenByUser(authUser), locale);
+        return ok(tokenUtil.createPostBody(tokenUtil.getParams(queryParams.build()), allowedApiCalls.build()));
+    }
+    
     /** Requests permissions for a given globus user to upload to the dataset
      * 
      * @param crc
@@ -3915,8 +3984,8 @@ public class Datasets extends AbstractApiBean {
             }
             
 
-            ExternalToolHandler eth = new ExternalToolHandler(externalTool, target.getDataset(), apiToken, locale);
-            return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters()))));
+            URLTokenUtil eth = new ExternalToolHandler(externalTool, target.getDataset(), apiToken, locale);
+            return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(externalTool.getAllowedApiCalls())));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
