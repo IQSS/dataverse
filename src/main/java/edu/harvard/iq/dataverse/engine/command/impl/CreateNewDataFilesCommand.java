@@ -3,18 +3,20 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-//import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.DataFileServiceBean.UserStorageQuota;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -83,7 +85,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
     private final String newStorageIdentifier; 
     private final String newCheckSum; 
     private DataFile.ChecksumType newCheckSumType;
-    private final Long newFileSize;
+    private Long newFileSize;
 
     public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum) {
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, null);
@@ -638,6 +640,24 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     finalType = type;
                 }
                 logger.fine("Supplied type: " + suppliedContentType + ", finalType: " + finalType);
+            }
+            if (newFileSize == null) {
+                // For direct/out-of-band upload, get the size from the underlying service
+                StorageIO<DvObject> sio;
+                try {
+                    sio = DataAccess.getDirectStorageIO(DataAccess.getLocationFromStorageId(newStorageIdentifier, version.getDataset()));
+
+                    // get file size
+                    // Note - some stores (e.g. AWS S3) only offer eventual consistency and a call
+                    // to get the size immediately after uploading may fail. As of the addition of
+                    // PR#9409 adding storage quotas, we are now requiring size to be available
+                    // earlier. If this is seen, adding
+                    // a delay/retry may help
+                    newFileSize = sio.retrieveSizeFromMedia();
+                } catch (IOException e) {
+                    // If we don't get a file size, a CommandExecutionException will be thrown later in the code
+                    e.printStackTrace();
+                }
             }
         }
         // Finally, if none of the special cases above were applicable (or 
