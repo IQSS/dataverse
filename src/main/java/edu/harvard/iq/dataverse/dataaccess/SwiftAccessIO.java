@@ -954,4 +954,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         }
         return toDelete;
     }
+
+    @Override
+    public long retrieveSizeFromMedia() throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver."); 
+    }
 }

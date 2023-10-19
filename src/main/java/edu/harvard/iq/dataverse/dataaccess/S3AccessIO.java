@@ -207,14 +207,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             
             if (isReadAccess) {
-                key = getMainFileKey();
-                ObjectMetadata objectMetadata = null; 
-                try {
-                    objectMetadata = s3.getObjectMetadata(bucketName, key);
-                } catch (SdkClientException sce) {
-                    throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
-                }
-                this.setSize(objectMetadata.getContentLength());
+                this.setSize(retrieveSizeFromMedia());
 
                 if (dataFile.getContentType() != null
                         && dataFile.getContentType().equals("text/tab-separated-values")
@@ -1384,5 +1377,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             this.deleteFile(f);
         }
         return toDelete;
+    }
+
+    @Override
+    public long retrieveSizeFromMedia() throws IOException {
+        key = getMainFileKey();
+        ObjectMetadata objectMetadata = null;
+        try {
+            objectMetadata = s3.getObjectMetadata(bucketName, key);
+        } catch (SdkClientException sce) {
+            throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")");
+        }
+        return objectMetadata.getContentLength();
     }
 }

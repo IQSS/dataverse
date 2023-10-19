@@ -64,8 +64,6 @@ import javax.net.ssl.SSLContext;
 public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.RemoteOverlayAccessIO");
-
-    String globusAccessToken = null;
     
     protected StorageIO<DvObject> baseStore = null;
     protected String path = null;
@@ -155,7 +153,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                     this.setSize(dataFile.getFilesize());
                 } else {
                     logger.fine("Setting size");
-                    this.setSize(retrieveSize());
+                    this.setSize(retrieveSizeFromMedia());
                 }
                 if (dataFile.getContentType() != null && dataFile.getContentType().equals("text/tab-separated-values")
                         && dataFile.isTabularData() && dataFile.getDataTable() != null && (!this.noVarHeader())) {
@@ -183,7 +181,8 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
-    long retrieveSize() {
+    @Override
+    public long retrieveSizeFromMedia() {
         long size = -1;
         HttpHead head = new HttpHead(baseUrl + "/" + path);
         try {
@@ -383,7 +382,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public boolean exists() {
         logger.fine("Exists called");
-        return (retrieveSize() != -1);
+        return (retrieveSizeFromMedia() != -1);
     }
 
     @Override
@@ -502,8 +501,9 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                     if (index > 0) {
                         storageLocation = storageLocation.substring(index + DataAccess.SEPARATOR.length());
                     }
-                    // THe base store needs the baseStoreIdentifier and not the relative URL
-                    fullStorageLocation = storageLocation.substring(0, storageLocation.indexOf("//"));
+                    // The base store needs the baseStoreIdentifier and not the relative URL (if it exists)
+                    int endOfId = storageLocation.indexOf("//");
+                    fullStorageLocation = (endOfId>-1) ? storageLocation.substring(0, endOfId) : storageLocation;
 
                     switch (baseDriverType) {
                     case DataAccess.S3:
