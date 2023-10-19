@@ -64,6 +64,13 @@ import javax.net.ssl.SSLContext;
 public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.RemoteOverlayAccessIO");
+
+    static final String BASE_URL = "base-url";
+    static final String BASE_STORE = "base-store";
+    static final String SECRET_KEY = "secret-key";
+    static final String URL_EXPIRATION_MINUTES = "url-expiration-minutes";
+    static final String REMOTE_STORE_NAME = "remote-store-name";
+    static final String REMOTE_STORE_URL = "remote-store-url";
     
     protected StorageIO<DvObject> baseStore = null;
     protected String path = null;
@@ -404,7 +411,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public boolean downloadRedirectEnabled() {
-        String optionValue = System.getProperty("dataverse.files." + this.driverId + ".download-redirect");
+        String optionValue = getConfigParam(StorageIO.DOWNLOAD_REDIRECT);
         if ("true".equalsIgnoreCase(optionValue)) {
             return true;
         }
@@ -421,7 +428,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
         // ToDo - support remote auxiliary Files
         if (auxiliaryTag == null) {
-            String secretKey = System.getProperty("dataverse.files." + this.driverId + ".secret-key");
+            String secretKey = getConfigParam(SECRET_KEY);
             if (secretKey == null) {
                 return baseUrl + "/" + path;
             } else {
@@ -434,7 +441,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     int getUrlExpirationMinutes() {
-        String optionValue = System.getProperty("dataverse.files." + this.driverId + ".url-expiration-minutes");
+        String optionValue = getConfigParam(URL_EXPIRATION_MINUTES);
         if (optionValue != null) {
             Integer num;
             try {
@@ -450,7 +457,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     protected void configureStores(DataAccessRequest req, String driverId, String storageLocation) throws IOException {
-        baseUrl = System.getProperty("dataverse.files." + this.driverId + ".base-url");
+        baseUrl = getConfigParam(BASE_URL);
         if (baseUrl == null) {
             throw new IOException("dataverse.files." + this.driverId + ".base-url is required");
         } else {
@@ -467,7 +474,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         if (baseStore == null) {
             String baseDriverId = getBaseStoreIdFor(driverId);
             String fullStorageLocation = null;
-            String baseDriverType = System.getProperty("dataverse.files." + baseDriverId + ".type",
+            String baseDriverType = getConfigParamForDriver(baseDriverId, StorageIO.TYPE,
                     DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
 
             if (dvObject instanceof Dataset) {
@@ -480,17 +487,17 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                     switch (baseDriverType) {
                     case DataAccess.S3:
                         fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".bucket-name") + "/"
+                                + getConfigParamForDriver(baseDriverId, S3AccessIO.BUCKET_NAME) + "/"
                                 + fullStorageLocation;
                         break;
                     case DataAccess.FILE:
                         fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files")
+                                + getConfigParamForDriver(baseDriverId, FileAccessIO.DIRECTORY, "/tmp/files")
                                 + "/" + fullStorageLocation;
                         break;
                     default:
                         logger.warning("Not Supported: " + this.getClass().getName() + " store with base store type: "
-                                + System.getProperty("dataverse.files." + baseDriverId + ".type"));
+                                + getConfigParamForDriver(baseDriverId, StorageIO.TYPE));
                         throw new IOException("Not supported");
                     }
 
@@ -508,17 +515,17 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                     switch (baseDriverType) {
                     case DataAccess.S3:
                         fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".bucket-name") + "/"
+                                + getConfigParamForDriver(baseDriverId, S3AccessIO.BUCKET_NAME) + "/"
                                 + fullStorageLocation;
                         break;
                     case DataAccess.FILE:
                         fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + System.getProperty("dataverse.files." + baseDriverId + ".directory", "/tmp/files")
+                                + getConfigParamForDriver(baseDriverId, FileAccessIO.DIRECTORY, "/tmp/files")
                                 + "/" + fullStorageLocation;
                         break;
                     default:
                         logger.warning("Not Supported: " + this.getClass().getName() + " store with base store type: "
-                                + System.getProperty("dataverse.files." + baseDriverId + ".type"));
+                                + getConfigParamForDriver(baseDriverId, StorageIO.TYPE));
                         throw new IOException("Not supported");
                     }
                 }
@@ -528,9 +535,9 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
                 ((S3AccessIO<?>) baseStore).setMainDriver(false);
             }
         }
-        remoteStoreName = System.getProperty("dataverse.files." + this.driverId + ".remote-store-name");
+        remoteStoreName = getConfigParam(REMOTE_STORE_NAME);
         try {
-            remoteStoreUrl = new URL(System.getProperty("dataverse.files." + this.driverId + ".remote-store-url"));
+            remoteStoreUrl = new URL(getConfigParam(REMOTE_STORE_URL));
         } catch (MalformedURLException mfue) {
             logger.fine("Unable to read remoteStoreUrl for driver: " + this.driverId);
         }
@@ -623,7 +630,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     static boolean isValidIdentifier(String driverId, String storageId) {
         String urlPath = storageId.substring(storageId.lastIndexOf("//") + 2);
-        String baseUrl = System.getProperty("dataverse.files." + driverId + ".base-url");
+        String baseUrl = getConfigParamForDriver(driverId, BASE_URL);
         try {
             URI absoluteURI = new URI(baseUrl + "/" + urlPath);
             if (!absoluteURI.normalize().toString().startsWith(baseUrl)) {
@@ -638,7 +645,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     public static String getBaseStoreIdFor(String driverId) {
-        return System.getProperty("dataverse.files." + driverId + ".base-store");
+        return getConfigParamForDriver(driverId, BASE_STORE);
     }
 
     @Override

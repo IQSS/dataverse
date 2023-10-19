@@ -3452,14 +3452,14 @@ public class Datasets extends AbstractApiBean {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.globusuploaddisabled"));
         }
         boolean managed = GlobusOverlayAccessIO.isDataverseManaged(storeId);
-        
+        String endpoint = GlobusOverlayAccessIO.getEndpointId(storeId);
         JsonObjectBuilder queryParams = Json.createObjectBuilder();
         queryParams.add("queryParameters",
                 Json.createArrayBuilder().add(Json.createObjectBuilder().add("datasetId", "{datasetId}"))
                         .add(Json.createObjectBuilder().add("siteUrl", "{siteUrl}"))
                         .add(Json.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
-                        .add(Json.createObjectBuilder().add("dvLocale", "{localeCode}"))
-                        .add(Json.createObjectBuilder().add("datasetPid", "{datasetPid}").add("managed", managed)));
+                        .add(Json.createObjectBuilder().add("dvLocale", "{localeCode}")).add(Json.createObjectBuilder()
+                                .add("datasetPid", "{datasetPid}").add("managed", managed).add("endpoint", endpoint)));
 
         JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "requestGlobusTransferPaths")

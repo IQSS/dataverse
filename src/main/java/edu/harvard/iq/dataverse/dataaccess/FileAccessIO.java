@@ -53,6 +53,7 @@ import java.util.ArrayList;
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.FileAccessIO");
+    public static final String DIRECTORY = "directory";
 
 
     public FileAccessIO() {
@@ -578,7 +579,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     
     
     protected String getFilesRootDirectory() {
-        String filesRootDirectory = System.getProperty("dataverse.files." + this.driverId + ".directory", "/tmp/files");
+        String filesRootDirectory = getConfigParam(DIRECTORY, "/tmp/files");
         return filesRootDirectory;
     }
     

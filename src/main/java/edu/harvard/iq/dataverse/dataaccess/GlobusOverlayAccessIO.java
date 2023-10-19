@@ -46,6 +46,9 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO");
 
+    static final String GLOBUS_TOKEN = "globus-token";
+    static final String MANAGED = "managed";
+
     /*
      * If this is set to true, the store supports Globus transfer in and
      * Dataverse/the globus app manage file locations, access controls, deletion,
@@ -68,7 +71,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
 
     private void parsePath() {
         int filenameStart = path.lastIndexOf("/") + 1;
-        String endpointWithBasePath = baseUrl.substring(baseUrl.lastIndexOf("://") + 3);
+        String endpointWithBasePath = baseUrl.substring(baseUrl.lastIndexOf(DataAccess.SEPARATOR) + 3);
         int pathStart = endpointWithBasePath.indexOf("/");
         logger.info("endpointWithBasePath: " + endpointWithBasePath);
         endpointPath = "/" + (pathStart > 0 ? endpointWithBasePath.substring(pathStart + 1) : "");
@@ -112,12 +115,14 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
     }
     
     private String retrieveGlobusAccessToken() {
-        // String globusToken = JvmSettings.GLOBUS_TOKEN.lookup(driverId);
-        String globusToken = System.getProperty("dataverse.files." + this.driverId + ".globus-token");
+        String globusToken = getConfigParam(GLOBUS_TOKEN);
+        
 
         AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
         return accessToken.getOtherTokens().get(0).getAccessToken();
     }
+
+
 
     private void validatePath(String relPath) throws IOException {
         try {
@@ -255,7 +260,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
 //Fix
         // ToDo - support remote auxiliary Files
         if (auxiliaryTag == null) {
-            String secretKey = System.getProperty("dataverse.files." + this.driverId + ".secret-key");
+            String secretKey = getConfigParam(SECRET_KEY);
             if (secretKey == null) {
                 return baseUrl + "/" + path;
             } else {
@@ -267,12 +272,12 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
     }
 
     public static boolean isDataverseManaged(String driverId) {
-        return Boolean.getBoolean("dataverse.files." + driverId + ".managed");
+        return Boolean.parseBoolean(getConfigParamForDriver(driverId, MANAGED));
     }
 
     static boolean isValidIdentifier(String driverId, String storageId) {
         String baseIdentifier = storageId.substring(storageId.lastIndexOf("//") + 2);
-        String baseUrl = System.getProperty("dataverse.files." + driverId + ".base-url");
+        String baseUrl = getConfigParamForDriver(driverId, BASE_URL);
         if (baseUrl == null) {
             return false;
         }
@@ -310,6 +315,14 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         } else {
             return super.getStorageLocation();
         }
+    }
+    
+    public static String getEndpointId(String driverId) {
+        String baseUrl = getConfigParamForDriver(driverId, BASE_URL);
+        String endpointWithBasePath = baseUrl.substring(baseUrl.lastIndexOf(DataAccess.SEPARATOR) + 3);
+        int pathStart = endpointWithBasePath.indexOf("/");
+        return pathStart > 0 ? endpointWithBasePath.substring(0, pathStart) : endpointWithBasePath;
+        
     }
     
     public static void main(String[] args) {

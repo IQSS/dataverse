@@ -50,6 +50,13 @@ import java.util.regex.Pattern;
 
 public abstract class StorageIO<T extends DvObject> {
 
+    static final String INGEST_SIZE_LIMIT = "ingestsizelimit";
+    static final String PUBLIC = "public";
+    static final String TYPE = "type";
+    static final String UPLOAD_REDIRECT = "upload-redirect";
+    static final String UPLOAD_OUT_OF_BAND = "upload-out-of-band";
+    protected static final String DOWNLOAD_REDIRECT = "download-redirect";
+
     public StorageIO() {
 
     }
@@ -572,7 +579,7 @@ public abstract class StorageIO<T extends DvObject> {
     }
 
     public boolean isBelowIngestSizeLimit() {
-        long limit = Long.parseLong(System.getProperty("dataverse.files." + this.driverId + ".ingestsizelimit", "-1"));
+        long limit = Long.parseLong(getConfigParam(INGEST_SIZE_LIMIT, "-1"));
         if (limit > 0 && getSize() > limit) {
             return false;
         } else {
@@ -597,7 +604,7 @@ public abstract class StorageIO<T extends DvObject> {
         // Read once and cache
         if (!driverPublicAccessMap.containsKey(driverId)) {
             driverPublicAccessMap.put(driverId,
-                    Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".public")));
+                    Boolean.parseBoolean(getConfigParamForDriver(driverId, PUBLIC)));
         }
         return driverPublicAccessMap.get(driverId);
     }
@@ -607,9 +614,9 @@ public abstract class StorageIO<T extends DvObject> {
     }
 
     public static boolean isDirectUploadEnabled(String driverId) {
-        return (System.getProperty("dataverse.files." + driverId + ".type").equals(DataAccess.S3)
-                && Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".upload-redirect")))
-                || Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".upload-out-of-band"));
+        return (getConfigParamForDriver(driverId, TYPE).equals(DataAccess.S3)
+                && Boolean.parseBoolean(getConfigParamForDriver(driverId, UPLOAD_REDIRECT)))
+                || Boolean.parseBoolean(getConfigParamForDriver(driverId, UPLOAD_OUT_OF_BAND));
     }
 
     // Check that storageIdentifier is consistent with store's config
@@ -638,5 +645,30 @@ public abstract class StorageIO<T extends DvObject> {
      * @throws IOException 
      */
     public abstract long retrieveSizeFromMedia() throws IOException;
+    
+    
+    /* Convenience methods to get a driver-specific parameter
+     * 
+     * - with or without a default
+     * - static or per object
+     * 
+     * @param parameterName
+     * @return the parameter value
+     */
+    
+    protected String getConfigParam(String parameterName) {
+        return getConfigParam(parameterName, null);
+    }
+
+    protected String getConfigParam(String parameterName, String defaultValue) {
+        return getConfigParamForDriver(this.driverId, parameterName, defaultValue);
+    }
+
+    protected static String getConfigParamForDriver(String driverId, String parameterName) {
+        return getConfigParamForDriver(driverId, parameterName, null);
+    }
+    protected static String getConfigParamForDriver(String driverId, String parameterName, String defaultValue) {
+        return System.getProperty("dataverse.files." + driverId + "." + parameterName, defaultValue);
+    }
 
 }

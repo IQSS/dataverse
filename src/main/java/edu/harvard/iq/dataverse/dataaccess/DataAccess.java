@@ -48,7 +48,7 @@ public class DataAccess {
     public static final String S3 = "s3";
     static final String SWIFT = "swift";
     static final String REMOTE = "remote";
-    static final String GLOBUS = "globus";
+    public static final String GLOBUS = "globus";
     static final String TMP = "tmp";
     public static final String SEPARATOR = "://";
     //Default to "file" is for tests only
@@ -187,7 +187,7 @@ public class DataAccess {
     	if(driverId.isEmpty() || driverId.equals("tmp")) {
     		return "tmp";
     	}
-    	return System.getProperty("dataverse.files." + driverId + ".type", "Undefined");
+    	return StorageIO.getConfigParamForDriver(driverId, StorageIO.TYPE, "Undefined");
     }
     
     //This 
@@ -195,7 +195,7 @@ public class DataAccess {
         if(driverId.isEmpty() || driverId.equals("tmp")) {
             return "tmp" + SEPARATOR;
         }
-        String storageType = System.getProperty("dataverse.files." + driverId + ".type", "Undefined");
+        String storageType = StorageIO.getConfigParamForDriver(driverId, StorageIO.TYPE, "Undefined");
         switch(storageType) {
         case FILE:
             return FileAccessIO.getDriverPrefix(driverId);
