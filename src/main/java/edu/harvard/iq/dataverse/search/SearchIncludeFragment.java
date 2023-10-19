@@ -131,7 +131,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
     Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
     private boolean solrIsDown = false;
-    private boolean solrIsOverloaded = false; 
+    private boolean solrIsTemporarilyUnavailable = false; 
+    private boolean solrFacetsDisabled = false;
     private Map<String, Integer> numberOfFacets = new HashMap<>();
 //    private boolean showUnpublished;
     List<String> filterQueriesDebug = new ArrayList<>();
@@ -361,6 +362,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
             if (solrQueryResponse.hasError()){
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
+            } 
+            // Solr "temporarily unavailable" is the condition triggered by 
+            // receiving a 503 from the search engine, that is in turn a result
+            // of one of the Solr "circuit breakers" being triggered by excessive
+            // load. We treat this condition as distinct from "Solr is down", 
+            // on the assumption that it is transitive. 
+            if (solrQueryResponse.isSolrTemporarilyUnavailable()) {
+                setSolrTemporarilyUnavailable(true);
             }
             // This 2nd search() is for populating the "type" ("dataverse", "dataset", "file") facets: -- L.A. 
             // (why exactly do we need it, again?)
@@ -386,7 +395,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
             }
             
-            if (selectedTypesList.size() < 3) {
+            if (selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable()) {
                 // If some types are NOT currently selected, we will need to 
                 // run another query to obtain the numbers of the unselected types:
                 
@@ -1079,14 +1088,23 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.solrIsDown = solrIsDown;
     }
     
-    public boolean isSolrOverloaded() {
-        return solrIsOverloaded;
+    public boolean isSolrTemporarilyUnavailable() {
+        return solrIsTemporarilyUnavailable;
     }
     
-    public void setSolrIsOverloaded(boolean solrIsOverloaded) {
-        this.solrIsOverloaded = solrIsOverloaded; 
+    public void setSolrTemporarilyUnavailable(boolean solrIsTemporarilyUnavailable) {
+        this.solrIsTemporarilyUnavailable = solrIsTemporarilyUnavailable; 
     }
 
+    public boolean isFacetsDisabled() {
+        return solrFacetsDisabled;
+    }
+    
+    public void setFacetsDisabled(boolean solrFacetsDisabled) {
+        this.solrFacetsDisabled = solrFacetsDisabled; 
+    }
+    
+    
     public boolean isRootDv() {
         return rootDv;
     }

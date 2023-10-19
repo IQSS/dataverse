@@ -382,7 +382,6 @@ public class SearchServiceBean {
         // Make the solr query
         // -----------------------------------
         QueryResponse queryResponse = null;
-        boolean solrTemporarilyUnavailable = false; 
         
         try {
             queryResponse = solrClientService.getSolrClient().query(solrQuery);
@@ -397,6 +396,8 @@ public class SearchServiceBean {
                 logger.info("return code: "+queryResponse.getStatus());
             }
             
+            SolrQueryResponse exceptionSolrQueryResponse = new SolrQueryResponse(solrQuery);
+
             // We probably shouldn't be assuming that this is necessarily a 
             // "search syntax error", as the code below implies - could be 
             // something else too - ? 
@@ -407,9 +408,9 @@ public class SearchServiceBean {
             // a transient condition): 
             
             if (ex.code() == 503) {
-                solrTemporarilyUnavailable = true;
                 // actual logic for communicating this state back to the local 
                 // client code TBD (@todo)
+                exceptionSolrQueryResponse.setSolrTemporarilyUnavailable(true);
             }
             
             String error = "Search Syntax Error: ";
@@ -421,7 +422,6 @@ public class SearchServiceBean {
                 error += messageFromSolr;
             }
             logger.info(error);
-            SolrQueryResponse exceptionSolrQueryResponse = new SolrQueryResponse(solrQuery);
             exceptionSolrQueryResponse.setError(error);
 
             // we can't show anything because of the search syntax error
