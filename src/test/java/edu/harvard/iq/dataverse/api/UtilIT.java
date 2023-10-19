@@ -3448,7 +3448,15 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
     }
 
-    static Response getVersionFileCounts(Integer datasetId, String version, String contentType, String accessStatus, String categoryName, String tabularTagName, String searchText, boolean includeDeaccessioned, String apiToken) {
+    static Response getVersionFileCounts(Integer datasetId,
+                                         String version,
+                                         String contentType,
+                                         String accessStatus,
+                                         String categoryName,
+                                         String tabularTagName,
+                                         String searchText,
+                                         boolean includeDeaccessioned,
+                                         String apiToken) {
         RequestSpecification requestSpecification = given()
                 .queryParam("includeDeaccessioned", includeDeaccessioned);
         if (apiToken != null) {
@@ -3525,10 +3533,38 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
     }
 
-    static Response getDownloadSize(Integer datasetId, String version, String mode, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .queryParam("mode", mode)
+    static Response getDownloadSize(Integer datasetId,
+                                    String version,
+                                    String contentType,
+                                    String accessStatus,
+                                    String categoryName,
+                                    String tabularTagName,
+                                    String searchText,
+                                    String mode,
+                                    boolean includeDeaccessioned,
+                                    String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
+                .queryParam("mode", mode);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (contentType != null) {
+            requestSpecification = requestSpecification.queryParam("contentType", contentType);
+        }
+        if (accessStatus != null) {
+            requestSpecification = requestSpecification.queryParam("accessStatus", accessStatus);
+        }
+        if (categoryName != null) {
+            requestSpecification = requestSpecification.queryParam("categoryName", categoryName);
+        }
+        if (tabularTagName != null) {
+            requestSpecification = requestSpecification.queryParam("tabularTagName", tabularTagName);
+        }
+        if (searchText != null) {
+            requestSpecification = requestSpecification.queryParam("searchText", searchText);
+        }
+        return requestSpecification
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
     }
 }

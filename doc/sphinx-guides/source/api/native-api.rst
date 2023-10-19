@@ -971,7 +971,7 @@ The fully expanded example above (without environment variables) looks like this
  
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files"
 
-This endpoint supports optional pagination, through the ``limit`` and ``offset`` query params:
+This endpoint supports optional pagination, through the ``limit`` and ``offset`` query parameters:
 
 .. code-block:: bash
 
@@ -1051,7 +1051,7 @@ Usage example:
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files?includeDeaccessioned=true"
 
-.. note:: Keep in mind that you can combine all of the above query params depending on the results you are looking for.
+.. note:: Keep in mind that you can combine all of the above query parameters depending on the results you are looking for.
 
 Get File Counts in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1139,7 +1139,7 @@ Usage example:
 
 Please note that filtering values are case sensitive and must be correctly typed for the endpoint to recognize them.
 
-Keep in mind that you can combine all of the above query params depending on the results you are looking for.
+Keep in mind that you can combine all of the above query parameters depending on the results you are looking for.
 
 View Dataset Files and Folders as a Directory Index
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1894,6 +1894,61 @@ Usage example:
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/datasets/24/versions/1.0/downloadsize?mode=Archival"
+
+Category name filtering is also optionally supported. To return the size of all files available for download matching the requested category name.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/downloadsize?categoryName=Data"
+
+Tabular tag name filtering is also optionally supported. To return the size of all files available for download for which the requested tabular tag has been added.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/downloadsize?tabularTagName=Survey"
+
+Content type filtering is also optionally supported. To return the size of all files available for download matching the requested content type.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/downloadsize?contentType=image/png"
+
+Filtering by search text is also optionally supported. The search will be applied to the labels and descriptions of the dataset files, to return the size of all files available for download that contain the text searched in one of such fields.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/downloadsize?searchText=word"
+
+File access filtering is also optionally supported. In particular, by the following possible values:
+
+* ``Public``
+* ``Restricted``
+* ``EmbargoedThenRestricted``
+* ``EmbargoedThenPublic``
+
+If no filter is specified, the files will match all of the above categories.
+
+Please note that filtering query parameters are case sensitive and must be correctly typed for the endpoint to recognize them.
+
+By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+
+If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/downloadsize?includeDeaccessioned=true"
+
+.. note:: Keep in mind that you can combine all of the above query parameters depending on the results you are looking for.
 
 Submit a Dataset for Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

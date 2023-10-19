@@ -3005,19 +3005,37 @@ public class Datasets extends AbstractApiBean {
     public Response getDownloadSize(@Context ContainerRequestContext crc,
                                     @PathParam("identifier") String dvIdtf,
                                     @PathParam("versionId") String version,
+                                    @QueryParam("contentType") String contentType,
+                                    @QueryParam("accessStatus") String accessStatus,
+                                    @QueryParam("categoryName") String categoryName,
+                                    @QueryParam("tabularTagName") String tabularTagName,
+                                    @QueryParam("searchText") String searchText,
                                     @QueryParam("mode") String mode,
+                                    @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                     @Context UriInfo uriInfo,
                                     @Context HttpHeaders headers) {
 
         return response(req -> {
+            FileSearchCriteria fileSearchCriteria;
+            try {
+                fileSearchCriteria = new FileSearchCriteria(
+                        contentType,
+                        accessStatus != null ? FileSearchCriteria.FileAccessStatus.valueOf(accessStatus) : null,
+                        categoryName,
+                        tabularTagName,
+                        searchText
+                );
+            } catch (IllegalArgumentException e) {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
+            }
             DatasetVersionFilesServiceBean.FileDownloadSizeMode fileDownloadSizeMode;
             try {
                 fileDownloadSizeMode = mode != null ? DatasetVersionFilesServiceBean.FileDownloadSizeMode.valueOf(mode) : DatasetVersionFilesServiceBean.FileDownloadSizeMode.All;
             } catch (IllegalArgumentException e) {
                 return error(Response.Status.BAD_REQUEST, "Invalid mode: " + mode);
             }
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers);
-            long datasetStorageSize = datasetVersionFilesServiceBean.getFilesDownloadSize(datasetVersion, fileDownloadSizeMode);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers, includeDeaccessioned);
+            long datasetStorageSize = datasetVersionFilesServiceBean.getFilesDownloadSize(datasetVersion, fileSearchCriteria, fileDownloadSizeMode);
             String message = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), datasetStorageSize);
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
             jsonObjectBuilder.add("message", message);
