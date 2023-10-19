@@ -153,12 +153,34 @@ public class DataAccess {
     }
     
     public static String getStorageIdFromLocation(String location) {
-    	if(location.contains(SEPARATOR)) {
-    		//It's a full location with a driverId, so strip and reapply the driver id
-    		//NOte that this will strip the bucketname out (which s3 uses) but the S3IOStorage class knows to look at re-insert it
-    		return location.substring(0,location.indexOf(SEPARATOR) +3) + location.substring(location.lastIndexOf('/')+1); 
-    	}
-    	return location.substring(location.lastIndexOf('/')+1);
+        if (location.contains(SEPARATOR)) {
+            // It's a full location with a driverId, so strip and reapply the driver id
+            // NOte that this will strip the bucketname out (which s3 uses) but the
+            // S3IOStorage class knows to look at re-insert it
+            return location.substring(0, location.indexOf(SEPARATOR) + 3)
+                    + location.substring(location.lastIndexOf('/') + 1);
+        }
+        return location.substring(location.lastIndexOf('/') + 1);
+    }
+    
+    /** Changes storageidentifiers of the form
+     * s3://bucketname/18b39722140-50eb7d3c5ece or file://18b39722140-50eb7d3c5ece to s3://10.5072/FK2/ABCDEF/18b39722140-50eb7d3c5ece
+     * and
+     * 18b39722140-50eb7d3c5ece to 10.5072/FK2/ABCDEF/18b39722140-50eb7d3c5ece
+     * @param id
+     * @param dataset
+     * @return
+     */
+    public static String getLocationFromStorageId(String id, Dataset dataset) {
+        String path= dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/";
+        if (id.contains(SEPARATOR)) {
+            // It's a full location with a driverId, so strip and reapply the driver id
+            // NOte that this will strip the bucketname out (which s3 uses) but the
+            // S3IOStorage class knows to look at re-insert it
+            return id.substring(0, id.indexOf(SEPARATOR) + 3) + path
+                    + id.substring(id.lastIndexOf('/') + 1);
+        }
+        return path + id.substring(id.lastIndexOf('/') + 1);
     }
     
     public static String getDriverType(String driverId) {
