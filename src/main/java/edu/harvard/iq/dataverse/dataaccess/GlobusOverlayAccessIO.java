@@ -17,11 +17,14 @@ import java.util.logging.Logger;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 
+import jakarta.json.Json;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 /**
  * @author qqmyers
@@ -43,7 +46,6 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO");
 
-    String globusAccessToken = null;
     /*
      * If this is set to true, the store supports Globus transfer in and
      * Dataverse/the globus app manage file locations, access controls, deletion,
@@ -51,35 +53,64 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
      */
     private boolean dataverseManaged = false;
 
+    private String relativeDirectoryPath;
+    
+    private String endpointPath;
+    
+    private String filename;
+
+    private String endpoint;
+
     public GlobusOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
-        if (dvObject instanceof DataFile) {
-            globusAccessToken = retrieveGlobusAccessToken();
-        }
         dataverseManaged = isDataverseManaged(this.driverId);
+    }
 
-        logger.info("GAT3: " + globusAccessToken);
+    private void parsePath() {
+        int filenameStart = path.lastIndexOf("/") + 1;
+        String endpointWithBasePath = baseUrl.substring(baseUrl.lastIndexOf("://") + 3);
+        int pathStart = endpointWithBasePath.indexOf("/");
+        logger.info("endpointWithBasePath: " + endpointWithBasePath);
+        endpointPath = "/" + (pathStart > 0 ? endpointWithBasePath.substring(pathStart + 1) : "");
+        logger.info("endpointPath: " + endpointPath);
+
+        if (dataverseManaged && (dvObject!=null)) {
+            
+            Dataset ds = null;
+            if (dvObject instanceof Dataset) {
+                ds = (Dataset) dvObject;
+            } else if (dvObject instanceof DataFile) {
+                ds = ((DataFile) dvObject).getOwner();
+            }
+            relativeDirectoryPath = "/" + ds.getAuthority() + "/" + ds.getIdentifier();
+        } else {
+            relativeDirectoryPath = "";
+        }
+        if (filenameStart > 0) {
+            relativeDirectoryPath = relativeDirectoryPath + path.substring(0, filenameStart);
+        }
+        logger.info("relativeDirectoryPath finally: " + relativeDirectoryPath);
+        filename = path.substring(filenameStart);
+        endpoint = pathStart > 0 ? endpointWithBasePath.substring(0, pathStart) : endpointWithBasePath;
+
+        
     }
 
     public GlobusOverlayAccessIO(String storageLocation, String driverId) throws IOException {
         this.driverId = driverId;
+        configureStores(null, driverId, storageLocation);
         this.dataverseManaged = isDataverseManaged(this.driverId);
         if (dataverseManaged) {
             String[] parts = DataAccess.getDriverIdAndStorageLocation(storageLocation);
             path = parts[1];
         } else {
             this.setIsLocalFile(false);
-            configureStores(null, driverId, storageLocation);
-
             path = storageLocation.substring(storageLocation.lastIndexOf("//") + 2);
             validatePath(path);
             logger.fine("Relative path: " + path);
         }
-//ToDo - only when needed?
-        globusAccessToken = retrieveGlobusAccessToken();
-
     }
-
+    
     private String retrieveGlobusAccessToken() {
         // String globusToken = JvmSettings.GLOBUS_TOKEN.lookup(driverId);
         String globusToken = System.getProperty("dataverse.files." + this.driverId + ".globus-token");
@@ -101,33 +132,16 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
 
     // Call the Globus API to get the file size
     @Override
-    long retrieveSize() {
+    public long retrieveSizeFromMedia() {
+        parsePath();
+        String globusAccessToken = retrieveGlobusAccessToken();
         logger.info("GAT2: " + globusAccessToken);
         // Construct Globus URL
         URI absoluteURI = null;
         try {
-            int filenameStart = path.lastIndexOf("/") + 1;
-            String endpointWithBasePath = baseUrl.substring(baseUrl.lastIndexOf("://") + 3);
-            int pathStart = endpointWithBasePath.indexOf("/");
-            logger.info("endpointWithBasePath: " + endpointWithBasePath);
-            String directoryPath = "/" + (pathStart > 0 ? endpointWithBasePath.substring(pathStart + 1) : "");
-            logger.info("directoryPath: " + directoryPath);
-
-            if (dataverseManaged && (dvObject!=null)) {
-                Dataset ds = ((DataFile) dvObject).getOwner();
-                directoryPath = directoryPath + "/" + ds.getAuthority() + "/" + ds.getIdentifier();
-                logger.info("directoryPath now: " + directoryPath);
-
-            }
-            if (filenameStart > 0) {
-                directoryPath = directoryPath + path.substring(0, filenameStart);
-            }
-            logger.info("directoryPath finally: " + directoryPath);
-            String filename = path.substring(filenameStart);
-            String endpoint = pathStart > 0 ? endpointWithBasePath.substring(0, pathStart) : endpointWithBasePath;
 
             absoluteURI = new URI("https://transfer.api.globusonline.org/v0.10/operation/endpoint/" + endpoint
-                    + "/ls?path=" + directoryPath + "&filter=name:" + filename);
+                    + "/ls?path=" + endpointPath + relativeDirectoryPath + "&filter=name:" + filename);
             HttpGet get = new HttpGet(absoluteURI);
 
             logger.info("Token is " + globusAccessToken);
@@ -166,25 +180,63 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
     @Override
     public void delete() throws IOException {
 
-// Fix
-        // Delete is best-effort - we tell the remote server and it may or may not
-        // implement this call
+        parsePath();
+        // Delete is best-effort - we tell the endpoint to delete don't monitor whether
+        // it succeeds
         if (!isDirectAccess()) {
             throw new IOException("Direct Access IO must be used to permanently delete stored file objects");
         }
+        String globusAccessToken = retrieveGlobusAccessToken();
+        // Construct Globus URL
+        URI absoluteURI = null;
         try {
-            HttpDelete del = new HttpDelete(baseUrl + "/" + path);
-            CloseableHttpResponse response = getSharedHttpClient().execute(del, localContext);
-            try {
-                int code = response.getStatusLine().getStatusCode();
-                switch (code) {
+
+            absoluteURI = new URI("https://transfer.api.globusonline.org/v0.10/submission_id");
+            HttpGet get = new HttpGet(absoluteURI);
+
+            logger.info("Token is " + globusAccessToken);
+            get.addHeader("Authorization", "Bearer " + globusAccessToken);
+            CloseableHttpResponse response = getSharedHttpClient().execute(get, localContext);
+            if (response.getStatusLine().getStatusCode() == 200) {
+                // Get reponse as string
+                String responseString = EntityUtils.toString(response.getEntity());
+                logger.info("Response from " + get.getURI().toString() + " is: " + responseString);
+                JsonObject responseJson = JsonUtil.getJsonObject(responseString);
+                String submissionId = responseJson.getString("value");
+                logger.info("submission_id for delete is: " + submissionId);
+                absoluteURI = new URI("https://transfer.api.globusonline.org/v0.10/delete");
+                HttpPost post = new HttpPost(absoluteURI);
+                JsonObjectBuilder taskJsonBuilder = Json.createObjectBuilder();
+                taskJsonBuilder.add("submission_id", submissionId).add("DATA_TYPE", "delete").add("endpoint", endpoint)
+                        .add("DATA", Json.createArrayBuilder().add(Json.createObjectBuilder().add("DATA_TYPE", "delete_item").add("path",
+                                endpointPath + relativeDirectoryPath + "/" + filename)));
+                post.setHeader("Content-Type", "application/json");
+                post.addHeader("Authorization", "Bearer " + globusAccessToken);
+                String taskJson= JsonUtil.prettyPrint(taskJsonBuilder.build());
+                logger.info("Sending: " + taskJson);
+                post.setEntity(new StringEntity(taskJson, "utf-8"));
+                CloseableHttpResponse postResponse = getSharedHttpClient().execute(post, localContext);
+                int statusCode=postResponse.getStatusLine().getStatusCode();
+                logger.info("Response :" + statusCode + ": " +postResponse.getStatusLine().getReasonPhrase());
+                switch (statusCode) {
+                case 202:
+                    // ~Success - delete task was accepted
+                    logger.info("Globus delete initiated: " + EntityUtils.toString(postResponse.getEntity()));
+                    break;
                 case 200:
-                    logger.fine("Sent DELETE for " + baseUrl + "/" + path);
+                    // Duplicate - delete task was already accepted
+                    logger.info("Duplicate Globus delete: " + EntityUtils.toString(postResponse.getEntity()));
+                    break;
                 default:
-                    logger.fine("Response from DELETE on " + del.getURI().toString() + " was " + code);
+                    logger.warning("Response from " + post.getURI().toString() + " was "
+                            + postResponse.getStatusLine().getStatusCode());
+                    logger.info(EntityUtils.toString(postResponse.getEntity()));
                 }
-            } finally {
-                EntityUtils.consume(response.getEntity());
+
+            } else {
+                logger.warning("Response from " + get.getURI().toString() + " was "
+                        + response.getStatusLine().getStatusCode());
+                logger.info(EntityUtils.toString(response.getEntity()));
             }
         } catch (Exception e) {
             logger.warning(e.getMessage());
@@ -250,6 +302,16 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         return true;
     }
 
+    @Override
+    public String getStorageLocation() throws IOException {
+        parsePath();
+        if (dataverseManaged) {
+            return this.driverId + DataAccess.SEPARATOR + relativeDirectoryPath + "/" + filename;
+        } else {
+            return super.getStorageLocation();
+        }
+    }
+    
     public static void main(String[] args) {
         System.out.println("Running the main method");
         if (args.length > 0) {
@@ -272,7 +334,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         try {
             GlobusOverlayAccessIO<DvObject> gsio = new GlobusOverlayAccessIO<DvObject>(
                     "globus://1234///hdc1/image001.mrc", "globus");
-            logger.info("Size is " + gsio.retrieveSize());
+            logger.info("Size is " + gsio.retrieveSizeFromMedia());
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -286,7 +348,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
             df.setOwner(ds);
             df.setStorageIdentifier("globus://1234///hdc1/image001.mrc");
             GlobusOverlayAccessIO<DvObject> gsio = new GlobusOverlayAccessIO<DvObject>(df, null, "globus");
-            logger.info("Size2 is " + gsio.retrieveSize());
+            logger.info("Size2 is " + gsio.retrieveSizeFromMedia());
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -294,4 +356,5 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         }
 
     }
+    
 }
