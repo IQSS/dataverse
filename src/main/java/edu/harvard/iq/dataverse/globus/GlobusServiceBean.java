@@ -4,8 +4,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
-import com.nimbusds.oauth2.sdk.pkce.CodeVerifier;
-
 import edu.harvard.iq.dataverse.*;
 
 import jakarta.ejb.Asynchronous;
@@ -21,7 +19,6 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonPatch;
-import jakarta.json.JsonValue;
 import jakarta.servlet.http.HttpServletRequest;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
@@ -662,6 +659,7 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
         
         ruleId = getRuleId(endpoint, task.getOwner_id(), "rw");
+        
         if(ruleId!=null) {
             Long datasetId = rulesCache.getIfPresent(ruleId);
             if(datasetId!=null) {
@@ -1095,7 +1093,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
         String fullPath = id.split("IDsplit")[1];
         String fileName = id.split("IDsplit")[2];
 
-        // ToDo: what if the file doesnot exists in s3
+        // ToDo: what if the file does not exist in s3
         // ToDo: what if checksum calculation failed
 
         do {
@@ -1107,8 +1105,8 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
             } catch (IOException ioex) {
                 count = 3;
                 logger.info(ioex.getMessage());
-                globusLogger.info("DataFile (fullPAth " + fullPath
-                        + ") does not appear to be accessible withing Dataverse: ");
+                globusLogger.info("DataFile (fullPath " + fullPath
+                        + ") does not appear to be accessible within Dataverse: ");
             } catch (Exception ex) {
                 count = count + 1;
                 ex.printStackTrace();
@@ -1119,7 +1117,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
         } while (count < 3);
 
         if (checksumVal.length() == 0) {
-            checksumVal = "NULL";
+            checksumVal = "Not available in Dataverse";
         }
 
         String mimeType = calculatemime(fileName);
@@ -1384,4 +1382,5 @@ logger.info("clientToken: " + clientToken);
     private static boolean isDataverseManaged(String driverId) {
         return Boolean.getBoolean("dataverse.files." + driverId + ".managed");
     }
+    
 }
