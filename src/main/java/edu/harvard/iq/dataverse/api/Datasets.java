@@ -3451,15 +3451,25 @@ public class Datasets extends AbstractApiBean {
         if(!DataAccess.getDriverType(storeId).equals(DataAccess.GLOBUS)) {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.globusuploaddisabled"));
         }
+        
+        URLTokenUtil tokenUtil = new URLTokenUtil(dataset, authSvc.findApiTokenByUser(authUser), locale);
+
         boolean managed = GlobusOverlayAccessIO.isDataverseManaged(storeId);
         String endpoint = GlobusOverlayAccessIO.getEndpointId(storeId);
+
         JsonObjectBuilder queryParams = Json.createObjectBuilder();
         queryParams.add("queryParameters",
                 Json.createArrayBuilder().add(Json.createObjectBuilder().add("datasetId", "{datasetId}"))
                         .add(Json.createObjectBuilder().add("siteUrl", "{siteUrl}"))
                         .add(Json.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
-                        .add(Json.createObjectBuilder().add("dvLocale", "{localeCode}")).add(Json.createObjectBuilder()
-                                .add("datasetPid", "{datasetPid}").add("managed", managed).add("endpoint", endpoint)));
+                        .add(Json.createObjectBuilder().add("dvLocale", "{localeCode}"))
+                        .add(Json.createObjectBuilder().add("datasetPid", "{datasetPid}")));
+        JsonObject substitutedParams = tokenUtil.getParams(queryParams.build());
+        JsonObjectBuilder params = Json.createObjectBuilder();
+        substitutedParams.keySet().forEach((key) -> {
+            params.add(key, substitutedParams.get(key));
+        });
+        params.add("managed", Boolean.toString(managed)).add("endpoint", endpoint);
 
         JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "requestGlobusTransferPaths")
@@ -3470,14 +3480,12 @@ public class Datasets extends AbstractApiBean {
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addGlobusFiles")
                 .add(URLTokenUtil.TIMEOUT, 300));
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing")
-                .add(URLTokenUtil.HTTP_METHOD, "GET")
-                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
-                .add(URLTokenUtil.TIMEOUT, 300));
-        
+        allowedApiCalls.add(
+                Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
+                        .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
+                        .add(URLTokenUtil.TIMEOUT, 300));
 
-        URLTokenUtil tokenUtil = new URLTokenUtil(dataset, authSvc.findApiTokenByUser(authUser), locale);
-        return ok(tokenUtil.createPostBody(tokenUtil.getParams(queryParams.build()), allowedApiCalls.build()));
+        return ok(tokenUtil.createPostBody(params.build(), allowedApiCalls.build()));
     }
     
     /** Requests permissions for a given globus user to upload to the dataset
@@ -3544,7 +3552,7 @@ public class Datasets extends AbstractApiBean {
             JsonObject response = globusService.requestAccessiblePaths(principal, dataset, numberOfPaths);
             switch (response.getInt("status")) {
             case 201:
-                return ok(response.getJsonArray("paths"));
+                return ok(response.getJsonObject("paths"));
             case 400:
                 return badRequest("Unable to grant permission");
             case 409:

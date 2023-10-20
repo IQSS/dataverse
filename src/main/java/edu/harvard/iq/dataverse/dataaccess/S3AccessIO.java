@@ -1400,4 +1400,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         return objectMetadata.getContentLength();
     }
+    
+    public static String getNewIdentifier(String driverId) {
+        return driverId + DataAccess.SEPARATOR + getConfigParamForDriver(driverId, BUCKET_NAME) + ":" + FileUtil.generateStorageIdentifier();
+    }
 }

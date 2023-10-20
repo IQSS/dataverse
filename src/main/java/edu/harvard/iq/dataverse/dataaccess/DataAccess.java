@@ -403,4 +403,28 @@ public class DataAccess {
         }
         return false;
     }
+
+
+
+    public static String getNewStorageIdentifier(String driverId) {
+        String storageType = DataAccess.getDriverType(driverId);
+        if (storageType.equals("tmp") || storageType.equals("Undefined")) {
+            return null;
+        }
+        switch (storageType) {
+        case FILE:
+            return FileAccessIO.getNewIdentifier(driverId);
+        case SWIFT:
+            return SwiftAccessIO.getNewIdentifier(driverId);
+        case S3:
+            return S3AccessIO.getNewIdentifier(driverId);
+        case REMOTE:
+            return RemoteOverlayAccessIO.getNewIdentifier(driverId);
+        case GLOBUS:
+            return GlobusOverlayAccessIO.getNewIdentifier(driverId);
+        default:
+            logger.warning("Request to validate for storage driver: " + driverId);
+        }
+        return null;
+    }
 }

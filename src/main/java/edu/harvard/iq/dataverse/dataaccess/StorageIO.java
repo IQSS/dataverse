@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.util.FileUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -669,6 +670,10 @@ public abstract class StorageIO<T extends DvObject> {
     }
     protected static String getConfigParamForDriver(String driverId, String parameterName, String defaultValue) {
         return System.getProperty("dataverse.files." + driverId + "." + parameterName, defaultValue);
+    }
+    
+    public static String getNewIdentifier(String driverId) {
+        return driverId + DataAccess.SEPARATOR + FileUtil.generateStorageIdentifier();
     }
 
 }

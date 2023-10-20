@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.globus;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Scheduler;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import edu.harvard.iq.dataverse.*;
@@ -36,6 +37,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -257,12 +259,16 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
                     permissions.setId(globusResponse.getString("access_id"));
                     monitorTemporaryPermissions(permissions.getId(), dataset.getId());
                     logger.info("Access rule " + permissions.getId() + " was created successfully");
-                    JsonArrayBuilder pathArray = Json.createArrayBuilder();
+                    
+                    String driverId = dataset.getEffectiveStorageDriverId();
+                    JsonObjectBuilder paths = Json.createObjectBuilder();
                     for(int i=0;i<numberOfPaths;i++) {
-                        pathArray.add(getUniqueFilePath(endpoint));
+                        String storageIdentifier = DataAccess.getNewStorageIdentifier(driverId);
+                        int lastIndex = Math.max(storageIdentifier.lastIndexOf("/"), storageIdentifier.lastIndexOf(":")); 
+                        paths.add(storageIdentifier, endpoint.getBasePath() + "/" + storageIdentifier.substring(lastIndex + 1));
                     
                     }
-                    response.add("paths", pathArray.build());
+                    response.add("paths", paths.build());
                     
                 } else {
                     //Shouldn't happen!
@@ -277,18 +283,23 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
             return response.build();
     }
 
-    private String getUniqueFilePath(GlobusEndpoint endpoint) {
+    private Entry<String,String> getUniqueFilePath(GlobusEndpoint endpoint) {
         // TODO See if generated identifier exists at globus endpoint
-        return endpoint.getBasePath() + "/" + FileUtil.generateStorageIdentifier();
+        String sid=FileUtil.generateStorageIdentifier();
+        String path = endpoint.getBasePath() + "/" + FileUtil.generateStorageIdentifier();
+        return null;
     }
 
     //Single cache of open rules/permission requests
     private final Cache<String, Long> rulesCache = Caffeine.newBuilder()
-            .expireAfterWrite(Duration.of(JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.MINUTES))
+//            .expireAfterWrite(Duration.of(JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.MINUTES))
+            .expireAfterWrite(Duration.of(1, ChronoUnit.MINUTES))
+            .scheduler(Scheduler.systemScheduler())
             .evictionListener((ruleId, datasetId, cause) -> {
                 //Delete rules that expire
+                logger.info("Rule " + ruleId + " expired");
                 Dataset dataset = datasetSvc.find(datasetId);
-                deletePermission((String) ruleId, dataset, null);
+                deletePermission((String) ruleId, dataset, logger);
               })
             
             .build();
@@ -583,7 +594,7 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
         String appUrl;
         if (upload) {
             appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
-                    + "/upload?datasetPid={datasetPid}&siteUrl={siteUrl}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}";
+                    + "/upload?dvLocale={localeCode}";
             String callback = SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/datasets/" + d.getId()
                     + "/globusUploadParameters?locale=" + localeCode;
             if (apiToken != null) {
@@ -611,7 +622,7 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
                         + rawStorageId + "&fileName=" + df.getCurrentName();
             }
         }
-        String finalUrl = tokenUtil.replaceTokensWithValues(appUrl) + "&storePrefix=" + storePrefix;
+        String finalUrl = tokenUtil.replaceTokensWithValues(appUrl);
         logger.info("Calling app: " + finalUrl);
         return finalUrl;
     }
@@ -827,9 +838,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
                 globusLogger.info("Files failures: " + countError.toString());
                 globusLogger.info("Finished upload via Globus job.");
 
-                if (fileHandlerSuceeded) {
-                    fileHandler.close();
-                }
+
 
             } catch (Exception e) {
                 logger.info("Exception from globusUpload call ");
@@ -841,6 +850,9 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
         if (ruleId != null) {
             deletePermission(ruleId, dataset, globusLogger);
             globusLogger.info("Removed upload permission: " + ruleId);
+        }
+        if (fileHandlerSuceeded) {
+            fileHandler.close();
         }
     }
 
