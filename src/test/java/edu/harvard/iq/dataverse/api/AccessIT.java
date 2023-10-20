@@ -666,6 +666,8 @@ public class AccessIT {
         assertTrue(canDownloadFile);
         boolean canEditOwnerDataset = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canEditOwnerDataset");
         assertTrue(canEditOwnerDataset);
+        boolean canManageFilePermissions = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canManageFilePermissions");
+        assertTrue(canManageFilePermissions);
 
         // Call with invalid file id
         Response getUserPermissionsOnFileInvalidIdResponse = UtilIT.getUserPermissionsOnFile("testInvalidId", apiToken);

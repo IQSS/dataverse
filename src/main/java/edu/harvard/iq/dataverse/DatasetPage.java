@@ -2880,6 +2880,12 @@ public class DatasetPage implements java.io.Serializable {
     public String refresh() {
         logger.fine("refreshing");
 
+        //In v5.14, versionId was null here. In 6.0, it appears not to be.
+        //This check is to handle the null if it reappears/occurs under other circumstances
+        if(versionId==null) {
+            logger.warning("versionId was null in refresh");
+            versionId = workingVersion.getId();
+        }
         //dataset = datasetService.find(dataset.getId());
         dataset = null;
         workingVersion = null; 
@@ -2889,10 +2895,9 @@ public class DatasetPage implements java.io.Serializable {
         DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
 
         if (versionId != null) {
-            // versionId must have been set by now, in the init() method, 
-            // regardless of how the page was originally called - by the dataset
-            // database id, by the persistent identifier, or by the db id of
-            // the version. 
+            // versionId must have been set by now (see null check above), in the init()
+            // method, regardless of how the page was originally called - by the dataset
+            // database id, by the persistent identifier, or by the db id of the version.
             this.workingVersion = datasetVersionService.findDeep(versionId);
             dataset = workingVersion.getDataset();
         } 
@@ -6282,7 +6287,10 @@ public class DatasetPage implements java.io.Serializable {
     String signpostingLinkHeader = null;
 
     public String getSignpostingLinkHeader() {
-        if (!workingVersion.isReleased()) {
+        if ((workingVersion==null) || (!workingVersion.isReleased())) {
+            if(workingVersion==null) {
+                logger.warning("workingVersion was null in getSignpostingLinkHeader");
+            }
             return null;
         }
         if (signpostingLinkHeader == null) {

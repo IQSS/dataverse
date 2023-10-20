@@ -606,7 +606,7 @@ public abstract class StorageIO<T extends DvObject> {
     }
     
     public static boolean isDirectUploadEnabled(String driverId) {
-        return (DataAccess.S3.equals(driverId) && Boolean.parseBoolean(System.getProperty("dataverse.files." + DataAccess.S3 + ".upload-redirect"))) ||
+        return (System.getProperty("dataverse.files." + driverId + ".type").equals(DataAccess.S3) && Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".upload-redirect"))) ||
             Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".upload-out-of-band"));
     }
     
