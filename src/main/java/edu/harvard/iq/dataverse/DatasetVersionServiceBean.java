@@ -166,9 +166,44 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.datasetVersion")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.releaseUser")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.creator")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataFileTags")
             .getSingleResult();
     }
-
+    
+    /**
+     * Performs the same database lookup as the one behind Dataset.getVersions().
+     * Additionally, provides the arguments for selecting a partial list of 
+     * (length-offset) versions for pagination, plus the ability to pre-select 
+     * only the publicly-viewable versions. 
+     * It is recommended that individual software components utilize the 
+     * ListVersionsCommand, instead of calling this service method directly.
+     * @param datasetId
+     * @param offset for pagination through long lists of versions
+     * @param length for pagination through long lists of versions
+     * @param includeUnpublished retrieves all the versions, including drafts and deaccessioned. 
+     * @return (partial) list of versions
+     */
+    public List<DatasetVersion> findVersions(Long datasetId, Integer offset, Integer length, boolean includeUnpublished) {
+        TypedQuery<DatasetVersion> query;  
+        if (includeUnpublished) {
+            query = em.createNamedQuery("DatasetVersion.findByDataset", DatasetVersion.class);
+        } else {
+            query = em.createNamedQuery("DatasetVersion.findReleasedByDataset", DatasetVersion.class)
+                    .setParameter("datasetId", datasetId);
+        }
+        
+        query.setParameter("datasetId", datasetId);
+        
+        if (offset != null) {
+            query.setFirstResult(offset);
+        }
+        if (length != null) {
+            query.setMaxResults(length);
+        }
+        
+        return query.getResultList();
+    }
+    
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
         Long majorVersionNumber = null;
         Long minorVersionNumber = null;

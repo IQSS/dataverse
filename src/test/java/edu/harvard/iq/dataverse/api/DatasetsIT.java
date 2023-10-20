@@ -505,7 +505,7 @@ public class DatasetsIT {
         assertTrue(datasetContactFromExport.toString().contains("finch@mailinator.com"));
         assertTrue(firstValue.toString().contains("finch@mailinator.com"));
 
-        Response getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST_PUBLISHED, false, apiToken);
+        Response getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST_PUBLISHED, apiToken);
         getDatasetVersion.prettyPrint();
         getDatasetVersion.then().assertThat()
                 .body("data.datasetId", equalTo(datasetId))
@@ -554,11 +554,11 @@ public class DatasetsIT {
         deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // includeDeaccessioned false
-        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST_PUBLISHED, false, apiToken);
+        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST_PUBLISHED, apiToken, false, false);
         getDatasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
         // includeDeaccessioned true
-        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST_PUBLISHED, true, apiToken);
+        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST_PUBLISHED, apiToken, false, true);
         getDatasetVersion.then().assertThat().statusCode(OK.getStatusCode());
 
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
@@ -575,6 +575,103 @@ public class DatasetsIT {
 
     }
 
+    /**
+     * The apis (/api/datasets/{id}/versions and /api/datasets/{id}/versions/{vid}
+     * are already called from other RestAssured tests, in this class and also in FilesIT. 
+     * But this test is dedicated to this api specifically, and focuses on the 
+     * functionality added to it in 6.1. 
+    */
+    @Test
+    public void testDatasetVersionsAPI() {
+        // Create user
+        String apiToken = UtilIT.createRandomUserGetToken();
+
+        // Create user with no permission
+        String apiTokenNoPerms = UtilIT.createRandomUserGetToken();
+
+        // Create Collection
+        String collectionAlias = UtilIT.createRandomCollectionGetAlias(apiToken);
+
+        // Create Dataset
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(collectionAlias, apiToken);
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        // Upload file
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        // Check that the file we just uploaded is shown by the versions api:
+        Response unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .body("data.files.size()", equalTo(1))
+                .statusCode(OK.getStatusCode());
+        
+        // Now check that the file is NOT shown, when we ask the versions api to 
+        // skip files: 
+        boolean skipFiles = true; 
+        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, skipFiles, false);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .body("data.files", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
+        // Publish collection and dataset
+        UtilIT.publishDataverseViaNativeApi(collectionAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Upload another file: 
+        String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
+        Response uploadResponse2 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, apiToken);
+        uploadResponse2.then().assertThat().statusCode(OK.getStatusCode());
+       
+        // We should now have a published version, and a draft. 
+        
+        // Call /versions api, *with the owner api token*, make sure both 
+        // versions are listed; also check that the correct numbers of files 
+        // are shown in each version (2 in the draft, 1 in the published). 
+        Response versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiToken);
+        versionsResponse.prettyPrint();
+        versionsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(2))
+                .body("data[0].files.size()", equalTo(2))
+                .body("data[1].files.size()", equalTo(1));
+        
+        // Now call this api with the new (as of 6.1) pagination parameters
+        Integer offset = 0;
+        Integer howmany = 1;
+        versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiToken, offset, howmany);
+        // (the above should return only one version, the draft)
+        versionsResponse.prettyPrint();
+        versionsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
+                .body("data[0].files.size()", equalTo(2));
+                
+        // And now call it with an un-privileged token, to make sure only one 
+        // (the published) version is shown:
+        
+        versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms);
+        versionsResponse.prettyPrint();
+        versionsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1));
+        
+        // And now call the "short", no-files version of the same api
+        versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms, skipFiles);
+        versionsResponse.prettyPrint();
+        versionsResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].files", equalTo(null));
+    }
+
+    
     /**
      * This test requires the root dataverse to be published to pass.
      */
@@ -3875,7 +3972,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         int expectedTextFilesStorageSize = testFileSize1 + testFileSize2;
 
         // Get the total size when there are no tabular files
-        Response getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
+        Response getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedTextFilesStorageSize));
 
@@ -3890,7 +3987,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Thread.sleep(2000);
 
         // Get the total size ignoring the original tabular file sizes
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Archival.toString(), apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Archival.toString(), false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         int actualSizeIgnoringOriginalTabularSizes = Integer.parseInt(getDownloadSizeResponse.getBody().jsonPath().getString("data.storageSize"));
@@ -3901,7 +3998,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Get the total size including only original sizes and ignoring archival sizes for tabular files
         int expectedSizeIncludingOnlyOriginalForTabular = tabularOriginalSize + expectedTextFilesStorageSize;
 
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Original.toString(), apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Original.toString(), false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingOnlyOriginalForTabular));
 
@@ -3909,13 +4006,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         int tabularArchivalSize = actualSizeIgnoringOriginalTabularSizes - expectedTextFilesStorageSize;
         int expectedSizeIncludingAllSizes = tabularArchivalSize + tabularOriginalSize + expectedTextFilesStorageSize;
 
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingAllSizes));
 
         // Get the total size sending invalid file download size mode
         String invalidMode = "invalidMode";
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, invalidMode, apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, invalidMode, false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Invalid mode: " + invalidMode));
 
@@ -3929,16 +4026,48 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Get the total size including only original sizes and ignoring archival sizes for tabular files
         expectedSizeIncludingOnlyOriginalForTabular = tabularOriginalSize + expectedSizeIncludingOnlyOriginalForTabular;
 
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Original.toString(), apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.Original.toString(), false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingOnlyOriginalForTabular));
 
         // Get the total size including both the original and archival tabular file sizes
         expectedSizeIncludingAllSizes = tabularArchivalSize + tabularOriginalSize + expectedSizeIncludingAllSizes;
 
-        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), apiToken);
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
         getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.storageSize", equalTo(expectedSizeIncludingAllSizes));
+
+        // Get the total size including both the original and archival tabular file sizes with search criteria
+        getDownloadSizeResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST, "text/plain", FileSearchCriteria.FileAccessStatus.Public.toString(), null, null, "test_", DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
+        // We exclude tabular sizes from the expected result since the search criteria filters by content type "text/plain" and search text "test_"
+        int expectedSizeIncludingAllSizesAndApplyingCriteria = testFileSize1 + testFileSize2;
+        getDownloadSizeResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .body("data.storageSize", equalTo(expectedSizeIncludingAllSizesAndApplyingCriteria));
+
+        // Test Deaccessioned
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // includeDeaccessioned false
+        Response getVersionFileCountsResponseNoDeaccessioned = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), false, apiToken);
+        getVersionFileCountsResponseNoDeaccessioned.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // includeDeaccessioned true
+        Response getVersionFileCountsResponseDeaccessioned = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, apiToken);
+        getVersionFileCountsResponseDeaccessioned.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Test that the dataset file counts for a deaccessioned dataset cannot be accessed by a guest
+        // By latest published version
+        Response getVersionFileCountsGuestUserResponse = UtilIT.getDownloadSize(datasetId, DS_VERSION_LATEST_PUBLISHED, null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
+        getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        // By specific version 1.0
+        getVersionFileCountsGuestUserResponse = UtilIT.getDownloadSize(datasetId, "1.0", null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
+        getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
     }
 
     @Test
