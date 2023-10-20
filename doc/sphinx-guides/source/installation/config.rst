@@ -3940,22 +3940,7 @@ The URL of an LDN Inbox to which the LDN Announce workflow step will send messag
 
 The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
 
-.. _:GlobusBasicToken:
-
-:GlobusBasicToken
-+++++++++++++++++
-
-GlobusBasicToken encodes credentials for Globus integration. See :ref:`globus-support` for details.
-
-:GlobusEndpoint
-+++++++++++++++
-
-GlobusEndpoint is Globus endpoint id used with Globus integration. See :ref:`globus-support` for details.
-
-:GlobusStores
-+++++++++++++
-
-A comma-separated list of the S3 stores that are configured to support Globus integration. See :ref:`globus-support` for details.
+.. _:GlobusSettings:
 
 :GlobusAppUrl
 +++++++++++++

@@ -317,12 +317,12 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
         return false;
     }
 
-    public GlobusTask getTask(AccessToken clientTokenUser, String taskId, Logger globusLogger) throws MalformedURLException {
+    public GlobusTask getTask(String accessToken, String taskId, Logger globusLogger) throws MalformedURLException {
 
         URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task/" + taskId);
 
         MakeRequestResponse result = makeRequest(url, "Bearer",
-                clientTokenUser.getOtherTokens().get(0).getAccessToken(), "GET", null);
+                accessToken, "GET", null);
 
         GlobusTask task = null;
 
@@ -661,13 +661,14 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
 
         String taskIdentifier = jsonData.getString("taskIdentifier");
 
+        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
         // globus task status check
-        GlobusTask task = globusStatusCheck(taskIdentifier, globusLogger);
+        GlobusTask task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
         String taskStatus = getTaskStatus(task);
 
         globusLogger.info("Starting an globusUpload ");
 
-        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+
         String ruleId = getRuleId(endpoint, task.getOwner_id(), "rw");
         logger.info("Found rule: " + ruleId);
         if (ruleId != null) {
@@ -947,7 +948,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
         }
 
         // globus task status check
-        GlobusTask task = globusStatusCheck(taskIdentifier, globusLogger);
+        GlobusTask task = globusStatusCheck(null, taskIdentifier, globusLogger);
         String taskStatus = getTaskStatus(task);
 
         if (ruleId.length() > 0) {
@@ -976,7 +977,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
 
     Executor executor = Executors.newFixedThreadPool(10);
 
-    private GlobusTask globusStatusCheck(String taskId, Logger globusLogger) throws MalformedURLException {
+    private GlobusTask globusStatusCheck(GlobusEndpoint endpoint, String taskId, Logger globusLogger) throws MalformedURLException {
         boolean taskCompletion = false;
         String status = "";
         GlobusTask task = null;
@@ -985,9 +986,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
             try {
                 globusLogger.info("checking globus transfer task   " + taskId);
                 Thread.sleep(pollingInterval * 1000);
-                AccessToken clientTokenUser = getClientToken(settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, ""));
-                // success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskId);
-                task = getTask(clientTokenUser, taskId, globusLogger);
+                task = getTask(endpoint.getClientToken(), taskId, globusLogger);
                 if (task != null) {
                     status = task.getStatus();
                     if (status != null) {

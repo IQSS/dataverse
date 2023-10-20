@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -333,10 +334,7 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public boolean isGlobusEnabledStorageDriver(String driverId) {
-        if (globusStoreList == null) {
-            globusStoreList = systemConfig.getGlobusStoresList();
-        }
-        return globusStoreList.contains(driverId);
+        return (GlobusAccessibleStore.acceptsGlobusTransfers(driverId) || GlobusAccessibleStore.allowsGlobusReferences(driverId));
     }
     
     public String getGlobusAppUrl() {

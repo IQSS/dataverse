@@ -206,9 +206,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         redirect_url_str = null;
                     }
                 }
-                
-                if (systemConfig.isGlobusFileDownload() && systemConfig.getGlobusStoresList()
-                        .contains(DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier()))) {
+                String driverId = DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier());
+                if (systemConfig.isGlobusFileDownload() && (GlobusAccessibleStore.acceptsGlobusTransfers(driverId) || GlobusAccessibleStore.allowsGlobusReferences(driverId))) {
                     if (di.getConversionParam() != null) {
                         if (di.getConversionParam().equals("format")) {
 

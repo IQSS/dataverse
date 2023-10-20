@@ -948,11 +948,6 @@ public class SystemConfig {
         return (isGlobusDownload() && settingsService.isTrueForKey(SettingsServiceBean.Key.GlobusSingleFileTransfer, false));
     }
 
-    public List<String> getGlobusStoresList() {
-    String globusStores = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusStores, "");
-    return Arrays.asList(globusStores.split("\\s*,\\s*"));
-    }
-
     private Boolean getMethodAvailable(String method, boolean upload) {
         String methods = settingsService.getValueForKey(
                 upload ? SettingsServiceBean.Key.UploadMethods : SettingsServiceBean.Key.DownloadMethods);
