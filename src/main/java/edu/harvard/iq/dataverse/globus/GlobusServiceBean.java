@@ -37,7 +37,6 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -56,6 +55,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -283,17 +283,9 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
             return response.build();
     }
 
-    private Entry<String,String> getUniqueFilePath(GlobusEndpoint endpoint) {
-        // TODO See if generated identifier exists at globus endpoint
-        String sid=FileUtil.generateStorageIdentifier();
-        String path = endpoint.getBasePath() + "/" + FileUtil.generateStorageIdentifier();
-        return null;
-    }
-
     //Single cache of open rules/permission requests
     private final Cache<String, Long> rulesCache = Caffeine.newBuilder()
-//            .expireAfterWrite(Duration.of(JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.MINUTES))
-            .expireAfterWrite(Duration.of(1, ChronoUnit.MINUTES))
+            .expireAfterWrite(Duration.of(JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.MINUTES))
             .scheduler(Scheduler.systemScheduler())
             .evictionListener((ruleId, datasetId, cause) -> {
                 //Delete rules that expire
@@ -306,6 +298,7 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
     
     
     private void monitorTemporaryPermissions(String ruleId, long datasetId) {
+        logger.info("Adding rule " + ruleId + " for dataset " + datasetId);
         rulesCache.put(ruleId, datasetId);
     }
 
@@ -519,6 +512,7 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
 
     }
 
+    /* unused - may be needed for S3 case
     private MakeRequestResponse findDirectory(String directory, String clientToken, String globusEndpoint)
             throws MalformedURLException {
         URL url = new URL(" https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/ls?path="
@@ -530,7 +524,8 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
 
         return result;
     }
-
+*/
+    
     /*
     public boolean giveGlobusPublicPermissions(Dataset dataset)
             throws UnsupportedEncodingException, MalformedURLException {
@@ -582,10 +577,8 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
                 apiToken = authSvc.generateApiTokenForUser((AuthenticatedUser) user);
             }
         }
-        String storePrefix = "";
         String driverId = d.getEffectiveStorageDriverId();
         try {
-            storePrefix = DataAccess.getDriverPrefix(driverId);
         } catch (Exception e) {
             logger.warning("GlobusAppUrlForDataset: Failed to get storePrefix for " + driverId);
         }
@@ -765,13 +758,10 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
                         countAll++;
                         String storageIdentifier = fileJsonObject.getString("storageIdentifier");
                         String fileName = fileJsonObject.getString("fileName");
-                        String directoryLabel = fileJsonObject.getString("directoryLabel");
                         String[] parts = DataAccess.getDriverIdAndStorageLocation(storageIdentifier);
                         //If this is an S3 store, we need to split out the bucket name
                         String[] bits = parts[1].split(":");
-                        String bucketName = "";
                         if(bits.length > 1) {
-                            bucketName = bits[0];
                         }
                         String fileId = bits[bits.length - 1];
                         
@@ -1070,7 +1060,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
                     .collect(Collectors.toList());
         });
 
-        CompletableFuture completableFuture = allCompletableFuture.thenApply(files -> {
+        CompletableFuture<?> completableFuture = allCompletableFuture.thenApply(files -> {
             return files.stream().map(d -> json(d)).collect(toJsonArray());
         });
 
@@ -1361,15 +1351,17 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
         }
         String driverId = dataset.getEffectiveStorageDriverId();
         GlobusEndpoint endpoint = null;
-        String baseUrl = System.getProperty("dataverse.files." + driverId + ".base-url");
+        
+        //ToDo - consolidate with GlobusOverlayAccessIO.parsePath()
+        String baseUrl = System.getProperty("dataverse.files." + driverId + "." + GlobusAccessibleStore.GLOBUS_TRANSFER_ENDPOINT_WITH_BASEPATH);
 
         String endpointWithBasePath = baseUrl.substring(baseUrl.lastIndexOf("://") + 3);
         int pathStart = endpointWithBasePath.indexOf("/");
         logger.info("endpointWithBasePath: " + endpointWithBasePath);
-        String directoryPath = "/" + (pathStart > 0 ? endpointWithBasePath.substring(pathStart + 1) : "");
+        String directoryPath = (pathStart > 0 ? endpointWithBasePath.substring(pathStart) : "");
         logger.info("directoryPath: " + directoryPath);
 
-        if (GlobusOverlayAccessIO.isDataverseManaged(driverId) && (dataset!=null)) {
+        if (GlobusAccessibleStore.isDataverseManaged(driverId) && (dataset!=null)) {
             directoryPath = directoryPath + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage();
             logger.info("directoryPath now: " + directoryPath);
 
@@ -1387,7 +1379,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
         
         logger.info("endpointId: " + endpointId);
         
-        String globusToken = System.getProperty("dataverse.files." + driverId + ".globus-token");
+        String globusToken = System.getProperty("dataverse.files." + driverId + "." + GlobusAccessibleStore.GLOBUS_TOKEN);
 
         AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
         String clientToken = accessToken.getOtherTokens().get(0).getAccessToken();
@@ -1395,10 +1387,6 @@ logger.info("clientToken: " + clientToken);
         endpoint = new GlobusEndpoint(endpointId, clientToken, directoryPath);
 
         return endpoint;
-    }
-    
-    private static boolean isDataverseManaged(String driverId) {
-        return Boolean.getBoolean("dataverse.files." + driverId + ".managed");
     }
     
 }

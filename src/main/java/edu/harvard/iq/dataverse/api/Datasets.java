@@ -65,7 +65,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO;
+import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -3448,14 +3448,15 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
         String storeId = dataset.getEffectiveStorageDriverId();
-        if(!DataAccess.getDriverType(storeId).equals(DataAccess.GLOBUS)) {
+        //acceptsGlobusTransfers should only be true for an S3 or globus store
+        if(!GlobusAccessibleStore.acceptsGlobusTransfers(storeId) && !GlobusAccessibleStore.allowsGlobusReferences(storeId)) {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.globusuploaddisabled"));
         }
         
         URLTokenUtil tokenUtil = new URLTokenUtil(dataset, authSvc.findApiTokenByUser(authUser), locale);
 
-        boolean managed = GlobusOverlayAccessIO.isDataverseManaged(storeId);
-        String endpoint = GlobusOverlayAccessIO.getEndpointId(storeId);
+        boolean managed = GlobusAccessibleStore.isDataverseManaged(storeId);
+        String transferEndpoint = GlobusAccessibleStore.getEndpointId(storeId);
 
         JsonObjectBuilder queryParams = Json.createObjectBuilder();
         queryParams.add("queryParameters",
@@ -3469,7 +3470,11 @@ public class Datasets extends AbstractApiBean {
         substitutedParams.keySet().forEach((key) -> {
             params.add(key, substitutedParams.get(key));
         });
-        params.add("managed", Boolean.toString(managed)).add("endpoint", endpoint);
+        if(transferEndpoint!= null) {
+            params.add("managed", Boolean.toString(managed)).add("endpoint", transferEndpoint);
+        } else {
+            //ToDO: Reference endpoints
+        }
 
         JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "requestGlobusTransferPaths")
@@ -3535,7 +3540,7 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
 
-        if(!GlobusOverlayAccessIO.isDataverseManaged(dataset.getEffectiveStorageDriverId())) {
+        if(!GlobusAccessibleStore.isDataverseManaged(dataset.getEffectiveStorageDriverId())) {
             return badRequest("This dataset does not have managed Globus storage");
         }
             

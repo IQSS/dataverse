@@ -84,7 +84,7 @@ import jakarta.validation.constraints.NotNull;
 /* 
     Amazon AWS S3 driver
  */
-public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
+public class S3AccessIO<T extends DvObject> extends StorageIO<T> implements GlobusAccessibleStore {
 
     private static final Config config = ConfigProvider.getConfig();
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");

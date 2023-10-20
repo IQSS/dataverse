@@ -42,12 +42,8 @@ import jakarta.json.JsonObjectBuilder;
  * baseUrl: globus://<globusEndpointId/basePath>
  * 
  */
-public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAccessIO<T> {
-
+public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAccessIO<T> implements GlobusAccessibleStore {
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO");
-
-    static final String GLOBUS_TOKEN = "globus-token";
-    static final String MANAGED = "managed";
 
     /*
      * If this is set to true, the store supports Globus transfer in and
@@ -66,7 +62,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
 
     public GlobusOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
-        dataverseManaged = isDataverseManaged(this.driverId);
+        dataverseManaged = GlobusAccessibleStore.isDataverseManaged(this.driverId);
     }
 
     private void parsePath() {
@@ -102,7 +98,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
     public GlobusOverlayAccessIO(String storageLocation, String driverId) throws IOException {
         this.driverId = driverId;
         configureStores(null, driverId, storageLocation);
-        this.dataverseManaged = isDataverseManaged(this.driverId);
+        this.dataverseManaged = GlobusAccessibleStore.isDataverseManaged(this.driverId);
         if (dataverseManaged) {
             String[] parts = DataAccess.getDriverIdAndStorageLocation(storageLocation);
             path = parts[1];
@@ -115,7 +111,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
     }
     
     private String retrieveGlobusAccessToken() {
-        String globusToken = getConfigParam(GLOBUS_TOKEN);
+        String globusToken = getConfigParam(GlobusAccessibleStore.GLOBUS_TOKEN);
         
 
         AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
@@ -179,7 +175,11 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
     
     @Override
     public InputStream getInputStream() throws IOException {
-        throw new IOException("Not implemented");
+        if(Boolean.parseBoolean(getConfigParam("endpoint-maps-to-base-store"))) {
+            return baseStore.getInputStream();
+        } else {
+            throw new IOException("Not implemented");
+        }
     }
     
     @Override
@@ -271,10 +271,6 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         }
     }
 
-    public static boolean isDataverseManaged(String driverId) {
-        return Boolean.parseBoolean(getConfigParamForDriver(driverId, MANAGED));
-    }
-
     static boolean isValidIdentifier(String driverId, String storageId) {
         String baseIdentifier = storageId.substring(storageId.lastIndexOf("//") + 2);
         String baseUrl = getConfigParamForDriver(driverId, BASE_URL);
@@ -283,7 +279,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         }
         // Internally managed endpoints require standard name pattern (submitted via
         // /addFile(s) api)
-        if (isDataverseManaged(driverId)) {
+        if (GlobusAccessibleStore.isDataverseManaged(driverId)) {
             boolean hasStandardName = usesStandardNamePattern(baseIdentifier);
             if (hasStandardName) {
                 return true;
@@ -317,13 +313,6 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         }
     }
     
-    public static String getEndpointId(String driverId) {
-        String baseUrl = getConfigParamForDriver(driverId, BASE_URL);
-        String endpointWithBasePath = baseUrl.substring(baseUrl.lastIndexOf(DataAccess.SEPARATOR) + 3);
-        int pathStart = endpointWithBasePath.indexOf("/");
-        return pathStart > 0 ? endpointWithBasePath.substring(0, pathStart) : endpointWithBasePath;
-        
-    }
     
     public static void main(String[] args) {
         System.out.println("Running the main method");
