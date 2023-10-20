@@ -472,9 +472,9 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions")
     public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("includeFiles") Boolean includeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
-        
+
         return response( req -> {
-            Dataset dataset = findDatasetOrDie(id); 
+            Dataset dataset = findDatasetOrDie(id);
 
             return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, (includeFiles == null ? true : includeFiles)) )
                                 .stream()
@@ -486,14 +486,20 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}")
-    public Response getVersion(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("includeFiles") Boolean includeFiles, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getVersion(@Context ContainerRequestContext crc,
+                               @PathParam("id") String datasetId,
+                               @PathParam("versionId") String versionId,
+                               @QueryParam("includeFiles") Boolean includeFiles,
+                               @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                               @Context UriInfo uriInfo,
+                               @Context HttpHeaders headers) {
         return response( req -> {
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned);
+
             if (dsv == null || dsv.getId() == null) {
                 return notFound("Dataset version not found");
             }
-            
+
             if (includeFiles == null ? true : includeFiles) {
                 dsv = datasetversionService.findDeep(dsv.getId());
             }
@@ -4111,5 +4117,25 @@ public class Datasets extends AbstractApiBean {
         dataset.setGuestbookEntryAtRequest(DvObjectContainer.UNDEFINED_CODE);
         datasetService.merge(dataset);
         return ok("Guestbook Entry At Request reset to default: " + dataset.getEffectiveGuestbookEntryAtRequest());
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/userPermissions")
+    public Response getUserPermissionsOnDataset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId) {
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        User requestUser = getRequestUser(crc);
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("canViewUnpublishedDataset", permissionService.userOn(requestUser, dataset).has(Permission.ViewUnpublishedDataset));
+        jsonObjectBuilder.add("canEditDataset", permissionService.userOn(requestUser, dataset).has(Permission.EditDataset));
+        jsonObjectBuilder.add("canPublishDataset", permissionService.userOn(requestUser, dataset).has(Permission.PublishDataset));
+        jsonObjectBuilder.add("canManageDatasetPermissions", permissionService.userOn(requestUser, dataset).has(Permission.ManageDatasetPermissions));
+        jsonObjectBuilder.add("canDeleteDatasetDraft", permissionService.userOn(requestUser, dataset).has(Permission.DeleteDatasetDraft));
+        return ok(jsonObjectBuilder);
     }
 }

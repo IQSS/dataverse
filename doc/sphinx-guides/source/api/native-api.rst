@@ -916,6 +916,16 @@ The fully expanded example above (without environment variables) looks like this
 The optional ``includeFiles`` parameter specifies whether the files should be listed in the output (defaults to ``true``). Note that a separate ``/files`` API can be used for listing the files, or a subset thereof in a given version. 
 
 
+By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+
+If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0?includeDeaccessioned=true"
+
 .. _export-dataset-metadata-api:
 
 Export Metadata of a Dataset in Various Formats
@@ -2558,6 +2568,26 @@ The API can also be used to reset the dataset to use the default/inherited value
 
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" -H Content-type:application/json "$SERVER_URL/api/datasets/:persistentId/guestbookEntryAtRequest?persistentId=$PERSISTENT_IDENTIFIER"
 
+Get User Permissions on a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API call returns the permissions that the calling user has on a particular dataset.
+
+In particular, the user permissions that this API call checks, returned as booleans, are the following:
+
+* Can view the unpublished dataset
+* Can edit the dataset
+* Can publish the dataset
+* Can manage the dataset permissions
+* Can delete the dataset draft
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X GET "$SERVER_URL/api/datasets/$ID/userPermissions"
 
 
 Files
