@@ -50,6 +50,8 @@ public enum JvmSettings {
     UPLOADS_DIRECTORY(SCOPE_FILES, "uploads"),
     DOCROOT_DIRECTORY(SCOPE_FILES, "docroot"),
     GUESTBOOK_AT_REQUEST(SCOPE_FILES, "guestbook-at-request"),
+    SCOPE_DRIVER(SCOPE_FILES),
+    DISABLE_S3_TAGGING(SCOPE_DRIVER, "disable-tagging"),
     
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),

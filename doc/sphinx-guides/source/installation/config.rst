@@ -792,6 +792,13 @@ Larger installations may want to increase the number of open S3 connections allo
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.connection-pool-size=4096"``
 
+By default, when redirecting an upload to the S3 storage, the Dataverse will place a ``temp`` tag on the file being uploaded for an easier cleanup when the file is not added to the dataset after upload (e.g., when the user cancels the operation).
+If your S3 store does not support tagging and gives an error when redirecting uploads, you can disable that tag by using the ``dataverse.files.<id>.disable-tagging`` JVM option. For example:
+
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.disable-tagging=true"``
+
+Disabling the ``temp`` tag can result in leftover files that are not used by your Dataverse instance and should be removed to preserve the storage space. To clean up the leftover files, you can use the [Cleanup Storage of a Dataset](https://guides.dataverse.org/en/5.13/api/native-api.html#cleanup-storage-of-a-dataset) API endpoint.
+
 In case you would like to configure Dataverse to use a custom S3 service instead of Amazon S3 services, please
 add the options for the custom URL and region as documented below. Please read above if your desired combination has
 been tested already and what other options have been set for a successful integration.
@@ -825,6 +832,7 @@ List of S3 Storage Options
     dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                                     ``false``
     dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                                   ``true``
     dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                              ``256``
+    dataverse.files.<id>.disable-tagging         ``true``/``false``  Do not place the ``temp`` tag when redirecting the upload to the S3 server           ``false``
     ===========================================  ==================  ===================================================================================  =============
 
 .. table::
