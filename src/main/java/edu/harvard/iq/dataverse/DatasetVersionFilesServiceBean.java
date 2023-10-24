@@ -24,10 +24,7 @@ import jakarta.persistence.PersistenceContext;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static edu.harvard.iq.dataverse.DataFileTag.TagLabelToTypes;
 
@@ -235,6 +232,29 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         return baseQuery;
     }
 
+    private Predicate createSearchCriteriaAccessStatusPredicate(FileAccessStatus accessStatus, CriteriaBuilder criteriaBuilder, Root<FileMetadata> fileMetadataRoot) {
+        Path<Object> dataFile = fileMetadataRoot.get("dataFile");
+
+        Path<Object> embargo = dataFile.get("embargo");
+        Predicate activelyEmbargoedPredicate = criteriaBuilder.greaterThanOrEqualTo(embargo.<Date>get("dateAvailable"), criteriaBuilder.currentDate());
+        Predicate inactivelyEmbargoedPredicate = criteriaBuilder.isNull(embargo);
+
+        Path<Boolean> isRestricted = dataFile.get("restricted");
+        Predicate isRestrictedPredicate = criteriaBuilder.isTrue(isRestricted);
+        Predicate isUnrestrictedPredicate = criteriaBuilder.isFalse(isRestricted);
+
+        return switch (accessStatus) {
+            case EmbargoedThenRestricted ->
+                    criteriaBuilder.and(activelyEmbargoedPredicate, isRestrictedPredicate);
+            case EmbargoedThenPublic ->
+                    criteriaBuilder.and(activelyEmbargoedPredicate, isUnrestrictedPredicate);
+            case Restricted ->
+                    criteriaBuilder.and(inactivelyEmbargoedPredicate, isRestrictedPredicate);
+            case Public -> criteriaBuilder.and(inactivelyEmbargoedPredicate, isUnrestrictedPredicate);
+        };
+    }
+
+    @Deprecated
     private BooleanExpression createGetFileMetadatasAccessStatusExpression(FileAccessStatus accessStatus) {
         QEmbargo embargo = fileMetadata.dataFile.embargo;
         BooleanExpression activelyEmbargoedExpression = embargo.dateAvailable.goe(DateExpression.currentDate(LocalDate.class));
@@ -267,7 +287,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         }
         FileAccessStatus accessStatus = searchCriteria.getAccessStatus();
         if (accessStatus != null) {
-            // TODO
+            predicates.add(createSearchCriteriaAccessStatusPredicate(accessStatus, criteriaBuilder, fileMetadataRoot));
         }
         String categoryName = searchCriteria.getCategoryName();
         if (categoryName != null) {
