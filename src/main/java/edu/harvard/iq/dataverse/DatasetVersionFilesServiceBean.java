@@ -89,17 +89,17 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * @return Map<String, Long> of file metadata counts per content type
      */
     public Map<String, Long> getFileMetadataCountPerContentType(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        JPAQuery<Tuple> baseQuery = queryFactory
-                .select(fileMetadata.dataFile.contentType, fileMetadata.count())
-                .from(fileMetadata)
-                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
-                .groupBy(fileMetadata.dataFile.contentType);
-        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
-        List<Tuple> contentTypeOccurrences = baseQuery.fetch();
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<jakarta.persistence.Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        Path<String> contentType = fileMetadataRoot.get("dataFile").get("contentType");
+        Predicate basePredicate = criteriaBuilder.equal(fileMetadataRoot.get("datasetVersion").<String>get("id"), datasetVersion.getId());
+        Predicate searchCriteriaPredicate = createSearchCriteriaPredicate(searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot);
+        criteriaQuery.multiselect(contentType, criteriaBuilder.count(contentType)).where(criteriaBuilder.and(basePredicate, searchCriteriaPredicate)).groupBy(contentType);
+        List<jakarta.persistence.Tuple> contentTypeOccurrences = em.createQuery(criteriaQuery).getResultList();
         Map<String, Long> result = new HashMap<>();
-        for (Tuple occurrence : contentTypeOccurrences) {
-            result.put(occurrence.get(fileMetadata.dataFile.contentType), occurrence.get(fileMetadata.count()));
+        for (jakarta.persistence.Tuple occurrence : contentTypeOccurrences) {
+            result.put(occurrence.get(0, String.class), occurrence.get(1, Long.class));
         }
         return result;
     }
@@ -234,22 +234,16 @@ public class DatasetVersionFilesServiceBean implements Serializable {
 
     private Predicate createSearchCriteriaAccessStatusPredicate(FileAccessStatus accessStatus, CriteriaBuilder criteriaBuilder, Root<FileMetadata> fileMetadataRoot) {
         Path<Object> dataFile = fileMetadataRoot.get("dataFile");
-
         Path<Object> embargo = dataFile.get("embargo");
         Predicate activelyEmbargoedPredicate = criteriaBuilder.greaterThanOrEqualTo(embargo.<Date>get("dateAvailable"), criteriaBuilder.currentDate());
         Predicate inactivelyEmbargoedPredicate = criteriaBuilder.isNull(embargo);
-
         Path<Boolean> isRestricted = dataFile.get("restricted");
         Predicate isRestrictedPredicate = criteriaBuilder.isTrue(isRestricted);
         Predicate isUnrestrictedPredicate = criteriaBuilder.isFalse(isRestricted);
-
         return switch (accessStatus) {
-            case EmbargoedThenRestricted ->
-                    criteriaBuilder.and(activelyEmbargoedPredicate, isRestrictedPredicate);
-            case EmbargoedThenPublic ->
-                    criteriaBuilder.and(activelyEmbargoedPredicate, isUnrestrictedPredicate);
-            case Restricted ->
-                    criteriaBuilder.and(inactivelyEmbargoedPredicate, isRestrictedPredicate);
+            case EmbargoedThenRestricted -> criteriaBuilder.and(activelyEmbargoedPredicate, isRestrictedPredicate);
+            case EmbargoedThenPublic -> criteriaBuilder.and(activelyEmbargoedPredicate, isUnrestrictedPredicate);
+            case Restricted -> criteriaBuilder.and(inactivelyEmbargoedPredicate, isRestrictedPredicate);
             case Public -> criteriaBuilder.and(inactivelyEmbargoedPredicate, isUnrestrictedPredicate);
         };
     }
@@ -279,7 +273,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         return accessStatusExpression;
     }
 
-    private Predicate createSearchCriteriaPredicate(FileSearchCriteria searchCriteria, CriteriaBuilder criteriaBuilder, CriteriaQuery<Long> criteriaQuery, Root<FileMetadata> fileMetadataRoot) {
+    private Predicate createSearchCriteriaPredicate(FileSearchCriteria searchCriteria, CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery, Root<FileMetadata> fileMetadataRoot) {
         List<Predicate> predicates = new ArrayList<>();
         String contentType = searchCriteria.getContentType();
         if (contentType != null) {
