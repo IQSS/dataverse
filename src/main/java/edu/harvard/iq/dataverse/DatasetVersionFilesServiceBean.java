@@ -136,18 +136,20 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * @param searchCriteria for counting only files matching this criteria
      * @return Map<DataFileTag.TagType, Long> of file metadata counts per DataFileTag.TagType
      */
+    // TODO: Refactor remove duplication with getFileMetadataCountPerContentType
     public Map<DataFileTag.TagType, Long> getFileMetadataCountPerTabularTagName(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        JPAQuery<Tuple> baseQuery = queryFactory
-                .select(dataFileTag.type, fileMetadata.count())
-                .from(dataFileTag, fileMetadata)
-                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()).and(fileMetadata.dataFile.dataFileTags.contains(dataFileTag)))
-                .groupBy(dataFileTag.type);
-        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
-        List<Tuple> tagNameOccurrences = baseQuery.fetch();
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<jakarta.persistence.Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        Predicate basePredicate = criteriaBuilder.equal(fileMetadataRoot.get("datasetVersion").<String>get("id"), datasetVersion.getId());
+        Predicate searchCriteriaPredicate = createSearchCriteriaPredicate(searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot);
+        Root<DataFileTag> dataFileTagRoot = criteriaQuery.from(DataFileTag.class);
+        Path<DataFileTag.TagType> dataFileTagType = dataFileTagRoot.get("type");
+        criteriaQuery.multiselect(dataFileTagType, criteriaBuilder.count(fileMetadataRoot)).where(criteriaBuilder.and(basePredicate, searchCriteriaPredicate, dataFileTagRoot.in(fileMetadataRoot.get("dataFile").get("dataFileTags")))).groupBy(dataFileTagType);
+        List<jakarta.persistence.Tuple> tagNameOccurrences = em.createQuery(criteriaQuery).getResultList();
         Map<DataFileTag.TagType, Long> result = new HashMap<>();
-        for (Tuple occurrence : tagNameOccurrences) {
-            result.put(occurrence.get(dataFileTag.type), occurrence.get(fileMetadata.count()));
+        for (jakarta.persistence.Tuple occurrence : tagNameOccurrences) {
+            result.put(occurrence.get(0, DataFileTag.TagType.class), occurrence.get(1, Long.class));
         }
         return result;
     }
