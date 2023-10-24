@@ -92,9 +92,9 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<jakarta.persistence.Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
         Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
-        Path<String> contentType = fileMetadataRoot.get("dataFile").get("contentType");
         Predicate basePredicate = criteriaBuilder.equal(fileMetadataRoot.get("datasetVersion").<String>get("id"), datasetVersion.getId());
         Predicate searchCriteriaPredicate = createSearchCriteriaPredicate(searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot);
+        Path<String> contentType = fileMetadataRoot.get("dataFile").get("contentType");
         criteriaQuery.multiselect(contentType, criteriaBuilder.count(contentType)).where(criteriaBuilder.and(basePredicate, searchCriteriaPredicate)).groupBy(contentType);
         List<jakarta.persistence.Tuple> contentTypeOccurrences = em.createQuery(criteriaQuery).getResultList();
         Map<String, Long> result = new HashMap<>();
@@ -111,18 +111,20 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * @param searchCriteria for counting only files matching this criteria
      * @return Map<String, Long> of file metadata counts per category name
      */
+    // TODO: Refactor remove duplication with getFileMetadataCountPerContentType
     public Map<String, Long> getFileMetadataCountPerCategoryName(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        JPAQuery<Tuple> baseQuery = queryFactory
-                .select(dataFileCategory.name, fileMetadata.count())
-                .from(dataFileCategory, fileMetadata)
-                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()).and(fileMetadata.fileCategories.contains(dataFileCategory)))
-                .groupBy(dataFileCategory.name);
-        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
-        List<Tuple> categoryNameOccurrences = baseQuery.fetch();
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<jakarta.persistence.Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        Predicate basePredicate = criteriaBuilder.equal(fileMetadataRoot.get("datasetVersion").<String>get("id"), datasetVersion.getId());
+        Predicate searchCriteriaPredicate = createSearchCriteriaPredicate(searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot);
+        Root<DataFileCategory> dataFileCategoryRoot = criteriaQuery.from(DataFileCategory.class);
+        Path<String> categoryName = dataFileCategoryRoot.get("name");
+        criteriaQuery.multiselect(categoryName, criteriaBuilder.count(fileMetadataRoot)).where(criteriaBuilder.and(basePredicate, searchCriteriaPredicate, dataFileCategoryRoot.in(fileMetadataRoot.get("fileCategories")))).groupBy(categoryName);
+        List<jakarta.persistence.Tuple> categoryNameOccurrences = em.createQuery(criteriaQuery).getResultList();
         Map<String, Long> result = new HashMap<>();
-        for (Tuple occurrence : categoryNameOccurrences) {
-            result.put(occurrence.get(dataFileCategory.name), occurrence.get(fileMetadata.count()));
+        for (jakarta.persistence.Tuple occurrence : categoryNameOccurrences) {
+            result.put(occurrence.get(0, String.class), occurrence.get(1, Long.class));
         }
         return result;
     }
