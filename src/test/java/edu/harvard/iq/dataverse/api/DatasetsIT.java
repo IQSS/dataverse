@@ -549,6 +549,18 @@ public class DatasetsIT {
         }
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
+        // Test includeDeaccessioned option
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // includeDeaccessioned false
+        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST_PUBLISHED, apiToken, false, false);
+        getDatasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // includeDeaccessioned true
+        getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, DS_VERSION_LATEST_PUBLISHED, apiToken, false, true);
+        getDatasetVersion.then().assertThat().statusCode(OK.getStatusCode());
+
         Response deleteDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
@@ -603,7 +615,7 @@ public class DatasetsIT {
         // Now check that the file is NOT shown, when we ask the versions api to 
         // skip files: 
         boolean skipFiles = true; 
-        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken, skipFiles);
+        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, skipFiles, false);
         unpublishedDraft.prettyPrint();
         unpublishedDraft.then().assertThat()
                 .body("data.files", equalTo(null))
@@ -4056,5 +4068,38 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // By specific version 1.0
         getVersionFileCountsGuestUserResponse = UtilIT.getDownloadSize(datasetId, "1.0", null, null, null, null, null, DatasetVersionFilesServiceBean.FileDownloadSizeMode.All.toString(), true, null);
         getVersionFileCountsGuestUserResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    public void testGetUserPermissionsOnDataset() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Call with valid dataset id
+        Response getUserPermissionsOnDatasetResponse = UtilIT.getUserPermissionsOnDataset(Integer.toString(datasetId), apiToken);
+        getUserPermissionsOnDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        boolean canViewUnpublishedDataset = JsonPath.from(getUserPermissionsOnDatasetResponse.body().asString()).getBoolean("data.canViewUnpublishedDataset");
+        assertTrue(canViewUnpublishedDataset);
+        boolean canEditDataset = JsonPath.from(getUserPermissionsOnDatasetResponse.body().asString()).getBoolean("data.canEditDataset");
+        assertTrue(canEditDataset);
+        boolean canPublishDataset = JsonPath.from(getUserPermissionsOnDatasetResponse.body().asString()).getBoolean("data.canPublishDataset");
+        assertTrue(canPublishDataset);
+        boolean canManageDatasetPermissions = JsonPath.from(getUserPermissionsOnDatasetResponse.body().asString()).getBoolean("data.canManageDatasetPermissions");
+        assertTrue(canManageDatasetPermissions);
+        boolean canDeleteDatasetDraft = JsonPath.from(getUserPermissionsOnDatasetResponse.body().asString()).getBoolean("data.canDeleteDatasetDraft");
+        assertTrue(canDeleteDatasetDraft);
+
+        // Call with invalid dataset id
+        Response getUserPermissionsOnDatasetInvalidIdResponse = UtilIT.getUserPermissionsOnDataset("testInvalidId", apiToken);
+        getUserPermissionsOnDatasetInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 }

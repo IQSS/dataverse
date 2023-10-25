@@ -117,14 +117,14 @@ public class UtilIT {
 
         return createRandomUser("user");
     }
-    
+
     /**
-     * A convenience method for creating a random test user, when all you need 
-     * is the api token. 
+     * A convenience method for creating a random test user, when all you need
+     * is the api token.
      * @return apiToken
      */
     public static String createRandomUserGetToken(){
-        Response createUser = createRandomUser();        
+        Response createUser = createRandomUser();
         return getApiTokenFromResponse(createUser);
     }
 
@@ -377,15 +377,15 @@ public class UtilIT {
         String category = null;
         return createDataverse(alias, category, apiToken);
     }
-    
+
     /**
-     * A convenience method for creating a random collection and getting its 
-     * alias in one step. 
+     * A convenience method for creating a random collection and getting its
+     * alias in one step.
      * @param apiToken
      * @return alias
      */
     static String createRandomCollectionGetAlias(String apiToken){
-        
+
         Response createCollectionResponse = createRandomDataverse(apiToken);
         //createDataverseResponse.prettyPrint();
         createCollectionResponse.then().assertThat().statusCode(CREATED.getStatusCode());
@@ -1434,15 +1434,16 @@ public class UtilIT {
     }
 
     static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken) {
-        return getDatasetVersion(persistentId, versionNumber, apiToken, false);
+        return getDatasetVersion(persistentId, versionNumber, apiToken, false, false);
     }
-    
-    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean skipFiles) {
+
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean skipFiles, boolean includeDeaccessioned) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/:persistentId/versions/" 
-                        + versionNumber 
-                        + "?persistentId=" 
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
+                .get("/api/datasets/:persistentId/versions/"
+                        + versionNumber
+                        + "?persistentId="
                         + persistentId
                         + (skipFiles ? "&includeFiles=false" : ""));
     }
@@ -1808,15 +1809,15 @@ public class UtilIT {
     static Response getDatasetVersions(String idOrPersistentId, String apiToken) {
         return getDatasetVersions(idOrPersistentId, apiToken, false);
     }
-    
+
     static Response getDatasetVersions(String idOrPersistentId, String apiToken, boolean skipFiles) {
         return getDatasetVersions(idOrPersistentId, apiToken, null, null, skipFiles);
     }
-    
+
     static Response getDatasetVersions(String idOrPersistentId, String apiToken, Integer offset, Integer limit) {
         return getDatasetVersions(idOrPersistentId, apiToken, offset, limit, false);
     }
-    
+
     static Response getDatasetVersions(String idOrPersistentId, String apiToken, Integer offset, Integer limit, boolean skipFiles) {
         logger.info("Getting Dataset Versions");
         String idInPath = idOrPersistentId; // Assume it's a number.
@@ -3432,6 +3433,12 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + dataFileId + "/userPermissions");
+    }
+
+    static Response getUserPermissionsOnDataset(String datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/userPermissions");
     }
 
     static Response createFileEmbargo(Integer datasetId, Integer fileId, String dateAvailable, String apiToken) {
