@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.QDataFileCategory;
 import edu.harvard.iq.dataverse.QDataFileTag;
-import edu.harvard.iq.dataverse.QDataTable;
 import edu.harvard.iq.dataverse.QDvObject;
 import edu.harvard.iq.dataverse.QEmbargo;
 import edu.harvard.iq.dataverse.QFileMetadata;
@@ -42,7 +41,6 @@ public class DatasetVersionFilesServiceBean implements Serializable {
     private final QDvObject dvObject = QDvObject.dvObject;
     private final QDataFileCategory dataFileCategory = QDataFileCategory.dataFileCategory;
     private final QDataFileTag dataFileTag = QDataFileTag.dataFileTag;
-    private final QDataTable dataTable = QDataTable.dataTable;
 
     /**
      * Different criteria to sort the results of FileMetadata queries used in {@link DatasetVersionFilesServiceBean#getFileMetadatas}
@@ -361,29 +359,34 @@ public class DatasetVersionFilesServiceBean implements Serializable {
     }
 
     private long getOriginalTabularFilesSize(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        JPAQuery<?> baseQuery = queryFactory
-                .from(fileMetadata)
-                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()))
-                .from(dataTable)
-                .where(dataTable.dataFile.eq(fileMetadata.dataFile));
-        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
-        Long result = baseQuery.select(dataTable.originalFileSize.sum()).fetchFirst();
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        Root<DataTable> dataTableRoot = criteriaQuery.from(DataTable.class);
+        criteriaQuery
+                .select(criteriaBuilder.sum(dataTableRoot.get("originalFileSize")))
+                .where(criteriaBuilder.and(
+                        criteriaBuilder.equal(dataTableRoot.get("dataFile"), fileMetadataRoot.get("dataFile")),
+                        createSearchCriteriaPredicate(datasetVersion, searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot)));
+        Long result = em.createQuery(criteriaQuery).getSingleResult();
         return (result == null) ? 0 : result;
     }
 
     private long getArchivalFilesSize(DatasetVersion datasetVersion, boolean ignoreTabular, FileSearchCriteria searchCriteria) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        JPAQuery<?> baseQuery = queryFactory
-                .from(fileMetadata)
-                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()));
-        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
-        Long result;
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        Predicate searchCriteriaPredicate = createSearchCriteriaPredicate(datasetVersion, searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot);
+        Predicate wherePredicate;
         if (ignoreTabular) {
-            result = baseQuery.where(fileMetadata.dataFile.dataTables.isEmpty()).select(fileMetadata.dataFile.filesize.sum()).fetchFirst();
+            wherePredicate = criteriaBuilder.and(searchCriteriaPredicate, criteriaBuilder.isEmpty(fileMetadataRoot.get("dataFile").get("dataTables")));
         } else {
-            result = baseQuery.select(fileMetadata.dataFile.filesize.sum()).fetchFirst();
+            wherePredicate = searchCriteriaPredicate;
         }
+        criteriaQuery
+                .select(criteriaBuilder.sum(fileMetadataRoot.get("dataFile").get("filesize")))
+                .where(wherePredicate);
+        Long result = em.createQuery(criteriaQuery).getSingleResult();
         return (result == null) ? 0 : result;
     }
 
