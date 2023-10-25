@@ -1,34 +1,19 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.QDataFileCategory;
-import edu.harvard.iq.dataverse.QDataFileTag;
-import edu.harvard.iq.dataverse.QDvObject;
-import edu.harvard.iq.dataverse.QEmbargo;
-import edu.harvard.iq.dataverse.QFileMetadata;
-
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.DateExpression;
-import com.querydsl.core.types.dsl.DateTimeExpression;
-
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-
+import edu.harvard.iq.dataverse.FileSearchCriteria.FileAccessStatus;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.*;
 
 import static edu.harvard.iq.dataverse.DataFileTag.TagLabelToTypes;
-
-import edu.harvard.iq.dataverse.FileSearchCriteria.FileAccessStatus;
-import jakarta.persistence.Tuple;
-import jakarta.persistence.criteria.*;
 
 @Stateless
 @Named
@@ -36,11 +21,6 @@ public class DatasetVersionFilesServiceBean implements Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-
-    private final QFileMetadata fileMetadata = QFileMetadata.fileMetadata;
-    private final QDvObject dvObject = QDvObject.dvObject;
-    private final QDataFileCategory dataFileCategory = QDataFileCategory.dataFileCategory;
-    private final QDataFileTag dataFileTag = QDataFileTag.dataFileTag;
 
     /**
      * Different criteria to sort the results of FileMetadata queries used in {@link DatasetVersionFilesServiceBean#getFileMetadatas}
@@ -174,16 +154,21 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * @return a FileMetadata list from the specified DatasetVersion
      */
     public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, FileSearchCriteria searchCriteria, FileOrderCriteria orderCriteria) {
-        JPAQuery<FileMetadata> baseQuery = createGetFileMetadatasBaseQuery(datasetVersion, orderCriteria);
-        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
-        applyOrderCriteriaToGetFileMetadatasQuery(baseQuery, orderCriteria);
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<FileMetadata> criteriaQuery = criteriaBuilder.createQuery(FileMetadata.class);
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        criteriaQuery
+                .select(fileMetadataRoot)
+                .where(createSearchCriteriaPredicate(datasetVersion, searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot))
+                .orderBy(createGetFileMetadatasOrder(criteriaBuilder, orderCriteria, fileMetadataRoot));
+        TypedQuery<FileMetadata> typedQuery = em.createQuery(criteriaQuery);
         if (limit != null) {
-            baseQuery.limit(limit);
+            typedQuery.setMaxResults(limit);
         }
         if (offset != null) {
-            baseQuery.offset(offset);
+            typedQuery.setFirstResult(offset);
         }
-        return baseQuery.fetch();
+        return typedQuery.getResultList();
     }
 
     /**
@@ -223,15 +208,6 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         return em.createQuery(criteriaQuery).getSingleResult();
     }
 
-    private JPAQuery<FileMetadata> createGetFileMetadatasBaseQuery(DatasetVersion datasetVersion, FileOrderCriteria orderCriteria) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        JPAQuery<FileMetadata> baseQuery = queryFactory.selectFrom(fileMetadata).where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()));
-        if (orderCriteria == FileOrderCriteria.Newest || orderCriteria == FileOrderCriteria.Oldest) {
-            baseQuery.from(dvObject).where(dvObject.id.eq(fileMetadata.dataFile.id));
-        }
-        return baseQuery;
-    }
-
     private Predicate createSearchCriteriaAccessStatusPredicate(FileAccessStatus accessStatus, CriteriaBuilder criteriaBuilder, Root<FileMetadata> fileMetadataRoot) {
         Path<Object> dataFile = fileMetadataRoot.get("dataFile");
         Path<Object> embargo = dataFile.get("embargo");
@@ -246,31 +222,6 @@ public class DatasetVersionFilesServiceBean implements Serializable {
             case Restricted -> criteriaBuilder.and(inactivelyEmbargoedPredicate, isRestrictedPredicate);
             case Public -> criteriaBuilder.and(inactivelyEmbargoedPredicate, isUnrestrictedPredicate);
         };
-    }
-
-    @Deprecated
-    private BooleanExpression createGetFileMetadatasAccessStatusExpression(FileAccessStatus accessStatus) {
-        QEmbargo embargo = fileMetadata.dataFile.embargo;
-        BooleanExpression activelyEmbargoedExpression = embargo.dateAvailable.goe(DateExpression.currentDate(LocalDate.class));
-        BooleanExpression inactivelyEmbargoedExpression = embargo.isNull();
-        BooleanExpression accessStatusExpression;
-        switch (accessStatus) {
-            case EmbargoedThenRestricted:
-                accessStatusExpression = activelyEmbargoedExpression.and(fileMetadata.dataFile.restricted.isTrue());
-                break;
-            case EmbargoedThenPublic:
-                accessStatusExpression = activelyEmbargoedExpression.and(fileMetadata.dataFile.restricted.isFalse());
-                break;
-            case Restricted:
-                accessStatusExpression = inactivelyEmbargoedExpression.and(fileMetadata.dataFile.restricted.isTrue());
-                break;
-            case Public:
-                accessStatusExpression = inactivelyEmbargoedExpression.and(fileMetadata.dataFile.restricted.isFalse());
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + accessStatus);
-        }
-        return accessStatusExpression;
     }
 
     private Predicate createSearchCriteriaPredicate(DatasetVersion datasetVersion,
@@ -309,53 +260,22 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         return criteriaBuilder.and(predicates.toArray(new Predicate[]{}));
     }
 
-    @Deprecated
-    private void applyFileSearchCriteriaToQuery(JPAQuery<?> baseQuery, FileSearchCriteria searchCriteria) {
-        String contentType = searchCriteria.getContentType();
-        if (contentType != null) {
-            baseQuery.where(fileMetadata.dataFile.contentType.eq(contentType));
-        }
-        FileAccessStatus accessStatus = searchCriteria.getAccessStatus();
-        if (accessStatus != null) {
-            baseQuery.where(createGetFileMetadatasAccessStatusExpression(accessStatus));
-        }
-        String categoryName = searchCriteria.getCategoryName();
-        if (categoryName != null) {
-            baseQuery.from(dataFileCategory).where(dataFileCategory.name.eq(categoryName).and(fileMetadata.fileCategories.contains(dataFileCategory)));
-        }
-        String tabularTagName = searchCriteria.getTabularTagName();
-        if (tabularTagName != null) {
-            baseQuery.from(dataFileTag).where(dataFileTag.type.eq(TagLabelToTypes.get(tabularTagName)).and(fileMetadata.dataFile.dataFileTags.contains(dataFileTag)));
-        }
-        String searchText = searchCriteria.getSearchText();
-        if (searchText != null && !searchText.isEmpty()) {
-            searchText = searchText.trim().toLowerCase();
-            baseQuery.where(fileMetadata.label.lower().contains(searchText).or(fileMetadata.description.lower().contains(searchText)));
-        }
-    }
-
-    private void applyOrderCriteriaToGetFileMetadatasQuery(JPAQuery<FileMetadata> query, FileOrderCriteria orderCriteria) {
-        DateTimeExpression<Timestamp> orderByLifetimeExpression = new CaseBuilder().when(dvObject.publicationDate.isNotNull()).then(dvObject.publicationDate).otherwise(dvObject.createDate);
-        switch (orderCriteria) {
-            case NameZA:
-                query.orderBy(fileMetadata.label.desc());
-                break;
-            case Newest:
-                query.orderBy(orderByLifetimeExpression.desc());
-                break;
-            case Oldest:
-                query.orderBy(orderByLifetimeExpression.asc());
-                break;
-            case Size:
-                query.orderBy(fileMetadata.dataFile.filesize.asc());
-                break;
-            case Type:
-                query.orderBy(fileMetadata.dataFile.contentType.asc(), fileMetadata.label.asc());
-                break;
-            default:
-                query.orderBy(fileMetadata.label.asc());
-                break;
-        }
+    private Order createGetFileMetadatasOrder(CriteriaBuilder criteriaBuilder,
+                                              FileOrderCriteria orderCriteria,
+                                              Root<FileMetadata> fileMetadataRoot) {
+        Path<Object> label = fileMetadataRoot.get("label");
+        Path<Object> dataFile = fileMetadataRoot.get("dataFile");
+        Path<Timestamp> publicationDate = dataFile.get("publicationDate");
+        Path<Timestamp> createDate = dataFile.get("createDate");
+        Expression<Object> orderByLifetimeExpression = criteriaBuilder.selectCase().when(publicationDate.isNotNull(), publicationDate).otherwise(createDate);
+        return switch (orderCriteria) {
+            case NameZA -> criteriaBuilder.desc(label);
+            case Newest -> criteriaBuilder.desc(orderByLifetimeExpression);
+            case Oldest -> criteriaBuilder.asc(orderByLifetimeExpression);
+            case Size -> criteriaBuilder.asc(dataFile.get("filesize"));
+            case Type -> criteriaBuilder.asc(dataFile.get("contentType"));
+            default -> criteriaBuilder.asc(label);
+        };
     }
 
     private long getOriginalTabularFilesSize(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {
