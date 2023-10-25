@@ -94,10 +94,9 @@
     <div class="row" jsf:rendered="#{SearchIncludeFragment.solrTemporarilyUnavailable}">
         <div class="col-sm-12">
             <div class="bg-danger padding-12 margin-bottom">
-                <!-- @todo: move this text into the bundle -->
-                <h:outputText value="Search Engine service (Solr) is temporarily unavailable because of load issues. Please try again later. " styleClass="highlightBold"/>
+                <h:outputText value="#{bundle['dataverse.results.solrIsTemporarilyUnavailable']}" styleClass="highlightBold"/>
             </div>
-            <pre><h:outputText value="Note that all the datasets that are part of this collection are accessible via direct links and registered DOIs"/></pre>
+            <pre><h:outputText value="#{bundle['dataverse.results.solrIsTemporarilyUnavailable.extraText']}"/></pre>
         </div>
     </div>
 
@@ -263,10 +262,10 @@
                     </ui:fragment>
                 </p:dataList>
             </h:form>
-            <!-- "facets unavailable" message: -->
+            <!-- "facets temporarily unavailable" message: -->
             <h:form id="facetsUnavailable" rendered="#{SearchIncludeFragment.facetsDisabled}">
                 <div class="clearfix">
-                    <h:outputText value="Facets temporarily unavailable" styleClass="facetTypeLink"/>
+                    <h:outputText value="#{bundle['dataverse.results.solrFacetsDisabled']}" styleClass="facetTypeLink"/>
                 </div>
             </h:form>
         </div>

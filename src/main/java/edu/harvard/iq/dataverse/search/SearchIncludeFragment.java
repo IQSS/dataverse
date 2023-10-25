@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -132,7 +133,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
     Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
     private boolean solrIsDown = false;
     private boolean solrIsTemporarilyUnavailable = false; 
-    private boolean solrFacetsDisabled = false;
     private Map<String, Integer> numberOfFacets = new HashMap<>();
 //    private boolean showUnpublished;
     List<String> filterQueriesDebug = new ArrayList<>();
@@ -358,7 +358,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), httpServletRequest);
             List<Dataverse> dataverses = new ArrayList<>();
             dataverses.add(dataverse);
-            solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null);
+            solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null, !isFacetsDisabled(), true);
             if (solrQueryResponse.hasError()){
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
@@ -395,7 +395,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
             }
             
-            if (selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable()) {
+            if (selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable() && !isFacetsDisabled()) {
                 // If some types are NOT currently selected, we will need to 
                 // run another query to obtain the numbers of the unselected types:
                 
@@ -1096,14 +1096,19 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.solrIsTemporarilyUnavailable = solrIsTemporarilyUnavailable; 
     }
 
+    /**
+     * Indicates that the fragment should not be requesting facets in Solr 
+     * searches and rendering them on the page.
+     * @return true if disabled; false by default 
+     */
     public boolean isFacetsDisabled() {
-        return solrFacetsDisabled;
+        // The method is used in rendered="..." logic. So we are using 
+        // SettingsWrapper to make sure we are not looking it up repeatedly 
+        // (settings are not expensive to look up, but 
+        // still).
+        
+        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false);
     }
-    
-    public void setFacetsDisabled(boolean solrFacetsDisabled) {
-        this.solrFacetsDisabled = solrFacetsDisabled; 
-    }
-    
     
     public boolean isRootDv() {
         return rootDv;
