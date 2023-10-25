@@ -77,9 +77,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
         criteriaQuery
                 .select(criteriaBuilder.count(fileMetadataRoot))
-                .where(criteriaBuilder.and(
-                        createFileMetadataFromDatasetVersionPredicate(datasetVersion, criteriaBuilder, fileMetadataRoot),
-                        createSearchCriteriaPredicate(searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot)));
+                .where(createSearchCriteriaPredicate(datasetVersion, searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot));
         return em.createQuery(criteriaQuery).getSingleResult();
     }
 
@@ -97,9 +95,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         Path<String> contentType = fileMetadataRoot.get("dataFile").get("contentType");
         criteriaQuery
                 .multiselect(contentType, criteriaBuilder.count(contentType))
-                .where(criteriaBuilder.and(
-                        createFileMetadataFromDatasetVersionPredicate(datasetVersion, criteriaBuilder, fileMetadataRoot),
-                        createSearchCriteriaPredicate(searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot)))
+                .where(createSearchCriteriaPredicate(datasetVersion, searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot))
                 .groupBy(contentType);
         return getStringLongMapResultFromQuery(criteriaQuery);
     }
@@ -120,9 +116,8 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         criteriaQuery
                 .multiselect(categoryName, criteriaBuilder.count(fileMetadataRoot))
                 .where(criteriaBuilder.and(
-                                createFileMetadataFromDatasetVersionPredicate(datasetVersion, criteriaBuilder, fileMetadataRoot),
-                                createSearchCriteriaPredicate(searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot)),
-                        dataFileCategoryRoot.in(fileMetadataRoot.get("fileCategories")))
+                        createSearchCriteriaPredicate(datasetVersion, searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot),
+                        dataFileCategoryRoot.in(fileMetadataRoot.get("fileCategories"))))
                 .groupBy(categoryName);
         return getStringLongMapResultFromQuery(criteriaQuery);
     }
@@ -143,8 +138,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         criteriaQuery
                 .multiselect(dataFileTagType, criteriaBuilder.count(fileMetadataRoot))
                 .where(criteriaBuilder.and(
-                        createFileMetadataFromDatasetVersionPredicate(datasetVersion, criteriaBuilder, fileMetadataRoot),
-                        createSearchCriteriaPredicate(searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot),
+                        createSearchCriteriaPredicate(datasetVersion, searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot),
                         dataFileTagRoot.in(fileMetadataRoot.get("dataFile").get("dataFileTags"))))
                 .groupBy(dataFileTagType);
         List<Tuple> tagNameOccurrences = em.createQuery(criteriaQuery).getResultList();
@@ -220,12 +214,15 @@ public class DatasetVersionFilesServiceBean implements Serializable {
     }
 
     private long getFileMetadataCountByAccessStatus(DatasetVersion datasetVersion, FileAccessStatus accessStatus, FileSearchCriteria searchCriteria) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        JPAQuery<FileMetadata> baseQuery = queryFactory
-                .selectFrom(fileMetadata)
-                .where(fileMetadata.datasetVersion.id.eq(datasetVersion.getId()).and(createGetFileMetadatasAccessStatusExpression(accessStatus)));
-        applyFileSearchCriteriaToQuery(baseQuery, searchCriteria);
-        return baseQuery.stream().count();
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        criteriaQuery
+                .select(criteriaBuilder.count(fileMetadataRoot))
+                .where(criteriaBuilder.and(
+                        createSearchCriteriaAccessStatusPredicate(accessStatus, criteriaBuilder, fileMetadataRoot),
+                        createSearchCriteriaPredicate(datasetVersion, searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot)));
+        return em.createQuery(criteriaQuery).getSingleResult();
     }
 
     private JPAQuery<FileMetadata> createGetFileMetadatasBaseQuery(DatasetVersion datasetVersion, FileOrderCriteria orderCriteria) {
@@ -278,8 +275,14 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         return accessStatusExpression;
     }
 
-    private Predicate createSearchCriteriaPredicate(FileSearchCriteria searchCriteria, CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery, Root<FileMetadata> fileMetadataRoot) {
+    private Predicate createSearchCriteriaPredicate(DatasetVersion datasetVersion,
+                                                    FileSearchCriteria searchCriteria,
+                                                    CriteriaBuilder criteriaBuilder,
+                                                    CriteriaQuery<?> criteriaQuery,
+                                                    Root<FileMetadata> fileMetadataRoot) {
         List<Predicate> predicates = new ArrayList<>();
+        Predicate basePredicate = criteriaBuilder.equal(fileMetadataRoot.get("datasetVersion").<String>get("id"), datasetVersion.getId());
+        predicates.add(basePredicate);
         String contentType = searchCriteria.getContentType();
         if (contentType != null) {
             predicates.add(criteriaBuilder.equal(fileMetadataRoot.get("dataFile").<String>get("contentType"), contentType));
@@ -382,10 +385,6 @@ public class DatasetVersionFilesServiceBean implements Serializable {
             result = baseQuery.select(fileMetadata.dataFile.filesize.sum()).fetchFirst();
         }
         return (result == null) ? 0 : result;
-    }
-
-    private Predicate createFileMetadataFromDatasetVersionPredicate(DatasetVersion datasetVersion, CriteriaBuilder criteriaBuilder, Root<FileMetadata> fileMetadataRoot) {
-        return criteriaBuilder.equal(fileMetadataRoot.get("datasetVersion").<String>get("id"), datasetVersion.getId());
     }
 
     private Map<String, Long> getStringLongMapResultFromQuery(CriteriaQuery<Tuple> criteriaQuery) {
