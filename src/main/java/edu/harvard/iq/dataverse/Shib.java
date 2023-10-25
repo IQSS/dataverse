@@ -257,6 +257,7 @@ public class Shib implements java.io.Serializable {
                 return;
             }
             state = State.REGULAR_LOGIN_INTO_EXISTING_SHIB_ACCOUNT;
+            au = authSvc.updateLastLogin(au);
             logger.fine("Found user based on " + userPersistentId + ". Logging in.");
             logger.fine("Updating display info for " + au.getName());
             authSvc.updateAuthenticatedUser(au, displayInfo);

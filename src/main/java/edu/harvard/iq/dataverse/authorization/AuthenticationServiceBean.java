@@ -298,7 +298,7 @@ public class AuthenticationServiceBean {
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
 
             if (user != null && !user.isDeactivated()) {
-                user = userService.updateLastLogin(user);
+                user = updateLastLogin(user);
             }
             
             if ( user == null ) {
@@ -653,6 +653,15 @@ public class AuthenticationServiceBean {
         return em.createNamedQuery("AuthenticatedUser.countOfIdentifier", Number.class)
                 .setParameter("identifier", idtf)
                 .getSingleResult().intValue() > 0;
+    }
+    
+    /**
+     * Updating user's last login date
+     * @param {@link AuthenticatedUser}
+     * @return {@link AuthenticatedUser} with last login date updated
+     */
+    public AuthenticatedUser updateLastLogin(AuthenticatedUser user) {
+        return userService.updateLastLogin(user);
     }
     
     public AuthenticatedUser updateAuthenticatedUser(AuthenticatedUser user, AuthenticatedUserDisplayInfo userDisplayInfo) {
