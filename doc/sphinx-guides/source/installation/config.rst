@@ -3065,11 +3065,17 @@ You can override this global setting on a per-format basis for the following for
 - SAV
 - Rdata
 - CSV
-- XLSX
+- XLSX (in lower-case)
 
-For example, if you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB, use this setting:
+For example :
+
+* if you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB, use this setting:
 
 ``curl -X PUT -d 1000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:Rdata``
+
+* if you want your Dataverse installation to not attempt to ingest XLSX files at all, use this setting:
+
+``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:xlsx``
 
 :ZipUploadFilesLimit
 ++++++++++++++++++++
