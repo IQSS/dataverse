@@ -376,7 +376,7 @@ public class SearchServiceBean {
 //        solrQuery.addNumericRangeFacet(SearchFields.PRODUCTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
 //        solrQuery.addNumericRangeFacet(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
         solrQuery.setRows(numResultsPerPage);
-        logger.info("Solr query:" + solrQuery);
+        logger.fine("Solr query:" + solrQuery);
 
         // -----------------------------------
         // Make the solr query
@@ -389,12 +389,7 @@ public class SearchServiceBean {
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
             
-            logger.info("message from tye solr exception: "+messageFromSolr);
-            logger.info("code from the solr exception: "+ex.code());
-            
-            if (queryResponse != null) {
-                logger.info("return code: "+queryResponse.getStatus());
-            }
+            logger.fine("message from the solr exception: "+messageFromSolr+"; code: "+ex.code());
             
             SolrQueryResponse exceptionSolrQueryResponse = new SolrQueryResponse(solrQuery);
 
@@ -444,9 +439,9 @@ public class SearchServiceBean {
         
         int statusCode = queryResponse.getStatus();
         
-        logger.info("status code of the query response: "+statusCode);
-        logger.info("_size from query response: "+queryResponse._size());
-        logger.info("qtime: "+queryResponse.getQTime());
+        logger.fine("status code of the query response: "+statusCode);
+        logger.fine("_size from query response: "+queryResponse._size());
+        logger.fine("qtime: "+queryResponse.getQTime());
 
         SolrDocumentList docs = queryResponse.getResults();
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();

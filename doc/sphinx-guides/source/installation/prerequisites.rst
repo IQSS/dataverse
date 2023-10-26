@@ -211,6 +211,25 @@ Finally, you need to tell Solr to create the core "collection1" on startup::
 
         echo "name=collection1" > /usr/local/solr/solr-9.3.0/server/solr/collection1/core.properties
 
+Dataverse collection ("dataverse") page uses Solr very heavily. On a busy instance this may cause the search engine to become the performance bottleneck, making these pages take increasingly longer to load, potentially affecting the overall performance of the application and/or causing Solr itself to crash. If this is observed on your instance, we recommend uncommenting the following lines in the ``<circuitBreaker ...>`` section of the ``solrconfig.xml`` file::
+
+  <str name="memEnabled">true</str>
+  <str name="memThreshold">75</str>
+
+and::
+
+  <str name="cpuEnabled">true</str>
+  <str name="cpuThreshold">75</str>
+
+This will activate Solr "circuit breaker" mechanisms that make it start dropping incoming requests with the HTTP code 503 when it starts experiencing load issues. As of Dataverse 6.1, the collection page will recognize this condition and display a customizeable message to the users informing them that the search engine is unavailable because of heavy load, with the assumption that the condition is transitive and suggesting that they try again later. This is still an inconvenience to the users, but still a more graceful handling of the problem, rather than letting the pages time out or causing crashes. You may need to experiment and adjust the threshold values defined in the lines above. 
+
+If this becomes a common issue, another temporary workaround an admin may choose to use is to enable the following setting::
+
+  curl -X PUT -d true "http://localhost:8080/api/admin/settings/:DisableSolrFacets"
+
+This will make the collection show the search results without the usual search facets on the left side of the page. Another customizeable message will be shown in that column informing the users that facets are temporarily unavailable. Generating these facets is more resource-intensive for Solr than the main search results themselves, so applying this measure will significantly reduce the load on the search engine. 
+
+
 Solr Init Script
 ================
 

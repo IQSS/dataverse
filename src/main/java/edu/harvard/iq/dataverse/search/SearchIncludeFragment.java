@@ -318,9 +318,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         selectedTypesList = new ArrayList<>();
         String[] parts = selectedTypesString.split(":");
         selectedTypesList.addAll(Arrays.asList(parts));
-        
-        logger.info("selected types list size: "+selectedTypesList.size());
-        
+                
         String[] arr = selectedTypesList.toArray(new String[selectedTypesList.size()]);
         selectedTypesHumanReadable = combine(arr, " OR ");
         if (!selectedTypesHumanReadable.isEmpty()) {
@@ -382,9 +380,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
             // extra numbers. -- L.A. 10/16/2023
             
             // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
-            previewCountbyType.put(BundleUtil.getStringFromBundle("dataverses"), -1L);
-            previewCountbyType.put(BundleUtil.getStringFromBundle("datasets"), -1L);
-            previewCountbyType.put(BundleUtil.getStringFromBundle("files"), -1L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("dataverses"), 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("datasets"), 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("files"), 0L);
             
             
             // This will populate the type facet counts for the types that are 
@@ -397,34 +395,18 @@ public class SearchIncludeFragment implements java.io.Serializable {
             
             if (selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable() && !isFacetsDisabled()) {
                 // If some types are NOT currently selected, we will need to 
-                // run another query to obtain the numbers of the unselected types:
+                // run a second search to obtain the numbers of the unselected types:
                 
                 List<String> filterQueriesFinalSecondPass = new ArrayList<>();
                 filterQueriesFinalSecondPass.addAll(filterQueries);
-                
-                List<String> selectedTypesListSecondPass = new ArrayList<>();
-                
-                // @todo: simplify this!
-                for (String dvObjectTypeLabel : previewCountbyType.keySet()) {
-                    if (previewCountbyType.get(dvObjectTypeLabel) == -1) {
-                        String dvObjectType = null;
-                        
-                        if (dvObjectTypeLabel.equals(BundleUtil.getStringFromBundle("dataverses"))) {
-                            dvObjectType = "dataverses";
-                        } else if (dvObjectTypeLabel.equals(BundleUtil.getStringFromBundle("datasets"))) {
-                            dvObjectType = "datasets";
-                        } else if (dvObjectTypeLabel.equals(BundleUtil.getStringFromBundle("files"))) {
-                            dvObjectType = "files";
-                        }
-                    
-                        if (dvObjectType != null) {
-                            logger.info("adding object type to the second pass query: "+dvObjectType);
-                            selectedTypesListSecondPass.add(dvObjectType);
-                        }
+                   
+                arr = new String[3 - selectedTypesList.size()];
+                int c = 0; 
+                for (String dvObjectType : Arrays.asList("dataverses", "datasets", "files")) {
+                    if (!selectedTypesList.contains(dvObjectType)) {
+                        arr[c++] = dvObjectType;
                     }
                 }
-                
-                arr = selectedTypesListSecondPass.toArray(new String[selectedTypesListSecondPass.size()]);
                 filterQueriesFinalSecondPass.add(SearchFields.TYPE + ":(" + combine(arr, " OR ") + ")");
 
                 solrQueryResponseSecondPass = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalSecondPass, null, sortOrder.toString(), 0, onlyDataRelatedToMe, 1, false, null, null, false, false);
@@ -432,7 +414,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (solrQueryResponseSecondPass != null) {
 
                     if (solrQueryResponseSecondPass.hasError()) {
-                        logger.info(solrQueryResponseSecondPass.getError());
+                        logger.fine(solrQueryResponseSecondPass.getError());
                         setSolrErrorEncountered(true);
                     }
 
