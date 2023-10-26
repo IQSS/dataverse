@@ -94,8 +94,8 @@ import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
@@ -111,7 +111,6 @@ import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.net.URI;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
@@ -761,10 +760,10 @@ public class Datasets extends AbstractApiBean {
             return error( Response.Status.BAD_REQUEST, "Only the " + DS_VERSION_DRAFT + " version can be updated");
         }
         
-        try ( StringReader rdr = new StringReader(jsonBody) ) {
+        try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset ds = findDatasetOrDie(id);
-            JsonObject json = Json.createReader(rdr).readObject();
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
             DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json);
             
             // clear possibly stale fields from the incoming dataset version.
@@ -920,10 +919,10 @@ public class Datasets extends AbstractApiBean {
     }
 
     private Response processDatasetFieldDataDelete(String jsonBody, String id, DataverseRequest req) {
-        try (StringReader rdr = new StringReader(jsonBody)) {
+        try {
 
             Dataset ds = findDatasetOrDie(id);
-            JsonObject json = Json.createReader(rdr).readObject();
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
             //Get the current draft or create a new version to update
             DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
@@ -1077,10 +1076,10 @@ public class Datasets extends AbstractApiBean {
     
     
     private Response processDatasetUpdate(String jsonBody, String id, DataverseRequest req, Boolean replaceData){
-        try (StringReader rdr = new StringReader(jsonBody)) {
+        try {
            
             Dataset ds = findDatasetOrDie(id);
-            JsonObject json = Json.createReader(rdr).readObject();
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
             //Get the current draft or create a new version to update
             DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
@@ -1527,8 +1526,7 @@ public class Datasets extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "No Embargoes allowed");
         }
 
-        StringReader rdr = new StringReader(jsonBody);
-        JsonObject json = Json.createReader(rdr).readObject();
+        JsonObject json = JsonUtil.getJsonObject(jsonBody);
 
         Embargo embargo = new Embargo();
 
@@ -1671,8 +1669,7 @@ public class Datasets extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "No Embargoes allowed");
         }
 
-        StringReader rdr = new StringReader(jsonBody);
-        JsonObject json = Json.createReader(rdr).readObject();
+        JsonObject json = JsonUtil.getJsonObject(jsonBody);
 
         List<DataFile> datasetFiles = dataset.getFiles();
         List<DataFile> embargoFilesToUnset = new LinkedList<>();
@@ -2187,8 +2184,7 @@ public class Datasets extends AbstractApiBean {
         if (jsonBody == null || jsonBody.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset (field: reasonForReturn).");
         }
-        StringReader rdr = new StringReader(jsonBody);
-        JsonObject json = Json.createReader(rdr).readObject();
+        JsonObject json = JsonUtil.getJsonObject(jsonBody);
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             String reasonForReturn = null;
@@ -2440,9 +2436,7 @@ public class Datasets extends AbstractApiBean {
             List<PartETag> eTagList = new ArrayList<PartETag>();
             logger.info("Etags: " + partETagBody);
             try {
-                JsonReader jsonReader = Json.createReader(new StringReader(partETagBody));
-                JsonObject object = jsonReader.readObject();
-                jsonReader.close();
+                JsonObject object = JsonUtil.getJsonObject(partETagBody);
                 for (String partNo : object.keySet()) {
                     eTagList.add(new PartETag(Integer.parseInt(partNo), object.getString(partNo)));
                 }
@@ -4015,8 +4009,8 @@ public class Datasets extends AbstractApiBean {
         }
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, false);
-            try (StringReader stringReader = new StringReader(jsonBody)) {
-                JsonObject jsonObject = Json.createReader(stringReader).readObject();
+            try {
+                JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
                 datasetVersion.setVersionNote(jsonObject.getString("deaccessionReason"));
                 String deaccessionForwardURL = jsonObject.getString("deaccessionForwardURL", null);
                 if (deaccessionForwardURL != null) {
