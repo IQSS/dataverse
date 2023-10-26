@@ -2868,7 +2868,6 @@ To enable setting file-level PIDs per collection::
 
 When :AllowEnablingFilePIDsPerCollection is true, setting File PIDs to be enabled/disabled for a given collection can be done via the Native API - see :ref:`collection-attributes-api` in the Native API Guide.
 
-
 .. _:IndependentHandleService:
 
 :IndependentHandleService
@@ -3102,6 +3101,21 @@ Whether or not to index the content of files such as PDFs. The default is false.
 If ``:SolrFullTextIndexing`` is set to true, the content of files of any size will be indexed. To set a limit in bytes for which files to index in this way:
 
 ``curl -X PUT -d 314572800 http://localhost:8080/api/admin/settings/:SolrMaxFileSizeForFullTextIndexing``
+
+
+.. _:DisableSolrFacets:
+
+:DisableSolrFacets
+++++++++++++++++++
+
+Setting this to ``true`` will make the collection ("dataverse") page start showing search results without the usual search facets on the left side of the page. A message will be shown in that column informing the users that facets are temporarily unavailable. Generating the facets is more resource-intensive for Solr than the main search results themselves, so applying this measure will significantly reduce the load on the search engine when its performance becomes an issue.
+
+This setting can be used in combination with the "circuit breaker" mechanism on the Solr side (see the "Installing Solr" section of the Installation Prerequisites guide). An admin can choose to enable it, or even create an automated system for enabling it in response to Solr beginning to drop incoming requests with the HTTP code 503.
+
+To enable the setting::
+
+  curl -X PUT -d true "http://localhost:8080/api/admin/settings/:DisableSolrFacets"
+
 
 .. _:SignUpUrl:
 

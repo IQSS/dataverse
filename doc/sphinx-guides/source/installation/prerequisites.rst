@@ -227,7 +227,7 @@ If this becomes a common issue, another temporary workaround an admin may choose
 
   curl -X PUT -d true "http://localhost:8080/api/admin/settings/:DisableSolrFacets"
 
-This will make the collection show the search results without the usual search facets on the left side of the page. Another customizeable message will be shown in that column informing the users that facets are temporarily unavailable. Generating these facets is more resource-intensive for Solr than the main search results themselves, so applying this measure will significantly reduce the load on the search engine. 
+This will make the collection page show the search results without the usual search facets on the left side of the page. Another customizeable message will be shown in that column informing the users that facets are temporarily unavailable. Generating these facets is more resource-intensive for Solr than the main search results themselves, so applying this measure will significantly reduce the load on the search engine. 
 
 
 Solr Init Script
