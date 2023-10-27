@@ -65,6 +65,31 @@ public class JsonUtil {
         }
     }
     
+    /**
+     * Return the contents of the {@link InputStream} as a JSON object.
+     * @param stream the input stream to read from
+     * @throws JsonException when parsing fails.
+     */
+    public static JsonObject getJsonObject(InputStream stream) {
+        try (JsonReader jsonReader = Json.createReader(stream)) {
+            return jsonReader.readObject();
+        }
+    }
+    
+    /**
+     * Return the contents of the file as a JSON object.
+     * @param fileName the name of the file to read from
+     * @throws FileNotFoundException when the file cannot be opened for reading
+     * @throws JsonException when parsing fails.
+     */
+    public static JsonObject getJsonObjectFromFile(String fileName) throws IOException {
+        try (FileReader rdr = new FileReader(fileName)) {
+            try (JsonReader jsonReader = Json.createReader(rdr)) {
+                return jsonReader.readObject();
+            }
+        }
+    }
+    
     public static JsonArray getJsonArray(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
             try (JsonReader jsonReader = Json.createReader(rdr)) {
