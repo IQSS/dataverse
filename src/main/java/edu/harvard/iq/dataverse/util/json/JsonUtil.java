@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
@@ -26,11 +27,8 @@ public class JsonUtil {
      */
     public static String prettyPrint(String jsonString) {
         try {
-            com.google.gson.JsonParser jsonParser = new com.google.gson.JsonParser();
-            JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            String prettyJson = gson.toJson(jsonObject);
-            return prettyJson;
+            JsonObject jsonObject = getJsonObject(jsonString);
+            return prettyPrint(jsonObject);
         } catch (Exception ex) {
             logger.info("Returning original string due to exception: " + ex);
             return jsonString;
@@ -48,7 +46,7 @@ public class JsonUtil {
         return stringWriter.toString();
     }
 
-    public static String prettyPrint(jakarta.json.JsonObject jsonObject) {
+    public static String prettyPrint(JsonObject jsonObject) {
         Map<String, Boolean> config = new HashMap<>();
         config.put(JsonGenerator.PRETTY_PRINTING, true);
         JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(config);
@@ -59,7 +57,7 @@ public class JsonUtil {
         return stringWriter.toString();
     }
     
-    public static jakarta.json.JsonObject getJsonObject(String serializedJson) {
+    public static JsonObject getJsonObject(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
             try (JsonReader jsonReader = Json.createReader(rdr)) {
                 return jsonReader.readObject();
@@ -67,7 +65,7 @@ public class JsonUtil {
         }
     }
     
-    public static jakarta.json.JsonArray getJsonArray(String serializedJson) {
+    public static JsonArray getJsonArray(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
             try (JsonReader jsonReader = Json.createReader(rdr)) {
                 return jsonReader.readArray();
