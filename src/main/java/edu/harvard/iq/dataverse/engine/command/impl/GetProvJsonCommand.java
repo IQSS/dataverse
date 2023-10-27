@@ -9,12 +9,12 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 
 @RequiredPermissions(Permission.EditDataset)
 public class GetProvJsonCommand extends AbstractCommand<JsonObject> {
@@ -37,9 +37,8 @@ public class GetProvJsonCommand extends AbstractCommand<JsonObject> {
             StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
             InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension);
             JsonObject jsonObject = null;
-            if(null != inputStream) {
-                JsonReader jsonReader = Json.createReader(inputStream);
-                jsonObject = jsonReader.readObject();
+            if (null != inputStream) {
+                jsonObject = JsonUtil.getJsonObject(inputStream);
             }
             return jsonObject;
         } catch (IOException ex) {
