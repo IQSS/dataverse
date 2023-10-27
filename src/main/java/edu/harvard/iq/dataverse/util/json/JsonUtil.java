@@ -21,6 +21,8 @@ public class JsonUtil {
 
     private static final Logger logger = Logger.getLogger(JsonUtil.class.getCanonicalName());
 
+    private JsonUtil() {}
+
     /**
      * Make an attempt at pretty printing a String but will return the original
      * string if it isn't JSON or if there is any exception.
