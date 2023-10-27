@@ -1824,7 +1824,7 @@ public class DdiExportUtil {
                 xmlw.writeCharacters(dvar.getString("label"));
                 xmlw.writeEndElement(); //labl
             }
-        } else if (vm != null && vm.containsKey("label")) {
+        } else {
             xmlw.writeStartElement("labl");
             writeAttribute(xmlw, "level", "variable");
             xmlw.writeCharacters(vm.getString("label"));
