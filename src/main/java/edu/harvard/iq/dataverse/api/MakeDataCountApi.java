@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -135,7 +134,7 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @POST
     @Path("{id}/updateCitationsForDataset")
-    public Response updateCitationsForDataset(@PathParam("id") String id) throws MalformedURLException, IOException {
+    public Response updateCitationsForDataset(@PathParam("id") String id) throws IOException {
         try {
             Dataset dataset = findDatasetOrDie(id);
             String persistentId = dataset.getGlobalId().toString();
