@@ -29,8 +29,11 @@ public class JsonUtil {
      */
     public static String prettyPrint(String jsonString) {
         try {
-            JsonObject jsonObject = getJsonObject(jsonString);
-            return prettyPrint(jsonObject);
+            if (jsonString.trim().startsWith("{")) {
+                return prettyPrint(getJsonObject(jsonString));
+            } else {
+                return prettyPrint(getJsonArray(jsonString));
+            }
         } catch (Exception ex) {
             logger.info("Returning original string due to exception: " + ex);
             return jsonString;
