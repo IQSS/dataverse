@@ -101,7 +101,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             }
 
         } catch (IOException ex) {
-            System.out.print(ex.getMessage());
+            logger.log(Level.WARNING, ex.getMessage());
             return error(Status.BAD_REQUEST, "IOException: " + ex.getLocalizedMessage());
         }
         String msg = "Dummy Data has been added to dataset " + id;
@@ -125,7 +125,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             }
 
         } catch (IOException ex) {
-            System.out.print(ex.getMessage());
+            logger.log(Level.WARNING, ex.getMessage());
             return error(Status.BAD_REQUEST, "IOException: " + ex.getLocalizedMessage());
         }
         String msg = "Usage Metrics Data has been added to all datasets from file  " + reportOnDisk;
