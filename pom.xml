@@ -617,6 +617,12 @@
             <version>${smallrye-mpconfig.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/edu.kit.datamanager/ro-crate-java -->
+        <dependency>
+            <groupId>edu.kit.datamanager</groupId>
+            <artifactId>ro-crate-java</artifactId>
+            <version>1.1.0-rc.1</version>
+        </dependency>
     </dependencies>
     <build>
         <!--        <testResources>
