@@ -501,28 +501,13 @@ public class FileUtil implements java.io.Serializable  {
 
         if ("application/x-gzip".equals(fileType)) {
             logger.fine("we'll run additional checks on this gzipped file.");
-            try (FileInputStream gzippedIn = new FileInputStream(f)) {
-                // (new FileInputStream() can throw a "file not found" exception;
-                // however, if we've made it this far, it really means that the
-                // file does exist and can be opened)
-                InputStream uncompressedIn = null;
-                try {
-                    uncompressedIn = new GZIPInputStream(gzippedIn);
-                    if (isFITSFile(uncompressedIn)) {
-                        fileType = "application/fits-gzipped";
-                    }
-                } catch (IOException ioex) {
-                    if (uncompressedIn != null) {
-                        try {
-                            uncompressedIn.close();
-                        } catch (IOException e) {
-                            logger.warning("IOException closing uncompressed stream");
-                        }
-                    }
+            try (FileInputStream gzippedIn = new FileInputStream(f);
+                InputStream uncompressedIn = new GZIPInputStream(gzippedIn)) {
+                if (isFITSFile(uncompressedIn)) {
+                    fileType = "application/fits-gzipped";
                 }
-            } catch (FileNotFoundException e) {
-                // Handle the FileNotFoundException
-                logger.warning("FileUtil.determineFileType: File not found exception while checking for gzipped FITS file.");
+            } catch (IOException ioex) {
+                logger.warning("IOException while processing gzipped FITS file: " + ioex.getMessage());
             }
         }
         if ("application/zip".equals(fileType)) {
