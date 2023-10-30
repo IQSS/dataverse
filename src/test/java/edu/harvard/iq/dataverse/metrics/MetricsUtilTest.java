@@ -17,6 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MetricsUtilTest {
@@ -199,6 +200,12 @@ class MetricsUtilTest {
             System.out.println(JsonUtil.prettyPrint(jsonObjAfter));
 
             assertEquals(jsonObjBefore.getString("Test"), jsonObjAfter.getString("Test"));
+        }
+
+        @Test
+        void testStringToJsonWithNull() {
+            assertNull(MetricsUtil.stringToJsonArray(null));
+            assertNull(MetricsUtil.stringToJsonObject(null));
         }
 
     }
