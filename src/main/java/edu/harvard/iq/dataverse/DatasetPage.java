@@ -822,6 +822,12 @@ public class DatasetPage implements java.io.Serializable {
      * @return boolean
      */
     public boolean isThisVersionSearchable() {
+        // Just like on the collection page, facets on the Dataset page can be
+        // disabled instance-wide by an admin:
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false)) {
+            return false;
+        }
+        
         SolrQuery solrQuery = new SolrQuery();
 
         solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, workingVersion.getDataset().getId().toString()));
