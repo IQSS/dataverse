@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -521,7 +523,7 @@ public class DatasetUtil {
         // for the filter to whitelist by these attributes. 
         
         try {
-            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion()))
+            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion(), true))
                     .add("sourceAddress", sourceAddressLabel)
                     .add("userIdentifier", userIdentifier)
                     .add("parentAlias", ds.getOwner().getAlias())
@@ -580,10 +582,10 @@ public class DatasetUtil {
         // Return the URI
         // For standard licenses, just return the stored URI
         return (license != null) ? license.getUri().toString()
-                // For custom terms, construct a URI with :draft or the version number in the URI
+                // For custom terms, construct a URI with draft version constant or the version number in the URI
                 : (dsv.getVersionState().name().equals("DRAFT")
                         ? dsv.getDataverseSiteUrl()
-                                + "/api/datasets/:persistentId/versions/:draft/customlicense?persistentId="
+                                + "/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "/customlicense?persistentId="
                                 + dsv.getDataset().getGlobalId().asString()
                         : dsv.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/" + dsv.getVersionNumber()
                                 + "." + dsv.getMinorVersionNumber() + "/customlicense?persistentId="

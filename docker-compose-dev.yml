@@ -18,6 +18,7 @@ services:
       - DATAVERSE_AUTH_OIDC_CLIENT_ID=test
       - DATAVERSE_AUTH_OIDC_CLIENT_SECRET=94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8
       - DATAVERSE_AUTH_OIDC_AUTH_SERVER_URL=http://keycloak.mydomain.com:8090/realms/test
+      - DATAVERSE_JSF_REFRESH_PERIOD=1
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
       - "4848:4848" # HTTP (Payara Admin Console)
@@ -28,9 +29,13 @@ services:
     depends_on:
       - dev_postgres
       - dev_solr
+      - dev_dv_initializer
     volumes:
       - ./docker-dev-volumes/app/data:/dv
       - ./docker-dev-volumes/app/secrets:/secrets
+      # Uncomment for changes to xhtml to be deployed immediately (if supported your IDE or toolchain).
+      # Replace 6.0 with the current version.
+      # - ./target/dataverse-6.0:/opt/payara/deployments/dataverse
     tmpfs:
       - /dumps:mode=770,size=2052M,uid=1000,gid=1000
       - /tmp:mode=770,size=2052M,uid=1000,gid=1000
@@ -47,6 +52,17 @@ services:
       - dev
     networks:
       - dataverse
+
+  dev_dv_initializer:
+    container_name: "dev_dv_initializer"
+    image: gdcc/configbaker:unstable
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - "fix-fs-perms.sh dv"
+    volumes:
+      - ./docker-dev-volumes/app/data:/dv
 
   dev_postgres:
     container_name: "dev_postgres"

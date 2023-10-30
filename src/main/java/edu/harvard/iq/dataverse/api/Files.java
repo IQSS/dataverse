@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -54,6 +55,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -63,15 +65,12 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -112,6 +111,8 @@ public class Files extends AbstractApiBean {
     MakeDataCountLoggingServiceBean mdcLogService;
     @Inject
     GuestbookResponseServiceBean guestbookResponseService;
+    @Inject
+    DataFileServiceBean dataFileServiceBean;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -852,18 +853,82 @@ public class Files extends AbstractApiBean {
         try {
             dataFile = findDataFileOrDie(dataFileId);
         } catch (WrappedResponse e) {
-            return error(Response.Status.NOT_FOUND, "File not found for given id.");
+            return notFound("File not found for given id.");
         }
         if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
             DataverseRequest dataverseRequest = createDataverseRequest(getRequestUser(crc));
             boolean hasPermissionToDownloadFile = permissionSvc.requestOn(dataverseRequest, dataFile).has(Permission.DownloadFile);
             if (!hasPermissionToDownloadFile) {
-                return error(FORBIDDEN, "Insufficient permissions to access the requested information.");
+                return forbidden("Insufficient permissions to access the requested information.");
             }
         }
         if (!dataFile.isTabularData()) {
-            return error(BAD_REQUEST, "This operation is only available for tabular files.");
+            return badRequest(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"));
         }
         return ok(jsonDT(dataFile.getDataTables()));
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{id}/metadata/categories")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setFileCategories(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            jakarta.json.JsonObject jsonObject;
+            try (StringReader stringReader = new StringReader(jsonBody)) {
+                jsonObject = Json.createReader(stringReader).readObject();
+                JsonArray requestedCategoriesJson = jsonObject.getJsonArray("categories");
+                FileMetadata fileMetadata = dataFile.getFileMetadata();
+                for (JsonValue jsonValue : requestedCategoriesJson) {
+                    JsonString jsonString = (JsonString) jsonValue;
+                    fileMetadata.addCategoryByName(jsonString.getString());
+                }
+                execCommand(new UpdateDatasetVersionCommand(fileMetadata.getDataFile().getOwner(), req));
+                return ok("Categories of file " + dataFileId + " updated.");
+            } catch (JsonParsingException jpe) {
+                return badRequest("Error parsing Json: " + jpe.getMessage());
+            }
+        }, getRequestUser(crc));
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{id}/metadata/tabularTags")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setFileTabularTags(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            if (!dataFile.isTabularData()) {
+                return badRequest(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"));
+            }
+            jakarta.json.JsonObject jsonObject;
+            try (StringReader stringReader = new StringReader(jsonBody)) {
+                jsonObject = Json.createReader(stringReader).readObject();
+                JsonArray requestedTabularTagsJson = jsonObject.getJsonArray("tabularTags");
+                for (JsonValue jsonValue : requestedTabularTagsJson) {
+                    JsonString jsonString = (JsonString) jsonValue;
+                    try {
+                        dataFile.addUniqueTagByLabel(jsonString.getString());
+                    } catch (IllegalArgumentException iax){
+                        return badRequest(iax.getMessage());
+                    }
+                }
+                execCommand(new UpdateDatasetVersionCommand(dataFile.getOwner(), req));
+                return ok("Tabular tags of file " + dataFileId + " updated.");
+            } catch (JsonParsingException jpe) {
+                return badRequest("Error parsing Json: " + jpe.getMessage());
+            }
+        }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/hasBeenDeleted")
+    public Response getHasBeenDeleted(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            return ok(dataFileServiceBean.hasBeenDeleted(dataFile));
+        }, getRequestUser(crc));
     }
 }

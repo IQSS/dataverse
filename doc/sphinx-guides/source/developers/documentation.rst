@@ -8,7 +8,7 @@ Writing Documentation
 Quick Fix
 -----------
 
-If you find a typo or a small error in the documentation you can fix it using GitHub's online web editor. Generally speaking, we will be following https://help.github.com/en/articles/editing-files-in-another-users-repository
+If you find a typo or a small error in the documentation you can fix it using GitHub's online web editor. Generally speaking, we will be following https://docs.github.com/en/repositories/working-with-files/managing-files/editing-files#editing-files-in-another-users-repository
 
 - Navigate to https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source where you will see folders for each of the guides: `admin`_, `api`_, `developers`_, `installation`_, `style`_, `user`_.
 - Find the file you want to edit under one of the folders above.
