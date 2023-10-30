@@ -262,8 +262,7 @@ public class MetricsUtil {
             throw new BadRequestException("The requested date is set past the current month.");
         }
 
-        String sanitized = inputLocalDate.format(dateTimeFormatter);
-        return sanitized;
+        return inputLocalDate.format(dateTimeFormatter);
     }
 
     public static String validateDataLocationStringType(String dataLocation) throws BadRequestException {
