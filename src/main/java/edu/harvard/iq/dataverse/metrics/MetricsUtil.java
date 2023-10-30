@@ -39,6 +39,8 @@ public class MetricsUtil {
     public static final String DATA_LOCATION_REMOTE = "remote";
     public static final String DATA_LOCATION_ALL = "all";
 
+    private MetricsUtil() {}
+
     public static JsonObjectBuilder countToJson(long count) {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(COUNT, count);
