@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonWriter;
@@ -61,7 +62,17 @@ public class JsonUtil {
         }
         return stringWriter.toString();
     }
-    
+
+    /**
+     * Return the contents of the string as a JSON object.
+     * This method closes its resources when an exception occurs, but does
+     * not catch any exceptions.
+     * @param serializedJson the JSON object serialized as a {@code String}
+     * @throws JsonException when parsing fails.
+     * @see #getJsonObject(InputStream)
+     * @see #getJsonObjectFromFile(String)
+     * @see #getJsonArray(String)
+     */
     public static JsonObject getJsonObject(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
             try (JsonReader jsonReader = Json.createReader(rdr)) {
@@ -69,25 +80,33 @@ public class JsonUtil {
             }
         }
     }
-    
+
     /**
      * Return the contents of the {@link InputStream} as a JSON object.
      *
+     * This method closes its resources when an exception occurs, but does
+     * not catch any exceptions.
      * The caller of this method is responsible for closing the provided stream.
      * @param stream the input stream to read from
      * @throws JsonException when parsing fails.
+     * @see #getJsonObject(String)
+     * @see #getJsonObjectFromFile(String)
      */
     public static JsonObject getJsonObject(InputStream stream) {
         try (JsonReader jsonReader = Json.createReader(stream)) {
             return jsonReader.readObject();
         }
     }
-    
+
     /**
      * Return the contents of the file as a JSON object.
+     * This method closes its resources when an exception occurs, but does
+     * not catch any exceptions.
      * @param fileName the name of the file to read from
      * @throws FileNotFoundException when the file cannot be opened for reading
      * @throws JsonException when parsing fails.
+     * @see #getJsonObject(String)
+     * @see #getJsonObject(InputStream)
      */
     public static JsonObject getJsonObjectFromFile(String fileName) throws IOException {
         try (FileReader rdr = new FileReader(fileName)) {
@@ -96,7 +115,15 @@ public class JsonUtil {
             }
         }
     }
-    
+
+    /**
+     * Return the contents of the string as a JSON array.
+     * This method closes its resources when an exception occurs, but does
+     * not catch any exceptions.
+     * @param serializedJson the JSON array serialized as a {@code String}
+     * @throws JsonException when parsing fails.
+     * @see #getJsonObject(String)
+     */
     public static JsonArray getJsonArray(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
             try (JsonReader jsonReader = Json.createReader(rdr)) {
