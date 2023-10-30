@@ -240,11 +240,11 @@ public class MetricsUtil {
 
     /**
      *
-     * @param userInput A year and month in YYYY-MM format.
-     * @return A year and month in YYYY-M     
      * Note that along with sanitization, this checks that the requested month is
      * not after the current one. This will need to be made more robust if we
-     * start writing metrics for farther in the future (e.g. the current year) the current year)
+     * start writing metrics for farther in the future (e.g. the current year)
+     * @param userInput A year and month in YYYY-MM format.
+     * @return A year and month in YYYY-M     
      */
     public static String sanitizeYearMonthUserInput(String userInput) throws BadRequestException {
         logger.fine("string from user to sanitize (hopefully YYYY-MM format): " + userInput);
