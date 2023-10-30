@@ -1,7 +1,8 @@
 package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import java.io.StringReader;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -17,7 +18,7 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
+import jakarta.json.JsonException;
 import jakarta.ws.rs.BadRequestException;
 
 public class MetricsUtil {
@@ -280,26 +281,34 @@ public class MetricsUtil {
         return LocalDate.now().format(DateTimeFormatter.ofPattern(MetricsUtil.YEAR_AND_MONTH_PATTERN));
     }
 
+    /**
+     * Parse a String into a JSON object
+     * @param str serialized JSON
+     * @return {@code null} if {@code str} is {@code null}, or the parsed JSON object
+     * @throws JsonException
+     * @see JsonUtil#getJsonObject(String)
+     */
     public static JsonObject stringToJsonObject(String str) {
         if (str == null) {
             return null;
         }
-        JsonReader jsonReader = Json.createReader(new StringReader(str));
-        JsonObject jo = jsonReader.readObject();
-        jsonReader.close();
 
-        return jo;
+        return JsonUtil.getJsonObject(str);
     }
 
+    /**
+     * Parse a String into a JSON array
+     * @param str serialized JSON
+     * @return {@code null} if {@code str} is {@code null}, or the parsed JSON array
+     * @throws JsonException
+     * @see JsonUtil#getJsonArray(String)
+     */
     public static JsonArray stringToJsonArray(String str) {
         if (str == null) {
             return null;
         }
-        JsonReader jsonReader = Json.createReader(new StringReader(str));
-        JsonArray ja = jsonReader.readArray();
-        jsonReader.close();
 
-        return ja;
+        return JsonUtil.getJsonArray(str);
     }
 
     public static List<String> getDatesFrom(String startMonth) {
