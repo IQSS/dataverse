@@ -72,6 +72,8 @@ public class JsonUtil {
     
     /**
      * Return the contents of the {@link InputStream} as a JSON object.
+     *
+     * The caller of this method is responsible for closing the provided stream.
      * @param stream the input stream to read from
      * @throws JsonException when parsing fails.
      */

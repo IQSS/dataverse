@@ -35,12 +35,13 @@ public class GetProvJsonCommand extends AbstractCommand<JsonObject> {
 
         try {
             StorageIO<DataFile> dataAccess = dataFile.getStorageIO();
-            InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension);
-            JsonObject jsonObject = null;
-            if (null != inputStream) {
-                jsonObject = JsonUtil.getJsonObject(inputStream);
+            try (InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension)) {
+                JsonObject jsonObject = null;
+                if (null != inputStream) {
+                    jsonObject = JsonUtil.getJsonObject(inputStream);
+                }
+                return jsonObject;
             }
-            return jsonObject;
         } catch (IOException ex) {
             String error = "Exception caught in DataAccess.getStorageIO(dataFile) getting file. Error: " + ex;
             throw new IllegalCommandException(error, this);

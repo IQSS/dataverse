@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Iterator;
@@ -150,7 +151,10 @@ public class MakeDataCountApi extends AbstractApiBean {
                     logger.warning("Failed to get citations from " + url.toString());
                     return error(Status.fromStatusCode(status), "Failed to get citations from " + url.toString());
                 }
-                JsonObject report = JsonUtil.getJsonObject(connection.getInputStream());
+                JsonObject report;
+                try (InputStream inStream = connection.getInputStream()) {
+                    report = JsonUtil.getJsonObject(inStream);
+                }
                 JsonObject links = report.getJsonObject("links");
                 JsonArray data = report.getJsonArray("data");
                 Iterator<JsonValue> iter = data.iterator();
