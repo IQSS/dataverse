@@ -136,8 +136,8 @@ public class MetricsUtil {
     
     public static JsonArray timeSeriesByTypeToJson(List<Object[]> results) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
-        Map<String, Long> totals = new HashMap<String, Long>();
-        Map<String, Long> sizes =  new HashMap<String, Long>();
+        Map<String, Long> totals = new HashMap<>();
+        Map<String, Long> sizes =  new HashMap<>();
         String curDate = (String) results.get(0)[0];
         // Get a list of all the monthly dates from the start until now
         List<String> dates = getDatesFrom(curDate);
@@ -171,7 +171,7 @@ public class MetricsUtil {
     
     public static JsonArray timeSeriesByPIDToJson(List<Object[]> results) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
-        Map<String, Long> totals = new HashMap<String, Long>();
+        Map<String, Long> totals = new HashMap<>();
         String curDate = (String) results.get(0)[0];
         // Get a list of all the monthly dates from the start until now
         List<String> dates = getDatesFrom(curDate);
@@ -202,8 +202,8 @@ public class MetricsUtil {
     
     public static JsonArray timeSeriesByIDAndPIDToJson(List<Object[]> results) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
-        Map<Integer, Long> totals = new HashMap<Integer, Long>();
-        Map<Integer, String> pids = new HashMap<Integer, String>();
+        Map<Integer, Long> totals = new HashMap<>();
+        Map<Integer, String> pids = new HashMap<>();
         String curDate = (String) results.get(0)[0];
         // Get a list of all the monthly dates from the start until now
         List<String> dates = getDatesFrom(curDate);
@@ -304,7 +304,7 @@ public class MetricsUtil {
     }
 
     public static List<String> getDatesFrom(String startMonth) {
-        List<String> dates = new ArrayList<String>();
+        List<String> dates = new ArrayList<>();
         LocalDate next = LocalDate.parse(startMonth+ "-01").plusMonths(1);
         dates.add(startMonth);
         DateTimeFormatter monthFormat = DateTimeFormatter.ofPattern(YEAR_AND_MONTH_PATTERN);
