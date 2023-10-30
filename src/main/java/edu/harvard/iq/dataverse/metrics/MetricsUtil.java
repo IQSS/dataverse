@@ -24,14 +24,14 @@ public class MetricsUtil {
 
     private static final Logger logger = Logger.getLogger(MetricsUtil.class.getCanonicalName());
 
-    public final static String CONTENTTYPE = "contenttype";
-    public final static String COUNT = "count";
-    public final static String CATEGORY = "category";
-    public final static String ID = "id";
-    public final static String PID = "pid";
-    public final static String SUBJECT = "subject";
-    public final static String DATE = "date";
-    public final static String SIZE = "size";
+    public static final String CONTENTTYPE = "contenttype";
+    public static final String COUNT = "count";
+    public static final String CATEGORY = "category";
+    public static final String ID = "id";
+    public static final String PID = "pid";
+    public static final String SUBJECT = "subject";
+    public static final String DATE = "date";
+    public static final String SIZE = "size";
 
     public static final String YEAR_AND_MONTH_PATTERN = "yyyy-MM";
 
