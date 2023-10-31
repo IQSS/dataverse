@@ -84,7 +84,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    private final static LinkedHashMap<ValidatorTypes, PasswordValidator> validators = new LinkedHashMap(2);
+    private static final LinkedHashMap<ValidatorTypes, PasswordValidator> validators = new LinkedHashMap(2);
     private int goodStrength;
     private int maxLength;
     private int minLength;

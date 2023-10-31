@@ -49,7 +49,7 @@ import javax.xml.xpath.XPathExpression;
  */
 public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     
-    final static Logger logger = Logger.getLogger(OrcidOAuth2AP.class.getName());
+    static final Logger logger = Logger.getLogger(OrcidOAuth2AP.class.getName());
 
     public static final String PROVIDER_ID_PRODUCTION = "orcid";
     public static final String PROVIDER_ID_SANDBOX = "orcid-sandbox";

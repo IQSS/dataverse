@@ -87,8 +87,8 @@ public class SystemConfig {
     private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_IMAGE = 3000000L; // 3 MB
     private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_PDF = 1000000L; // 1 MB
     
-    public final static String DEFAULTCURATIONLABELSET = "DEFAULT";
-    public final static String CURATIONLABELSDISABLED = "DISABLED";
+    public static final String DEFAULTCURATIONLABELSET = "DEFAULT";
+    public static final String CURATIONLABELSDISABLED = "DISABLED";
     
     public String getVersion() {
         return getVersion(false);
