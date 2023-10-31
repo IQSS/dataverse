@@ -69,8 +69,9 @@ In the single part case, only one call to the supplied URL is required:
 
 .. code-block:: bash
 
-    curl -H 'x-amz-tagging:dv-state=temp' -X PUT -T <filename> "<supplied url>"
+    curl -i -H 'x-amz-tagging:dv-state=temp' -X PUT -T <filename> "<supplied url>"
 
+Note that without the ``-i`` flag, you should not expect any output from the command above. With the ``-i`` flag, you should expect to see a "200 OK" response.
 
 In the multipart case, the client must send each part and collect the 'eTag' responses from the server. The calls for this are the same as the one for the single part case except that each call should send a <partSize> slice of the total file, with the last part containing the remaining bytes.
 The responses from the S3 server for these calls will include the 'eTag' for the uploaded part. 
