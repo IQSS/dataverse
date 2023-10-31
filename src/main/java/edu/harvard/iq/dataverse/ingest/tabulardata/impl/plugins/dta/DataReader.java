@@ -274,7 +274,7 @@ public class DataReader {
      */
     public String readString(int n) throws IOException {
 
-        String ret = new String(readBytes(n), "US-ASCII");
+        String ret = new String(readBytes(n), StandardCharsets.US_ASCII);
 
         // Remove the terminating and/or padding zero bytes:
         if (ret != null && ret.indexOf(0) > -1) {
@@ -315,11 +315,11 @@ public class DataReader {
     }
 
     public String readPrimitiveStringSection(String tag) throws IOException {
-        return new String(readPrimitiveSection(tag), "US-ASCII");
+        return new String(readPrimitiveSection(tag), StandardCharsets.US_ASCII);
     }
 
     public String readPrimitiveStringSection(String tag, int length) throws IOException {
-        return new String(readPrimitiveSection(tag, length), "US-ASCII");
+        return new String(readPrimitiveSection(tag, length), StandardCharsets.US_ASCII);
     }
 
     public String readLabelSection(String tag, int limit) throws IOException {
@@ -333,7 +333,7 @@ public class DataReader {
         logger.fine("length of label: " + lengthOfLabel);
         String label = null;
         if (lengthOfLabel > 0) {
-            label = new String(readBytes(lengthOfLabel), "US-ASCII");
+            label = new String(readBytes(lengthOfLabel), StandardCharsets.US_ASCII);
         }
         logger.fine("ret: " + label);
         readClosingTag(tag);
@@ -359,7 +359,7 @@ public class DataReader {
         }
         String ret = null;
         if (number > 0) {
-            ret = new String(readBytes(number), "US-ASCII");
+            ret = new String(readBytes(number), StandardCharsets.US_ASCII);
         }
         logger.fine("ret: " + ret);
         readClosingTag(tag);
@@ -401,7 +401,7 @@ public class DataReader {
 
         int n = tag.length();
         if ((this.buffer_size - buffer_byte_offset) >= n) {
-            return (tag).equals(new String(Arrays.copyOfRange(buffer, buffer_byte_offset, buffer_byte_offset+n),"US-ASCII"));
+            return (tag).equals(new String(Arrays.copyOfRange(buffer, buffer_byte_offset, buffer_byte_offset+n),StandardCharsets.US_ASCII));
         }
         else{
             bufferMoreBytes();
@@ -415,7 +415,7 @@ public class DataReader {
             throw new IOException("opening tag must be a non-empty string.");
         }
 
-        String openTagString = new String(readBytes(tag.length() + 2), "US-ASCII");
+        String openTagString = new String(readBytes(tag.length() + 2), StandardCharsets.US_ASCII);
         if (openTagString == null || !openTagString.equals("<"+tag+">")) {
             throw new IOException("Could not read opening tag <"+tag+">");
         }
@@ -426,7 +426,7 @@ public class DataReader {
             throw new IOException("closing tag must be a non-empty string.");
         }
 
-        String closeTagString = new String(readBytes(tag.length() + 3), "US-ASCII");
+        String closeTagString = new String(readBytes(tag.length() + 3), StandardCharsets.US_ASCII);
         logger.fine("closeTagString: " + closeTagString);
 
         if (closeTagString == null || !closeTagString.equals("</" + tag + ">")) {
