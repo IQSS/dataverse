@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -729,7 +730,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         ingesteddata.setTabDelimitedFile(tabDelimitedDataFile);
 
         FileOutputStream fileOutTab = new FileOutputStream(tabDelimitedDataFile);
-        PrintWriter pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
+        PrintWriter pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, StandardCharsets.UTF_8), true);
 
         logger.fine("Beginning to read data stream.");
 
@@ -990,7 +991,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
             File finalTabFile = File.createTempFile("finalTabfile.", ".tab");
             FileOutputStream fileOutTab = new FileOutputStream(finalTabFile);
-            PrintWriter pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
+            PrintWriter pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, StandardCharsets.UTF_8), true);
 
             logger.fine("Setting the tab-delimited file to " + finalTabFile.getName());
             ingesteddata.setTabDelimitedFile(finalTabFile);
@@ -1117,7 +1118,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
         String gsoString;
         if (binary) {
-            gsoString = new String(contents, "utf8"); 
+            gsoString = new String(contents, StandardCharsets.UTF_8); 
         } else {
             gsoString = new String(contents, 0, (int) length - 1, "US-ASCII");
         }
@@ -1213,7 +1214,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 }
                 label_length = (int)(label_end - label_offset);
 
-                category_value_labels[i] = new String(Arrays.copyOfRange(labelBytes, (int)label_offset, (int)label_end-1), "UTF8");
+                category_value_labels[i] = new String(Arrays.copyOfRange(labelBytes, (int)label_offset, (int)label_end-1), StandardCharsets.UTF_8);
                 total_label_bytes += label_length;
             }
 

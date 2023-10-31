@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -86,7 +87,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
 
                     spaceName = getSpaceName(dataset);
                     String dataciteXml = getDataCiteXml(dv);
-                    try (ByteArrayInputStream dataciteIn = new ByteArrayInputStream(dataciteXml.getBytes("UTF-8"))) {
+                    try (ByteArrayInputStream dataciteIn = new ByteArrayInputStream(dataciteXml.getBytes(StandardCharsets.UTF_8))) {
                         // Add datacite.xml file
                         ObjectMetadata om = new ObjectMetadata();
                         om.setContentLength(dataciteIn.available());

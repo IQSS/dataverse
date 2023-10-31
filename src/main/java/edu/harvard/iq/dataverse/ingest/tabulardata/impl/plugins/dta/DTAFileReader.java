@@ -29,6 +29,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -1701,7 +1702,7 @@ public class DTAFileReader extends TabularDataFileReader{
         ingesteddata.setTabDelimitedFile(tabDelimitedDataFile);
 
         fileOutTab = new FileOutputStream(tabDelimitedDataFile);
-        pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
+        pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, StandardCharsets.UTF_8), true);
 
         /* Should we lose this dateFormat thing in 4.0? 
          * the UNF should be calculatable on the app side solely from the data

@@ -20,27 +20,21 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.license.License;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.EnumUtils;
 
@@ -398,14 +392,8 @@ public class DatasetUtil {
             String base64Image = datasetThumbnail.getBase64image();
             String leadingStringToRemove = FileUtil.DATA_URI_SCHEME;
             String encodedImg = base64Image.substring(leadingStringToRemove.length());
-            byte[] decodedImg = null;
-            try {
-                decodedImg = Base64.getDecoder().decode(encodedImg.getBytes("UTF-8"));
+            byte[] decodedImg = Base64.getDecoder().decode(encodedImg.getBytes(StandardCharsets.UTF_8));
                 logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
-            } catch (UnsupportedEncodingException ex) {
-                logger.info("dataset thumbnail could not be decoded for dataset id " + dataset.getId() + ": " + ex);
-                return null;
-            }
             ByteArrayInputStream nonDefaultDatasetThumbnail = new ByteArrayInputStream(decodedImg);
             logger.fine("For dataset id " + dataset.getId() + " a thumbnail was found and is being returned.");
             return nonDefaultDatasetThumbnail;

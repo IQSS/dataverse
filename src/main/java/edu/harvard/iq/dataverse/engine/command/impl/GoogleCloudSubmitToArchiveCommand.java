@@ -26,7 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Map;
@@ -82,7 +82,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                             public void run() {
                                 try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
 
-                                    dataciteOut.write(dataciteXml.getBytes(Charset.forName("utf-8")));
+                                    dataciteOut.write(dataciteXml.getBytes(StandardCharsets.UTF_8));
                                     dataciteOut.close();
                                     success = true;
                                 } catch (Exception e) {
