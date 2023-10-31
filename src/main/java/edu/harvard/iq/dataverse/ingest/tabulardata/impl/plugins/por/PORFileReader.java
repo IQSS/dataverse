@@ -195,7 +195,7 @@ public class PORFileReader  extends TabularDataFileReader{
         BufferedReader bfReader = null;
         
         try {            
-            bfReader = new BufferedReader(new InputStreamReader(new FileInputStream(tempPORfile.getAbsolutePath()), "US-ASCII"));
+            bfReader = new BufferedReader(new InputStreamReader(new FileInputStream(tempPORfile.getAbsolutePath()), StandardCharsets.US_ASCII));
             if (bfReader == null){
                 dbgLog.fine("bfReader is null");
                 throw new IOException("bufferedReader is null");

@@ -1133,7 +1133,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         if (binary) {
             gsoString = new String(contents, StandardCharsets.UTF_8); 
         } else {
-            gsoString = new String(contents, 0, (int) length - 1, "US-ASCII");
+            gsoString = new String(contents, 0, (int) length - 1, StandardCharsets.US_ASCII);
         }
 
         logger.fine("GSO " + v + "," + o + ": " + gsoString);
