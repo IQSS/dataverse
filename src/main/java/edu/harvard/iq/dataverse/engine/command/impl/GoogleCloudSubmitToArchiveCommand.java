@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -33,7 +32,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.PublishDataset)
-public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
+public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand {
 
     private static final Logger logger = Logger.getLogger(GoogleCloudSubmitToArchiveCommand.class.getName());
     private static final String GOOGLECLOUD_BUCKET = ":GoogleCloudBucket";
