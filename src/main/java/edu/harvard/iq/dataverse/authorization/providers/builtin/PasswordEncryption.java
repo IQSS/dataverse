@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -36,13 +36,13 @@ public final class PasswordEncryption implements java.io.Serializable {
         public String encrypt(String plainText) {
             try {
                 MessageDigest md = MessageDigest.getInstance("SHA");
-                md.update(plainText.getBytes("UTF-8"));
+                md.update(plainText.getBytes(StandardCharsets.UTF_8));
                 byte[] raw = md.digest();
                 //String hash = Base64.encodeToString(raw, true);
                 String hash = Base64.getEncoder().encodeToString(raw);
                 return hash;
                 
-            } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);
             }
         }

@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
@@ -287,7 +288,7 @@ public class DataReader {
      */
     public String readUtfString(int n) throws IOException {
 
-        String ret = new String(readBytes(n), "UTF8");
+        String ret = new String(readBytes(n), StandardCharsets.UTF_8);
 
         // Remove the terminating and/or padding zero bytes:
         if (ret.indexOf(0) > -1) {

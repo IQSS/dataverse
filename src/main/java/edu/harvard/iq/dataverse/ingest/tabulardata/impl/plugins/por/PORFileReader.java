@@ -31,7 +31,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
-
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -567,7 +567,7 @@ public class PORFileReader  extends TabularDataFileReader{
         try {
             tempPORfile = File.createTempFile("tempPORfile.", ".por");
             fileOutPOR = new FileOutputStream(tempPORfile);
-            fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutPOR, "utf8"));
+            fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutPOR, StandardCharsets.UTF_8));
             porScanner = new Scanner(stream);
 
             // Because 64-bit and 32-bit machines decode POR's first 40-byte
@@ -1115,7 +1115,7 @@ public class PORFileReader  extends TabularDataFileReader{
 
         try {
             fileOutTab = new FileOutputStream(tabDelimitedDataFile);
-            pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
+            pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, StandardCharsets.UTF_8), true);
 
             variableFormatTypeList = new String[varQnty];
             for (int i = 0; i < varQnty; i++) {
