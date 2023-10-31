@@ -460,7 +460,7 @@ public class Shib implements java.io.Serializable {
             throw new Exception(key + " was empty");
         }
         if (systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
-            attributeValue= new String( attributeValue.getBytes("ISO-8859-1"), StandardCharsets.UTF_8);
+            attributeValue= new String( attributeValue.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
         }
         String trimmedValue = attributeValue.trim();
         logger.fine("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
