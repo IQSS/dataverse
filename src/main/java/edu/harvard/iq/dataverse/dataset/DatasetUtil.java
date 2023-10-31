@@ -318,17 +318,17 @@ public class DatasetUtil {
         int width = fullSizeImage.getWidth();
         int height = fullSizeImage.getHeight();
         FileChannel src = null;
-        try {
-            src = new FileInputStream(tmpFile).getChannel();
-        } catch (FileNotFoundException ex) {
+        try (FileInputStream fis = new FileInputStream(tmpFile)) {
+            src = fis.getChannel();
+        } catch (IOException ex) {
         	IOUtils.closeQuietly(inputStream);
             logger.severe(ex.getMessage());
             return null;
         }
         FileChannel dest = null;
-        try {
-            dest = new FileOutputStream(tmpFile).getChannel();
-        } catch (FileNotFoundException ex) {
+        try (FileInputStream fis = new FileInputStream(tmpFile)) {
+            dest = fis.getChannel();
+        } catch (IOException ex) {
         	IOUtils.closeQuietly(inputStream);
             logger.severe(ex.getMessage());
             return null;
@@ -410,7 +410,7 @@ public class DatasetUtil {
             String leadingStringToRemove = FileUtil.DATA_URI_SCHEME;
             String encodedImg = base64Image.substring(leadingStringToRemove.length());
             byte[] decodedImg = Base64.getDecoder().decode(encodedImg.getBytes(StandardCharsets.UTF_8));
-                logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
+            logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
             ByteArrayInputStream nonDefaultDatasetThumbnail = new ByteArrayInputStream(decodedImg);
             logger.fine("For dataset id " + dataset.getId() + " a thumbnail was found and is being returned.");
             return nonDefaultDatasetThumbnail;
