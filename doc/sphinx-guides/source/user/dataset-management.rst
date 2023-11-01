@@ -783,7 +783,7 @@ The "Compute" button on dataset and file pages will allow you to compute on a si
 Cloud Storage Access
 --------------------
 
-If you need to access a dataset in a more flexible way than the Compute button provides, then you can use the Cloud Storage Access box on the dataset page to copy the dataset's container name. This unique identifer can then be used to allow direct access to the dataset.
+If you need to access a dataset in a more flexible way than the Compute button provides, then you can use the Cloud Storage Access box on the dataset page to copy the dataset's container name. This unique identifier can then be used to allow direct access to the dataset.
 
 .. _deaccession:
 
