@@ -29,7 +29,7 @@ services:
         -Ddataverse.files.localstack1.custom-endpoint-region=us-east-2
         -Ddataverse.files.localstack1.bucket-name=mybucket
         -Ddataverse.files.localstack1.path-style-access=true
-        -Ddataverse.files.localstack1.upload-redirect=false
+        -Ddataverse.files.localstack1.upload-redirect=true
         -Ddataverse.files.localstack1.access-key=default
         -Ddataverse.files.localstack1.secret-key=default
         -Ddataverse.files.minio1.type=s3
