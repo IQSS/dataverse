@@ -36,7 +36,7 @@ If you would like to read more about the Dataverse Project's use of GitHub, plea
 Building the Guides with Sphinx
 -------------------------------
 
-The Dataverse guides are written using Sphinx (http://sphinx-doc.org). We recommend installing Sphinx on your localhost or using a Sphinx Docker container to build the guides locally so you can get an accurate preview of your changes.
+The Dataverse guides are written using Sphinx (https://sphinx-doc.org). We recommend installing Sphinx on your localhost or using a Sphinx Docker container to build the guides locally so you can get an accurate preview of your changes.
 
 In case you decide to use a Sphinx Docker container to build the guides, you can skip the next two installation sections, but you will need to have Docker installed.
 
@@ -62,7 +62,7 @@ In some parts of the documentation, graphs are rendered as images using the Sphi
 
 Building the guides requires the ``dot`` executable from GraphViz.
 
-This requires having `GraphViz <http://graphviz.org>`_ installed and either having ``dot`` on the path or
+This requires having `GraphViz <https://graphviz.org>`_ installed and either having ``dot`` on the path or
 `adding options to the make call <https://groups.google.com/forum/#!topic/sphinx-users/yXgNey_0M3I>`_.
 
 Editing and Building the Guides
@@ -71,7 +71,7 @@ Editing and Building the Guides
 To edit the existing documentation:
 
 - Create a branch (see :ref:`how-to-make-a-pull-request`).
-- In ``doc/sphinx-guides/source`` you will find the .rst files that correspond to http://guides.dataverse.org.
+- In ``doc/sphinx-guides/source`` you will find the .rst files that correspond to https://guides.dataverse.org.
 - Using your preferred text editor, open and edit the necessary files, or create new ones.
 
 Once you are done, you can preview the changes by building the guides locally. As explained, you can build the guides with Sphinx locally installed, or with a Docker container.
