@@ -499,14 +499,21 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             {
                 ZipEntry entry = entries.nextElement();
                 String dataverseLangFileName = dataverseLangDirectory + "/" + entry.getName();
-                try (FileOutputStream fileOutput = new FileOutputStream(dataverseLangFileName)) {
+                File entryFile = new File(dataverseLangFileName);
+                String canonicalPath = entryFile.getCanonicalPath();
+                if (canonicalPath.startsWith(dataverseLangDirectory + "/")) {
+                    try (FileOutputStream fileOutput = new FileOutputStream(dataverseLangFileName)) {
 
-                    InputStream is = file.getInputStream(entry);
-                    BufferedInputStream bis = new BufferedInputStream(is);
+                        InputStream is = file.getInputStream(entry);
+                        BufferedInputStream bis = new BufferedInputStream(is);
 
-                    while (bis.available() > 0) {
-                        fileOutput.write(bis.read());
+                        while (bis.available() > 0) {
+                            fileOutput.write(bis.read());
+                        }
                     }
+                } else {
+                    logger.log(Level.SEVERE, "Zip Slip prevented: uploaded zip file tried to write to {}", canonicalPath);
+                    return Response.status(400).entity("The zip file includes an illegal file path").build();
                 }
             }
         }
