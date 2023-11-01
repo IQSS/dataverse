@@ -135,7 +135,10 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
             }
         }
         String finalType = null;
-        
+        File newFile = null;    // this File will be used for a single-file, local (non-direct) upload
+        long fileSize = -1; 
+
+
         if (newStorageIdentifier == null) {
             if (getFilesTempDirectory() != null) {
                 try {
@@ -154,7 +157,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 // (note that "no size limit set" = "unlimited")
                 // (also note, that if this is a zip file, we'll be checking
                 // the size limit for each of the individual unpacked files)
-                Long fileSize = tempFile.toFile().length();
+                fileSize = tempFile.toFile().length();
                 if (fileSizeLimit != null && fileSize > fileSizeLimit) {
                     try {
                         tempFile.toFile().delete();
@@ -213,11 +216,11 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 }
 
                 DataFile datafile = null;
-                long fileSize = 0L; 
+                long uncompressedFileSize = -1; 
                 try {
                     uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
                     File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit, storageQuotaLimit);
-                    fileSize = unZippedTempFile.length();
+                    uncompressedFileSize = unZippedTempFile.length();
                     datafile = FileUtil.createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, ctxt.systemConfig().getFileFixityChecksumAlgorithm());
                 } catch (IOException | FileExceedsMaxSizeException | FileExceedsStorageQuotaException ioex) {
                     // it looks like we simply skip the file silently, if its uncompressed size
@@ -248,7 +251,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     datafiles.add(datafile);
                     // Update quota if present
                     if (quota != null) {
-                        quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + fileSize);
+                        quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + uncompressedFileSize);
                     }
                     return CreateDataFileResult.success(fileName, finalType, datafiles);
                 }
@@ -628,7 +631,35 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     throw new CommandExecutionException("Failed to process uploaded BagIt file", ioex, this);
                 }
             }
+            
+            // These are the final File and its size that will be used to 
+            // add create a single Datafile: 
+            
+            newFile = tempFile.toFile();
+            fileSize = newFile.length();
+            
         } else {
+            // Direct upload.
+            
+            // Since this is a direct upload, and therefore no temp file associated 
+            // with it, we may, OR MAY NOT know the size of the file. If this is 
+            // a direct upload via the UI, the page must have already looked up 
+            // the size, after the client confirmed that the upload had completed. 
+            // (so that we can reject the upload here, i.e. before the user clicks
+            // save, if it's over the size limit or storage quota). However, if 
+            // this is a direct upload via the API, we will wait until the 
+            // upload is finalized in the saveAndAddFiles method to enforce the 
+            // limits. 
+            if (newFileSize != null) {
+                fileSize = newFileSize;
+                
+                // if the size is specified, and it's above the individual size 
+                // limit for this store, we can reject it now:
+                if (fileSizeLimit != null && fileSize > fileSizeLimit) {
+                    throw new CommandExecutionException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)), this);
+                }
+            }
+            
             // Default to suppliedContentType if set or the overall undetermined default if a contenttype isn't supplied
             finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
             String type = determineFileTypeByNameAndExtension(fileName);
@@ -639,33 +670,18 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 }
                 logger.fine("Supplied type: " + suppliedContentType + ", finalType: " + finalType);
             }
+            
+            
         }
+        
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
         // create and return a single DataFile:
-        File newFile = null;
-        long fileSize = -1; 
         
-        if (tempFile != null) {
-            newFile = tempFile.toFile();
-            fileSize = newFile.length();
-        } else {
-            // If this is a direct upload, and therefore no temp file associated 
-            // with it, the file size must be explicitly passed to the command 
-            // (note that direct upload relies on knowing the size of the file 
-            // that's being uploaded in advance).
-            if (newFileSize != null) {
-                fileSize = newFileSize;
-            } else {
-                // This is a direct upload via the API (DVUploader, etc.) 
-                //throw new CommandExecutionException("File size must be explicitly specified when creating DataFiles with Direct Upload", this);
-            }
-        }
         
         // We have already checked that this file does not exceed the individual size limit; 
         // but if we are processing it as is, as a single file, we need to check if 
         // its size does not go beyond the allocated storage quota (if specified):
-        
         
         if (storageQuotaLimit != null && fileSize > storageQuotaLimit) {
             if (newFile != null) {
@@ -696,9 +712,13 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
             }
             datafiles.add(datafile);
 
-            // Update quota (may not be necessary in the context of direct upload - ?)
-            if (fileSize > 0 && quota != null) {
-                quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + fileSize);
+            // Update quota (not necessary in the context of direct upload, will be done later)
+            // On a second thought, @todo: we should delay updating the storage size/quotas
+            // until the file is saved and finalized, for all upload cases!
+            if (newFile != null) {
+                if (fileSize > 0 && quota != null) {
+                    quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + fileSize);
+                }
             }
             return CreateDataFileResult.success(fileName, finalType, datafiles);
         }
