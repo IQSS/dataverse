@@ -42,6 +42,7 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 
 /**
@@ -79,6 +80,9 @@ public class DataverseServiceBean implements java.io.Serializable {
     
     @EJB
     PermissionServiceBean permissionService;
+    
+    @EJB
+    DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
     
     @EJB
     SystemConfig systemConfig;
@@ -919,5 +923,212 @@ public class DataverseServiceBean implements java.io.Serializable {
         return em.createNativeQuery(cqString).getResultList();
     }
 
+        
+    public  String getCollectionDatasetSchema(Long dataverseId) {
+       
+        List<MetadataBlock> selectedBlocks = new ArrayList<>();
+        List<DatasetFieldType> requiredDSFT = new ArrayList<>();
+
+        Dataverse testDV = this.find(dataverseId);
+
+        while (!testDV.isMetadataBlockRoot()) {
+            if (testDV.getOwner() == null) {
+                break; // we are at the root; which by defintion is metadata blcok root, regarldess of the value
+            }
+            testDV = testDV.getOwner();
+        }
+        
+        selectedBlocks.addAll(testDV.getMetadataBlocks());
+
+        for (MetadataBlock mdb : selectedBlocks) {
+            for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
+                if (!dsft.isChild()) {
+                    DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(testDV.getId(), dsft.getId());
+                    if (dsfIl != null) {
+                        dsft.setRequiredDV(dsfIl.isRequired());
+                        dsft.setInclude(dsfIl.isInclude());
+                    } else {
+                        dsft.setRequiredDV(dsft.isRequired());
+                        dsft.setInclude(true);
+                    }
+                    if (dsft.isHasChildren()) {
+                        for (DatasetFieldType child : dsft.getChildDatasetFieldTypes()) {
+                            DataverseFieldTypeInputLevel dsfIlChild = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(testDV.getId(), child.getId());
+                            if (dsfIlChild != null) {
+                                child.setRequiredDV(dsfIlChild.isRequired());
+                                child.setInclude(dsfIlChild.isInclude());
+                            } else {
+                                // in the case of conditionally required (child = true, parent = false)
+                                // we set this to false; i.e this is the default "don't override" value
+                                child.setRequiredDV(child.isRequired() && dsft.isRequired());
+                                child.setInclude(true);
+                            }
+                        }
+                    }
+                    if(dsft.isRequiredDV()){
+                        requiredDSFT.add(dsft);
+                    }
+                }
+            }            
+
+        }
+        
+        String reqMDBNames = "";
+        List<MetadataBlock> hasReqFields = new ArrayList<>();
+        String retval = datasetSchemaPreface;
+        for (MetadataBlock mdb : selectedBlocks) {
+            for (DatasetFieldType dsft : requiredDSFT) {
+                if (dsft.getMetadataBlock().equals(mdb)) {
+                    hasReqFields.add(mdb);
+                    if (!reqMDBNames.isEmpty()) reqMDBNames += ",";
+                    reqMDBNames += "\"" + mdb.getName() + "\"";
+                    break;
+                }
+            }
+        }
+        
+        for (MetadataBlock mdb : hasReqFields) {
+            retval += getCustomMDBSchema(mdb, requiredDSFT);
+        }
+        
+        retval += "\n}\n";
+        
+        retval += endOfjson.replace("blockNames", reqMDBNames);
+
+        return retval;
     
+    } 
+    
+    private  String datasetSchemaPreface = 
+    "{\n" +
+    "    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n" +
+    "    \"$defs\": {\n" +
+    "    \"field\": {\n" + 
+    "        \"type\": \"object\",\n" +
+    "        \"required\": [\"typeClass\", \"multiple\", \"typeName\"],\n" +
+    "        \"properties\": {\n" + 
+    "            \"value\": {\n" +
+    "                \"anyOf\": [\n" +
+    "                    {\n" +
+    "                        \"type\": \"array\"\n" +
+    "                    },\n" +
+    "                    {\n" + 
+    "                        \"type\": \"string\"\n" +
+    "                    },\n" +
+    "                    {\n" +
+    "                        \"$ref\": \"#/$defs/field\"\n" +
+    "                    }\n" + 
+    "                ]\n" + 
+    "            },\n" + 
+    "            \"typeClass\": {\n" +
+    "                \"type\": \"string\"\n" +
+    "            }\n," +
+    "            \"multiple\": {\n" +
+    "                \"type\": \"boolean\"\n" +
+    "            },\n" +
+    "            \"typeName\": {\n" + 
+    "                \"type\": \"string\"\n" +
+    "            }\n" +
+    "        }\n" +
+    "    }\n" + 
+    "},\n" + 
+    "\"type\": \"object\",\n" +
+    "\"properties\": {\n" + 
+    "    \"datasetVersion\": {\n" + 
+    "        \"type\": \"object\",\n" +
+    "        \"properties\": {\n" + 
+    "           \"license\": {\n" + 
+    "                \"type\": \"object\",\n" + 
+    "                \"properties\": {\n" + 
+    "                    \"name\": {\n" +
+    "                        \"type\": \"string\"\n" + 
+    "                    },\n" + 
+    "                    \"uri\": {\n" + 
+    "                        \"type\": \"string\",\n" + 
+    "                        \"format\": \"uri\"\n" + 
+    "                   }\n" + 
+    "                },\n" + 
+    "                \"required\": [\"name\", \"uri\"]\n" + 
+    "            },\n" + 
+    "            \"metadataBlocks\": {\n" + 
+    "                \"type\": \"object\",\n" + 
+    "               \"properties\": {\n" +
+    ""  ;  
+
+
+    
+    private String reqValTemplate = "                                        {\n" +
+"                                            \"contains\": {\n" +
+"                                                \"properties\": {\n" +
+"                                                    \"typeName\": {\n" +
+"                                                        \"const\": \"reqFieldTypeName\"\n" +
+"                                                    }\n" +
+"                                                }\n" +
+"                                            }\n" +
+"                                        },";
+    
+    private String minItemsTemplate = "\n                                    \"minItems\": numMinItems,\n" +
+"                                    \"allOf\": [\n";
+    private String endOfReqVal = "                                    ]\n" +
+"                                }\n" +
+"                            },\n" +
+"                            \"required\": [\"fields\"]\n" +
+"                        },";
+    
+    private String endOfjson = ",\n" +
+"                    \"required\": [blockNames]\n" +
+"                }\n" +
+"            },\n" +
+"            \"required\": [\"license\", \"metadataBlocks\"]\n" +
+"        }\n" +
+"    },\n" +
+"    \"required\": [\"datasetVersion\"]\n" +
+"}\n";
+    
+    private String startOfMDB = "\"blockName\": {\n" +
+"                            \"type\": \"object\",\n" +
+"                            \"properties\": {\n" +
+"                                \"fields\": {\n" +
+"                                    \"type\": \"array\",\n" +
+"                                    \"items\": {\n" +
+"                                        \"$ref\": \"#/$defs/field\"\n" +
+"                                    },";
+    
+    
+    private String getCustomMDBSchema (MetadataBlock mdb, List<DatasetFieldType> requiredDSFT){
+        String retval = "";
+        boolean mdbHasReqField = false;
+        int numReq = 0;
+        List<DatasetFieldType> requiredThisMDB = new ArrayList<>();
+        
+        for (DatasetFieldType dsft : requiredDSFT ){
+
+            if(dsft.getMetadataBlock().equals(mdb)){
+                numReq++;
+                mdbHasReqField = true;
+                requiredThisMDB.add(dsft);
+            }
+        }
+        if (mdbHasReqField){
+        retval  += startOfMDB.replace("blockName", mdb.getName());
+        
+        retval += minItemsTemplate.replace("numMinItems", Integer.toString(requiredThisMDB.size()));
+        int count = 0;
+        for (DatasetFieldType dsft:requiredThisMDB ){
+            count++;
+            String reqValImp = reqValTemplate.replace("reqFieldTypeName", dsft.getName());
+            if (count < requiredThisMDB.size()){
+                retval += reqValImp + "\n";
+            } else {
+               reqValImp = StringUtils.substring(reqValImp, 0, reqValImp.length() - 1);
+               retval += reqValImp+ "\n";
+               retval += endOfReqVal;
+            }            
+        }
+        
+        }
+
+        return retval;
+    }    
+            
 }
