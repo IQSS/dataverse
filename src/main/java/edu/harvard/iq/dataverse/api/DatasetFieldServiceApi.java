@@ -24,7 +24,6 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -488,9 +487,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @Consumes("application/zip")
     @Path("loadpropertyfiles")
     public Response loadLanguagePropertyFile(File inputFile) {
-        try
-        {
-            ZipFile file = new ZipFile(inputFile);
+        try (ZipFile file = new ZipFile(inputFile)) {
             //Get file entries
             Enumeration<? extends ZipEntry> entries = file.entries();
 
@@ -502,20 +499,19 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             {
                 ZipEntry entry = entries.nextElement();
                 String dataverseLangFileName = dataverseLangDirectory + "/" + entry.getName();
-                FileOutputStream fileOutput = new FileOutputStream(dataverseLangFileName);
+                try (FileOutputStream fileOutput = new FileOutputStream(dataverseLangFileName)) {
 
-                InputStream is = file.getInputStream(entry);
-                BufferedInputStream bis = new BufferedInputStream(is);
+                    InputStream is = file.getInputStream(entry);
+                    BufferedInputStream bis = new BufferedInputStream(is);
 
-                while (bis.available() > 0) {
-                    fileOutput.write(bis.read());
+                    while (bis.available() > 0) {
+                        fileOutput.write(bis.read());
+                    }
                 }
-                fileOutput.close();
             }
         }
-        catch(IOException e)
-        {
-            e.printStackTrace();
+        catch(IOException e) {
+            logger.log(Level.SEVERE, "Reading the language property zip file failed", e);
             return Response.status(500).entity("Internal server error. More details available at the server logs.").build();
         }
 
