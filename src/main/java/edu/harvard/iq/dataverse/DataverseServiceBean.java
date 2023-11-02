@@ -1079,7 +1079,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 "                    \"required\": [blockNames]\n" +
 "                }\n" +
 "            },\n" +
-"            \"required\": [\"license\", \"metadataBlocks\"]\n" +
+"            \"required\": [\"metadataBlocks\"]\n" +
 "        }\n" +
 "    },\n" +
 "    \"required\": [\"datasetVersion\"]\n" +
