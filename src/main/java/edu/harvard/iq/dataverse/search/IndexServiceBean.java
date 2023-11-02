@@ -420,7 +420,6 @@ public class IndexServiceBean {
         }
     }
 
-    @Asynchronous
     public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
         for(Dataset dataset : datasets) {
             asyncIndexDataset(dataset, true);
