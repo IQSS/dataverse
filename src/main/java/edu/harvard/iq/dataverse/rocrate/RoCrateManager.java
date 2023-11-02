@@ -112,8 +112,8 @@ public class RoCrateManager {
             String fieldName = fieldType.getName();
             String fieldUri = fieldType.getUri();
 
-            if (fieldUri == null && fieldType.getMetadataBlock().getNamespaceUri() != null) {
-                fieldUri = fieldType.getMetadataBlock().getNamespaceUri()+fieldType.getName();
+            if (fieldUri == null) {
+                fieldUri = fieldType.getMetadataBlock().getJsonLDNamespace().getUrl();
             }
 
             if (!datasetField.isEmpty()) {
@@ -407,8 +407,8 @@ public class RoCrateManager {
                 DatasetFieldType childFieldType = childDatasetField.getDatasetFieldType();
                 String childFieldName = childFieldType.getName();
                 String childFieldUri = childFieldType.getUri();
-                if (childFieldUri == null && childFieldType.getMetadataBlock().getNamespaceUri() != null) {
-                    childFieldUri = childFieldType.getMetadataBlock().getNamespaceUri()+childFieldName;
+                if (childFieldUri == null) {
+                    childFieldUri = childFieldType.getMetadataBlock().getJsonLDNamespace().getUrl();
                 }
                 if (isCreation || !roCrateContext.has(childFieldName)) {
                     roCrateContextUpdater.addValuePairToContext(childFieldName, childFieldUri);
@@ -440,8 +440,8 @@ public class RoCrateManager {
         DatasetFieldType parentFieldType = parentField.getDatasetFieldType();
         String parentFieldName = parentFieldType.getName();
         String parentFieldUri = parentFieldType.getUri();
-        if (parentFieldUri == null && parentFieldType.getMetadataBlock().getNamespaceUri() != null) {
-            parentFieldUri = parentFieldType.getMetadataBlock().getNamespaceUri() + parentFieldName;
+        if (parentFieldUri == null) {
+            parentFieldUri = parentFieldType.getMetadataBlock().getJsonLDNamespace().getUrl();
         }
         ContextualEntity.ContextualEntityBuilder contextualEntityBuilder = new ContextualEntity.ContextualEntityBuilder();
         buildNewContextualEntity(roCrate, roCrateContextUpdater, contextualEntityBuilder, compoundValue, mapper, parentFieldName, parentFieldUri, isCreation);
