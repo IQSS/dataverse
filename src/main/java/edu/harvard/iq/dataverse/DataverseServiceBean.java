@@ -991,7 +991,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             retval += getCustomMDBSchema(mdb, requiredDSFT);
         }
         
-        retval += "\n}\n";
+        retval += "\n                     }";
         
         retval += endOfjson.replace("blockNames", reqMDBNames);
 
@@ -1022,7 +1022,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     "            },\n" + 
     "            \"typeClass\": {\n" +
     "                \"type\": \"string\"\n" +
-    "            }\n," +
+    "            },\n" +
     "            \"multiple\": {\n" +
     "                \"type\": \"boolean\"\n" +
     "            },\n" +
@@ -1085,7 +1085,8 @@ public class DataverseServiceBean implements java.io.Serializable {
 "    \"required\": [\"datasetVersion\"]\n" +
 "}\n";
     
-    private String startOfMDB = "\"blockName\": {\n" +
+    private String startOfMDB = "" +
+"                           \"blockName\": {\n" +
 "                            \"type\": \"object\",\n" +
 "                            \"properties\": {\n" +
 "                                \"fields\": {\n" +
