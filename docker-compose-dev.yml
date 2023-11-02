@@ -127,6 +127,15 @@ services:
     volumes:
       - './conf/keycloak/oidc-realm.json:/opt/keycloak/data/import/oidc-realm.json'
 
+  dev_nginx:
+    container_name: dev_nginx
+    image: gdcc/dev_nginx:unstable
+    ports:
+      - "4849:4849"
+    restart: always
+    networks:
+      - dataverse
+
 networks:
   dataverse:
     driver: bridge

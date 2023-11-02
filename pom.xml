@@ -891,6 +891,14 @@
                                         <skip>true</skip>
                                     </run>
                                 </image>
+
+                                <image>
+                                    <name>gdcc/dev_nginx:unstable</name>
+                                    <build>
+                                        <contextDir>${project.basedir}/modules/nginx</contextDir>
+                                    </build>
+                                </image>
+
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
                         </configuration>
