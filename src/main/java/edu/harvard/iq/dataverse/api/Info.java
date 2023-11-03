@@ -9,6 +9,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
@@ -81,5 +82,19 @@ public class Info extends AbstractApiBean {
         } else {
             return notFound("Setting " + key + " not found");
         }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("settingGroups/{groupName}")
+    public Response getGroupSettings(@Context ContainerRequestContext crc, @PathParam("groupName") String groupName) {
+        return ok("Not implemented!");
+    }
+
+    @GET
+    @AuthRequired
+    @Path("settingScopes/{groupName}/{settingName}")
+    public Response getSetting(@Context ContainerRequestContext crc, @PathParam("groupName") String groupName, @PathParam("settingName") String settingName) {
+        return ok("Not implemented!");
     }
 }
