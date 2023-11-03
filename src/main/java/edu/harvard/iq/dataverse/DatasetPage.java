@@ -754,17 +754,26 @@ public class DatasetPage implements java.io.Serializable {
         if (isIndexedVersion != null) {
             return isIndexedVersion;
         }
-        // The version is SUPPOSED to be indexed if it's the latest published version, or a
-        // draft. So if none of the above is true, we return false right away:
-
-        if (!(workingVersion.isDraft() || isThisLatestReleasedVersion())) {
+        
+        // Just like on the collection page, facets on the Dataset page can be
+        // disabled instance-wide by an admin:
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false)) {
             return isIndexedVersion = false;
         }
-
-        // ... but if it is the latest published version or a draft, we want to test
-        // and confirm that this version *has* actually been indexed and is searchable
-        // (and that solr is actually up and running!), by running a quick solr search:
-        return isIndexedVersion = isThisVersionSearchable();
+        
+        // The version is SUPPOSED to be indexed if it's the latest published version, or a
+        // draft. So if none of the above is true, we can return fasle.
+        // ... but if it is the latest published version or a draft, we want to 
+        // confirm that this version *has* actually been indexed. 
+        
+        if (workingVersion.isDraft()) {
+            return isIndexedVersion = workingVersion.getDataset().getIndexTime() != null;
+        } else if (isThisLatestReleasedVersion()) {
+            return isIndexedVersion = (workingVersion.getDataset().getIndexTime() != null)
+                    && workingVersion.getDataset().getIndexTime().after(workingVersion.getReleaseTime());
+        }
+        
+        return isIndexedVersion = false ;
     }
 
     /**
@@ -820,7 +829,11 @@ public class DatasetPage implements java.io.Serializable {
     /**
      * Verifies that solr is running and that the version is indexed and searchable
      * @return boolean
-     */
+     * Commenting out this method for now, since we have decided it was not 
+     * necessary, to query solr just to figure out if we can query solr. We will
+     * rely solely on the latest-relesed status and the indexed timestamp from 
+     * the database for that. - L.A.
+     *
     public boolean isThisVersionSearchable() {
         // Just like on the collection page, facets on the Dataset page can be
         // disabled instance-wide by an admin:
@@ -862,6 +875,7 @@ public class DatasetPage implements java.io.Serializable {
 
         return false;
     }
+    */
 
     /**
      * Finds the list of numeric datafile ids in the Version specified, by running
