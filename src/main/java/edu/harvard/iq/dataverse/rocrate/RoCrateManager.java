@@ -36,12 +36,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Manages RO-Crate related functionalities, currently creating and updateing the ro-crate-metadata.json of
+ * Manages RO-Crate related functionalities, currently creating and updating the ro-crate-metadata.json of
  * a dataset. It generates RO-Crate JSON using the metadatablocks of the dataset as the schema
  * of the RO-Crate. It means, that all data that is present in the dataset in Dataverse is generated into the JSON.
  * The RO-Crate specification suggests the use of the Schema.org vocabulary, which would mean that every Dataverse
  * dataset data should be mapped to a Schema.org counterpart, which cannot be done without loss of data. This
- * implementation instead uses fact that the Ro-Crate specification allows using any schema beside Schema.org and in
+ * implementation instead uses fact that the RO-Crate specification allows using any schema beside Schema.org and in
  * this implementation the schema is provided by the Dataverse metadatablocks.
  *
  * This class has been extracted from the ARP project (https://science-research-data.hu/en) in the frame of
