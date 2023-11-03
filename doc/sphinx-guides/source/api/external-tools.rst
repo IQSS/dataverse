@@ -187,6 +187,7 @@ Using Example Manifests to Get Started
 ++++++++++++++++++++++++++++++++++++++
 
 Again, you can use :download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` or :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as a starting point for your own manifest file.
+Additional working examples, including ones using signedUrls, are available at https://github.com/gdcc/dataverse-previewers .
 
 Testing Your External Tool
 --------------------------
