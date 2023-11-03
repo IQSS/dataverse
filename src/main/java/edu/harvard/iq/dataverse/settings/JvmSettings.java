@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * {@link JvmSettings#JvmSettings(JvmSettings)}
  *
  */
-public enum JvmSettings {
+public enum JvmSettings implements SettingKey {
     // the upmost root scope - every setting shall start with it.
     PREFIX("dataverse"),
     
