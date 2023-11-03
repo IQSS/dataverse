@@ -762,18 +762,21 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         // The version is SUPPOSED to be indexed if it's the latest published version, or a
-        // draft. So if none of the above is true, we can return fasle.
-        // ... but if it is the latest published version or a draft, we want to 
-        // confirm that this version *has* actually been indexed. 
+        // draft. So if none of the above is true, we can return false right away. 
+        if (!(workingVersion.isDraft() || isThisLatestReleasedVersion())) {
+            return isIndexedVersion = false;
+        }
+        // If this is the latest published version, we want to confirm that this 
+        // version was successfully indexed after the last publication 
         
-        if (workingVersion.isDraft()) {
-            return isIndexedVersion = workingVersion.getDataset().getIndexTime() != null;
-        } else if (isThisLatestReleasedVersion()) {
+        if (isThisLatestReleasedVersion()) {
             return isIndexedVersion = (workingVersion.getDataset().getIndexTime() != null)
                     && workingVersion.getDataset().getIndexTime().after(workingVersion.getReleaseTime());
         }
         
-        return isIndexedVersion = false ;
+        // Drafts don't have the indextime stamps set/incremented when indexed, 
+        // so we'll just assume it is indexed, and will then hope for the best.
+        return isIndexedVersion = true;
     }
 
     /**
@@ -987,10 +990,19 @@ public class DatasetPage implements java.io.Serializable {
             logger.fine("Remote Solr Exception: " + ex.getLocalizedMessage());
             String msg = ex.getLocalizedMessage();
             if (msg.contains(SearchFields.FILE_DELETED)) {
+                // This is a backward compatibility hook put in place many versions
+                // ago, to accommodate instances running Solr with schemas that 
+                // don't include this flag yet. Running Solr with an up-to-date
+                // schema has been a hard requirement for a while now; should we 
+                // remove it at this point? - L.A. 
                 fileDeletedFlagNotIndexed = true;
+            } else {
+                isIndexedVersion = false;
+                return resultIds;
             }
         } catch (Exception ex) {
             logger.warning("Solr exception: " + ex.getLocalizedMessage());
+            isIndexedVersion = false; 
             return resultIds;
         }
 
@@ -1003,6 +1015,7 @@ public class DatasetPage implements java.io.Serializable {
                 queryResponse = solrClientService.getSolrClient().query(solrQuery);
             } catch (Exception ex) {
                 logger.warning("Caught a Solr exception (again!): " + ex.getLocalizedMessage());
+                isIndexedVersion = false; 
                 return resultIds;
             }
         }
