@@ -622,6 +622,7 @@ public class AuthenticationServiceBean {
             String identifier = internalUserIdentifier + i;
             while ( identifierExists(identifier) ) {
                 i += 1;
+                identifier = internalUserIdentifier + i;
             }
             authenticatedUser.setUserIdentifier(identifier);
         } else {
