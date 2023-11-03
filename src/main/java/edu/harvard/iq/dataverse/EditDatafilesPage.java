@@ -2169,7 +2169,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 - Max size specified in db: check too make sure file is within limits
             // ---------------------------- */
             /**
-             * @todo: this size check is probably redundant here, since the new
+             * @todo: this file size limit check is now redundant here, since the new
              * CreateNewFilesCommand is going to perform it (and the quota 
              * checks too, if enabled
              */
