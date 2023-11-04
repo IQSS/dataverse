@@ -56,6 +56,7 @@ fi
 if [ "${ENABLE_RELOAD}" = "1" ]; then
   echo "Enabling hot reload of deployments."
   echo "set configs.config.server-config.admin-service.das-config.dynamic-reload-enabled=true" >> "${DV_PREBOOT}"
+  echo "set configs.config.server-config.admin-service.das-config.autodeploy-enabled=true" >> "${DV_PREBOOT}"
 fi
 
 # 4. Add the commands to the existing preboot file, but insert BEFORE deployment
