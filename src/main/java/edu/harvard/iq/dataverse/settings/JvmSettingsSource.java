@@ -11,41 +11,41 @@ public class JvmSettingsSource implements SettingsSource<JvmSettings> {
 
     @Override
     public String lookup(JvmSettings settingKey) {
-        return null;
+        return settingKey.lookup();
     }
 
     @Override
     public Optional<String> lookupOptional(JvmSettings settingKey) {
-        return Optional.empty();
+        return settingKey.lookupOptional();
     }
 
     @Override
     public <T> T lookup(JvmSettings settingKey, Class<T> klass) {
-        return null;
+        return settingKey.lookup(klass);
     }
 
     @Override
     public <T> Optional<T> lookupOptional(JvmSettings settingKey, Class<T> klass) {
-        return Optional.empty();
+        return settingKey.lookupOptional(klass);
     }
 
     @Override
     public String lookup(JvmSettings settingKey, String... arguments) {
-        return null;
+        return settingKey.lookup(arguments);
     }
 
     @Override
     public Optional<String> lookupOptional(JvmSettings settingKey, String... arguments) {
-        return Optional.empty();
+        return settingKey.lookupOptional(arguments);
     }
 
     @Override
     public <T> T lookup(JvmSettings settingKey, Class<T> klass, String... arguments) {
-        return null;
+        return settingKey.lookup(klass, arguments);
     }
 
     @Override
     public <T> Optional<T> lookupOptional(JvmSettings settingKey, Class<T> klass, String... arguments) {
-        return Optional.empty();
+        return settingKey.lookupOptional(klass, arguments);
     }
 }
