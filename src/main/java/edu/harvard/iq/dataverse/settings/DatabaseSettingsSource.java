@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.settings;
 
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.util.Optional;
@@ -9,9 +10,12 @@ import java.util.Optional;
 @Named
 public class DatabaseSettingsSource implements SettingsSource<SettingsServiceBean.Key> {
 
+    @Inject
+    SettingsServiceBean settingsService;
+
     @Override
     public String lookup(SettingsServiceBean.Key settingKey) {
-        return null;
+        return settingsService.getValueForKey(settingKey);
     }
 
     @Override
