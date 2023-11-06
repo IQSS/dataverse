@@ -4,8 +4,6 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import java.util.Optional;
-
 @Stateless
 @Named
 public class DatabaseSettingsSource implements SettingsSource<SettingsServiceBean.Key> {
@@ -14,42 +12,8 @@ public class DatabaseSettingsSource implements SettingsSource<SettingsServiceBea
     SettingsServiceBean settingsService;
 
     @Override
-    public String lookup(SettingsServiceBean.Key settingKey) {
-        return settingsService.getValueForKey(settingKey);
-    }
-
-    @Override
-    public Optional<String> lookupOptional(SettingsServiceBean.Key settingKey) {
-        return Optional.empty();
-    }
-
-    @Override
-    public <T> T lookup(SettingsServiceBean.Key settingKey, Class<T> klass) {
-        return null;
-    }
-
-    @Override
-    public <T> Optional<T> lookupOptional(SettingsServiceBean.Key settingKey, Class<T> klass) {
-        return Optional.empty();
-    }
-
-    @Override
-    public String lookup(SettingsServiceBean.Key settingKey, String... arguments) {
-        return null;
-    }
-
-    @Override
-    public Optional<String> lookupOptional(SettingsServiceBean.Key settingKey, String... arguments) {
-        return Optional.empty();
-    }
-
-    @Override
-    public <T> T lookup(SettingsServiceBean.Key settingKey, Class<T> klass, String... arguments) {
-        return null;
-    }
-
-    @Override
-    public <T> Optional<T> lookupOptional(SettingsServiceBean.Key settingKey, Class<T> klass, String... arguments) {
-        return Optional.empty();
+    public <T> T lookup(SettingsServiceBean.Key settingKey, Class<T> klass, T defaultValue) {
+        // TODO params and default value support
+        return (T) settingsService.getValueForKey(settingKey);
     }
 }

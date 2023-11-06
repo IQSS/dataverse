@@ -2,9 +2,11 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.settings.PublicSettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
+import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonValue;
 import jakarta.ws.rs.GET;
@@ -22,6 +24,9 @@ public class Info extends AbstractApiBean {
     
     @EJB
     SystemConfig systemConfig;
+
+    @Inject
+    PublicSettingsServiceBean publicSettingsServiceBean;
 
     @GET
     @Path("settings/:DatasetPublishPopupCustomText")
@@ -96,5 +101,6 @@ public class Info extends AbstractApiBean {
     @Path("settingScopes/{groupName}/{settingName}")
     public Response getSetting(@Context ContainerRequestContext crc, @PathParam("groupName") String groupName, @PathParam("settingName") String settingName) {
         return ok("Not implemented!");
+        //return ok(publicSettingsServiceBean.lookup(groupName, settingName));
     }
 }
