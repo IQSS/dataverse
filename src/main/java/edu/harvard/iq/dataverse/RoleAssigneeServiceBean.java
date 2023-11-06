@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
@@ -96,8 +97,8 @@ public class RoleAssigneeServiceBean {
         if (identifier == null || identifier.isEmpty()) {
             throw new IllegalArgumentException("Identifier cannot be null or empty string.");
         }
-        switch (identifier.charAt(0)) {
-            case ':':
+        switch (identifier.substring(0,1)) {
+            case ":":
                 return predefinedRoleAssignees.get(identifier);
             case AuthenticatedUser.IDENTIFIER_PREFIX:
                 if (!augmented){
