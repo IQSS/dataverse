@@ -99,15 +99,15 @@ public class RoleAssigneeServiceBean {
         switch (identifier.charAt(0)) {
             case ':':
                 return predefinedRoleAssignees.get(identifier);
-            case '@':
+            case AuthenticatedUser.IDENTIFIER_PREFIX:
                 if (!augmented){
                     return authSvc.getAuthenticatedUser(identifier.substring(1));
                 } else {
                     return authSvc.getAuthenticatedUserWithProvider(identifier.substring(1));
-                }                
-            case '&':
+                }
+            case Group.IDENTIFIER_PREFIX:
                 return groupSvc.getGroup(identifier.substring(1));
-            case '#':
+            case PrivateUrlUser.PREFIX:
                 return PrivateUrlUtil.identifier2roleAssignee(identifier);
             default:
                 throw new IllegalArgumentException("Unsupported assignee identifier '" + identifier + "'");
