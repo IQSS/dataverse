@@ -201,7 +201,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> implements Glob
                     }
                 } // else we're OK (assumes bucket name in storageidentifier matches the driver's bucketname)
             } else {
-                if(!storageIdentifier.substring((this.driverId + DataAccess.SEPARATOR).length()).contains(":")) {
+                if(!storageIdentifier.contains(":")) {
                     //No driver id or bucket 
                     newStorageIdentifier= this.driverId + DataAccess.SEPARATOR + bucketName + ":" + storageIdentifier;
                 } else {

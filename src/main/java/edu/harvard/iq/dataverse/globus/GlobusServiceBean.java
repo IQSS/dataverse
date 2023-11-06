@@ -20,6 +20,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonPatch;
+import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.HttpMethod;
 
@@ -668,7 +669,6 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
 
         globusLogger.info("Starting an globusUpload ");
 
-
         String ruleId = getRuleId(endpoint, task.getOwner_id(), "rw");
         logger.info("Found rule: " + ruleId);
         if (ruleId != null) {
@@ -886,17 +886,16 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
                 sb.append(line);
             globusLogger.info(" API Output :  " + sb.toString());
             JsonObject jsonObject = null;
-            try (StringReader rdr = new StringReader(sb.toString())) {
-                jsonObject = Json.createReader(rdr).readObject();
-            } catch (Exception jpe) {
-                jpe.printStackTrace();
-                globusLogger.log(Level.SEVERE, "Error parsing dataset json.");
-            }
+            jsonObject = JsonUtil.getJsonObject(sb.toString());
 
             status = jsonObject.getString("status");
         } catch (Exception ex) {
-            globusLogger.log(Level.SEVERE,
+            if(ex instanceof JsonParsingException) {
+                globusLogger.log(Level.SEVERE, "Error parsing dataset json.");
+            } else { 
+                globusLogger.log(Level.SEVERE,
                     "******* Unexpected Exception while executing api/datasets/:persistentId/add call ", ex);
+            }
         }
 
         return status;
@@ -931,11 +930,12 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
         globusLogger.info("Starting an globusDownload ");
 
         JsonObject jsonObject = null;
-        try (StringReader rdr = new StringReader(jsonData)) {
-            jsonObject = Json.createReader(rdr).readObject();
+        try {
+            jsonObject = JsonUtil.getJsonObject(jsonData);
         } catch (Exception jpe) {
             jpe.printStackTrace();
-            globusLogger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}");
+            globusLogger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonData);
+            // TODO: stop the process after this parsing exception.
         }
 
         String taskIdentifier = jsonObject.getString("taskIdentifier");
@@ -944,7 +944,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
         try {
             jsonObject.getString("ruleId");
         } catch (NullPointerException npe) {
-
+            globusLogger.log(Level.SEVERE, "Error parsing dataset json. No ruleId: {0}", jsonData);
         }
 
         // globus task status check

@@ -30,6 +30,8 @@ import jakarta.ws.rs.HttpMethod;
 
 import org.apache.commons.codec.binary.StringUtils;
 
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_LATEST;
+
 /**
  * Handles an operation on a specific file. Requires a file id in order to be
  * instantiated. Applies logic based on an {@link ExternalTool} specification,
@@ -101,7 +103,7 @@ public class ExternalToolHandler extends URLTokenUtil {
                 switch (externalTool.getScope()) {
                 case DATASET:
                     callback=SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/datasets/"
-                            + dataset.getId() + "/versions/:latest/toolparams/" + externalTool.getId();
+                            + dataset.getId() + "/versions/" + DS_VERSION_LATEST + "/toolparams/" + externalTool.getId();
                     break;
                 case FILE:
                     callback= SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/files/"
