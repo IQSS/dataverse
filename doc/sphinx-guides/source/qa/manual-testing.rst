@@ -15,6 +15,7 @@ Examining a pull request for test cases:
 What does it do? What problem does it solve?
 ++++++++++++++++++++++++++++++++++++++++++++
 Read the top part of the pull request for a description, notes for reviewers, and usually a how-to test section. Does it make sense? If not, read the underlying ticket it closes, and any release notes or documentation. Knowing in general what it does helps you to think about how to approach it.
+
 How is it configured?
 +++++++++++++++++++++
 Most pull requests do not have any special configuration and are enabled on deployment, but some do. Configuration is part of testing. An admin will need to follow these instructions so try them out. Plus, that is the only way you will get it working to test it! 
