@@ -104,7 +104,7 @@ public class DataverseUtil {
         // :MetadataLanguage setting is not set
         // Must send UNDEFINED or match parent
         if (mLangMap.isEmpty()) {
-            if (!(ds.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)
+            if (!(ds.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_CODE)
                     || ds.getMetadataLanguage().equals(owner.getMetadataLanguage()))) {
                 throw new BadRequestException("This repository is not configured to support metadataLanguage.");
             }
@@ -113,8 +113,8 @@ public class DataverseUtil {
             // parent collection choice, or, if that is undefined, be one of the choices
             // allowed by the setting
             if (!((ds.getMetadataLanguage().equals(owner.getMetadataLanguage())
-                    && !owner.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE))
-                    || (owner.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)
+                    && !owner.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_CODE))
+                    || (owner.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_CODE)
                             && (mLangMap.containsKey(ds.getMetadataLanguage()))))) {
                 throw new BadRequestException("Specified metadatalanguage ( metadataLanguage, "
                         + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed in this collection.");

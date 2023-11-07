@@ -28,20 +28,20 @@ With Maven installed you can run ``mvn package`` and ``mvn test`` from the comma
 PlantUML
 ++++++++
 
-PlantUML is used to create diagrams in the guides and other places. Download it from http://plantuml.com and check out an example script at https://github.com/IQSS/dataverse/blob/v4.6.1/doc/Architecture/components.sh . Note that for this script to work, you'll need the ``dot`` program, which can be installed on Mac with ``brew install graphviz``.
+PlantUML is used to create diagrams in the guides and other places. Download it from https://plantuml.com and check out an example script at https://github.com/IQSS/dataverse/blob/v4.6.1/doc/Architecture/components.sh . Note that for this script to work, you'll need the ``dot`` program, which can be installed on Mac with ``brew install graphviz``.
 
 Eclipse Memory Analyzer Tool (MAT)
 ++++++++++++++++++++++++++++++++++
 
 The Memory Analyzer Tool (MAT) from Eclipse can help you analyze heap dumps, showing you "leak suspects" such as seen at https://github.com/payara/Payara/issues/350#issuecomment-115262625
 
-It can be downloaded from http://www.eclipse.org/mat
+It can be downloaded from https://www.eclipse.org/mat
 
 If the heap dump provided to you was created with ``gcore`` (such as with ``gcore -o /tmp/app.core $app_pid``) rather than ``jmap``, you will need to convert the file before you can open it in MAT. Using ``app.core.13849`` as example of the original 33 GB file, here is how you could convert it into a 26 GB ``app.core.13849.hprof`` file. Please note that this operation took almost 90 minutes:
 
 ``/usr/java7/bin/jmap -dump:format=b,file=app.core.13849.hprof /usr/java7/bin/java app.core.13849``
 
-A file of this size may not "just work" in MAT. When you attempt to open it you may see something like "An internal error occurred during: "Parsing heap dump from '/tmp/heapdumps/app.core.13849.hprof'". Java heap space". If so, you will need to increase the memory allocated to MAT. On Mac OS X, this can be done by editing ``MemoryAnalyzer.app/Contents/MacOS/MemoryAnalyzer.ini`` and increasing the value "-Xmx1024m" until it's high enough to open the file. See also http://wiki.eclipse.org/index.php/MemoryAnalyzer/FAQ#Out_of_Memory_Error_while_Running_the_Memory_Analyzer
+A file of this size may not "just work" in MAT. When you attempt to open it you may see something like "An internal error occurred during: "Parsing heap dump from '/tmp/heapdumps/app.core.13849.hprof'". Java heap space". If so, you will need to increase the memory allocated to MAT. On Mac OS X, this can be done by editing ``MemoryAnalyzer.app/Contents/MacOS/MemoryAnalyzer.ini`` and increasing the value "-Xmx1024m" until it's high enough to open the file. See also https://wiki.eclipse.org/index.php/MemoryAnalyzer/FAQ#Out_of_Memory_Error_while_Running_the_Memory_Analyzer
 
 PageKite
 ++++++++
@@ -58,7 +58,7 @@ The first time you run ``./pagekite.py`` a file at ``~/.pagekite.rc`` will be
 created. You can edit this file to configure PageKite to serve up port 8080
 (the default app server HTTP port) or the port of your choosing.
 
-According to https://pagekite.net/support/free-for-foss/ PageKite (very generously!) offers free accounts to developers writing software the meets http://opensource.org/docs/definition.php such as the Dataverse Project.
+According to https://pagekite.net/support/free-for-foss/ PageKite (very generously!) offers free accounts to developers writing software the meets https://opensource.org/docs/definition.php such as the Dataverse Project.
 
 MSV
 +++
@@ -96,7 +96,7 @@ Download SonarQube from https://www.sonarqube.org and start look in the `bin` di
     -Dsonar.test.exclusions='src/test/**,src/main/webapp/resources/**' \
     -Dsonar.issuesReport.html.enable=true \
     -Dsonar.issuesReport.html.location='sonar-issues-report.html' \
-    -Dsonar.jacoco.reportPath=target/jacoco.exec
+    -Dsonar.jacoco.reportPath=target/coverage-reports/jacoco-unit.exec
 
 Once the analysis is complete, you should be able to access http://localhost:9000/dashboard?id=edu.harvard.iq%3Adataverse to see the report. To learn about resource leaks, for example, click on "Bugs", the "Tag", then "leak" or "Rule", then "Resources should be closed".
 

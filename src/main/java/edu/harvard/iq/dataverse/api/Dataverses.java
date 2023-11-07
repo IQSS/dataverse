@@ -78,8 +78,9 @@ import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
-import java.io.StringReader;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -178,8 +179,8 @@ public class Dataverses extends AbstractApiBean {
 
         Dataverse d;
         JsonObject dvJson;
-        try (StringReader rdr = new StringReader(body)) {
-            dvJson = Json.createReader(rdr).readObject();
+        try {
+            dvJson = JsonUtil.getJsonObject(body);
             d = jsonParser().parseDataverse(dvJson);
         } catch (JsonParsingException jpe) {
             logger.log(Level.SEVERE, "Json: {0}", body);
@@ -559,8 +560,8 @@ public class Dataverses extends AbstractApiBean {
     }
     
     private Dataset parseDataset(String datasetJson) throws WrappedResponse {
-        try (StringReader rdr = new StringReader(datasetJson)) {
-            return jsonParser().parseDataset(Json.createReader(rdr).readObject());
+        try {
+            return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson));
         } catch (JsonParsingException | JsonParseException jpe) {
             logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", datasetJson);
             throw new WrappedResponse(error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage()));
@@ -976,6 +977,8 @@ public class Dataverses extends AbstractApiBean {
      */
 //    File tempDir;
 //
+//    TODO: Code duplicate in ThemeWidgetFragment. Maybe extract, make static and put some place else?
+//          Important: at least use JvmSettings.DOCROOT_DIRECTORY and not the hardcoded location!
 //    private void createTempDir(Dataverse editDv) {
 //        try {
 //            File tempRoot = java.nio.file.Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();
@@ -1171,8 +1174,9 @@ public class Dataverses extends AbstractApiBean {
     public Response getGuestbookResponsesByDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
 
+        Dataverse dv;
         try {
-            Dataverse dv = findDataverseOrDie(dvIdtf);
+            dv = findDataverseOrDie(dvIdtf);
             User u = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(u);
             if (permissionSvc.request(req)
@@ -1192,16 +1196,14 @@ public class Dataverses extends AbstractApiBean {
             public void write(OutputStream os) throws IOException,
                     WebApplicationException {
 
-                Dataverse dv = dataverseService.findByAlias(dvIdtf);
                 Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
                 Map<Integer, String> datasetTitles = guestbookResponseService.mapDatasetTitles(dv.getId());
-                
+
                 List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
                 os.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
                 for (Object[] result : guestbookResults) {
                     StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, datasetTitles, result);
                     os.write(sb.toString().getBytes());
-
                 }
             }
         };

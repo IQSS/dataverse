@@ -26,7 +26,7 @@ Installing Java
 
 The Dataverse Software should run fine with only the Java Runtime Environment (JRE) installed, but installing the Java Development Kit (JDK) is recommended so that useful tools for troubleshooting production environments are available. We recommend using Oracle JDK or OpenJDK.
 
-The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
+The Oracle JDK can be downloaded from https://www.oracle.com/technetwork/java/javase/downloads/index.html
 
 On a RHEL/derivative, install OpenJDK (devel version) using yum::
 
@@ -233,11 +233,9 @@ For systems using init.d (like CentOS 6), download this :download:`Solr init scr
 Securing Solr
 =============
 
-Our sample init script and systemd service file linked above tell Solr to only listen on localhost (127.0.0.1). We strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks, for added redundancy.
+As of version 9.3.0, Solr listens solely on localhost for security reasons. If your installation will run Solr on its own host, you will need to edit ``bin/solr.in.sh``, setting ``JETTY_HOST`` to the external IP address of your Solr server to tell Solr to accept external connections.
 
-It is **very important** not to allow direct access to the Solr API from outside networks! Otherwise, any host that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_3/securing-solr.html. A particularly serious security issue that has been identified recently allows a potential intruder to remotely execute arbitrary code on the system. See `RCE in Solr via Velocity Template <https://github.com/veracode-research/solr-injection#7-cve-2019-xxxx-rce-via-velocity-template-by-_s00py>`_ for more information.
-
-If you're running your Dataverse installation across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse installation host(s), by specific ip address(es).
+We strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks. It is **very important** not to allow direct access to the Solr API from outside networks! Otherwise, any host that can reach Solr can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://solr.apache.org/guide/solr/latest/deployment-guide/securing-solr.html
 
 We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation::
 
@@ -267,7 +265,7 @@ Installing jq
 or you may install it manually::
 
         # cd /usr/bin
-        # wget http://stedolan.github.io/jq/download/linux64/jq
+        # wget https://stedolan.github.io/jq/download/linux64/jq
         # chmod +x jq
         # jq --version
 

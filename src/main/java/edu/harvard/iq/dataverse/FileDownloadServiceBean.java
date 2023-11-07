@@ -19,7 +19,9 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.Ma
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -76,6 +78,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     PrivateUrlServiceBean privateUrlService;
     @EJB
     SettingsServiceBean settingsService;
+    @EJB
+    MailServiceBean mailService;
 
     @Inject
     DataverseSession session;
@@ -192,6 +196,42 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         redirectToDownloadAPI(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId());
         logger.fine("issued file download redirect for datafile "+guestbookResponse.getDataFile().getId());
     }
+    
+    public void writeGuestbookResponseAndRequestAccess(GuestbookResponse guestbookResponse){
+        if (guestbookResponse == null || ( guestbookResponse.getDataFile() == null && guestbookResponse.getSelectedFileIds() == null) ) {
+            return;
+        }
+
+        guestbookResponse.setEventType(GuestbookResponse.ACCESS_REQUEST);
+
+        List <DataFile> selectedDataFiles = new ArrayList<>(); //always make sure it's at least an empty List
+
+        if(guestbookResponse.getDataFile() != null ){ //one file 'selected' by 'Request Access' button click
+            selectedDataFiles.add(datafileService.find(guestbookResponse.getDataFile().getId())); //don't want the findCheapAndEasy
+        }
+
+        if(guestbookResponse.getSelectedFileIds() != null && !guestbookResponse.getSelectedFileIds().isEmpty()) { //multiple selected through multi-select REquest Access button   
+            selectedDataFiles = datafileService.findAll(guestbookResponse.getSelectedFileIds());
+        }
+
+        int countRequestAccessSuccess = 0;
+
+        for(DataFile dataFile : selectedDataFiles){
+            guestbookResponse.setDataFile(dataFile);
+            writeGuestbookResponseRecordForRequestAccess(guestbookResponse);
+            if(requestAccess(dataFile,guestbookResponse)){
+                countRequestAccessSuccess++;
+            } else {
+                JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("file.accessRequested.alreadyRequested", Arrays.asList(dataFile.getDisplayName())));
+            }
+        }
+
+        if(countRequestAccessSuccess > 0){
+            DataFile firstDataFile = selectedDataFiles.get(0);
+            sendRequestFileAccessNotification(firstDataFile.getOwner(), firstDataFile.getId(), (AuthenticatedUser) session.getUser());
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
+        }
+    }
 
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
         if(!fileMetadata.getDatasetVersion().isDraft()){           
@@ -219,6 +259,18 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             //if an error occurs here then download won't happen no need for response recs...
             logger.warning("Exception writing GuestbookResponse for file: " + guestbookResponse.getDataFile().getId() + " : " + e.getLocalizedMessage());
         }
+    }
+    
+    public void writeGuestbookResponseRecordForRequestAccess(GuestbookResponse guestbookResponse) {
+        try {
+            CreateGuestbookResponseCommand cmd = new CreateGuestbookResponseCommand(dvRequestService.getDataverseRequest(), guestbookResponse, guestbookResponse.getDataset());
+            commandEngine.submit(cmd);
+
+        } catch (CommandException e) {
+            //if an error occurs here then download won't happen no need for response recs...
+            logger.info("Failed to writeGuestbookResponseRecord for RequestAccess");
+        }
+
     }
     
     // The "guestBookRecord(s)AlreadyWritten" parameter in the 2 methods 
@@ -313,7 +365,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         String localeCode = session.getLocaleCode();
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, localeCode);
         // Persist the name of the tool (i.e. "Data Explorer", etc.)
-        guestbookResponse.setDownloadtype(externalTool.getDisplayName());
+        guestbookResponse.setEventType(externalTool.getDisplayName());
         PrimeFaces.current().executeScript(externalToolHandler.getExploreScript());
         // This is the old logic from TwoRavens, null checks and all.
         if (guestbookResponse != null && guestbookResponse.isWriteResponse()
@@ -489,7 +541,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             return false;
         }
         DataFile file = datafileService.find(fileId);
-        if (!file.containsFileAccessRequestFromUser(session.getUser())) {
+        if (!file.containsActiveFileAccessRequestFromUser(session.getUser())) {
             try {
                 commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));                        
                 return true;
@@ -499,12 +551,33 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             }             
         }        
         return false;
-    }    
+    }
     
-    public void sendRequestFileAccessNotification(DataFile datafile, AuthenticatedUser requestor) {
-        permissionService.getUsersWithPermissionOn(Permission.ManageFilePermissions, datafile).stream().forEach((au) -> {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, datafile.getId(), null, requestor, false);
+    public boolean requestAccess(DataFile dataFile, GuestbookResponse gbr){
+        boolean accessRequested = false;
+        if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null){
+            return accessRequested;
+        }
+
+        if(!dataFile.containsActiveFileAccessRequestFromUser(session.getUser())) {
+            try {
+                commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), dataFile, gbr));
+                accessRequested = true;
+            } catch (CommandException ex) {
+                logger.info("Unable to request access for file id " + dataFile.getId() + ". Exception: " + ex);
+            }
+        } 
+
+        return accessRequested;
+    }
+    
+    public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
+        Timestamp ts = new Timestamp(new Date().getTime());
+        permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
+            userNotificationService.sendNotification(au, ts, UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, true);
         });
+        //send the user that requested access a notification that they requested the access
+        userNotificationService.sendNotification(requestor, ts, UserNotification.Type.REQUESTEDFILEACCESS, fileId, null, requestor, true);
 
     } 
     
@@ -571,16 +644,5 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
             
         return null; 
-    }
-
-    /**
-     *  Checks if the DataverseRequest, which contains IP Groups, has permission to download the file
-     *
-     * @param dataverseRequest the DataverseRequest
-     * @param dataFile the DataFile to check permissions
-     * @return boolean
-     */
-    public boolean canDownloadFile(DataverseRequest dataverseRequest, DataFile dataFile) {
-        return permissionService.requestOn(dataverseRequest, dataFile).has(Permission.DownloadFile);
     }
 }

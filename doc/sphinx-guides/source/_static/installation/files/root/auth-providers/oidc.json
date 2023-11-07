@@ -1,0 +1,8 @@
+{
+    "id":"<a unique id>",
+    "factoryAlias":"oidc",
+    "title":"<a title - shown in UI>",
+    "subtitle":"<a subtitle - currently unused in UI>",
+    "factoryData":"type: oidc | issuer: <issuer url> | clientId: <client id> | clientSecret: <client secret> | pkceEnabled: <true/false> | pkceMethod: <PLAIN/S256/...>",
+    "enabled":true
+}

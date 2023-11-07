@@ -153,10 +153,10 @@ public class AdminIT {
                 .body("data.pagination.pageCount", equalTo(1))
                 .body("data.pagination.numResults", equalTo(numResults));
         
-        String userIdentifer;
+        String userIdentifier;
         for (int i=0; i < numResults; i++){
-            userIdentifer = JsonPath.from(filterReponse01.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
-            assertEquals(randomUsernames.contains(userIdentifer), true);
+            userIdentifier = JsonPath.from(filterReponse01.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
+            assertTrue(randomUsernames.contains(userIdentifier));
         }
 
         List<Object> userList1 = JsonPath.from(filterReponse01.body().asString()).getList("data.users");
@@ -177,10 +177,10 @@ public class AdminIT {
                 .body("data.pagination.pageCount", equalTo(3))
                 .body("data.pagination.numResults", equalTo(numResults));
         
-        String userIdentifer2;
+        String userIdentifier2;
         for (int i=0; i < numUsersReturned; i++){
-            userIdentifer2 = JsonPath.from(filterReponse02.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
-            assertEquals(randomUsernames.contains(userIdentifer2), true);
+            userIdentifier2 = JsonPath.from(filterReponse02.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
+            assertTrue(randomUsernames.contains(userIdentifier2));
         }
         
         List<Object> userList2 = JsonPath.from(filterReponse02.body().asString()).getList("data.users");

@@ -142,7 +142,7 @@ The need to redirect port HTTP (port 80) to HTTPS (port 443) for security has al
 
 Your decision to proxy or not should primarily be driven by which features of the Dataverse Software you'd like to use. If you'd like to use Shibboleth, the decision is easy because proxying or "fronting" Payara with Apache is required. The details are covered in the :doc:`shibboleth` section.
 
-Even if you have no interest in Shibboleth, you may want to front your Dataverse installation with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse Project team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Payara is arduous and not for the faint of heart. The Dataverse Project team cannot provide much help with adding certificates to Payara beyond linking to `tips <http://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
+Even if you have no interest in Shibboleth, you may want to front your Dataverse installation with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse Project team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Payara is arduous and not for the faint of heart. The Dataverse Project team cannot provide much help with adding certificates to Payara beyond linking to `tips <https://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
 
 Still not convinced you should put Payara behind another web server? Even if you manage to get your SSL certificate into Payara, how are you going to run Payara on low ports such as 80 and 443? Are you going to run Payara as root? Bad idea. This is a security risk. Under "Additional Recommendations" under "Securing Your Installation" above you are advised to configure Payara to run as a user other than root.
 
@@ -154,7 +154,7 @@ If you really don't want to front Payara with any proxy (not recommended), you c
 
 ``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=443``
 
-What about port 80? Even if you don't front your Dataverse installation with Apache, you may want to let Apache run on port 80 just to rewrite HTTP to HTTPS as described above. You can use a similar command as above to change the HTTP port that Payara uses from 8080 to 80 (substitute ``http-listener-1.port=80``). Payara can be used to enforce HTTPS on its own without Apache, but configuring this is an exercise for the reader. Answers here may be helpful: http://stackoverflow.com/questions/25122025/glassfish-v4-java-7-port-unification-error-not-able-to-redirect-http-to
+What about port 80? Even if you don't front your Dataverse installation with Apache, you may want to let Apache run on port 80 just to rewrite HTTP to HTTPS as described above. You can use a similar command as above to change the HTTP port that Payara uses from 8080 to 80 (substitute ``http-listener-1.port=80``). Payara can be used to enforce HTTPS on its own without Apache, but configuring this is an exercise for the reader. Answers here may be helpful: https://stackoverflow.com/questions/25122025/glassfish-v4-java-7-port-unification-error-not-able-to-redirect-http-to
 
 If you are running an installation with Apache and Payara on the same server, and would like to restrict Payara from responding to any requests to port 8080 from external hosts (in other words, not through Apache), you can restrict the AJP listener to localhost only with:
 
@@ -278,7 +278,7 @@ change the ``:Protocol`` setting, as it defaults to DOI usage.
 - :ref:`:IndependentHandleService <:IndependentHandleService>` (optional)
 - :ref:`:HandleAuthHandle <:HandleAuthHandle>` (optional)
 
-Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
+Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <https://handle.net/hnr_documentation.html>`_.
 
 .. _permalinks:
 
@@ -508,6 +508,10 @@ A Dataverse installation can alternately store files in a Swift or S3-compatible
 
 A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web-accessible trusted remote store.
 
+A Dataverse installation can be configured to allow out of band upload by setting the ``dataverse.files.\<id\>.upload-out-of-band`` JVM option to ``true``.
+By default, Dataverse supports uploading files via the :ref:`add-file-api`. With S3 stores, a direct upload process can be enabled to allow sending the file directly to the S3 store (without any intermediate copies on the Dataverse server).
+With the upload-out-of-band option enabled, it is also possible for file upload to be managed manually or via third-party tools, with the :ref:`Adding the Uploaded file to the Dataset <direct-add-to-dataset-api>` API call (described in the :doc:`/developers/s3-direct-upload-api` page) used to add metadata and inform Dataverse that a new file has been added to the relevant store.
+
 The following sections describe how to set up various types of stores and how to configure for multiple stores.
 
 Multi-store Basics
@@ -551,7 +555,7 @@ Multiple file stores should specify different directories (which would nominally
 Swift Storage
 +++++++++++++
 
-Rather than storing data files on the filesystem, you can opt for an experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
+Rather than storing data files on the filesystem, you can opt for an experimental setup with a `Swift Object Storage <https://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
 
 **In order to configure a Swift installation,** you need to complete these steps to properly modify the JVM options:
 
@@ -567,7 +571,7 @@ First, run all the following create commands with your Swift endpoint informatio
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.username.endpoint1=your-username"
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.endpoint.endpoint1=your-swift-endpoint"
 
-``auth_type`` can either be ``keystone``, ``keystone_v3``, or it will assumed to be ``basic``. ``auth_url`` should be your keystone authentication URL which includes the tokens (e.g. for keystone, ``https://openstack.example.edu:35357/v2.0/tokens`` and for keystone_v3, ``https://openstack.example.edu:35357/v3/auth/tokens``). ``swift_endpoint`` is a URL that looks something like ``http://rdgw.swift.example.org/swift/v1``.
+``auth_type`` can either be ``keystone``, ``keystone_v3``, or it will assumed to be ``basic``. ``auth_url`` should be your keystone authentication URL which includes the tokens (e.g. for keystone, ``https://openstack.example.edu:35357/v2.0/tokens`` and for keystone_v3, ``https://openstack.example.edu:35357/v3/auth/tokens``). ``swift_endpoint`` is a URL that looks something like ``https://rdgw.swift.example.org/swift/v1``.
 
 Then create a password alias by running (without changes):
 
@@ -663,7 +667,7 @@ You'll need an AWS account with an associated S3 bucket for your installation to
 **Make note** of the **bucket's name** and the **region** its data is hosted in.
 
 To **create a user** with full S3 access and nothing more for security reasons, we recommend using IAM
-(Identity and Access Management). See `IAM User Guide <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html>`_
+(Identity and Access Management). See `IAM User Guide <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users.html>`_
 for more info on this process.
 
 To use programmatic access, **Generate the user keys** needed for a Dataverse installation afterwards by clicking on the created user.
@@ -734,7 +738,7 @@ Additional profiles can be added to these files by appending the relevant inform
   aws_access_key_id = <insert key, no brackets>
   aws_secret_access_key = <insert secret key, no brackets>
 
-Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Installation on Payara. (From the `AWS Command Line Interface Documentation <http://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html>`_:
+Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Installation on Payara. (From the `AWS Command Line Interface Documentation <https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html>`_:
 "In order to separate credentials from less sensitive options, region and output format are stored in a separate file
 named config in the same folder")
 
@@ -800,27 +804,28 @@ List of S3 Storage Options
 .. table::
     :align: left
 
-    ===========================================  ==================  ==========================================================================  =============
-    JVM Option                                   Value               Description                                                                 Default value
-    ===========================================  ==================  ==========================================================================  =============
-    dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                  ``file``
-    dataverse.files.<id>.type                    ``s3``              **Required** to mark this storage as S3 based.                              (none)
-    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                   (none)
-    dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
-    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
-    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
-    dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
-    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
-    dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
-    dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
-    dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
-    dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
-    dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
-    dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
-    dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
-    dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
-    dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
-    ===========================================  ==================  ==========================================================================  =============
+    ===========================================  ==================  ===================================================================================  =============
+    JVM Option                                   Value               Description                                                                          Default value
+    ===========================================  ==================  ===================================================================================  =============
+    dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                           ``file``
+    dataverse.files.<id>.type                    ``s3``              **Required** to mark this storage as S3 based.                                       (none)
+    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                            (none)
+    dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                          (none)
+    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                                   ``false``
+    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset in the S3 store.                    ``false``
+    dataverse.files.<id>.upload-out-of-band      ``true``/``false``  Allow upload of files by out-of-band methods (using some tool other than Dataverse)  ``false``
+    dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                           (none)
+    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.                      60
+    dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.            ``1024**3``
+    dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.                   (none)
+    dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                                      ``dataverse``
+    dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.           (none)
+    dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                                    (none)
+    dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                              ``false``
+    dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                                     ``false``
+    dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                                   ``true``
+    dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                              ``256``
+    ===========================================  ==================  ===================================================================================  =============
 
 .. table::
     :align: left
@@ -860,7 +865,7 @@ You may provide the values for these via any `supported MicroProfile Config API 
 Reported Working S3-Compatible Storage
 ######################################
 
-`Minio v2018-09-12 <http://minio.io>`_
+`Minio v2018-09-12 <https://minio.io>`_
   Set ``dataverse.files.<id>.path-style-access=true``, as Minio works path-based. Works pretty smooth, easy to setup.
   **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
   possibly slow) https://play.minio.io:9000 service.
@@ -1270,6 +1275,8 @@ The list below depicts a set of tools that can be used to ease the amount of wor
 - `Weblate for the Dataverse Software <https://weblate.dataverse.org/>`_, made available in the scope of the `SSHOC <https://sshopencloud.eu/>`_ project.
 
 - `easyTranslationHelper <https://github.com/universidadeaveiro/easyTranslationHelper>`_, a tool developed by `University of Aveiro <https://www.ua.pt/>`_.
+
+- `Dataverse General User Interface Translation Guide for Weblate <https://doi.org/10.5281/zenodo.4807371>`_, a guide produced as part of the `SSHOC Dataverse Translation <https://www.sshopencloud.eu/news/workshop-notes-sshoc-dataverse-translation-follow-event/>`_ event.
 
 .. _Web-Analytics-Code:
 
@@ -1694,6 +1701,11 @@ When changing values these values with ``asadmin``, you'll need to delete the ol
 
 It's also possible to change these values by stopping Payara, editing ``payara6/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
 
+In addition, JVM options enabled for "MicroProfile Config" (see docs of any option), can be used with any
+`supported MicroProfile Config API source`_ to provide their values. The most notable source are environment variables;
+many examples are given in detail documentation of enabled options.
+
+
 .. _dataverse.fqdn:
 
 dataverse.fqdn
@@ -1761,8 +1773,8 @@ protocol, host, and port number and should not include a trailing slash.
 dataverse.files.directory
 +++++++++++++++++++++++++
 
-Please provide an absolute path to a directory backed by some mounted file system. This directory is used for a number
-of purposes:
+Providing an explicit location here makes it easier to reuse some mounted filesystem and we recommend doing so
+to avoid filled up disks, aid in performance, etc. This directory is used for a number of purposes:
 
 1. ``<dataverse.files.directory>/temp`` after uploading, data is temporarily stored here for ingest and/or before
    shipping to the final storage destination.
@@ -1775,24 +1787,51 @@ of purposes:
    under certain conditions. This directory may also be used by file stores for :ref:`permanent file storage <storage-files-dir>`,
    but this is controlled by other, store-specific settings.
 
-Defaults to ``/tmp/dataverse``. Can also be set via *MicroProfile Config API* sources, e.g. the environment variable
-``DATAVERSE_FILES_DIRECTORY``. Defaults to ``${STORAGE_DIR}`` for profile ``ct``, important for the
-:ref:`Dataverse Application Image <app-locations>`.
+Notes:
+
+- Please provide an absolute path to a directory backed by some mounted file system.
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_DIRECTORY``.
+- Defaults to ``/tmp/dataverse`` in a :doc:`default installation <installation-main>`.
+- Defaults to ``${STORAGE_DIR}`` using our :ref:`Dataverse container <app-locations>` (resolving to ``/dv``).
+- During startup, this directory will be checked for existence and write access. It will be created for you
+  if missing. If it cannot be created or does not have proper write access, application deployment will fail.
 
 .. _dataverse.files.uploads:
 
 dataverse.files.uploads
 +++++++++++++++++++++++
 
-Configure a folder to store the incoming file stream during uploads (before transfering to `${dataverse.files.directory}/temp`).
+Configure a folder to store the incoming file stream during uploads (before transfering to ``${dataverse.files.directory}/temp``).
+Providing an explicit location here makes it easier to reuse some mounted filesystem.
 Please also see :ref:`temporary-file-storage` for more details.
-You can use an absolute path or a relative, which is relative to the application server domain directory.
 
-Defaults to ``./uploads``, which resolves to ``/usr/local/payara6/glassfish/domains/domain1/uploads`` in a default
-installation.
+Notes:
 
-Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
-Defaults to ``${STORAGE_DIR}/uploads`` for profile ``ct``, important for the :ref:`Dataverse Application Image <app-locations>`.
+- Please provide an absolute path to a directory backed by some mounted file system.
+- Defaults to ``${com.sun.aas.instanceRoot}/uploads`` in a :doc:`default installation <installation-main>`
+  (resolving to ``/usr/local/payara6/glassfish/domains/domain1/uploads``).
+- Defaults to ``${STORAGE_DIR}/uploads`` using our :ref:`Dataverse container <app-locations>` (resolving to ``/dv/uploads``).
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
+- During startup, this directory will be checked for existence and write access. It will be created for you
+  if missing. If it cannot be created or does not have proper write access, application deployment will fail.
+
+.. _dataverse.files.docroot:
+
+dataverse.files.docroot
++++++++++++++++++++++++
+
+Configure a folder to store and retrieve additional materials like user uploaded collection logos, generated sitemaps,
+and so on. Providing an explicit location here makes it easier to reuse some mounted filesystem.
+See also logo customization above.
+
+Notes:
+
+- Defaults to ``${com.sun.aas.instanceRoot}/docroot`` in a :doc:`default installation <installation-main>`
+  (resolves to ``/usr/local/payara6/glassfish/domains/domain1/docroot``).
+- Defaults to ``${STORAGE_DIR}/docroot`` using our :ref:`Dataverse container <app-locations>` (resolving to ``/dv/docroot``).
+- Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_DOCROOT``.
+- During startup, this directory will be checked for existence and write access. It will be created for you
+  if missing. If it cannot be created or does not have proper write access, application deployment will fail.
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2450,6 +2489,23 @@ This setting was added to keep S3 direct upload lightweight. When that feature i
 
 See also :ref:`s3-direct-upload-features-disabled`.
 
+dataverse.auth.oidc.*
++++++++++++++++++++++
+
+Provision a single :doc:`OpenID Connect authentication provider <oidc>` using MicroProfile Config. You can find a list of
+all available options at :ref:`oidc-mpconfig`.
+
+.. _dataverse.files.guestbook-at-request:
+
+dataverse.files.guestbook-at-request
+++++++++++++++++++++++++++++++++++++
+
+This setting enables functionality to allow guestbooks to be displayed when a user requests access to a restricted data file(s) or when a file is downloaded (the historic default). Providing a true/false value for this setting enables the functionality and provides a global default. The behavior can also be changed at the collection level via the user interface and by a superuser for a give dataset using the API.
+
+See also :ref:`guestbook-at-request-api` in the API Guide, and .
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_GUESTBOOK_AT_REQUEST``.
+
 .. _feature-flags:
 
 Feature Flags
@@ -2923,7 +2979,7 @@ Note: by default, the URL is composed from the settings ``:GuidesBaseUrl`` and `
 :GuidesBaseUrl
 ++++++++++++++
 
-Set ``:GuidesBaseUrl`` to override the default value "http://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/developers/documentation` section of the Developer Guide helpful.
+Set ``:GuidesBaseUrl`` to override the default value "https://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/developers/documentation` section of the Developer Guide helpful.
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
 
@@ -2944,14 +3000,14 @@ Set ``:NavbarSupportUrl`` to a fully-qualified URL which will be used for the "S
 
 Note that this will override the default behaviour for the "Support" menu option, which is to display the Dataverse collection 'feedback' dialog.
 
-``curl -X PUT -d http://dataverse.example.edu/supportpage.html http://localhost:8080/api/admin/settings/:NavbarSupportUrl``
+``curl -X PUT -d https://dataverse.example.edu/supportpage.html http://localhost:8080/api/admin/settings/:NavbarSupportUrl``
 
 :MetricsUrl
 +++++++++++
 
 Make the metrics component on the root Dataverse collection a clickable link to a website where you present metrics on your Dataverse installation, perhaps one of the community-supported tools mentioned in the :doc:`/admin/reporting-tools-and-queries` section of the Admin Guide.
 
-``curl -X PUT -d http://metrics.dataverse.example.edu http://localhost:8080/api/admin/settings/:MetricsUrl``
+``curl -X PUT -d https://metrics.dataverse.example.edu http://localhost:8080/api/admin/settings/:MetricsUrl``
 
 .. _:MaxFileUploadSizeInBytes:
 
@@ -3009,11 +3065,17 @@ You can override this global setting on a per-format basis for the following for
 - SAV
 - Rdata
 - CSV
-- XLSX
+- XLSX (in lower-case)
 
-For example, if you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB, use this setting:
+For example :
+
+* if you want your Dataverse installation to not attempt to ingest Rdata files larger than 1 MB, use this setting:
 
 ``curl -X PUT -d 1000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:Rdata``
+
+* if you want your Dataverse installation to not attempt to ingest XLSX files at all, use this setting:
+
+``curl -X PUT -d 0 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:xlsx``
 
 :ZipUploadFilesLimit
 ++++++++++++++++++++
