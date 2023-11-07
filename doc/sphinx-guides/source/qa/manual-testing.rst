@@ -1,2 +1,43 @@
 Manual testing approach
 =======================
+
+.. contents:: |toctitle|
+    :local:
+
+Introduction
+------------
+We use a risk-based, manual testing approach to achieve the most benefit with limited resources. This means we want to catch bugs where they are likely to exist, ensure core functions work, and failures do not have catastrophic results. In practice this means we do a brief positive check of core functions on each build called a smoke test, we test the most likely place for new bugs to exist, the area where things have changed, and attempt to prevent catastrophic failure by asking about the scope and reach of the code and how failures may occur. 
+
+If it seems possible through user error or some other occurrence that such a serious failure will occur, we try to make it happen in the test environment. If the code has a UI component, we also do a limited amount of browser compatibility testing using Chrome, Firefox, and Safari browsers. We do not currently do UX or accessibility testing on a regular basis, though both have been done product-wide by the Design group and by the community.
+
+Examining a pull request for test cases:
+----------------------------------------
+What does it do? What problem does it solve?
+++++++++++++++++++++++++++++++++++++++++++++
+Read the top part of the pull request for a description, notes for reviewers, and usually a how-to test section. Does it make sense? If not, read the underlying ticket it closes, and any release notes or documentation. Knowing in general what it does helps you to think about how to approach it.
+How is it configured?
++++++++++++++++++++++
+Most pull requests do not have any special configuration and are enabled on deployment, but some do. Configuration is part of testing. An admin will need to follow these instructions so try them out. Plus, that is the only way you will get it working to test it! 
+
+Identify test cases by examining the problem report or feature description and any documentation of functionality. Look for statements or assertions about functions, what it does, as well as conditions or conditional behavior. These become your test cases. Think about how someone might make a mistake using it and try it. Does it fail gracefully or in a confusing or worse, damaging manner? Also, consider whether this pull request may interact with other functionality and try some spot checks there. For instance, if new metadata fields are added, try the export feature. Of course, try the suggestions under how to test. Those may be sufficient, but you should always think about it based on what it does.
+
+Try adding, modifying, and deleting any objects involved. This is probably covered by using the feature but a good basic approach to keep in mind.
+
+Make sure any server logging is appropriate. You should tail the server log while running your tests. Watch for unreported errors or stack traces especially chatty logging. If you do find a bug you will need to report the stack trace from the server.log
+
+Exercise the UI if there is one. I tend to use Chrome for most of my basic testing as it’s used twice as much as the next most commonly used browser, according to our site’s Google Analytics. I first go through all the options in the UI. Then, if all works, I’ll spot-check using Firefox and Safari.
+
+Check permissions. Is this feature limited to a specific set of users? Can it be accessed by a guest or by a non-privileged user? How about pasting a privileged page URL into a non-privileged user’s browser?
+
+Think about risk. Is the feature or function part of a critical area such as permissions? Does the functionality modify data? You may do more testing when the risk is higher.
+
+Smoke test
+-----------
+
+1.	Go to the homepage on https://dataverse-internal.iq.harvard.edu. Scroll to the bottom to ensure the build number is the one you intend to test from Jenkins.
+2.	Create a new user: I use a formulaic name with my initials and date and make the username and password the same, eg. kc080622.
+3.	Create a dataverse: I use the same username
+4.	Create a dataset: I use the same username; I fill in the required fields (I do not use a template).
+5.	Upload 3 different types of files: I use a tabular file, 50by1000.dta, an image file, and a text file.
+6.	Publish the dataset.
+7.	Download a file, done.

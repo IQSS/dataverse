@@ -1,2 +1,5 @@
-Checklist for QA Release
-========================
+Test automation and integration test
+====================================
+
+.. contents:: |toctitle|
+    :local:
