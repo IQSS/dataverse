@@ -5,8 +5,8 @@ Overview
     :local:
 
 
-What is an API?
----------------
+Introduction
+------------
 
 This document describes the testing process used by QA at IQSS and provides a guide for others filling in for that role. Please note that many variations are possible, and the main thing is to catch bugs and provide a good quality product to the user community.
 
