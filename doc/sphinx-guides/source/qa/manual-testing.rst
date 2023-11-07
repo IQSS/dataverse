@@ -1,0 +1,2 @@
+Manual testing approach
+=======================
