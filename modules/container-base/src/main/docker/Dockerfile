@@ -65,7 +65,8 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin:${SCRIPT_DIR}" \
     JVM_DUMPS_ARG="-XX:+HeapDumpOnOutOfMemoryError" \
     ENABLE_JMX=0 \
     ENABLE_JDWP=0 \
-    ENABLE_RELOAD=0
+    ENABLE_RELOAD=0 \
+    SKIP_DEPLOY=0
 
 ### PART 1: SYSTEM ###
 ARG UID=1000

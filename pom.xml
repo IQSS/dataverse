@@ -911,6 +911,7 @@
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
                 <app.image.tag>unstable</app.image.tag>
+                <app.deploy.skip>false</app.deploy.skip>
                 <base.image>gdcc/base:${base.image.tag}</base.image>
                 <base.image.tag>unstable</base.image.tag>
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
@@ -923,6 +924,7 @@
                 <POSTGRES_VERSION>${postgresql.server.version}</POSTGRES_VERSION>
                 <SOLR_VERSION>${solr.version}</SOLR_VERSION>
                 <DATAVERSE_DB_USER>dataverse</DATAVERSE_DB_USER>
+                <SKIP_DEPLOY>${app.deploy.skip}</SKIP_DEPLOY>
             </properties>
         
             <build>
