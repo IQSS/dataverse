@@ -9,8 +9,12 @@ import jakarta.mail.Authenticator;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @ApplicationScoped
@@ -41,13 +45,24 @@ public class MailSessionProducer {
     Session systemMailSession;
     
     /**
-     * Inject the application server provided (user defined) javamail resource to enable backwards compatibility.
+     * Cache the application server provided (user defined) javamail resource to enable backwards compatibility.
+     * No direct JNDI lookup on the field to avoid deployment failures when not present.
      * @deprecated This should be removed with the next major release of Dataverse, as it would be a breaking change.
      */
     @Deprecated(forRemoval = true, since = "6.1")
-    @Resource(name = "mail/notifyMailSession")
     Session appserverProvidedSession;
     
+    public MailSessionProducer() {
+        try {
+            // Do JNDI lookup of legacy mail session programmatically to avoid deployment errors when not found.
+            Context initialContext = new InitialContext();
+            this.appserverProvidedSession = (Session)initialContext.lookup("mail/notifyMailSession");
+        } catch (NamingException e) {
+            // This exception simply means the appserver did not provide the legacy mail session.
+            // Debug level output is just fine.
+            logger.log(Level.FINE, "Error during mail resource lookup", e);
+        }
+    }
     
     @Produces
     @Named("mail/systemSession")
@@ -102,6 +117,16 @@ public class MailSessionProducer {
                 number -> configuration.put(PREFIX + prop, number.toString())));
         
         return configuration;
+    }
+    
+    /**
+     * Determine if the session returned by {@link #getSession()} has been provided by the application server
+     * @return True if injected as resource from app server, false otherwise
+     * @deprecated This is supposed to be removed when {@link #appserverProvidedSession} is removed.
+     */
+    @Deprecated(forRemoval = true, since = "6.1")
+    public boolean hasSessionFromAppServer() {
+        return this.appserverProvidedSession != null;
     }
     
 }
