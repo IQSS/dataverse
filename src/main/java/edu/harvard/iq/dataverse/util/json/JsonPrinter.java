@@ -796,9 +796,10 @@ public class JsonPrinter {
             JsonObjectBuilder catStatObj = Json.createObjectBuilder();
             catStatObj.add("label", stat.getLabel())
                       .add("value", stat.getValue())
-                      .add("isMissing", stat.isMissing())
-                      .add("frequency", stat.getFrequency())
-                    ;
+                      .add("isMissing", stat.isMissing());
+            if(stat.getFrequency()!=null){
+                catStatObj.add("frequency", stat.getFrequency());
+            }
             catArr.add(catStatObj);
         }
         return catArr;
