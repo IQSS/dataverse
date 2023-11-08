@@ -51,7 +51,7 @@ Just like with :doc:`oauth2` you need to obtain a *Client ID* and a *Client Secr
   You need to apply for credentials out-of-band.
 
 The Dataverse installation will discover all necessary metadata for a given provider on its own (this is `part of the standard
-<http://openid.net/specs/openid-connect-discovery-1_0.html>`_).
+<https://openid.net/specs/openid-connect-discovery-1_0.html>`_).
 
 To enable this, you need to specify an *Issuer URL* when creating the configuration for your provider (see below).
 

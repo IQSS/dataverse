@@ -263,20 +263,6 @@
             <artifactId>expressly</artifactId>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>com.querydsl</groupId>
-            <artifactId>querydsl-apt</artifactId>
-            <version>${querydsl.version}</version>
-            <classifier>jakarta</classifier>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.querydsl</groupId>
-            <artifactId>querydsl-jpa</artifactId>
-            <version>${querydsl.version}</version>
-            <classifier>jakarta</classifier>
-        </dependency>
         
         <dependency>
             <groupId>commons-io</groupId>
@@ -1032,6 +1018,14 @@
                                         <skip>true</skip>
                                     </run>
                                 </image>
+
+                                <image>
+                                    <name>gdcc/dev_nginx:unstable</name>
+                                    <build>
+                                        <contextDir>${project.basedir}/modules/nginx</contextDir>
+                                    </build>
+                                </image>
+
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
                         </configuration>
