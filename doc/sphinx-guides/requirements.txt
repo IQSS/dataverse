@@ -10,3 +10,4 @@ Jinja2>=3.0.2,<3.1
 
 # Sphinx - Additional modules
 sphinx-icon==0.1.2
+sphinx-tabs==3.4.4
