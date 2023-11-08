@@ -202,6 +202,10 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode())
                 .body(containsString("Dataset schema error"));
         
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        
     }
 
     @Test
