@@ -688,6 +688,7 @@
                     <include>**/firstNames/*.*</include>
                     <include>**/*.xsl</include>
                     <include>**/services/*</include>
+                    <include>**/*.map</include>
                 </includes>
             </resource>
             <resource>
