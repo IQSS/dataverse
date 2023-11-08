@@ -7,3 +7,8 @@ and
 SELECT spec, count(*) FROM oaiset group by spec;
 
 and then removing any duplicate rows (where count>1).
+
+
+
+
+TODO: Add note about reloading metadata blocks after upgrade.
