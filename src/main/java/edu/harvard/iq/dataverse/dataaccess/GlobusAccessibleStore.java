@@ -1,5 +1,9 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+
 public interface GlobusAccessibleStore {
 
     static final String MANAGED = "managed";
@@ -11,13 +15,28 @@ public interface GlobusAccessibleStore {
         return Boolean.parseBoolean(StorageIO.getConfigParamForDriver(driverId, MANAGED));
     }
     
-    public static String getEndpointId(String driverId) {
-        String baseUrl = StorageIO.getConfigParamForDriver(driverId, GLOBUS_TRANSFER_ENDPOINT_WITH_BASEPATH);
-        String endpointWithBasePath = baseUrl.substring(baseUrl.lastIndexOf(DataAccess.SEPARATOR) + 3);
+    public static String getTransferEndpointId(String driverId) {
+        String endpointWithBasePath = StorageIO.getConfigParamForDriver(driverId, GLOBUS_TRANSFER_ENDPOINT_WITH_BASEPATH);
         int pathStart = endpointWithBasePath.indexOf("/");
         return pathStart > 0 ? endpointWithBasePath.substring(0, pathStart) : endpointWithBasePath;
-        
     }
+    
+    public static String getTransferPath(String driverId) {
+        String endpointWithBasePath = StorageIO.getConfigParamForDriver(driverId, GLOBUS_TRANSFER_ENDPOINT_WITH_BASEPATH);
+        int pathStart = endpointWithBasePath.indexOf("/");
+        return pathStart > 0 ? endpointWithBasePath.substring(pathStart) : "";
+
+    }
+
+    public static JsonArray getReferenceEndpointsWithPaths(String driverId) {
+        String[] endpoints = StorageIO.getConfigParamForDriver(driverId, GLOBUS_REFERENCE_ENDPOINTS_WITH_BASEPATHS).split("\\s*,\\s*");
+        JsonArrayBuilder builder = Json.createArrayBuilder();
+        for(int i=0;i<endpoints.length;i++) {
+            builder.add(endpoints[i]);
+        }
+        return builder.build();
+    }
+
     
     public static boolean acceptsGlobusTransfers(String storeId) {
         if(StorageIO.getConfigParamForDriver(storeId, GLOBUS_TRANSFER_ENDPOINT_WITH_BASEPATH) != null) {
@@ -31,6 +50,10 @@ public interface GlobusAccessibleStore {
             return true;
         }
         return false;
+    }
+    
+    public static String getGlobusToken(String storeId) {
+        return StorageIO.getConfigParamForDriver(storeId, GLOBUS_TOKEN);
     }
     
 }

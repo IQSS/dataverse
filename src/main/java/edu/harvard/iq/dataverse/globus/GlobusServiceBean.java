@@ -1351,14 +1351,7 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
         String driverId = dataset.getEffectiveStorageDriverId();
         GlobusEndpoint endpoint = null;
         
-        //ToDo - consolidate with GlobusOverlayAccessIO.parsePath()
-        String baseUrl = System.getProperty("dataverse.files." + driverId + "." + GlobusAccessibleStore.GLOBUS_TRANSFER_ENDPOINT_WITH_BASEPATH);
-
-        String endpointWithBasePath = baseUrl.substring(baseUrl.lastIndexOf("://") + 3);
-        int pathStart = endpointWithBasePath.indexOf("/");
-        logger.info("endpointWithBasePath: " + endpointWithBasePath);
-        String directoryPath = (pathStart > 0 ? endpointWithBasePath.substring(pathStart) : "");
-        logger.info("directoryPath: " + directoryPath);
+        String directoryPath = GlobusAccessibleStore.getTransferPath(driverId);
 
         if (GlobusAccessibleStore.isDataverseManaged(driverId) && (dataset!=null)) {
             directoryPath = directoryPath + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage();
@@ -1374,11 +1367,11 @@ logger.info("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
         }
         logger.info("directoryPath finally: " + directoryPath);
         
-        String endpointId = pathStart > 0 ? endpointWithBasePath.substring(0, pathStart) : endpointWithBasePath;
+        String endpointId = GlobusAccessibleStore.getTransferPath(driverId);
         
         logger.info("endpointId: " + endpointId);
         
-        String globusToken = System.getProperty("dataverse.files." + driverId + "." + GlobusAccessibleStore.GLOBUS_TOKEN);
+        String globusToken = GlobusAccessibleStore.getGlobusToken(driverId);
 
         AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
         String clientToken = accessToken.getOtherTokens().get(0).getAccessToken();

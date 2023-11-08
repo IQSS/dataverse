@@ -3573,7 +3573,13 @@ public class Datasets extends AbstractApiBean {
         URLTokenUtil tokenUtil = new URLTokenUtil(dataset, authSvc.findApiTokenByUser(authUser), locale);
 
         boolean managed = GlobusAccessibleStore.isDataverseManaged(storeId);
-        String transferEndpoint = GlobusAccessibleStore.getEndpointId(storeId);
+        String transferEndpoint = null;
+        JsonArray referenceEndpointsWithPaths = null;
+        if(managed) {
+            transferEndpoint = GlobusAccessibleStore.getTransferEndpointId(storeId);
+        } else {
+            referenceEndpointsWithPaths = GlobusAccessibleStore.getReferenceEndpointsWithPaths(storeId);
+        }
 
         JsonObjectBuilder queryParams = Json.createObjectBuilder();
         queryParams.add("queryParameters",
@@ -3587,17 +3593,21 @@ public class Datasets extends AbstractApiBean {
         substitutedParams.keySet().forEach((key) -> {
             params.add(key, substitutedParams.get(key));
         });
+        params.add("managed", Boolean.toString(managed));
         if(transferEndpoint!= null) {
-            params.add("managed", Boolean.toString(managed)).add("endpoint", transferEndpoint);
+            params.add("endpoint", transferEndpoint);
         } else {
-            //ToDO: Reference endpoints
+            params.add("referenceEndpointsWithPaths", referenceEndpointsWithPaths);
         }
 
         JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "requestGlobusTransferPaths")
-                .add(URLTokenUtil.HTTP_METHOD, "POST")
-                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/requestGlobusTransferPaths")
-                .add(URLTokenUtil.TIMEOUT, 300));
+        if (managed) {
+
+            allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "requestGlobusTransferPaths")
+                    .add(URLTokenUtil.HTTP_METHOD, "POST")
+                    .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/requestGlobusTransferPaths")
+                    .add(URLTokenUtil.TIMEOUT, 300));
+        }
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "addGlobusFiles")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addGlobusFiles")
