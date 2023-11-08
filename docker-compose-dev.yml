@@ -21,7 +21,7 @@ services:
       - DATAVERSE_AUTH_OIDC_AUTH_SERVER_URL=http://keycloak.mydomain.com:8090/realms/test
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
-      - "4848:4848" # HTTP (Payara Admin Console)
+      - "4949:4848" # HTTPS (Payara Admin Console)
       - "9009:9009" # JDWP
       - "8686:8686" # JMX
     networks:
