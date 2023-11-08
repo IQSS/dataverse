@@ -1,2 +1,0 @@
-Tips and tricks
-===============

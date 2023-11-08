@@ -1,4 +1,4 @@
-Manual testing approach
+Manual Testing Approach
 =======================
 
 .. contents:: |toctitle|
@@ -10,13 +10,13 @@ We use a risk-based, manual testing approach to achieve the most benefit with li
 
 If it seems possible through user error or some other occurrence that such a serious failure will occur, we try to make it happen in the test environment. If the code has a UI component, we also do a limited amount of browser compatibility testing using Chrome, Firefox, and Safari browsers. We do not currently do UX or accessibility testing on a regular basis, though both have been done product-wide by the Design group and by the community.
 
-Examining a pull request for test cases:
+Examining a Pull Pequest for Test Cases:
 ----------------------------------------
-What does it do? What problem does it solve?
+What Problem Does it Solve?
 ++++++++++++++++++++++++++++++++++++++++++++
 Read the top part of the pull request for a description, notes for reviewers, and usually a how-to test section. Does it make sense? If not, read the underlying ticket it closes, and any release notes or documentation. Knowing in general what it does helps you to think about how to approach it.
 
-How is it configured?
+How is it Configured?
 +++++++++++++++++++++
 Most pull requests do not have any special configuration and are enabled on deployment, but some do. Configuration is part of testing. An admin will need to follow these instructions so try them out. Plus, that is the only way you will get it working to test it! 
 
@@ -32,7 +32,7 @@ Check permissions. Is this feature limited to a specific set of users? Can it be
 
 Think about risk. Is the feature or function part of a critical area such as permissions? Does the functionality modify data? You may do more testing when the risk is higher.
 
-Smoke test
+Smoke Test
 -----------
 
 1.	Go to the homepage on https://dataverse-internal.iq.harvard.edu. Scroll to the bottom to ensure the build number is the one you intend to test from Jenkins.
@@ -41,4 +41,4 @@ Smoke test
 4.	Create a dataset: I use the same username; I fill in the required fields (I do not use a template).
 5.	Upload 3 different types of files: I use a tabular file, 50by1000.dta, an image file, and a text file.
 6.	Publish the dataset.
-7.	Download a file, done.
+7.	Download a file.

@@ -1,4 +1,4 @@
-Performance testing
+Performance Testing
 ===================
 
 .. contents:: |toctitle|
@@ -12,11 +12,11 @@ Access
 ------
 Access to performance cluster instances requires ssh keys, see Leonid. The cluster itself is normally not running to reduce costs. To turn on the cluster, log on to the demo server and run the perfenv scripts from the centos default user dir. Access to the demo requires an ssh key, see Leonid. 
 
-Special notes
--------------
+Special Notes ⚠️
+-----------------
 Please note the performance database is also used occasionally by Julian and the Curation team to generate prod reports so a courtesy check with Julian would be good before taking over the env.
 
-Executing the performance script
+Executing the Performance Script
 --------------------------------
 To execute the performance test script, you need to install a local copy of the database-helper-scripts project (https://github.com/IQSS/dataverse-helper-scripts), written by Raman. I have since produced a stripped-down script that calls just the DB and ds and works with python3. 
 
