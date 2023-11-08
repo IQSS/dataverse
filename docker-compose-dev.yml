@@ -30,6 +30,7 @@ services:
         -Ddataverse.files.localstack1.bucket-name=mybucket
         -Ddataverse.files.localstack1.path-style-access=true
         -Ddataverse.files.localstack1.upload-redirect=true
+        -Ddataverse.files.localstack1.download-redirect=true
         -Ddataverse.files.localstack1.access-key=default
         -Ddataverse.files.localstack1.secret-key=default
         -Ddataverse.files.minio1.type=s3
@@ -39,6 +40,7 @@ services:
         -Ddataverse.files.minio1.bucket-name=mybucket
         -Ddataverse.files.minio1.path-style-access=true
         -Ddataverse.files.minio1.upload-redirect=false
+        -Ddataverse.files.minio1.download-redirect=false
         -Ddataverse.files.minio1.access-key=minioadmin
         -Ddataverse.files.minio1.secret-key=minioadmin
     ports:

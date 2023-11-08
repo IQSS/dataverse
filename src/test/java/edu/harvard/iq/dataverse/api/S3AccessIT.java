@@ -11,6 +11,7 @@ import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.HeadBucketRequest;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
+import io.restassured.http.Header;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -175,6 +176,13 @@ public class S3AccessIT {
 
         // The file uploaded above only contains the character "a".
         assertEquals("a".trim(), s3Object.trim());
+
+        System.out.println("non-direct download...");
+        Response downloadFile = UtilIT.downloadFile(Integer.valueOf(fileId), apiToken);
+        downloadFile.then().assertThat().statusCode(200);
+
+        String contentsOfDownloadedFile = downloadFile.getBody().asString();
+        assertEquals("a\n", contentsOfDownloadedFile);
 
         Response deleteFile = UtilIT.deleteFileApi(Integer.parseInt(fileId), apiToken);
         deleteFile.prettyPrint();
@@ -344,6 +352,28 @@ public class S3AccessIT {
 //        assertEquals(contentsOfFile.trim(), s3Object.trim());
         assertEquals(contentsOfFile, s3Object);
 
+        System.out.println("direct download...");
+        Response getHeaders = downloadFileNoRedirect(Integer.valueOf(fileId), apiToken);
+        for (Header header : getHeaders.getHeaders()) {
+            System.out.println("direct download header: " + header);
+        }
+        getHeaders.then().assertThat().statusCode(303);
+
+        String urlFromResponse = getHeaders.getHeader("Location");
+        String localhostDownloadUrl = urlFromResponse.replace("localstack", "localhost");
+        String decodedDownloadUrl = null;
+        try {
+            decodedDownloadUrl = URLDecoder.decode(localhostDownloadUrl, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException ex) {
+        }
+
+        Response downloadFile = downloadFromUrl(decodedDownloadUrl);
+        downloadFile.prettyPrint();
+        downloadFile.then().assertThat().statusCode(200);
+
+        String contentsOfDownloadedFile = downloadFile.getBody().asString();
+        assertEquals(contentsOfFile, contentsOfDownloadedFile);
+
         Response deleteFile = UtilIT.deleteFileApi(Integer.parseInt(fileId), apiToken);
         deleteFile.prettyPrint();
         deleteFile.then().assertThat().statusCode(200);
@@ -400,6 +430,15 @@ public class S3AccessIT {
                 .header("x-amz-tagging", "dv-state=temp")
                 .body(inputStream)
                 .put(url);
+    }
+
+    static Response downloadFileNoRedirect(Integer fileId, String apiToken) {
+        return given().when().redirects().follow(false)
+                .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
+    }
+
+    static Response downloadFromUrl(String url) {
+        return given().get(url);
     }
 
 }
