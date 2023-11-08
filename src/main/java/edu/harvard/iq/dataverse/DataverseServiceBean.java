@@ -44,6 +44,11 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.everit.json.schema.Schema;
+import org.everit.json.schema.ValidationException;
+import org.everit.json.schema.loader.SchemaLoader;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 /**
  *
@@ -924,12 +929,12 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
         
-    public  String getCollectionDatasetSchema(Long dataverseId) {
+    public  String getCollectionDatasetSchema(String dataverseAlias) {
        
         List<MetadataBlock> selectedBlocks = new ArrayList<>();
         List<DatasetFieldType> requiredDSFT = new ArrayList<>();
 
-        Dataverse testDV = this.find(dataverseId);
+        Dataverse testDV = this.findByAlias(dataverseAlias);
 
         while (!testDV.isMetadataBlockRoot()) {
             if (testDV.getOwner() == null) {
@@ -997,7 +1002,60 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         return retval;
     
-    } 
+    }    
+    
+    private String getCustomMDBSchema (MetadataBlock mdb, List<DatasetFieldType> requiredDSFT){
+        String retval = "";
+        boolean mdbHasReqField = false;
+        int numReq = 0;
+        List<DatasetFieldType> requiredThisMDB = new ArrayList<>();
+        
+        for (DatasetFieldType dsft : requiredDSFT ){
+
+            if(dsft.getMetadataBlock().equals(mdb)){
+                numReq++;
+                mdbHasReqField = true;
+                requiredThisMDB.add(dsft);
+            }
+        }
+        if (mdbHasReqField){
+        retval  += startOfMDB.replace("blockName", mdb.getName());
+        
+        retval += minItemsTemplate.replace("numMinItems", Integer.toString(requiredThisMDB.size()));
+        int count = 0;
+        for (DatasetFieldType dsft:requiredThisMDB ){
+            count++;
+            String reqValImp = reqValTemplate.replace("reqFieldTypeName", dsft.getName());
+            if (count < requiredThisMDB.size()){
+                retval += reqValImp + "\n";
+            } else {
+               reqValImp = StringUtils.substring(reqValImp, 0, reqValImp.length() - 1);
+               retval += reqValImp+ "\n";
+               retval += endOfReqVal;
+            }            
+        }
+        
+        }
+
+        return retval;
+    }
+    
+    public String isDatasetJsonValid(String dataverseAlias, String jsonInput) {
+        JSONObject rawSchema = new JSONObject(new JSONTokener(getCollectionDatasetSchema(dataverseAlias)));
+        
+        try {               
+            Schema schema = SchemaLoader.load(rawSchema);
+            schema.validate(new JSONObject(jsonInput)); // throws a ValidationException if this object is invalid
+        } catch (ValidationException vx) {
+            logger.info("Dataset schema error : " + vx); //without classLoader is blows up in actual deployment
+            return "Dataset schema error : " + vx.getErrorMessage();
+        } catch (Exception ex) {
+            logger.info("Dataset file error : " + ex.getLocalizedMessage());
+            return "Dataset file error : " + ex.getLocalizedMessage();
+        } 
+
+        return "The Dataset json provided is valid for this Dataverse Collection.";
+    }
     
     private  String datasetSchemaPreface = 
     "{\n" +
@@ -1053,9 +1111,17 @@ public class DataverseServiceBean implements java.io.Serializable {
     "            \"metadataBlocks\": {\n" + 
     "                \"type\": \"object\",\n" + 
     "               \"properties\": {\n" +
-    ""  ;  
-
-
+    ""  ;
+    
+    private String startOfMDB = "" +
+"                           \"blockName\": {\n" +
+"                            \"type\": \"object\",\n" +
+"                            \"properties\": {\n" +
+"                                \"fields\": {\n" +
+"                                    \"type\": \"array\",\n" +
+"                                    \"items\": {\n" +
+"                                        \"$ref\": \"#/$defs/field\"\n" +
+"                                    },";
     
     private String reqValTemplate = "                                        {\n" +
 "                                            \"contains\": {\n" +
@@ -1085,51 +1151,5 @@ public class DataverseServiceBean implements java.io.Serializable {
 "    \"required\": [\"datasetVersion\"]\n" +
 "}\n";
     
-    private String startOfMDB = "" +
-"                           \"blockName\": {\n" +
-"                            \"type\": \"object\",\n" +
-"                            \"properties\": {\n" +
-"                                \"fields\": {\n" +
-"                                    \"type\": \"array\",\n" +
-"                                    \"items\": {\n" +
-"                                        \"$ref\": \"#/$defs/field\"\n" +
-"                                    },";
-    
-    
-    private String getCustomMDBSchema (MetadataBlock mdb, List<DatasetFieldType> requiredDSFT){
-        String retval = "";
-        boolean mdbHasReqField = false;
-        int numReq = 0;
-        List<DatasetFieldType> requiredThisMDB = new ArrayList<>();
-        
-        for (DatasetFieldType dsft : requiredDSFT ){
-
-            if(dsft.getMetadataBlock().equals(mdb)){
-                numReq++;
-                mdbHasReqField = true;
-                requiredThisMDB.add(dsft);
-            }
-        }
-        if (mdbHasReqField){
-        retval  += startOfMDB.replace("blockName", mdb.getName());
-        
-        retval += minItemsTemplate.replace("numMinItems", Integer.toString(requiredThisMDB.size()));
-        int count = 0;
-        for (DatasetFieldType dsft:requiredThisMDB ){
-            count++;
-            String reqValImp = reqValTemplate.replace("reqFieldTypeName", dsft.getName());
-            if (count < requiredThisMDB.size()){
-                retval += reqValImp + "\n";
-            } else {
-               reqValImp = StringUtils.substring(reqValImp, 0, reqValImp.length() - 1);
-               retval += reqValImp+ "\n";
-               retval += endOfReqVal;
-            }            
-        }
-        
-        }
-
-        return retval;
-    }    
             
 }

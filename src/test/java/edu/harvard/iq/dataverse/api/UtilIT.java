@@ -406,6 +406,27 @@ public class UtilIT {
         }
         return requestSpec.get("/api/dataverses/" + dataverseAlias + "/guestbookResponses/");
     }
+    
+    static Response getCollectionSchema (String dataverseAlias, String apiToken){
+        
+        Response getCollectionSchemaResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/dataverses/" + dataverseAlias + "/datasetSchema");
+        return getCollectionSchemaResponse;
+        
+    }
+    
+    static Response validateDatasetJson (String dataverseAlias, String datasetJson, String apiToken){
+        
+        Response getValidateDatasetJsonResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(datasetJson)
+                .contentType("application/json")
+                .post("/api/dataverses/" + dataverseAlias + "/validateDatasetJson");
+        return getValidateDatasetJsonResponse;
+        
+    }
 
     static Response createRandomDatasetViaNativeApi(String dataverseAlias, String apiToken) {
         return createRandomDatasetViaNativeApi(dataverseAlias, apiToken, false);

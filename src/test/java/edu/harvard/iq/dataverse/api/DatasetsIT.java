@@ -162,6 +162,47 @@ public class DatasetsIT {
                 .statusCode(200);
          */
     }
+    
+    @Test
+    public void testCollectionSchema(){
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        Response getCollectionSchemaResponse =  UtilIT.getCollectionSchema(dataverseAlias, apiToken);
+        getCollectionSchemaResponse.prettyPrint();
+        getCollectionSchemaResponse.then().assertThat()
+                .statusCode(200);
+        
+        String expectedJson = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch1.json");
+        
+        Response validateDatasetJsonResponse = UtilIT.validateDatasetJson(dataverseAlias, expectedJson, apiToken);
+        validateDatasetJsonResponse.prettyPrint();
+        validateDatasetJsonResponse.then().assertThat()
+                .statusCode(200);
+        
+        
+        String pathToJsonFile = "scripts/search/tests/data/datasetMissingReqFields.json"; 
+        
+        String jsonIn = UtilIT.getDatasetJson(pathToJsonFile);
+        
+        Response validateBadDatasetJsonResponse = UtilIT.validateDatasetJson(dataverseAlias, jsonIn, apiToken);
+        validateBadDatasetJsonResponse.prettyPrint();
+        validateBadDatasetJsonResponse.then().assertThat()
+                .statusCode(200);
+
+        
+        validateBadDatasetJsonResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(containsString("Dataset schema error"));
+        
+    }
 
     @Test
     public void testCreateDataset() {

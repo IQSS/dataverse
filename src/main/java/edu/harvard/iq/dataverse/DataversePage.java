@@ -597,8 +597,6 @@ public class DataversePage implements java.io.Serializable {
 
 
     public String save() {
-                 String test = dataverseService.getCollectionDatasetSchema(dataverse.getId());
-                 System.out.print(test);
         List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList<>();
         if (editMode != null && ( editMode.equals(EditMode.INFO) || editMode.equals(EditMode.CREATE))) {
 
