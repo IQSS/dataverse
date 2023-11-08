@@ -149,38 +149,92 @@ Rebuild and Running Images
 
 The safest way to redeploy code is to stop the running containers (with Ctrl-c if you started them in the foreground) and then build and run them again with ``mvn -Pct clean package docker:run``.
 
-IntelliJ IDEA Ultimate and Payara Platform Tools
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IDE-triggered re-deployments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you have IntelliJ IDEA Ultimate (note that `free educational licenses <https://www.jetbrains.com/community/education/>`_ are available), you can install `Payara Platform Tools <https://plugins.jetbrains.com/plugin/15114-payara-platform-tools>`_ which can dramatically improve your feedback loop when iterating on code.
+You have at least two options:
 
-The following steps are suggested:
+1. Use plugins for different IDEs by Payara to ease the burden of redeploying an application during development to a running Payara application server.
+   Their guides contain `documentation on Payara IDE plugins <https://docs.payara.fish/community/docs/documentation/ecosystem/ecosystem.html>`_.
+2. Use a paid product like `JRebel <https://www.jrebel.com/>`_.
 
-- Go to the Payara admin console (either at https://localhost:4848 or http://localhost:4849) and undeploy the dataverse application under "Applications".
-- Install Payara Platform Tools.
-- Under "Server":
+The main difference between the first and the second option is support for hot deploys of non-class files plus limitations in what the JVM HotswapAgent can do for you.
+Find more `details in a blog article by JRebel <https://www.jrebel.com/blog/java-hotswap-guide>`_.
 
-  - Click "Run" then "Edit Configurations".
-  - Click the plus sign and scroll down to Payara Server and click "Remote".
-  - For "Name" put "Payara in Docker" or something reasonable.
-  - Under "Application server" select a local directory that has the same version of Payara used in the container. This should match the version of Payara mentioned in the Installation Guide under :ref:`payara`.
-  - Change "Admin Server Port" to 4849.
-  - For username, put "admin".
-  - For password, put "admin".
+When opting for Payara tools, please follow these steps:
 
-- Under "Deployment":
+1. | Download the Payara appserver to your machine, unzip and note the location for later.
+   | - See this guide for which version, in doubt lookup using
+   | ``mvn help:evaluate -Dexpression=payara.version -q -DforceStdout``
+   | - Can be downloaded from `Maven Central <https://mvnrepository.com/artifact/fish.payara.distributions/payara>`_.
 
-  - Click the plus button and clien "Artifact" then "dataverse:war".
+2. Install Payara tools plugin in your IDE:
 
-- Under "Startup/Connection":
+   .. tabs::
+     .. group-tab:: IntelliJ
+       **Requires IntelliJ Ultimate!**
+       (Note that `free educational licenses <https://www.jetbrains.com/community/education/>`_ are available)
 
-  - Click "Debug" and change the port to 9009.
+       .. image:: img/intellij-payara-plugin-install.png
 
-- Click "Run" and then "Debug Payara in Docker". This initial deployment will take some time.
-- Go to http://localhost:8080/api/info/version and make sure the API is responding.
-- Edit ``Info.java`` and make a small change to the ``/api/info/version`` code.
-- Click "Run" then "Debugging Actions" then "Reload Changed Classes". The deployment should only take a few seconds.
-- Go to http://localhost:8080/api/info/version and verify the change you made.
+3. Configure a connection to the application server:
+
+   .. tabs::
+     .. group-tab:: IntelliJ
+        Create a new running configuration with a "Remote Payara".
+        (Open dialog by clicking "Run", then "Edit Configurations")
+
+        .. image:: img/intellij-payara-add-new-config.png
+
+        Click on "Configure" next to "Application Server".
+        Add an application server and select unzipped local directory.
+
+        .. image:: img/intellij-payara-config-add-server.png
+
+        Add admin password "admin" and add "building artifact" before launch.
+        Make sure to select the WAR, *not* exploded!
+
+        .. image:: img/intellij-payara-config-server.png
+
+        Go to "Deployment" tab and add the Dataverse WAR, *not* exploded!.
+
+        .. image:: img/intellij-payara-config-deployment.png
+
+        Go to "Startup/Connection" tab, select "Debug" and change port to ``9009``.
+
+        .. image:: img/intellij-payara-config-startup.png
+
+        You might want to tweak the hot deploy behaviour in the "Server" tab now.
+        "Update action" can be found in the run window (see below).
+        "Frame deactivation" means switching from IntelliJ window to something else, e.g. your browser.
+        *Note: static resources like properties, XHTML etc will only update when redeploying!*
+
+        .. image:: img/intellij-payara-config-server-behaviour.png
+
+4. | Start all the containers. Follow the cheat sheet above, but take care to skip application deployment:
+   | - When using the Maven commands, append ``-Dapp.deploy.skip``.
+   | - When using Docker Compose, prepend the command with ``SKIP_DEPLOY=1``.
+   | - Note: the Admin Console can be reached at http://localhost:4848 or https://localhost:4949
+5. To deploy the application to the running server, use the configured tools to deploy.
+   Using the "Run" configuration only deploys and enables redeploys, while running "Debug" enables hot swapping of classes via JDWP.
+
+   .. tabs::
+     .. group-tab:: IntelliJ
+        Choose "Run" or "Debug" in the toolbar.
+
+        .. image:: img/intellij-payara-run-toolbar.png
+
+        Watch the WAR build and the deployment unfold.
+        Note the "Update" action button (see config to change its behaviour).
+
+        .. image:: img/intellij-payara-run-output.png
+
+        Manually hotswap classes in "Debug" mode via "Run" > "Debugging Actions" > "Reload Changed Classes".
+
+        .. image:: img/intellij-payara-run-menu-reload.png
+
+Note: in the background, the bootstrap job will wait for Dataverse to be deployed and responsive.
+When your IDE automatically opens the URL a newly deployed, not bootstrapped Dataverse application, it might take some more time and page refreshes until the job finishes.
 
 Using a Debugger
 ----------------
