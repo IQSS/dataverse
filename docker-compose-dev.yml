@@ -145,12 +145,21 @@ services:
     volumes:
       - './conf/keycloak/test-realm.json:/opt/keycloak/data/import/test-realm.json'
 
-  dev_nginx:
-    container_name: dev_nginx
-    image: gdcc/dev_nginx:unstable
+  # This proxy configuration is only intended to be used for development purposes!
+  # DO NOT USE IN PRODUCTION! HIGH SECURITY RISK!
+  dev_proxy:
+    image: caddy:2-alpine
+    # The command below is enough to enable using the admin gui, but it will not rewrite location headers to HTTP.
+    # To achieve rewriting from https:// to http://, we need a simple configuration file
+    #command: ["caddy", "reverse-proxy", "-f", ":4848", "-t", "https://dataverse:4848", "--insecure"]
+    command: ["caddy", "run", "-c", "/Caddyfile"]
     ports:
-      - "4849:4849"
+      - "4848:4848" # Will expose Payara Admin Console (HTTPS) as HTTP
     restart: always
+    volumes:
+      - ./conf/proxy/Caddyfile:/Caddyfile:ro
+    depends_on:
+      - dev_dataverse
     networks:
       - dataverse
 
