@@ -482,7 +482,7 @@
         <div class="panel panel-default" jsf:rendered="#{!settingsWrapper.rsyncOnly and (managePage==false or datasetPage == true)
                                                          and (!empty DatasetPage.dataset.guestbook or (dataverseSession.user.authenticated and permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset)))}">
            <div data-toggle="collapse" data-target="#panelCollapseGuestbook" class="panel-heading text-info">
-               #{bundle['file.dataFilesTab.terms.list.guestbook']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
+               #{bundle['file.dataFilesTab.terms.list.guestbook']} &#160;<span class="glyphicon glyphicon-chevron-down"/>
            </div>
            <div id="panelCollapseGuestbook" class="collapse">
                <div class="panel-body">
@@ -524,7 +524,7 @@
                                            <p:commandButton styleClass="btn btn-default pull-right"
                                                           value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                           action="#{DatasetPage.viewSelectedGuestbook(DatasetPage.dataset.guestbook)}"
-                                                          update=":datasetForm" oncomplete="PF('viewGuestbook').show();"/>
+                                                          update=":datasetForm:previewGuestbook" oncomplete="PF('viewGuestbook').show();"/>
                                        </div>
                                    </div>
                                </ui:fragment>
@@ -563,7 +563,7 @@
                                            <p:commandButton styleClass="btn btn-default pull-right"
                                                           value="#{bundle['file.dataFilesTab.terms.list.guestbook.viewBtn']}"
                                                           action="#{DatasetPage.viewSelectedGuestbook(guestbook)}"
-                                                          update=":datasetForm" oncomplete="PF('viewGuestbook').show();"/>
+                                                          update=":datasetForm:previewGuestbook" oncomplete="PF('viewGuestbook').show();"/>
                                        </p:column>
                                    </p:dataTable>
                                </ui:fragment>
