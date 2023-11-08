@@ -220,6 +220,11 @@ provides. These are mostly based on environment variables (very common with cont
         when new artifacts are copied into the running domain. Also, export Dataverse specific environment variables
         ``DATAVERSE_JSF_PROJECT_STAGE=Development`` and ``DATAVERSE_JSF_REFRESH_PERIOD=0`` to enable dynamic JSF page
         reloads.
+    * - ``SKIP_DEPLOY``
+      - ``0``
+      - Bool, ``0|1`` or ``false|true``
+      - When active, do not deploy applications from ``DEPLOY_DIR`` (see below), just start the application server.
+        Will still execute any provided init scripts and only skip deployments within the default init scripts.
     * - ``DATAVERSE_HTTP_TIMEOUT``
       - ``900``
       - Seconds
@@ -274,7 +279,8 @@ building upon it. You can also use these for references in scripts, etc.
         (Might be reused for Dataverse one day)
     * - ``DEPLOY_DIR``
       - ``${HOME_DIR}/deployments``
-      - Any EAR or WAR file, exploded WAR directory etc are autodeployed on start
+      - Any EAR or WAR file, exploded WAR directory etc are autodeployed on start.
+        See also ``SKIP_DEPLOY`` above.
     * - ``DOMAIN_DIR``
       - ``${PAYARA_DIR}/glassfish`` ``/domains/${DOMAIN_NAME}``
       - Path to root of the Payara domain applications will be deployed into. Usually ``${DOMAIN_NAME}`` will be ``domain1``.
