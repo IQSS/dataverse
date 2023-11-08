@@ -307,9 +307,9 @@ named Docker volume in these places to avoid data loss, gain performance and/or 
       - Description
     * - ``STORAGE_DIR``
       - ``/dv``
-      - This place is writeable by the Payara user, making it usable as a place to store research data, customizations
-        or other. Images inheriting the base image should create distinct folders here, backed by different
-        mounted volumes.
+      - This place is writeable by the Payara user, making it usable as a place to store research data, customizations or other.
+        Images inheriting the base image should create distinct folders here, backed by different mounted volumes.
+        Enforce correct filesystem permissions on the mounted volume using ``fix-fs-perms.sh`` from :doc:`configbaker-image` or similar scripts.
     * - ``SECRETS_DIR``
       - ``/secrets``
       - Mount secrets or other here, being picked up automatically by
