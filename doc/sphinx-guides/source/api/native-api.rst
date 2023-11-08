@@ -526,7 +526,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/datasetSchema"
 
-
+Note: you must have Add Dataset permission in the given Dataverse collection to invoke this endpoint.
 
 .. _create-dataset-command: 
 
