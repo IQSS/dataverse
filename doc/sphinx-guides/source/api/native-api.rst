@@ -518,13 +518,36 @@ Retrieves a JSON schema customized for a given Dataverse collection in order to 
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID//datasetSchema"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/datasetSchema"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/datasetSchema"
+
+Note: you must have Add Dataset permission in the given Dataverse collection to invoke this endpoint.
+
+.. _validate-dataset-json:
+
+Validate Dataset.json file for a Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Validates a Dataset json file customized for a given Dataverse collection prior to creating the dataset:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/$ID/validateDatasetJson" --upload-file dataset.json -H 'Content-type:application/json'
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/validateDatasetJson" --upload-file dataset.json -H 'Content-type:application/json'
 
 Note: you must have Add Dataset permission in the given Dataverse collection to invoke this endpoint.
 
