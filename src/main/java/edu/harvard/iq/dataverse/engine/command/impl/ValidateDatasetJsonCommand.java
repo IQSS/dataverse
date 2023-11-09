@@ -34,12 +34,8 @@ public class ValidateDatasetJsonCommand extends AbstractCommand<String> {
 
     @Override
     public String execute(CommandContext ctxt) throws CommandException {
-        try {
-            String retVal = ctxt.dataverses().isDatasetJsonValid(dataverse.getAlias(), datasetJson);
-            return retVal;
-        } catch (Exception ex) {
-            String error = "Exception caught in getting the schema for this collection. Error: " + ex;
-            return error;
-        }
+
+            return ctxt.dataverses().isDatasetJsonValid(dataverse.getAlias(), datasetJson);
+
     }   
 }

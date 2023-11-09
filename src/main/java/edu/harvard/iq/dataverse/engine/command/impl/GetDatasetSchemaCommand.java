@@ -31,14 +31,8 @@ public class GetDatasetSchemaCommand extends AbstractCommand<String> {
     }
 
     @Override
-    public String execute(CommandContext ctxt) throws CommandException {
-        try {              
-            return ctxt.dataverses().getCollectionDatasetSchema(dataverse.getAlias());
-            
-        } catch (Exception ex) {
-            String error = "Exception caught in getting the schema for this collection. Error: " + ex;
-            throw new IllegalCommandException(error, this);
-        }       
+    public String execute(CommandContext ctxt) throws CommandException {            
+            return ctxt.dataverses().getCollectionDatasetSchema(dataverse.getAlias());                   
     }
     
 }
