@@ -17,6 +17,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 public class ProvIT {
     
     @BeforeAll
@@ -27,6 +29,8 @@ public class ProvIT {
     
     @Test
     public void testFreeformDraftActions() {
+
+        UtilIT.enableSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
         Response createDepositor = UtilIT.createRandomUser();
         createDepositor.prettyPrint();
         createDepositor.then().assertThat()
@@ -71,6 +75,7 @@ public class ProvIT {
         JsonObject provFreeFormGood = Json.createObjectBuilder()
                 .add("text", "I inherited this file from my grandfather.")
                 .build();
+        
         Response uploadProvFreeForm = UtilIT.uploadProvFreeForm(dataFileId.toString(), provFreeFormGood, apiTokenForDepositor);
         uploadProvFreeForm.prettyPrint();
         uploadProvFreeForm.then().assertThat()
@@ -81,11 +86,14 @@ public class ProvIT {
         datasetVersions.then().assertThat()
                 .body("data[0].versionState", equalTo("DRAFT"));
         
+        UtilIT.deleteSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
         
     }
     
     @Test
     public void testAddProvFile() {
+
+        UtilIT.enableSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
 
         Response createDepositor = UtilIT.createRandomUser();
         createDepositor.prettyPrint();
@@ -196,6 +204,7 @@ public class ProvIT {
                 .body("data.json", notNullValue(String.class));
         assertEquals(200, getProvJson.getStatusCode());
         
+        
         // TODO: Test that if provenance already exists in CPL (e.g. cplId in fileMetadata is not 0) upload returns error.
         //       There are currently no api endpoints to set up up this test.
         
@@ -204,6 +213,7 @@ public class ProvIT {
         deleteProvJson.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode()); //cannot delete json of a published dataset
 
+        UtilIT.deleteSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
 // Command removed, redundant        
 //        Response deleteProvFreeForm = UtilIT.deleteProvFreeForm(dataFileId.toString(), apiTokenForDepositor);
 //        deleteProvFreeForm.prettyPrint();
