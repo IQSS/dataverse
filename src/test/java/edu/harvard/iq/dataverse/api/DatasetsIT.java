@@ -200,7 +200,7 @@ public class DatasetsIT {
         
         validateBadDatasetJsonResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body(containsString("Dataset schema error"));
+                .body(containsString("failed validation"));
         
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();

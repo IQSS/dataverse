@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
@@ -1047,14 +1048,14 @@ public class DataverseServiceBean implements java.io.Serializable {
             Schema schema = SchemaLoader.load(rawSchema);
             schema.validate(new JSONObject(jsonInput)); // throws a ValidationException if this object is invalid
         } catch (ValidationException vx) {
-            logger.info("Dataset schema error : " + vx); //without classLoader is blows up in actual deployment
-            return "Dataset schema error : " + vx.getErrorMessage();
-        } catch (Exception ex) {
-            logger.info("Dataset file error : " + ex.getLocalizedMessage());
-            return "Dataset file error : " + ex.getLocalizedMessage();
+            logger.info(BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " " + vx.getErrorMessage()); 
+            return BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " "  + vx.getErrorMessage();
+        } catch (Exception ex) {            
+            logger.info(BundleUtil.getStringFromBundle("dataverses.api.validate.json.exception") + ex.getLocalizedMessage());
+            return BundleUtil.getStringFromBundle("dataverses.api.validate.json.exception") + ex.getLocalizedMessage();
         } 
 
-        return "The Dataset json provided is valid for this Dataverse Collection.";
+        return BundleUtil.getStringFromBundle("dataverses.api.validate.json.succeeded");
     }
     
     private  String datasetSchemaPreface = 
