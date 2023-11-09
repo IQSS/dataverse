@@ -11,12 +11,4 @@ QA Guide
    manual-testing
    test-automation-integration
    other-approaches
-
-
-
-
-
-
-
-
-
+   conclusion

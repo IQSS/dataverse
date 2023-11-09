@@ -38,11 +38,11 @@ import sphinx_bootstrap_theme
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.intersphinx',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.graphviz',
     'sphinxcontrib.icon',
+    'myst_parser',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -430,9 +430,6 @@ epub_exclude_files = ['search.html']
 # If false, no index is generated.
 #epub_use_index = True
 
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
 # Suppress "WARNING: unknown mimetype for ..." https://github.com/IQSS/dataverse/issues/3391
 suppress_warnings = ['epub.unknown_project_files']
 rst_prolog = """
