@@ -1,9 +1,12 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Locale;
-import javax.persistence.MappedSuperclass;
+import java.util.Optional;
+
+import jakarta.persistence.MappedSuperclass;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -13,10 +16,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 @MappedSuperclass
 public abstract class DvObjectContainer extends DvObject {
-	
     
-    public static final String UNDEFINED_METADATA_LANGUAGE_CODE = "undefined"; //Used in dataverse.xhtml as a non-null selection option value (indicating inheriting the default)
-    
+    public static final String UNDEFINED_CODE = "undefined"; //Used in dataverse.xhtml as a non-null selection option value (indicating inheriting the default)
     
     public void setOwner(Dataverse owner) {
         super.setOwner(owner);
@@ -37,6 +38,8 @@ public abstract class DvObjectContainer extends DvObject {
     private String storageDriver=null;
     
     private String metadataLanguage=null;
+    
+    private Boolean guestbookAtRequest = null;
     
     public String getEffectiveStorageDriverId() {
         String id = storageDriver;
@@ -71,7 +74,7 @@ public abstract class DvObjectContainer extends DvObject {
             if (this.getOwner() != null) {
                 ml = this.getOwner().getEffectiveMetadataLanguage();
             } else {
-                ml = UNDEFINED_METADATA_LANGUAGE_CODE;
+                ml = UNDEFINED_CODE;
             }
         }
         return ml;
@@ -79,13 +82,13 @@ public abstract class DvObjectContainer extends DvObject {
     
     public String getMetadataLanguage() {
         if (metadataLanguage == null) {
-            return UNDEFINED_METADATA_LANGUAGE_CODE;
+            return UNDEFINED_CODE;
         }
         return metadataLanguage;
     }
 
     public void setMetadataLanguage(String ml) {
-        if (ml != null && ml.equals(UNDEFINED_METADATA_LANGUAGE_CODE)) {
+        if (ml != null && ml.equals(UNDEFINED_CODE)) {
             this.metadataLanguage = null;
         } else {
             this.metadataLanguage = ml;
@@ -93,7 +96,40 @@ public abstract class DvObjectContainer extends DvObject {
     }
     
     public static boolean isMetadataLanguageSet(String mdLang) {
-        return mdLang!=null && !mdLang.equals(UNDEFINED_METADATA_LANGUAGE_CODE);
+        return mdLang!=null && !mdLang.equals(UNDEFINED_CODE);
+    }
+    
+    public boolean getEffectiveGuestbookEntryAtRequest() {
+        boolean gbAtRequest = false;
+        if (guestbookAtRequest==null) {
+            if (this.getOwner() != null) {
+                gbAtRequest = this.getOwner().getEffectiveGuestbookEntryAtRequest();
+            } else {
+                Optional<Boolean> opt = JvmSettings.GUESTBOOK_AT_REQUEST.lookupOptional(Boolean.class);
+                if (opt.isPresent()) {
+                gbAtRequest = opt.get();
+                }
+            }
+        } else {
+            gbAtRequest = guestbookAtRequest;
+        }
+        return gbAtRequest;
+    }
+    
+    public String getGuestbookEntryAtRequest() {
+        if(guestbookAtRequest==null) {
+            return UNDEFINED_CODE;
+        }
+        return Boolean.valueOf(guestbookAtRequest).toString();
+    }
+
+    public void setGuestbookEntryAtRequest(String gbAtRequest) {
+        if (gbAtRequest == null || gbAtRequest.equals(UNDEFINED_CODE)) {
+            this.guestbookAtRequest = null;
+        } else {
+            //Force to true or false
+            this.guestbookAtRequest = Boolean.valueOf(Boolean.parseBoolean(gbAtRequest));
+        }
     }
     
 

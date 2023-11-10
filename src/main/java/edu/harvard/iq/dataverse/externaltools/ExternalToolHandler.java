@@ -22,17 +22,19 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-import javax.ws.rs.HttpMethod;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.ws.rs.HttpMethod;
 
 import org.apache.commons.codec.binary.StringUtils;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_LATEST;
 
 /**
  * Handles an operation on a specific file. Requires a file id in order to be
@@ -110,7 +112,8 @@ public class ExternalToolHandler extends URLTokenUtil {
                 switch (externalTool.getScope()) {
                 case DATASET:
                     callback=SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/datasets/"
-                            + dataset.getId() + "/versions/:latest/toolparams/" + externalTool.getId();
+                            + dataset.getId() + "/versions/" + DS_VERSION_LATEST + "/toolparams/" + externalTool.getId();
+                    break;
                 case FILE:
                     callback= SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/files/"
                             + dataFile.getId() + "/metadata/" + fileMetadata.getId() + "/toolparams/"
@@ -250,6 +253,13 @@ public class ExternalToolHandler extends URLTokenUtil {
     public String getExploreScript() {
         String toolUrl = this.getToolUrlWithQueryParams();
         logger.fine("Exploring with " + toolUrl);
+        return getScriptForUrl(toolUrl);
+    }
+
+    // TODO: Consider merging with getExploreScript
+    public String getConfigureScript() {
+        String toolUrl = this.getToolUrlWithQueryParams();
+        logger.fine("Configuring with " + toolUrl);
         return getScriptForUrl(toolUrl);
     }
 }

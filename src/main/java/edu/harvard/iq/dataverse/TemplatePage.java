@@ -15,12 +15,12 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  *
@@ -53,6 +53,9 @@ public class TemplatePage implements java.io.Serializable {
     
     @Inject
     LicenseServiceBean licenseServiceBean;
+    
+    @Inject
+    SettingsWrapper settingsWrapper;
     
     private static final Logger logger = Logger.getLogger(TemplatePage.class.getCanonicalName());
 
@@ -130,7 +133,7 @@ public class TemplatePage implements java.io.Serializable {
 
             template = templateService.find(templateId);
             template.setDataverse(dataverse);
-            template.setMetadataValueBlocks();
+            template.setMetadataValueBlocks(settingsWrapper.getSystemMetadataBlocks());
 
             if (template.getTermsOfUseAndAccess() != null) {
                 TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
@@ -143,8 +146,9 @@ public class TemplatePage implements java.io.Serializable {
             // create mode for a new template
 
             editMode = TemplatePage.EditMode.CREATE;
-            template = new Template(this.dataverse);
+            template = new Template(this.dataverse, settingsWrapper.getSystemMetadataBlocks());
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+            terms.setFileAccessRequest(true);
             terms.setTemplate(template);
             terms.setLicense(licenseServiceBean.getDefault());
             template.setTermsOfUseAndAccess(terms);

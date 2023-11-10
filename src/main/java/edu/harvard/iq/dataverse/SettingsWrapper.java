@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
@@ -13,7 +14,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 
 import java.time.LocalDate;
@@ -24,19 +24,20 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.Set;
 
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
-import javax.faces.validator.ValidatorException;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.json.JsonObject;
-import javax.mail.internet.InternetAddress;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.validator.ValidatorException;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.json.JsonObject;
+import jakarta.mail.internet.InternetAddress;
 
 /**
  *
@@ -59,6 +60,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     @EJB
     DatasetFieldServiceBean fieldService;
+    
+    @EJB
+    MetadataBlockServiceBean mdbService;
 
     private Map<String, String> settingsMap;
     
@@ -115,6 +119,8 @@ public class SettingsWrapper implements java.io.Serializable {
     private Boolean dataFilePIDSequentialDependent = null;
     
     private Boolean customLicenseAllowed = null;
+    
+    private List<MetadataBlock> systemMetadataBlocks;
     
     private Set<Type> alwaysMuted = null;
 
@@ -465,7 +471,16 @@ public class SettingsWrapper implements java.io.Serializable {
     public boolean isMakeDataCountDisplayEnabled() {
         boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
         return isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, safeDefaultIfKeyNotFound);
+    }
     
+    public LocalDate getMDCStartDate() {
+        String date = getValueForKey(SettingsServiceBean.Key.MDCStartDate);
+        LocalDate ld=null;
+        if(date!=null) {
+          ld = LocalDate.parse(date);
+        }
+        return ld;
+        
     }
     
     public boolean displayChronologicalDateFacets() {
@@ -580,19 +595,24 @@ public class SettingsWrapper implements java.io.Serializable {
     public Map<String, String> getMetadataLanguages(DvObjectContainer target) {
         Map<String,String> currentMap = new HashMap<String,String>();
         currentMap.putAll(getBaseMetadataLanguageMap(false));
-        currentMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
+        currentMap.put(DvObjectContainer.UNDEFINED_CODE, getDefaultMetadataLanguageLabel(target));
         return currentMap;
     }
-    
+
     private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
         String mlLabel = BundleUtil.getStringFromBundle("dataverse.metadatalanguage.setatdatasetcreation");
-        String mlCode = target.getEffectiveMetadataLanguage();
-        // If it's 'undefined', it's the global default
-        if (!mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-            // Get the label for the language code found
-            mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
-            mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+
+        if(target.getOwner() != null) { // Root collection is excluded from inherit metadata language research
+            String mlCode = target.getOwner().getEffectiveMetadataLanguage();
+
+            // If it's undefined, no parent has a metadata language defined, and the global default should be used.
+            if (!mlCode.equals(DvObjectContainer.UNDEFINED_CODE)) {
+                // Get the label for the language code found
+                mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
+                mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+            }
         }
+
         return mlLabel;
     }
     
@@ -604,12 +624,38 @@ public class SettingsWrapper implements java.io.Serializable {
             return (String) mdMap.keySet().toArray()[0];
             } else {
                 //More than one - :MetadataLanguages is set and the default is undefined (users must choose if the collection doesn't override the default)
-                return DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE;
+                return DvObjectContainer.UNDEFINED_CODE;
             }
         } else {
             // None - :MetadataLanguages is not set so return null to turn off the display (backward compatibility)
             return null;
         }
+    }
+    
+    public Map<String, String> getGuestbookEntryOptions(DvObjectContainer target) {
+        Map<String, String> currentMap = new HashMap<String, String>();
+        String atDownload = BundleUtil.getStringFromBundle("dataverse.guestbookentry.atdownload");
+        String atRequest = BundleUtil.getStringFromBundle("dataverse.guestbookentry.atrequest");
+        Optional<Boolean> gbDefault = JvmSettings.GUESTBOOK_AT_REQUEST.lookupOptional(Boolean.class);
+        if (gbDefault.isPresent()) {
+            // Three options - inherited/default option, at Download, at Request
+            String useDefault = null;
+            if (target.getOwner() == null) {
+                boolean defaultOption = gbDefault.get();
+                useDefault = (defaultOption ? atRequest : atDownload)
+                        + BundleUtil.getStringFromBundle("dataverse.default");
+            } else {
+                boolean defaultOption = target.getOwner().getEffectiveGuestbookEntryAtRequest();
+                useDefault = (defaultOption ? atRequest : atDownload)
+                        + BundleUtil.getStringFromBundle("dataverse.inherited");
+            }
+            currentMap.put(DvObjectContainer.UNDEFINED_CODE, useDefault);
+            currentMap.put(Boolean.toString(true), atRequest);
+            currentMap.put(Boolean.toString(false), atDownload);
+        } else {
+            // Setting not defined - leave empty
+        }
+        return currentMap;
     }
     
     public Dataverse getRootDataverse() {
@@ -707,5 +753,21 @@ public class SettingsWrapper implements java.io.Serializable {
             customLicenseAllowed = systemConfig.isAllowCustomTerms();
         }
         return customLicenseAllowed;
+    }
+
+    public List<MetadataBlock> getSystemMetadataBlocks() {
+
+        if (systemMetadataBlocks == null) {
+            systemMetadataBlocks = new ArrayList<MetadataBlock>();
+        }
+        List<MetadataBlock> blocks = mdbService.listMetadataBlocks();
+        for (MetadataBlock mdb : blocks) {
+            String smdbString = JvmSettings.MDB_SYSTEM_KEY_FOR.lookupOptional(mdb.getName()).orElse(null);
+            if (smdbString != null) {
+                systemMetadataBlocks.add(mdb);
+            }
+        }
+
+        return systemMetadataBlocks;
     }
 }

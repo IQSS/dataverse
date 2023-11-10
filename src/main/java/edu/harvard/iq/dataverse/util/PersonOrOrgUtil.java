@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -116,6 +116,15 @@ public class PersonOrOrgUtil {
                         givenName=null;
                     }
                 }
+            }
+        }
+        if(!isOrganization && givenName == null && name.contains(",")) {
+            //If we still think this is a person and there's only one comma, assume we can extract the given name and family name
+            if (!name.replaceFirst(",", "").contains(",")) {
+                // contributorName=<FamilyName>, <FirstName>
+                String[] fullName = name.split(", ");
+                givenName = fullName[1];
+                familyName = fullName[0];
             }
         }
         JsonObjectBuilder job = new NullSafeJsonBuilder();

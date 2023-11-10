@@ -22,9 +22,9 @@
           },
           {
             "typeName": "alternativeTitle",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "Alternative Title"
+            "value": ["Alternative Title"]
           },
           {
             "typeName": "alternativeURL",
@@ -710,9 +710,9 @@
           },
           {
             "typeName": "series",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "compound",
-            "value": {
+            "value": [{
               "seriesName": {
                 "typeName": "seriesName",
                 "multiple": false,
@@ -725,7 +725,7 @@
                 "typeClass": "primitive",
                 "value": "SeriesInformation"
               }
-            }
+            }]
           },
           {
             "typeName": "software",
@@ -1404,7 +1404,7 @@
             "multiple": true,
             "typeClass": "controlledVocabulary",
             "value": [
-              "cell counting",
+              "genome sequencing",
               "cell sorting",
               "clinical chemistry analysis",
               "DNA methylation profiling"

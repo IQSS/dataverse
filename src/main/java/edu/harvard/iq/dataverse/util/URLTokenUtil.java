@@ -5,14 +5,16 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.json.Json;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonValue;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 
 public class URLTokenUtil {
 
@@ -177,8 +179,7 @@ public class URLTokenUtil {
                 }
             }
             if (("DRAFT").equals(versionString)) {
-                versionString = ":draft"; // send the token needed in api calls that can be substituted for a numeric
-                                          // version.
+                versionString = DS_VERSION_DRAFT; // send the token needed in api calls that can be substituted for a numeric version.
             }
             return versionString;
         case FILE_METADATA_ID:

@@ -108,7 +108,7 @@
                         <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
 
                         <span class="input-group-btn">
-                            <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                            <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"  ariaLabel="#{bundle['dataverse.search.btn.find']}">
                                 <span class="glyphicon glyphicon-search no-text"/>
                             </p:commandLink>
                         </span>
@@ -144,7 +144,7 @@
                         </button>
                         <ul class="dropdown-menu">
                             <!-- link for "All" - all file types: -->
-                            <li><h:outputLink value="/dataset.xhtml">
+                            <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
                                     <h:outputText styleClass="#{empty DatasetPage.fileTypeFacet ? 'highlightBold' : ''}" value="#{bundle['file.results.filter.all']}"/>
                                     <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
                                     <f:param name="version" value="#{DatasetPage.version}"/>
@@ -158,7 +158,7 @@
                                 </h:outputLink></li>
                             <li role="separator" class="divider"></li>
                             <ui:repeat value="#{DatasetPage.fileTypeFacetLabels}" var="facetLabel">
-                                <li><h:outputLink value="/dataset.xhtml">
+                                <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
                                         <h:outputFormat styleClass="#{facetLabel.name == DatasetPage.fileTypeFacet ? 'highlightBold' : ''}" value="#{facetLabel.name} &#40;{0}&#41;">
                                             <f:param value="#{facetLabel.count}"/>
                                         </h:outputFormat>
@@ -185,7 +185,7 @@
                         </button>
                         <ul class="dropdown-menu">
                             <!-- link for "All" - i.e., all (both) types of access: -->
-                            <li><h:outputLink value="/dataset.xhtml">
+                            <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
                                     <h:outputText styleClass="#{empty DatasetPage.fileAccessFacet ? 'highlightBold' : ''}" value="#{bundle['file.results.filter.all']}"/>
                                     <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
                                     <f:param name="version" value="#{DatasetPage.version}"/>
@@ -199,7 +199,7 @@
                                 </h:outputLink></li>
                             <li role="separator" class="divider"></li>
                             <ui:repeat value="#{DatasetPage.fileAccessFacetLabels}" var="facetLabel">
-                                <li><h:outputLink value="/dataset.xhtml">
+                                <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
                                         <h:outputFormat styleClass="#{facetLabel.name == DatasetPage.fileAccessFacet ? 'highlightBold' : ''}" value="#{facetLabel.name} &#40;{0}&#41;">
                                             <f:param value="#{facetLabel.count}"/>
                                         </h:outputFormat>
@@ -226,7 +226,7 @@
                         </button>
                         <ul class="dropdown-menu">
                             <!-- link for "All" - i.e., all file tags: -->
-                            <li><h:outputLink value="/dataset.xhtml">
+                            <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
                                     <h:outputText styleClass="#{empty DatasetPage.fileTagsFacet ? 'highlightBold' : ''}" value="#{bundle['file.results.filter.all']}"/>
                                     <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
                                     <f:param name="version" value="#{DatasetPage.version}"/>
@@ -240,7 +240,7 @@
                                 </h:outputLink></li>
                             <li role="separator" class="divider"></li>
                             <ui:repeat value="#{DatasetPage.fileTagsFacetLabels}" var="facetLabel">
-                                <li><h:outputLink value="/dataset.xhtml">
+                                <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
                                         <h:outputFormat styleClass="#{facetLabel.name == DatasetPage.fileTagsFacet ? 'highlightBold' : ''}" value="#{facetLabel.name} &#40;{0}&#41;">
                                             <f:param value="#{facetLabel.count}"/>
                                         </h:outputFormat>
@@ -278,7 +278,7 @@
                             <span class="glyphicon glyphicon-sort"></span> #{bundle['file.results.btn.sort']} <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu pull-right text-left">
-                            <li><h:outputLink value="/dataset.xhtml">
+                            <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
                                     <h:outputText styleClass="#{((empty DatasetPage.fileSortField) or DatasetPage.fileSortField == 'name') and (empty DatasetPage.fileSortOrder) ? 'highlightBold' : ''}" value="#{bundle['file.results.btn.sort.option.nameAZ']}"/>
                                     <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
                                     <f:param name="version" value="#{DatasetPage.version}"/>
@@ -288,7 +288,7 @@
                                     <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
                                     <f:param name="folderPresort" value="#{DatasetPage.folderPresort}"/>
                                 </h:outputLink></li>
-                            <li><h:outputLink value="/dataset.xhtml">
+                            <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
                                     <h:outputText styleClass="#{(DatasetPage.fileSortField == 'name' and DatasetPage.fileSortOrder == 'desc') ? 'highlightBold' : ''}" value="#{bundle['file.results.btn.sort.option.nameZA']}"/>
                                     <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
                                     <f:param name="version" value="#{DatasetPage.version}"/>
@@ -300,7 +300,7 @@
                                     <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
                                     <f:param name="folderPresort" value="#{DatasetPage.folderPresort}"/>
                                 </h:outputLink></li>
-                            <li><h:outputLink value="/dataset.xhtml">
+                            <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
                                     <h:outputText styleClass="#{(DatasetPage.fileSortField == 'date' and (empty DatasetPage.fileSortOrder)) ? 'highlightBold' : ''}" value="#{bundle['file.results.btn.sort.option.newest']}"/>
                                     <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
                                     <f:param name="version" value="#{DatasetPage.version}"/>
@@ -310,7 +310,7 @@
                                     <f:param name="fileSortField" value="date"/>
                                     <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
                                 </h:outputLink></li>
-                            <li><h:outputLink value="/dataset.xhtml">
+                            <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
                                     <h:outputText styleClass="#{(DatasetPage.fileSortField == 'date' and DatasetPage.fileSortOrder == 'desc') ? 'highlightBold' : ''}" value="#{bundle['file.results.btn.sort.option.oldest']}"/>
                                     <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
                                     <f:param name="version" value="#{DatasetPage.version}"/>
@@ -321,7 +321,7 @@
                                     <f:param name="fileSortOrder" value="desc"/>
                                     <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
                                 </h:outputLink></li>
-                            <li><h:outputLink value="/dataset.xhtml">
+                            <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
                                     <h:outputText styleClass="#{DatasetPage.fileSortField == 'size' ? 'highlightBold' : ''}" value="#{bundle['file.results.btn.sort.option.size']}"/>
                                     <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
                                     <f:param name="version" value="#{DatasetPage.version}"/>
@@ -331,7 +331,7 @@
                                     <f:param name="fileSortField" value="size"/>
                                     <f:param name="tagPresort" value="#{DatasetPage.tagPresort}"/>
                                 </h:outputLink></li>
-                            <li><h:outputLink value="/dataset.xhtml">
+                            <li><h:outputLink rel="nofollow" value="/dataset.xhtml">
                                     <h:outputText styleClass="#{DatasetPage.fileSortField == 'type' ? 'highlightBold' : ''}" value="#{bundle['file.results.btn.sort.option.type']}"/>
                                     <f:param name="persistentId" value="#{DatasetPage.persistentId}"/>
                                     <f:param name="version" value="#{DatasetPage.version}"/>
@@ -421,7 +421,6 @@
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                             <ui:param name="bean" value="#{DatasetPage}"/>
                             <ui:param name="unrestrictFileAction" value="restrictFiles"/>
-                            <ui:param name="editFileAction" value="editFileMetadata"/>
                             <ui:param name="refreshTagsPopoupAction" value="refreshTagsPopUp"/>                          
                         </ui:include>  
                     </ul>
@@ -437,13 +436,14 @@
                 <div jsf:id="downloadButtonBlockNormal" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                      and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
-                                     and !DatasetPage.isHasTabular()}">
+                                     and !DatasetPage.isVersionHasTabular()}">
                     <p:commandLink 
                                    styleClass="btn btn-default btn-download"
                                    disabled="#{false and DatasetPage.lockedFromDownload}"
                                    onclick="if (!testFilesSelected()) return false;" 
                                    action="#{DatasetPage.startDownloadSelectedOriginal()}"
                                    update="@form" oncomplete="showPopup();">
+                        <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                         <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
@@ -451,7 +451,7 @@
                 <div jsf:id="downloadButtonBlockTabular" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                      and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
-                                     and DatasetPage.isHasTabular()}">
+                                     and DatasetPage.isVersionHasTabular()}">
                     <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown">  
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
                     </button>
@@ -462,6 +462,7 @@
                                            update="@form" oncomplete="showPopup();"
                                            onclick="if (!testFilesSelected()) return false;" 
                                            actionListener="#{DatasetPage.startDownloadSelectedOriginal()}">
+                                <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                 <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
                                 #{bundle.downloadOriginal}
                             </p:commandLink>
@@ -472,6 +473,7 @@
                                            update="@form" oncomplete="showPopup();"
                                            onclick="if (!testFilesSelected()) return false;" 
                                            actionListener="#{DatasetPage.startDownloadSelectedArchival()}">
+                            <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                             <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
                                 #{bundle.downloadArchival}
                             </p:commandLink>
@@ -480,10 +482,11 @@
                 </div>
 
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
-                               styleClass="btn btn-default btn-request"                                   
-                               action="#{DatasetPage.requestAccessMultipleFiles()}"
-                               update="@form, @([id$=messagePanel])"
-                               disabled="#{DatasetPage.locked}">
+                               styleClass="btn btn-default btn-request"
+                               update="@form, @([id$=messagePanel])" 
+                               action="#{DatasetPage.validateFilesForRequestAccess()}"
+                               disabled="#{DatasetPage.locked or !DatasetPage.fileAccessRequestMultiButtonEnabled}">
+                    <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle['file.requestAccess'])}"/>
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiSignUpButtonRequired}"
@@ -510,7 +513,7 @@
                        data-content="#{DatasetPage.ingestMessage} #{fileMetadata.dataFile.ingestReportMessage}"/>
                 </span>
             </div>
-            <div class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.containsFileAccessRequestFromUser(dataverseSession.user)}">
+            <div class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.containsActiveFileAccessRequestFromUser(dataverseSession.user)}">
                 <!-- Access Requested -->
                 <span class="glyphicon glyphicon-info-sign"/>
                 <span> #{bundle['file.accessRequested']}&#160;</span>
@@ -528,29 +531,38 @@
                     
                     <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
+                     <ui:fragment rendered="#{DatasetPage.isShowQueryButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
+                        <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getQueryToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
+                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber)).concat('&amp;toolType=QUERY')}">
+                            <img src="#{resource['images/Robot-Icon_2.png']}"  width="32" height="32" /><span class="sr-only">#{bundle.preview} "#{empty(fileMetadata.directoryLabel) ? "":fileMetadata.directoryLabel.concat("/")}#{fileMetadata.label}"</span>
+                        </a>                       
+                     </ui:fragment>
+                                   
                     <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
                         <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getPreviewToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
-                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
-                            <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview} "#{empty(fileMetadata.directoryLabel) ? "":fileMetadata.directoryLabel.concat("/")}#{fileMetadata.label}"</span>
+                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalId ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalId ? fileMetadata.dataFile.globalId.asString() : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber)).concat('&amp;toolType=PREVIEW')}">
+                            <span style="margin-top: 10px;"  class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview} "#{empty(fileMetadata.directoryLabel) ? "":fileMetadata.directoryLabel.concat("/")}#{fileMetadata.label}"</span>
                         </a>
                     </ui:fragment>
                     <a type="button" style="padding:6px 8px;" class="btn-access-file btn btn-link bootstrap-button-tooltip dropdown-toggle" 
                        title="#{bundle['file.accessBtn']}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" tabindex="0">
-                        <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle['file.accessBtn']}</span><span class="caret"></span>
+                        <span style="margin-top: 10px;" class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle['file.accessBtn']}</span><span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu pull-right text-left">
                         <!-- Explore/Download/Request Button Block -->
                         <ui:include src="file-download-button-fragment.xhtml">
                             <ui:param name="fileMetadata" value="#{fileMetadata}"/>
-                            <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
-                            <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.requestAccessPopupRequired}"/>
+                            <ui:param name="termsPopupRequired" value="#{DatasetPage.termsPopupRequired}"/>
+                            <ui:param name="guestbookPopupRequiredAtDownload" value="#{DatasetPage.guestbookPopupRequiredAtDownload}"/>        
                             <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
+                            <ui:param name="guestbookAndTermsPopupRequired" value="#{DatasetPage.guestbookAndTermsPopupRequired}"/>
                             <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                             <ui:param name="lockedFromDownload" value="#{DatasetPage.lockedFromDownload}"/>
                             <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
                             <ui:param name="anonymized" value="#{DatasetPage.anonymizedAccess}"/>
+                            <ui:param name="bean" value="#{DatasetPage}"/>
                         </ui:include>
                         <!-- END: Explore/Download/Request Button Block -->
 

@@ -16,9 +16,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -68,8 +70,8 @@ public class CreateDatasetVersionCommandTest {
         assertEquals(expected, testEngine.getReqiredPermissionsForObjects() );
     }
     
-    @Test(expected=IllegalCommandException.class)
-    public void testCantCreateTwoDraftVersions() throws Exception {
+    @Test
+    void testCantCreateTwoDraftVersions() {
         DatasetVersion dsvNew = new DatasetVersion();
         dsvNew.setVersionState(DatasetVersion.VersionState.DRAFT);
         Dataset sampleDataset = makeDataset();
@@ -87,7 +89,7 @@ public class CreateDatasetVersionCommandTest {
             
         });
         
-        testEngine.submit(sut);
+        assertThrows(IllegalCommandException.class, () -> testEngine.submit(sut));
     }
     
     

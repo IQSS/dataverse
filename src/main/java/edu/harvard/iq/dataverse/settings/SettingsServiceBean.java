@@ -4,23 +4,20 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import edu.harvard.iq.dataverse.util.StringUtil;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -406,9 +403,10 @@ public class SettingsServiceBean {
          */
         InheritParentRoleAssignments,
         
-        /** Make Data Count Logging and Display */
+        /** Make Data Count Logging, Display, and Start Date */
         MDCLogPath, 
         DisplayMDCMetrics,
+        MDCStartDate,
 
         /**
          * Allow CORS flag (true or false). It is true by default
@@ -565,6 +563,7 @@ public class SettingsServiceBean {
          * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
          */
         LDNMessageHosts,
+
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */
@@ -576,7 +575,16 @@ public class SettingsServiceBean {
         /**
          * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
          */
-        WebloaderUrl,
+        WebloaderUrl, 
+        /**
+         * Enforce storage quotas:
+         */
+        UseStorageQuotas, 
+        /** 
+         * Placeholder storage quota (defines the same quota setting for every user; used to test the concept of a quota.
+         */
+        StorageQuotaSizeInBytes,
+
         /**
          * A comma-separated list of CategoryName in the desired order for files to be
          * sorted in the file table display. If not set, files will be sorted
@@ -593,7 +601,11 @@ public class SettingsServiceBean {
          * True/false(default) option deciding whether the dataset file table display should include checkboxes
          * allowing users to dynamically turn folder and category ordering on/off.
          */
-        AllowUserManagementOfOrder
+        AllowUserManagementOfOrder,
+        /*
+         * True/false(default) option deciding whether file PIDs can be enabled per collection - using the Dataverse/collection set attribute API call.
+         */
+        AllowEnablingFilePIDsPerCollection
         ;
 
         @Override
@@ -681,8 +693,8 @@ public class SettingsServiceBean {
     	   try {
     		   return Long.parseLong(val);
     	   } catch (NumberFormatException ex) {
-    		   try ( StringReader rdr = new StringReader(val) ) {
-    			   JsonObject settings = Json.createReader(rdr).readObject();
+    		   try {
+    			   JsonObject settings = JsonUtil.getJsonObject(val);
     			   if(settings.containsKey(param)) {
     				   return Long.parseLong(settings.getString(param));
     			   } else if(settings.containsKey("default")) {
@@ -715,8 +727,8 @@ public class SettingsServiceBean {
             return null;
         }
 
-        try (StringReader rdr = new StringReader(val)) {
-            JsonObject settings = Json.createReader(rdr).readObject();
+        try {
+            JsonObject settings = JsonUtil.getJsonObject(val);
             if (settings.containsKey(param)) {
                 return Boolean.parseBoolean(settings.getString(param));
             } else if (settings.containsKey("default")) {
@@ -882,8 +894,7 @@ public class SettingsServiceBean {
             if(mlString.isEmpty()) {
                 mlString="[]";
             }
-            JsonReader jsonReader = Json.createReader(new StringReader(mlString));
-            JsonArray languages = jsonReader.readArray();
+            JsonArray languages = JsonUtil.getJsonArray(mlString);
             for(JsonValue jv: languages) {
                 JsonObject lang = (JsonObject) jv;
                 languageMap.put(lang.getString("locale"), lang.getString("title"));

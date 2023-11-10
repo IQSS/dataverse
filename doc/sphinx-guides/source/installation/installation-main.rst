@@ -28,8 +28,8 @@ Unpack the zip file - this will create the directory ``dvinstall``.
 
 Just make sure the user running the installer has write permission to:
 
-- /usr/local/payara5/glassfish/lib
-- /usr/local/payara5/glassfish/domains/domain1
+- /usr/local/payara6/glassfish/lib
+- /usr/local/payara6/glassfish/domains/domain1
 - the current working directory of the installer (it currently writes its logfile there), and
 - your jvm-option specified files.dir
 
@@ -47,7 +47,7 @@ Follow the instructions in the text file.
 The script will prompt you for some configuration values. If this is a test/evaluation installation, it may be possible to accept the default values provided for most of the settings:
 
 - Internet Address of your host: localhost
-- Payara Directory: /usr/local/payara5
+- Payara Directory: /usr/local/payara6
 - Payara User: current user running the installer script
 - Administrator email address for this Dataverse installation: (none)
 - SMTP (mail) server to relay notification messages: localhost
@@ -98,9 +98,9 @@ The supplied site URL will be saved under the JVM option :ref:`dataverse.siteUrl
 
 **IMPORTANT:** Please note, that "out of the box" the installer will configure the Dataverse installation to leave unrestricted access to the administration APIs from (and only from) localhost. Please consider the security implications of this arrangement (anyone with shell access to the server can potentially mess with your Dataverse installation). An alternative solution would be to block open access to these sensitive API endpoints completely; and to only allow requests supplying a pre-defined "unblock token" (password). If you prefer that as a solution, please consult the supplied script ``post-install-api-block.sh`` for examples on how to set it up. See also "Securing Your Installation" under the :doc:`config` section.
 
-The Dataverse Software uses JHOVE_ to help identify the file format (CSV, PNG, etc.) for files that users have uploaded. The installer places files called ``jhove.conf`` and ``jhoveConfig.xsd`` into the directory ``/usr/local/payara5/glassfish/domains/domain1/config`` by default and makes adjustments to the jhove.conf file based on the directory into which you chose to install Payara.
+The Dataverse Software uses JHOVE_ to help identify the file format (CSV, PNG, etc.) for files that users have uploaded. The installer places files called ``jhove.conf`` and ``jhoveConfig.xsd`` into the directory ``/usr/local/payara6/glassfish/domains/domain1/config`` by default and makes adjustments to the jhove.conf file based on the directory into which you chose to install Payara.
 
-.. _JHOVE: http://jhove.openpreservation.org
+.. _JHOVE: https://jhove.openpreservation.org
 
 Logging In
 ----------
@@ -120,7 +120,7 @@ Use the following credentials to log in:
 - username: dataverseAdmin
 - password: admin
 
-Congratulations! You have a working Dataverse installation. Soon you'll be tweeting at `@dataverseorg <https://twitter.com/dataverseorg>`_ asking to be added to the map at http://dataverse.org :)
+Congratulations! You have a working Dataverse installation. Soon you'll be tweeting at `@dataverseorg <https://twitter.com/dataverseorg>`_ asking to be added to the map at https://dataverse.org :)
 
 Trouble? See if you find an answer in the troubleshooting section below.
 
@@ -204,7 +204,7 @@ Be sure you save the changes made here and then restart your Payara server to te
 UnknownHostException While Deploying
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are seeing "Caused by: java.net.UnknownHostException: myhost: Name or service not known" in server.log and your hostname is "myhost" the problem is likely that "myhost" doesn't appear in ``/etc/hosts``. See also http://stackoverflow.com/questions/21817809/glassfish-exception-during-deployment-project-with-stateful-ejb/21850873#21850873
+If you are seeing "Caused by: java.net.UnknownHostException: myhost: Name or service not known" in server.log and your hostname is "myhost" the problem is likely that "myhost" doesn't appear in ``/etc/hosts``. See also https://stackoverflow.com/questions/21817809/glassfish-exception-during-deployment-project-with-stateful-ejb/21850873#21850873
 
 .. _fresh-reinstall:
 
@@ -249,7 +249,7 @@ Deleting Uploaded Files
 
 The path below will depend on the value for ``dataverse.files.directory`` as described in the :doc:`config` section:
 
-``rm -rf /usr/local/payara5/glassfish/domains/domain1/files``
+``rm -rf /usr/local/payara6/glassfish/domains/domain1/files``
 
 Rerun Installer
 ^^^^^^^^^^^^^^^

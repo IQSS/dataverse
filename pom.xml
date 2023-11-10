@@ -19,14 +19,16 @@
     <name>dataverse</name>
     <properties>
         <skipUnitTests>false</skipUnitTests>
+        <skipIntegrationTests>false</skipIntegrationTests>
+        <it.groups>integration</it.groups>
+        
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
         <packaging.type>war</packaging.type>
         
         <reload4j.version>1.2.18.4</reload4j.version>
-        <flyway.version>8.5.10</flyway.version>
+        <flyway.version>9.21.2</flyway.version>
         <jhove.version>1.20.1</jhove.version>
-        <jacoco.version>0.8.7</jacoco.version>
         <poi.version>5.2.1</poi.version>
         <tika.version>2.4.1</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
@@ -67,7 +69,7 @@
             <scope>runtime</scope>
         </dependency>
         
-	    <dependency>
+        <dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>
             <version>1.6.0</version>
@@ -94,7 +96,7 @@
         <dependency>
             <groupId>io.gdcc</groupId>
             <artifactId>sword2-server</artifactId>
-            <version>1.2.1</version>
+            <version>2.0.0</version>
         </dependency>
         <!-- Dependency to use sword2-server in our codebase -->
         <dependency>
@@ -117,7 +119,7 @@
         <dependency>
           <groupId>com.apicatalog</groupId>
           <artifactId>titanium-json-ld</artifactId>
-          <version>1.3.0-SNAPSHOT</version>
+          <version>1.3.2</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -158,12 +160,20 @@
             <artifactId>flyway-core</artifactId>
             <version>${flyway.version}</version>
         </dependency>
+        <!-- Enable resolution of the JPA provider in persistence.xml -->
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.jpa</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>29.0-jre</version>
+            <version>32.1.2-jre</version>
             <type>jar</type>
         </dependency>
+        
+        <!-- Jakarta EE & Eclipse MicroProfile base dependencies -->
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
@@ -172,21 +182,35 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee-api.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- JSON-P -->
+        
+        <!-- Jakarta Activation, MIME support etc -->
+        <!-- Runtime implementation here only, as necessary for testing. -->
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.json</artifactId>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-activation</artifactId>
             <scope>provided</scope>
             <!-- no version here as managed by Payara BOM above! -->
         </dependency>
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+            <scope>provided</scope>
+            <!-- Note: The version was provided by Payara BOM till 6.2023.7, when they removed the Core BOM from it as
+                       meant for internal use only. Simply referencing the version property here solves the problem. -->
+            <version>${payara.version}</version>
+        </dependency>
+        
+        <!-- JSON-P -->
+        <!-- Runtime implementation here only, as necessary for testing. -->
+        <dependency>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>jakarta.json</artifactId>
             <scope>provided</scope>
         </dependency>
+        
+        <!-- Jakarta Faces & related -->
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
@@ -196,6 +220,7 @@
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
             <version>11.0.0</version>
+            <classifier>jakarta</classifier>
         </dependency>
         <dependency>
             <groupId>org.primefaces.themes</groupId>
@@ -205,9 +230,10 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>3.8</version> <!-- Or 1.8-SNAPSHOT -->
+            <version>4.0-M13</version>
         </dependency>
         
+        <!-- Jakarta Validation API & runtime -->
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
@@ -218,9 +244,12 @@
             <artifactId>hibernate-validator</artifactId>
             <scope>provided</scope>
         </dependency>
+    
+        <!-- Jakarta Expression Language -->
+        <!-- Runtime implementation here only, as necessary for testing. -->
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
             <scope>provided</scope>
         </dependency>
         
@@ -254,29 +283,23 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>8.11.1</version>
+            <version>9.3.0</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
             <artifactId>colt</artifactId>
             <version>1.2.0</version>
         </dependency>
-        <!-- fits.jar, not available from network repos, supplied in local_lib -->
+        <!-- FITS -->
         <dependency>
-            <groupId>nom.tam.fits</groupId>
-            <artifactId>fits</artifactId>
-            <version>2012-10-25-generated</version>
+            <groupId>gov.nasa.gsfc.heasarc</groupId>
+            <artifactId>nom-tam-fits</artifactId>
+            <version>1.12.0</version>
         </dependency>
         <dependency>
             <groupId>net.handle</groupId>
-            <artifactId>handle</artifactId>
-            <version>8.1.1</version>
-        </dependency>
-        <!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
-        <dependency>
-            <groupId>edu.harvard.iq.dvn</groupId>
-            <artifactId>unf5</artifactId>
-            <version>5.0</version>
+            <artifactId>handle-client</artifactId>
+            <version>9.3.1</version>
         </dependency>
         <!-- (new) UNF v6: -->
         <dependency>
@@ -336,18 +359,24 @@
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-servlet</artifactId>
-            <version>3.5.0.Final</version>
+            <version>10.0.0.Final</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-config-prettyfaces</artifactId>
-            <version>3.5.0.Final</version>
+            <version>10.0.0.Final</version>
         </dependency>
         <dependency>
             <groupId>edu.ucsb.nceas</groupId>
             <artifactId>ezid</artifactId>
             <version>1.0.0</version>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
@@ -385,9 +414,16 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>10.7.1</version>
+            <version>10.13.2</version>
         </dependency>
-        <!-- New and Improved GDCC XOAI library! --> 
+        <!-- Caching library, current main use case is for OIDC authentication -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.1.8</version>
+        </dependency>
+        
+        <!-- New and Improved GDCC XOAI library! -->
         <dependency>
             <groupId>io.gdcc</groupId>
             <artifactId>xoai-data-provider</artifactId>
@@ -408,15 +444,13 @@
         </dependency>
         <!-- For API File Upload: 1 of 2 -->
         <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-            <version>2.23.2</version>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
         </dependency>
         <!-- For API File Upload: 2 of 2 -->
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
-            <version>2.23.2</version>
         </dependency>
         <dependency>
             <groupId>com.mashape.unirest</groupId>
@@ -503,24 +537,16 @@
             <artifactId>cdm-core</artifactId>
             <version>${netcdf.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>io.gdcc</groupId>
+            <artifactId>dataverse-spi</artifactId>
+            <version>2.0.0</version>
+        </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <version>${junit.vintage.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -542,9 +568,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.jayway.restassured</groupId>
+            <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
-            <version>2.4.0</version>
+            <version>5.3.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -563,6 +589,12 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -574,6 +606,24 @@
             <artifactId>postgresql</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.dasniko</groupId>
+            <artifactId>testcontainers-keycloak</artifactId>
+            <version>3.0.0</version>
+            <scope>test</scope>
+        </dependency>
+        <!--
+            Brute force solution until we are on Jakarta EE 10.
+            Otherwise, we get very cryptic errors about missing bundle files on test runs.
+            See also https://github.com/jakartaee/jakartaee-api/issues/61
+        -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>4.0.4</version>
+            <scope>test</scope>
+        </dependency>
+        
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -592,24 +642,23 @@
             <version>${smallrye-mpconfig.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+            <version>3.2.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
-        <!--        <testResources>
+        <testResources>
             <testResource>
-                <directory>${project.basedir}/src/main/resources</directory>
-            </testResource>
-        </testResources>-->
-        <!--        <testResources>
-            <testResource>
-              <directory>${project.basedir}/src/test/java</directory>
-              <excludes>
-                  <exclude>**/*.java</exclude>
-              </excludes>
+                <directory>${project.basedir}/src/test/resources</directory>
             </testResource>
             <testResource>
-              <directory>${project.basedir}/src/test/resources</directory>
+                <directory>${project.basedir}/conf/keycloak</directory>
+                <targetPath>keycloak</targetPath>
             </testResource>
-          </testResources>-->
+        </testResources>
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -687,24 +736,94 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
-                <configuration>
-                    <destfile>${basedir}/target/coverage-reports/jacoco-unit.exec</destfile>
-                    <datafile>${basedir}/target/coverage-reports/jacoco-unit.exec</datafile>
-                </configuration>
                 <executions>
                     <execution>
                         <id>jacoco-initialize</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/coverage-reports/jacoco-unit.exec</destFile>
+                            <propertyName>surefire.jacoco.args</propertyName>
+                            <skip>${skipUnitTests}</skip>
+                            <includes>
+                                <include>edu/harvard/iq/dataverse/*</include>
+                                <include>io/gdcc/*</include>
+                                <include>org/dataverse/*</include>
+                            </includes>
+                        </configuration>
                     </execution>
                     <execution>
-                        <id>jacoco-site</id>
-                        <phase>package</phase>
+                        <id>jacoco-after-unit</id>
+                        <phase>test</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/coverage-reports/jacoco-unit.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report</outputDirectory>
+                            <skip>${skipUnitTests}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-initialize-it</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/coverage-reports/jacoco-integration.exec</destFile>
+                            <propertyName>failsafe.jacoco.args</propertyName>
+                            <skip>${skipIntegrationTests}</skip>
+                            <includes>
+                                <include>edu/harvard/iq/dataverse/*</include>
+                                <include>io/gdcc/*</include>
+                                <include>org/dataverse/*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-after-it</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/coverage-reports/jacoco-integration.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-integration-test-coverage-report</outputDirectory>
+                            <skip>${skipIntegrationTests}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-merge-unit-and-it</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>merge</goal>
+                        </goals>
+                        <configuration>
+                            <fileSets>
+                                <fileSet>
+                                    <directory>${project.build.directory}/coverage-reports/</directory>
+                                    <includes>
+                                        <include>*.exec</include>
+                                    </includes>
+                                </fileSet>
+                            </fileSets>
+                            <destFile>${project.build.directory}/coverage-reports/merged.exec</destFile>
+                            <skip>${skipIntegrationTests}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/coverage-reports/merged.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
+                            <skip>${skipIntegrationTests}</skip>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -719,6 +838,9 @@
                         <version>2.3.1</version>
                     </dependency>
                 </dependencies>
+                <configuration>
+                    <jacocoReports>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report/jacoco.xml</jacocoReports>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -728,7 +850,26 @@
                     <!-- testsToExclude come from the profile-->
                     <excludedGroups>${testsToExclude}</excludedGroups>
                     <skip>${skipUnitTests}</skip>
+                    <argLine>${surefire.jacoco.args} ${argLine}</argLine>
                 </configuration>
+            </plugin>
+            <!-- Run mvn verify to execute these Testcontainers based integration tests. Needs Docker! -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <groups>${it.groups}</groups>
+                    <argLine>${failsafe.jacoco.args} ${argLine}</argLine>
+                    <skip>${skipIntegrationTests}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -750,7 +891,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <testsToExclude>edu.harvard.iq.dataverse.NonEssentialTests</testsToExclude>
+                <testsToExclude>not-essential-unittests</testsToExclude>
             </properties>
         </profile>
         <profile>
@@ -762,6 +903,7 @@
             <properties>
                 <!-- Let's go FAST here - building the image should be quick to do by default. -->
                 <skipUnitTests>true</skipUnitTests>
+                <skipIntegrationTests>true</skipIntegrationTests>
                 <!-- Once we truly run tests with Testcontainers, this should be switch to "docker", activating ITs -->
                 <packaging.type>docker-build</packaging.type>
                 <postgresql.server.version>13</postgresql.server.version>
@@ -770,6 +912,8 @@
                 <app.image.tag>unstable</app.image.tag>
                 <base.image>gdcc/base:${base.image.tag}</base.image>
                 <base.image.tag>unstable</base.image.tag>
+                <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
+                <conf.image.tag>${app.image.tag}</conf.image.tag>
     
                 <docker.platforms></docker.platforms>
             
@@ -824,23 +968,8 @@
                                             <descriptor>assembly.xml</descriptor>
                                         </assembly>
                                     </build>
-                                
+                                    
                                     <run>
-                                        <!-- <autoRemove>true</autoRemove> -->
-                                        <!--
-                                        <wait>
-                                            <http>
-                                                <url>http://localhost:8080/robots.txt</url>
-                                                <method>GET</method>
-                                                <status>200..399</status>
-                                            </http>
-                                            <log>dataverse was successfully deployed</log>
-                                            <time>${ct.run.wait}</time>
-                                            <exec>
-                                                <postStart>/opt/payara/scripts/bootstrap-job.sh</postStart>
-                                            </exec>
-                                        </wait>
-                                        -->
                                     </run>
                                     
                                     <external>
@@ -849,6 +978,43 @@
                                         <composeFile>docker-compose-dev.yml</composeFile>
                                     </external>
                                 </image>
+                                
+                                <image>
+                                    <alias>dev_bootstrap</alias>
+                                    <name>${conf.image}</name>
+                                    <build>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>${docker.platforms}</platform>
+                                            </platforms>
+                                        </buildx>
+                                        <dockerFile>${project.basedir}/modules/container-configbaker/Dockerfile</dockerFile>
+                                        <args>
+                                            <SOLR_VERSION>${SOLR_VERSION}</SOLR_VERSION>
+                                        </args>
+                                        <filter>@</filter>
+                                        <assembly>
+                                            <descriptor>${project.basedir}/modules/container-configbaker/assembly.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                    
+                                    <!--
+                                        We skip the run here as it is already included in the external run config
+                                        above for the main image via the docker-compose file. Even if using
+                                        -Ddocker.filter=dev_bootstrap, the run config from above is still enforced.
+                                    -->
+                                    <run>
+                                        <skip>true</skip>
+                                    </run>
+                                </image>
+
+                                <image>
+                                    <name>gdcc/dev_nginx:unstable</name>
+                                    <build>
+                                        <contextDir>${project.basedir}/modules/nginx</contextDir>
+                                    </build>
+                                </image>
+
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
                         </configuration>
@@ -858,10 +1024,11 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <version>${maven-failsafe-plugin.version}</version>
                         <configuration>
-                            <groups>testcontainers</groups>
+                            <groups>end2end</groups>
                             <systemPropertyVariables>
                                 <postgresql.server.version>${postgresql.server.version}</postgresql.server.version>
                             </systemPropertyVariables>
+                            <skip>${skipIntegrationTests}</skip>
                         </configuration>
                         <executions>
                             <execution>

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.UserNotification;
@@ -8,8 +9,8 @@ import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.SystemEm
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 
 public class MailUtil {
 
@@ -39,6 +40,8 @@ public class MailUtil {
                 datasetDisplayName = ((Dataset) objectOfNotification).getDisplayName();
             } else if (objectOfNotification instanceof DatasetVersion) {
                 datasetDisplayName = ((DatasetVersion) objectOfNotification).getDataset().getDisplayName();
+            } else if (objectOfNotification instanceof DataFile) {
+                datasetDisplayName = ((DataFile) objectOfNotification).getOwner().getDisplayName();
             }
         }
 
@@ -50,7 +53,9 @@ public class MailUtil {
             case CREATEDV:
                 return BundleUtil.getStringFromBundle("notification.email.create.dataverse.subject", rootDvNameAsList);
             case REQUESTFILEACCESS:
-                return BundleUtil.getStringFromBundle("notification.email.request.file.access.subject", rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.request.file.access.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
+            case REQUESTEDFILEACCESS:
+                return BundleUtil.getStringFromBundle("notification.email.requested.file.access.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case GRANTFILEACCESS:
                 return BundleUtil.getStringFromBundle("notification.email.grant.file.access.subject", rootDvNameAsList);
             case REJECTFILEACCESS:

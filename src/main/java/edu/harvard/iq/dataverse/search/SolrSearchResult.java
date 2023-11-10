@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -122,6 +122,8 @@ public class SolrSearchResult {
 	private String filePersistentId = null;
 
 	private Long embargoEndDate;
+
+	private boolean datasetValid;
 
 	public String getDvTree() {
 		return dvTree;
@@ -423,6 +425,7 @@ public class SolrSearchResult {
 				.add("is_draft_state", this.isDraftState()).add("is_in_review_state", this.isInReviewState())
 				.add("is_unpublished_state", this.isUnpublishedState()).add("is_published", this.isPublishedState())
 				.add("is_deaccesioned", this.isDeaccessionedState())
+				.add("is_valid", this.isValid())
 				.add("date_to_display_on_card", getDateToDisplayOnCard());
 
 		// Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
@@ -1257,4 +1260,12 @@ public class SolrSearchResult {
 	public void setEmbargoEndDate(Long embargoEndDate) {
 		this.embargoEndDate = embargoEndDate;
 	}
+
+	public void setDatasetValid(Boolean datasetValid) {
+		this.datasetValid = datasetValid == null || Boolean.valueOf(datasetValid);
+	}
+
+	public boolean isValid() {
+		return datasetValid;
+    }
 }

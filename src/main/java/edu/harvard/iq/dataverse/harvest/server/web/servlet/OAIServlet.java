@@ -20,9 +20,10 @@ import io.gdcc.xoai.model.oaipmh.OAIPMH;
 import io.gdcc.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository;
@@ -37,17 +38,16 @@ import org.apache.commons.lang3.StringUtils;
 
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.inject.Inject;
+import jakarta.ejb.EJB;
+import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import javax.mail.internet.InternetAddress;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLStreamException;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -154,18 +154,13 @@ public class OAIServlet extends HttpServlet {
                 exporter = null;
             }
 
-            if (exporter != null && exporter.isXMLFormat() && exporter.isHarvestable()) {
+            if (exporter != null && (exporter instanceof XMLExporter) && exporter.isHarvestable()) {
                 MetadataFormat metadataFormat;
 
-                try {
+                metadataFormat = MetadataFormat.metadataFormat(formatName);
+                metadataFormat.withNamespace(((XMLExporter) exporter).getXMLNameSpace());
+                metadataFormat.withSchemaLocation(((XMLExporter) exporter).getXMLSchemaLocation());
 
-                    metadataFormat = MetadataFormat.metadataFormat(formatName);
-                    metadataFormat.withNamespace(exporter.getXMLNameSpace());
-                    metadataFormat.withSchemaLocation(exporter.getXMLSchemaLocation());
-                    
-                } catch (ExportException ex) {
-                    metadataFormat = null;
-                }
                 if (metadataFormat != null) {
                     context.withMetadataFormat(metadataFormat);
                 }
