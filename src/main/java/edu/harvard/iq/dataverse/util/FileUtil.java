@@ -1469,37 +1469,24 @@ public class FileUtil implements java.io.Serializable  {
         }
 
         StorageIO<DataFile> storage = dataFile.getStorageIO();
-        InputStream in = null;
+        String recalculatedChecksum = null;
 
-        try {
-            in = getOriginalFileInputStream(storage, dataFile.isTabularData());
+        try (InputStream inputStream = getOriginalFileInputStream(storage, dataFile.isTabularData())) {
+            recalculatedChecksum = FileUtil.calculateChecksum(inputStream, checksumType);
         } catch (IOException ioex) {
-            in = null;
-        }
-
-        if (in == null) {
             String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString()));
             logger.log(Level.INFO, info);
             throw new IOException(info);
-        }
-
-        String recalculatedChecksum = null;
-        try {
-            recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
         } catch (RuntimeException rte) {
             logger.log(Level.SEVERE, "failed to calculated checksum, one retry", rte);
             recalculatedChecksum = null;
-            IOUtils.closeQuietly(in);
+        }
+
+        if (recalculatedChecksum == null) { //retry once
             storage = dataFile.getStorageIO();
-            try {
-                in = getOriginalFileInputStream(storage, dataFile.isTabularData());
-                recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
-            } catch (RuntimeException rte2) {
-                logger.log(Level.SEVERE, "failed to calculated checksum, no retry", rte2);
-                recalculatedChecksum = null;
+            try (InputStream inputStream = getOriginalFileInputStream(storage, dataFile.isTabularData())) {
+                recalculatedChecksum = FileUtil.calculateChecksum(inputStream, checksumType);
             }
-        } finally {
-            IOUtils.closeQuietly(in);
         }
 
         if (recalculatedChecksum == null) {
