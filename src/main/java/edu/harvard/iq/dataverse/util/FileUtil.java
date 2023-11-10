@@ -1504,6 +1504,7 @@ public class FileUtil implements java.io.Serializable  {
             boolean fixed = false;
             if (!dataFile.isTabularData() && dataFile.getIngestReport() != null) {
                 // try again, see if the .orig file happens to be there:
+                InputStream in = null;
                 try {
                     in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
                 } catch (IOException ioex) {
