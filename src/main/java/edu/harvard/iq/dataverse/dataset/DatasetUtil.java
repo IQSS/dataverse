@@ -523,7 +523,7 @@ public class DatasetUtil {
         // for the filter to whitelist by these attributes. 
         
         try {
-            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion()))
+            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion(), true))
                     .add("sourceAddress", sourceAddressLabel)
                     .add("userIdentifier", userIdentifier)
                     .add("parentAlias", ds.getOwner().getAlias())

@@ -645,15 +645,4 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             
         return null; 
     }
-
-    /**
-     *  Checks if the DataverseRequest, which contains IP Groups, has permission to download the file
-     *
-     * @param dataverseRequest the DataverseRequest
-     * @param dataFile the DataFile to check permissions
-     * @return boolean
-     */
-    public boolean canDownloadFile(DataverseRequest dataverseRequest, DataFile dataFile) {
-        return permissionService.requestOn(dataverseRequest, dataFile).has(Permission.DownloadFile);
-    }
 }
