@@ -6,7 +6,6 @@ import com.github.benmanes.caffeine.cache.Scheduler;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import edu.harvard.iq.dataverse.*;
-
 import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -20,6 +19,8 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonPatch;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue.ValueType;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.HttpMethod;
@@ -57,7 +58,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
-import edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -282,6 +282,33 @@ public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger
                 response.add("status", 500);
             }
             return response.build();
+    }
+
+    public JsonObject requestReferenceFileIdentifiers(Dataset dataset, JsonArray referencedFiles) {
+        String driverId = dataset.getEffectiveStorageDriverId();
+        JsonArray endpoints = GlobusAccessibleStore.getReferenceEndpointsWithPaths(driverId);
+
+        JsonObjectBuilder fileMap = Json.createObjectBuilder();
+        referencedFiles.forEach(value -> {
+            if (value.getValueType() != ValueType.STRING) {
+                throw new JsonParsingException("ReferencedFiles must be strings", null);
+            }
+            String referencedFile = ((JsonString) value).getString();
+            boolean valid = false;
+            for (int i = 0; i < endpoints.size(); i++) {
+                if (referencedFile.startsWith(((JsonString) endpoints.get(i)).getString())) {
+                    valid = true;
+                }
+            }
+            if (!valid) {
+                throw new IllegalArgumentException(
+                        "Referenced file " + referencedFile + " is not in an allowed endpoint/path");
+            }
+            String storageIdentifier = DataAccess.getNewStorageIdentifier(driverId);
+            fileMap.add(referencedFile,
+                    storageIdentifier + "//" + referencedFile);
+        });
+        return fileMap.build();
     }
 
     //Single cache of open rules/permission requests

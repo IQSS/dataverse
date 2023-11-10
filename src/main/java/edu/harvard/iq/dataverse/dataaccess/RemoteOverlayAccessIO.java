@@ -65,7 +65,10 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.RemoteOverlayAccessIO");
 
+    // A single baseUrl of the form http(s)://<host(:port)/basePath> where this store can reference data
     static final String BASE_URL = "base-url";
+    // Multiple endpoints where data can be referenced from. Multiple endpoints are separated by a comma. Multiple endpoints are only supported by the GlobalOverlayAccessIO at present. 
+    static final String REFERENCE_ENDPOINTS_WITH_BASEPATHS = "reference-endpoints-with-basepaths";
     static final String BASE_STORE = "base-store";
     static final String SECRET_KEY = "secret-key";
     static final String URL_EXPIRATION_MINUTES = "url-expiration-minutes";
@@ -74,7 +77,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     
     protected StorageIO<DvObject> baseStore = null;
     protected String path = null;
-    protected String baseUrl = null;
+    private String baseUrl = null;
 
     protected static HttpClientContext localContext = HttpClientContext.create();
     protected PoolingHttpClientConnectionManager cm = null;
@@ -110,7 +113,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         logger.fine("Relative path: " + path);
     }
 
-    private void validatePath(String relPath) throws IOException {
+    protected void validatePath(String relPath) throws IOException {
         try {
             URI absoluteURI = new URI(baseUrl + "/" + relPath);
             if (!absoluteURI.normalize().toString().startsWith(baseUrl)) {
@@ -457,19 +460,8 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     protected void configureStores(DataAccessRequest req, String driverId, String storageLocation) throws IOException {
-        baseUrl = getConfigParam(BASE_URL);
-        if (baseUrl == null) {
-            throw new IOException("dataverse.files." + this.driverId + ".base-url is required");
-        } else {
-            try {
-                new URI(baseUrl);
-            } catch (Exception e) {
-                logger.warning(
-                        "Trouble interpreting base-url for store: " + this.driverId + " : " + e.getLocalizedMessage());
-                throw new IOException("Can't interpret base-url as a URI");
-            }
-
-        }
+        configureEndpoints();
+        
 
         if (baseStore == null) {
             String baseDriverId = getBaseStoreIdFor(driverId);
@@ -540,6 +532,31 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             remoteStoreUrl = new URL(getConfigParam(REMOTE_STORE_URL));
         } catch (MalformedURLException mfue) {
             logger.fine("Unable to read remoteStoreUrl for driver: " + this.driverId);
+        }
+    }
+
+    /** This endpoint configures all the endpoints the store is allowed to reference data from. At present, the RemoteOverlayAccessIO only supports a single endpoint but
+     * the derived GlobusOverlayAccessIO can support multiple endpoints.
+     * @throws IOException
+     */
+    protected void configureEndpoints() throws IOException {
+        baseUrl = getConfigParam(BASE_URL);
+        if (baseUrl == null) {
+            //Will accept the first endpoint using the newer setting
+            baseUrl = getConfigParam(REFERENCE_ENDPOINTS_WITH_BASEPATHS).split("\\s*,\\s*")[0];
+            if (baseUrl == null) {
+                throw new IOException("dataverse.files." + this.driverId + ".base-url is required");
+            }
+        }
+        if (baseUrl != null) {
+            try {
+                new URI(baseUrl);
+            } catch (Exception e) {
+                logger.warning(
+                        "Trouble interpreting base-url for store: " + this.driverId + " : " + e.getLocalizedMessage());
+                throw new IOException("Can't interpret base-url as a URI");
+            }
+
         }
     }
 

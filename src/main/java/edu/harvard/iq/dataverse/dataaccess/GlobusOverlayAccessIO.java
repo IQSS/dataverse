@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
@@ -39,7 +41,8 @@ import jakarta.json.JsonObjectBuilder;
  * <globusEndpointId/basepath>/<dataset authority>/<dataset
  * identifier>/<baseStorageIdentifier>
  *
- * baseUrl: globus://<globusEndpointId/basePath>
+ * transfer and reference endpoint formats: <globusEndpointId/basePath>
+ * reference endpoints separated by a comma
  * 
  */
 public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAccessIO<T> implements GlobusAccessibleStore {
@@ -50,7 +53,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
      * Dataverse/the globus app manage file locations, access controls, deletion,
      * etc.
      */
-    private boolean dataverseManaged = false;
+    private Boolean dataverseManaged = null;
 
     private String relativeDirectoryPath;
     
@@ -58,22 +61,59 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
     
     private String filename;
 
+    private String[] allowedEndpoints;
     private String endpoint;
 
     public GlobusOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
-        dataverseManaged = GlobusAccessibleStore.isDataverseManaged(this.driverId);
     }
+
+
+    public GlobusOverlayAccessIO(String storageLocation, String driverId) throws IOException {
+        this.driverId = driverId;
+        configureStores(null, driverId, storageLocation);
+        if (isManaged()) {
+            String[] parts = DataAccess.getDriverIdAndStorageLocation(storageLocation);
+            path = parts[1];
+        } else {
+            this.setIsLocalFile(false);
+            path = storageLocation.substring(storageLocation.lastIndexOf("//") + 2);
+            validatePath(path);
+            logger.fine("Referenced path: " + path);
+        }
+    }
+    private boolean isManaged() {
+        if(dataverseManaged==null) {
+            dataverseManaged = GlobusAccessibleStore.isDataverseManaged(this.driverId);
+        }
+        return dataverseManaged;
+    }
+    
+    private String retrieveGlobusAccessToken() {
+        String globusToken = getConfigParam(GlobusAccessibleStore.GLOBUS_TOKEN);
+        
+
+        AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
+        return accessToken.getOtherTokens().get(0).getAccessToken();
+    }
+
 
     private void parsePath() {
         int filenameStart = path.lastIndexOf("/") + 1;
-        String endpointWithBasePath = baseUrl.substring(baseUrl.lastIndexOf(DataAccess.SEPARATOR) + 3);
+        String endpointWithBasePath = null;
+        if (!isManaged()) {
+            endpointWithBasePath = findMatchingEndpoint(path, allowedEndpoints);
+        } else {
+            endpointWithBasePath = allowedEndpoints[0];
+        }
+        //String endpointWithBasePath = baseEndpointPath.substring(baseEndpointPath.lastIndexOf(DataAccess.SEPARATOR) + 3);
         int pathStart = endpointWithBasePath.indexOf("/");
         logger.info("endpointWithBasePath: " + endpointWithBasePath);
         endpointPath = "/" + (pathStart > 0 ? endpointWithBasePath.substring(pathStart + 1) : "");
         logger.info("endpointPath: " + endpointPath);
+        
 
-        if (dataverseManaged && (dvObject!=null)) {
+        if (isManaged() && (dvObject!=null)) {
             
             Dataset ds = null;
             if (dvObject instanceof Dataset) {
@@ -95,40 +135,36 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         
     }
 
-    public GlobusOverlayAccessIO(String storageLocation, String driverId) throws IOException {
-        this.driverId = driverId;
-        configureStores(null, driverId, storageLocation);
-        this.dataverseManaged = GlobusAccessibleStore.isDataverseManaged(this.driverId);
-        if (dataverseManaged) {
-            String[] parts = DataAccess.getDriverIdAndStorageLocation(storageLocation);
-            path = parts[1];
-        } else {
-            this.setIsLocalFile(false);
-            path = storageLocation.substring(storageLocation.lastIndexOf("//") + 2);
-            validatePath(path);
-            logger.fine("Relative path: " + path);
-        }
-    }
-    
-    private String retrieveGlobusAccessToken() {
-        String globusToken = getConfigParam(GlobusAccessibleStore.GLOBUS_TOKEN);
-        
-
-        AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
-        return accessToken.getOtherTokens().get(0).getAccessToken();
-    }
-
-
-
-    private void validatePath(String relPath) throws IOException {
-        try {
-            URI absoluteURI = new URI(baseUrl + "/" + relPath);
-            if (!absoluteURI.normalize().toString().startsWith(baseUrl)) {
-                throw new IOException("storageidentifier doesn't start with " + this.driverId + "'s base-url");
+    private static String findMatchingEndpoint(String path, String[] allowedEndpoints) {
+        for(int i=0;i<allowedEndpoints.length;i++) {
+            if (path.startsWith(allowedEndpoints[i])) {
+                return allowedEndpoints[i];
             }
-        } catch (URISyntaxException use) {
-            throw new IOException("Could not interpret storageidentifier in remote store " + this.driverId);
         }
+        logger.warning("Could not find matching endpoint for path: " + path);
+        return null;
+    }
+
+    @Override
+    protected void validatePath(String relPath) throws IOException {
+        if (isManaged()) {
+            if (!usesStandardNamePattern(relPath)) {
+                throw new IOException("Unacceptable identifier pattern in submitted identifier: " + relPath);
+            }
+        } else {
+            try {
+                String endpoint = findMatchingEndpoint(relPath, allowedEndpoints);
+                logger.info(endpoint + "  " + relPath);
+
+                if (endpoint == null || !Paths.get(endpoint, relPath).normalize().startsWith(endpoint)) {
+                    throw new IOException(
+                            "storageidentifier doesn't start with one of " + this.driverId + "'s allowed endpoints");
+                }
+            } catch (InvalidPathException e) {
+                throw new IOException("Could not interpret storageidentifier in globus store " + this.driverId);
+            }
+        }
+
     }
 
     // Call the Globus API to get the file size
@@ -245,7 +281,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
             }
         } catch (Exception e) {
             logger.warning(e.getMessage());
-            throw new IOException("Error deleting: " + baseUrl + "/" + path);
+            throw new IOException("Error deleting: " + endpoint + "/" + path);
 
         }
 
@@ -258,13 +294,14 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
     public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName)
             throws IOException {
 //Fix
+        parsePath();
         // ToDo - support remote auxiliary Files
         if (auxiliaryTag == null) {
             String secretKey = getConfigParam(SECRET_KEY);
             if (secretKey == null) {
-                return baseUrl + "/" + path;
+                return endpoint + "/" + path;
             } else {
-                return UrlSignerUtil.signUrl(baseUrl + "/" + path, getUrlExpirationMinutes(), null, "GET", secretKey);
+                return UrlSignerUtil.signUrl(endpoint + "/" + path, getUrlExpirationMinutes(), null, "GET", secretKey);
             }
         } else {
             return baseStore.generateTemporaryDownloadUrl(auxiliaryTag, auxiliaryType, auxiliaryFileName);
@@ -273,10 +310,10 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
 
     static boolean isValidIdentifier(String driverId, String storageId) {
         String baseIdentifier = storageId.substring(storageId.lastIndexOf("//") + 2);
-        String baseUrl = getConfigParamForDriver(driverId, BASE_URL);
-        if (baseUrl == null) {
-            return false;
-        }
+        try {
+            
+        String[] allowedEndpoints =getAllowedEndpoints(driverId);
+            
         // Internally managed endpoints require standard name pattern (submitted via
         // /addFile(s) api)
         if (GlobusAccessibleStore.isDataverseManaged(driverId)) {
@@ -290,30 +327,65 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         }
         // Remote endpoints require a valid URI within the baseUrl
         try {
-            URI absoluteURI = new URI(baseUrl + "/" + baseIdentifier);
-            if (!absoluteURI.normalize().toString().startsWith(baseUrl)) {
-                logger.warning("storageidentifier doesn't start with " + driverId + "'s base-url: " + storageId);
+            String endpoint = findMatchingEndpoint(baseIdentifier, allowedEndpoints);
+            
+            if(endpoint==null || !Paths.get(endpoint, baseIdentifier).normalize().startsWith(endpoint)) {
+                logger.warning("storageidentifier doesn't start with one of " + driverId + "'s allowed endpoints");
                 return false;
             }
-        } catch (URISyntaxException use) {
-            logger.warning("Could not interpret storageidentifier in remote store " + driverId + " : " + storageId);
-            logger.warning(use.getLocalizedMessage());
+        } catch (InvalidPathException e) {
+            logger.warning("Could not interpret storageidentifier in globus store " + driverId);
             return false;
         }
         return true;
+        } catch (IOException e) {
+            return false;
+        }
+        
     }
 
     @Override
     public String getStorageLocation() throws IOException {
         parsePath();
-        if (dataverseManaged) {
+        if (isManaged()) {
             return this.driverId + DataAccess.SEPARATOR + relativeDirectoryPath + "/" + filename;
         } else {
             return super.getStorageLocation();
         }
     }
     
+    /** This endpoint configures all the endpoints the store is allowed to reference data from. At present, the RemoteOverlayAccessIO only supports a single endpoint but
+     * the derived GlobusOverlayAccessIO can support multiple endpoints.
+     * @throws IOException
+     */
+    @Override
+    protected void configureEndpoints() throws IOException {
+        allowedEndpoints = getAllowedEndpoints(this.driverId);
+        logger.info("Set allowed endpoints: " + Arrays.toString(allowedEndpoints));
+    }
     
+    private static String[] getAllowedEndpoints(String driverId) throws IOException {
+        String[] allowedEndpoints = null;
+        if (GlobusAccessibleStore.isDataverseManaged(driverId)) {
+            allowedEndpoints = new String[1];
+            allowedEndpoints[0] = getConfigParamForDriver(driverId, TRANSFER_ENDPOINT_WITH_BASEPATH);
+            if (allowedEndpoints[0] == null) {
+                throw new IOException(
+                        "dataverse.files." + driverId + "." + TRANSFER_ENDPOINT_WITH_BASEPATH + " is required");
+            }
+        } else {
+            String rawEndpoints = getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS);
+            if (rawEndpoints != null) {
+                allowedEndpoints = getConfigParamForDriver(driverId, REFERENCE_ENDPOINTS_WITH_BASEPATHS).split("\\s*,\\s*");
+            }
+            if (rawEndpoints == null || allowedEndpoints.length == 0) {
+                throw new IOException("dataverse.files." + driverId + ".base-url is required");
+            }
+        }
+        return allowedEndpoints;
+    }
+
+
     public static void main(String[] args) {
         System.out.println("Running the main method");
         if (args.length > 0) {
