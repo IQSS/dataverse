@@ -25,6 +25,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 
@@ -189,7 +190,11 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
                 String responseString = EntityUtils.toString(response.getEntity());
                 logger.info("Response from " + get.getURI().toString() + " is: " + responseString);
                 JsonObject responseJson = JsonUtil.getJsonObject(responseString);
-                return (long) responseJson.getJsonArray("DATA").getJsonObject(0).getInt("size");
+                JsonArray dataArray = responseJson.getJsonArray("DATA");
+                if (dataArray != null && dataArray.size() != 0) {
+                    //File found
+                    return (long) responseJson.getJsonArray("DATA").getJsonObject(0).getInt("size");
+                }
             } else {
                 logger.warning("Response from " + get.getURI().toString() + " was "
                         + response.getStatusLine().getStatusCode());
