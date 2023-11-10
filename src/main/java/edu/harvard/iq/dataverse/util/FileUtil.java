@@ -1449,7 +1449,8 @@ public class FileUtil implements java.io.Serializable  {
     	return s3io;
     }
     
-    private static InputStream getInputStream(StorageIO<DataFile> storage, boolean isTabularData) throws IOException {
+    private static InputStream getOriginalFileInputStream(StorageIO<DataFile> storage, boolean isTabularData) throws IOException {
+        storage.open(DataAccessOption.READ_ACCESS);
         if (!isTabularData) {
             return storage.getInputStream();
         } else {
@@ -1471,8 +1472,7 @@ public class FileUtil implements java.io.Serializable  {
         InputStream in = null;
 
         try {
-            storage.open(DataAccessOption.READ_ACCESS);
-            in = getInputStream(storage, dataFile.isTabularData());
+            in = getOriginalFileInputStream(storage, dataFile.isTabularData());
         } catch (IOException ioex) {
             in = null;
         }
@@ -1492,8 +1492,7 @@ public class FileUtil implements java.io.Serializable  {
             IOUtils.closeQuietly(in);
             storage = dataFile.getStorageIO();
             try {
-                storage.open(DataAccessOption.READ_ACCESS);
-                in = getInputStream(storage, dataFile.isTabularData());
+                in = getOriginalFileInputStream(storage, dataFile.isTabularData());
                 recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
             } catch (RuntimeException rte2) {
                 logger.log(Level.SEVERE, "failed to calculated checksum, no retry", rte2);
