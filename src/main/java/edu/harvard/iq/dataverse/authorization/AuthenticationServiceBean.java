@@ -580,7 +580,7 @@ public class AuthenticationServiceBean {
      * {@code userDisplayInfo}, a lookup entry for them based
      * UserIdentifier.getLookupStringPerAuthProvider (within the supplied
      * authentication provider), and internal user identifier (used for role
-     * assignments, etc.) based on UserIdentifier.getInternalUserIdentifer.
+     * assignments, etc.) based on UserIdentifier.getInternalUserIdentifier.
      *
      * @param userRecordId
      * @param proposedAuthenticatedUserIdentifier
@@ -605,20 +605,20 @@ public class AuthenticationServiceBean {
             proposedAuthenticatedUserIdentifier = proposedAuthenticatedUserIdentifier.trim();
         }
         // we now select a username for the generated AuthenticatedUser, or give up
-        String internalUserIdentifer = proposedAuthenticatedUserIdentifier;
+        String internalUserIdentifier = proposedAuthenticatedUserIdentifier;
         // TODO should lock table authenticated users for write here
-        if ( identifierExists(internalUserIdentifer) ) {
+        if ( identifierExists(internalUserIdentifier) ) {
             if ( ! generateUniqueIdentifier ) {
                 return null;
             }
             int i=1;
-            String identifier = internalUserIdentifer + i;
+            String identifier = internalUserIdentifier + i;
             while ( identifierExists(identifier) ) {
                 i += 1;
             }
             authenticatedUser.setUserIdentifier(identifier);
         } else {
-            authenticatedUser.setUserIdentifier(internalUserIdentifer);
+            authenticatedUser.setUserIdentifier(internalUserIdentifier);
         }
         authenticatedUser = save( authenticatedUser );
         // TODO should unlock table authenticated users for write here

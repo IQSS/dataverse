@@ -596,13 +596,14 @@ public class GlobusServiceBean implements java.io.Serializable {
         Thread.sleep(5000);
 
         JsonObject jsonObject = null;
-        try (StringReader rdr = new StringReader(jsonData)) {
-            jsonObject = Json.createReader(rdr).readObject();
+        try {
+            jsonObject = JsonUtil.getJsonObject(jsonData);
         } catch (Exception jpe) {
             jpe.printStackTrace();
-            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}");
+            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonData);
+            // TODO: I think an (parsing) exception should stop the process, shouldn't it?
         }
-        logger.info("json: " + JsonUtil.prettyPrint(jsonObject));
+        logger.log(Level.INFO, "json: {0}", JsonUtil.prettyPrint(jsonObject));
 
         String taskIdentifier = jsonObject.getString("taskIdentifier");
 
@@ -808,11 +809,12 @@ public class GlobusServiceBean implements java.io.Serializable {
                 sb.append(line);
             globusLogger.info(" API Output :  " + sb.toString());
             JsonObject jsonObject = null;
-            try (StringReader rdr = new StringReader(sb.toString())) {
-                jsonObject = Json.createReader(rdr).readObject();
+            try {
+                jsonObject = JsonUtil.getJsonObject(sb.toString());
             } catch (Exception jpe) {
                 jpe.printStackTrace();
                 globusLogger.log(Level.SEVERE, "Error parsing dataset json.");
+                // TODO: a parsing exception should cause the process to stop.
             }
 
             status = jsonObject.getString("status");
@@ -853,11 +855,12 @@ public class GlobusServiceBean implements java.io.Serializable {
         globusLogger.info("Starting an globusDownload ");
 
         JsonObject jsonObject = null;
-        try (StringReader rdr = new StringReader(jsonData)) {
-            jsonObject = Json.createReader(rdr).readObject();
+        try {
+            jsonObject = JsonUtil.getJsonObject(jsonData);
         } catch (Exception jpe) {
             jpe.printStackTrace();
-            globusLogger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}");
+            globusLogger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonData);
+            // TODO: stop the process after this parsing exception.
         }
 
         String taskIdentifier = jsonObject.getString("taskIdentifier");
