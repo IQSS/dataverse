@@ -657,7 +657,8 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
             if (newFileSize != null) {
                 fileSize = newFileSize;
             } else {
-                throw new CommandExecutionException("File size must be explicitly specified when creating DataFiles with Direct Upload", this);
+                // This is a direct upload via the API (DVUploader, etc.) 
+                //throw new CommandExecutionException("File size must be explicitly specified when creating DataFiles with Direct Upload", this);
             }
         }
         
@@ -696,7 +697,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
             datafiles.add(datafile);
 
             // Update quota (may not be necessary in the context of direct upload - ?)
-            if (quota != null) {
+            if (fileSize > 0 && quota != null) {
                 quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + fileSize);
             }
             return CreateDataFileResult.success(fileName, finalType, datafiles);

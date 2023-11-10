@@ -6,7 +6,7 @@ After = syslog.target network.target remote-fs.target nss-lookup.target
 User = solr
 Type = forking
 WorkingDirectory = /usr/local/solr/solr-9.3.0
-ExecStart = /usr/local/solr/solr-9.3.0/bin/solr start -m 1g -j "jetty.host=127.0.0.1"
+ExecStart = /usr/local/solr/solr-9.3.0/bin/solr start -m 1g
 ExecStop = /usr/local/solr/solr-9.3.0/bin/solr stop
 LimitNOFILE=65000
 LimitNPROC=65000
