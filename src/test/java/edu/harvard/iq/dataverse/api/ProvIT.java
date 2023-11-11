@@ -30,7 +30,12 @@ public class ProvIT {
     @Test
     public void testFreeformDraftActions() {
 
-        UtilIT.enableSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
+        Response provCollectionStatus = UtilIT.getSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
+        boolean provEnabled = provCollectionStatus.getStatusCode() == 200;
+        if(!provEnabled){
+            UtilIT.enableSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
+        }
+  
         Response createDepositor = UtilIT.createRandomUser();
         createDepositor.prettyPrint();
         createDepositor.then().assertThat()
@@ -85,15 +90,20 @@ public class ProvIT {
         datasetVersions.prettyPrint();
         datasetVersions.then().assertThat()
                 .body("data[0].versionState", equalTo("DRAFT"));
-        
-        UtilIT.deleteSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
-        
+        if(!provEnabled){
+            UtilIT.deleteSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
+        }
+               
     }
     
     @Test
     public void testAddProvFile() {
 
-        UtilIT.enableSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
+        Response provCollectionStatus = UtilIT.getSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
+        boolean provEnabled = provCollectionStatus.getStatusCode() == 200;
+        if(!provEnabled){
+            UtilIT.enableSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
+        }
 
         Response createDepositor = UtilIT.createRandomUser();
         createDepositor.prettyPrint();
@@ -213,12 +223,8 @@ public class ProvIT {
         deleteProvJson.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode()); //cannot delete json of a published dataset
 
-        UtilIT.deleteSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
-// Command removed, redundant        
-//        Response deleteProvFreeForm = UtilIT.deleteProvFreeForm(dataFileId.toString(), apiTokenForDepositor);
-//        deleteProvFreeForm.prettyPrint();
-//        deleteProvFreeForm.then().assertThat()
-//                .statusCode(OK.getStatusCode());
-        
+        if(!provEnabled){
+            UtilIT.deleteSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
+        }
     }
 }
