@@ -1,13 +1,13 @@
-Other approaches to deploying and testing
-=========================================
+# Other approaches to deploying and testing
 
-.. contents:: |toctitle|
-    :local:
+```{contents}
+:depth: 3
+```
 
 This workflow is fine for a single person testing a PR, one at a time. It would be awkward or impossible if there were multiple people wanting to test different PRs at the same time. I’m assuming if a developer is testing, they would likely just deploy to their dev environment. That might be ok but not sure the env is fully configured enough to offer a real-world testing scenario. An alternative might be to spin an EC2 branch on AWS, potentially using sample data. This can take some time so another option might be to spin up a few, persistent AWS instances with sample data this way, one per tester, and just deploy new builds there when you want to test. You could even configure Jenkins projects for each if desired to maintain consistency in how they’re built.
 
-Tips and tricks
----------------
+## Tips and tricks
+
 
 -	Start testing simply, with the most obvious test. You don’t need to know all your tests upfront. As you gain comfort and understanding of how it works, try more tests until you are done. If it is a complex feature, jot down your tests in an outline format, some beforehand as a guide, and some after as things occur to you. Save the doc in a testing folder (I have one on Google Drive). This potentially will help with future testing.
 -	When in doubt, ask someone. If you are confused about how something is working, it may be something you have missed, or it could be a documentation issue, or it could be a bug! Talk to the code reviewer and the contributor/developer for their opinion and advice.
@@ -17,8 +17,8 @@ Tips and tricks
 -	When testing an optional feature that requires configuration, do a smoke test without the feature configured and then with it configured. That way you know that folks using the standard config are unaffected by the option if they choose not to configure it.
 -	Back up your DB before applying an irreversible DB update and you are using a persistent/reusable platform. Just in case it fails, and you need to carry on testing something else you can use the backup.
 
-Workflow for Completing QA on a PR
------------------------------------
+## Workflow for Completing QA on a PR
+
 
 1.	Assign the PR you are working on to yourself.
 
@@ -106,8 +106,8 @@ Workflow for Completing QA on a PR
     Just a housekeeping move if the PR is from IQSS. Click the delete branch button where the merge button had been. There is no deletion for outside contributions.
 
 
-Checklist for Completing QA on a PR
-------------------------------------
+## Checklist for Completing QA on a PR
+
 
 1. Build the docs 
 2. Smoke test the pr 
@@ -115,8 +115,8 @@ Checklist for Completing QA on a PR
 4. Regression test 
 5. Test any upgrade instructions
 
-Checklist for QA on Release
----------------------------
+## Checklist for QA on Release
+
 
 1.	Review Consolidated Release Notes, in particular upgrade instructions.
 2.	Conduct performance testing and compare with the previous release.

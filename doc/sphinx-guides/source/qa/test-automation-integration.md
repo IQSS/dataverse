@@ -1,15 +1,15 @@
-Test automation and integration test
-====================================
+# Test automation and integration test
 
-.. contents:: |toctitle|
-    :local:
+```{contents}
+:depth: 3
+```
 
 This test suite is added to and maintained by development. It is generally advisable for code contributors to add integration tests when adding new functionality. The approach here is one of code coverage: exercise as much of the code base’s code paths as possible, every time to catch bugs. 
 
 This type of approach is often used to give contributing developers confidence that their code didn’t introduce any obvious, major issues and is run on each commit. Since it is a broad set of tests, it is not clear whether any specific, conceivable test is run but it does add a lot of confidence that the code base is functioning due to its reach and consistency.
 
-Building and Deploying a Pull Request from Jenkins to Dataverse-Internal:
--------------------------------------------------------------------------
+## Building and Deploying a Pull Request from Jenkins to Dataverse-Internal:
+
 
 1.	Log on to GitHub, go to projects, dataverse to see Kanban board, select a pull request to test from the QA queue. 
 
@@ -17,12 +17,12 @@ Building and Deploying a Pull Request from Jenkins to Dataverse-Internal:
 
 3.	Log on to jenkins.dataverse.org, select the IQSS_Dataverse_Internal project, and configure the repository URL and branch specifier to match the ones from the pull request. For example:
 
-    - 8372-gdcc-xoai-library has IQSS implied
-        | **Repository URL:** https://github.com/IQSS/dataverse.git 
-        | **Branch specifier:** \*/8372-gdcc-xoai-library
-    - GlobalDataverseCommunityConsortium:GDCC/DC-3B
-        | **Repository URL:** https://github.com/GlobalDataverseCommunityConsortium/dataverse.git 
-        | **Branch specifier:** \*/GDCC/DC-3B. 
+    * 8372-gdcc-xoai-library has IQSS implied
+        - **Repository URL:** https://github.com/IQSS/dataverse.git 
+        - **Branch specifier:** */8372-gdcc-xoai-library
+    * GlobalDataverseCommunityConsortium:GDCC/DC-3B
+        - **Repository URL:** https://github.com/GlobalDataverseCommunityConsortium/dataverse.git 
+        - **Branch specifier:** */GDCC/DC-3B. 
 
 4.	Click Build Now and note the build number in progress.
 
