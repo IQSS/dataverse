@@ -89,6 +89,7 @@ Open a terminal, change directories to ``doc/sphinx-guides``, activate (or react
 
 ``make html``
 
+
 Building the Guides with a Sphinx Docker Container
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -159,6 +160,11 @@ A few notes about the command above:
 Also, as of this writing we have enabled PDF builds from the "develop" branch. You download the PDF from http://preview.guides.gdcc.io/_/downloads/en/develop/pdf/
 
 If you would like to help improve the PDF version of the guides, please get in touch! Please see :ref:`getting-help-developers` for ways to contact the developer community.
+
+Writing Guides on Markdown
+--------------------------
+
+The Guides section now support guides on the Markdown format (sample-guide.md). Please check the documentation at `Myst-Parser <https://myst-parser.readthedocs.io#ref-role>`_. 
 
 ----
 
