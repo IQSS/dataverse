@@ -1,6 +1,7 @@
 # Infrastructure for Testing
 
-```{contents}
+```{contents} Contents:
+:local: 
 :depth: 3
 ```
 

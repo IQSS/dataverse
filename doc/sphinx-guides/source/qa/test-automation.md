@@ -1,6 +1,7 @@
 # Test Automation
 
-```{contents}
+```{contents} Contents:
+:local: 
 :depth: 3
 ```
 

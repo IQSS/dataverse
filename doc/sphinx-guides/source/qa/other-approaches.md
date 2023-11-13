@@ -1,6 +1,7 @@
 # Other Approaches to Deploying and Testing
 
-```{contents}
+```{contents} Contents:
+:local: 
 :depth: 3
 ```
 
