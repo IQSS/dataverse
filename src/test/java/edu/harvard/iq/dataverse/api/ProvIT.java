@@ -27,12 +27,12 @@ public class ProvIT {
     private static boolean provEnabled = false;
     
     @BeforeAll
-    public static void setUpClass() {        
+    public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
         Response provCollectionStatus = UtilIT.getSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
-        
+
         provEnabled = provCollectionStatus.getStatusCode() == 200;
-        if(!provEnabled){
+        if (!provEnabled) {
             UtilIT.enableSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
         }
     }
@@ -99,7 +99,7 @@ public class ProvIT {
     }
     
     @Test
-    public void testAddProvFile() {        
+    public void testAddProvFile() {
 
         Response createDepositor = UtilIT.createRandomUser();
         createDepositor.prettyPrint();
