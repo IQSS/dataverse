@@ -426,6 +426,10 @@ target/coverage-it/index.html is the place to start reading the code coverage re
 Load/Performance Testing
 ------------------------
 
+See also :doc:`/qa/performance-tests` in the QA Guide.
+
+.. _locust:
+
 Locust
 ~~~~~~
 

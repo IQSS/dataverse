@@ -10,7 +10,7 @@ To run performance tests, we have a performance test cluster on AWS that employs
 
 ## Access
 
-Access to performance cluster instances requires ssh keys, see Leonid. The cluster itself is normally not running to reduce costs. To turn on the cluster, log on to the demo server and run the perfenv scripts from the centos default user dir. Access to the demo requires an ssh key, see Leonid. 
+Access to performance cluster instances requires ssh keys. The cluster itself is normally not running to reduce costs. To turn on the cluster, log on to the demo server and run the perfenv scripts from the centos default user dir. Access to the demo requires an ssh key, see Leonid. 
 
 ## Special Notes ⚠️ 
 
@@ -19,6 +19,4 @@ Please note the performance database is also used occasionally by Julian and the
 
 Executing the Performance Script
 --------------------------------
-To execute the performance test script, you need to install a local copy of the database-helper-scripts project (https://github.com/IQSS/dataverse-helper-scripts), written by Raman. I have since produced a stripped-down script that calls just the DB and ds and works with python3. 
-
-The automated integration test runs happen on each commit to a PR on an AWS instance and should be reviewed to be passing before merging into development. Their status can be seen on the PR page near the bottom, above the merge button. See Don Sizemore or Phil for questions.
+To execute the performance test script, you need to install a local copy of the database-helper-scripts project at <https://github.com/IQSS/dataverse-helper-scripts>. We have since produced a stripped-down script that calls just the DB and ds and works with python3. 
