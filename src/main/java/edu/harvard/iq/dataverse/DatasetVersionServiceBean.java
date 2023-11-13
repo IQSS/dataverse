@@ -495,10 +495,24 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
          }
     } // end getDatasetVersionByQuery
     
-    
-    
-    
-    public DatasetVersion retrieveDatasetVersionByIdentiferClause(String identifierClause, String version){
+    /**
+     * @deprecated because of a typo; use {@link #retrieveDatasetVersionByIdentifierClause(String, String) retrieveDatasetVersionByIdentifierClause} instead
+     * @see #retrieveDatasetVersionByIdentifierClause(String, String)
+     * @param identifierClause
+     * @param version
+     * @return a DatasetVersion if found, or {@code null} otherwise
+     */
+    @Deprecated
+    public DatasetVersion retrieveDatasetVersionByIdentiferClause(String identifierClause, String version) {
+        return retrieveDatasetVersionByIdentifierClause(identifierClause, version);
+    }
+
+    /**
+     * @param identifierClause
+     * @param version
+     * @return a DatasetVersion if found, or {@code null} otherwise
+     */
+    public DatasetVersion retrieveDatasetVersionByIdentifierClause(String identifierClause, String version) {
         
         if (identifierClause == null){
             return null;
@@ -620,7 +634,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         identifierClause += " AND ds.identifier = '" + parsedId.getIdentifier() + "'"; 
         
 
-        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        DatasetVersion ds = retrieveDatasetVersionByIdentifierClause(identifierClause, version);
         
         if (ds != null){
             msg("retrieved dataset: " + ds.getId() + " semantic: " + ds.getSemanticVersion());
@@ -718,7 +732,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
         String identifierClause = this.getIdClause(datasetId);
 
-        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        DatasetVersion ds = retrieveDatasetVersionByIdentifierClause(identifierClause, version);
         
         return ds;
 

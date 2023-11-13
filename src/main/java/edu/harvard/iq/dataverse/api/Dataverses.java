@@ -78,8 +78,9 @@ import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
-import java.io.StringReader;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -178,8 +179,8 @@ public class Dataverses extends AbstractApiBean {
 
         Dataverse d;
         JsonObject dvJson;
-        try (StringReader rdr = new StringReader(body)) {
-            dvJson = Json.createReader(rdr).readObject();
+        try {
+            dvJson = JsonUtil.getJsonObject(body);
             d = jsonParser().parseDataverse(dvJson);
         } catch (JsonParsingException jpe) {
             logger.log(Level.SEVERE, "Json: {0}", body);
@@ -559,8 +560,8 @@ public class Dataverses extends AbstractApiBean {
     }
     
     private Dataset parseDataset(String datasetJson) throws WrappedResponse {
-        try (StringReader rdr = new StringReader(datasetJson)) {
-            return jsonParser().parseDataset(Json.createReader(rdr).readObject());
+        try {
+            return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson));
         } catch (JsonParsingException | JsonParseException jpe) {
             logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", datasetJson);
             throw new WrappedResponse(error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage()));
