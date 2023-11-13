@@ -11,6 +11,9 @@ import static jakarta.ws.rs.core.Response.Status.OK;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.AfterAll;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
@@ -20,22 +23,24 @@ import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 public class ProvIT {
+
+    private static boolean provEnabled = false;
     
     @BeforeAll
-    public static void setUpClass() {
+    public static void setUpClass() {        
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+        Response provCollectionStatus = UtilIT.getSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
+        
+        provEnabled = provCollectionStatus.getStatusCode() == 200;
+        if(!provEnabled){
+            UtilIT.enableSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
+        }
     }
 
     
     @Test
     public void testFreeformDraftActions() {
 
-        Response provCollectionStatus = UtilIT.getSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
-        boolean provEnabled = provCollectionStatus.getStatusCode() == 200;
-        if(!provEnabled){
-            UtilIT.enableSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
-        }
-  
         Response createDepositor = UtilIT.createRandomUser();
         createDepositor.prettyPrint();
         createDepositor.then().assertThat()
@@ -90,20 +95,11 @@ public class ProvIT {
         datasetVersions.prettyPrint();
         datasetVersions.then().assertThat()
                 .body("data[0].versionState", equalTo("DRAFT"));
-        if(!provEnabled){
-            UtilIT.deleteSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
-        }
-               
+     
     }
     
     @Test
-    public void testAddProvFile() {
-
-        Response provCollectionStatus = UtilIT.getSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
-        boolean provEnabled = provCollectionStatus.getStatusCode() == 200;
-        if(!provEnabled){
-            UtilIT.enableSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
-        }
+    public void testAddProvFile() {        
 
         Response createDepositor = UtilIT.createRandomUser();
         createDepositor.prettyPrint();
@@ -223,6 +219,11 @@ public class ProvIT {
         deleteProvJson.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode()); //cannot delete json of a published dataset
 
+        
+    }
+
+    @AfterAll
+    public static void tearDownClass() {
         if(!provEnabled){
             UtilIT.deleteSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
         }
