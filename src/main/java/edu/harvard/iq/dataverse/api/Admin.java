@@ -107,6 +107,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -2425,5 +2426,27 @@ public class Admin extends AbstractApiBean {
         
         return ok(Json.createObjectBuilder().add(ExternalToolHandler.SIGNED_URL, signedUrl));
     }
- 
+
+    /**
+     * For testing only. Download a file from the file system.
+     */
+    @GET
+    @AuthRequired
+    @Path("/localfile")
+    public Response getLocalFile(@Context ContainerRequestContext crc, @QueryParam("pathToFile") String pathToFile) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        try {
+            return ok(new FileInputStream(pathToFile));
+        } catch (IOException ex) {
+            return error(Status.BAD_REQUEST, ex.toString());
+        }
+    }
+
 }
