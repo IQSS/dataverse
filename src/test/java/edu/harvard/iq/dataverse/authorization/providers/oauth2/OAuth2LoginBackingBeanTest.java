@@ -178,6 +178,7 @@ class OAuth2LoginBackingBeanTest {
             // also fake the result of the lookup in the auth service
             doReturn(userIdentifier).when(userRecord).getUserRecordIdentifier();
             doReturn(user).when(authenticationServiceBean).lookupUser(userIdentifier);
+            doReturn(user).when(authenticationServiceBean).updateLastLogin(user);
         
             // WHEN (& then)
             // capture the redirect target from the faces context
