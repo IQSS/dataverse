@@ -40,7 +40,7 @@ Creating a Dataverse collection is easy but first you must be a registered user 
 Edit Dataverse Collection
 =========================
 
-To edit your Dataverse collection, navigate to your Dataverse collection's landing page and select the "Edit Dataverse" button, where you will be presented with the following editing options: 
+To edit your Dataverse collection, navigate to your Dataverse collection's landing page and select the "Edit" button, where you will be presented with the following editing options: 
 
 - :ref:`General Information <general-information>`: edit name, affiliation, identifier, category, contact email, description, metadata fields, and browse/search facets for your Dataverse collection
 - :ref:`Theme <theme>`: upload a logo for your Dataverse collection, add a link to your department or personal website, add a custom footer image, and select colors for your Dataverse collection in order to brand it
@@ -163,7 +163,7 @@ Templates are useful when you want to provide custom instructions on how to fill
 
 How do you create a template? 
 
-#. Navigate to your Dataverse collection, click on the Edit Dataverse button and select Dataset Templates. 
+#. Navigate to your Dataverse collection, click on the "Edit" button and select Dataset Templates. 
 #. Once you have clicked on Dataset Templates, you will be brought to the Dataset Templates page. On this page, you can 1) decide to use the dataset templates from your parent Dataverse collection 2) create a new dataset template or 3) do both.
 #. Click on the Create Dataset Template to get started. You will see that the template is the same as the create dataset page with an additional field at the top of the page to add a name for the template.
 #. To add custom instructions, click on ''(None - click to add)'' and enter the instructions you wish users to see. If you wish to edit existing instructions, click on them to make the text editable.
@@ -183,7 +183,7 @@ Guestbooks allow you to collect data about who is downloading the files from you
 
 How do you create a guestbook?
 
-#. After creating a Dataverse collection, click on the "Edit Dataverse" button and select "Dataset Guestbooks".
+#. After creating a Dataverse collection, click on the "Edit" button and select "Dataset Guestbooks".
 #. To create a new guestbook, click the "Create Dataset Guestbook" button on the right side of the page. 
 #. Name the guestbook, determine the account information that you would like to be required (all account information fields show when someone downloads a file), and then add custom questions (can be required or not required), if desired.
 #. Click the "Create Dataset Guestbook" button once you have finished.
