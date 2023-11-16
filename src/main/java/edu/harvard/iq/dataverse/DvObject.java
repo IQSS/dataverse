@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 
 import java.sql.Timestamp;
@@ -349,6 +350,22 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
             globalId = PidUtil.parseAsGlobalID(getProtocol(), getAuthority(), getIdentifier());
         }
         return globalId;
+    }
+    
+    @ManyToOne
+    @JoinColumn(name="harvestingClient_id")
+    private  HarvestingClient harvestedFrom;
+
+    public HarvestingClient getHarvestedFrom() {
+        return this.harvestedFrom;
+    }
+
+    public void setHarvestedFrom(HarvestingClient harvestingClientConfig) {
+        this.harvestedFrom = harvestingClientConfig;
+    }
+    
+    public boolean isHarvested() {
+        return this.harvestedFrom != null;
     }
     
     public abstract <T> T accept(Visitor<T> v);

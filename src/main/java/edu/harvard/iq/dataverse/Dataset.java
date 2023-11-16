@@ -742,21 +742,9 @@ public class Dataset extends DvObjectContainer {
         this.datasetExternalCitations = datasetExternalCitations;
     }
 
-    @ManyToOne
-    @JoinColumn(name="harvestingClient_id")
-    private  HarvestingClient harvestedFrom;
 
-    public HarvestingClient getHarvestedFrom() {
-        return this.harvestedFrom;
-    }
-
-    public void setHarvestedFrom(HarvestingClient harvestingClientConfig) {
-        this.harvestedFrom = harvestingClientConfig;
-    }
     
-    public boolean isHarvested() {
-        return this.harvestedFrom != null;
-    }
+
 
     private String harvestIdentifier;
      
