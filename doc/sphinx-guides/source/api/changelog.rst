@@ -5,7 +5,7 @@ API Changelog
     :local:
     :depth: 1
 
-6.0.0
+6.0
 -----
 
 Changes
