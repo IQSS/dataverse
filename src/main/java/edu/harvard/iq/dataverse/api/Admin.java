@@ -123,6 +123,7 @@ import jakarta.persistence.Query;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
+import java.nio.file.Paths;
 
 /**
  * Where the secure, setup API calls live.
@@ -2428,12 +2429,12 @@ public class Admin extends AbstractApiBean {
     }
 
     /**
-     * For testing only. Download a file from the file system.
+     * For testing only. Download a file from /tmp.
      */
     @GET
     @AuthRequired
-    @Path("/localfile")
-    public Response getLocalFile(@Context ContainerRequestContext crc, @QueryParam("pathToFile") String pathToFile) {
+    @Path("/downloadTmpFile")
+    public Response downloadTmpFile(@Context ContainerRequestContext crc, @QueryParam("fullyQualifiedPathToFile") String fullyQualifiedPathToFile) {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
@@ -2442,8 +2443,12 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+        java.nio.file.Path normalizedPath = Paths.get(fullyQualifiedPathToFile).normalize();
+        if (!normalizedPath.toString().startsWith("/tmp")) {
+            return error(Status.BAD_REQUEST, "Path must begin with '/tmp' but after normalization was '" + normalizedPath +"'.");
+        }
         try {
-            return ok(new FileInputStream(pathToFile));
+            return ok(new FileInputStream(fullyQualifiedPathToFile));
         } catch (IOException ex) {
             return error(Status.BAD_REQUEST, ex.toString());
         }

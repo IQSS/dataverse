@@ -5,6 +5,13 @@ API Changelog
     :local:
     :depth: 1
 
+6.1
+---
+
+New
+~~~
+- **/api/admin/downloadTmpFile**: See :ref:`download-file-from-tmp`.
+
 6.0
 -----
 

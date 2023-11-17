@@ -115,7 +115,7 @@ public class BagIT {
         //Bag-Size: 0 bytes
         //Payload-Oxum: 0.0
         //Internal-Sender-Identifier: Root:Darwin's Finches
-        Response downloadBag = downloadLocalFile(pathToZip, apiToken);
+        Response downloadBag = UtilIT.downloadTmpFile(pathToZip, apiToken);
         downloadBag.then().assertThat().statusCode(OK.getStatusCode());
         Path outputPath = Paths.get("/tmp/foo.zip");
         java.nio.file.Files.copy(downloadBag.getBody().asInputStream(), outputPath, StandardCopyOption.REPLACE_EXISTING);
@@ -160,12 +160,6 @@ public class BagIT {
         UtilIT.deleteSetting(SettingsServiceBean.Key.ArchiverSettings);
         UtilIT.deleteSetting(":BagItLocalPath");
 
-    }
-
-    static Response downloadLocalFile(String pathToFile, String apiToken) {
-        return given()
-                .header("X-Dataverse-key", apiToken)
-                .get("/api/admin/localfile?pathToFile=" + pathToFile);
     }
 
 }
