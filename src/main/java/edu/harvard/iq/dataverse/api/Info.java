@@ -225,7 +225,7 @@ public class Info extends AbstractApiBean {
                 }
             }
         }
-        objectBuilder.add("settingSubGroups", jsonArrayBuilder);
+        objectBuilder.add("settingSubgroups", jsonArrayBuilder);
         return objectBuilder;
     }
 
