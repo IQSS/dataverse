@@ -712,6 +712,15 @@ public abstract class AbstractApiBean {
                 .add("data", value).build()).build();
     }
 
+    protected Response ok(Object value) {
+        if (value instanceof Long) {
+            return ok((long) value);
+        } else if (value instanceof Boolean) {
+            return ok((boolean) value);
+        }
+        return ok((String) value);
+    }
+
     /**
      * @param data Payload to return.
      * @param mediaType Non-JSON media type.
