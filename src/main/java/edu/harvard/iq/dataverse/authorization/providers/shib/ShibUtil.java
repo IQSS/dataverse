@@ -133,7 +133,24 @@ public class ShibUtil {
         return singleValue;
     }
 
+    /**
+     * @deprecated because of a typo; use {@link #generateFriendlyLookingUserIdentifier(String, String)} instead
+     * @see #generateFriendlyLookingUserIdentifier(String, String)
+     * @param usernameAssertion
+     * @param email
+     * @return a friendly-looking user identifier based on the asserted username or email, or a UUID as fallback
+     */
+    @Deprecated
     public static String generateFriendlyLookingUserIdentifer(String usernameAssertion, String email) {
+        return generateFriendlyLookingUserIdentifier(usernameAssertion, email);
+    }
+
+    /**
+     * @param usernameAssertion
+     * @param email
+     * @return a friendly-looking user identifier based on the asserted username or email, or a UUID as fallback
+     */
+    public static String generateFriendlyLookingUserIdentifier(String usernameAssertion, String email) {
         if (usernameAssertion != null && !usernameAssertion.isEmpty()) {
             return usernameAssertion;
         }

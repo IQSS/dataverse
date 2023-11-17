@@ -158,6 +158,23 @@ public class Dataset extends DvObjectContainer {
         this.citationDateDatasetFieldType = citationDateDatasetFieldType;
     }    
 
+    // Per DataCite best practices, the citation date of a dataset may need 
+    // to be adjusted to reflect the latest embargo availability date of any 
+    // file within the first published version. 
+    // If any files are embargoed in the first version, this date will be
+    // calculated and cached here upon its publication, in the 
+    // FinalizeDatasetPublicationCommand. 
+    private Timestamp embargoCitationDate;
+    
+    public Timestamp getEmbargoCitationDate() {
+        return embargoCitationDate;
+    }
+
+    public void setEmbargoCitationDate(Timestamp embargoCitationDate) {
+        this.embargoCitationDate = embargoCitationDate;
+    }
+    
+    
     
     @ManyToOne
     @JoinColumn(name="template_id",nullable = true)
@@ -676,20 +693,10 @@ public class Dataset extends DvObjectContainer {
         Timestamp citationDate = null;
         //Only calculate if this dataset doesn't use an alternate date field for publication date
         if (citationDateDatasetFieldType == null) {
-            List<DatasetVersion> versions = this.versions;
-            // TODo - is this ever not version 1.0 (or draft if not published yet)
-            DatasetVersion oldest = versions.get(versions.size() - 1);
             citationDate = super.getPublicationDate();
-            if (oldest.isPublished()) {
-                List<FileMetadata> fms = oldest.getFileMetadatas();
-                for (FileMetadata fm : fms) {
-                    Embargo embargo = fm.getDataFile().getEmbargo();
-                    if (embargo != null) {
-                        Timestamp embDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
-                        if (citationDate.compareTo(embDate) < 0) {
-                            citationDate = embDate;
-                        }
-                    }
+            if (embargoCitationDate != null) {
+                if (citationDate.compareTo(embargoCitationDate) < 0) {
+                    return embargoCitationDate;
                 }
             }
         }
@@ -862,6 +869,12 @@ public class Dataset extends DvObjectContainer {
         return null;
     }
 
+    public boolean hasEnabledGuestbook(){
+        Guestbook gb = this.getGuestbook();
+
+        return ( gb != null && gb.isEnabled());
+    }
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

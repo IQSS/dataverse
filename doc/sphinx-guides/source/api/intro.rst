@@ -237,7 +237,7 @@ Dataverse Software API questions are on topic in all the usual places:
 
 - The dataverse-community Google Group: https://groups.google.com/forum/#!forum/dataverse-community
 - The Dataverse Project community calls: https://dataverse.org/community-calls
-- The Dataverse Project chat room: http://chat.dataverse.org 
+- The Dataverse Project chat room: https://chat.dataverse.org 
 - The Dataverse Project ticketing system: support@dataverse.org
 
 After your question has been answered, you are welcome to help improve the :doc:`faq` section of this guide.

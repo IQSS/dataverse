@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.bagit.data;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
 import java.io.File;
@@ -43,7 +44,11 @@ public class FileUtilWrapper {
     }
 
     public File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit) throws IOException, FileExceedsMaxSizeException {
-        return FileUtil.saveInputStreamInTempFile(inputStream, fileSizeLimit);
+        try {
+            return FileUtil.saveInputStreamInTempFile(inputStream, fileSizeLimit);
+        } catch (FileExceedsStorageQuotaException fesqx) {
+            return null; 
+        } 
     }
 
     public String determineFileType(File file, String fileName) throws IOException {

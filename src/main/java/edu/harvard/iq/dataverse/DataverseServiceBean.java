@@ -399,16 +399,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         DataverseTheme theme = dataverse.getDataverseTheme(); 
         if (theme != null && theme.getLogo() != null && !theme.getLogo().isEmpty()) {
-            Properties p = System.getProperties();
-            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-  
-            if (domainRoot != null && !"".equals(domainRoot)) {
-                return new File (domainRoot + File.separator + 
-                    "docroot" + File.separator + 
-                    "logos" + File.separator + 
-                    dataverse.getLogoOwnerId() + File.separator + 
-                    theme.getLogo());
-            }
+            return ThemeWidgetFragment.getLogoDir(dataverse.getLogoOwnerId()).resolve(theme.getLogo()).toFile();
         }
             
         return null;         
