@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -46,7 +47,7 @@ import jakarta.json.JsonObjectBuilder;
  * reference endpoints separated by a comma
  * 
  */
-public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAccessIO<T> implements GlobusAccessibleStore {
+public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOverlayAccessIO<T> implements GlobusAccessibleStore {
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO");
 
     /*
@@ -67,11 +68,19 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
 
     public GlobusOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
+        configureGlobusEndpoints();
+        configureStores(req, driverId, null);
+        logger.fine("Parsing storageidentifier: " + dvObject.getStorageIdentifier());
+        path = dvObject.getStorageIdentifier().substring(dvObject.getStorageIdentifier().lastIndexOf("//") + 2);
+        validatePath(path);
+
+        logger.fine("Relative path: " + path);
     }
 
 
     public GlobusOverlayAccessIO(String storageLocation, String driverId) throws IOException {
         this.driverId = driverId;
+        configureGlobusEndpoints();
         configureStores(null, driverId, storageLocation);
         if (isManaged()) {
             String[] parts = DataAccess.getDriverIdAndStorageLocation(storageLocation);
@@ -83,6 +92,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
             logger.fine("Referenced path: " + path);
         }
     }
+    
     private boolean isManaged() {
         if(dataverseManaged==null) {
             dataverseManaged = GlobusAccessibleStore.isDataverseManaged(this.driverId);
@@ -146,7 +156,6 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
         return null;
     }
 
-    @Override
     protected void validatePath(String relPath) throws IOException {
         if (isManaged()) {
             if (!usesStandardNamePattern(relPath)) {
@@ -363,8 +372,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
      * the derived GlobusOverlayAccessIO can support multiple endpoints.
      * @throws IOException
      */
-    @Override
-    protected void configureEndpoints() throws IOException {
+    protected void configureGlobusEndpoints() throws IOException {
         allowedEndpoints = getAllowedEndpoints(this.driverId);
         logger.info("Set allowed endpoints: " + Arrays.toString(allowedEndpoints));
     }
@@ -434,6 +442,41 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends RemoteOverlayAcce
             e.printStackTrace();
         }
 
+    }
+
+
+    @Override
+    public void open(DataAccessOption... option) throws IOException {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public Path getFileSystemPath() throws IOException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    @Override
+    public void savePath(Path fileSystemPath) throws IOException {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void saveInputStream(InputStream inputStream) throws IOException {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
+        // TODO Auto-generated method stub
+        
     }
     
 }

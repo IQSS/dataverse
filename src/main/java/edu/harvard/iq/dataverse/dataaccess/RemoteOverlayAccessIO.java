@@ -11,44 +11,22 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.logging.Logger;
 
 import org.apache.http.Header;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustAllStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HTTP;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
-
-import javax.net.ssl.SSLContext;
 
 /**
  * @author qqmyers
@@ -61,40 +39,20 @@ import javax.net.ssl.SSLContext;
  * 
  * baseUrl: http(s)://<host(:port)/basePath>
  */
-public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
-
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.RemoteOverlayAccessIO");
+public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOverlayAccessIO<T> {
 
     // A single baseUrl of the form http(s)://<host(:port)/basePath> where this store can reference data
     static final String BASE_URL = "base-url";
-    // Multiple endpoints where data can be referenced from. Multiple endpoints are separated by a comma. Multiple endpoints are only supported by the GlobalOverlayAccessIO at present. 
-    static final String REFERENCE_ENDPOINTS_WITH_BASEPATHS = "reference-endpoints-with-basepaths";
-    static final String BASE_STORE = "base-store";
-    static final String SECRET_KEY = "secret-key";
-    static final String URL_EXPIRATION_MINUTES = "url-expiration-minutes";
-    static final String REMOTE_STORE_NAME = "remote-store-name";
-    static final String REMOTE_STORE_URL = "remote-store-url";
-    
-    protected StorageIO<DvObject> baseStore = null;
-    protected String path = null;
-    private String baseUrl = null;
-
-    protected static HttpClientContext localContext = HttpClientContext.create();
-    protected PoolingHttpClientConnectionManager cm = null;
-    CloseableHttpClient httpclient = null;
-    protected int timeout = 1200;
-    protected RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 1000)
-            .setConnectionRequestTimeout(timeout * 1000).setSocketTimeout(timeout * 1000)
-            .setCookieSpec(CookieSpecs.STANDARD).setExpectContinueEnabled(true).build();
-    protected static boolean trustCerts = false;
-    protected int httpConcurrency = 4;
+    String baseUrl = null;
 
     public RemoteOverlayAccessIO() {
+        super();
     }
     
     public RemoteOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
         this.setIsLocalFile(false);
+        configureRemoteEndpoints();
         configureStores(req, driverId, null);
         logger.fine("Parsing storageidentifier: " + dvObject.getStorageIdentifier());
         path = dvObject.getStorageIdentifier().substring(dvObject.getStorageIdentifier().lastIndexOf("//") + 2);
@@ -106,6 +64,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     public RemoteOverlayAccessIO(String storageLocation, String driverId) throws IOException {
         super(null, null, driverId);
         this.setIsLocalFile(false);
+        configureRemoteEndpoints();
         configureStores(null, driverId, storageLocation);
 
         path = storageLocation.substring(storageLocation.lastIndexOf("//") + 2);
@@ -297,102 +256,9 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public Channel openAuxChannel(String auxItemTag, DataAccessOption... options) throws IOException {
-        return baseStore.openAuxChannel(auxItemTag, options);
-    }
-
-    @Override
-    public boolean isAuxObjectCached(String auxItemTag) throws IOException {
-        return baseStore.isAuxObjectCached(auxItemTag);
-    }
-
-    @Override
-    public long getAuxObjectSize(String auxItemTag) throws IOException {
-        return baseStore.getAuxObjectSize(auxItemTag);
-    }
-
-    @Override
-    public Path getAuxObjectAsPath(String auxItemTag) throws IOException {
-        return baseStore.getAuxObjectAsPath(auxItemTag);
-    }
-
-    @Override
-    public void backupAsAux(String auxItemTag) throws IOException {
-        baseStore.backupAsAux(auxItemTag);
-    }
-
-    @Override
-    public void revertBackupAsAux(String auxItemTag) throws IOException {
-        baseStore.revertBackupAsAux(auxItemTag);
-    }
-
-    @Override
-    // this method copies a local filesystem Path into this DataAccess Auxiliary
-    // location:
-    public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
-        baseStore.savePathAsAux(fileSystemPath, auxItemTag);
-    }
-
-    @Override
-    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException {
-        baseStore.saveInputStreamAsAux(inputStream, auxItemTag, filesize);
-    }
-
-    /**
-     * @param inputStream InputStream we want to save
-     * @param auxItemTag  String representing this Auxiliary type ("extension")
-     * @throws IOException if anything goes wrong.
-     */
-    @Override
-    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
-        baseStore.saveInputStreamAsAux(inputStream, auxItemTag);
-    }
-
-    @Override
-    public List<String> listAuxObjects() throws IOException {
-        return baseStore.listAuxObjects();
-    }
-
-    @Override
-    public void deleteAuxObject(String auxItemTag) throws IOException {
-        baseStore.deleteAuxObject(auxItemTag);
-    }
-
-    @Override
-    public void deleteAllAuxObjects() throws IOException {
-        baseStore.deleteAllAuxObjects();
-    }
-
-    @Override
-    public String getStorageLocation() throws IOException {
-        String fullStorageLocation = dvObject.getStorageIdentifier();
-        logger.fine("storageidentifier: " + fullStorageLocation);
-        int driverIndex = fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR);
-        if (driverIndex >= 0) {
-            fullStorageLocation = fullStorageLocation
-                    .substring(fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
-        }
-        if (this.getDvObject() instanceof Dataset) {
-            throw new IOException("RemoteOverlayAccessIO: Datasets are not a supported dvObject");
-        } else if (this.getDvObject() instanceof DataFile) {
-            fullStorageLocation = StorageIO.getDriverPrefix(this.driverId) + fullStorageLocation;
-        } else if (dvObject instanceof Dataverse) {
-            throw new IOException("RemoteOverlayAccessIO: Dataverses are not a supported dvObject");
-        }
-        logger.fine("fullStorageLocation: " + fullStorageLocation);
-        return fullStorageLocation;
-    }
-
-    @Override
     public Path getFileSystemPath() throws UnsupportedDataAccessOperationException {
         throw new UnsupportedDataAccessOperationException(
                 "RemoteOverlayAccessIO: this is a remote DataAccess IO object, it has no local filesystem path associated with it.");
-    }
-
-    @Override
-    public boolean exists() {
-        logger.fine("Exists called");
-        return (retrieveSizeFromMedia() != -1);
     }
 
     @Override
@@ -405,11 +271,6 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
     public OutputStream getOutputStream() throws UnsupportedDataAccessOperationException {
         throw new UnsupportedDataAccessOperationException(
                 "RemoteOverlayAccessIO: there are no output Streams associated with S3 objects.");
-    }
-
-    @Override
-    public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
-        return baseStore.getAuxFileAsInputStream(auxItemTag);
     }
 
     @Override
@@ -443,103 +304,12 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
-    int getUrlExpirationMinutes() {
-        String optionValue = getConfigParam(URL_EXPIRATION_MINUTES);
-        if (optionValue != null) {
-            Integer num;
-            try {
-                num = Integer.parseInt(optionValue);
-            } catch (NumberFormatException ex) {
-                num = null;
-            }
-            if (num != null) {
-                return num;
-            }
-        }
-        return 60;
-    }
-
-    protected void configureStores(DataAccessRequest req, String driverId, String storageLocation) throws IOException {
-        configureEndpoints();
-        
-
-        if (baseStore == null) {
-            String baseDriverId = getBaseStoreIdFor(driverId);
-            String fullStorageLocation = null;
-            String baseDriverType = getConfigParamForDriver(baseDriverId, StorageIO.TYPE,
-                    DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
-
-            if (dvObject instanceof Dataset) {
-                baseStore = DataAccess.getStorageIO(dvObject, req, baseDriverId);
-            } else {
-                if (this.getDvObject() != null) {
-                    fullStorageLocation = getStoragePath();
-
-                    // S3 expects <id>://<bucketname>/<key>
-                    switch (baseDriverType) {
-                    case DataAccess.S3:
-                        fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + getConfigParamForDriver(baseDriverId, S3AccessIO.BUCKET_NAME) + "/"
-                                + fullStorageLocation;
-                        break;
-                    case DataAccess.FILE:
-                        fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + getConfigParamForDriver(baseDriverId, FileAccessIO.DIRECTORY, "/tmp/files")
-                                + "/" + fullStorageLocation;
-                        break;
-                    default:
-                        logger.warning("Not Supported: " + this.getClass().getName() + " store with base store type: "
-                                + getConfigParamForDriver(baseDriverId, StorageIO.TYPE));
-                        throw new IOException("Not supported");
-                    }
-
-                } else if (storageLocation != null) {
-                    // <remoteDriverId>://<baseStorageIdentifier>//<baseUrlPath>
-                    // remoteDriverId:// is removed if coming through directStorageIO
-                    int index = storageLocation.indexOf(DataAccess.SEPARATOR);
-                    if (index > 0) {
-                        storageLocation = storageLocation.substring(index + DataAccess.SEPARATOR.length());
-                    }
-                    // The base store needs the baseStoreIdentifier and not the relative URL (if it exists)
-                    int endOfId = storageLocation.indexOf("//");
-                    fullStorageLocation = (endOfId>-1) ? storageLocation.substring(0, endOfId) : storageLocation;
-
-                    switch (baseDriverType) {
-                    case DataAccess.S3:
-                        fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + getConfigParamForDriver(baseDriverId, S3AccessIO.BUCKET_NAME) + "/"
-                                + fullStorageLocation;
-                        break;
-                    case DataAccess.FILE:
-                        fullStorageLocation = baseDriverId + DataAccess.SEPARATOR
-                                + getConfigParamForDriver(baseDriverId, FileAccessIO.DIRECTORY, "/tmp/files")
-                                + "/" + fullStorageLocation;
-                        break;
-                    default:
-                        logger.warning("Not Supported: " + this.getClass().getName() + " store with base store type: "
-                                + getConfigParamForDriver(baseDriverId, StorageIO.TYPE));
-                        throw new IOException("Not supported");
-                    }
-                }
-                baseStore = DataAccess.getDirectStorageIO(fullStorageLocation);
-            }
-            if (baseDriverType.contentEquals(DataAccess.S3)) {
-                ((S3AccessIO<?>) baseStore).setMainDriver(false);
-            }
-        }
-        remoteStoreName = getConfigParam(REMOTE_STORE_NAME);
-        try {
-            remoteStoreUrl = new URL(getConfigParam(REMOTE_STORE_URL));
-        } catch (MalformedURLException mfue) {
-            logger.fine("Unable to read remoteStoreUrl for driver: " + this.driverId);
-        }
-    }
 
     /** This endpoint configures all the endpoints the store is allowed to reference data from. At present, the RemoteOverlayAccessIO only supports a single endpoint but
      * the derived GlobusOverlayAccessIO can support multiple endpoints.
      * @throws IOException
      */
-    protected void configureEndpoints() throws IOException {
+    protected void configureRemoteEndpoints() throws IOException {
         baseUrl = getConfigParam(BASE_URL);
         if (baseUrl == null) {
             //Will accept the first endpoint using the newer setting
@@ -558,70 +328,6 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             }
 
         }
-    }
-
-    // Convenience method to assemble the path, starting with the DOI
-    // authority/identifier/, that is needed to create a base store via
-    // DataAccess.getDirectStorageIO - the caller has to add the store type specific
-    // prefix required.
-    protected String getStoragePath() throws IOException {
-        String fullStoragePath = dvObject.getStorageIdentifier();
-        logger.fine("storageidentifier: " + fullStoragePath);
-        int driverIndex = fullStoragePath.lastIndexOf(DataAccess.SEPARATOR);
-        if (driverIndex >= 0) {
-            fullStoragePath = fullStoragePath
-                    .substring(fullStoragePath.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
-        }
-        int suffixIndex = fullStoragePath.indexOf("//");
-        if (suffixIndex >= 0) {
-            fullStoragePath = fullStoragePath.substring(0, suffixIndex);
-        }
-        if (this.getDvObject() instanceof Dataset) {
-            fullStoragePath = this.getDataset().getAuthorityForFileStorage() + "/"
-                    + this.getDataset().getIdentifierForFileStorage() + "/" + fullStoragePath;
-        } else if (this.getDvObject() instanceof DataFile) {
-            fullStoragePath = this.getDataFile().getOwner().getAuthorityForFileStorage() + "/"
-                    + this.getDataFile().getOwner().getIdentifierForFileStorage() + "/" + fullStoragePath;
-        } else if (dvObject instanceof Dataverse) {
-            throw new IOException("RemoteOverlayAccessIO: Dataverses are not a supported dvObject");
-        }
-        logger.fine("fullStoragePath: " + fullStoragePath);
-        return fullStoragePath;
-    }
-
-    public CloseableHttpClient getSharedHttpClient() {
-        if (httpclient == null) {
-            try {
-                initHttpPool();
-                httpclient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(config).build();
-
-            } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException ex) {
-                logger.warning(ex.getMessage());
-            }
-        }
-        return httpclient;
-    }
-
-    private void initHttpPool() throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
-        if (trustCerts) {
-            // use the TrustSelfSignedStrategy to allow Self Signed Certificates
-            SSLContext sslContext;
-            SSLConnectionSocketFactory connectionFactory;
-
-            sslContext = SSLContextBuilder.create().loadTrustMaterial(new TrustAllStrategy()).build();
-            // create an SSL Socket Factory to use the SSLContext with the trust self signed
-            // certificate strategy
-            // and allow all hosts verifier.
-            connectionFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
-
-            Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                    .register("https", connectionFactory).build();
-            cm = new PoolingHttpClientConnectionManager(registry);
-        } else {
-            cm = new PoolingHttpClientConnectionManager();
-        }
-        cm.setDefaultMaxPerRoute(httpConcurrency);
-        cm.setMaxTotal(httpConcurrency > 20 ? httpConcurrency : 20);
     }
 
     @Override
@@ -659,14 +365,5 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             return false;
         }
         return true;
-    }
-
-    public static String getBaseStoreIdFor(String driverId) {
-        return getConfigParamForDriver(driverId, BASE_STORE);
-    }
-
-    @Override
-    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
-        return baseStore.cleanUp(filter, dryRun);
     }
 }

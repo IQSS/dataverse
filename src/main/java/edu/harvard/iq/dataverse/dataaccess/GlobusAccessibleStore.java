@@ -28,7 +28,7 @@ public interface GlobusAccessibleStore {
     }
 
     public static JsonArray getReferenceEndpointsWithPaths(String driverId) {
-        String[] endpoints = StorageIO.getConfigParamForDriver(driverId, RemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS).split("\\s*,\\s*");
+        String[] endpoints = StorageIO.getConfigParamForDriver(driverId, AbstractRemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS).split("\\s*,\\s*");
         JsonArrayBuilder builder = Json.createArrayBuilder();
         for(int i=0;i<endpoints.length;i++) {
             builder.add(endpoints[i]);
@@ -44,7 +44,7 @@ public interface GlobusAccessibleStore {
     }
 
     public static boolean allowsGlobusReferences(String storeId) {
-        if(StorageIO.getConfigParamForDriver(storeId, RemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS) != null) {
+        if(StorageIO.getConfigParamForDriver(storeId, AbstractRemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS) != null) {
             return true;
         }
         return false;
