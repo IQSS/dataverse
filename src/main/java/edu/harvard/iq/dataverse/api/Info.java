@@ -197,11 +197,11 @@ public class Info extends AbstractApiBean {
         if (settingItem instanceof Setting) {
             return ok(((Setting<?>) settingItem).getValue());
         } else {
-            return ok(getSettingsJsonObjectBuilder(((SettingGroup) settingItem).getItemList(), lookupMode).build());
+            return ok(transformSettingItemListToJsonObjectBuilder(((SettingGroup) settingItem).getItemList(), lookupMode).build());
         }
     }
 
-    private JsonObjectBuilder getSettingsJsonObjectBuilder(List<SettingItem> settingItems, ExposedSettingsLookupMode lookupMode) {
+    private JsonObjectBuilder transformSettingItemListToJsonObjectBuilder(List<SettingItem> settingItems, ExposedSettingsLookupMode lookupMode) {
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         for (SettingItem settingItem : settingItems) {
@@ -220,7 +220,7 @@ public class Info extends AbstractApiBean {
                     jsonArrayBuilder.add(settingItem.getName());
                 } else if (lookupMode == ExposedSettingsLookupMode.sub) {
                     JsonObjectBuilder groupObjectBuilder = Json.createObjectBuilder();
-                    groupObjectBuilder.add(settingItem.getName(), getSettingsJsonObjectBuilder(((SettingGroup) settingItem).getItemList(), lookupMode));
+                    groupObjectBuilder.add(settingItem.getName(), transformSettingItemListToJsonObjectBuilder(((SettingGroup) settingItem).getItemList(), lookupMode));
                     jsonArrayBuilder.add(groupObjectBuilder);
                 }
             }
