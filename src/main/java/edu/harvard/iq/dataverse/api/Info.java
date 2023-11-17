@@ -205,22 +205,23 @@ public class Info extends AbstractApiBean {
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         for (SettingItem settingItem : settingItems) {
+            String settingItemName = settingItem.getName();
             if (settingItem instanceof Setting) {
                 Object settingValue = ((Setting<?>) settingItem).getValue();
                 if (settingValue instanceof String) {
-                    objectBuilder.add(settingItem.getName(), (String) settingValue);
+                    objectBuilder.add(settingItemName, (String) settingValue);
                 } else if (settingValue instanceof Long) {
-                    objectBuilder.add(settingItem.getName(), (Long) settingValue);
+                    objectBuilder.add(settingItemName, (Long) settingValue);
                 } else if (settingValue instanceof Boolean) {
-                    objectBuilder.add(settingItem.getName(), (Boolean) settingValue);
+                    objectBuilder.add(settingItemName, (Boolean) settingValue);
                 }
             }
             if (settingItem instanceof SettingGroup) {
                 if (lookupMode == ExposedSettingsLookupMode.base) {
-                    jsonArrayBuilder.add(settingItem.getName());
+                    jsonArrayBuilder.add(settingItemName);
                 } else if (lookupMode == ExposedSettingsLookupMode.sub) {
                     JsonObjectBuilder groupObjectBuilder = Json.createObjectBuilder();
-                    groupObjectBuilder.add(settingItem.getName(), transformSettingItemListToJsonObjectBuilder(((SettingGroup) settingItem).getItemList(), lookupMode));
+                    groupObjectBuilder.add(settingItemName, transformSettingItemListToJsonObjectBuilder(((SettingGroup) settingItem).getItemList(), lookupMode));
                     jsonArrayBuilder.add(groupObjectBuilder);
                 }
             }
