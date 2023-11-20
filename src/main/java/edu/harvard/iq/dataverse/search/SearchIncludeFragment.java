@@ -345,7 +345,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         try {
             logger.info("ATTENTION! query from user:   " + query);
             logger.info("ATTENTION! queryToPassToSolr: " + queryToPassToSolr);
-            logger.info("ATTENTION! filterQueriesFinal: " + filterQueriesFinal);
+            logger.info("ATTENTION! filterQueriesFinal: " + filterQueriesFinal.toString());
             logger.info("ATTENTION! sort by: " + sortField);
 
             /**
