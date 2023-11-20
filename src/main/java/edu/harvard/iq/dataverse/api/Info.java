@@ -26,22 +26,32 @@ public class Info extends AbstractApiBean {
 
     private final SettingGroup dataverseSettingGroup;
 
-    // DATAVERSE ROOT GROUP NAME
+    /**
+     * Root setting group name
+     */
     private static final String SETTING_GROUP_DATAVERSE = "dataverse";
 
-    // DATAVERSE SUBGROUP NAMES
+    /**
+     * Setting subgroup names
+     */
     private static final String SETTING_GROUP_DATASET = "dataset";
     private static final String SETTING_GROUP_API = "api";
 
-    // DATAVERSE ROOT GROUP SETTING NAMES
+    /**
+     * Setting names for group {@value #SETTING_GROUP_DATAVERSE}
+     */
     private static final String SETTING_NAME_FQDN = "fqdn";
     private static final String SETTING_NAME_IS_PUBLIC_INSTALL = "isPublicInstall";
 
-    // DATAVERSE API GROUP SETTING NAMES
+    /**
+     * Setting names for group {@value #SETTING_GROUP_API}
+     */
     private static final String SETTING_NAME_API_TERMS_OF_USE = "apiTermsOfUse";
     private static final String SETTING_NAME_API_ALLOW_INCOMPLETE_METADATA = "apiAllowIncompleteMetadata";
 
-    // DATAVERSE DATASET GROUP SETTING NAMES
+    /**
+     * Setting names for group {@value #SETTING_GROUP_DATASET}
+     */
     private static final String SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT = "datasetZipDownloadLimit";
     private static final String SETTING_NAME_DATASET_PUBLISH_POPUP_CUSTOM_TEXT = "datasetPublishPopupCustomText";
     private static final String SETTING_NAME_DATASET_ALLOWED_CURATION_LABELS = "datasetAllowedCurationLabels";
