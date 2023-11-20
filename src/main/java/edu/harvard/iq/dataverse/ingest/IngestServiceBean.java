@@ -174,6 +174,13 @@ public class IngestServiceBean {
     // It must be called before we attempt to permanently save the files in 
     // the database by calling the Save command on the dataset and/or version.
     
+    // There is way too much going on in this method. :(
+    public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version,
+            List<DataFile> newFiles,
+            DataFile fileToReplace,
+            boolean tabIngest) {
+        return saveAndAddFilesToDataset(version, newFiles, fileToReplace, tabIngest, null);
+    }
     public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version,
             List<DataFile> newFiles,
             DataFile fileToReplace,
