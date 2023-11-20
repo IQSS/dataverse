@@ -343,9 +343,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
         setSolrErrorEncountered(false);
         
         try {
-            logger.fine("ATTENTION! query from user:   " + query);
-            logger.fine("ATTENTION! queryToPassToSolr: " + queryToPassToSolr);
-            logger.fine("ATTENTION! sort by: " + sortField);
+            logger.info("ATTENTION! query from user:   " + query);
+            logger.info("ATTENTION! queryToPassToSolr: " + queryToPassToSolr);
+            logger.info("ATTENTION! filterQueriesFinal: " + filterQueriesFinal);
+            logger.info("ATTENTION! sort by: " + sortField);
 
             /**
              * @todo Number of search results per page should be configurable -
@@ -408,6 +409,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                 }
                 filterQueriesFinalSecondPass.add(SearchFields.TYPE + ":(" + combine(arr, " OR ") + ")");
+                logger.info("second pass query: " + queryToPassToSolr);
+                logger.info("second pass filter query: "+filterQueriesFinalSecondPass.toString());
 
                 solrQueryResponseSecondPass = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalSecondPass, null, sortOrder.toString(), 0, onlyDataRelatedToMe, 1, false, null, null, false, false);
 
