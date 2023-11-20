@@ -1,12 +1,17 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.api.auth.*;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.api.exposedsettings.Setting;
+import edu.harvard.iq.dataverse.api.exposedsettings.SettingGroup;
+import edu.harvard.iq.dataverse.api.exposedsettings.SettingItem;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import jakarta.inject.Inject;
-import jakarta.json.*;
+import jakarta.json.Json;
+import jakarta.json.JsonValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -15,7 +20,6 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Path("info")
@@ -80,71 +84,7 @@ public class Info extends AbstractApiBean {
         dataverseSettingGroup = new SettingGroup(SETTING_GROUP_DATAVERSE, dataverseSettingItems);
     }
 
-    private abstract static class SettingItem {
-        protected String name;
-
-        public SettingItem(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
-    private static class SettingGroup extends SettingItem {
-        private final List<SettingItem> itemList;
-
-        public SettingGroup(String name, List<SettingItem> itemList) {
-            super(name);
-            this.itemList = itemList;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        private SettingItem getItemByName(String name) {
-            for (SettingItem item : itemList) {
-                if (item.getName().equals(name)) {
-                    return item;
-                }
-            }
-            return null;
-        }
-
-        private List<SettingItem> getItemList() {
-            return this.itemList;
-        }
-
-        private SettingItem getItem(String[] orderedNamesRoute) {
-            String subItemName = orderedNamesRoute[0];
-            if (orderedNamesRoute.length == 1) {
-                return getItemByName(subItemName);
-            }
-            for (SettingItem settingItem : itemList) {
-                if (settingItem.getName().equals(subItemName)) {
-                    return ((SettingGroup) settingItem).getItem(Arrays.copyOfRange(orderedNamesRoute, 1, orderedNamesRoute.length));
-                }
-            }
-            return null;
-        }
-    }
-
-    private static class Setting<T> extends SettingItem {
-        private final T value;
-
-        private Setting(String name, T value) {
-            super(name);
-            this.value = value;
-        }
-
-        public T getValue() {
-            return value;
-        }
-    }
-
-    private enum ExposedSettingsLookupMode {
+    public enum ExposedSettingsLookupMode {
         base, sub
     }
 
@@ -222,44 +162,7 @@ public class Info extends AbstractApiBean {
         if (settingItem == null) {
             return notFound(BundleUtil.getStringFromBundle("info.api.exposedSettings.notFound"));
         }
-        return transformSettingItemToResponse(settingItem, lookupMode);
-    }
-
-    private Response transformSettingItemToResponse(SettingItem settingItem, ExposedSettingsLookupMode lookupMode) {
-        if (settingItem instanceof Setting) {
-            return ok(((Setting<?>) settingItem).getValue());
-        } else {
-            return ok(transformSettingItemListToJsonObjectBuilder(((SettingGroup) settingItem).getItemList(), lookupMode).build());
-        }
-    }
-
-    private JsonObjectBuilder transformSettingItemListToJsonObjectBuilder(List<SettingItem> settingItems, ExposedSettingsLookupMode lookupMode) {
-        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        for (SettingItem settingItem : settingItems) {
-            String settingItemName = settingItem.getName();
-            if (settingItem instanceof Setting) {
-                Object settingValue = ((Setting<?>) settingItem).getValue();
-                if (settingValue instanceof String) {
-                    objectBuilder.add(settingItemName, (String) settingValue);
-                } else if (settingValue instanceof Long) {
-                    objectBuilder.add(settingItemName, (Long) settingValue);
-                } else if (settingValue instanceof Boolean) {
-                    objectBuilder.add(settingItemName, (Boolean) settingValue);
-                }
-            }
-            if (settingItem instanceof SettingGroup) {
-                if (lookupMode == ExposedSettingsLookupMode.base) {
-                    jsonArrayBuilder.add(settingItemName);
-                } else if (lookupMode == ExposedSettingsLookupMode.sub) {
-                    JsonObjectBuilder groupObjectBuilder = Json.createObjectBuilder();
-                    groupObjectBuilder.add(settingItemName, transformSettingItemListToJsonObjectBuilder(((SettingGroup) settingItem).getItemList(), lookupMode));
-                    jsonArrayBuilder.add(groupObjectBuilder);
-                }
-            }
-        }
-        objectBuilder.add("settingSubgroups", jsonArrayBuilder);
-        return objectBuilder;
+        return ok(JsonPrinter.json(settingItem, lookupMode));
     }
 
     private Response getSettingResponseByKey(SettingsServiceBean.Key key) {
