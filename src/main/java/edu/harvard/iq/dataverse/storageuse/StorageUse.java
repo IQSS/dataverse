@@ -23,7 +23,8 @@ import java.io.Serializable;
  */
 @NamedQueries({
     @NamedQuery(name = "StorageUse.findByteSizeByDvContainerId",query = "SELECT su.sizeInBytes FROM StorageUse su WHERE su.dvObjectContainer.id =:dvObjectId "),
-    @NamedQuery(name = "StorageUse.findByDvContainerId",query = "SELECT su FROM StorageUse su WHERE su.dvObjectContainer.id =:dvObjectId ")
+    @NamedQuery(name = "StorageUse.findByDvContainerId",query = "SELECT su FROM StorageUse su WHERE su.dvObjectContainer.id =:dvObjectId "),
+    @NamedQuery(name = "StorageUse.incrementByteSizeByDvContainerId", query = "UPDATE StorageUse SET sizeInBytes = (sizeInBytes + :fileSize) WHERE dvObjectContainer.id=dv.ObjectId")
 })
 @Entity
 public class StorageUse implements Serializable {
