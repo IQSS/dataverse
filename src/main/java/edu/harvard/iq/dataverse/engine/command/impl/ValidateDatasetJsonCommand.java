@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 @RequiredPermissions(Permission.AddDataset)
 public class ValidateDatasetJsonCommand extends AbstractCommand<String> {
     
-    private static final Logger logger = Logger.getLogger(GetDatasetSchemaCommand.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(ValidateDatasetJsonCommand.class.getCanonicalName());
     
     private final Dataverse dataverse;
     private final String datasetJson;
