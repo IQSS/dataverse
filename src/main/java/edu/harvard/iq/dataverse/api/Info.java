@@ -30,58 +30,11 @@ public class Info extends AbstractApiBean {
 
     private final SettingGroup dataverseSettingGroup;
 
-    /**
-     * Root setting group name
-     */
-    private static final String SETTING_GROUP_DATAVERSE = "dataverse";
-
-    /**
-     * Setting subgroup names
-     */
-    private static final String SETTING_GROUP_DATASET = "dataset";
-    private static final String SETTING_GROUP_API = "api";
-
-    /**
-     * Setting names for group {@value #SETTING_GROUP_DATAVERSE}
-     */
-    private static final String SETTING_NAME_FQDN = "fqdn";
-    private static final String SETTING_NAME_IS_PUBLIC_INSTALL = "isPublicInstall";
-
-    /**
-     * Setting names for group {@value #SETTING_GROUP_API}
-     */
-    private static final String SETTING_NAME_API_TERMS_OF_USE = "apiTermsOfUse";
-    private static final String SETTING_NAME_API_ALLOW_INCOMPLETE_METADATA = "apiAllowIncompleteMetadata";
-
-    /**
-     * Setting names for group {@value #SETTING_GROUP_DATASET}
-     */
-    private static final String SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT = "datasetZipDownloadLimit";
-    private static final String SETTING_NAME_DATASET_PUBLISH_POPUP_CUSTOM_TEXT = "datasetPublishPopupCustomText";
-    private static final String SETTING_NAME_DATASET_ALLOWED_CURATION_LABELS = "datasetAllowedCurationLabels";
-
     @Inject
     public Info(SettingsServiceBean settingsService, SystemConfig systemConfig) {
         this.settingsService = settingsService;
         this.systemConfig = systemConfig;
-
-        List<SettingItem> dataverseSettingItems = List.of(
-                new Setting<>(SETTING_NAME_FQDN, JvmSettings.FQDN.lookup()),
-                new Setting<>(SETTING_NAME_IS_PUBLIC_INSTALL, systemConfig.isPublicInstall()),
-                new SettingGroup(SETTING_GROUP_API, List.of(
-                        new Setting<>(SETTING_NAME_API_TERMS_OF_USE, systemConfig.getApiTermsOfUse()),
-                        new Setting<>(SETTING_NAME_API_ALLOW_INCOMPLETE_METADATA, JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false))
-                )
-                ),
-                new SettingGroup(SETTING_GROUP_DATASET, List.of(
-                        new Setting<>(SETTING_NAME_DATASET_PUBLISH_POPUP_CUSTOM_TEXT, SettingsServiceBean.Key.DatasetPublishPopupCustomText),
-                        new Setting<>(SETTING_NAME_DATASET_ALLOWED_CURATION_LABELS, settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels)),
-                        new Setting<>(SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT, SystemConfig.getLongLimitFromStringOrDefault(settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit), SystemConfig.defaultZipDownloadLimit))
-
-                )
-                )
-        );
-        dataverseSettingGroup = new SettingGroup(SETTING_GROUP_DATAVERSE, dataverseSettingItems);
+        dataverseSettingGroup = SettingGroup.getDataverseSettingGroup(systemConfig, settingsService);
     }
 
     public enum ExposedSettingsLookupMode {

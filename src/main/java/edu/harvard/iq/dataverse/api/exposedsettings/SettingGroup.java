@@ -1,14 +1,48 @@
 package edu.harvard.iq.dataverse.api.exposedsettings;
 
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.util.Arrays;
 import java.util.List;
 
-public class SettingGroup extends SettingItem {
-    private final List<SettingItem> itemList;
+import static edu.harvard.iq.dataverse.api.exposedsettings.Setting.*;
 
-    public SettingGroup(String name, List<SettingItem> itemList) {
+public class SettingGroup extends SettingItem {
+    public static final String GROUP_NAME_DATAVERSE = "dataverse";
+    public static final String GROUP_NAME_DATASET = "dataset";
+    public static final String GROUP_NAME_API = "api";
+    private final List<SettingItem> itemList;
+    private static SettingGroup dataverseSettingGroup;
+
+    private SettingGroup(String name, List<SettingItem> itemList) {
         super(name);
         this.itemList = itemList;
+    }
+
+    public static SettingGroup getDataverseSettingGroup(SystemConfig systemConfig, SettingsServiceBean settingsService) {
+        if (dataverseSettingGroup == null) {
+            dataverseSettingGroup = new SettingGroup(
+                    GROUP_NAME_DATAVERSE,
+                    List.of(
+                            new Setting<>(SETTING_NAME_FQDN, JvmSettings.FQDN.lookup()),
+                            new Setting<>(SETTING_NAME_IS_PUBLIC_INSTALL, systemConfig.isPublicInstall()),
+                            new SettingGroup(GROUP_NAME_API, List.of(
+                                    new Setting<>(SETTING_NAME_API_TERMS_OF_USE, systemConfig.getApiTermsOfUse()),
+                                    new Setting<>(SETTING_NAME_API_ALLOW_INCOMPLETE_METADATA, JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false))
+                            )
+                            ),
+                            new SettingGroup(GROUP_NAME_DATASET, List.of(
+                                    new Setting<>(SETTING_NAME_DATASET_PUBLISH_POPUP_CUSTOM_TEXT, SettingsServiceBean.Key.DatasetPublishPopupCustomText),
+                                    new Setting<>(SETTING_NAME_DATASET_ALLOWED_CURATION_LABELS, settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels)),
+                                    new Setting<>(SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT, SystemConfig.getLongLimitFromStringOrDefault(settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit), SystemConfig.defaultZipDownloadLimit))
+
+                            )
+                            )
+                    ));
+        }
+        return dataverseSettingGroup;
     }
 
     public String getName() {
