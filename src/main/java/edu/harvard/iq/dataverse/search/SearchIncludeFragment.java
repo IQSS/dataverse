@@ -282,7 +282,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         SolrQueryResponse solrQueryResponse = null;
         SolrQueryResponse solrQueryResponseSecondPass = null;
 
-        List<String> filterQueriesFinal = new ArrayList<>();
+        List<String> filterQueriesExtended = new ArrayList<>();
         
         if (dataverseAlias != null) {
             this.dataverse = dataverseService.findByAlias(dataverseAlias);
@@ -296,7 +296,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                  * @todo centralize this into SearchServiceBean
                  */
                 if (!isfilterQueryAlreadyInMap(filterDownToSubtree)){
-                    filterQueriesFinal.add(filterDownToSubtree);
+                    filterQueriesExtended.add(filterDownToSubtree);
                 }
 //                this.dataverseSubtreeContext = dataversePath;
             } else {
@@ -309,7 +309,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             this.setRootDv(true);
         }
 
-        filterQueriesFinal.addAll(filterQueries);
+        filterQueriesExtended.addAll(filterQueries);
 
         /**
          * Add type queries, for the types (Dataverses, Datasets, Datafiles) 
@@ -323,7 +323,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
         selectedTypesHumanReadable = combine(arr, " OR ");
         if (!selectedTypesHumanReadable.isEmpty()) {
             typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
-        }        
+        } 
+        List<String> filterQueriesFinal = new ArrayList<>();
+        filterQueriesFinal.addAll(filterQueriesExtended);
         filterQueriesFinal.add(typeFilterQuery);
 
         if (page <= 1) {
@@ -343,10 +345,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
         setSolrErrorEncountered(false);
         
         try {
-            logger.info("ATTENTION! query from user:   " + query);
-            logger.info("ATTENTION! queryToPassToSolr: " + queryToPassToSolr);
-            logger.info("ATTENTION! filterQueriesFinal: " + filterQueriesFinal.toString());
-            logger.info("ATTENTION! sort by: " + sortField);
+            logger.fine"ATTENTION! query from user:   " + query);
+            logger.fine("ATTENTION! queryToPassToSolr: " + queryToPassToSolr);
+            logger.fine("ATTENTION! filterQueriesFinal: " + filterQueriesFinal.toString());
+            logger.fine("ATTENTION! sort by: " + sortField);
 
             /**
              * @todo Number of search results per page should be configurable -
@@ -399,7 +401,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 // run a second search to obtain the numbers of the unselected types:
                 
                 List<String> filterQueriesFinalSecondPass = new ArrayList<>();
-                filterQueriesFinalSecondPass.addAll(filterQueries);
+                filterQueriesFinalSecondPass.addAll(filterQueriesExtended);
                    
                 arr = new String[3 - selectedTypesList.size()];
                 int c = 0; 
@@ -409,8 +411,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                 }
                 filterQueriesFinalSecondPass.add(SearchFields.TYPE + ":(" + combine(arr, " OR ") + ")");
-                logger.info("second pass query: " + queryToPassToSolr);
-                logger.info("second pass filter query: "+filterQueriesFinalSecondPass.toString());
+                logger.fine("second pass query: " + queryToPassToSolr);
+                logger.fine("second pass filter query: "+filterQueriesFinalSecondPass.toString());
 
                 solrQueryResponseSecondPass = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalSecondPass, null, sortOrder.toString(), 0, onlyDataRelatedToMe, 1, false, null, null, false, false);
 
