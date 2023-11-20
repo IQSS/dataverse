@@ -636,6 +636,16 @@ public abstract class AbstractApiBean {
         }
     }
 
+    /***
+     * The preferred way of handling a request from an open API.
+     *
+     * @param hdl handling code block.
+     * @return HTTP Response appropriate for the way {@code hdl} executed.
+     */
+    protected Response response(DataverseRequestHandler hdl) {
+        return response(hdl, null);
+    }
+
     private Response handleDataverseRequestHandlerException(Exception ex) {
         String incidentId = UUID.randomUUID().toString();
         logger.log(Level.SEVERE, "API internal error " + incidentId +": " + ex.getMessage(), ex);
