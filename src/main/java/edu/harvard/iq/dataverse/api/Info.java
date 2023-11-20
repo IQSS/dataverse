@@ -26,11 +26,25 @@ public class Info extends AbstractApiBean {
 
     private final SettingGroup dataverseSettingGroup;
 
+    // DATAVERSE ROOT GROUP NAME
     private static final String SETTING_GROUP_DATAVERSE = "dataverse";
+
+    // DATAVERSE SUBGROUP NAMES
+    private static final String SETTING_GROUP_DATASET = "dataset";
     private static final String SETTING_GROUP_API = "api";
 
+    // DATAVERSE ROOT GROUP SETTING NAMES
+    private static final String SETTING_NAME_FQDN = "fqdn";
+    private static final String SETTING_NAME_IS_PUBLIC_INSTALL = "isPublicInstall";
+
+    // DATAVERSE API GROUP SETTING NAMES
     private static final String SETTING_NAME_API_TERMS_OF_USE = "apiTermsOfUse";
     private static final String SETTING_NAME_API_ALLOW_INCOMPLETE_METADATA = "apiAllowIncompleteMetadata";
+
+    // DATAVERSE DATASET GROUP SETTING NAMES
+    private static final String SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT = "datasetZipDownloadLimit";
+    private static final String SETTING_NAME_DATASET_PUBLISH_POPUP_CUSTOM_TEXT = "datasetPublishPopupCustomText";
+    private static final String SETTING_NAME_DATASET_ALLOWED_CURATION_LABELS = "datasetAllowedCurationLabels";
 
     @Inject
     public Info(SettingsServiceBean settingsService, SystemConfig systemConfig) {
@@ -38,13 +52,21 @@ public class Info extends AbstractApiBean {
         this.systemConfig = systemConfig;
 
         List<SettingItem> dataverseSettingItems = List.of(
+                new Setting<>(SETTING_NAME_FQDN, JvmSettings.FQDN.lookup()),
+                new Setting<>(SETTING_NAME_IS_PUBLIC_INSTALL, systemConfig.isPublicInstall()),
                 new SettingGroup(SETTING_GROUP_API, List.of(
                         new Setting<>(SETTING_NAME_API_TERMS_OF_USE, systemConfig.getApiTermsOfUse()),
-                        new Setting<>(SETTING_NAME_API_ALLOW_INCOMPLETE_METADATA, JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false)),
-                        new SettingGroup("dummy", List.of(
-                                new Setting<>("dummySetting", 10L)
-                        )))
-                ));
+                        new Setting<>(SETTING_NAME_API_ALLOW_INCOMPLETE_METADATA, JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false))
+                )
+                ),
+                new SettingGroup(SETTING_GROUP_DATASET, List.of(
+                        new Setting<>(SETTING_NAME_DATASET_PUBLISH_POPUP_CUSTOM_TEXT, SettingsServiceBean.Key.DatasetPublishPopupCustomText),
+                        new Setting<>(SETTING_NAME_DATASET_ALLOWED_CURATION_LABELS, settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels)),
+                        new Setting<>(SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT, SystemConfig.getLongLimitFromStringOrDefault(settingsSvc.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit), SystemConfig.defaultZipDownloadLimit))
+
+                )
+                )
+        );
         dataverseSettingGroup = new SettingGroup(SETTING_GROUP_DATAVERSE, dataverseSettingItems);
     }
 
