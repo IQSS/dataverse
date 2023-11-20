@@ -72,7 +72,7 @@ public class Info extends AbstractApiBean {
                 new SettingGroup(SETTING_GROUP_DATASET, List.of(
                         new Setting<>(SETTING_NAME_DATASET_PUBLISH_POPUP_CUSTOM_TEXT, SettingsServiceBean.Key.DatasetPublishPopupCustomText),
                         new Setting<>(SETTING_NAME_DATASET_ALLOWED_CURATION_LABELS, settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels)),
-                        new Setting<>(SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT, SystemConfig.getLongLimitFromStringOrDefault(settingsSvc.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit), SystemConfig.defaultZipDownloadLimit))
+                        new Setting<>(SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT, SystemConfig.getLongLimitFromStringOrDefault(settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit), SystemConfig.defaultZipDownloadLimit))
 
                 )
                 )
