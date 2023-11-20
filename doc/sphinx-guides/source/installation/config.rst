@@ -539,6 +539,27 @@ If you wish to change which store is used by default, you'll need to delete the 
 
 It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
 
+.. _labels-file-stores:
+
+Labels for File Stores
+++++++++++++++++++++++
+
+If you find yourself adding many file stores with various configurations such as per-file limits and direct upload, you might find it helpful to make the label descriptive.
+
+For example, instead of simply labeling an S3 store as "S3"...
+
+.. code-block:: none
+
+    ./asadmin create-jvm-options "\-Ddataverse.files.s3xl.label=S3"
+
+... you might want to include some extra information such as the example below.
+
+.. code-block:: none
+
+    ./asadmin create-jvm-options "\-Ddataverse.files.s3xl.label=S3XL, Filesize limit: 100GB, direct-upload"
+
+Please keep in mind that the UI will only show so many characters, so labels are best kept short.
+
 .. _storage-files-dir:
 
 File Storage
