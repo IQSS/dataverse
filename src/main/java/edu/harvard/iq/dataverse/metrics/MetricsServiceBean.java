@@ -214,8 +214,8 @@ public class MetricsServiceBean implements Serializable {
                 + "       join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "       join dvobject on dataset.id = dvobject.id\n"
                 + "       where versionstate='RELEASED'\n"
-                + "       	     and dvobject.harvestingclient_id is null"
-                + "       	     and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "       and dvobject.harvestingclient_id is null"
+                + "       and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "       group by dataset_id\n"
                 + "))\n";
 
