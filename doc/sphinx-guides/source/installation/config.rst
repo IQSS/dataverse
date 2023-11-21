@@ -3215,6 +3215,17 @@ This curl command...
 
 See also :doc:`oauth2`.
 
+.. _:DatasetManagerForFileAccessNotification
+
+:DatasetManagerForFileAccessNotification
+++++++++++++++++++++++++++++++++++++++++
+
+The identifier for the data manager's dataverse username. This is a dataverse account for the dataset manager of the organisation responsible
+for receiving file access requests. Use this in case owners of datasets are not responsible for approving access
+requests for file downloads. For example, if the mail address of the datamanager is "datasetmanager" set it to:
+
+``curl -X PUT -d 'datasetmanager' http://localhost:8080/api/admin/settings/:DatasetManagerForFileAccessNotification``
+
 .. _:FileFixityChecksumAlgorithm:
 
 :FileFixityChecksumAlgorithm

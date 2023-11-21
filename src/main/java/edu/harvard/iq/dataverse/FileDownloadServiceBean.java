@@ -573,13 +573,18 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
         Timestamp ts = new Timestamp(new Date().getTime());
-        permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
+        final String datasetManagerForFileAccessNotification = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetManagerForFileAccessNotification);
+        if (datasetManagerForFileAccessNotification == null ) {
+            permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
+                userNotificationService.sendNotification(au, ts, UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, true);
+            });
+        } else {
+            final AuthenticatedUser au = authService.getAuthenticatedUser(datasetManagerForFileAccessNotification);
             userNotificationService.sendNotification(au, ts, UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, true);
-        });
+        }
         //send the user that requested access a notification that they requested the access
         userNotificationService.sendNotification(requestor, ts, UserNotification.Type.REQUESTEDFILEACCESS, fileId, null, requestor, true);
-
-    } 
+    }
     
     public String generateServiceKey() {
         UUID uid = UUID.randomUUID();

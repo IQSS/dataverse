@@ -53,6 +53,10 @@ public class SettingsServiceBean {
          */
         CustomDatasetSummaryFields,
         /**
+         * Dataverse user as an alternative address to send file download requests to.
+         */
+        DatasetManagerForFileAccessNotification,
+        /**
          * Defines a public installation -- all datafiles are unrestricted
          */
         PublicInstall,
