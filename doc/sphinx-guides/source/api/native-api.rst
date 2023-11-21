@@ -2491,6 +2491,8 @@ Get Dataset By Private URL Token
 
   curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN"
 
+.. _get-citation:
+
 Get Citation
 ~~~~~~~~~~~~
 
