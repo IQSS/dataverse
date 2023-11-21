@@ -1244,7 +1244,8 @@ public class JsonPrinter {
 
     private static JsonObjectBuilder json(List<SettingItem> settingItems, Info.ExposedSettingsLookupMode lookupMode) {
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
-        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        JsonObjectBuilder subgroupsObjectBuilder = Json.createObjectBuilder();
+        JsonArrayBuilder subgroupsArrayBuilder = Json.createArrayBuilder();
         for (SettingItem settingItem : settingItems) {
             String settingName = settingItem.getName();
             if (settingItem instanceof Setting) {
@@ -1252,15 +1253,24 @@ public class JsonPrinter {
             }
             if (settingItem instanceof SettingGroup) {
                 if (lookupMode == Info.ExposedSettingsLookupMode.base) {
-                    jsonArrayBuilder.add(settingName);
+                    subgroupsArrayBuilder.add(settingName);
                 } else if (lookupMode == Info.ExposedSettingsLookupMode.sub) {
-                    JsonObjectBuilder groupObjectBuilder = Json.createObjectBuilder();
-                    groupObjectBuilder.add(settingName, json(((SettingGroup) settingItem).getItemList(), lookupMode));
-                    jsonArrayBuilder.add(groupObjectBuilder);
+                    subgroupsObjectBuilder.add(settingName, json(((SettingGroup) settingItem).getItemList(), lookupMode));
                 }
             }
         }
-        objectBuilder.add("settingSubgroups", jsonArrayBuilder);
+        String settingSubgroupsField = "settingSubgroups";
+        if (lookupMode == Info.ExposedSettingsLookupMode.base) {
+            JsonArray subgroupsJsonArray = subgroupsArrayBuilder.build();
+            if (!subgroupsJsonArray.isEmpty()) {
+                objectBuilder.add(settingSubgroupsField, subgroupsJsonArray);
+            }
+        } else if (lookupMode == Info.ExposedSettingsLookupMode.sub) {
+            JsonObject subgroupsJsonObject = subgroupsObjectBuilder.build();
+            if (!subgroupsJsonObject.isEmpty()){
+                objectBuilder.add(settingSubgroupsField, subgroupsJsonObject);
+            }
+        }
         return objectBuilder;
     }
 
