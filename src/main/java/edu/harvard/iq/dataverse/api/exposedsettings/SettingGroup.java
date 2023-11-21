@@ -12,6 +12,7 @@ import static edu.harvard.iq.dataverse.api.exposedsettings.Setting.*;
 public class SettingGroup extends SettingItem {
     public static final String GROUP_NAME_DATAVERSE = "dataverse";
     public static final String GROUP_NAME_DATASET = "dataset";
+    public static final String GROUP_NAME_DATAFILE = "datafile";
     public static final String GROUP_NAME_API = "api";
     private final List<SettingItem> itemList;
     private static SettingGroup dataverseSettingGroup;
@@ -37,9 +38,11 @@ public class SettingGroup extends SettingItem {
                                     new Setting<>(SETTING_NAME_DATASET_PUBLISH_POPUP_CUSTOM_TEXT, settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText)),
                                     new Setting<>(SETTING_NAME_DATASET_ALLOWED_CURATION_LABELS, settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels)),
                                     new Setting<>(SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT, SystemConfig.getLongLimitFromStringOrDefault(settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit), SystemConfig.defaultZipDownloadLimit))
-
                             )
-                            )
+                            ),
+                            new SettingGroup(GROUP_NAME_DATAFILE, List.of(
+                                    new Setting<>(SETTING_NAME_DATAFILE_MAX_EMBARGO_DURATION_IN_MONTHS, settingsService.getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths))
+                            ))
                     ));
         }
         return dataverseSettingGroup;

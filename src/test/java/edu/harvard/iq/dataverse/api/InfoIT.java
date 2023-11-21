@@ -101,7 +101,7 @@ public class InfoIT {
         response.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data." + Setting.SETTING_NAME_FQDN, notNullValue())
                 .body("data." + Setting.SETTING_NAME_IS_PUBLIC_INSTALL, equalTo(false))
-                .body("data.settingSubgroups", hasItems(SettingGroup.GROUP_NAME_API, SettingGroup.GROUP_NAME_DATASET));
+                .body("data.settingSubgroups", hasItems(SettingGroup.GROUP_NAME_API, SettingGroup.GROUP_NAME_DATASET, SettingGroup.GROUP_NAME_DATAFILE));
 
         // Call for setting root group and lookup mode sub
         response = given().urlEncodingEnabled(false)
@@ -115,7 +115,8 @@ public class InfoIT {
                 .body("data.settingSubgroups." + SettingGroup.GROUP_NAME_API + "." + Setting.SETTING_NAME_API_ALLOW_INCOMPLETE_METADATA, equalTo(false))
                 .body("data.settingSubgroups." + SettingGroup.GROUP_NAME_DATASET + "." + Setting.SETTING_NAME_DATASET_ALLOWED_CURATION_LABELS, equalTo(null))
                 .body("data.settingSubgroups." + SettingGroup.GROUP_NAME_DATASET + "." + Setting.SETTING_NAME_DATASET_PUBLISH_POPUP_CUSTOM_TEXT, equalTo(null))
-                .body("data.settingSubgroups." + SettingGroup.GROUP_NAME_DATASET + "." + Setting.SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT, equalTo((int) SystemConfig.defaultZipDownloadLimit));
+                .body("data.settingSubgroups." + SettingGroup.GROUP_NAME_DATASET + "." + Setting.SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT, equalTo((int) SystemConfig.defaultZipDownloadLimit))
+                .body("data.settingSubgroups." + SettingGroup.GROUP_NAME_DATAFILE + "." + Setting.SETTING_NAME_DATAFILE_MAX_EMBARGO_DURATION_IN_MONTHS, equalTo(null));
 
         // Call for setting subgroup with default lookup mode base
         response = given().urlEncodingEnabled(false)
