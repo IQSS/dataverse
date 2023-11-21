@@ -3366,10 +3366,11 @@ public class UtilIT {
         return response;
     }
 
-    static Response getDatasetVersionCitation(Integer datasetId, String version, String apiToken) {
+    static Response getDatasetVersionCitation(Integer datasetId, String version, boolean includeDeaccessioned, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/json")
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation");
         return response;
     }
