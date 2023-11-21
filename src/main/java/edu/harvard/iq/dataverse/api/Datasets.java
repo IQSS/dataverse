@@ -3992,9 +3992,14 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/citation")
-    public Response getDatasetVersionCitation(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getDatasetVersionCitation(@Context ContainerRequestContext crc,
+                                              @PathParam("id") String datasetId,
+                                              @PathParam("versionId") String versionId,
+                                              @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                              @Context UriInfo uriInfo,
+                                              @Context HttpHeaders headers) {
         return response(req -> ok(
-                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getCitation(true, false)), getRequestUser(crc));
+                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned).getCitation(true, false)), getRequestUser(crc));
     }
 
     @POST
