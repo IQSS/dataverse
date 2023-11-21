@@ -6261,7 +6261,13 @@ public class DatasetPage implements java.io.Serializable {
             apiToken = new ApiToken();
             apiToken.setTokenString(privUrl.getToken());
         }
-        PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken));
+        if(fileMetadataForAction!=null) {
+            List<FileMetadata> downloadFMList = new ArrayList<FileMetadata>(1);
+            downloadFMList.add(fileMetadataForAction);
+            PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, downloadFMList));
+        } else {
+            PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, getSelectedDownloadableFiles()));
+        }
     }
 
     public String getWebloaderUrlForDataset(Dataset d) {
