@@ -14,6 +14,10 @@ public interface GlobusAccessibleStore {
         return Boolean.parseBoolean(StorageIO.getConfigParamForDriver(driverId, MANAGED));
     }
     
+    public static String getTransferEnpointWithPath(String driverId) {
+        return StorageIO.getConfigParamForDriver(driverId, GlobusAccessibleStore.TRANSFER_ENDPOINT_WITH_BASEPATH);
+    }
+    
     public static String getTransferEndpointId(String driverId) {
         String endpointWithBasePath = StorageIO.getConfigParamForDriver(driverId, TRANSFER_ENDPOINT_WITH_BASEPATH);
         int pathStart = endpointWithBasePath.indexOf("/");
