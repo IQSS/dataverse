@@ -22,6 +22,7 @@ import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Provider;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -212,7 +213,9 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         if (di.getConversionParam().equals("format")) {
 
                             if ("GlobusTransfer".equals(di.getConversionParamValue())) {
-                                redirect_url_str = globusService.getGlobusAppUrlForDataset(dataFile.getOwner(), false, dataFile);
+                                List<FileMetadata> downloadFMList = new ArrayList<FileMetadata>(1);
+                                downloadFMList.add(dataFile.getFileMetadata());
+                                redirect_url_str = globusService.getGlobusAppUrlForDataset(dataFile.getOwner(), false, downloadFMList);
                             }
                         }
                     }
