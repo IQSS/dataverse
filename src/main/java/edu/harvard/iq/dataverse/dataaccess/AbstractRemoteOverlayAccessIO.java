@@ -222,11 +222,11 @@ public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends 
                     .substring(fullStorageLocation.lastIndexOf(DataAccess.SEPARATOR) + DataAccess.SEPARATOR.length());
         }
         if (this.getDvObject() instanceof Dataset) {
-            throw new IOException("RemoteOverlayAccessIO: Datasets are not a supported dvObject");
+            throw new IOException("AbstractRemoteOverlayAccessIO: Datasets are not a supported dvObject");
         } else if (this.getDvObject() instanceof DataFile) {
             fullStorageLocation = StorageIO.getDriverPrefix(this.driverId) + fullStorageLocation;
         } else if (dvObject instanceof Dataverse) {
-            throw new IOException("RemoteOverlayAccessIO: Dataverses are not a supported dvObject");
+            throw new IOException("AbstractRemoteOverlayAccessIO: Dataverses are not a supported dvObject");
         }
         logger.fine("fullStorageLocation: " + fullStorageLocation);
         return fullStorageLocation;
