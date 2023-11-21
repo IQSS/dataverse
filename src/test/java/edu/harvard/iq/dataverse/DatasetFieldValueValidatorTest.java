@@ -213,4 +213,15 @@ public class DatasetFieldValueValidatorTest {
             assertTrue(c.getMessage().contains("email"));
         });
     }
+    @Test
+    public void testBoundingBoxValidity() {
+        // valid tests
+        assertTrue(DatasetFieldValueValidator.validateBoundingBox("180", "-180", "90", "-90"));
+        assertTrue(DatasetFieldValueValidator.validateBoundingBox("180", "-180", "90", null));
+
+        // invalid tests
+        assertTrue(!DatasetFieldValueValidator.validateBoundingBox("180", "-180", "90", "junk"));
+        assertTrue(!DatasetFieldValueValidator.validateBoundingBox("40", "45", "90", "0"));
+        assertTrue(!DatasetFieldValueValidator.validateBoundingBox("360", "0", "90", "-90"));
+    }
 }
