@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
-import edu.harvard.iq.dataverse.api.exposedsettings.Setting;
 import edu.harvard.iq.dataverse.api.exposedsettings.SettingGroup;
 import edu.harvard.iq.dataverse.api.exposedsettings.SettingItem;
 import edu.harvard.iq.dataverse.settings.JvmSettings;

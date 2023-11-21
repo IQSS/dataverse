@@ -56,7 +56,6 @@ import static java.util.stream.Collectors.toList;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
-import jakarta.ws.rs.core.Response;
 
 /**
  * Convert objects to Json.
