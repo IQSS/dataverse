@@ -3599,25 +3599,32 @@ public class Datasets extends AbstractApiBean {
         } else {
             params.add("referenceEndpointsWithPaths", referenceEndpointsWithPaths);
         }
-        int timeoutSeconds = JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class) * 60;
+        int timeoutSeconds = JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class);
         JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
         String requestCallName = managed ? "requestGlobusTransferPaths" : "requestGlobusReferencePaths";
         allowedApiCalls.add(
                 Json.createObjectBuilder().add(URLTokenUtil.NAME, requestCallName).add(URLTokenUtil.HTTP_METHOD, "POST")
                         .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/requestGlobusUploadPaths")
                         .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
+        if(managed) {
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "addGlobusFiles")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addGlobusFiles")
                 .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
+        } else {
+            allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "addFiles")
+                    .add(URLTokenUtil.HTTP_METHOD, "POST")
+                    .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addFiles")
+                    .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
+        }
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
                 .add(URLTokenUtil.HTTP_METHOD, "GET")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}")
-                .add(URLTokenUtil.TIMEOUT, 300));
+                .add(URLTokenUtil.TIMEOUT, 5));
         allowedApiCalls.add(
                 Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
                         .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
-                        .add(URLTokenUtil.TIMEOUT, 300));
+                        .add(URLTokenUtil.TIMEOUT, 5));
 
         return ok(tokenUtil.createPostBody(params.build(), allowedApiCalls.build()));
     }
@@ -3783,7 +3790,7 @@ public class Datasets extends AbstractApiBean {
             params.add("endpoint", transferEndpoint);
         }
         params.add("files", files);
-        int timeoutSeconds = JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class) * 60;
+        int timeoutSeconds = JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class);
         JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "monitorGlobusDownload")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
@@ -3797,11 +3804,11 @@ public class Datasets extends AbstractApiBean {
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
                 .add(URLTokenUtil.HTTP_METHOD, "GET")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}")
-                .add(URLTokenUtil.TIMEOUT, 300));
+                .add(URLTokenUtil.TIMEOUT, 5));
         allowedApiCalls.add(
                 Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
                         .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
-                        .add(URLTokenUtil.TIMEOUT, 300));
+                        .add(URLTokenUtil.TIMEOUT, 5));
 
         return ok(tokenUtil.createPostBody(params.build(), allowedApiCalls.build()));
     }

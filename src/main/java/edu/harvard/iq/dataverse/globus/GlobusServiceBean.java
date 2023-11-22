@@ -569,7 +569,7 @@ public class GlobusServiceBean implements java.io.Serializable {
     // Single cache of open rules/permission requests
     private final Cache<String, JsonObject> downloadCache = Caffeine.newBuilder()
             .expireAfterWrite(
-                    Duration.of(JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class) + 300, ChronoUnit.MINUTES))
+                    Duration.of(JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class) + 5, ChronoUnit.MINUTES))
             .scheduler(Scheduler.systemScheduler()).evictionListener((downloadId, datasetId, cause) -> {
                 // Delete downloads that expire
                 logger.info("Download for " + downloadId + " expired");
