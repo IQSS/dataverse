@@ -3541,10 +3541,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/globusUploadParameters")
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getGlobusUploadParams(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @QueryParam(value = "locale") String locale)
-    {
+    public Response getGlobusUploadParams(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+            @QueryParam(value = "locale") String locale) {
         // -------------------------------------
         // (1) Get the user from the ContainerRequestContext
         // -------------------------------------
@@ -3565,17 +3564,18 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
         String storeId = dataset.getEffectiveStorageDriverId();
-        //acceptsGlobusTransfers should only be true for an S3 or globus store
-        if(!GlobusAccessibleStore.acceptsGlobusTransfers(storeId) && !GlobusAccessibleStore.allowsGlobusReferences(storeId)) {
+        // acceptsGlobusTransfers should only be true for an S3 or globus store
+        if (!GlobusAccessibleStore.acceptsGlobusTransfers(storeId)
+                && !GlobusAccessibleStore.allowsGlobusReferences(storeId)) {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.globusuploaddisabled"));
         }
-        
+
         URLTokenUtil tokenUtil = new URLTokenUtil(dataset, authSvc.findApiTokenByUser(authUser), locale);
 
         boolean managed = GlobusAccessibleStore.isDataverseManaged(storeId);
         String transferEndpoint = null;
         JsonArray referenceEndpointsWithPaths = null;
-        if(managed) {
+        if (managed) {
             transferEndpoint = GlobusAccessibleStore.getTransferEndpointId(storeId);
         } else {
             referenceEndpointsWithPaths = GlobusAccessibleStore.getReferenceEndpointsWithPaths(storeId);
@@ -3594,7 +3594,7 @@ public class Datasets extends AbstractApiBean {
             params.add(key, substitutedParams.get(key));
         });
         params.add("managed", Boolean.toString(managed));
-        if(transferEndpoint!= null) {
+        if (transferEndpoint != null) {
             params.add("endpoint", transferEndpoint);
         } else {
             params.add("referenceEndpointsWithPaths", referenceEndpointsWithPaths);
@@ -3602,18 +3602,18 @@ public class Datasets extends AbstractApiBean {
         int timeoutSeconds = JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class) * 60;
         JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
         String requestCallName = managed ? "requestGlobusTransferPaths" : "requestGlobusReferencePaths";
-        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, requestCallName)
-                    .add(URLTokenUtil.HTTP_METHOD, "POST")
-                    .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/requestGlobusUploadPaths")
-                    .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
+        allowedApiCalls.add(
+                Json.createObjectBuilder().add(URLTokenUtil.NAME, requestCallName).add(URLTokenUtil.HTTP_METHOD, "POST")
+                        .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/requestGlobusUploadPaths")
+                        .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "addGlobusFiles")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addGlobusFiles")
                 .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
-        allowedApiCalls.add(
-                Json.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata").add(URLTokenUtil.HTTP_METHOD, "GET")
-                        .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}")
-                        .add(URLTokenUtil.TIMEOUT, 300));
+        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
+                .add(URLTokenUtil.HTTP_METHOD, "GET")
+                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}")
+                .add(URLTokenUtil.TIMEOUT, 300));
         allowedApiCalls.add(
                 Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
                         .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
@@ -3621,8 +3621,9 @@ public class Datasets extends AbstractApiBean {
 
         return ok(tokenUtil.createPostBody(params.build(), allowedApiCalls.build()));
     }
-    
-    /** Requests permissions for a given globus user to upload to the dataset
+
+    /**
+     * Requests permissions for a given globus user to upload to the dataset
      * 
      * @param crc
      * @param datasetId
@@ -3637,15 +3638,14 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/requestGlobusUploadPaths")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response requestGlobusUpload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, String jsonBody
-    ) throws IOException, ExecutionException, InterruptedException {
-
+    public Response requestGlobusUpload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+            String jsonBody) throws IOException, ExecutionException, InterruptedException {
 
         logger.info(" ====  (api allowGlobusUpload) jsonBody   ====== " + jsonBody);
 
-
         if (!systemConfig.isGlobusUpload()) {
-            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
+            return error(Response.Status.SERVICE_UNAVAILABLE,
+                    BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
         }
 
         // -------------------------------------
@@ -3713,12 +3713,12 @@ public class Datasets extends AbstractApiBean {
         }
 
     }
-    
+
     /**
      * Retrieve the parameters and signed URLs required to perform a globus
-     * transfer/download. This api endpoint is expected to be called as a signed callback
-     * after the globus-dataverse app/other app is launched, but it will accept
-     * other forms of authentication.
+     * transfer/download. This api endpoint is expected to be called as a signed
+     * callback after the globus-dataverse app/other app is launched, but it will
+     * accept other forms of authentication.
      * 
      * @param crc
      * @param datasetId
@@ -3726,10 +3726,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/globusDownloadParameters")
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getGlobusDownloadParams(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @QueryParam(value = "locale") String locale, @QueryParam(value = "downloadId") String downloadId)
-    {
+    public Response getGlobusDownloadParams(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+            @QueryParam(value = "locale") String locale, @QueryParam(value = "downloadId") String downloadId) {
         // -------------------------------------
         // (1) Get the user from the ContainerRequestContext
         // -------------------------------------
@@ -3750,22 +3749,22 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         }
         String storeId = dataset.getEffectiveStorageDriverId();
-        //acceptsGlobusTransfers should only be true for an S3 or globus store
-        if(!(GlobusAccessibleStore.acceptsGlobusTransfers(storeId) || GlobusAccessibleStore.allowsGlobusReferences(storeId))) {
+        // acceptsGlobusTransfers should only be true for an S3 or globus store
+        if (!(GlobusAccessibleStore.acceptsGlobusTransfers(storeId)
+                || GlobusAccessibleStore.allowsGlobusReferences(storeId))) {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
         }
 
         JsonObject files = globusService.getFilesForDownload(downloadId);
-        if(files==null) {
+        if (files == null) {
             return notFound(BundleUtil.getStringFromBundle("datasets.api.globusdownloadnotfound"));
         }
-        
+
         URLTokenUtil tokenUtil = new URLTokenUtil(dataset, authSvc.findApiTokenByUser(authUser), locale);
 
         boolean managed = GlobusAccessibleStore.isDataverseManaged(storeId);
         String transferEndpoint = null;
-        
-        
+
         JsonObjectBuilder queryParams = Json.createObjectBuilder();
         queryParams.add("queryParameters",
                 Json.createArrayBuilder().add(Json.createObjectBuilder().add("datasetId", "{datasetId}"))
@@ -3779,7 +3778,7 @@ public class Datasets extends AbstractApiBean {
             params.add(key, substitutedParams.get(key));
         });
         params.add("managed", Boolean.toString(managed));
-        if(managed) {
+        if (managed) {
             transferEndpoint = GlobusAccessibleStore.getTransferEndpointId(storeId);
             params.add("endpoint", transferEndpoint);
         }
@@ -3787,17 +3786,18 @@ public class Datasets extends AbstractApiBean {
         int timeoutSeconds = JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class) * 60;
         JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "monitorGlobusDownload")
-                    .add(URLTokenUtil.HTTP_METHOD, "POST")
-                    .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/monitorGlobusDownload")
-                    .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
+                .add(URLTokenUtil.HTTP_METHOD, "POST")
+                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/monitorGlobusDownload")
+                .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "requestGlobusDownload")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
-                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/requestGlobusDownload?downloadId=" + downloadId)
+                .add(URLTokenUtil.URL_TEMPLATE,
+                        "/api/v1/datasets/{datasetId}/requestGlobusDownload?downloadId=" + downloadId)
                 .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
-        allowedApiCalls.add(
-                Json.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata").add(URLTokenUtil.HTTP_METHOD, "GET")
-                        .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}")
-                        .add(URLTokenUtil.TIMEOUT, 300));
+        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
+                .add(URLTokenUtil.HTTP_METHOD, "GET")
+                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}")
+                .add(URLTokenUtil.TIMEOUT, 300));
         allowedApiCalls.add(
                 Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
                         .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
@@ -3805,8 +3805,10 @@ public class Datasets extends AbstractApiBean {
 
         return ok(tokenUtil.createPostBody(params.build(), allowedApiCalls.build()));
     }
-    
-    /** Requests permissions for a given globus user to download the specified files the dataset
+
+    /**
+     * Requests permissions for a given globus user to download the specified files
+     * the dataset
      * 
      * @param crc
      * @param datasetId
@@ -3818,7 +3820,7 @@ public class Datasets extends AbstractApiBean {
      */
     @POST
     @AuthRequired
-    @Path("{id}/requestGlobusDownloadPaths")
+    @Path("{id}/requestGlobusDownload")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response requestGlobusDownload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
@@ -3884,6 +3886,7 @@ public class Datasets extends AbstractApiBean {
         ArrayList<DataFile> dataFiles = new ArrayList<DataFile>(fileIds.size());
         for (String id : fileIds) {
             boolean published = false;
+            logger.info("File id: " + id);
 
             DataFile df = null;
             try {
@@ -3891,7 +3894,7 @@ public class Datasets extends AbstractApiBean {
             } catch (WrappedResponse wr) {
                 return wr.getResponse();
             }
-            if (df.getOwner() != dataset) {
+            if (!df.getOwner().equals(dataset)) {
                 return badRequest("All files must be in the dataset");
             }
             dataFiles.add(df);
@@ -3942,7 +3945,9 @@ public class Datasets extends AbstractApiBean {
         return ok(files);
     }
 
-    /** Monitors a globus download and removes permissions on the dir/dataset when done
+    /**
+     * Monitors a globus download and removes permissions on the dir/dataset when
+     * done
      * 
      * @param crc
      * @param datasetId
@@ -3955,16 +3960,15 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/monitorGlobusDownload")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response deleteglobusRule(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,@FormDataParam("jsonData") String jsonData
-    ) throws IOException, ExecutionException, InterruptedException {
-
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response monitorGlobusDownload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+            String jsonData) throws IOException, ExecutionException, InterruptedException {
 
         logger.info(" ====  (api deleteglobusRule) jsonData   ====== " + jsonData);
 
-
         if (!systemConfig.isGlobusDownload()) {
-            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
+            return error(Response.Status.SERVICE_UNAVAILABLE,
+                    BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
         }
 
         // -------------------------------------
@@ -3991,7 +3995,6 @@ public class Datasets extends AbstractApiBean {
 
     }
 
-
     /**
      * Add multiple Files to an existing Dataset
      *
@@ -4003,9 +4006,8 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/addFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response addFilesToDataset(@Context ContainerRequestContext crc,
-                                      @PathParam("id") String idSupplied,
-                                      @FormDataParam("jsonData") String jsonData) {
+    public Response addFilesToDataset(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied,
+            @FormDataParam("jsonData") String jsonData) {
 
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
