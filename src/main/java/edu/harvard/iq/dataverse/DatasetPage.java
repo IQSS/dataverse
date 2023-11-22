@@ -6266,7 +6266,13 @@ public class DatasetPage implements java.io.Serializable {
             downloadFMList.add(fileMetadataForAction);
             PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, downloadFMList));
         } else {
-            PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, getSelectedDownloadableFiles()));
+            if(getSelectedDownloadableFiles()!=null) {
+                PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, getSelectedDownloadableFiles()));
+            } else {
+                //ToDo: For non-public, need the subset that are downloadable by the user
+                //ToDo: For mixed (some in backing store), need the ones in the globus store
+                PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, workingVersion.getFileMetadatas()));
+            }
         }
     }
 
