@@ -37,13 +37,20 @@ import jakarta.json.JsonObjectBuilder;
  * Globus Overlay Driver
  * 
  * Remote: StorageIdentifier format:
- * <globusDriverId>://<baseStorageIdentifier>//<relativePath> Storage location:
- * <globusendpointId/basepath>/<relPath> Internal StorageIdentifier format:
- * <globusDriverId>://<baseStorageIdentifier> Storage location:
- * <globusEndpointId/basepath>/<dataset authority>/<dataset
- * identifier>/<baseStorageIdentifier>
+ * <globusDriverId>://<baseStorageIdentifier>//<relativePath> 
+ * 
+ * Storage location:
+ * <globusendpointId/basepath>/<relPath> 
+ * 
+ * Internal StorageIdentifier format:
+ * <globusDriverId>://<baseStorageIdentifier> 
+ * 
+ * Storage location:
+ * <globusEndpointId/basepath>/<dataset authority>/<dataset identifier>/<baseStorageIdentifier>
  *
- * transfer and reference endpoint formats: <globusEndpointId/basePath>
+ * transfer and reference endpoint formats: 
+ * <globusEndpointId/basePath>
+ * 
  * reference endpoints separated by a comma
  * 
  */
