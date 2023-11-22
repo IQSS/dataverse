@@ -184,30 +184,21 @@ public class GlobusServiceBean implements java.io.Serializable {
      * @param globusLogger - a separate logger instance, may be null
      */
     public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger) {
-
+        globusLogger.info("Start deleting rule " + ruleId + " for dataset " + dataset.getId());
         if (ruleId.length() > 0) {
             if (dataset != null) {
                 GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
                 if (endpoint != null) {
                     String accessToken = endpoint.getClientToken();
-                    if (globusLogger != null) {
-                        globusLogger.info("Start deleting permissions.");
-                    }
+                    globusLogger.info("Start deleting permissions.");
                     try {
                         URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId()
                                 + "/access/" + ruleId);
                         MakeRequestResponse result = makeRequest(url, "Bearer", accessToken, "DELETE", null);
                         if (result.status != 200) {
-                            if (globusLogger != null) {
-                                globusLogger.warning("Cannot delete access rule " + ruleId);
-                            } else {
-                                // When removed due to a cache ejection, we don't have a globusLogger
-                                logger.warning("Cannot delete access rule " + ruleId);
-                            }
+                            globusLogger.warning("Cannot delete access rule " + ruleId);
                         } else {
-                            if (globusLogger != null) {
-                                globusLogger.info("Access rule " + ruleId + " was deleted successfully");
-                            }
+                            globusLogger.info("Access rule " + ruleId + " was deleted successfully");
                         }
                     } catch (MalformedURLException ex) {
                         logger.log(Level.WARNING,
@@ -585,7 +576,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             })
 
             .build();
-    
+
     public JsonObject getFilesForDownload(String downloadId) {
         return downloadCache.getIfPresent(downloadId);
     }
@@ -603,7 +594,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         return requestPermission(endpoint, dataset, permissions);
     }
-    
+
     // Generates the URL to launch the Globus app
     public String getGlobusAppUrlForDataset(Dataset d) {
         return getGlobusAppUrlForDataset(d, true, null);
@@ -668,9 +659,14 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     public JsonObject getFilesMap(ArrayList<DataFile> dataFiles, Dataset d) {
         JsonObjectBuilder filesBuilder = Json.createObjectBuilder();
-        for(DataFile df: dataFiles) {
-            String fileLocation = DataAccess
-                    .getLocationFromStorageId(df.getStorageIdentifier(), d);
+        for (DataFile df : dataFiles) {
+            String[] fileInfo = DataAccess.getDriverIdAndStorageLocation(DataAccess.getLocationFromStorageId(df.getStorageIdentifier(), d));
+            String driverId = fileInfo[0];
+            String fileLocation= fileInfo[1]; 
+            if(GlobusAccessibleStore.isDataverseManaged(driverId)) {
+                String endpointWithBasePath = GlobusAccessibleStore.getTransferEnpointWithPath(driverId);
+                fileLocation = endpointWithBasePath + "/" + fileLocation;
+            }
             filesBuilder.add(df.getId().toString(), fileLocation);
         }
         return filesBuilder.build();
@@ -711,28 +707,34 @@ public class GlobusServiceBean implements java.io.Serializable {
             globusLogger = logger;
         }
 
-        Thread.sleep(5000);
-
         logger.fine("json: " + JsonUtil.prettyPrint(jsonData));
 
         String taskIdentifier = jsonData.getString("taskIdentifier");
 
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
-        // globus task status check
-        GlobusTask task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
-        String taskStatus = getTaskStatus(task);
-
-        globusLogger.info("Starting an globusUpload ");
-
+        GlobusTask task = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
         String ruleId = getRuleId(endpoint, task.getOwner_id(), "rw");
         logger.info("Found rule: " + ruleId);
         if (ruleId != null) {
             Long datasetId = rulesCache.getIfPresent(ruleId);
             if (datasetId != null) {
-
-                // Will delete rule
+                // Will not delete rule
                 rulesCache.invalidate(ruleId);
             }
+        }
+        
+        //Wait before first check
+        Thread.sleep(5000);
+        // globus task status check
+        task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
+        String taskStatus = getTaskStatus(task);
+
+        globusLogger.info("Starting a globusUpload ");
+
+        if (ruleId != null) {
+            // Transfer is complete, so delete rule
+            deletePermission(ruleId, dataset, globusLogger);
+
         }
 
         // If success, switch to an EditInProgress lock - do this before removing the
@@ -983,7 +985,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             globusLogger = logger;
         }
 
-        globusLogger.info("Starting an globusDownload ");
+        globusLogger.info("Starting a globusDownload ");
 
         JsonObject jsonObject = null;
         try {
@@ -995,19 +997,34 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
 
         String taskIdentifier = jsonObject.getString("taskIdentifier");
-        String ruleId = "";
 
-        try {
-            jsonObject.getString("ruleId");
-        } catch (NullPointerException npe) {
-            globusLogger.log(Level.SEVERE, "Error parsing dataset json. No ruleId: {0}", jsonData);
-        }
+        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+        logger.info("Endpoint path: " + endpoint.getBasePath());
 
+        // If the rules_cache times out, the permission will be deleted. Presumably that
+        // doesn't affect a
         // globus task status check
-        GlobusTask task = globusStatusCheck(null, taskIdentifier, globusLogger);
+        GlobusTask task = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+        String ruleId = getRuleId(endpoint, task.getOwner_id(), "r");
+        if (ruleId != null) {
+            logger.info("Found rule: " + ruleId);
+            Long datasetId = rulesCache.getIfPresent(ruleId);
+            if (datasetId != null) {
+                logger.info("Deleting from cache: rule: " + ruleId);
+                // Will not delete rule
+                rulesCache.invalidate(ruleId);
+            }
+        } else {
+            // Something is wrong - the rule should be there (a race with the cache timing
+            // out?)
+            logger.warning("ruleId not found for taskId: " + taskIdentifier);
+        }
+        task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
         String taskStatus = getTaskStatus(task);
-
-        if (ruleId.length() > 0) {
+        
+        //Transfer is done (success or failure) so delete the rule
+        if (ruleId != null) {
+            logger.info("Deleting: rule: " + ruleId);
             deletePermission(ruleId, dataset, globusLogger);
         }
 
@@ -1087,7 +1104,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         if (task != null) {
             status = task.getStatus();
             if (status != null) {
-                // The task is in progress.
+                // The task is in progress but is not ok or queued
                 if (status.equalsIgnoreCase("ACTIVE")) {
                     status = "FAILED" + "#" + task.getNice_status() + "#" + task.getNice_status_short_description();
                 } else {
