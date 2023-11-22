@@ -3976,6 +3976,64 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/settings/:MaxEmbargoDurationInMonths"
 
+Get Exposed Settings
+~~~~~~~~~~~~~~~~~~~~
+
+Although the previous endpoints allow to get public settings individually, this endpoint unifies all public settings by exposing them individually or in groups.
+
+For supporting this, the public settings have been grouped considering different Dataverse scopes. Within these groups, the settings have been named in a natural way for the user, being this natural name independent of the setting source name on which they depend (JVM options or database settings).
+
+Groups follow a tree structure, starting with the root group and its root-level settings, so each child group can contain one or more settings and/or one or more child groups.
+
+Currently under the root group we find the following settings:
+
+- fqdn
+- isPublicInstall
+
+And the following child groups, with their associated settings:
+
+- api: termsOfUse, allowIncompleteMetadata.
+- dataset: publishPopupCustomText, allowedCurationLabels, zipDownloadLimit.
+- datafile: maxEmbargoDurationInMonths.
+
+The tree-like structure translates to the endpoint structure, which will receive child group names and setting names via path parameters, ordered by depth starting from root.
+
+For reading a single setting from a child group:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export SETTING_GROUP=api
+  export SETTING_NAME=termsOfUse
+
+  curl "$SERVER_URL/api/info/exposedSettings/$SETTING_GROUP/$SETTING_NAME"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/exposedSettings/api/termsOfUse"
+
+For reading all settings from a particular group:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export SETTING_GROUP=dataset
+
+  curl "$SERVER_URL/api/info/exposedSettings/$SETTING_GROUP"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/dataset"
+
+For group reading, there are two lookup modes, defined by the optional "lookupMode" query parameter:
+
+- base: The child groups will not be read and only their names will appear in the response body alongside the parent setting names. This is the default option, if not specified.
+- sub: The child groups will also be read, in order to retrieve all their underlying settings and child groups following the tree structure downwards.
+
 .. _metadata-blocks-api:
 
 Metadata Blocks
