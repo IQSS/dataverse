@@ -3983,7 +3983,7 @@ Although the previous endpoints allow to get public settings individually, this 
 
 For supporting this, the public settings have been grouped considering different Dataverse scopes. Within these groups, the settings have been named in a natural way for the user, being this natural name independent of the setting source name on which they depend (JVM options or database settings).
 
-Groups follow a tree structure, starting with the root group and its root-level settings, so each child group can contain one or more settings and/or one or more child groups.
+Groups follow a tree structure, starting with the root group and its root-level settings, and each child group can contain one or more settings and/or one or more child groups.
 
 Currently under the root group we find the following settings:
 
