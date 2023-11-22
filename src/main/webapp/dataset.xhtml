@@ -1810,27 +1810,30 @@
                         <p class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']}
                         </p>
-                        <ui:remove>
-                            <!--FIXME update for new comments table -->
-                            <p:inputTextarea id="returnReason" rows="3" value="#{DatasetPage.workingVersion.returnReason}" title="#{bundle['dataset.rejectMessage.label']}" maxlength="200" widgetVar="returnReason"
-                                             cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
-                                             requiredMessage="#{bundle['dataset.reject.enterReason.error']}"/>
-                            <!--FIXME validation error msg for returnReason was in confirmDialog using testReturnReason() in commandButton below but all that was removed
-                                      as it did not look like the usual validation method, added preferred requiredMessage attribute to inputTextarea above, need wiring #5717-->
-                            <p>
-                                <h:outputText id="display"/>
-                            </p>
-                            <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonwatermark"/>
-                        </ui:remove>
+
+                        <p:inputTextarea id="returnReason" rows="3" value="#{DatasetPage.returnReason}" title="#{bundle['dataset.rejectMessage.label']}" maxlength="200" widgetVar="returnReason"
+                                         cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
+                                         required="#{param['DO_RETURN_TO_AUTHOR_VALIDATION']}"
+                                         requiredMessage="#{bundle['dataset.reject.enterReason.error']}"/>
+                        <p>
+                            <h:outputText id="display"/>
+                        </p>
+                        <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonWatermark"/>
+                        <h:message for="returnReason" styleClass="bg-danger text-danger"/>
+                        
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('sendBackToContributor').hide()" action="#{DatasetPage.sendBackToContributor}"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}"
+                                             update="@form"
+                                             oncomplete="PF('sendBackToContributor').show();if (args &amp;&amp; !args.validationFailed) returnToAuthorCommand();">
+                                <f:param name="DO_RETURN_TO_AUTHOR_VALIDATION" value="true"/>
+                            </p:commandButton>
                             <button class="btn btn-link" onclick="PF('sendBackToContributor').hide();
                                     PF('blockDatasetForm').hide();" type="button">
                                 #{bundle.cancel}
                             </button>
                         </div>
                     </p:dialog>
-                    <p:remoteCommand name="returnToAuthorCommand" action="#{DatasetPage.sendBackToContributor}"/>
+                    <p:remoteCommand name="returnToAuthorCommand" oncomplete="PF('sendBackToContributor').hide();" update=":messagePanel" actionListener="#{DatasetPage.sendBackToContributor}"/>
                     <p:remoteCommand name="linkEditTerms"   actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel">
                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                     </p:remoteCommand>
