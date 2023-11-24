@@ -110,7 +110,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
             //Not sure this is needed but moving it from the open method for now since it definitely doesn't need to run every time an object is opened.
             try {
-                if (bucketName == null || !s3.doesBucketExistV2(bucketName)) {
+                if (bucketName == null) {
                     throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
                 }
             } catch (SdkClientException sce) {
