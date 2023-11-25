@@ -1035,7 +1035,7 @@ public class Admin extends AbstractApiBean {
                             return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
                         }
 
-			user.setSuperuser(!user.isSuperuser());
+			user.setSuperuser(true);
 
 			return ok("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set" : "removed")
 					+ " as a superuser.");
