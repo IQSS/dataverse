@@ -1037,8 +1037,7 @@ public class Admin extends AbstractApiBean {
 
 			user.setSuperuser(true);
 
-			return ok("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set" : "removed")
-					+ " as a superuser.");
+			return ok("User " + user.getIdentifier() + " set as a superuser.");
 		} catch (Exception e) {
 			alr.setActionResult(ActionLogRecord.Result.InternalError);
 			alr.setInfo(alr.getInfo() + "// " + e.getMessage());
