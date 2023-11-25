@@ -4880,7 +4880,7 @@ This action changes the identifier of user johnsmith to jsmith.
 Make User a SuperUser
 ~~~~~~~~~~~~~~~~~~~~~
 
-Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
+Sets superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
 
     POST http://$SERVER/api/admin/superuser/$identifier
 
