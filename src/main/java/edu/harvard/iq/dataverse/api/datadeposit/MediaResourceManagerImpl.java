@@ -219,7 +219,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unsupported file type found in URL: " + uri);
             }
         } else {
-            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Target or identifer not specified in URL: " + uri);
+            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Target or identifier not specified in URL: " + uri);
         }
     }
 
