@@ -24,14 +24,14 @@ import java.io.Serializable;
 @NamedQueries({
     @NamedQuery(name = "StorageUse.findByteSizeByDvContainerId",query = "SELECT su.sizeInBytes FROM StorageUse su WHERE su.dvObjectContainer.id =:dvObjectId "),
     @NamedQuery(name = "StorageUse.findByDvContainerId",query = "SELECT su FROM StorageUse su WHERE su.dvObjectContainer.id =:dvObjectId "),
-    @NamedQuery(name = "StorageUse.incrementByteSizeByDvContainerId", query = "UPDATE StorageUse SET sizeInBytes = (sizeInBytes + :fileSize) WHERE dvObjectContainer.id=dv.ObjectId")
+    @NamedQuery(name = "StorageUse.incrementByteSizeByDvContainerId", query = "UPDATE StorageUse su SET su.sizeInBytes = su.sizeInBytes +:fileSize WHERE su.dvObjectContainer.id =:dvObjectId")
 })
 @Entity
 public class StorageUse implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     public Long getId() {
@@ -48,6 +48,12 @@ public class StorageUse implements Serializable {
     
     @Column
     private Long sizeInBytes = null; 
+    
+    public StorageUse() {}
+    
+    public StorageUse(DvObjectContainer dvObjectContainer) {
+        this(dvObjectContainer, 0L);
+    }
     
     public StorageUse(DvObjectContainer dvObjectContainer, Long sizeInBytes) {
         this.dvObjectContainer = dvObjectContainer;

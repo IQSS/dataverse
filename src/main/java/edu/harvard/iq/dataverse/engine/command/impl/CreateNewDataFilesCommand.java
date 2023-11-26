@@ -13,8 +13,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
-import edu.harvard.iq.dataverse.DataFileServiceBean.UserStorageQuota;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -74,7 +74,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
     private final InputStream inputStream;
     private final String fileName;
     private final String suppliedContentType; 
-    private final UserStorageQuota quota;
+    private final UploadSessionQuotaLimit quota;
     // parent Dataverse must be specified when the command is called on Create 
     // of a new dataset that does not exist in the database yet (for the purposes
     // of authorization - see getRequiredPermissions() below):
@@ -85,18 +85,18 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
     private DataFile.ChecksumType newCheckSumType;
     private final Long newFileSize;
 
-    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum) {
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum) {
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, null);
     }
     
-    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum, DataFile.ChecksumType newCheckSumType) {
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType) {
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, null, null);
     }
     
     // This version of the command must be used when files are created in the 
     // context of creating a brand new dataset (from the Add Dataset page):
     
-    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize, Dataverse dataverse) {
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize, Dataverse dataverse) {
         super(aRequest, dataverse);
         
         this.version = version;
@@ -701,7 +701,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         
         DataFile datafile = FileUtil.createSingleDataFile(version, newFile, newStorageIdentifier, fileName, finalType, newCheckSumType, newCheckSum);
 
-        if (datafile != null && ((newFile != null) || (newStorageIdentifier != null))) {
+        if (datafile != null) {
 
             if (warningMessage != null) {
                 createIngestFailureReport(datafile, warningMessage);
@@ -712,14 +712,19 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
             }
             datafiles.add(datafile);
 
-            // Update quota (not necessary in the context of direct upload, will be done later)
-            // On a second thought, @todo: we should delay updating the storage size/quotas
-            // until the file is saved and finalized, for all upload cases!
-            if (newFile != null) {
-                if (fileSize > 0 && quota != null) {
-                    quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + fileSize);
-                }
+            // Update the quota definition for the *current upload session*
+            // This is relevant for the uploads going through the UI page 
+            // (where there may be an appreciable amount of time between the user
+            // uploading the files and clicking "save". The file size should be 
+            // available here for both direct and local uploads via the UI. 
+            // It is not yet available if this is direct-via-API - but 
+            // for API uploads the quota check will be enforced during the final 
+            // save. 
+            if (fileSize > 0 && quota != null) {
+                logger.info("Setting total usage in bytes to " + (quota.getTotalUsageInBytes() + fileSize));
+                quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + fileSize);
             }
+
             return CreateDataFileResult.success(fileName, finalType, datafiles);
         }
 

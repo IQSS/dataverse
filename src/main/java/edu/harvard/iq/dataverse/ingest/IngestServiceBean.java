@@ -30,7 +30,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataFileServiceBean.UserStorageQuota;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -73,6 +72,8 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.*;
 import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
 
@@ -151,6 +152,8 @@ public class IngestServiceBean {
     @EJB
     AuxiliaryFileServiceBean auxiliaryFileService;
     @EJB
+    StorageUseServiceBean storageUseService; 
+    @EJB
     SystemConfig systemConfig;
 
     @Resource(lookup = "java:app/jms/queue/ingest")
@@ -185,7 +188,7 @@ public class IngestServiceBean {
             List<DataFile> newFiles,
             DataFile fileToReplace,
             boolean tabIngest, 
-            UserStorageQuota quota) /*throws FileExceedsMaxSizeException, FileExceedsStorageQuotaException*/ {
+            UploadSessionQuotaLimit quota) /*throws FileExceedsMaxSizeException, FileExceedsStorageQuotaException*/ {
         List<DataFile> ret = new ArrayList<>();
 
         if (newFiles != null && newFiles.size() > 0) {
@@ -360,20 +363,41 @@ public class IngestServiceBean {
                     }
                 }
                 
-                // We will perform (another) quota check, and if still under quota
-                // (it's not impossible that somebody else may have uploaded more 
-                // stuff into the same collection/dataset etc., before this user 
-                // decided to click "save", for example!)
+                // If quotas are enforced, we will perform a quota check here. 
+                // If this is an upload via the UI, we must have already 
+                // performed this check once. But it is possible that somebody 
+                // else may have added more data to the same collection/dataset 
+                // etc., before this user was ready to click "save", so this is
+                // necessary. For other cases, such as the direct uploads via 
+                // the API, this is the single point in the workflow where  
+                // storage quotas are enforced. 
         
                 if (systemConfig.isStorageQuotasEnforced() && quota != null) {
                     long storageQuotaLimit = quota.getRemainingQuotaInBytes();
                     if (confirmedFileSize > storageQuotaLimit) {
                         savedSuccess = false; 
+                        logger.warning("file size over quota limit, skipping");
+                        // @todo: we need to figure out how to better communicate
+                        // this (potentially partial) failure to the user.  
                         //throw new FileExceedsStorageQuotaException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(confirmedFileSize), bytesToHumanReadable(storageQuotaLimit)));
+                    } else {
+                        // Update storage use for all the parent dvobjects: 
+                        // @todo: Do we want to do this after after *each* file is saved? - there may be 
+                        // quite a few files being saved here all at once. We could alternatively
+                        // perform this update only once, after this loop is completed (are there any
+                        // risks/accuracy loss?)
+                        // This update is performed with a direct native query that 
+                        // is supposed to be quite fast. But still. 
+                        logger.info("Incrementing recorded storage use by "+confirmedFileSize+" bytes for dataset "+dataset.getId());
+                        // (@todo: need to consider what happens when this code is called on Create?)
+                        storageUseService.incrementStorageSizeRecursively(dataset.getId(), confirmedFileSize);
+                        // Adjust quota: 
+                        logger.info("Setting total usage in bytes to "+(quota.getTotalUsageInBytes() + confirmedFileSize));
+                        quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + confirmedFileSize);
                     }
                 }
 
-                logger.fine("Done! Finished saving new files in permanent storage and adding them to the dataset.");
+                logger.fine("Done! Finished saving new file in permanent storage and adding them to the dataset.");
                 boolean belowLimit = false;
 
                 try {
@@ -1078,7 +1102,14 @@ public class IngestServiceBean {
                     }
                 }
 
-                if (!databaseSaveSuccessful) {
+                if (databaseSaveSuccessful) {
+                    // Add the size of the tab-delimited version of the data file 
+                    // that we have produced and stored to the recorded storage 
+                    // size of all the ancestor DvObjectContainers: 
+                    if (dataFile.getFilesize() > 0) {
+                        storageUseService.incrementStorageSizeRecursively(dataFile.getOwner().getId(), dataFile.getFilesize());
+                    }
+                } else {
                     logger.warning("Ingest failure (failed to save the tabular data in the database; file left intact as uploaded).");
                     return false;
                 }

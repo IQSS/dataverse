@@ -66,7 +66,9 @@ public class StorageQuota implements Serializable {
     
     public StorageQuota() {}
     
-    /*public String getAssigneeIdentifier() {
+    /**
+     * Could be uncommented if/when we want to add per-user quotas (see above)
+    public String getAssigneeIdentifier() {
         return assigneeIdentifier;
     }
 

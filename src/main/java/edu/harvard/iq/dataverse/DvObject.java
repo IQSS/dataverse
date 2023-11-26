@@ -157,10 +157,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     private String identifier;
     
     private boolean identifierRegistered;
-    
-    @Column(nullable = true)
-    private Long storageSize; 
-    
+        
     private transient GlobalId globalId = null;
     
     @OneToMany(mappedBy = "dvObject", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -185,7 +182,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     @OneToOne(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     private StorageQuota storageQuota;
     
-    @OneToOne(mappedBy = "dvObjectContainer",cascade={ CascadeType.REMOVE}, orphanRemoval=true)
+    @OneToOne(mappedBy = "dvObjectContainer",cascade={ CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval=true)
     private StorageUse storageUse;
     
     
@@ -470,14 +467,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.storageIdentifier = storageIdentifier;
     }
     
-    public Long getStorageSize() {
-        return storageSize; 
-    }
-    
-    public void setStorageSize(Long storageSize) {
-        this.storageSize = storageSize; 
-    }
-    
     public StorageQuota getStorageQuota() {
         return storageQuota;
     }
@@ -495,4 +484,14 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     
     @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     List<RoleAssignment> roleAssignments;
+    
+    /**
+     * Should only be used in constructors for DvObjectContainers (Datasets and 
+     * Collections), to make sure new entries are created and persisted in the 
+     * database StorageUse table for every DvObject container we create.
+     * @param storageUse 
+     */
+    public void setStorageUse(StorageUse storageUse) {
+        this.storageUse = storageUse;
+    }
 }
