@@ -88,6 +88,8 @@
                                                     escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
                                                     <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(dsf.datasetFieldType.id).getString('languages'))}" />
                                                     <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
+                                                    <f:passThroughAttribute name="data-cvoc-ui-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-ui-url','')}" />
+                                                    <f:passThroughAttribute name="data-cvoc-headers" value="#{cvocConf.get(dsf.datasetFieldType.id).containsKey('headers')? cvocConf.get(dsf.datasetFieldType.id).get('headers').toString() : '{}' }" />
                                                     <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
                                                     <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
                                                 </h:outputText>
@@ -100,6 +102,8 @@
                                                                   escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
                                                         <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(dsf.datasetFieldType.id).getString('languages'))}" />
                                                         <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
+                                                        <f:passThroughAttribute name="data-cvoc-ui-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-ui-url','')}" />
+                                                        <f:passThroughAttribute name="data-cvoc-headers" value="#{cvocConf.get(dsf.datasetFieldType.id).containsKey('headers')? cvocConf.get(dsf.datasetFieldType.id).get('headers').toString() : '{}' }" />
                                                         <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
                                                         <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
                                                     </h:outputText>
@@ -146,6 +150,8 @@
                                                                       rendered="${cvocOnCvPart and cvPart.key.datasetFieldType.name.equals(cvocConf.get(cvPart.key.datasetFieldType.id).getString('term-uri-field'))}">
                                                                       <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(cvPart.key.datasetFieldType.id).getString('languages'))}" />
                                                                       <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(cvPart.key.datasetFieldType.id).getString('cvoc-url','')}" />
+                                                                      <f:passThroughAttribute name="data-cvoc-ui-url" value="#{cvocConf.get(cvPart.key.datasetFieldType.id).getString('cvoc-ui-url','')}" />
+                                                                      <f:passThroughAttribute name="data-cvoc-headers" value="#{cvocConf.get(cvPart.key.datasetFieldType.id).containsKey('headers')? cvocConf.get(cvPart.key.datasetFieldType.id).get('headers').toString() : '{}' }" />
                                                                       <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(cvPart.key.datasetFieldType.id).getString('protocol','')}" />
                                                                       <!-- unlikely to be used in this case -->
                                                                       <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(cvPart.key.datasetFieldType.id).get('managedfields').toString()}" />
@@ -156,6 +162,8 @@
                                                                       rendered="${cvocOnDsf and cvPart.key.datasetFieldType.name.equals(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field'))}">
                                                                       <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(dsf.datasetFieldType.id).getString('languages'))}" />
                                                                       <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
+                                                                      <f:passThroughAttribute name="data-cvoc-ui-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-ui-url','')}" />
+                                                                      <f:passThroughAttribute name="data-cvoc-headers" value="#{cvocConf.get(dsf.datasetFieldType.id).containsKey('headers')? cvocConf.get(dsf.datasetFieldType.id).get('headers').toString() : '{}' }" />
                                                                       <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
                                                                       <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
                                                         </h:outputText>

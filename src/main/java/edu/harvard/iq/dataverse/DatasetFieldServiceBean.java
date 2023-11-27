@@ -449,12 +449,24 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @param term - the term uri as a string
      */
     public void registerExternalTerm(JsonObject cvocEntry, String term) {
-        String retrievalUri = cvocEntry.getString("retrieval-uri");
-        String prefix = cvocEntry.getString("prefix", null);
         if(term.isBlank()) {
             logger.fine("Ingoring blank term");
             return;
         }
+
+        String cvocUrl = cvocEntry.getString("cvoc-url");
+        String cvocUiUrl = cvocEntry.getString("cvoc-ui-url", null);
+        String retrievalUri = cvocEntry.getString("retrieval-uri");
+        String prefix = cvocEntry.getString("prefix", null);
+        JsonObject headers = cvocEntry.getJsonObject("headers");
+        if (headers == null) {
+            headers = Json.createObjectBuilder().build();
+        }
+
+        if(cvocUiUrl != null) {
+            term = term.replace(cvocUiUrl, cvocUrl);
+        }
+
         boolean isExternal = false;
         JsonObject vocabs = cvocEntry.getJsonObject("vocabs");
         for (String key: vocabs.keySet()) {
@@ -501,7 +513,12 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         .build()) {
                     HttpGet httpGet = new HttpGet(retrievalUri);
                     //application/json+ld is for backward compatibility
+
                     httpGet.addHeader("Accept", "application/ld+json, application/json+ld, application/json");
+                    for (String hName: headers.keySet()) {
+                        String hValue = headers.getString(hName);
+                        httpGet.addHeader(hName, hValue);
+                    }
 
                     HttpResponse response = httpClient.execute(httpGet);
                     String data = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
