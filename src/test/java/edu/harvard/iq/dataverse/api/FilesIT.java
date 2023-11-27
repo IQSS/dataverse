@@ -2403,6 +2403,10 @@ public class FilesIT {
         
         // Upload a small file: 
         
+        String pathToFileUnder1K = "src/test/resources/FileRecordJobIT.properties"; 
+        String pathToFileOver1K = "src/test/resources/datacite.xml";
+        
+        
         // [To be continued/work in progress]
     }
 }
