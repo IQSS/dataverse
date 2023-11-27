@@ -4027,7 +4027,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/info/dataset"
+  curl "https://demo.dataverse.org/api/info/exposedSettings/dataset"
 
 For group reading, there are two lookup modes, defined by the optional "lookupMode" query parameter:
 
