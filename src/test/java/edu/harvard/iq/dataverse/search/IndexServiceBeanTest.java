@@ -110,8 +110,8 @@ public class IndexServiceBeanTest {
         DatasetFieldCompoundValue val = new DatasetFieldCompoundValue();
         val.setParentDatasetField(dsf);
         val.setChildDatasetFields(Arrays.asList(
-                constructBoundingBoxValue(DatasetFieldConstant.westLongitude, "34.8"),
-                constructBoundingBoxValue(DatasetFieldConstant.eastLongitude, "34.9"), // bad value. must be less than west
+                constructBoundingBoxValue(DatasetFieldConstant.westLongitude, "34.9"), // bad value. must be less than east
+                constructBoundingBoxValue(DatasetFieldConstant.eastLongitude, "34.8"),
                 constructBoundingBoxValue(DatasetFieldConstant.northLatitude, "34.2"),
                 constructBoundingBoxValue(DatasetFieldConstant.southLatitude, "34.1")
         ));

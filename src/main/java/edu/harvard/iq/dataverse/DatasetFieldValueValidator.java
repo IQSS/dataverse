@@ -274,7 +274,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             Float east = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.eastLongitude, eastLon);
             Float north = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.northLatitude, northLat);
             Float south = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.southLatitude, southLat);
-            returnVal = east < west && south < north;
+            returnVal = west < east && south < north;
         } catch (IllegalArgumentException e) {
             returnVal = false;
         }
