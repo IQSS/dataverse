@@ -4029,7 +4029,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/exposedSettings/dataset"
 
-For group reading, there are two lookup modes, defined by the optional "lookupMode" query parameter:
+There are two lookup modes, defined by the optional "lookupMode" query parameter:
 
 - base: The child groups will not be read and only their names will appear in the response body alongside the parent setting names. This is the default option, if not specified.
 - sub: The child groups will also be read, in order to retrieve all their underlying settings and child groups following the tree structure downwards.
