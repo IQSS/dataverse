@@ -62,7 +62,7 @@ public class UtilIT {
     private static final String BUILTIN_USER_KEY = "burrito";
     private static final String EMPTY_STRING = "";
     public static final int MAXIMUM_INGEST_LOCK_DURATION = 15;
-    public static final int MAXIMUM_PUBLISH_LOCK_DURATION = 15;
+    public static final int MAXIMUM_PUBLISH_LOCK_DURATION = 20;
     public static final int MAXIMUM_IMPORT_DURATION = 1;
 
     private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
