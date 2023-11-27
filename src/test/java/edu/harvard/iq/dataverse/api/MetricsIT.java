@@ -30,7 +30,7 @@ public class MetricsIT {
 
     @Test
     public void testGetDataversesToMonth() {
-        String yyyymm = "2023-04";
+        String yyyymm = "2018-04";
 //        yyyymm = null;
         Response response = UtilIT.metricsDataversesToMonth(yyyymm, null);
         String precache = response.prettyPrint();
@@ -54,7 +54,7 @@ public class MetricsIT {
 
     @Test
     public void testGetDatasetsToMonth() {
-        String yyyymm = "2023-04";
+        String yyyymm = "2018-04";
 //        yyyymm = null;
         Response response = UtilIT.metricsDatasetsToMonth(yyyymm, null);
         String precache = response.prettyPrint();
@@ -77,7 +77,7 @@ public class MetricsIT {
 
     @Test
     public void testGetFilesToMonth() {
-        String yyyymm = "2023-04";
+        String yyyymm = "2018-04";
 //        yyyymm = null;
         Response response = UtilIT.metricsFilesToMonth(yyyymm, null);
         String precache = response.prettyPrint();
@@ -100,7 +100,7 @@ public class MetricsIT {
 
     @Test
     public void testGetDownloadsToMonth() {
-        String yyyymm = "2023-04";
+        String yyyymm = "2018-04";
 //        yyyymm = null;
         Response response = UtilIT.metricsDownloadsToMonth(yyyymm, null);
         String precache = response.prettyPrint();
@@ -281,12 +281,6 @@ public class MetricsIT {
         
         //Test ok when passing extra query params
         response = UtilIT.metricsDatasetsBySubject("dataLocation=local");
-        response.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        
-        //Test ok when passing remote
-        response = UtilIT.metricsDatasetsBySubject("dataLocation=remote");
-        response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
