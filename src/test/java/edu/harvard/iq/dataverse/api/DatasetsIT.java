@@ -62,6 +62,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -179,6 +180,14 @@ public class DatasetsIT {
         getCollectionSchemaResponse.prettyPrint();
         getCollectionSchemaResponse.then().assertThat()
                 .statusCode(200);
+
+        JsonObject expectedSchema = null;
+        try {
+            expectedSchema = JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataset-schema.json");
+        } catch (IOException ex) {
+        }
+
+        assertEquals(JsonUtil.prettyPrint(expectedSchema), JsonUtil.prettyPrint(getCollectionSchemaResponse.body().asString()));
         
         String expectedJson = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch1.json");
         
