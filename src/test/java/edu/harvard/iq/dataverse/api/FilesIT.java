@@ -2362,4 +2362,47 @@ public class FilesIT {
         fileHasBeenDeleted = JsonPath.from(getHasBeenDeletedResponse.body().asString()).getBoolean("data");
         assertTrue(fileHasBeenDeleted);
     }
+    
+    @Test
+    public void testCollectionStorageQuotas() {
+        // A minimal storage quota functionality test: 
+        // - We create a collection and define a storage quota
+        // - We configure Dataverse to enforce it 
+        // - We confirm that we can upload a file with the size under the quota
+        // - We confirm that we cannot upload a file once the quota is reached
+        // - We disable the quota on the collection via the API
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        Response checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // This brand new collection shouldn't have any quota defined yet: 
+        assertEquals("No quota defined for this collection", JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        
+        // Set quota to 1K:
+        Response setQuotaResponse = UtilIT.setCollectionQuota(dataverseAlias, 1024, apiToken);
+        setQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        assertEquals("Storage quota successfully set for the collection", JsonPath.from(setQuotaResponse.body().asString()).getString("data.message"));
+        
+        // Check again:
+        checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        assertEquals("Total quota allocation for this collection: 1,024 bytes", JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+
+        UtilIT.enableSetting(SettingsServiceBean.Key.UseStorageQuotas);
+        
+        // Upload a small file: 
+        
+        // [To be continued/work in progress]
+    }
 }
