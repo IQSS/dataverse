@@ -528,6 +528,8 @@ The fully expanded example above (without environment variables) looks like this
 
 Note: you must have Add Dataset permission in the given Dataverse collection to invoke this endpoint.
 
+While it is recommended to download a copy of the JSON Schema from the collection (as above) to account for any fields that have been marked as required, you can also download a minimal :download:`dataset-schema.json <../_static/api/dataset-schema.json>` to get a sense of the schema when no customizations have been made.
+
 .. _validate-dataset-json:
 
 Validate Dataset.json file for a Collection
