@@ -258,7 +258,8 @@ public class Dataverses extends AbstractApiBean {
 
         try {
             String datasetSchema = execCommand(new GetDatasetSchemaCommand(createDataverseRequest(u), findDataverseOrDie(idtf)));
-            return ok(datasetSchema);
+            JsonObject jsonObject = JsonUtil.getJsonObject(datasetSchema);
+            return ok(jsonObject);
         } catch (WrappedResponse ex) {
             Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, null, ex);
             return ex.getResponse();

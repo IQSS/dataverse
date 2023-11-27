@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -43,6 +44,8 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.everit.json.schema.Schema;
@@ -931,18 +934,34 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         
     public  String getCollectionDatasetSchema(String dataverseAlias) {
-       
-        List<MetadataBlock> selectedBlocks = new ArrayList<>();
-        List<DatasetFieldType> requiredDSFT = new ArrayList<>();
-
+        
         Dataverse testDV = this.findByAlias(dataverseAlias);
-
+        
         while (!testDV.isMetadataBlockRoot()) {
             if (testDV.getOwner() == null) {
                 break; // we are at the root; which by defintion is metadata blcok root, regarldess of the value
             }
             testDV = testDV.getOwner();
         }
+        
+        /* Couldn't get the 'return base if no extra required fields to work with the path provided
+        leaving it as 'out of scope' for now SEK 11/27/2023
+
+        List<DataverseFieldTypeInputLevel> required = new ArrayList<>();
+
+        required = dataverseFieldTypeInputLevelService.findRequiredByDataverseId(testDV.getId());
+        
+        if (required == null || required.isEmpty()){
+            String pathToJsonFile = "src/main/resources/edu/harvas/iq/dataverse/baseDatasetSchema.json";
+            String baseSchema = getBaseSchemaStringFromFile(pathToJsonFile);
+            if (baseSchema != null && !baseSchema.isEmpty()){
+                return baseSchema;
+            }
+        }
+        
+        */
+        List<MetadataBlock> selectedBlocks = new ArrayList<>();
+        List<DatasetFieldType> requiredDSFT = new ArrayList<>();
         
         selectedBlocks.addAll(testDV.getMetadataBlocks());
 
@@ -992,9 +1011,13 @@ public class DataverseServiceBean implements java.io.Serializable {
                 }
             }
         }
-        
+        int countMDB = 0;
         for (MetadataBlock mdb : hasReqFields) {
+            if (countMDB>0){
+                retval += ",";
+            }
             retval += getCustomMDBSchema(mdb, requiredDSFT);
+            countMDB++;            
         }
         
         retval += "\n                     }";
@@ -1037,7 +1060,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         
         }
-
+        
         return retval;
     }
     
@@ -1056,6 +1079,20 @@ public class DataverseServiceBean implements java.io.Serializable {
         } 
 
         return BundleUtil.getStringFromBundle("dataverses.api.validate.json.succeeded");
+    }
+    
+    static String getBaseSchemaStringFromFile(String pathToJsonFile) {
+        File datasetSchemaJson = new File(pathToJsonFile);
+        try {
+            String datasetSchemaAsJson = new String(Files.readAllBytes(Paths.get(datasetSchemaJson.getAbsolutePath())));
+            return datasetSchemaAsJson;
+        } catch (IOException ex) {
+            logger.info("IO - failed to get schema file  - will build on fly " +ex.getMessage());
+            return null;
+        } catch (Exception e){
+            logger.info("Other exception - failed to get schema file  - will build on fly. " + e.getMessage());
+            return null;
+        }
     }
     
     private  String datasetSchemaPreface = 
@@ -1140,7 +1177,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 "                                }\n" +
 "                            },\n" +
 "                            \"required\": [\"fields\"]\n" +
-"                        },";
+"                        }";
     
     private String endOfjson = ",\n" +
 "                    \"required\": [blockNames]\n" +
@@ -1152,5 +1189,5 @@ public class DataverseServiceBean implements java.io.Serializable {
 "    \"required\": [\"datasetVersion\"]\n" +
 "}\n";
     
-            
+    
 }
