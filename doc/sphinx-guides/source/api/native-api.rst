@@ -3979,7 +3979,7 @@ The fully expanded example above (without environment variables) looks like this
 Get Exposed Settings
 ~~~~~~~~~~~~~~~~~~~~
 
-Although the previous endpoints allow to get public settings individually, this endpoint unifies all public settings by exposing them individually or in groups.
+Although the previous endpoints allow retrieval of public settings individually, this endpoint unifies public settings by exposing them individually or in groups.
 
 For supporting this, the public settings have been grouped considering different Dataverse scopes. Within these groups, the settings have been named in a natural way for the user, being this natural name independent of the setting source name on which they depend (JVM options or database settings).
 
