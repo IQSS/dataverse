@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import jakarta.inject.Inject;
+import jakarta.ejb.EJB;
 import jakarta.json.Json;
 import jakarta.json.JsonValue;
 import jakarta.ws.rs.GET;
@@ -24,17 +24,11 @@ import java.util.List;
 @Path("info")
 public class Info extends AbstractApiBean {
 
-    private final SettingsServiceBean settingsService;
-    private final SystemConfig systemConfig;
+    @EJB
+    SettingsServiceBean settingsService;
 
-    private final SettingGroup dataverseSettingGroup;
-
-    @Inject
-    public Info(SettingsServiceBean settingsService, SystemConfig systemConfig) {
-        this.settingsService = settingsService;
-        this.systemConfig = systemConfig;
-        dataverseSettingGroup = SettingGroup.getDataverseSettingGroup(systemConfig, settingsService);
-    }
+    @EJB
+    SystemConfig systemConfig;
 
     public enum ExposedSettingsLookupMode {
         base, sub
@@ -110,6 +104,7 @@ public class Info extends AbstractApiBean {
         } catch (IllegalArgumentException e) {
             return badRequest(BundleUtil.getStringFromBundle("info.api.exposedSettings.invalid.lookupMode", List.of(mode)));
         }
+        SettingGroup dataverseSettingGroup = SettingGroup.getDataverseSettingGroup(systemConfig, settingsService);
         SettingItem settingItem = ((path == null) ? dataverseSettingGroup : dataverseSettingGroup.getItem(path.split("/")));
         if (settingItem == null) {
             return notFound(BundleUtil.getStringFromBundle("info.api.exposedSettings.notFound"));

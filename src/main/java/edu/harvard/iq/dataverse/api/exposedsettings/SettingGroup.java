@@ -15,7 +15,7 @@ public class SettingGroup extends SettingItem {
     public static final String GROUP_NAME_DATAFILE = "datafile";
     public static final String GROUP_NAME_API = "api";
     private final List<SettingItem> itemList;
-    private static SettingGroup dataverseSettingGroup;
+    private static volatile SettingGroup dataverseSettingGroup;
 
     private SettingGroup(String name, List<SettingItem> itemList) {
         super(name);
@@ -24,32 +24,30 @@ public class SettingGroup extends SettingItem {
 
     public static SettingGroup getDataverseSettingGroup(SystemConfig systemConfig, SettingsServiceBean settingsService) {
         if (dataverseSettingGroup == null) {
-            dataverseSettingGroup = new SettingGroup(
-                    GROUP_NAME_DATAVERSE,
-                    List.of(
-                            new Setting<>(SETTING_NAME_FQDN, JvmSettings.FQDN.lookup()),
-                            new Setting<>(SETTING_NAME_IS_PUBLIC_INSTALL, systemConfig.isPublicInstall()),
-                            new SettingGroup(GROUP_NAME_API, List.of(
-                                    new Setting<>(SETTING_NAME_API_TERMS_OF_USE, systemConfig.getApiTermsOfUse()),
-                                    new Setting<>(SETTING_NAME_API_ALLOW_INCOMPLETE_METADATA, JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false))
-                            )
-                            ),
-                            new SettingGroup(GROUP_NAME_DATASET, List.of(
-                                    new Setting<>(SETTING_NAME_DATASET_PUBLISH_POPUP_CUSTOM_TEXT, settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText)),
-                                    new Setting<>(SETTING_NAME_DATASET_ALLOWED_CURATION_LABELS, settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels)),
-                                    new Setting<>(SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT, SystemConfig.getLongLimitFromStringOrDefault(settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit), SystemConfig.defaultZipDownloadLimit))
-                            )
-                            ),
-                            new SettingGroup(GROUP_NAME_DATAFILE, List.of(
-                                    new Setting<>(SETTING_NAME_DATAFILE_MAX_EMBARGO_DURATION_IN_MONTHS, settingsService.getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths))
-                            ))
-                    ));
+            synchronized (SettingGroup.class) {
+                dataverseSettingGroup = new SettingGroup(
+                        GROUP_NAME_DATAVERSE,
+                        List.of(
+                                new Setting<>(SETTING_NAME_FQDN, JvmSettings.FQDN.lookup()),
+                                new Setting<>(SETTING_NAME_IS_PUBLIC_INSTALL, systemConfig.isPublicInstall()),
+                                new SettingGroup(GROUP_NAME_API, List.of(
+                                        new Setting<>(SETTING_NAME_API_TERMS_OF_USE, systemConfig.getApiTermsOfUse()),
+                                        new Setting<>(SETTING_NAME_API_ALLOW_INCOMPLETE_METADATA, JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false))
+                                )
+                                ),
+                                new SettingGroup(GROUP_NAME_DATASET, List.of(
+                                        new Setting<>(SETTING_NAME_DATASET_PUBLISH_POPUP_CUSTOM_TEXT, settingsService.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText)),
+                                        new Setting<>(SETTING_NAME_DATASET_ALLOWED_CURATION_LABELS, settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels)),
+                                        new Setting<>(SETTING_NAME_DATASET_ZIP_DOWNLOAD_LIMIT, SystemConfig.getLongLimitFromStringOrDefault(settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit), SystemConfig.defaultZipDownloadLimit))
+                                )
+                                ),
+                                new SettingGroup(GROUP_NAME_DATAFILE, List.of(
+                                        new Setting<>(SETTING_NAME_DATAFILE_MAX_EMBARGO_DURATION_IN_MONTHS, settingsService.getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths))
+                                ))
+                        ));
+            }
         }
         return dataverseSettingGroup;
-    }
-
-    public String getName() {
-        return name;
     }
 
     private SettingItem getItemByName(String name) {
