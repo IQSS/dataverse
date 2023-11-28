@@ -396,7 +396,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
             }
             
-            if (selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable() && !isFacetsDisabled()) {
+            if (!wasSolrErrorEncountered() && selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable() && !isFacetsDisabled()) {
                 // If some types are NOT currently selected, we will need to 
                 // run a second search to obtain the numbers of the unselected types:
                 
