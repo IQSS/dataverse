@@ -4046,6 +4046,20 @@ There are two lookup modes, defined by the optional "lookupMode" query parameter
 - base: The child groups will not be read and only their names will appear in the response body alongside the parent setting names. This is the default option, if not specified.
 - sub: The child groups will also be read, in order to retrieve all their underlying settings and child groups following the tree structure downwards.
 
+For obtaining a dump of all exposed Dataverse settings:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/info/exposedSettings?lookupMode=sub"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/info/exposedSettings?lookupMode=sub"
+
 .. _metadata-blocks-api:
 
 Metadata Blocks
