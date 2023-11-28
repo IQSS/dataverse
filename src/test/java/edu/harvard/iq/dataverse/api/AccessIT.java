@@ -198,6 +198,8 @@ public class AccessIT {
         //Not logged in non-restricted
         Response anonDownloadOriginal = UtilIT.downloadFileOriginal(tabFile1Id);
         Response anonDownloadConverted = UtilIT.downloadFile(tabFile1Id);
+        Response anonDownloadConvertedNullKey = UtilIT.downloadFile(tabFile1Id, null);
+
         // ... and download the same tabular data file, but without the variable name header added:
         Response anonDownloadTabularNoHeader = UtilIT.downloadTabularFileNoVarHeader(tabFile1Id);
         // ... and download the same tabular file, this time requesting the "format=tab" explicitly:
@@ -206,6 +208,8 @@ public class AccessIT {
         assertEquals(OK.getStatusCode(), anonDownloadConverted.getStatusCode());
         assertEquals(OK.getStatusCode(), anonDownloadTabularNoHeader.getStatusCode());
         assertEquals(OK.getStatusCode(), anonDownloadTabularWithFormatName.getStatusCode());
+        assertEquals(UNAUTHORIZED.getStatusCode(), anonDownloadConvertedNullKey.getStatusCode());
+        
         int origSizeAnon = anonDownloadOriginal.getBody().asByteArray().length;
         int convertSizeAnon = anonDownloadConverted.getBody().asByteArray().length;
         int tabularSizeNoVarHeader = anonDownloadTabularNoHeader.getBody().asByteArray().length;
@@ -423,10 +427,7 @@ public class AccessIT {
                 }
 
                 String name = entry.getName(); 
-//                String s = String.format("Entry: %s len %d added %TD",
-//                                entry.getName(), entry.getSize(),
-//                                new Date(entry.getTime()));
-//                System.out.println(s);
+
 
                 // Once we get the entry from the zStream, the zStream is
                 // positioned read to read the raw data, and we keep
@@ -466,7 +467,7 @@ public class AccessIT {
     
     @Test
     public void testRequestAccess() throws InterruptedException {
-
+    
         String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
@@ -666,6 +667,8 @@ public class AccessIT {
         assertTrue(canDownloadFile);
         boolean canEditOwnerDataset = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canEditOwnerDataset");
         assertTrue(canEditOwnerDataset);
+        boolean canManageFilePermissions = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canManageFilePermissions");
+        assertTrue(canManageFilePermissions);
 
         // Call with invalid file id
         Response getUserPermissionsOnFileInvalidIdResponse = UtilIT.getUserPermissionsOnFile("testInvalidId", apiToken);

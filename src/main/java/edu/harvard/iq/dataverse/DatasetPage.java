@@ -2880,6 +2880,12 @@ public class DatasetPage implements java.io.Serializable {
     public String refresh() {
         logger.fine("refreshing");
 
+        //In v5.14, versionId was null here. In 6.0, it appears not to be.
+        //This check is to handle the null if it reappears/occurs under other circumstances
+        if(versionId==null) {
+            logger.warning("versionId was null in refresh");
+            versionId = workingVersion.getId();
+        }
         //dataset = datasetService.find(dataset.getId());
         dataset = null;
         workingVersion = null; 
@@ -2889,10 +2895,9 @@ public class DatasetPage implements java.io.Serializable {
         DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
 
         if (versionId != null) {
-            // versionId must have been set by now, in the init() method, 
-            // regardless of how the page was originally called - by the dataset
-            // database id, by the persistent identifier, or by the db id of
-            // the version. 
+            // versionId must have been set by now (see null check above), in the init()
+            // method, regardless of how the page was originally called - by the dataset
+            // database id, by the persistent identifier, or by the db id of the version.
             this.workingVersion = datasetVersionService.findDeep(versionId);
             dataset = workingVersion.getDataset();
         } 
@@ -3391,7 +3396,7 @@ public class DatasetPage implements java.io.Serializable {
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), linkingDataverseErrorMessage);
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
-
+        alreadyLinkedDataverses = null; //force update to list of linked dataverses
     }
 
     private String linkingDataverseErrorMessage = "";
@@ -3427,7 +3432,23 @@ public class DatasetPage implements java.io.Serializable {
         }
         return retVal;
     }
-
+        
+    private String alreadyLinkedDataverses = null;
+    
+    public String getAlreadyLinkedDataverses(){
+        if (alreadyLinkedDataverses != null) {           
+            return alreadyLinkedDataverses;
+        }
+        List<Dataverse> dataverseList = dataverseService.findDataversesThatLinkToThisDatasetId(dataset.getId());
+        for (Dataverse dv: dataverseList){
+            if (alreadyLinkedDataverses == null){
+                alreadyLinkedDataverses = dv.getCurrentName();
+            } else {
+                alreadyLinkedDataverses = alreadyLinkedDataverses + ", " + dv.getCurrentName();
+            }
+        }
+        return alreadyLinkedDataverses;
+    }
 
     public List<Dataverse> completeLinkingDataverse(String query) {
         dataset = datasetService.find(dataset.getId());
@@ -5889,14 +5910,7 @@ public class DatasetPage implements java.io.Serializable {
     public void explore(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
-        if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-        } else if (user instanceof PrivateUrlUser) {
-            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-            PrivateUrl privUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-            apiToken = new ApiToken();
-            apiToken.setTokenString(privUrl.getToken());
-        }
+        apiToken = authService.getValidApiTokenForUser(user);
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
         PrimeFaces.current().executeScript(externalToolHandler.getExploreScript());
     }
@@ -5904,8 +5918,9 @@ public class DatasetPage implements java.io.Serializable {
     public void configure(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
+        //Not enabled for PrivateUrlUsers (who wouldn't have write permissions anyway)
         if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+            apiToken = authService.getValidApiTokenForAuthenticatedUser((AuthenticatedUser) user);
         }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
         PrimeFaces.current().executeScript(externalToolHandler.getConfigureScript());
@@ -6266,7 +6281,10 @@ public class DatasetPage implements java.io.Serializable {
     String signpostingLinkHeader = null;
 
     public String getSignpostingLinkHeader() {
-        if (!workingVersion.isReleased()) {
+        if ((workingVersion==null) || (!workingVersion.isReleased())) {
+            if(workingVersion==null) {
+                logger.warning("workingVersion was null in getSignpostingLinkHeader");
+            }
             return null;
         }
         if (signpostingLinkHeader == null) {
