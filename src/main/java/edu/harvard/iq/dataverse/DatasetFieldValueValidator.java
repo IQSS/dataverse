@@ -67,12 +67,17 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         }
 
         // validate fields that are siblings and depend on each others values
-        if (value.getDatasetField().getParentDatasetFieldCompoundValue() != null) {
+        if (value.getDatasetField().getParentDatasetFieldCompoundValue() != null &&
+                value.getDatasetField().getParentDatasetFieldCompoundValue().getParentDatasetField().getValidationMessage() == null) {
             Optional<String> failureMessage = validateChildConstraints(value.getDatasetField());
             if (failureMessage.isPresent()) {
                 try {
                     context.buildConstraintViolationWithTemplate(dsfType.getParentDatasetFieldType().getDisplayName() +  "  " +
                             BundleUtil.getStringFromBundle(failureMessage.get()) ).addConstraintViolation();
+
+                    // save the failure message in the parent so we don't keep validating the children
+                    value.getDatasetField().getParentDatasetFieldCompoundValue().getParentDatasetField().setValidationMessage(failureMessage.get());
+
                 } catch (NullPointerException npe) {
                 }
                 return false;
@@ -240,15 +245,15 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         return pattern.matcher(userInput).matches();
     }
 
-    // Validate child fields against each other and return failure message or null if success
+    // Validate child fields against each other and return failure message or Optional.empty() if success
     public Optional<String> validateChildConstraints(DatasetField dsf) {
         final String fieldName = dsf.getDatasetFieldType().getName() != null ? dsf.getDatasetFieldType().getName() : "";
         Optional<String> returnFailureMessage = Optional.empty();
 
         // Validate Child Constraint for Geospatial Bounding Box
         // validate the four points of the box to insure proper layout
-        // only validate on one value for speed. picked northLatitude since it was at the bottom of the UI
-        if (fieldName.equals(DatasetFieldConstant.northLatitude)) {
+        if (fieldName.equals(DatasetFieldConstant.northLatitude) || fieldName.equals(DatasetFieldConstant.westLongitude)
+                || fieldName.equals(DatasetFieldConstant.eastLongitude) || fieldName.equals(DatasetFieldConstant.southLatitude)) {
             final String failureMessage = "dataset.metadata.invalidGeospatialCoordinates";
             DatasetFieldCompoundValue cv = dsf.getParentDatasetFieldCompoundValue();
             List<DatasetField> cdsf = cv.getChildDatasetFields();

@@ -217,6 +217,7 @@ public class DatasetFieldValueValidatorTest {
     public void testBoundingBoxValidity() {
         // valid tests
         assertTrue(DatasetFieldValueValidator.validateBoundingBox("-180", "180", "90", "-90"));
+        assertTrue(DatasetFieldValueValidator.validateBoundingBox("0", "0", "0", "0"));
 
         // invalid tests
         assertTrue(!DatasetFieldValueValidator.validateBoundingBox("-180", null, "90", null));
@@ -224,6 +225,7 @@ public class DatasetFieldValueValidatorTest {
         assertTrue(!DatasetFieldValueValidator.validateBoundingBox("-180", "180", "90", "junk"));
         assertTrue(!DatasetFieldValueValidator.validateBoundingBox("45", "40", "90", "0"));
         assertTrue(!DatasetFieldValueValidator.validateBoundingBox("360", "0", "90", "-90"));
-        assertTrue(!DatasetFieldValueValidator.validateBoundingBox(null, null, "90", "-90"));
+        assertTrue(!DatasetFieldValueValidator.validateBoundingBox("", "", "", ""));
+        assertTrue(!DatasetFieldValueValidator.validateBoundingBox(null, null, null, null));
     }
 }
