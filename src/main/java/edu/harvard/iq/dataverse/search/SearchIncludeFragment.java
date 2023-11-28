@@ -403,14 +403,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 List<String> filterQueriesFinalSecondPass = new ArrayList<>();
                 filterQueriesFinalSecondPass.addAll(filterQueriesExtended);
                    
-                arr = new String[3 - selectedTypesList.size()];
-                int c = 0; 
+                arr = new String[3];
+                int c = 0;
                 for (String dvObjectType : Arrays.asList("dataverses", "datasets", "files")) {
                     if (!selectedTypesList.contains(dvObjectType)) {
                         arr[c++] = dvObjectType;
                     }
                 }
-                filterQueriesFinalSecondPass.add(SearchFields.TYPE + ":(" + combine(arr, " OR ") + ")");
+                filterQueriesFinalSecondPass.add(SearchFields.TYPE + ":(" + combine(arr, " OR ", c) + ")");
                 logger.fine("second pass query: " + queryToPassToSolr);
                 logger.fine("second pass filter query: "+filterQueriesFinalSecondPass.toString());
 
@@ -660,6 +660,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
     // http://stackoverflow.com/questions/1515437/java-function-for-arrays-like-phps-join/1515548#1515548
     String combine(String[] s, String glue) {
         int k = s.length;
+        return combine(s, glue, k);
+    }
+    
+    String combine(String[] s, String glue, int k) {
         if (k == 0) {
             return null;
         }
