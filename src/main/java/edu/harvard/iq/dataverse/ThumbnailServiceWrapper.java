@@ -5,33 +5,19 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.api.Datasets;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 
-import static edu.harvard.iq.dataverse.dataset.DatasetUtil.datasetLogoThumbnail;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import org.apache.commons.io.IOUtils;
 
 /**
  *
@@ -58,49 +44,6 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
     private Map<Long, String> dvobjectThumbnailsMap = new HashMap<>();
     private Map<Long, DvObject> dvobjectViewMap = new HashMap<>();
     private Map<Long, Boolean> hasThumbMap = new HashMap<>();
-
-    private String getAssignedDatasetImage(Dataset dataset, int size) {
-        if (dataset == null) {
-            return null;
-        }
-
-        DataFile assignedThumbnailFile = dataset.getThumbnailFile();
-
-        if (assignedThumbnailFile != null) {
-            Long assignedThumbnailFileId = assignedThumbnailFile.getId();
-
-            if (this.dvobjectThumbnailsMap.containsKey(assignedThumbnailFileId)) {
-                // Yes, return previous answer
-                //logger.info("using cached result for ... "+assignedThumbnailFileId);
-                if (!"".equals(this.dvobjectThumbnailsMap.get(assignedThumbnailFileId))) {
-                    return this.dvobjectThumbnailsMap.get(assignedThumbnailFileId);
-                }
-                return null;
-            }
-
-            String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(assignedThumbnailFile,
-                    size);
-                    //ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-
-            if (imageSourceBase64 != null) {
-                this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, imageSourceBase64);
-                return imageSourceBase64;
-            }
-
-            // OK - we can't use this "assigned" image, because of permissions, or because 
-            // the thumbnail failed to generate, etc... in this case we'll 
-            // mark this dataset in the lookup map - so that we don't have to
-            // do all these lookups again...
-            this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, "");
-            
-            // TODO: (?)
-            // do we need to cache this datafile object in the view map?
-            // -- L.A., 4.2.2
-        }
-
-        return null;
-
-    }
 
     // it's the responsibility of the user - to make sure the search result
     // passed to this method is of the Datafile type!
