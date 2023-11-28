@@ -274,7 +274,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             Float east = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.eastLongitude, eastLon);
             Float north = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.northLatitude, northLat);
             Float south = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.southLatitude, southLat);
-            returnVal = west < east && south < north;
+            returnVal = west <= east && south <= north;
         } catch (IllegalArgumentException e) {
             returnVal = false;
         }
@@ -286,9 +286,9 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         int max = name.equals(DatasetFieldConstant.westLongitude) || name.equals(DatasetFieldConstant.eastLongitude) ? 180 : 90;
         int min = max * -1;
 
-        final Float returnVal = value != null ? Float.parseFloat(value) : min; // defaults to min if value is missing
-        if (returnVal < min || returnVal > max) {
-            throw new IllegalArgumentException(String.format("Value (%s) not in range (%s-%s)", returnVal, min, max));
+        final Float returnVal = value != null ? Float.parseFloat(value) : Float.NaN;
+        if (returnVal.isNaN() || returnVal < min || returnVal > max) {
+            throw new IllegalArgumentException(String.format("Value (%s) not in range (%s-%s)", returnVal.isNaN() ? "missing" : returnVal, min, max));
         }
         return returnVal;
     }
