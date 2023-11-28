@@ -38,21 +38,21 @@ public class Info extends AbstractApiBean {
         String[] comps = versionStr.split("build",2);
         String version = comps[0].trim();
         JsonValue build = comps.length > 1 ? Json.createArrayBuilder().add(comps[1].trim()).build().get(0) : JsonValue.NULL;
-
-        return response( req -> ok( Json.createObjectBuilder().add("version", version)
-                                                              .add("build", build)));
+        return ok(Json.createObjectBuilder()
+                .add("version", version)
+                .add("build", build));
     }
 
     @GET
     @Path("server")
     public Response getServer() {
-        return response( req -> ok(JvmSettings.FQDN.lookup()));
+        return ok(JvmSettings.FQDN.lookup());
     }
 
     @GET
     @Path("apiTermsOfUse")
     public Response getTermsOfUse() {
-        return response( req -> ok(systemConfig.getApiTermsOfUse()));
+        return ok(systemConfig.getApiTermsOfUse());
     }
 
     @GET
