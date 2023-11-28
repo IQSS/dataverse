@@ -5,8 +5,8 @@ API Changelog
     :local:
     :depth: 1
 
-6.1
----
+v6.1
+----
 
 New
 ~~~
@@ -17,8 +17,8 @@ Changes
 ~~~~~~~
 - **/api/datasets/{id}/versions/{versionId}/citation**: This endpoint now accepts a new boolean optional query parameter "includeDeaccessioned", which, if enabled, causes the endpoint to consider deaccessioned versions when searching for versions to obtain the citation. See :ref:`get-citation`.
 
-6.0
----
+v6.0
+----
 
 Changes
 ~~~~~~~
