@@ -339,6 +339,11 @@
                                                     <h:outputText value="#{bundle.conditionalRequiredMsg}"/>
                                                 </p>
                                             </ui:fragment>
+                                            <ui:fragment rendered="#{dsf.datasetFieldType.name == 'keyword'}">
+                                                <p class="help-block">
+                                                    <h:outputText value="#{bundle.vocabularyFaqMsg}" escape="false"/>
+                                                </p>
+                                            </ui:fragment>
                                             <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="valCount">
                                                 <div class="form-group form-col-container col-sm-9 edit-compound-field"  data-cvoc-parentfield="#{cvocConf.containsKey(dsf.datasetFieldType.id)?cvocConf.get(dsf.datasetFieldType.id).getString('field-name'):''}">
                                                     <!-- Sub Fields -->
