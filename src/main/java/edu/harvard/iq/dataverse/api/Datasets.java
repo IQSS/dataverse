@@ -3930,10 +3930,7 @@ public class Datasets extends AbstractApiBean {
             }
             ApiToken apiToken = null;
             User u = getRequestUser(crc);
-            if (u instanceof AuthenticatedUser) {
-                apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) u);
-            }
-            
+            apiToken = authSvc.getValidApiTokenForUser(u);
 
             ExternalToolHandler eth = new ExternalToolHandler(externalTool, target.getDataset(), apiToken, locale);
             return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters()))));

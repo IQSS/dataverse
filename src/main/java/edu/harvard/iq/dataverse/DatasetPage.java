@@ -5919,14 +5919,7 @@ public class DatasetPage implements java.io.Serializable {
     public void explore(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
-        if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-        } else if (user instanceof PrivateUrlUser) {
-            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-            PrivateUrl privUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-            apiToken = new ApiToken();
-            apiToken.setTokenString(privUrl.getToken());
-        }
+        apiToken = authService.getValidApiTokenForUser(user);
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
         PrimeFaces.current().executeScript(externalToolHandler.getExploreScript());
     }
@@ -5934,8 +5927,9 @@ public class DatasetPage implements java.io.Serializable {
     public void configure(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
+        //Not enabled for PrivateUrlUsers (who wouldn't have write permissions anyway)
         if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+            apiToken = authService.getValidApiTokenForAuthenticatedUser((AuthenticatedUser) user);
         }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
         PrimeFaces.current().executeScript(externalToolHandler.getConfigureScript());
