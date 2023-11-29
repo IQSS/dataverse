@@ -1112,18 +1112,17 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
     
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
-        
-        
-        if ((filterQuery == null)||
-            (datasetfieldFriendlyNamesBySolrField == null)||
-            (staticSolrFieldFriendlyNamesBySolrField==null)){
+
+        if ((filterQuery == null) ||
+                (datasetfieldFriendlyNamesBySolrField == null) ||
+                (staticSolrFieldFriendlyNamesBySolrField == null)) {
             return null;
         }
-        
-        if(!filterQuery.contains(":")) {
+
+        if (!filterQuery.contains(":")) {
             return null;
         }
-        
+
         int index = filterQuery.indexOf(":");
         String key = filterQuery.substring(0,index);
         String value = filterQuery.substring(index+1);
@@ -1157,9 +1156,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
         String valueWithoutQuotes = noTrailingQuote;
 
         if (key.equals(SearchFields.METADATA_TYPES) && getDataverse() != null && getDataverse().getMetadataBlockFacets() != null) {
-            Optional<String> friendlyName = getDataverse().getMetadataBlockFacets().stream().filter(block -> block.getMetadataBlock().getName().equals(valueWithoutQuotes)).findFirst().map(block -> block.getMetadataBlock().getLocaleDisplayFacet());
+            Optional<String> friendlyName = getDataverse().getMetadataBlockFacets()
+                    .stream()
+                    .filter(block -> block.getMetadataBlock().getName().equals(valueWithoutQuotes))
+                    .findFirst()
+                    .map(block -> block.getMetadataBlock().getLocaleDisplayFacet());
             logger.fine(String.format("action=getFriendlyNamesFromFilterQuery key=%s value=%s friendlyName=%s", key, value, friendlyName));
-            if(friendlyName.isPresent()) {
+            if (friendlyName.isPresent()) {
                 friendlyNames.add(friendlyName.get());
                 return friendlyNames;
             }
