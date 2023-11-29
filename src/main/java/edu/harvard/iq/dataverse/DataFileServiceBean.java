@@ -1369,7 +1369,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     /**
      * Checks if the supplied DvObjectContainer (Dataset or Collection; although
-     * only collection-level storage quotas are officially supported as if now)
+     * only collection-level storage quotas are officially supported as of now)
      * has a quota configured, and if not, keeps checking if any of the direct
      * ancestor Collections further up have a configured quota. If it finds one, 
      * it will retrieve the current total content size for that specific ancestor 
