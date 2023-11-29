@@ -2387,17 +2387,17 @@ public class FilesIT {
         Response checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
         checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
         // This brand new collection shouldn't have any quota defined yet: 
-        assertEquals("No quota defined for this collection", JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
         
         // Set quota to 1K:
         Response setQuotaResponse = UtilIT.setCollectionQuota(dataverseAlias, 1024, apiToken);
         setQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
-        assertEquals("Storage quota successfully set for the collection", JsonPath.from(setQuotaResponse.body().asString()).getString("data.message"));
+        assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"), JsonPath.from(setQuotaResponse.body().asString()).getString("data.message"));
         
         // Check again:
         checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
         checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
-        assertEquals("Total quota allocation for this collection: 1,024 bytes", JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation", Arrays.asList("1,024")), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
 
         UtilIT.enableSetting(SettingsServiceBean.Key.UseStorageQuotas);
                 

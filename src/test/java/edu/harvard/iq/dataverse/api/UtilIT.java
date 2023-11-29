@@ -2992,7 +2992,7 @@ public class UtilIT {
     static Response setCollectionQuota(String collectionId, long allocatedSize, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/dataverses/" + collectionId + "/storage/quota" + allocatedSize);
+                .post("/api/dataverses/" + collectionId + "/storage/quota/" + allocatedSize);
         return response;
     }
     
