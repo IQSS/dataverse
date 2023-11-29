@@ -2384,6 +2384,8 @@ public class FilesIT {
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         
+        System.out.println("dataset id: "+datasetId);
+        
         Response checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
         checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
         // This brand new collection shouldn't have any quota defined yet: 
@@ -2397,8 +2399,11 @@ public class FilesIT {
         // Check again:
         checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
         checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
-        assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation", Arrays.asList("1,024")), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        String expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation", Arrays.asList("1,024"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
 
+        System.out.println(expectedApiMessage);
+        
         UtilIT.enableSetting(SettingsServiceBean.Key.UseStorageQuotas);
                 
         String pathToFile306bytes = "src/test/resources/FileRecordJobIT.properties"; 
@@ -2413,9 +2418,11 @@ public class FilesIT {
         
         Response checkStorageUseResponse = UtilIT.checkCollectionStorageUse(dataverseAlias, apiToken);
         checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
-        String expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.use", Arrays.asList("306"));
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.use", Arrays.asList("306"));
         assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
 
+        System.out.println(expectedApiMessage);
+        
         // Attempt to upload the second file - this should get us over the quota, 
         // so it should be rejected:
         
@@ -2426,6 +2433,8 @@ public class FilesIT {
         expectedApiMessage = expectedApiMessage + " " + BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded", Arrays.asList("1.7 KB", "718 B"));
         assertEquals(expectedApiMessage, JsonPath.from(uploadResponse.body().asString()).getString("message"));
         
+        System.out.println(expectedApiMessage);
+        
         // Check Storage Use again - should be unchanged: 
         
         checkStorageUseResponse = UtilIT.checkCollectionStorageUse(dataverseAlias, apiToken);
@@ -2435,7 +2444,39 @@ public class FilesIT {
 
         // Disable the quota on the collection; try again:
         
-        // [work in progress]         
+        Response disableQuotaResponse = UtilIT.disableCollectionQuota(dataverseAlias, apiToken);
+        disableQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.quota.deleted");
+        assertEquals(expectedApiMessage, JsonPath.from(disableQuotaResponse.body().asString()).getString("data.message"));
+
+        // Check again: 
+        
+        checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // ... should say "no quota", again: 
+        assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        
+        // And try to upload the larger file again:
+        
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        // ... should work this time around:
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+            
+        // Let's confirm that the total storage use has been properly implemented:
+
+        //try {sleep(1000);}catch(InterruptedException ie){}
+        
+        checkStorageUseResponse = UtilIT.checkCollectionStorageUse(dataverseAlias, apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.use", Arrays.asList("2,093"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        // @todo: a test for the storage use hierarchy? - create a couple of 
+        // sub-collections, upload a file into a dataset in the farthest branch 
+        // collection, make sure the usage has been incremented all the way up 
+        // to the root? 
         
         UtilIT.deleteSetting(SettingsServiceBean.Key.UseStorageQuotas);
     }

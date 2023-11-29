@@ -372,16 +372,27 @@ public class IngestServiceBean {
                 // necessary. For other cases, such as the direct uploads via 
                 // the API, this is the single point in the workflow where  
                 // storage quotas are enforced. 
-        
-                if (uploadSessionQuota != null) {
-                    long storageQuotaLimit = uploadSessionQuota.getRemainingQuotaInBytes();
-                    if (confirmedFileSize > storageQuotaLimit) {
-                        savedSuccess = false;
-                        logger.warning("file size over quota limit, skipping");
-                        // @todo: we need to figure out how to better communicate
-                        // this (potentially partial) failure to the user.  
-                        //throw new FileExceedsStorageQuotaException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(confirmedFileSize), bytesToHumanReadable(storageQuotaLimit)));
-                    } else {
+
+                if (savedSuccess) {
+                    if (uploadSessionQuota != null) {
+                        if (confirmedFileSize > uploadSessionQuota.getRemainingQuotaInBytes()) {
+                            savedSuccess = false;
+                            logger.warning("file size over quota limit, skipping");
+                            // @todo: we need to figure out how to better communicate
+                            // this (potentially partial) failure to the user.  
+                            //throw new FileExceedsStorageQuotaException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(confirmedFileSize), bytesToHumanReadable(storageQuotaLimit)));
+                        } else {
+
+                            // Adjust quota: 
+                            logger.info("Setting total usage in bytes to " + (uploadSessionQuota.getTotalUsageInBytes() + confirmedFileSize));
+                            uploadSessionQuota.setTotalUsageInBytes(uploadSessionQuota.getTotalUsageInBytes() + confirmedFileSize);
+                        }
+                    }
+
+                    // ... unless we had to reject the file just now because of 
+                    // the quota limits, increment the storage use record(s):
+                    
+                    if (savedSuccess) {
                         // Update storage use for all the parent dvobjects: 
                         // @todo: Do we want to do this after after *each* file is saved? - there may be 
                         // quite a few files being saved here all at once. We could alternatively
@@ -392,13 +403,10 @@ public class IngestServiceBean {
                         logger.info("Incrementing recorded storage use by " + confirmedFileSize + " bytes for dataset " + dataset.getId());
                         // (@todo: need to consider what happens when this code is called on Create?)
                         storageUseService.incrementStorageSizeRecursively(dataset.getId(), confirmedFileSize);
-                        // Adjust quota: 
-                        logger.info("Setting total usage in bytes to " + (uploadSessionQuota.getTotalUsageInBytes() + confirmedFileSize));
-                        uploadSessionQuota.setTotalUsageInBytes(uploadSessionQuota.getTotalUsageInBytes() + confirmedFileSize);
                     }
                 }
 
-                logger.fine("Done! Finished saving new file in permanent storage and adding them to the dataset.");
+                logger.fine("Done! Finished saving new file in permanent storage and adding it to the dataset.");
                 boolean belowLimit = false;
 
                 try {
