@@ -1127,24 +1127,18 @@ public class SearchIncludeFragment implements java.io.Serializable {
         String key = filterQuery.substring(0,index);
         String value = filterQuery.substring(index+1);
 
-        List<String> friendlyNames = new ArrayList<>();
+        // friendlyNames get 2 entries : key and value
+        List<String> friendlyNames = new ArrayList<>(2);
 
+        // Get dataset field friendly name from "Bundle" ressource bundle file
         String datasetfieldFriendyName = datasetfieldFriendlyNamesBySolrField.get(key);
         if (datasetfieldFriendyName != null) {
             friendlyNames.add(datasetfieldFriendyName);
         } else {
+            // Get non dataset field friendly name from "staticSearchFields" ressource bundle file
             String nonDatasetSolrField = staticSolrFieldFriendlyNamesBySolrField.get(key);
             if (nonDatasetSolrField != null) {
                 friendlyNames.add(nonDatasetSolrField);
-            } else if (key.equals(SearchFields.PUBLICATION_STATUS)) {
-                /**
-                 * @todo Refactor this quick fix for
-                 * https://github.com/IQSS/dataverse/issues/618 . We really need
-                 * to get rid of all the reflection that's happening with
-                 * solrQueryResponse.getStaticSolrFieldFriendlyNamesBySolrField()
-                 * and
-                 */
-                friendlyNames.add("Publication Status");
             } else {
                 // meh. better than nuthin'
                 friendlyNames.add(key);
