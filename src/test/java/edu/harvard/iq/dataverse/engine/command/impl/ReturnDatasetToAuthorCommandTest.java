@@ -155,7 +155,7 @@ public class ReturnDatasetToAuthorCommandTest {
         String actual = null;
         Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy"));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
@@ -171,7 +171,7 @@ public class ReturnDatasetToAuthorCommandTest {
         String actual = null;
         Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy"));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
