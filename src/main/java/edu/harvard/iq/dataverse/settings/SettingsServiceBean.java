@@ -605,7 +605,12 @@ public class SettingsServiceBean {
         /*
          * True/false(default) option deciding whether file PIDs can be enabled per collection - using the Dataverse/collection set attribute API call.
          */
-        AllowEnablingFilePIDsPerCollection
+        AllowEnablingFilePIDsPerCollection,
+        /**
+         * Allows an instance admin to disable Solr search facets on the collection
+         * and dataset pages instantly
+         */
+        DisableSolrFacets
         ;
 
         @Override
