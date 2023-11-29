@@ -2191,7 +2191,7 @@ public class Datasets extends AbstractApiBean {
             reasonForReturn = json.getString("reasonForReturn");
             // TODO: Once we add a box for the curator to type into, pass the reason for return to the ReturnDatasetToAuthorCommand and delete this check and call to setReturnReason on the API side.
             if (reasonForReturn == null || reasonForReturn.isEmpty()) {
-                return error(Response.Status.BAD_REQUEST, "You must enter a reason for returning a dataset to the author(s).");
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("dataset.reject.datasetNotInReview"));
             }
             AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             Dataset updatedDataset = execCommand(new ReturnDatasetToAuthorCommand(createDataverseRequest(authenticatedUser), dataset, reasonForReturn ));

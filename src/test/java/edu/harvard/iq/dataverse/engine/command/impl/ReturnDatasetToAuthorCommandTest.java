@@ -178,29 +178,26 @@ public class ReturnDatasetToAuthorCommandTest {
         assertEquals(expected, actual);
     }
 
-    /*
-    FIXME - Empty Comments won't be allowed in future
     @Test
-    public void testEmptyComments(){
-               
-        dataset.setIdentifier("DUMMY");
+    public void testEmptyOrNullComment(){
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
-        dataset.getLatestVersion().setInReview(true);
-        dataset.getLatestVersion().setReturnReason(null);
+        Dataset updatedDataset = null;
         String expected = "You must enter a reason for returning a dataset to the author(s).";
         String actual = null;
-        Dataset updatedDataset = null;
         try {
-            
-             updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset));
-        } catch (CommandException ex) {
+            testEngine.submit( new AddLockCommand(dataverseRequest, dataset,
+                    new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
+
+            assertThrowsExactly(IllegalArgumentException.class,
+                    () -> new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, null), expected);
+            assertThrowsExactly(IllegalArgumentException.class,
+                    () -> new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""), expected);
+            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
+        } catch (IllegalArgumentException | CommandException ex) {
             actual = ex.getMessage();
         }
-        assertEquals(expected, actual);      
-        
-        
+        assertEquals(expected, actual);
     }
-     */
     
    @Test
     public void testAllGood() {
