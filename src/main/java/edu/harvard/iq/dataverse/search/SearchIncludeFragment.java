@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -1130,7 +1131,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         // friendlyNames get 2 entries : key and value
         List<String> friendlyNames = new ArrayList<>(2);
 
-        // Get dataset field friendly name from "Bundle" ressource bundle file
+        // Get dataset field friendly name from default ressource bundle file
         String datasetfieldFriendyName = datasetfieldFriendlyNamesBySolrField.get(key);
         if (datasetfieldFriendyName != null) {
             friendlyNames.add(datasetfieldFriendyName);
@@ -1162,7 +1163,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
         }
 
-        friendlyNames.add(valueWithoutQuotes);
+        // Get value friendly name from default ressource bundle file
+        String valueFriendlyName;
+        try {
+            valueFriendlyName = BundleUtil.getStringFromPropertyFile(noTrailingQuote, "Bundle");
+        } catch (MissingResourceException e) {
+            valueFriendlyName = noTrailingQuote;
+        }
+
+        friendlyNames.add(valueFriendlyName);
         return friendlyNames;
     }
     
