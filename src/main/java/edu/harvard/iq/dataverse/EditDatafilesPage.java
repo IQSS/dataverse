@@ -1102,11 +1102,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
 
             // Try to save the NEW files permanently: 
-            // ... but first, refresh the session quota specifiction, if defined:
-            if (systemConfig.isStorageQuotasEnforced()) {
-                this.uploadSessionQuota = datafileService.getUploadSessionQuotaLimit(dataset);
-            }
-            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true, uploadSessionQuota);
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true); 
             
             // reset the working list of fileMetadatas, as to only include the ones
             // that have been added to the version successfully: 

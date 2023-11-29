@@ -178,17 +178,13 @@ public class IngestServiceBean {
     // the database by calling the Save command on the dataset and/or version.
     
     // There is way too much going on in this method. :(
+    
+    // @todo: Is this method a good candidate for turning into a dedicated Command? 
     public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version,
             List<DataFile> newFiles,
             DataFile fileToReplace,
             boolean tabIngest) {
-        return saveAndAddFilesToDataset(version, newFiles, fileToReplace, tabIngest, null);
-    }
-    public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version,
-            List<DataFile> newFiles,
-            DataFile fileToReplace,
-            boolean tabIngest, 
-            UploadSessionQuotaLimit quota) /*throws FileExceedsMaxSizeException, FileExceedsStorageQuotaException*/ {
+        UploadSessionQuotaLimit uploadSessionQuota = null; 
         List<DataFile> ret = new ArrayList<>();
 
         if (newFiles != null && newFiles.size() > 0) {
@@ -200,6 +196,11 @@ public class IngestServiceBean {
             IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles, fileToReplace);
             Dataset dataset = version.getDataset();
 
+            if (systemConfig.isStorageQuotasEnforced()) {
+                // Check if this dataset is subject to any storage quotas:
+                uploadSessionQuota = fileService.getUploadSessionQuotaLimit(dataset);
+            }
+            
             for (DataFile dataFile : newFiles) {
                 boolean unattached = false;
                 boolean savedSuccess = false;
@@ -372,10 +373,10 @@ public class IngestServiceBean {
                 // the API, this is the single point in the workflow where  
                 // storage quotas are enforced. 
         
-                if (systemConfig.isStorageQuotasEnforced() && quota != null) {
-                    long storageQuotaLimit = quota.getRemainingQuotaInBytes();
+                if (uploadSessionQuota != null) {
+                    long storageQuotaLimit = uploadSessionQuota.getRemainingQuotaInBytes();
                     if (confirmedFileSize > storageQuotaLimit) {
-                        savedSuccess = false; 
+                        savedSuccess = false;
                         logger.warning("file size over quota limit, skipping");
                         // @todo: we need to figure out how to better communicate
                         // this (potentially partial) failure to the user.  
@@ -388,12 +389,12 @@ public class IngestServiceBean {
                         // risks/accuracy loss?)
                         // This update is performed with a direct native query that 
                         // is supposed to be quite fast. But still. 
-                        logger.info("Incrementing recorded storage use by "+confirmedFileSize+" bytes for dataset "+dataset.getId());
+                        logger.info("Incrementing recorded storage use by " + confirmedFileSize + " bytes for dataset " + dataset.getId());
                         // (@todo: need to consider what happens when this code is called on Create?)
                         storageUseService.incrementStorageSizeRecursively(dataset.getId(), confirmedFileSize);
                         // Adjust quota: 
-                        logger.info("Setting total usage in bytes to "+(quota.getTotalUsageInBytes() + confirmedFileSize));
-                        quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + confirmedFileSize);
+                        logger.info("Setting total usage in bytes to " + (uploadSessionQuota.getTotalUsageInBytes() + confirmedFileSize));
+                        uploadSessionQuota.setTotalUsageInBytes(uploadSessionQuota.getTotalUsageInBytes() + confirmedFileSize);
                     }
                 }
 

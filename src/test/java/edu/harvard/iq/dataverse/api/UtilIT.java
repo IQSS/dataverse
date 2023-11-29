@@ -2996,6 +2996,12 @@ public class UtilIT {
         return response;
     }
     
+    static Response checkCollectionStorageUse(String collectionId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + collectionId + "/storage/use");
+    }
+    
     /**
      * Determine the "payload" storage size of a dataverse
      *
