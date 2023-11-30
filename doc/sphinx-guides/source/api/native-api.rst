@@ -5360,7 +5360,22 @@ A curl example using an ``ID``
 
 Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.
 
+.. _thumbnail_reset:
 
+Reset Thumbnail Failure Flags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If Dataverse attempts to create a thumbnail image for an image or PDF file and the attempt fails, Dataverse will set a flag for the file to avoid repeated attempts to generate the thumbnail.
+For cases where the problem may have been temporary (or fixed in a later Dataverse release), the API calls below can be used to reset this flag for all files or for a given file.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=1234
+
+  curl -X DELETE $SERVER_URL/api/admin/clearThumbnailFailureFlag
+  
+  curl -X DELETE $SERVER_URL/api/admin/clearThumbnailFailureFlag/$FILE_ID
 
 MyData
 ------
@@ -5398,24 +5413,4 @@ Parameters:
 ``published_states`` State of the object, several possible values among:``Published`` , ``Unpublished`` , ``Draft`` , ``Deaccessioned`` & ``In+Review`` .
 
 ``per_page`` Number of results returned per page.
-
-
-.. _thumbnail_reset:
-
-Reset Thumbnail Failure Flags
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If Dataverse attempts to create a thumbnail image for an image or pdf file and the attempt fails, Dataverse will set a flag for the file to avoid repeated attempts to generate the thumbnail.
-For cases where the problem may have been temporary (or fixed in a later Dataverse release), two API calls exist to reset this flag for all files or for a given file.
-
-Curl examples
-
-.. code-block:: bash
-
-  export SERVER_URL=http://localhost
-  export fileID=1234
-
-  curl -X DELETE $SERVER_URL/api/admin/clearThumbnailFailureFlag
-  
-  curl -X DELETE $SERVER_URL/api/admin/clearThumbnailFailureFlag/$fileID
 
