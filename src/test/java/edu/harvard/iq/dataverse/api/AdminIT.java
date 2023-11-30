@@ -818,6 +818,16 @@ public class AdminIT {
           message
         );
     }
+    @Test
+    public void testClearThumbnailFailureFlag(){
+        Response nonExistentFile = UtilIT.clearThumbnailFailureFlag(Long.MAX_VALUE);
+        nonExistentFile.prettyPrint();
+        nonExistentFile.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        
+        Response clearAllFlags = UtilIT.clearThumbnailFailureFlags();
+        clearAllFlags.prettyPrint();
+        clearAllFlags.then().assertThat().statusCode(OK.getStatusCode());
+    }
     
     @Test
     public void testBannerMessages(){
