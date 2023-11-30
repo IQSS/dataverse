@@ -2430,7 +2430,7 @@ public class Admin extends AbstractApiBean {
     @Path("/clearThumbnailFailureFlag")
     public Response clearThumbnailFailureFlag() {
         em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE").executeUpdate();
-        return ok("Thumnail Failure Flags cleared.");
+        return ok("Thumbnail Failure Flags cleared.");
     }
     
     @DELETE
@@ -2441,7 +2441,7 @@ public class Admin extends AbstractApiBean {
             Query deleteQuery = em.createNativeQuery("UPDATE dvobject SET previewshavefailed = FALSE where id = ?");
             deleteQuery.setParameter(1, df.getId());
             deleteQuery.executeUpdate();
-            return ok("Thumnail Failure Flag cleared for file id=: " + df.getId() + ".");
+            return ok("Thumbnail Failure Flag cleared for file id=: " + df.getId() + ".");
         } catch (WrappedResponse r) {
             logger.info("Could not find file with the id: " + fileId);
             return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
