@@ -2438,7 +2438,7 @@ public class Admin extends AbstractApiBean {
     public Response clearThumbnailFailureFlagByDatafile(@PathParam("id") String fileId) {
         try {
             DataFile df = findDataFileOrDie(fileId);
-            Query deleteQuery = em.createNativeQuery("UPDATE dvobject SET previewshavefailed = FALSE where id = ?");
+            Query deleteQuery = em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE where id = ?");
             deleteQuery.setParameter(1, df.getId());
             deleteQuery.executeUpdate();
             return ok("Thumbnail Failure Flag cleared for file id=: " + df.getId() + ".");
