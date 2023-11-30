@@ -520,7 +520,9 @@
             </div>
             <div class="label label-info remote-info" jsf:rendered="#{not empty fileMetadata.dataFile.storageIO.remoteStoreName}" 
               title="#{bundle['file.remotelyStored']}">
-              <a jsf:rendered="#{not empty fileMetadata.dataFile.storageIO.remoteStoreUrl}" href="#{fileMetadata.dataFile.storageIO.remoteStoreUrl.toString()}" target="_blank" rel="noopener">#{fileMetadata.dataFile.storageIO.remoteStoreName}</a>
+              <div jsf:rendered="#{not empty fileMetadata.dataFile.storageIO.remoteStoreUrl}">
+                  <a href="#{fileMetadata.dataFile.storageIO.remoteStoreUrl.toString()}" target="_blank" rel="noopener">#{fileMetadata.dataFile.storageIO.remoteStoreName}</a>
+              </div>
               <span jsf:rendered="#{empty fileMetadata.dataFile.storageIO.remoteStoreUrl}">#{fileMetadata.dataFile.storageIO.remoteStoreName}</span>
             </div>
             <!-- END: FILE LEVEL MSGs -->
