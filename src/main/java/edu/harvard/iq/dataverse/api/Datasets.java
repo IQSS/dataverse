@@ -4368,10 +4368,7 @@ public class Datasets extends AbstractApiBean {
             }
             ApiToken apiToken = null;
             User u = getRequestUser(crc);
-            if (u instanceof AuthenticatedUser) {
-                apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) u);
-            }
-            
+            apiToken = authSvc.getValidApiTokenForUser(u);
 
             URLTokenUtil eth = new ExternalToolHandler(externalTool, target.getDataset(), apiToken, locale);
             return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(externalTool.getAllowedApiCalls())));
@@ -4433,9 +4430,14 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/citation")
-    public Response getDatasetVersionCitation(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getDatasetVersionCitation(@Context ContainerRequestContext crc,
+                                              @PathParam("id") String datasetId,
+                                              @PathParam("versionId") String versionId,
+                                              @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                              @Context UriInfo uriInfo,
+                                              @Context HttpHeaders headers) {
         return response(req -> ok(
-                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getCitation(true, false)), getRequestUser(crc));
+                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned).getCitation(true, false)), getRequestUser(crc));
     }
 
     @POST

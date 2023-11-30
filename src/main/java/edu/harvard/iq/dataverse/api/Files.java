@@ -816,10 +816,8 @@ public class Files extends AbstractApiBean {
             return error(BAD_REQUEST, "External tool does not have file scope.");
         }
         ApiToken apiToken = null;
-        User u = getRequestUser(crc);
-        if (u instanceof AuthenticatedUser) {
-            apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) u);
-        }
+        User user = getRequestUser(crc);
+        apiToken = authSvc.getValidApiTokenForUser(user);
         FileMetadata target = fileSvc.findFileMetadata(fmid);
         if (target == null) {
             return error(BAD_REQUEST, "FileMetadata not found.");

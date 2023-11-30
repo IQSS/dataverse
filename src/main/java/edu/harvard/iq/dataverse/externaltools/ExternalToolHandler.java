@@ -132,7 +132,7 @@ public class ExternalToolHandler extends URLTokenUtil {
             if (requestMethod.equals(HttpMethod.POST)) {
                 String body = JsonUtil.prettyPrint(createPostBody(params, null).build());
                 try {
-                    logger.info("POST Body: " + body);
+                    logger.fine("POST Body: " + body);
                     return postFormData(body);
                 } catch (IOException | InterruptedException ex) {
                     Logger.getLogger(ExternalToolHandler.class.getName()).log(Level.SEVERE, null, ex);
