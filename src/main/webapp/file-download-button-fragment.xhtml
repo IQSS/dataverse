@@ -80,7 +80,7 @@
                          <f:actionListener binding="#{bean.setTermsGuestbookPopupAction(bundle.download)}"/>
                 <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                GT: #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
+                <span class="globus-btn ui-icon" title="#{bundle['file.globus.transfer']}"/> #{bundle['file.globus.of']} #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
             </p:commandLink>
         </li>
         
