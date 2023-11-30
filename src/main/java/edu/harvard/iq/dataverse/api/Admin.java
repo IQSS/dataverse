@@ -2429,7 +2429,7 @@ public class Admin extends AbstractApiBean {
     @DELETE
     @Path("/clearThumbnailFailureFlag")
     public Response clearThumbnailFailureFlag() {
-        em.createNativeQuery("UPDATE dvobject SET previewshavefailed = FALSE").executeUpdate();
+        em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE").executeUpdate();
         return ok("Thumnail Failure Flags cleared.");
     }
     

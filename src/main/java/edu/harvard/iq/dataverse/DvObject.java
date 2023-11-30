@@ -191,14 +191,14 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      * real failure in generating the thumbnail. In both cases, we won't want to try
      * again every time the preview/thumbnail is requested for a view.
      */
-    private boolean previewsHaveFailed;
+    private boolean previewImageFail;
 
-    public boolean isPreviewsHaveFailed() {
-        return previewsHaveFailed;
+    public boolean isPreviewImageFail() {
+        return previewImageFail;
     }
 
-    public void setPreviewsHaveFailed(boolean previewsHaveFailed) {
-        this.previewsHaveFailed = previewsHaveFailed;
+    public void setPreviewImageFail(boolean previewImageFail) {
+        this.previewImageFail = previewImageFail;
     }
     
     public Timestamp getModificationTime() {

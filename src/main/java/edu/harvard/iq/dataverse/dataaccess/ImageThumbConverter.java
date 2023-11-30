@@ -119,9 +119,9 @@ public class ImageThumbConverter {
     }
 
     private static boolean generateThumbnail(DataFile file, StorageIO<DataFile> storageIO, int size) {
-        logger.log(Level.FINE, (file.isPreviewsHaveFailed() ? "Not trying" : "Trying") + " to generate thumbnail, file id: " + file.getId());
+        logger.log(Level.FINE, (file.isPreviewImageFail() ? "Not trying" : "Trying") + " to generate thumbnail, file id: " + file.getId());
         // Don't try to generate if there have been failures:
-        if (!file.isPreviewsHaveFailed()) {
+        if (!file.isPreviewImageFail()) {
             boolean thumbnailGenerated = false;
             if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
                 thumbnailGenerated = generateImageThumbnail(storageIO, size);
