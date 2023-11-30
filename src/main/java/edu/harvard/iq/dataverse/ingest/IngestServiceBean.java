@@ -177,7 +177,7 @@ public class IngestServiceBean {
     // It must be called before we attempt to permanently save the files in 
     // the database by calling the Save command on the dataset and/or version.
     
-    // There is way too much going on in this method. :(
+    // !! There is way too much going on in this method. :( !!
     
     // @todo: Is this method a good candidate for turning into a dedicated Command? 
     public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version,
@@ -195,6 +195,7 @@ public class IngestServiceBean {
             // renamed FOOBAR-1.txt back to FOOBAR.txt...
             IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles, fileToReplace);
             Dataset dataset = version.getDataset();
+            long totalBytesSaved = 0L;
 
             if (systemConfig.isStorageQuotasEnforced()) {
                 // Check if this dataset is subject to any storage quotas:
@@ -205,6 +206,9 @@ public class IngestServiceBean {
                 boolean unattached = false;
                 boolean savedSuccess = false;
                 if (dataFile.getOwner() == null) {
+                    // is it ever "unattached"? 
+                    // do we ever call this method with dataFile.getOwner() != null? 
+                    // - we really shouldn't be, either. 
                     unattached = true;
                     dataFile.setOwner(dataset);
                 }
@@ -230,31 +234,38 @@ public class IngestServiceBean {
                         dataAccess = DataAccess.createNewStorageIO(dataFile, storageLocation);
 
                         logger.fine("Successfully created a new storageIO object.");
-                        /*
-						 * This commented-out code demonstrates how to copy bytes from a local
-						 * InputStream (or a readChannel) into the writable byte channel of a Dataverse
-						 * DataAccessIO object:
+                        /**
+                         * This commented-out code demonstrates how to copy
+                         * bytes from a local InputStream (or a readChannel)
+                         * into the writable byte channel of a Dataverse
+                         * DataAccessIO object:
                          */
 
- /*
-						 * storageIO.open(DataAccessOption.WRITE_ACCESS);
-						 * 
-						 * writeChannel = storageIO.getWriteChannel(); readChannel = new
-						 * FileInputStream(tempLocationPath.toFile()).getChannel();
-						 * 
-						 * long bytesPerIteration = 16 * 1024; // 16K bytes long start = 0; while (
-						 * start < readChannel.size() ) { readChannel.transferTo(start,
-						 * bytesPerIteration, writeChannel); start += bytesPerIteration; }
+                        /**
+                         * storageIO.open(DataAccessOption.WRITE_ACCESS);
+                         *
+                         * writeChannel = storageIO.getWriteChannel();
+                         * readChannel = new
+                         * FileInputStream(tempLocationPath.toFile()).getChannel();
+                         *
+                         * long bytesPerIteration = 16 * 1024; // 16K bytes long
+                         * start = 0; 
+                         * while ( start < readChannel.size() ) {
+                         *    readChannel.transferTo(start, bytesPerIteration, writeChannel); start += bytesPerIteration;
+                         * }
                          */
 
- /*
-						 * But it's easier to use this convenience method from the DataAccessIO:
-						 * 
-						 * (if the underlying storage method for this file is local filesystem, the
-						 * DataAccessIO will simply copy the file using Files.copy, like this:
-						 * 
-						 * Files.copy(tempLocationPath, storageIO.getFileSystemLocation(),
-						 * StandardCopyOption.REPLACE_EXISTING);
+                        /**
+                         * But it's easier to use this convenience method from
+                         * the DataAccessIO:
+                         *
+                         * (if the underlying storage method for this file is
+                         * local filesystem, the DataAccessIO will simply copy
+                         * the file using Files.copy, like this:
+                         *
+                         * Files.copy(tempLocationPath,
+                         * storageIO.getFileSystemLocation(),
+                         * StandardCopyOption.REPLACE_EXISTING);
                          */
                         dataAccess.savePath(tempLocationPath);
 
@@ -265,7 +276,7 @@ public class IngestServiceBean {
                         savedSuccess = true;
                         logger.fine("Success: permanently saved file " + dataFile.getFileMetadata().getLabel());
 
-                        // TODO: reformat this file to remove the many tabs added in cc08330
+                        // TODO: reformat this file to remove the many tabs added in cc08330 - done, I think?
                         extractMetadataNcml(dataFile, tempLocationPath);
 
                     } catch (IOException ioex) {
@@ -375,6 +386,15 @@ public class IngestServiceBean {
 
                 if (savedSuccess) {
                     if (uploadSessionQuota != null) {
+                        // It may be worth considering refreshing the quota here, 
+                        // and incrementing the Storage Use record for 
+                        // all the parent objects in real time, as 
+                        // *each* individual file is being saved. I experimented
+                        // with that, but decided against it for performance 
+                        // reasons. But yes, there may be some edge case where 
+                        // parallel multi-file uploads can end up being able 
+                        // to save 2X worth the quota that was available at the 
+                        // beginning of each session. 
                         if (confirmedFileSize > uploadSessionQuota.getRemainingQuotaInBytes()) {
                             savedSuccess = false;
                             logger.warning("file size over quota limit, skipping");
@@ -382,7 +402,6 @@ public class IngestServiceBean {
                             // this (potentially partial) failure to the user.  
                             //throw new FileExceedsStorageQuotaException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(confirmedFileSize), bytesToHumanReadable(storageQuotaLimit)));
                         } else {
-
                             // Adjust quota: 
                             logger.info("Setting total usage in bytes to " + (uploadSessionQuota.getTotalUsageInBytes() + confirmedFileSize));
                             uploadSessionQuota.setTotalUsageInBytes(uploadSessionQuota.getTotalUsageInBytes() + confirmedFileSize);
@@ -390,19 +409,12 @@ public class IngestServiceBean {
                     }
 
                     // ... unless we had to reject the file just now because of 
-                    // the quota limits, increment the storage use record(s):
+                    // the quota limits, count the number of bytes saved for the 
+                    // purposes of incrementing the total storage of the parent
+                    // DvObjectContainers:
                     
                     if (savedSuccess) {
-                        // Update storage use for all the parent dvobjects: 
-                        // @todo: Do we want to do this after after *each* file is saved? - there may be 
-                        // quite a few files being saved here all at once. We could alternatively
-                        // perform this update only once, after this loop is completed (are there any
-                        // risks/accuracy loss?)
-                        // This update is performed with a direct native query that 
-                        // is supposed to be quite fast. But still. 
-                        logger.info("Incrementing recorded storage use by " + confirmedFileSize + " bytes for dataset " + dataset.getId());
-                        // (@todo: need to consider what happens when this code is called on Create?)
-                        storageUseService.incrementStorageSizeRecursively(dataset.getId(), confirmedFileSize);
+                        totalBytesSaved += confirmedFileSize; 
                     }
                 }
 
@@ -425,12 +437,14 @@ public class IngestServiceBean {
                     boolean metadataExtracted = false;
                     boolean metadataExtractedFromNetcdf = false;
                     if (tabIngest && FileUtil.canIngestAsTabular(dataFile)) {
-                        /*
-						 * Note that we don't try to ingest the file right away - instead we mark it as
-						 * "scheduled for ingest", then at the end of the save process it will be queued
-						 * for async. ingest in the background. In the meantime, the file will be
-						 * ingested as a regular, non-tabular file, and appear as such to the user,
-						 * until the ingest job is finished with the Ingest Service.
+                        /**
+                         * Note that we don't try to ingest the file right away
+                         * - instead we mark it as "scheduled for ingest", then
+                         * at the end of the save process it will be queued for
+                         * async. ingest in the background. In the meantime, the
+                         * file will be ingested as a regular, non-tabular file,
+                         * and appear as such to the user, until the ingest job
+                         * is finished with the Ingest Service.
                          */
                         dataFile.SetIngestScheduled();
                     } else if (fileMetadataExtractable(dataFile)) {
@@ -488,6 +502,10 @@ public class IngestServiceBean {
                     // dataset.getGlobalId());
                     // Make sure the file is attached to the dataset and to the version, if this
                     // hasn't been done yet:
+                    // @todo: but shouldn't we be doing the reverse if we haven't been 
+                    // able to save the file? - disconnect it from the dataset and 
+                    // the version?? - L.A. 2023 
+                    // (that said, is there *ever* a case where dataFile.getOwner() != null ?)
                     if (dataFile.getOwner() == null) {
                         dataFile.setOwner(dataset);
 
@@ -503,8 +521,7 @@ public class IngestServiceBean {
                                 DataFileCategory dataFileCategory = dfcIt.next();
 
                                 if (dataFileCategory.getDataset() == null) {
-                                    DataFileCategory newCategory = dataset
-                                            .getCategoryByName(dataFileCategory.getName());
+                                    DataFileCategory newCategory = dataset.getCategoryByName(dataFileCategory.getName());
                                     if (newCategory != null) {
                                         newCategory.addFileMetadata(dataFile.getFileMetadata());
                                         // dataFileCategory = newCategory;
@@ -516,10 +533,25 @@ public class IngestServiceBean {
                             }
                         }
                     }
+                    
+                    // Hmm. Noticing that the following two things - adding the 
+                    // files to the return list were being 
+                    // done outside of this "if (savedSuccess)" block. I'm pretty
+                    // sure that was wrong. - L.A. 11-30-2023
+                    ret.add(dataFile);
+                    // (unless that is that return value isn't used for anything - ?)
                 }
 
-                ret.add(dataFile);
             }
+            // Update storage use for all the parent dvobjects: 
+            logger.info("Incrementing recorded storage use by " + totalBytesSaved + " bytes for dataset " + dataset.getId());
+            // Q. Need to consider what happens when this code is called on Create?
+            // A. It works on create as well, yes. (the recursive increment
+            // query in the method below does need the parent dataset to 
+            // have the database id. But even if these files have been
+            // uploaded on the Create form, we first save the dataset, and 
+            // then add the files to it. - L.A. 
+            storageUseService.incrementStorageSizeRecursively(dataset.getId(), totalBytesSaved);
         }
 
         return ret;
