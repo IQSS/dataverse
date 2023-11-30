@@ -255,13 +255,17 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         if (fieldName.equals(DatasetFieldConstant.northLatitude) || fieldName.equals(DatasetFieldConstant.westLongitude)
                 || fieldName.equals(DatasetFieldConstant.eastLongitude) || fieldName.equals(DatasetFieldConstant.southLatitude)) {
             final String failureMessage = "dataset.metadata.invalidGeospatialCoordinates";
-            DatasetFieldCompoundValue cv = dsf.getParentDatasetFieldCompoundValue();
-            List<DatasetField> cdsf = cv.getChildDatasetFields();
+
             try {
-                if (cdsf.size() == 4) {
-                    if (!validateBoundingBox(cdsf.get(0).getValue(), cdsf.get(1).getValue(), cdsf.get(2).getValue(), cdsf.get(3).getValue())) {
-                        returnFailureMessage = Optional.of(failureMessage);
-                    }
+                final Map<String, String> coords = new HashMap<>();
+                dsf.getParentDatasetFieldCompoundValue().getChildDatasetFields().forEach(f -> {
+                        coords.put(f.getDatasetFieldType().getName(), f.getValue());
+                });
+                if (!validateBoundingBox(coords.get(DatasetFieldConstant.westLongitude),
+                        coords.get(DatasetFieldConstant.eastLongitude),
+                        coords.get(DatasetFieldConstant.northLatitude),
+                        coords.get(DatasetFieldConstant.southLatitude))) {
+                    returnFailureMessage = Optional.of(failureMessage);
                 }
             } catch (IllegalArgumentException e) { // IllegalArgumentException NumberFormatException
                 returnFailureMessage = Optional.of(failureMessage);
