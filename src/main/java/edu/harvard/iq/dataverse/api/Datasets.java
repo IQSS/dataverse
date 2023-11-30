@@ -3856,7 +3856,10 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        JsonObject body = JsonUtil.getJsonObject(jsonBody);
+        JsonObject body = null;
+        if (jsonBody != null) {
+            body = JsonUtil.getJsonObject(jsonBody);
+        }
         Set<String> fileIds = null;
         if (downloadId != null) {
             JsonObject files = globusService.getFilesForDownload(downloadId);
@@ -3864,7 +3867,7 @@ public class Datasets extends AbstractApiBean {
                 fileIds = files.keySet();
             }
         } else {
-            if (body.containsKey("fileIds")) {
+            if ((body!=null) && body.containsKey("fileIds")) {
                 Collection<JsonValue> fileVals = body.getJsonArray("fileIds").getValuesAs(JsonValue.class);
                 fileIds = new HashSet<String>(fileVals.size());
                 for (JsonValue fileVal : fileVals) {
