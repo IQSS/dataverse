@@ -436,7 +436,7 @@
                 <div jsf:id="downloadButtonBlockNormal" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                      and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
-                                     and !DatasetPage.isVersionHasTabular()}">
+                                     and  !(DatasetPage.isVersionHasTabular()||DatasetPage.isVersionHasGlobus())}">
                     <p:commandLink 
                                    styleClass="btn btn-default btn-download"
                                    disabled="#{false and DatasetPage.lockedFromDownload}"
@@ -448,15 +448,15 @@
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
                 </div>
-                <div jsf:id="downloadButtonBlockTabular" class="btn-group" 
+                <div jsf:id="downloadButtonBlockMultiple" class="btn-group" 
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                      and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
-                                     and DatasetPage.isVersionHasTabular()}">
+                                     and (DatasetPage.isVersionHasTabular()||DatasetPage.isVersionHasGlobus())}">
                     <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown">  
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
                     </button>
                     <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left">
-                        <li >
+                        <li>
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
                                            update="@form" oncomplete="showPopup();"
@@ -467,7 +467,7 @@
                                 #{bundle.downloadOriginal}
                             </p:commandLink>
                         </li>
-                        <li> 
+                        <li jsf:rendered="#{DatasetPage.isVersionHasTabular()}">
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
                                            update="@form" oncomplete="showPopup();"
@@ -476,6 +476,17 @@
                             <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                             <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
                                 #{bundle.downloadArchival}
+                            </p:commandLink>
+                        </li>
+                        <li  jsf:rendered="#{DatasetPage.isVersionHasGlobus()}"> 
+                            <p:commandLink
+                                           disabled="#{false and DatasetPage.lockedFromDownload}"
+                                           update="@form" oncomplete="showPopup();"
+                                           onclick="if (!testFilesSelected()) return false;" 
+                                           actionListener="#{DatasetPage.startGlobusTransfer(false)}">
+                            <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                            <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
+                                #{bundle['file.globus.transfer']}
                             </p:commandLink>
                         </li>
                     </ul>
