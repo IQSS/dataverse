@@ -7,10 +7,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 
 /**
@@ -23,6 +25,7 @@ import java.io.Serializable;
     @NamedQuery(name = "StorageUse.incrementByteSizeByDvContainerId", query = "UPDATE StorageUse su SET su.sizeInBytes = su.sizeInBytes +:fileSize WHERE su.dvObjectContainer.id =:dvObjectId")
 })
 @Entity
+@Table(indexes = {@Index(columnList="dvobjectcontainer_id")})
 public class StorageUse implements Serializable {
 
     private static final long serialVersionUID = 1L;
