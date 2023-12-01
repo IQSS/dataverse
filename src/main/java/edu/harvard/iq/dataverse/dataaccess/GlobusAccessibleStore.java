@@ -58,4 +58,11 @@ public interface GlobusAccessibleStore {
         return StorageIO.getConfigParamForDriver(storeId, GLOBUS_TOKEN);
     }
     
+    public static boolean isGlobusAccessible(String storeId) {
+        if(StorageIO.getConfigParamForDriver(storeId, StorageIO.TYPE).equals(DataAccess.GLOBUS)) {
+            return true;
+        }
+        return false;
+    }
+    
 }
