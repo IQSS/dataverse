@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -283,13 +284,20 @@ public class FilePage implements java.io.Serializable {
         }               
     }
     
+    Boolean valid = null;
+
     public boolean isValid() {
-        if (!fileMetadata.getDatasetVersion().isDraft()) {
-            return true;
+        if (valid == null) {
+            final DatasetVersion workingVersion = fileMetadata.getDatasetVersion();
+            if (workingVersion.isDraft() || (canUpdateDataset() && JvmSettings.UI_SHOW_VALIDITY_LABEL.lookupOptional(Boolean.class).orElse(false))) {
+                final DatasetVersion newVersion = workingVersion.cloneDatasetVersion();
+                newVersion.setDatasetFields(newVersion.initDatasetFields());
+                valid = newVersion.isValid();
+            } else {
+                valid = true;
+            }
         }
-        DatasetVersion newVersion = fileMetadata.getDatasetVersion().cloneDatasetVersion();
-        newVersion.setDatasetFields(newVersion.initDatasetFields());
-        return newVersion.isValid();
+        return valid;
     }
 
     private boolean canViewUnpublishedDataset() {

@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 import jakarta.json.Json;
@@ -26,6 +27,7 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -417,7 +419,7 @@ public class SolrSearchResult {
 	 *
 	 * @return
 	 */
-	public JsonObjectBuilder getJsonForMyData() {
+	public JsonObjectBuilder getJsonForMyData(boolean isValid) {
 
 		JsonObjectBuilder myDataJson = json(true, true, true);// boolean showRelevance, boolean showEntityIds, boolean showApiUrls)
 
@@ -425,7 +427,7 @@ public class SolrSearchResult {
 				.add("is_draft_state", this.isDraftState()).add("is_in_review_state", this.isInReviewState())
 				.add("is_unpublished_state", this.isUnpublishedState()).add("is_published", this.isPublishedState())
 				.add("is_deaccesioned", this.isDeaccessionedState())
-				.add("is_valid", this.isValid())
+				.add("is_valid", isValid)
 				.add("date_to_display_on_card", getDateToDisplayOnCard());
 
 		// Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
@@ -1265,7 +1267,19 @@ public class SolrSearchResult {
 		this.datasetValid = datasetValid == null || Boolean.valueOf(datasetValid);
 	}
 
-	public boolean isValid() {
-		return datasetValid;
+	public boolean isValid(Predicate<SolrSearchResult> canUpdateDataset) {
+        if (this.datasetValid) {
+            return true;
+        }
+        if (!this.getType().equals("datasets")) {
+            return true;
+        }
+        if (this.isDraftState()) {
+            return false;
+        }
+        if (!JvmSettings.UI_SHOW_VALIDITY_LABEL.lookupOptional(Boolean.class).orElse(false)) {
+            return true;
+        }
+		return !canUpdateDataset.test(this);
     }
 }

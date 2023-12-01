@@ -145,6 +145,7 @@ public enum JvmSettings {
     SCOPE_UI(PREFIX, "ui"),
     UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
     UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
+    UI_SHOW_VALIDITY_LABEL(SCOPE_UI, "show-label-for-incomplete-when-published"),
 
     // NetCDF SETTINGS
     SCOPE_NETCDF(PREFIX, "netcdf"),

@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -351,8 +352,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
              * https://github.com/IQSS/dataverse/issues/84
              */
             int numRows = 10;
-            HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), httpServletRequest);
+            DataverseRequest dataverseRequest = getDataverseRequest();
             List<Dataverse> dataverses = new ArrayList<>();
             dataverses.add(dataverse);
             solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null);
@@ -1395,8 +1395,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
         }
     }
     
+    private DataverseRequest getDataverseRequest() {
+        final HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        return new DataverseRequest(session.getUser(), httpServletRequest);
+    }
+    
     public boolean isValid(SolrSearchResult result) {
-        return result.isValid();
+        return result.isValid(x -> permissionsWrapper.canUpdateDataset(getDataverseRequest(), datasetService.find(x.getEntityId())));
     }
     
     public enum SortOrder {

@@ -3,11 +3,13 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
@@ -25,6 +27,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 import java.util.List;
 import java.util.Map;
@@ -64,7 +67,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
     private static final String retrieveDataPartialAPIPath = "retrieve";
 
     @Inject
-    DataverseSession session;    
+    DataverseSession session;
+    @Inject
+    PermissionsWrapper permissionsWrapper;
 
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
@@ -82,6 +87,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     //MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     @EJB
     GroupServiceBean groupService;
+    @EJB
+    DatasetServiceBean datasetService;
     
     private List<DataverseRole> roleList;
     private DataverseRolePermissionHelper rolePermissionHelper;
@@ -482,12 +489,14 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         JsonObjectBuilder myDataCardInfo;
         JsonArrayBuilder rolesForCard;
+        DataverseRequest dataverseRequest = createDataverseRequest(authUser);
         
         for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
             // -------------------------------------------
             // (a) Get core card data from solr
             // -------------------------------------------
-            myDataCardInfo = doc.getJsonForMyData();
+            
+            myDataCardInfo = doc.getJsonForMyData(isValid(doc, dataverseRequest));
             
             if (!doc.getEntity().isInstanceofDataFile()){
                 String parentAlias = dataverseService.getParentAliasString(doc);
@@ -509,5 +518,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
         return jsonSolrDocsArrayBuilder;
         
+    }
+
+    private boolean isValid(SolrSearchResult result, DataverseRequest dataverseRequest) {
+        return result.isValid(x -> permissionsWrapper.canUpdateDataset(dataverseRequest, datasetService.find(x.getEntityId())));
     }
 }        
