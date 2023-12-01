@@ -11,6 +11,9 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
@@ -361,6 +364,7 @@ public class DatasetPage implements java.io.Serializable {
      * other boolean. 
      */
     private boolean versionHasTabular = false;
+    private boolean versionHasGlobus = false;
 
     private boolean showIngestSuccess;
     
@@ -2183,10 +2187,19 @@ public class DatasetPage implements java.io.Serializable {
         // the total "originals" size of the dataset with direct custom queries; 
         // then we'll be able to drop the lookup hint for DataTable from the 
         // findDeep() method for the version and further speed up the lookup 
-        // a little bit. 
+        // a little bit.
+        boolean globusDownloadEnabled = systemConfig.isGlobusDownload();
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (fmd.getDataFile().isTabularData()) {
+            DataFile df = fmd.getDataFile();
+            if (df.isTabularData()) {
                 versionHasTabular = true;
+            }
+            if(globusDownloadEnabled) {
+                if(GlobusAccessibleStore.isGlobusAccessible(DataAccess.getStorageDriverFromIdentifier(df.getStorageIdentifier()))) {
+                    versionHasGlobus= true;
+                }
+            }
+            if(versionHasTabular &&(!globusDownloadEnabled || versionHasGlobus)) {
                 break;
             }
         }
@@ -2482,6 +2495,10 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isVersionHasTabular() {
         return versionHasTabular;
+    }
+    
+    public boolean isVersionHasGlobus() {
+        return versionHasGlobus;
     }
 
     public boolean isReadOnly() {
@@ -3089,6 +3106,16 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedNonDownloadableFiles = selectedNonDownloadableFiles;
     }
 
+    private List<FileMetadata> selectedGlobusTransferableFiles;
+
+    public List<FileMetadata> getSelectedGlobusTransferableFiles() {
+        return selectedGlobusTransferableFiles;
+    }
+
+    public void setSelectedGlobusTransferableFiles(List<FileMetadata> selectedGlobusTransferableFiles) {
+        this.selectedGlobusTransferableFiles = selectedGlobusTransferableFiles;
+    }
+    
     public String getSizeOfDataset() {
         return DatasetUtil.getDownloadSize(workingVersion, false);
     }
@@ -3247,8 +3274,8 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-        //if there are two or more files with a total size
-        //over the zip limit post a "too large" popup
+        //if there are two or more files, with a total size
+        //over the zip limit, post a "too large" popup
         if (bytes > settingsWrapper.getZipDownloadLimit() && selectedDownloadableFiles.size() > 1) {
             setValidateFilesOutcome("FailSize");
             return false;
@@ -3257,16 +3284,17 @@ public class DatasetPage implements java.io.Serializable {
         // If some of the files were restricted and we had to drop them off the
         // list, and NONE of the files are left on the downloadable list
         // - we show them a "you're out of luck" popup:
-        if (getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()) {
+        if (getSelectedDownloadableFiles().isEmpty() && getSelectedGlobusTransferableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()) {
             setValidateFilesOutcome("FailRestricted");
             return false;
         }
 
-        if (!getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()) {
+        if (!(getSelectedDownloadableFiles().isEmpty() && getSelectedGlobusTransferableFiles().isEmpty())
+                && !getSelectedNonDownloadableFiles().isEmpty()) {
             setValidateFilesOutcome("Mixed");
             return true;
         }
-
+        //ToDo - should Mixed not trigger this?
         if (isTermsPopupRequired() || isGuestbookPopupRequiredAtDownload()) {
             setValidateFilesOutcome("GuestbookRequired");
         }
@@ -3302,11 +3330,24 @@ public class DatasetPage implements java.io.Serializable {
         setSelectedNonDownloadableFiles(new ArrayList<>());
         setSelectedRestrictedFiles(new ArrayList<>());
         setSelectedUnrestrictedFiles(new ArrayList<>());
+        setSelectedGlobusTransferableFiles(new ArrayList<>());
 
         boolean someFiles = false;
+        boolean globusDownloadEnabled = systemConfig.isGlobusDownload();
         for (FileMetadata fmd : this.selectedFiles){
-            if(this.fileDownloadHelper.canDownloadFile(fmd)){
+            boolean downloadable=this.fileDownloadHelper.canDownloadFile(fmd);
+            
+            boolean globusTransferable = false;
+            if(globusDownloadEnabled) {
+                String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
+                globusTransferable = GlobusAccessibleStore.isGlobusAccessible(driverId);
+                downloadable = downloadable && !AbstractRemoteOverlayAccessIO.isNotDataverseAccessible(driverId); 
+            }
+            if(downloadable){
                 getSelectedDownloadableFiles().add(fmd);
+                someFiles=true;
+            } else if(globusTransferable) {
+                getSelectedGlobusTransferableFiles().add(fmd);
                 someFiles=true;
             } else {
                 getSelectedNonDownloadableFiles().add(fmd);
@@ -5247,7 +5288,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-
+/* These appear to be unused - toDo - delete
     private Boolean downloadButtonAllEnabled = null;
 
     public boolean isDownloadAllButtonEnabled() {
@@ -5276,7 +5317,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-
+*/
     public boolean isFileAccessRequestMultiSignUpButtonRequired(){
         if (isSessionUserAuthenticated()){
             return false;
@@ -6277,28 +6318,37 @@ public class DatasetPage implements java.io.Serializable {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(dataset.getEffectiveStorageDriverId()));
     }
     
-    public void startGlobusTransfer() {
-        ApiToken apiToken = null;
-        User user = session.getUser();
-        if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-        } else if (user instanceof PrivateUrlUser) {
-            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-            PrivateUrl privUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-            apiToken = new ApiToken();
-            apiToken.setTokenString(privUrl.getToken());
+    public void startGlobusTransfer(boolean transferAll) {
+        if(transferAll) {
+            this.setSelectedFiles(workingVersion.getFileMetadatas());
         }
-        if(fileMetadataForAction!=null) {
-            List<FileMetadata> downloadFMList = new ArrayList<FileMetadata>(1);
-            downloadFMList.add(fileMetadataForAction);
-            PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, downloadFMList));
-        } else {
-            if(getSelectedDownloadableFiles()!=null) {
-                PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, getSelectedDownloadableFiles()));
+        boolean validated = validateFilesForDownload(true);
+        if (validated) {
+            ApiToken apiToken = null;
+            User user = session.getUser();
+            if (user instanceof AuthenticatedUser) {
+                apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+            } else if (user instanceof PrivateUrlUser) {
+                PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+                PrivateUrl privUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+                apiToken = new ApiToken();
+                apiToken.setTokenString(privUrl.getToken());
+            }
+            if (fileMetadataForAction != null) {
+                List<FileMetadata> downloadFMList = new ArrayList<FileMetadata>(1);
+                downloadFMList.add(fileMetadataForAction);
+                PrimeFaces.current()
+                        .executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, downloadFMList));
             } else {
-                //ToDo: For non-public, need the subset that are downloadable by the user
-                //ToDo: For mixed (some in backing store), need the ones in the globus store
-                PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, workingVersion.getFileMetadatas()));
+                if (getSelectedGlobusTransferableFiles() != null) {
+                    PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken,
+                            getSelectedGlobusTransferableFiles()));
+                } else {
+                    // ToDo: For non-public, need the subset that are downloadable by the user
+                    // ToDo: For mixed (some in backing store), need the ones in the globus store
+                    PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken,
+                            workingVersion.getFileMetadatas()));
+                }
             }
         }
     }
