@@ -7,4 +7,5 @@ performance-tests.md
 manual-testing.md
 test-automation.md
 other-approaches.md
+jenkins.md
 ```
