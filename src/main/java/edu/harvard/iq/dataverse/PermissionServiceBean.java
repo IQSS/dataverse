@@ -837,4 +837,12 @@ public class PermissionServiceBean {
         return false;
     }
 
+    public boolean canDownloadAtLeastOneFile(User requestUser, DatasetVersion datasetVersion) {
+        for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
+            if (userOn(requestUser, fileMetadata.getDataFile()).has(Permission.DownloadFile)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

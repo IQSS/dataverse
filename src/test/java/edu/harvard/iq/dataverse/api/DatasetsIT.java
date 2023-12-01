@@ -4121,4 +4121,29 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response getUserPermissionsOnDatasetInvalidIdResponse = UtilIT.getUserPermissionsOnDataset("testInvalidId", apiToken);
         getUserPermissionsOnDatasetInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
+
+    @Test
+    public void testGetCanDownloadAtLeastOneFile() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Call with valid dataset id
+        Response canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, apiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        boolean canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertTrue(canDownloadAtLeastOneFile);
+
+        // Call with invalid dataset id
+        Response getUserPermissionsOnDatasetInvalidIdResponse = UtilIT.getCanDownloadAtLeastOneFile("testInvalidId", DS_VERSION_LATEST, apiToken);
+        getUserPermissionsOnDatasetInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
 }
