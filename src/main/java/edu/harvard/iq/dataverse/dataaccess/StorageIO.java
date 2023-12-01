@@ -57,6 +57,8 @@ public abstract class StorageIO<T extends DvObject> {
     static final String UPLOAD_REDIRECT = "upload-redirect";
     static final String UPLOAD_OUT_OF_BAND = "upload-out-of-band";
     protected static final String DOWNLOAD_REDIRECT = "download-redirect";
+    protected static final String DATAVERSE_INACCESSIBLE = "dataverse-inaccessible";
+
 
     public StorageIO() {
 
@@ -620,6 +622,11 @@ public abstract class StorageIO<T extends DvObject> {
                 || Boolean.parseBoolean(getConfigParamForDriver(driverId, UPLOAD_OUT_OF_BAND));
     }
 
+    //True by default, Stores (e.g. RemoteOverlay, Globus) can set this false to stop attempts to read bytes
+    public static boolean isDataverseAccessible(String driverId) {
+        return (true && !Boolean.parseBoolean(getConfigParamForDriver(driverId, DATAVERSE_INACCESSIBLE)));
+    }
+    
     // Check that storageIdentifier is consistent with store's config
     // False will prevent direct uploads
     static boolean isValidIdentifier(String driverId, String storageId) {
