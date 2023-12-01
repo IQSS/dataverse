@@ -263,7 +263,8 @@ public class DataAccess {
         	storageIO = new S3AccessIO<>(dvObject, null, storageDriverId);
         	break;
         case REMOTE:
-            storageIO = createNewStorageIO(dvObject, storageTag, RemoteOverlayAccessIO.getBaseStoreIdFor(storageDriverId)) ;
+        case GLOBUS:
+            storageIO = createNewStorageIO(dvObject, storageTag, AbstractRemoteOverlayAccessIO.getBaseStoreIdFor(storageDriverId)) ;
             break;
         default:
         	logger.warning("Could not find storage driver for: " + storageTag);
