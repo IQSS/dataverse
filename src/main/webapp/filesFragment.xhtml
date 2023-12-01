@@ -442,7 +442,7 @@
                                    disabled="#{false and DatasetPage.lockedFromDownload}"
                                    onclick="if (!testFilesSelected()) return false;" 
                                    action="#{DatasetPage.startDownloadSelectedOriginal()}"
-                                   update="@form" oncomplete="showPopup();">
+                                   update="@form" oncomplete="showPopup(false);">
                         <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                         <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
@@ -459,7 +459,7 @@
                         <li>
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           update="@form" oncomplete="showPopup();"
+                                           update="@form" oncomplete="showPopup(false);"
                                            onclick="if (!testFilesSelected()) return false;" 
                                            actionListener="#{DatasetPage.startDownloadSelectedOriginal()}">
                                 <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
@@ -470,7 +470,7 @@
                         <li jsf:rendered="#{DatasetPage.isVersionHasTabular()}">
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           update="@form" oncomplete="showPopup();"
+                                           update="@form" oncomplete="showPopup(false);"
                                            onclick="if (!testFilesSelected()) return false;" 
                                            actionListener="#{DatasetPage.startDownloadSelectedArchival()}">
                             <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
@@ -481,9 +481,9 @@
                         <li  jsf:rendered="#{DatasetPage.isVersionHasGlobus()}"> 
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           update="@form" oncomplete="showPopup();"
+                                           update="@form" oncomplete="showPopup(true);"
                                            onclick="if (!testFilesSelected()) return false;" 
-                                           actionListener="#{DatasetPage.startGlobusTransfer(false)}">
+                                           actionListener="#{DatasetPage.startGlobusTransfer(false, false)}">
                             <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                             <f:setPropertyActionListener target="#{DatasetPage.fileMetadataForAction}" value="#{null}"/>
                                 #{bundle['file.globus.transfer']}

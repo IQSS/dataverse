@@ -365,6 +365,7 @@ public class DatasetPage implements java.io.Serializable {
      */
     private boolean versionHasTabular = false;
     private boolean versionHasGlobus = false;
+    private boolean globusTransferRequested = false;
 
     private boolean showIngestSuccess;
     
@@ -3116,6 +3117,16 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedGlobusTransferableFiles = selectedGlobusTransferableFiles;
     }
     
+    private List<FileMetadata> selectedNonGlobusTransferableFiles;
+
+    public List<FileMetadata> getSelectedNonGlobusTransferableFiles() {
+        return selectedNonGlobusTransferableFiles;
+    }
+
+    public void setSelectedNonGlobusTransferableFiles(List<FileMetadata> selectedNonGlobusTransferableFiles) {
+        this.selectedNonGlobusTransferableFiles = selectedNonGlobusTransferableFiles;
+    }
+    
     public String getSizeOfDataset() {
         return DatasetUtil.getDownloadSize(workingVersion, false);
     }
@@ -3227,7 +3238,7 @@ public class DatasetPage implements java.io.Serializable {
         boolean guestbookRequired = isDownloadPopupRequired();
         boolean validate = validateFilesForDownload(downloadOriginal);
         if (validate) {
-            updateGuestbookResponse(guestbookRequired, downloadOriginal);
+            updateGuestbookResponse(guestbookRequired, downloadOriginal, false);
             if(!guestbookRequired && !getValidateFilesOutcome().equals("Mixed")){
                 startMultipleFileDownload();
             }
@@ -3289,8 +3300,9 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
-        if (!(getSelectedDownloadableFiles().isEmpty() && getSelectedGlobusTransferableFiles().isEmpty())
-                && !getSelectedNonDownloadableFiles().isEmpty()) {
+        //Some are selected and there are non-downloadable ones or there are both downloadable and globus transferable files
+        if ((!(getSelectedDownloadableFiles().isEmpty() && getSelectedGlobusTransferableFiles().isEmpty())
+                && (!getSelectedNonDownloadableFiles().isEmpty()) || (!getSelectedDownloadableFiles().isEmpty() && !getSelectedGlobusTransferableFiles().isEmpty()))) {
             setValidateFilesOutcome("Mixed");
             return true;
         }
@@ -3302,7 +3314,7 @@ public class DatasetPage implements java.io.Serializable {
 
     }
 
-    private void updateGuestbookResponse (boolean guestbookRequired, boolean downloadOriginal) {
+    private void updateGuestbookResponse (boolean guestbookRequired, boolean downloadOriginal, boolean isGlobusTransfer) {
         // Note that the GuestbookResponse object may still have information from
         // the last download action performed by the user. For example, it may
         // still have the non-null Datafile in it, if the user has just downloaded
@@ -3310,7 +3322,11 @@ public class DatasetPage implements java.io.Serializable {
         // even if that's not what they are trying to do now.
         // So make sure to reset these values:
         guestbookResponse.setDataFile(null);
-        guestbookResponse.setSelectedFileIds(getSelectedDownloadableFilesIdsString());
+        if(isGlobusTransfer) {
+            guestbookResponse.setSelectedFileIds(getFilesIdsString(getSelectedGlobusTransferableFiles()));
+        } else {
+            guestbookResponse.setSelectedFileIds(getSelectedDownloadableFilesIdsString());
+        }
         if (downloadOriginal) {
             guestbookResponse.setFileFormat("original");
         } else {
@@ -3331,6 +3347,7 @@ public class DatasetPage implements java.io.Serializable {
         setSelectedRestrictedFiles(new ArrayList<>());
         setSelectedUnrestrictedFiles(new ArrayList<>());
         setSelectedGlobusTransferableFiles(new ArrayList<>());
+        setSelectedNonGlobusTransferableFiles(new ArrayList<>());
 
         boolean someFiles = false;
         boolean globusDownloadEnabled = systemConfig.isGlobusDownload();
@@ -3346,11 +3363,14 @@ public class DatasetPage implements java.io.Serializable {
             if(downloadable){
                 getSelectedDownloadableFiles().add(fmd);
                 someFiles=true;
-            } else if(globusTransferable) {
+            } else {
+                getSelectedNonDownloadableFiles().add(fmd);
+            }
+            if(globusTransferable) {
                 getSelectedGlobusTransferableFiles().add(fmd);
                 someFiles=true;
             } else {
-                getSelectedNonDownloadableFiles().add(fmd);
+                getSelectedNonGlobusTransferableFiles().add(fmd);
             }
             if(fmd.isRestricted()){
                 getSelectedRestrictedFiles().add(fmd); //might be downloadable to user or not
@@ -6318,37 +6338,45 @@ public class DatasetPage implements java.io.Serializable {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(dataset.getEffectiveStorageDriverId()));
     }
     
-    public void startGlobusTransfer(boolean transferAll) {
-        if(transferAll) {
+    public boolean isGlobusTransferRequested() {
+        return globusTransferRequested;
+    }
+    
+    public void startGlobusTransfer(boolean transferAll, boolean popupShown) {
+        if (transferAll) {
             this.setSelectedFiles(workingVersion.getFileMetadatas());
         }
+        boolean guestbookRequired = isDownloadPopupRequired();
+        
         boolean validated = validateFilesForDownload(true);
         if (validated) {
-            ApiToken apiToken = null;
-            User user = session.getUser();
-            if (user instanceof AuthenticatedUser) {
-                apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-            } else if (user instanceof PrivateUrlUser) {
-                PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-                PrivateUrl privUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-                apiToken = new ApiToken();
-                apiToken.setTokenString(privUrl.getToken());
-            }
-            if (fileMetadataForAction != null) {
-                List<FileMetadata> downloadFMList = new ArrayList<FileMetadata>(1);
-                downloadFMList.add(fileMetadataForAction);
-                PrimeFaces.current()
-                        .executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, downloadFMList));
-            } else {
-                if (getSelectedGlobusTransferableFiles() != null) {
-                    PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken,
-                            getSelectedGlobusTransferableFiles()));
-                } else {
-                    // ToDo: For non-public, need the subset that are downloadable by the user
-                    // ToDo: For mixed (some in backing store), need the ones in the globus store
-                    PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken,
-                            workingVersion.getFileMetadatas()));
+            globusTransferRequested = true;
+            boolean mixed = "Mixed".equals(getValidateFilesOutcome());
+            // transfer is
+            updateGuestbookResponse(guestbookRequired, true, true);
+            if ((!guestbookRequired && !mixed) || popupShown) {
+                ApiToken apiToken = null;
+                User user = session.getUser();
+                if (user instanceof AuthenticatedUser) {
+                    apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+                } else if (user instanceof PrivateUrlUser) {
+                    PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+                    PrivateUrl privUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+                    apiToken = new ApiToken();
+                    apiToken.setTokenString(privUrl.getToken());
                 }
+                if (fileMetadataForAction != null) {
+                    List<FileMetadata> downloadFMList = new ArrayList<FileMetadata>(1);
+                    downloadFMList.add(fileMetadataForAction);
+                    PrimeFaces.current()
+                            .executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, downloadFMList));
+                } else {
+                    if (getSelectedGlobusTransferableFiles() != null) {
+                        PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken,
+                                getSelectedGlobusTransferableFiles()));
+                    }
+                }
+                globusTransferRequested = false;
             }
         }
     }
