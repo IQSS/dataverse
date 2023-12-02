@@ -3354,7 +3354,7 @@ public class DatasetPage implements java.io.Serializable {
         setSelectedNonGlobusTransferableFiles(new ArrayList<>());
 
         boolean someFiles = false;
-        boolean globusDownloadEnabled = systemConfig.isGlobusDownload();
+        boolean globusDownloadEnabled = settingsWrapper.isGlobusDownload();
         for (FileMetadata fmd : this.selectedFiles){
             boolean downloadable=this.fileDownloadHelper.canDownloadFile(fmd);
             

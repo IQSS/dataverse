@@ -60,7 +60,7 @@
         
         <!-- GlobusTransfer, orig file only  -->
          <o:importFunctions type="edu.harvard.iq.dataverse.dataaccess.DataAccess" />
-        <li jsf:rendered="#{settingsWrapper.globusFileDownload and settingsWrapper.isGlobusEnabledStorageDriver(DataAccess:getStorageDriverFromIdentifier(fileMetadata.dataFile.storageIdentifier))}">
+        <li jsf:rendered="#{settingsWrapper.globusFileDownload and settingsWrapper.isGlobusTransferable(fileMetadata)}">
             <p:commandLink rendered="#{!(guestbookAndTermsPopupRequired) 
                                       and !(fileMetadata.dataFile.filePackage)}"
                          styleClass="btn-download"
@@ -112,7 +112,7 @@
                 #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
             </p:commandLink>
             <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and !(guestbookAndTermsPopupRequired) 
-                                      and !(fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}"
+                                      and !(fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload) and settingsWrapper.isDownloadable(fileMetadata)}"
                          styleClass="btn-download"
                          process="@this"
                          disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
@@ -122,7 +122,7 @@
                 #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
             </p:commandLink>
             <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and guestbookAndTermsPopupRequired 
-                                      and !(fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}"
+                                      and !(fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload) and settingsWrapper.isDownloadable(fileMetadata)}"
                          styleClass="btn-download"
                          process="@this"
                          disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
