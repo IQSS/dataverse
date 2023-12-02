@@ -408,52 +408,6 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     }
 
 
-    public static void main(String[] args) {
-        System.out.println("Running the main method");
-        if (args.length > 0) {
-            System.out.printf("List of arguments: {}", Arrays.toString(args));
-        }
-        System.setProperty("dataverse.files.globus.base-url", "globus://d8c42580-6528-4605-9ad8-116a61982644");
-        System.out.println("NotValid: " + isValidIdentifier("globus", "globus://localid//../of/the/hill"));
-        System.out.println("ValidRemote: " + isValidIdentifier("globus", "globus://localid//of/the/hill"));
-        System.setProperty("dataverse.files.globus.managed", "true");
-
-        System.out.println("ValidLocal: " + isValidIdentifier("globus", "globus://176e28068b0-1c3f80357c42"));
-        System.setProperty("dataverse.files.globus.globus-token",
-                "");
-        System.setProperty("dataverse.files.globus.base-store", "file");
-        System.setProperty("dataverse.files.file.type", DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
-        System.setProperty("dataverse.files.file.directory", "/tmp/files");
-        // logger.info(JvmSettings.BASE_URL.lookup("globus"));
-        // logger.info(JvmSettings.GLOBUS_TOKEN.lookup("globus"));
-
-        try {
-            GlobusOverlayAccessIO<DvObject> gsio = new GlobusOverlayAccessIO<DvObject>(
-                    "globus://1234///hdc1/image001.mrc", "globus");
-            logger.info("Size is " + gsio.retrieveSizeFromMedia());
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        try {
-            DataFile df = new DataFile();
-            Dataset ds = new Dataset();
-            ds.setAuthority("10.5072");
-            ds.setIdentifier("FK21234");
-            df.setOwner(ds);
-            df.setStorageIdentifier("globus://1234///hdc1/image001.mrc");
-            GlobusOverlayAccessIO<DvObject> gsio = new GlobusOverlayAccessIO<DvObject>(df, null, "globus");
-            logger.info("Size2 is " + gsio.retrieveSizeFromMedia());
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-    }
-
-
     @Override
     public void open(DataAccessOption... option) throws IOException {
         // TODO Auto-generated method stub
