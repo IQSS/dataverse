@@ -3321,7 +3321,11 @@ public class DatasetPage implements java.io.Serializable {
         // a single file; or it may still have the format set to "original" -
         // even if that's not what they are trying to do now.
         // So make sure to reset these values:
-        guestbookResponse.setDataFile(null);
+        if(fileMetadataForAction == null) {
+            guestbookResponse.setDataFile(null);
+        } else {
+            guestbookResponse.setDataFile(fileMetadataForAction.getDataFile());
+        }
         if(isGlobusTransfer) {
             guestbookResponse.setSelectedFileIds(getFilesIdsString(getSelectedGlobusTransferableFiles()));
         } else {
@@ -6355,27 +6359,8 @@ public class DatasetPage implements java.io.Serializable {
             // transfer is
             updateGuestbookResponse(guestbookRequired, true, true);
             if ((!guestbookRequired && !mixed) || popupShown) {
-                ApiToken apiToken = null;
-                User user = session.getUser();
-                if (user instanceof AuthenticatedUser) {
-                    apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-                } else if (user instanceof PrivateUrlUser) {
-                    PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-                    PrivateUrl privUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-                    apiToken = new ApiToken();
-                    apiToken.setTokenString(privUrl.getToken());
-                }
-                if (fileMetadataForAction != null) {
-                    List<FileMetadata> downloadFMList = new ArrayList<FileMetadata>(1);
-                    downloadFMList.add(fileMetadataForAction);
-                    PrimeFaces.current()
-                            .executeScript(globusService.getGlobusDownloadScript(dataset, apiToken, downloadFMList));
-                } else {
-                    if (getSelectedGlobusTransferableFiles() != null) {
-                        PrimeFaces.current().executeScript(globusService.getGlobusDownloadScript(dataset, apiToken,
-                                getSelectedGlobusTransferableFiles()));
-                    }
-                }
+                boolean doNotSaveGuestbookResponse = workingVersion.isDraft();
+                globusService.writeGuestbookAndStartTransfer(guestbookResponse, doNotSaveGuestbookResponse);
                 globusTransferRequested = false;
             }
         }

@@ -50,15 +50,19 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.codec.binary.StringUtils;
+import org.primefaces.PrimeFaces;
 
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -73,21 +77,22 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     @EJB
     protected DatasetServiceBean datasetSvc;
-
     @EJB
     protected SettingsServiceBean settingsSvc;
-
     @Inject
     DataverseSession session;
-
     @EJB
     protected AuthenticationServiceBean authSvc;
-
     @EJB
     EjbDataverseEngine commandEngine;
-
     @EJB
     UserNotificationServiceBean userNotificationService;
+    @EJB
+    PrivateUrlServiceBean privateUrlService;
+    @EJB
+    FileDownloadServiceBean fileDownloadService;
+    @EJB
+    DataFileServiceBean dataFileService;
 
     private static final Logger logger = Logger.getLogger(GlobusServiceBean.class.getCanonicalName());
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
@@ -600,7 +605,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         return getGlobusAppUrlForDataset(d, true, null);
     }
 
-    public String getGlobusAppUrlForDataset(Dataset d, boolean upload, List<FileMetadata> fileMetadataList) {
+    public String getGlobusAppUrlForDataset(Dataset d, boolean upload, List<DataFile> dataFiles) {
         String localeCode = session.getLocaleCode();
         ApiToken apiToken = null;
         User user = session.getUser();
@@ -629,10 +634,6 @@ public class GlobusServiceBean implements java.io.Serializable {
                     + "/globusUploadParameters?locale=" + localeCode;
         } else {
             // Download
-            ArrayList<DataFile> dataFiles = new ArrayList<DataFile>(fileMetadataList.size());
-            for (FileMetadata fileMetadata : fileMetadataList) {
-                dataFiles.add(fileMetadata.getDataFile());
-            }
             JsonObject files = getFilesMap(dataFiles, d);
 
             String downloadId = UUID.randomUUID().toString();
@@ -657,7 +658,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         return finalUrl;
     }
 
-    public JsonObject getFilesMap(ArrayList<DataFile> dataFiles, Dataset d) {
+    public JsonObject getFilesMap(List<DataFile> dataFiles, Dataset d) {
         JsonObjectBuilder filesBuilder = Json.createObjectBuilder();
         for (DataFile df : dataFiles) {
             String storageId = df.getStorageIdentifier();
@@ -675,8 +676,8 @@ public class GlobusServiceBean implements java.io.Serializable {
         return filesBuilder.build();
     }
 
-    public String getGlobusDownloadScript(Dataset dataset, ApiToken apiToken, List<FileMetadata> downloadFMList) {
-        return URLTokenUtil.getScriptForUrl(getGlobusAppUrlForDataset(dataset, false, downloadFMList));
+    public String getGlobusDownloadScript(Dataset dataset, ApiToken apiToken, List<DataFile> downloadDFList) {
+        return URLTokenUtil.getScriptForUrl(getGlobusAppUrlForDataset(dataset, false, downloadDFList));
 
     }
 
@@ -1460,5 +1461,64 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         return endpoint;
     }
+    
+    // This helper method is called from the Download terms/guestbook/etc. popup,
+    // when the user clicks the "ok" button. We use it, instead of calling
+    // downloadServiceBean directly, in order to differentiate between single
+    // file downloads and multiple (batch) downloads - since both use the same
+    // terms/etc. popup.
+    public void writeGuestbookAndStartTransfer(GuestbookResponse guestbookResponse, boolean doNotSaveGuestbookResponse) {
+        PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+        guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
+
+        ApiToken apiToken = null;
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) user);
+        } else if (user instanceof PrivateUrlUser) {
+            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+            PrivateUrl privUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+            apiToken = new ApiToken();
+            apiToken.setTokenString(privUrl.getToken());
+        }
+        
+        DataFile df = guestbookResponse.getDataFile();
+        if (df != null) {
+            logger.info("Single datafile case for writeGuestbookAndStartTransfer");
+            List<DataFile> downloadDFList = new ArrayList<DataFile>(1);
+            downloadDFList.add(df);
+            if (!doNotSaveGuestbookResponse) {
+                fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+            }
+            PrimeFaces.current()
+                    .executeScript(getGlobusDownloadScript(df.getOwner(), apiToken, downloadDFList));
+        } else {
+            //Following FileDownloadServiceBean writeGuestbookAndStartBatchDownload
+            List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
+            List<DataFile> selectedFiles = new ArrayList<DataFile>();
+            for (String idAsString : list) {
+                try {
+                    Long fileId = Long.parseLong(idAsString);
+                // If we need to create a GuestBookResponse record, we have to 
+                // look up the DataFile object for this file: 
+                if (!doNotSaveGuestbookResponse) {
+                    df = dataFileService.findCheapAndEasy(fileId);
+                    guestbookResponse.setDataFile(df);
+                    fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+                    selectedFiles.add(df);
+                }
+                } catch (NumberFormatException nfe) {
+                    logger.warning("A file id passed to the writeGuestbookAndStartTransfer method as a string could not be converted back to Long: " + idAsString);
+                    return;
+                }
+
+            }
+            if (!selectedFiles.isEmpty()) {
+                //Use dataset from one file - files should all be from the same dataset
+                PrimeFaces.current().executeScript(getGlobusDownloadScript(df.getOwner(), apiToken,
+                        selectedFiles));
+            }
+        }
+     }
 
 }
