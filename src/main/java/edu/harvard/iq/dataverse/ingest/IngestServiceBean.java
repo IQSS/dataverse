@@ -206,7 +206,7 @@ public class IngestServiceBean {
                 boolean unattached = false;
                 boolean savedSuccess = false;
                 if (dataFile.getOwner() == null) {
-                    // is it ever "unattached"? 
+                    // is it ever "attached"? 
                     // do we ever call this method with dataFile.getOwner() != null? 
                     // - we really shouldn't be, either. 
                     unattached = true;

@@ -1,3 +1,4 @@
+
 Storage Quotas for Collections
 ==============================
 
@@ -15,3 +16,4 @@ Please note that only the sizes of the main datafiles and the archival tab-delim
 
 When quotas are set and enforced, the users will be informed of the remaining storage allocation on the file upload page together with other upload and processing limits.
 
+Part of the new and experimental nature of this feature is that we don't know for the fact yet how well it will function in real life on a very busy production system, despite our best efforts to test it prior to the release. One specific issue is having to update the recorded storage use for every parent collection of the given dataset whenever new files are added. This includes updating the combined size of the root, top collection - which will need to be updated after *every* file upload. In an unlikely case that this will start causing problems with race conditions and database update conflicts, it is possible to disable these updates (and thus disable the storage quotas feature), by setting the :ref:`dataverse.storageuse.disable-storageuse-increments` JVM setting to true.

@@ -1,12 +1,14 @@
 package edu.harvard.iq.dataverse.storageuse;
 
 import edu.harvard.iq.dataverse.DvObjectContainer;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 /**
@@ -37,31 +39,6 @@ public class StorageUseServiceBean  implements java.io.Serializable {
         return res == null ? 0L : res;
     }
     
-    public void incrementStorageSizeHierarchy(DvObjectContainer dvObject, Long filesize) {
-        incrementStorageSize(dvObject, filesize); 
-        DvObjectContainer parent = dvObject.getOwner();
-        while (parent != null) {
-            incrementStorageSize(parent, filesize);
-            parent = parent.getOwner();
-        }
-    }
-    
-    /**
-     * @param dvObject
-     * @param filesize 
-     */
-    public void incrementStorageSize(DvObjectContainer dvObject, Long filesize) {
-        StorageUse dvContainerSU = findByDvContainerId(dvObject.getId());
-        if (dvContainerSU != null) {
-            // @todo: named query
-            dvContainerSU.incrementSizeInBytes(filesize);
-            em.merge(dvContainerSU);
-        } else {
-            dvContainerSU = new StorageUse(dvObject, filesize); 
-            em.persist(dvContainerSU);
-        }
-    }
-    
     /**
      * Increments the recorded storage size for all the dvobject parents of a
      * datafile, recursively. 
@@ -71,20 +48,23 @@ public class StorageUseServiceBean  implements java.io.Serializable {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void incrementStorageSizeRecursively(Long dvObjectContainerId, Long increment) {
         //@todo should throw exceptions if either parameter is null
-        String queryString = "WITH RECURSIVE uptree (id, owner_id) AS\n"
-                + "("
-                + "    SELECT id, owner_id\n"
-                + "    FROM dvobject\n"
-                + "    WHERE id=" + dvObjectContainerId + "\n"
-                + "    UNION ALL\n"
-                + "    SELECT dvobject.id, dvobject.owner_id\n"
-                + "    FROM dvobject\n"
-                + "    JOIN uptree ON dvobject.id = uptree.owner_id)\n"
-                + "UPDATE storageuse SET sizeinbytes=COALESCE(sizeinbytes,0)+" + increment + "\n"
-                + "FROM uptree\n"
-                + "WHERE dvobjectcontainer_id = uptree.id;";
-        
-        int parentsUpdated = em.createNativeQuery(queryString).executeUpdate();
+        Optional<Boolean> allow = JvmSettings.STORAGEUSE_DISABLE_UPDATES.lookupOptional(Boolean.class);
+        if (!(allow.isPresent() && allow.get())) {
+            String queryString = "WITH RECURSIVE uptree (id, owner_id) AS\n"
+                    + "("
+                    + "    SELECT id, owner_id\n"
+                    + "    FROM dvobject\n"
+                    + "    WHERE id=" + dvObjectContainerId + "\n"
+                    + "    UNION ALL\n"
+                    + "    SELECT dvobject.id, dvobject.owner_id\n"
+                    + "    FROM dvobject\n"
+                    + "    JOIN uptree ON dvobject.id = uptree.owner_id)\n"
+                    + "UPDATE storageuse SET sizeinbytes=COALESCE(sizeinbytes,0)+" + increment + "\n"
+                    + "FROM uptree\n"
+                    + "WHERE dvobjectcontainer_id = uptree.id;";
+
+            int parentsUpdated = em.createNativeQuery(queryString).executeUpdate();
+        }
         // @todo throw an exception if the number of parent dvobjects updated by
         // the query is < 2 - ? 
     }
