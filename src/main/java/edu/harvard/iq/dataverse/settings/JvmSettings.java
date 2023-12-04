@@ -50,7 +50,7 @@ public enum JvmSettings {
     UPLOADS_DIRECTORY(SCOPE_FILES, "uploads"),
     DOCROOT_DIRECTORY(SCOPE_FILES, "docroot"),
     GUESTBOOK_AT_REQUEST(SCOPE_FILES, "guestbook-at-request"),
-    GLOBUS_RULES_CACHE_MAXAGE(SCOPE_FILES, "globus-rules-cache-maxage"),
+    GLOBUS_CACHE_MAXAGE(SCOPE_FILES, "globus-rules-cache-maxage"),
     FILES(SCOPE_FILES),
     BASE_URL(FILES, "base-url"),
     GLOBUS_TOKEN(FILES, "globus-token"),

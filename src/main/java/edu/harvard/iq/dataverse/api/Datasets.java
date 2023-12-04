@@ -3543,7 +3543,7 @@ public class Datasets extends AbstractApiBean {
         } else {
             params.add("referenceEndpointsWithPaths", referenceEndpointsWithPaths);
         }
-        int timeoutSeconds = JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class);
+        int timeoutSeconds = JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class);
         JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
         String requestCallName = managed ? "requestGlobusTransferPaths" : "requestGlobusReferencePaths";
         allowedApiCalls.add(
@@ -3833,7 +3833,7 @@ public class Datasets extends AbstractApiBean {
             params.add("endpoint", transferEndpoint);
         }
         params.add("files", files);
-        int timeoutSeconds = JvmSettings.GLOBUS_RULES_CACHE_MAXAGE.lookup(Integer.class);
+        int timeoutSeconds = JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class);
         JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "monitorGlobusDownload")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
