@@ -1077,7 +1077,12 @@ public class DataverseServiceBean implements java.io.Serializable {
                 accumulatedexceptions = accumulatedexceptions + va;
                 accumulatedexceptions = accumulatedexceptions.replace("org.everit.json.schema.ValidationException:", " ");
             }
-            return BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " "  + accumulatedexceptions;
+            if (!accumulatedexceptions.isEmpty()){
+                return BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " "  + accumulatedexceptions;
+            } else {
+                return BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " "  + vx.getErrorMessage();
+            }
+            
         } catch (Exception ex) {            
             logger.info(BundleUtil.getStringFromBundle("dataverses.api.validate.json.exception") + ex.getLocalizedMessage());
             return BundleUtil.getStringFromBundle("dataverses.api.validate.json.exception") + ex.getLocalizedMessage();
