@@ -6,7 +6,13 @@ import jakarta.json.JsonArrayBuilder;
 
 public interface GlobusAccessibleStore {
 
+    //Whether Dataverse manages access controls for the Globus endpoint or not.
     static final String MANAGED = "managed";
+    /*
+     * transfer and reference endpoint formats: <globusEndpointId/basePath>
+     * 
+     * REFERENCE_ENDPOINTS_WITH_BASEPATHS - reference endpoints separated by a comma
+     */
     static final String TRANSFER_ENDPOINT_WITH_BASEPATH = "transfer-endpoint-with-basepath";
     static final String GLOBUS_TOKEN = "globus-token";
     

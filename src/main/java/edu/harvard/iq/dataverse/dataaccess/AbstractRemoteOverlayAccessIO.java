@@ -15,11 +15,8 @@ import java.util.logging.Logger;
 
 import javax.net.ssl.SSLContext;
 
-import org.apache.http.Header;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -30,15 +27,18 @@ import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.protocol.HTTP;
 import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.util.EntityUtils;
-
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 
+
+/**
+ * A base class for StorageIO implementations supporting remote access. At present, that includes the RemoteOverlayAccessIO store and the newer GlobusOverlayAccessIO store. It primarily includes
+ * common methods for handling auxiliary files in the configured base store.
+ * @param <T>
+ */
 public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     protected static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.RemoteOverlayAccessIO");
