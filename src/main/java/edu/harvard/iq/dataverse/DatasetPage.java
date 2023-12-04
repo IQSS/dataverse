@@ -6346,6 +6346,27 @@ public class DatasetPage implements java.io.Serializable {
         return globusTransferRequested;
     }
     
+    /**
+     * Analagous with the startDownload method, this method is called when the user
+     * tries to start a Globus transfer out (~download). The
+     * validateFilesForDownload call checks to see if there are some files that can
+     * be Globus transfered and, if so and there are no files that can't be
+     * transferre, this method will launch the globus transfer app. If there is a
+     * mix of files or if the guestbook popup is required, the method passes back to
+     * the UI so those popup(s) can be shown. Once they are, this method is called
+     * with the popupShown param true and the app will be shown.
+     * 
+     * @param transferAll - when called from the dataset Access menu, this should be
+     *                    true so that all files are included in the processing.
+     *                    When it is called from the file table, the current
+     *                    selection is used and the param should be false.
+     * @param popupShown  - This method is called twice if the the mixed files or
+     *                    guestbook popups are needed. On the first call, popupShown
+     *                    is false so that the transfer is not started and those
+     *                    popups can be shown. On the second call, popupShown is
+     *                    true and processing will occur as long as there are some
+     *                    valid files to transfer.
+     */
     public void startGlobusTransfer(boolean transferAll, boolean popupShown) {
         if (transferAll) {
             this.setSelectedFiles(workingVersion.getFileMetadatas());

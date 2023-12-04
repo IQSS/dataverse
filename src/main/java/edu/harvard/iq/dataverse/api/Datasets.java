@@ -3444,90 +3444,34 @@ public class Datasets extends AbstractApiBean {
     }
 
 
-    @POST
-    @AuthRequired
-    @Path("{id}/addGlobusFiles")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response addGlobusFilesToDataset(@Context ContainerRequestContext crc,
-                                            @PathParam("id") String datasetId,
-                                            @FormDataParam("jsonData") String jsonData,
-                                            @Context UriInfo uriInfo
-    ) throws IOException, ExecutionException, InterruptedException {
-
-        logger.info(" ====  (api addGlobusFilesToDataset) jsonData   ====== " + jsonData);
-
-        if (!systemConfig.isHTTPUpload()) {
-            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
-        }
-
-        // -------------------------------------
-        // (1) Get the user from the API key
-        // -------------------------------------
-        AuthenticatedUser authUser;
-        try {
-            authUser = getRequestAuthenticatedUserOrDie(crc);
-        } catch (WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth")
-            );
-        }
-
-        // -------------------------------------
-        // (2) Get the Dataset Id
-        // -------------------------------------
-        Dataset dataset;
-
-        try {
-            dataset = findDatasetOrDie(datasetId);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        
-        JsonObject jsonObject = null;
-        try {
-            jsonObject = JsonUtil.getJsonObject(jsonData);
-        } catch (Exception ex) {
-            logger.fine("Error parsing json: " + jsonData + " " + ex.getMessage());
-            return badRequest("Error parsing json body");
-
-        }
-
-        //------------------------------------
-        // (2b) Make sure dataset does not have package file
-        // --------------------------------------
-
-        for (DatasetVersion dv : dataset.getVersions()) {
-            if (dv.isHasPackageFile()) {
-                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
-                );
-            }
-        }
-
-
-        String lockInfoMessage = "Globus Upload API started ";
-        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.GlobusUpload,
-                (authUser).getId(), lockInfoMessage);
-        if (lock != null) {
-            dataset.addLock(lock);
-        } else {
-            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
-        }
-
-
-        ApiToken token = authSvc.findApiTokenByUser(authUser);
-
-        if(uriInfo != null) {
-            logger.info(" ====  (api uriInfo.getRequestUri()) jsonData   ====== " + uriInfo.getRequestUri().toString());
-        }
-
-
-        String requestUrl = SystemConfig.getDataverseSiteUrlStatic();
-        
-        // Async Call
-        globusService.globusUpload(jsonObject, token, dataset, requestUrl, authUser);
-
-        return ok("Async call to Globus Upload started ");
-
-    }
+/****************************
+ * Globus Support Section:
+ * 
+ * Globus transfer in (upload) and out (download) involve three basic steps: The
+ * app is launched and makes a callback to the
+ * globusUploadParameters/globusDownloadParameters method to get all of the info
+ * needed to set up it's display.
+ * 
+ * At some point after that, the user will make a selection as to which files to
+ * transfer and the app will call requestGlobusUploadPaths/requestGlobusDownload
+ * to indicate a transfer is about to start. In addition to providing the
+ * details of where to transfer the files to/from, Dataverse also grants the
+ * Globus principal involved the relevant rw or r permission for the dataset.
+ * 
+ * Once the transfer is started, the app records the task id and sends it to
+ * Dataverse in the addGlobusFiles/monitorGlobusDownload call. Dataverse then
+ * monitors the transfer task and when it ultimately succeeds for fails it
+ * revokes the principal's permission and, for the transfer in case, adds the
+ * files to the dataset. (The dataset is locked until the transfer completes.)
+ * 
+ * (If no transfer is started within a specified timeout, permissions will
+ * automatically be revoked - see the GlobusServiceBean for details.)
+ *
+ * The option to reference a file at a remote endpoint (rather than transfer it)
+ * follows the first two steps of the process above but completes with a call to
+ * the normal /addFiles endpoint (as there is no transfer to monitor and the
+ * files can be added to the dataset immediately.)
+ */
 
     /**
      * Retrieve the parameters and signed URLs required to perform a globus
@@ -3630,11 +3574,11 @@ public class Datasets extends AbstractApiBean {
     }
 
     /**
-     * Requests permissions for a given globus user to upload to the dataset
+     * Provides specific storageIdentifiers to use for each file amd requests permissions for a given globus user to upload to the dataset
      * 
      * @param crc
      * @param datasetId
-     * @param jsonData
+     * @param jsonData - an object that must include the id of the globus "principal" involved and the "numberOfFiles" that will be transferred.
      * @return
      * @throws IOException
      * @throws ExecutionException
@@ -3721,15 +3665,114 @@ public class Datasets extends AbstractApiBean {
 
     }
 
-    /**
-     * Retrieve the parameters and signed URLs required to perform a globus
-     * transfer/download. This api endpoint is expected to be called as a signed
-     * callback after the globus-dataverse app/other app is launched, but it will
-     * accept other forms of authentication.
+    /** A method analogous to /addFiles that must also include the taskIdentifier of the transfer-in-progress to monitor
      * 
      * @param crc
      * @param datasetId
+     * @param jsonData - see /addFiles documentation, aditional "taskIdentifier" key in the main object is required.
+     * @param uriInfo
+     * @return
+     * @throws IOException
+     * @throws ExecutionException
+     * @throws InterruptedException
      */
+    @POST
+    @AuthRequired
+    @Path("{id}/addGlobusFiles")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response addGlobusFilesToDataset(@Context ContainerRequestContext crc,
+                                            @PathParam("id") String datasetId,
+                                            @FormDataParam("jsonData") String jsonData,
+                                            @Context UriInfo uriInfo
+    ) throws IOException, ExecutionException, InterruptedException {
+
+        logger.info(" ====  (api addGlobusFilesToDataset) jsonData   ====== " + jsonData);
+
+        if (!systemConfig.isHTTPUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        }
+
+        // -------------------------------------
+        // (1) Get the user from the API key
+        // -------------------------------------
+        AuthenticatedUser authUser;
+        try {
+            authUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+            );
+        }
+
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        JsonObject jsonObject = null;
+        try {
+            jsonObject = JsonUtil.getJsonObject(jsonData);
+        } catch (Exception ex) {
+            logger.fine("Error parsing json: " + jsonData + " " + ex.getMessage());
+            return badRequest("Error parsing json body");
+
+        }
+
+        //------------------------------------
+        // (2b) Make sure dataset does not have package file
+        // --------------------------------------
+
+        for (DatasetVersion dv : dataset.getVersions()) {
+            if (dv.isHasPackageFile()) {
+                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
+                );
+            }
+        }
+
+
+        String lockInfoMessage = "Globus Upload API started ";
+        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.GlobusUpload,
+                (authUser).getId(), lockInfoMessage);
+        if (lock != null) {
+            dataset.addLock(lock);
+        } else {
+            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+        }
+
+
+        ApiToken token = authSvc.findApiTokenByUser(authUser);
+
+        if(uriInfo != null) {
+            logger.info(" ====  (api uriInfo.getRequestUri()) jsonData   ====== " + uriInfo.getRequestUri().toString());
+        }
+
+
+        String requestUrl = SystemConfig.getDataverseSiteUrlStatic();
+        
+        // Async Call
+        globusService.globusUpload(jsonObject, token, dataset, requestUrl, authUser);
+
+        return ok("Async call to Globus Upload started ");
+
+    }
+    
+/**
+ * Retrieve the parameters and signed URLs required to perform a globus
+ * transfer/download. This api endpoint is expected to be called as a signed
+ * callback after the globus-dataverse app/other app is launched, but it will
+ * accept other forms of authentication.
+ * 
+ * @param crc
+ * @param datasetId
+ * @param locale
+ * @param downloadId - an id to a cached object listing the files involved. This is generated via Dataverse and provided to the dataverse-globus app in a signedURL.
+ * @return - JSON containing the parameters and URLs needed by the dataverse-globus app. The format is analogous to that for external tools. 
+ */
     @GET
     @AuthRequired
     @Path("{id}/globusDownloadParameters")
@@ -3815,12 +3858,14 @@ public class Datasets extends AbstractApiBean {
 
     /**
      * Requests permissions for a given globus user to download the specified files
-     * the dataset
+     * the dataset and returns information about the paths to transfer from.
+     * 
+     * When called directly rather than in response to being given a downloadId, the jsonData can include a "fileIds" key with an array of file ids to transfer.
      * 
      * @param crc
      * @param datasetId
-     * @param jsonData
-     * @return
+     * @param jsonData - a JSON object that must include the id of the  Globus "principal" that will be transferring the files in the case where Dataverse manages the Globus endpoint. For remote endpoints, the principal is not required.
+     * @return - a JSON object containing a map of file ids to Globus endpoint/path
      * @throws IOException
      * @throws ExecutionException
      * @throws InterruptedException
@@ -3957,11 +4002,12 @@ public class Datasets extends AbstractApiBean {
 
     /**
      * Monitors a globus download and removes permissions on the dir/dataset when
-     * done
+     * the specified transfer task is completed.
      * 
      * @param crc
      * @param datasetId
-     * @param jsonData
+     * @param jsonData  - a JSON Object containing the key "taskIdentifier" with the
+     *                  Globus task to monitor.
      * @return
      * @throws IOException
      * @throws ExecutionException
