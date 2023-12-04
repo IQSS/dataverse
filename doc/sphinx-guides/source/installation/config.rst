@@ -2489,6 +2489,8 @@ This setting was added to keep S3 direct upload lightweight. When that feature i
 
 See also :ref:`s3-direct-upload-features-disabled`.
 
+.. _dataverse.storageuse.disable-storageuse-increments:
+
 dataverse.storageuse.disable-storageuse-increments
 ++++++++++++++++++++++++++++++++++++++++++++++++++
 
