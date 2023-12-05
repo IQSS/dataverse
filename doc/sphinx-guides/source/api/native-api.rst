@@ -754,6 +754,41 @@ The following attributes are supported:
 * ``affiliation`` Affiliation
 * ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
 
+.. _collection-storage-quotas:
+  
+Collection Storage Quotas
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: 
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
+
+Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the specific collection. The user identified by the API token must have the ``Manage`` permission on the collection. 
+
+
+To set or change the storage allocation quota for a collection:
+
+.. code-block:: 
+
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota/$SIZE_IN_BYTES"
+
+This is API is superuser-only.
+  
+
+To delete a storage quota configured for a collection:
+
+.. code-block:: 
+
+  curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
+
+This is API is superuser-only.
+
+Use the ``/settings`` API to enable or disable the enforcement of storage quotas that are defined across the instance via the following setting. For example,
+
+.. code-block:: 
+
+   curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:UseStorageQuotas
+
 
 Datasets
 --------
@@ -5334,7 +5369,6 @@ A curl example using allowing access to a dataset's metadata
 Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
 security.
 
-
 .. _send-feedback:
 
 Send Feedback To Contact(s)
@@ -5361,6 +5395,33 @@ A curl example using an ``ID``
 
 Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.
 
+.. _thumbnail_reset:
+
+Reset Thumbnail Failure Flags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If Dataverse attempts to create a thumbnail image for an image or PDF file and the attempt fails, Dataverse will set a flag for the file to avoid repeated attempts to generate the thumbnail.
+For cases where the problem may have been temporary (or fixed in a later Dataverse release), the API calls below can be used to reset this flag for all files or for a given file.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=1234
+
+  curl -X DELETE $SERVER_URL/api/admin/clearThumbnailFailureFlag
+  
+  curl -X DELETE $SERVER_URL/api/admin/clearThumbnailFailureFlag/$FILE_ID
+
+.. _download-file-from-tmp:
+
+Download File from /tmp
+~~~~~~~~~~~~~~~~~~~~~~~
+
+As a superuser::
+
+    GET /api/admin/downloadTmpFile?fullyQualifiedPathToFile=/tmp/foo.txt
+
+Note that this API is probably only useful for testing.
 
 MyData
 ------

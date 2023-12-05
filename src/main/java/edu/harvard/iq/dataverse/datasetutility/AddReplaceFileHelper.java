@@ -61,6 +61,7 @@ import jakarta.ws.rs.core.Response;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import org.apache.commons.io.IOUtils;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDataFilesCommand;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
 /**
@@ -1212,9 +1213,9 @@ public class AddReplaceFileHelper{
                     this.newCheckSumType,
                     this.systemConfig);*/
             
-            DataFileServiceBean.UserStorageQuota quota = null; 
+            UploadSessionQuotaLimit quota = null; 
             if (systemConfig.isStorageQuotasEnforced()) {
-                quota = fileService.getUserStorageQuota(dvRequest.getAuthenticatedUser(), dataset);
+                quota = fileService.getUploadSessionQuotaLimit(dataset);
             }
             Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType);
             CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);

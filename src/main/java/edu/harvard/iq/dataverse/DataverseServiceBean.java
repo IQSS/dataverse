@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
@@ -346,51 +347,6 @@ public class DataverseServiceBean implements java.io.Serializable {
         } 
         return null;
     }
-    
-    /*
-    public boolean isDataverseLogoThumbnailAvailable(Dataverse dataverse, User user) {    
-        if (dataverse == null) {
-            return false; 
-        }
-                
-        // First, check if the dataverse has a defined logo: 
-        
-        //if (dataverse.getDataverseTheme() != null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
-            File dataverseLogoFile = getLogo(dataverse);
-            if (dataverseLogoFile != null) {
-                String logoThumbNailPath = null;
-
-                if (dataverseLogoFile.exists()) {
-                    logoThumbNailPath = ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
-                    if (logoThumbNailPath != null) {
-                        return true;
-                    }
-                }
-            }
-        //}
-        */
-        // If there's no uploaded logo for this dataverse, go through its 
-        // [released] datasets and see if any of them have card images:
-        // 
-        // TODO:
-        // Discuss/Decide if we really want to do this - i.e., go through every
-        // file in every dataset below... 
-        // -- L.A. 4.0 beta14
-        /*
-        for (Dataset dataset : datasetService.findPublishedByOwnerId(dataverse.getId())) {
-            if (dataset != null) {
-                DatasetVersion releasedVersion = dataset.getReleasedVersion();
-                
-                if (releasedVersion != null) {
-                    if (datasetService.isDatasetCardImageAvailable(releasedVersion, user)) {
-                        return true;
-                    }
-                }
-            }
-        }   */     
-        /*
-        return false; 
-    } */
         
     private File getLogo(Dataverse dataverse) {
         if (dataverse.getId() == null) {
@@ -919,5 +875,27 @@ public class DataverseServiceBean implements java.io.Serializable {
         return em.createNativeQuery(cqString).getResultList();
     }
 
+    public void saveStorageQuota(Dataverse target, Long allocation) {
+        StorageQuota storageQuota = target.getStorageQuota();
+        
+        if (storageQuota != null) {
+            storageQuota.setAllocation(allocation);
+            em.merge(storageQuota);
+        } else {
+            storageQuota = new StorageQuota(); 
+            storageQuota.setDefinitionPoint(target);
+            storageQuota.setAllocation(allocation);
+            target.setStorageQuota(storageQuota);
+            em.persist(storageQuota);
+        }
+        em.flush();
+    }
     
+    public void disableStorageQuota(StorageQuota storageQuota) {
+        if (storageQuota != null && storageQuota.getAllocation() != null) {
+            storageQuota.setAllocation(null);
+            em.merge(storageQuota);
+            em.flush();
+        }
+    }
 }
