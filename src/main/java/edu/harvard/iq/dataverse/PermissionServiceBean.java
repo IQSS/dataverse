@@ -41,6 +41,9 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Your one-stop-shop for deciding which user can do what action on which
@@ -837,12 +840,56 @@ public class PermissionServiceBean {
         return false;
     }
 
-    public boolean canDownloadAtLeastOneFile(User requestUser, DatasetVersion datasetVersion) {
+    /**
+     * Checks if a User can download at least one file of the target DatasetVersion.
+     *
+     * @param user User to check
+     * @param datasetVersion DatasetVersion to check
+     * @return boolean indicating whether the user can download at least one file or not
+     */
+    public boolean canDownloadAtLeastOneFile(User user, DatasetVersion datasetVersion) {
+        if (user.isSuperuser()) {
+            return true;
+        }
+        if (hasReleasedFiles(datasetVersion)) {
+            return true;
+        }
         for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
-            if (userOn(requestUser, fileMetadata.getDataFile()).has(Permission.DownloadFile)) {
+            if (userOn(user, fileMetadata.getDataFile()).has(Permission.DownloadFile)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Checks if a DatasetVersion has released files.
+     *
+     * This method is mostly based on {@link #isPublicallyDownloadable(DvObject)} although in this case, instead of basing
+     * the search on a particular file, it searches for the total number of files in the target version that are present
+     * in the released version.
+     *
+     * @param targetDatasetVersion DatasetVersion to check
+     * @return boolean indicating whether the dataset version has released files or not
+     */
+    private boolean hasReleasedFiles(DatasetVersion targetDatasetVersion) {
+        Dataset targetDataset = targetDatasetVersion.getDataset();
+        if (!targetDataset.isReleased()) {
+            return false;
+        }
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<DatasetVersion> datasetVersionRoot = criteriaQuery.from(DatasetVersion.class);
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        criteriaQuery
+                .select(criteriaBuilder.count(fileMetadataRoot))
+                .where(criteriaBuilder.and(
+                        criteriaBuilder.equal(fileMetadataRoot.get("dataFile").get("restricted"), false),
+                        criteriaBuilder.equal(datasetVersionRoot.get("dataset"), targetDataset),
+                        criteriaBuilder.equal(datasetVersionRoot.get("versionState"), DatasetVersion.VersionState.RELEASED),
+                        fileMetadataRoot.in(targetDatasetVersion.getFileMetadatas()),
+                        fileMetadataRoot.in(datasetVersionRoot.get("fileMetadatas"))));
+        Long result = em.createQuery(criteriaQuery).getSingleResult();
+        return result > 0;
     }
 }
