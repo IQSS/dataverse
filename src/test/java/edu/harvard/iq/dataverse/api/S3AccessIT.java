@@ -99,9 +99,10 @@ public class S3AccessIT {
         String driverLabel = "MinIO";
 
         Response createSuperuser = UtilIT.createRandomUser();
+        createSuperuser.then().assertThat().statusCode(200);
         String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
         String superusername = UtilIT.getUsernameFromResponse(createSuperuser);
-        UtilIT.makeSuperUser(superusername);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
         Response storageDrivers = listStorageDrivers(superuserApiToken);
         storageDrivers.prettyPrint();
         // TODO where is "Local/local" coming from?
@@ -118,6 +119,7 @@ public class S3AccessIT {
 
         //create user who will make a dataverse/dataset
         Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(200);
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
@@ -208,9 +210,10 @@ public class S3AccessIT {
         String driverId = "localstack1";
         String driverLabel = "LocalStack";
         Response createSuperuser = UtilIT.createRandomUser();
+        createSuperuser.then().assertThat().statusCode(200);
         String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
         String superusername = UtilIT.getUsernameFromResponse(createSuperuser);
-        UtilIT.makeSuperUser(superusername);
+        UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
         Response storageDrivers = listStorageDrivers(superuserApiToken);
         storageDrivers.prettyPrint();
         // TODO where is "Local/local" coming from?
@@ -227,6 +230,7 @@ public class S3AccessIT {
 
         //create user who will make a dataverse/dataset
         Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(200);
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
