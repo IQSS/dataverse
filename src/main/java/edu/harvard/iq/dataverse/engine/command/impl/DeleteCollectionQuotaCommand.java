@@ -46,9 +46,7 @@ public class DeleteCollectionQuotaCommand  extends AbstractVoidCommand {
         StorageQuota storageQuota = targetDataverse.getStorageQuota();
         
         if (storageQuota != null && storageQuota.getAllocation() != null) {
-            storageQuota.setAllocation(null);
-            ctxt.em().merge(storageQuota);
-            ctxt.em().flush();
+            ctxt.dataverses().disableStorageQuota(storageQuota);
         } 
         // ... and if no quota was enabled on the collection - nothing to do = success
     }    

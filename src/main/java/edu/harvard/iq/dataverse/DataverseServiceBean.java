@@ -935,4 +935,12 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         em.flush();
     }
+    
+    public void disableStorageQuota(StorageQuota storageQuota) {
+        if (storageQuota != null && storageQuota.getAllocation() != null) {
+            storageQuota.setAllocation(null);
+            em.merge(storageQuota);
+            em.flush();
+        }
+    }
 }
