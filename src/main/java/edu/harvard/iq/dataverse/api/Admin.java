@@ -2427,6 +2427,28 @@ public class Admin extends AbstractApiBean {
         
         return ok(Json.createObjectBuilder().add(ExternalToolHandler.SIGNED_URL, signedUrl));
     }
+ 
+    @DELETE
+    @Path("/clearThumbnailFailureFlag")
+    public Response clearThumbnailFailureFlag() {
+        em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE").executeUpdate();
+        return ok("Thumbnail Failure Flags cleared.");
+    }
+    
+    @DELETE
+    @Path("/clearThumbnailFailureFlag/{id}")
+    public Response clearThumbnailFailureFlagByDatafile(@PathParam("id") String fileId) {
+        try {
+            DataFile df = findDataFileOrDie(fileId);
+            Query deleteQuery = em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE where id = ?");
+            deleteQuery.setParameter(1, df.getId());
+            deleteQuery.executeUpdate();
+            return ok("Thumbnail Failure Flag cleared for file id=: " + df.getId() + ".");
+        } catch (WrappedResponse r) {
+            logger.info("Could not find file with the id: " + fileId);
+            return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
+        }
+    }
 
     /**
      * For testing only. Download a file from /tmp.

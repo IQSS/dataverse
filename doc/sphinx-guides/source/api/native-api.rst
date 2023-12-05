@@ -5369,7 +5369,6 @@ A curl example using allowing access to a dataset's metadata
 Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
 security.
 
-
 .. _send-feedback:
 
 Send Feedback To Contact(s)
@@ -5395,6 +5394,23 @@ A curl example using an ``ID``
   curl -X POST -H 'Content-Type:application/json' -d "$JSON" "$SERVER_URL/api/admin/feedback"
 
 Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.
+
+.. _thumbnail_reset:
+
+Reset Thumbnail Failure Flags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If Dataverse attempts to create a thumbnail image for an image or PDF file and the attempt fails, Dataverse will set a flag for the file to avoid repeated attempts to generate the thumbnail.
+For cases where the problem may have been temporary (or fixed in a later Dataverse release), the API calls below can be used to reset this flag for all files or for a given file.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=1234
+
+  curl -X DELETE $SERVER_URL/api/admin/clearThumbnailFailureFlag
+  
+  curl -X DELETE $SERVER_URL/api/admin/clearThumbnailFailureFlag/$FILE_ID
 
 .. _download-file-from-tmp:
 

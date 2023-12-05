@@ -223,7 +223,19 @@ public class UtilIT {
                 .post("/api/admin/validateDataFileHashValue/" + fileId + "?key=" + apiToken);
         return response;
     }
-    
+
+    public static Response clearThumbnailFailureFlags() {
+        Response response = given()
+                .delete("/api/admin/clearThumbnailFailureFlag");
+        return response;
+    }
+
+    public static Response clearThumbnailFailureFlag(long fileId) {
+        Response response = given()
+                .delete("/api/admin/clearThumbnailFailureFlag/" + fileId);
+        return response;
+    }
+
     private static String getAuthenticatedUserAsJsonString(String persistentUserId, String firstName, String lastName, String authenticationProviderId, String identifier) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("authenticationProviderId", authenticationProviderId);
