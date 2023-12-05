@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -1199,5 +1200,27 @@ public class DataverseServiceBean implements java.io.Serializable {
 "    \"required\": [\"datasetVersion\"]\n" +
 "}\n";
     
+    public void saveStorageQuota(Dataverse target, Long allocation) {
+        StorageQuota storageQuota = target.getStorageQuota();
+        
+        if (storageQuota != null) {
+            storageQuota.setAllocation(allocation);
+            em.merge(storageQuota);
+        } else {
+            storageQuota = new StorageQuota(); 
+            storageQuota.setDefinitionPoint(target);
+            storageQuota.setAllocation(allocation);
+            target.setStorageQuota(storageQuota);
+            em.persist(storageQuota);
+        }
+        em.flush();
+    }
     
+    public void disableStorageQuota(StorageQuota storageQuota) {
+        if (storageQuota != null && storageQuota.getAllocation() != null) {
+            storageQuota.setAllocation(null);
+            em.merge(storageQuota);
+            em.flush();
+        }
+    }
 }

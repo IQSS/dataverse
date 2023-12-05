@@ -2510,6 +2510,13 @@ This setting was added to keep S3 direct upload lightweight. When that feature i
 
 See also :ref:`s3-direct-upload-features-disabled`.
 
+.. _dataverse.storageuse.disable-storageuse-increments:
+
+dataverse.storageuse.disable-storageuse-increments
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+This setting serves the role of an emergency "kill switch" that will disable maintaining the real time record of storage use for all the datasets and collections in the database. Because of the experimental nature of this feature (see :doc:`/admin/collectionquotas`) that hasn't been used in production setting as of this release, v6.1 this setting is provided in case these updates start causing database race conditions and conflicts on a busy server. 
+
 dataverse.auth.oidc.*
 +++++++++++++++++++++
 

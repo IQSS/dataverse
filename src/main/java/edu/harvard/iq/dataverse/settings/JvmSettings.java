@@ -150,6 +150,9 @@ public enum JvmSettings {
     SCOPE_NETCDF(PREFIX, "netcdf"),
     GEO_EXTRACT_S3_DIRECT_UPLOAD(SCOPE_NETCDF, "geo-extract-s3-direct-upload"),
 
+    // STORAGE USE SETTINGS
+    SCOPE_STORAGEUSE(PREFIX, "storageuse"),
+    STORAGEUSE_DISABLE_UPDATES(SCOPE_STORAGEUSE, "disable-storageuse-increments"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
