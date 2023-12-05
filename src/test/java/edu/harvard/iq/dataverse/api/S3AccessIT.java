@@ -54,8 +54,8 @@ public class S3AccessIT {
                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyLocalStack, secretKeyLocalStack)))
                 .withEndpointConfiguration(new EndpointConfiguration("s3.localhost.localstack.cloud:4566", Regions.US_EAST_2.getName())).build();
 
-        String accessKeyMinio = "minioadmin";
-        String secretKeyMinio = "minioadmin";
+        String accessKeyMinio = "4cc355_k3y";
+        String secretKeyMinio = "s3cr3t_4cc355_k35";
         s3minio = AmazonS3ClientBuilder.standard()
                 // https://stackoverflow.com/questions/72205086/amazonss3client-throws-unknownhostexception-if-attempting-to-connect-to-a-local
                 .withPathStyleAccessEnabled(Boolean.TRUE)
