@@ -42,3 +42,18 @@ How can you know if API tests are passing? Here are the steps, by way of example
 - Click "Test Result".
 - Under "All Tests", look at the duration for "edu.harvard.iq.dataverse.api". It should be ten minutes or higher. If it was only a few seconds, tests did not run.
 - Assuming tests ran, if there were failures, they should appear at the top under "All Failed Tests". Inform the author of the pull request about the error.
+
+## Diagnosing Failures
+
+API test failures can have multiple causes. As described above, from the "Test Result" page, you might see the failure under "All Failed Tests". However, the test could have failed because of some underlying system issue.
+
+If you have determined that the API tests have not run at all, your next step should be to click on "Console Output". For example, <https://jenkins.dataverse.org/job/IQSS-Dataverse-Develop-PR/job/PR-10109/26/console>. Click "Full log" to see the full log in the browser or navigate to <https://jenkins.dataverse.org/job/IQSS-Dataverse-Develop-PR/job/PR-10109/26/consoleText> (for example) to get a plain text version.
+
+Go to the end of the log and then scroll up, looking for the failure. A failed Ansible task can look like this:
+
+```
+TASK [dataverse : download payara zip] *****************************************
+fatal: [localhost]: FAILED! => {"changed": false, "dest": "/tmp/payara.zip", "elapsed": 10, "msg": "Request failed: <urlopen error timed out>", "url": "https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2023.8/payara-6.2023.8.zip"}
+```
+
+In the example above, if Payara can't be downloaded, we're obviously going to have problems deploying Dataverse to it!
