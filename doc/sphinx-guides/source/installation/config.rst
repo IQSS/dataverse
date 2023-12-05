@@ -2425,6 +2425,25 @@ Defaults to ``false``.
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
+.. _dataverse.api.show-label-for-incomplete-when-published:
+
+dataverse.api.show-label-for-incomplete-when-published
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Even when you do not allow incomplete metadata to be saved in dataverse, some metadata may end up being incomplete, e.g., after making a metadata field mandatory. Datasets where that field is
+not filled out, become incomplete, and therefore can be labeled with the ``incomplete metadat`` label. By default, this label is only shown for draft datasets. However, in some situations, you
+may want to show the label also for published datasets. For example, when an admin needs to have an overview of the datasets that are no longer valid after a metadata fields update,
+enabling this option will show the ``incomplete metadata`` labels on published datasets, but only to the users that can edit the specific datasets. Note that you need to reindex the datasets
+after changing the metadata definitions. Reindexing will update the labels and other dataset information according to the new situation.
+
+When enabled, published datasets with incomplete metadata will have an ``incomplete metadata`` label attached to them, but only for the datasets that the user can edit. You can list these datasets,
+for example, with the validity of metadata filter shown in "My Data" page that can be turned on by enabling the :ref:`dataverse.ui.show-validity-filter` option.
+
+Defaults to ``false``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_SHOW_LABEL_FOR_INCOMPLETE_WHEN_PUBLISHED``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
 .. _dataverse.signposting.level1-author-limit:
 
 dataverse.signposting.level1-author-limit
@@ -2474,6 +2493,8 @@ Defaults to ``false``.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_UI_ALLOW_REVIEW_FOR_INCOMPLETE``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+.. _dataverse.ui.show-validity-filter:
 
 dataverse.ui.show-validity-filter
 +++++++++++++++++++++++++++++++++
