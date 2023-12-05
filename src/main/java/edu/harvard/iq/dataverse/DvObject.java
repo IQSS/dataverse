@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -156,7 +157,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     private String identifier;
     
     private boolean identifierRegistered;
-    
+        
     private transient GlobalId globalId = null;
     
     @OneToMany(mappedBy = "dvObject", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -178,6 +179,9 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      */
     private boolean previewImageAvailable;
     
+    @OneToOne(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
+    private StorageQuota storageQuota;
+    
     public boolean isPreviewImageAvailable() {
         return previewImageAvailable;
     }
@@ -185,7 +189,23 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     public void setPreviewImageAvailable(boolean status) {
         this.previewImageAvailable = status;
     }
+    
+    /**
+     * Indicates whether a previous attempt to generate a preview image has failed,
+     * regardless of size. This could be due to the file not being accessible, or a
+     * real failure in generating the thumbnail. In both cases, we won't want to try
+     * again every time the preview/thumbnail is requested for a view.
+     */
+    private boolean previewImageFail;
 
+    public boolean isPreviewImageFail() {
+        return previewImageFail;
+    }
+
+    public void setPreviewImageFail(boolean previewImageFail) {
+        this.previewImageFail = previewImageFail;
+    }
+    
     public Timestamp getModificationTime() {
         return modificationTime;
     }
@@ -475,6 +495,14 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.storageIdentifier = storageIdentifier;
     }
     
+    public StorageQuota getStorageQuota() {
+        return storageQuota;
+    }
+    
+    public void setStorageQuota(StorageQuota storageQuota) {
+        this.storageQuota = storageQuota;
+    }
+
     /**
      * 
      * @param other 
@@ -482,6 +510,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      */
     public abstract boolean isAncestorOf( DvObject other );
     
+
     @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     List<RoleAssignment> roleAssignments;
+    
 }

@@ -45,11 +45,13 @@ import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -723,6 +725,11 @@ public abstract class AbstractApiBean {
         if(downloadFilename != null) {
             res = res.header("Content-Disposition", "attachment; filename=" + downloadFilename);
         }
+        return res.build();
+    }
+
+    protected Response ok(InputStream inputStream) {
+        ResponseBuilder res = Response.ok().entity(inputStream).type(MediaType.valueOf(FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT));
         return res.build();
     }
 

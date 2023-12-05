@@ -62,6 +62,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -161,6 +162,59 @@ public class DatasetsIT {
         removeUploadMethods.then().assertThat()
                 .statusCode(200);
          */
+    }
+    
+    @Test
+    public void testCollectionSchema(){
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        Response getCollectionSchemaResponse =  UtilIT.getCollectionSchema(dataverseAlias, apiToken);
+        getCollectionSchemaResponse.prettyPrint();
+        getCollectionSchemaResponse.then().assertThat()
+                .statusCode(200);
+
+        JsonObject expectedSchema = null;
+        try {
+            expectedSchema = JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataset-schema.json");
+        } catch (IOException ex) {
+        }
+
+        assertEquals(JsonUtil.prettyPrint(expectedSchema), JsonUtil.prettyPrint(getCollectionSchemaResponse.body().asString()));
+        
+        String expectedJson = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch1.json");
+        
+        Response validateDatasetJsonResponse = UtilIT.validateDatasetJson(dataverseAlias, expectedJson, apiToken);
+        validateDatasetJsonResponse.prettyPrint();
+        validateDatasetJsonResponse.then().assertThat()
+                .statusCode(200);
+        
+        
+        String pathToJsonFile = "scripts/search/tests/data/datasetMissingReqFields.json"; 
+        
+        String jsonIn = UtilIT.getDatasetJson(pathToJsonFile);
+        
+        Response validateBadDatasetJsonResponse = UtilIT.validateDatasetJson(dataverseAlias, jsonIn, apiToken);
+        validateBadDatasetJsonResponse.prettyPrint();
+        validateBadDatasetJsonResponse.then().assertThat()
+                .statusCode(200);
+
+        
+        validateBadDatasetJsonResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(containsString("failed validation"));
+        
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        
     }
 
     @Test
