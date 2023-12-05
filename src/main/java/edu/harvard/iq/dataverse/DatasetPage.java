@@ -754,17 +754,29 @@ public class DatasetPage implements java.io.Serializable {
         if (isIndexedVersion != null) {
             return isIndexedVersion;
         }
+        
+        // Just like on the collection page, facets on the Dataset page can be
+        // disabled instance-wide by an admin:
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false)) {
+            return isIndexedVersion = false;
+        }
+        
         // The version is SUPPOSED to be indexed if it's the latest published version, or a
-        // draft. So if none of the above is true, we return false right away:
-
+        // draft. So if none of the above is true, we can return false right away. 
         if (!(workingVersion.isDraft() || isThisLatestReleasedVersion())) {
             return isIndexedVersion = false;
         }
-
-        // ... but if it is the latest published version or a draft, we want to test
-        // and confirm that this version *has* actually been indexed and is searchable
-        // (and that solr is actually up and running!), by running a quick solr search:
-        return isIndexedVersion = isThisVersionSearchable();
+        // If this is the latest published version, we want to confirm that this 
+        // version was successfully indexed after the last publication 
+        
+        if (isThisLatestReleasedVersion()) {
+            return isIndexedVersion = (workingVersion.getDataset().getIndexTime() != null)
+                    && workingVersion.getDataset().getIndexTime().after(workingVersion.getReleaseTime());
+        }
+        
+        // Drafts don't have the indextime stamps set/incremented when indexed, 
+        // so we'll just assume it is indexed, and will then hope for the best.
+        return isIndexedVersion = true;
     }
 
     /**
@@ -820,8 +832,18 @@ public class DatasetPage implements java.io.Serializable {
     /**
      * Verifies that solr is running and that the version is indexed and searchable
      * @return boolean
-     */
+     * Commenting out this method for now, since we have decided it was not 
+     * necessary, to query solr just to figure out if we can query solr. We will
+     * rely solely on the latest-relesed status and the indexed timestamp from 
+     * the database for that. - L.A.
+     *
     public boolean isThisVersionSearchable() {
+        // Just like on the collection page, facets on the Dataset page can be
+        // disabled instance-wide by an admin:
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false)) {
+            return false;
+        }
+        
         SolrQuery solrQuery = new SolrQuery();
 
         solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, workingVersion.getDataset().getId().toString()));
@@ -856,6 +878,7 @@ public class DatasetPage implements java.io.Serializable {
 
         return false;
     }
+    */
 
     /**
      * Finds the list of numeric datafile ids in the Version specified, by running
@@ -967,10 +990,19 @@ public class DatasetPage implements java.io.Serializable {
             logger.fine("Remote Solr Exception: " + ex.getLocalizedMessage());
             String msg = ex.getLocalizedMessage();
             if (msg.contains(SearchFields.FILE_DELETED)) {
+                // This is a backward compatibility hook put in place many versions
+                // ago, to accommodate instances running Solr with schemas that 
+                // don't include this flag yet. Running Solr with an up-to-date
+                // schema has been a hard requirement for a while now; should we 
+                // remove it at this point? - L.A. 
                 fileDeletedFlagNotIndexed = true;
+            } else {
+                isIndexedVersion = false;
+                return resultIds;
             }
         } catch (Exception ex) {
             logger.warning("Solr exception: " + ex.getLocalizedMessage());
+            isIndexedVersion = false; 
             return resultIds;
         }
 
@@ -983,6 +1015,7 @@ public class DatasetPage implements java.io.Serializable {
                 queryResponse = solrClientService.getSolrClient().query(solrQuery);
             } catch (Exception ex) {
                 logger.warning("Caught a Solr exception (again!): " + ex.getLocalizedMessage());
+                isIndexedVersion = false; 
                 return resultIds;
             }
         }
@@ -5910,14 +5943,7 @@ public class DatasetPage implements java.io.Serializable {
     public void explore(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
-        if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-        } else if (user instanceof PrivateUrlUser) {
-            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-            PrivateUrl privUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-            apiToken = new ApiToken();
-            apiToken.setTokenString(privUrl.getToken());
-        }
+        apiToken = authService.getValidApiTokenForUser(user);
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
         PrimeFaces.current().executeScript(externalToolHandler.getExploreScript());
     }
@@ -5925,8 +5951,9 @@ public class DatasetPage implements java.io.Serializable {
     public void configure(ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
+        //Not enabled for PrivateUrlUsers (who wouldn't have write permissions anyway)
         if (user instanceof AuthenticatedUser) {
-            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+            apiToken = authService.getValidApiTokenForAuthenticatedUser((AuthenticatedUser) user);
         }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
         PrimeFaces.current().executeScript(externalToolHandler.getConfigureScript());
