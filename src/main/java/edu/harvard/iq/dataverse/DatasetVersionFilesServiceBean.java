@@ -260,22 +260,27 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         return criteriaBuilder.and(predicates.toArray(new Predicate[]{}));
     }
 
-    private Order createGetFileMetadatasOrder(CriteriaBuilder criteriaBuilder,
-                                              FileOrderCriteria orderCriteria,
-                                              Root<FileMetadata> fileMetadataRoot) {
+    private List<Order> createGetFileMetadatasOrder(CriteriaBuilder criteriaBuilder,
+                                                    FileOrderCriteria orderCriteria,
+                                                    Root<FileMetadata> fileMetadataRoot) {
         Path<Object> label = fileMetadataRoot.get("label");
         Path<Object> dataFile = fileMetadataRoot.get("dataFile");
         Path<Timestamp> publicationDate = dataFile.get("publicationDate");
         Path<Timestamp> createDate = dataFile.get("createDate");
         Expression<Object> orderByLifetimeExpression = criteriaBuilder.selectCase().when(publicationDate.isNotNull(), publicationDate).otherwise(createDate);
-        return switch (orderCriteria) {
-            case NameZA -> criteriaBuilder.desc(label);
-            case Newest -> criteriaBuilder.desc(orderByLifetimeExpression);
-            case Oldest -> criteriaBuilder.asc(orderByLifetimeExpression);
-            case Size -> criteriaBuilder.asc(dataFile.get("filesize"));
-            case Type -> criteriaBuilder.asc(dataFile.get("contentType"));
-            default -> criteriaBuilder.asc(label);
-        };
+        List<Order> orderList = new ArrayList<>();
+        switch (orderCriteria) {
+            case NameZA -> orderList.add(criteriaBuilder.desc(label));
+            case Newest -> orderList.add(criteriaBuilder.desc(orderByLifetimeExpression));
+            case Oldest -> orderList.add(criteriaBuilder.asc(orderByLifetimeExpression));
+            case Size -> orderList.add(criteriaBuilder.asc(dataFile.get("filesize")));
+            case Type -> {
+                orderList.add(criteriaBuilder.asc(dataFile.get("contentType")));
+                orderList.add(criteriaBuilder.asc(label));
+            }
+            default -> orderList.add(criteriaBuilder.asc(label));
+        }
+        return orderList;
     }
 
     private long getOriginalTabularFilesSize(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {
