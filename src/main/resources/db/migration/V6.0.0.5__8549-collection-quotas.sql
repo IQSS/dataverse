@@ -38,6 +38,19 @@ AND fileobject.id = file.id
 AND dt.datafile_id = file.id
 GROUP BY datasetobject.id) o, dataset ds WHERE o.id = dvobject.id AND dvobject.dtype='Dataset' AND dvobject.id = ds.id AND ds.harvestingclient_id IS null;
 
+-- there may also be some auxiliary files registered in the database, such as
+-- the content generated and deposited by external tools - diff. privacy stats
+-- being one of the example. These are also considered the "payload" files that
+-- we want to count for the purposes of calculating storage use.
+UPDATE dvobject SET tempStorageSize=tempStorageSize+o.combinedStorageSize
+FROM (SELECT datasetobject.id, COALESCE(SUM(aux.fileSize),0) AS combinedStorageSize
+FROM dvobject fileobject, dvobject datasetobject, datafile file, auxiliaryFile aux
+WHERE fileobject.owner_id = datasetobject.id
+AND fileobject.id = file.id
+AND aux.datafile_id = file.id
+GROUP BY datasetobject.id) o, dataset ds WHERE o.id = dvobject.id AND dvobject.dtype='Dataset' AND dvobject.id = ds.id AND ds.harvestingclient_id IS null;
+
+
 -- ... and then we can repeat the same for collections, by setting the storage size
 -- to the sum of the storage sizes of the datasets *directly* in each collection:
 -- (no attemp is made yet to recursively count the sizes all the chilld sub-collections)

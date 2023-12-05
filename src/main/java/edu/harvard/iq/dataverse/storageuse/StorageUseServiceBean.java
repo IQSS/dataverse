@@ -46,23 +46,24 @@ public class StorageUseServiceBean  implements java.io.Serializable {
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void incrementStorageSizeRecursively(Long dvObjectContainerId, Long increment) {
-        //@todo should throw exceptions if either parameter is null
-        Optional<Boolean> allow = JvmSettings.STORAGEUSE_DISABLE_UPDATES.lookupOptional(Boolean.class);
-        if (!(allow.isPresent() && allow.get())) {
-            String queryString = "WITH RECURSIVE uptree (id, owner_id) AS\n"
-                    + "("
-                    + "    SELECT id, owner_id\n"
-                    + "    FROM dvobject\n"
-                    + "    WHERE id=" + dvObjectContainerId + "\n"
-                    + "    UNION ALL\n"
-                    + "    SELECT dvobject.id, dvobject.owner_id\n"
-                    + "    FROM dvobject\n"
-                    + "    JOIN uptree ON dvobject.id = uptree.owner_id)\n"
-                    + "UPDATE storageuse SET sizeinbytes=COALESCE(sizeinbytes,0)+" + increment + "\n"
-                    + "FROM uptree\n"
-                    + "WHERE dvobjectcontainer_id = uptree.id;";
+        if (dvObjectContainerId != null && increment != null) {
+            Optional<Boolean> allow = JvmSettings.STORAGEUSE_DISABLE_UPDATES.lookupOptional(Boolean.class);
+            if (!(allow.isPresent() && allow.get())) {
+                String queryString = "WITH RECURSIVE uptree (id, owner_id) AS\n"
+                        + "("
+                        + "    SELECT id, owner_id\n"
+                        + "    FROM dvobject\n"
+                        + "    WHERE id=" + dvObjectContainerId + "\n"
+                        + "    UNION ALL\n"
+                        + "    SELECT dvobject.id, dvobject.owner_id\n"
+                        + "    FROM dvobject\n"
+                        + "    JOIN uptree ON dvobject.id = uptree.owner_id)\n"
+                        + "UPDATE storageuse SET sizeinbytes=COALESCE(sizeinbytes,0)+" + increment + "\n"
+                        + "FROM uptree\n"
+                        + "WHERE dvobjectcontainer_id = uptree.id;";
 
-            int parentsUpdated = em.createNativeQuery(queryString).executeUpdate();
+                int parentsUpdated = em.createNativeQuery(queryString).executeUpdate();
+            }
         }
         // @todo throw an exception if the number of parent dvobjects updated by
         // the query is < 2 - ? 
