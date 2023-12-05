@@ -35,14 +35,14 @@ public class DataRetrieverApiIT {
 
         String badUserIdentifier = "bad-identifier";
         Response invalidUserIdentifierResponse = UtilIT.retrieveMyDataAsJsonString(superUserApiToken, badUserIdentifier, emptyRoleIdsList);
-        assertEquals("{\"success\":false,\"error_message\":\"No user found for: \\\"" + badUserIdentifier + "\\\"\"}", invalidUserIdentifierResponse.prettyPrint());
+        assertEquals("{\n    \"success\": false,\n    \"error_message\": \"No user found for: \\\"" + badUserIdentifier + "\\\"\"\n}", invalidUserIdentifierResponse.prettyPrint());
         assertEquals(OK.getStatusCode(), invalidUserIdentifierResponse.getStatusCode());
 
         // Call as superuser with valid user identifier
         Response createSecondUserResponse = UtilIT.createRandomUser();
         String userIdentifier = UtilIT.getUsernameFromResponse(createSecondUserResponse);
         Response validUserIdentifierResponse = UtilIT.retrieveMyDataAsJsonString(superUserApiToken, userIdentifier, emptyRoleIdsList);
-        assertEquals("{\"success\":false,\"error_message\":\"Sorry, you have no assigned roles.\"}", validUserIdentifierResponse.prettyPrint());
+        assertEquals("{\n    \"success\": false,\n    \"error_message\": \"Sorry, you have no assigned roles.\"\n}", validUserIdentifierResponse.prettyPrint());
         assertEquals(OK.getStatusCode(), validUserIdentifierResponse.getStatusCode());
     }
 }
