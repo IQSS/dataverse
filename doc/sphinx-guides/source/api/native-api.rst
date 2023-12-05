@@ -5412,6 +5412,17 @@ For cases where the problem may have been temporary (or fixed in a later Dataver
   
   curl -X DELETE $SERVER_URL/api/admin/clearThumbnailFailureFlag/$FILE_ID
 
+.. _download-file-from-tmp:
+
+Download File from /tmp
+~~~~~~~~~~~~~~~~~~~~~~~
+
+As a superuser::
+
+    GET /api/admin/downloadTmpFile?fullyQualifiedPathToFile=/tmp/foo.txt
+
+Note that this API is probably only useful for testing.
+
 MyData
 ------
 

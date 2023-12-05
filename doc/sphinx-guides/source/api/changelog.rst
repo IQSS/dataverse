@@ -11,6 +11,7 @@ API Changelog
 New
 ~~~
 - **/api/admin/clearThumbnailFailureFlag**: See :ref:`thumbnail_reset`.
+- **/api/admin/downloadTmpFile**: See :ref:`download-file-from-tmp`.
 
 Changes
 ~~~~~~~
