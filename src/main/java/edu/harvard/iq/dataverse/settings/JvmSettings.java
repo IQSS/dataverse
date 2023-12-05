@@ -157,6 +157,9 @@ public enum JvmSettings {
     BAGIT_SOURCEORG_ADDRESS(SCOPE_BAGIT_SOURCEORG, "address"),
     BAGIT_SOURCEORG_EMAIL(SCOPE_BAGIT_SOURCEORG, "email"),
 
+    // STORAGE USE SETTINGS
+    SCOPE_STORAGEUSE(PREFIX, "storageuse"),
+    STORAGEUSE_DISABLE_UPDATES(SCOPE_STORAGEUSE, "disable-storageuse-increments"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";

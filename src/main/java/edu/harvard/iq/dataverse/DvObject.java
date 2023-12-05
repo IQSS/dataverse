@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -155,7 +156,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     private String identifier;
     
     private boolean identifierRegistered;
-    
+        
     private transient GlobalId globalId = null;
     
     @OneToMany(mappedBy = "dvObject", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -176,6 +177,9 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      * boolean per thumbnail size.
      */
     private boolean previewImageAvailable;
+    
+    @OneToOne(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
+    private StorageQuota storageQuota;
     
     public boolean isPreviewImageAvailable() {
         return previewImageAvailable;
@@ -458,6 +462,14 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.storageIdentifier = storageIdentifier;
     }
     
+    public StorageQuota getStorageQuota() {
+        return storageQuota;
+    }
+    
+    public void setStorageQuota(StorageQuota storageQuota) {
+        this.storageQuota = storageQuota;
+    }
+
     /**
      * 
      * @param other 
@@ -467,4 +479,5 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     
     @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     List<RoleAssignment> roleAssignments;
+    
 }
