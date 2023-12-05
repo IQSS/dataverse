@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.logging.Logger;
 
@@ -49,18 +48,6 @@ public class SetCollectionQuotaCommand  extends AbstractVoidCommand {
             throw new IllegalCommandException("Must specify valid allocation in bytes", this);
         }
         
-        StorageQuota storageQuota = dataverse.getStorageQuota();
-        
-        if (storageQuota != null) {
-            storageQuota.setAllocation(allocation);
-            ctxt.em().merge(storageQuota);
-        } else {
-            storageQuota = new StorageQuota(); 
-            storageQuota.setDefinitionPoint(dataverse);
-            storageQuota.setAllocation(allocation);
-            dataverse.setStorageQuota(storageQuota);
-            ctxt.em().persist(storageQuota);
-        }
-        ctxt.em().flush();
+        ctxt.dataverses().saveStorageQuota(dataverse, allocation);
     }    
 }

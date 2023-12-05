@@ -641,23 +641,6 @@ public class DataFile extends DvObject implements Comparable {
         }
     }
     
-    /**
-     * Experimental - record the pre-calculated "storage size" of the file, and 
-     * all its associated auxiliary file objects:
-
-    @Column(nullable = true)
-    private Long storageSize;
-    
-
-    public Long getStorageSize() {
-        return storageSize; 
-    }
-    
-    public void setStorageSize(Long storageSize) {
-        this.storageSize = storageSize; 
-    }
-    * */
-
     public boolean isRestricted() {
         return restricted;
     }

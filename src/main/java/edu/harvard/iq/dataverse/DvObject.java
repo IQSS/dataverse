@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.storageuse.StorageQuota;
-import edu.harvard.iq.dataverse.storageuse.StorageUse;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -181,10 +180,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     
     @OneToOne(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     private StorageQuota storageQuota;
-    
-    @OneToOne(mappedBy = "dvObjectContainer",cascade={ CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval=true)
-    private StorageUse storageUse;
-    
     
     public boolean isPreviewImageAvailable() {
         return previewImageAvailable;
@@ -485,13 +480,4 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     List<RoleAssignment> roleAssignments;
     
-    /**
-     * Should only be used in constructors for DvObjectContainers (Datasets and 
-     * Collections), to make sure new entries are created and persisted in the 
-     * database StorageUse table for every DvObject container we create.
-     * @param storageUse 
-     */
-    public void setStorageUse(StorageUse storageUse) {
-        this.storageUse = storageUse;
-    }
 }

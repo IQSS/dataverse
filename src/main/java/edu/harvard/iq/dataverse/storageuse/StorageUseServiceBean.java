@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.storageuse;
 
-import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;

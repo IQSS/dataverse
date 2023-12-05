@@ -2,11 +2,9 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.storageuse.StorageUse;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.persistence.CascadeType;
-import java.util.Locale;
 import java.util.Optional;
 
 import jakarta.persistence.MappedSuperclass;
@@ -45,6 +43,9 @@ public abstract class DvObjectContainer extends DvObject {
     
     private Boolean guestbookAtRequest = null;
    
+    @OneToOne(mappedBy = "dvObjectContainer",cascade={ CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval=true)
+    private StorageUse storageUse;
+    
     public String getEffectiveStorageDriverId() {
         String id = storageDriver;
         if (StringUtils.isBlank(id)) {
@@ -165,4 +166,13 @@ public abstract class DvObjectContainer extends DvObject {
         this.externalLabelSetName = setName;
     }
     
+    /**
+     * Should only be used in constructors for DvObjectContainers (Datasets and 
+     * Collections), to make sure new entries are created and persisted in the 
+     * database StorageUse table for every DvObject container we create.
+     * @param storageUse 
+     */
+    public void setStorageUse(StorageUse storageUse) {
+        this.storageUse = storageUse;
+    }
 }
