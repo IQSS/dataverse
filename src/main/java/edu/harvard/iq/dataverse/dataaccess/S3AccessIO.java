@@ -87,7 +87,7 @@ import jakarta.validation.constraints.NotNull;
 /* 
     Amazon AWS S3 driver
  */
-public class S3AccessIO<T extends DvObject> extends StorageIO<T> implements GlobusAccessibleStore {
+public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Config config = ConfigProvider.getConfig();
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");
@@ -1194,7 +1194,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> implements Glob
              * * if a profile and static credentials are both explicitly set, the profile will be used preferentially, and 
              * * if no store-specific credentials are set, the global credentials will be preferred over using any "default" profile credentials that are found.
              */
-            String s3profile = getConfigParamForDriver(driverId, PROFILE,"default");
 
             ArrayList<AWSCredentialsProvider> providers = new ArrayList<>();
 
