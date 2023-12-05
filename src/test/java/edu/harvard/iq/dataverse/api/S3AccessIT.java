@@ -103,7 +103,7 @@ public class S3AccessIT {
         String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
         String superusername = UtilIT.getUsernameFromResponse(createSuperuser);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
-        Response storageDrivers = listStorageDrivers(superuserApiToken);
+        Response storageDrivers = UtilIT.listStorageDrivers(superuserApiToken);
         storageDrivers.prettyPrint();
         // TODO where is "Local/local" coming from?
         String drivers = """
@@ -127,18 +127,18 @@ public class S3AccessIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response originalStorageDriver = getStorageDriver(dataverseAlias, superuserApiToken);
+        Response originalStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         originalStorageDriver.prettyPrint();
         originalStorageDriver.then().assertThat()
                 .body("data.message", equalTo("undefined"))
                 .statusCode(200);
 
-        Response setStorageDriverToS3 = setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);
+        Response setStorageDriverToS3 = UtilIT.setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);
         setStorageDriverToS3.prettyPrint();
         setStorageDriverToS3.then().assertThat()
                 .statusCode(200);
 
-        Response updatedStorageDriver = getStorageDriver(dataverseAlias, superuserApiToken);
+        Response updatedStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         updatedStorageDriver.prettyPrint();
         updatedStorageDriver.then().assertThat()
                 .statusCode(200);
@@ -214,7 +214,7 @@ public class S3AccessIT {
         String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
         String superusername = UtilIT.getUsernameFromResponse(createSuperuser);
         UtilIT.makeSuperUser(superusername).then().assertThat().statusCode(200);
-        Response storageDrivers = listStorageDrivers(superuserApiToken);
+        Response storageDrivers = UtilIT.listStorageDrivers(superuserApiToken);
         storageDrivers.prettyPrint();
         // TODO where is "Local/local" coming from?
         String drivers = """
@@ -238,18 +238,18 @@ public class S3AccessIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response originalStorageDriver = getStorageDriver(dataverseAlias, superuserApiToken);
+        Response originalStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         originalStorageDriver.prettyPrint();
         originalStorageDriver.then().assertThat()
                 .body("data.message", equalTo("undefined"))
                 .statusCode(200);
 
-        Response setStorageDriverToS3 = setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);
+        Response setStorageDriverToS3 = UtilIT.setStorageDriver(dataverseAlias, driverLabel, superuserApiToken);
         setStorageDriverToS3.prettyPrint();
         setStorageDriverToS3.then().assertThat()
                 .statusCode(200);
 
-        Response updatedStorageDriver = getStorageDriver(dataverseAlias, superuserApiToken);
+        Response updatedStorageDriver = UtilIT.getStorageDriver(dataverseAlias, superuserApiToken);
         updatedStorageDriver.prettyPrint();
         updatedStorageDriver.then().assertThat()
                 .statusCode(200);
@@ -275,7 +275,7 @@ public class S3AccessIT {
 //
 //        String fileId = JsonPath.from(addFileResponse.body().asString()).getString("data.files[0].dataFile.id");
         long size = 1000000000l;
-        Response getUploadUrls = getUploadUrls(datasetPid, size, apiToken);
+        Response getUploadUrls = UtilIT.getUploadUrls(datasetPid, size, apiToken);
         getUploadUrls.prettyPrint();
         getUploadUrls.then().assertThat().statusCode(200);
 
@@ -298,7 +298,7 @@ public class S3AccessIT {
         String contentsOfFile = "foobar";
 
         InputStream inputStream = new ByteArrayInputStream(contentsOfFile.getBytes(StandardCharsets.UTF_8));
-        Response uploadFileDirect = uploadFileDirect(localhostUrl, inputStream);
+        Response uploadFileDirect = UtilIT.uploadFileDirect(localhostUrl, inputStream);
         uploadFileDirect.prettyPrint();
         /*
         Direct upload to MinIO is failing with errors like this:
@@ -357,7 +357,7 @@ public class S3AccessIT {
         assertEquals(contentsOfFile, s3Object);
 
         System.out.println("direct download...");
-        Response getHeaders = downloadFileNoRedirect(Integer.valueOf(fileId), apiToken);
+        Response getHeaders = UtilIT.downloadFileNoRedirect(Integer.valueOf(fileId), apiToken);
         for (Header header : getHeaders.getHeaders()) {
             System.out.println("direct download header: " + header);
         }
@@ -371,7 +371,7 @@ public class S3AccessIT {
         } catch (UnsupportedEncodingException ex) {
         }
 
-        Response downloadFile = downloadFromUrl(decodedDownloadUrl);
+        Response downloadFile = UtilIT.downloadFromUrl(decodedDownloadUrl);
         downloadFile.prettyPrint();
         downloadFile.then().assertThat().statusCode(200);
 
@@ -392,57 +392,6 @@ public class S3AccessIT {
         // 404 because the file has been sucessfully deleted
         assertEquals(404, expectedException.getStatusCode());
 
-    }
-
-    //TODO: move these into UtilIT. They are here for now to avoid merge conflicts
-    static Response listStorageDrivers(String apiToken) {
-        return given()
-                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/admin/dataverse/storageDrivers");
-    }
-
-    static Response getStorageDriver(String dvAlias, String apiToken) {
-        return given()
-                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/admin/dataverse/" + dvAlias + "/storageDriver");
-    }
-
-    static Response setStorageDriver(String dvAlias, String label, String apiToken) {
-        return given()
-                .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken)
-                .body(label)
-                .put("/api/admin/dataverse/" + dvAlias + "/storageDriver");
-    }
-
-    static Response getUploadUrls(String idOrPersistentIdOfDataset, long sizeInBytes, String apiToken) {
-        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
-        }
-        RequestSpecification requestSpecification = given();
-        if (apiToken != null) {
-            requestSpecification = given()
-                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
-        }
-        return requestSpecification.get("/api/datasets/" + idInPath + "/uploadurls?size=" + sizeInBytes + optionalQueryParam);
-    }
-
-    static Response uploadFileDirect(String url, InputStream inputStream) {
-        return given()
-                .header("x-amz-tagging", "dv-state=temp")
-                .body(inputStream)
-                .put(url);
-    }
-
-    static Response downloadFileNoRedirect(Integer fileId, String apiToken) {
-        return given().when().redirects().follow(false)
-                .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
-    }
-
-    static Response downloadFromUrl(String url) {
-        return given().get(url);
     }
 
 }
