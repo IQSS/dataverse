@@ -539,6 +539,27 @@ If you wish to change which store is used by default, you'll need to delete the 
 
 It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
 
+.. _labels-file-stores:
+
+Labels for File Stores
+++++++++++++++++++++++
+
+If you find yourself adding many file stores with various configurations such as per-file limits and direct upload, you might find it helpful to make the label descriptive.
+
+For example, instead of simply labeling an S3 store as "S3"...
+
+.. code-block:: none
+
+    ./asadmin create-jvm-options "\-Ddataverse.files.s3xl.label=S3"
+
+... you might want to include some extra information such as the example below.
+
+.. code-block:: none
+
+    ./asadmin create-jvm-options "\-Ddataverse.files.s3xl.label=S3XL, Filesize limit: 100GB, direct-upload"
+
+Please keep in mind that the UI will only show so many characters, so labels are best kept short.
+
 .. _storage-files-dir:
 
 File Storage
@@ -2488,6 +2509,13 @@ dataverse.netcdf.geo-extract-s3-direct-upload
 This setting was added to keep S3 direct upload lightweight. When that feature is enabled and you still want NetCDF and HDF5 files to go through metadata extraction of a Geospatial Bounding Box (see :ref:`netcdf-and-hdf5`), which requires the file to be downloaded from S3 in this scenario, make this setting true.
 
 See also :ref:`s3-direct-upload-features-disabled`.
+
+.. _dataverse.storageuse.disable-storageuse-increments:
+
+dataverse.storageuse.disable-storageuse-increments
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+This setting serves the role of an emergency "kill switch" that will disable maintaining the real time record of storage use for all the datasets and collections in the database. Because of the experimental nature of this feature (see :doc:`/admin/collectionquotas`) that hasn't been used in production setting as of this release, v6.1 this setting is provided in case these updates start causing database race conditions and conflicts on a busy server. 
 
 dataverse.auth.oidc.*
 +++++++++++++++++++++

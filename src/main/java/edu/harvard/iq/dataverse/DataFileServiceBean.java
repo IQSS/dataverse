@@ -8,6 +8,9 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -41,8 +44,6 @@ import jakarta.persistence.TypedQuery;
  *
  * @author Leonid Andreev
  * 
- * Basic skeleton of the new DataFile service for DVN 4.0
- * 
  */
 
 @Stateless
@@ -65,6 +66,9 @@ public class DataFileServiceBean implements java.io.Serializable {
     @EJB EmbargoServiceBean embargoService;
     
     @EJB SystemConfig systemConfig;
+    
+    @EJB
+    StorageUseServiceBean storageUseService; 
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -138,39 +142,6 @@ public class DataFileServiceBean implements java.io.Serializable {
      * the page URL above.
      */
     public static final String MIME_TYPE_PACKAGE_FILE = "application/vnd.dataverse.file-package";
-    
-    public class UserStorageQuota {
-        private Long totalAllocatedInBytes = 0L; 
-        private Long totalUsageInBytes = 0L;
-        
-        public UserStorageQuota(Long allocated, Long used) {
-            this.totalAllocatedInBytes = allocated;
-            this.totalUsageInBytes = used; 
-        }
-        
-        public Long getTotalAllocatedInBytes() {
-            return totalAllocatedInBytes;
-        }
-        
-        public void setTotalAllocatedInBytes(Long totalAllocatedInBytes) {
-            this.totalAllocatedInBytes = totalAllocatedInBytes;
-        }
-        
-        public Long getTotalUsageInBytes() {
-            return totalUsageInBytes;
-        }
-        
-        public void setTotalUsageInBytes(Long totalUsageInBytes) {
-            this.totalUsageInBytes = totalUsageInBytes;
-        }
-        
-        public Long getRemainingQuotaInBytes() {
-            if (totalUsageInBytes > totalAllocatedInBytes) {
-                return 0L; 
-            }
-            return totalAllocatedInBytes - totalUsageInBytes;
-        }
-    }
     
     public DataFile find(Object pk) {
         return em.find(DataFile.class, pk);
@@ -1396,28 +1367,38 @@ public class DataFileServiceBean implements java.io.Serializable {
         return d.getEmbargo();
     }
     
-    public Long getStorageUsageByCreator(AuthenticatedUser user) {
-        Query query = em.createQuery("SELECT SUM(o.filesize) FROM DataFile o WHERE o.creator.id=:creatorId");
-        
-        try {
-            Long totalSize = (Long)query.setParameter("creatorId", user.getId()).getSingleResult();
-            logger.info("total size for user: "+totalSize);
-            return totalSize == null ? 0L : totalSize; 
-        } catch (NoResultException nre) { // ?
-            logger.info("NoResultException, returning 0L");
-            return 0L;
+    /**
+     * Checks if the supplied DvObjectContainer (Dataset or Collection; although
+     * only collection-level storage quotas are officially supported as of now)
+     * has a quota configured, and if not, keeps checking if any of the direct
+     * ancestor Collections further up have a configured quota. If it finds one, 
+     * it will retrieve the current total content size for that specific ancestor 
+     * dvObjectContainer and use it to define the quota limit for the upload
+     * session in progress. 
+     * 
+     * @param parent - DvObjectContainer, Dataset or Collection
+     * @return upload session size limit spec, or null if quota not defined on 
+     * any of the ancestor DvObjectContainers
+     */
+    public UploadSessionQuotaLimit getUploadSessionQuotaLimit(DvObjectContainer parent) {
+        DvObjectContainer testDvContainer = parent; 
+        StorageQuota quota = testDvContainer.getStorageQuota();
+        while (quota == null && testDvContainer.getOwner() != null) {
+            testDvContainer = testDvContainer.getOwner();
+            quota = testDvContainer.getStorageQuota();
+            if (quota != null) {
+                break;
+            }
+        }    
+        if (quota == null || quota.getAllocation() == null) {
+            return null; 
         }
-    }
-    
-    public UserStorageQuota getUserStorageQuota(AuthenticatedUser user, Dataset dataset) {
-        // this is for testing only - one pre-set, installation-wide quota limit
-        // for everybody:
-        Long totalAllocated = systemConfig.getTestStorageQuotaLimit();
-        // again, this is for testing only - we are only counting the total size
-        // of all the files created by this user; it will likely be a much more 
-        // complex calculation in real life applications:
-        Long totalUsed = getStorageUsageByCreator(user); 
         
-        return new UserStorageQuota(totalAllocated, totalUsed);
+        // Note that we are checking the recorded storage use not on the 
+        // immediate parent necessarily, but on the specific ancestor 
+        // DvObjectContainer on which the storage quota is defined:
+        Long currentSize = storageUseService.findStorageSizeByDvContainerId(testDvContainer.getId()); 
+        
+        return new UploadSessionQuotaLimit(quota.getAllocation(), currentSize);
     }
 }
