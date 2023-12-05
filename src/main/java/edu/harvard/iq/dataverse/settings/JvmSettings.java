@@ -151,6 +151,16 @@ public enum JvmSettings {
     SCOPE_NETCDF(PREFIX, "netcdf"),
     GEO_EXTRACT_S3_DIRECT_UPLOAD(SCOPE_NETCDF, "geo-extract-s3-direct-upload"),
 
+    // BAGIT SETTINGS
+    SCOPE_BAGIT(PREFIX, "bagit"),
+    SCOPE_BAGIT_SOURCEORG(SCOPE_BAGIT, "sourceorg"),
+    BAGIT_SOURCE_ORG_NAME(SCOPE_BAGIT_SOURCEORG, "name"),
+    BAGIT_SOURCEORG_ADDRESS(SCOPE_BAGIT_SOURCEORG, "address"),
+    BAGIT_SOURCEORG_EMAIL(SCOPE_BAGIT_SOURCEORG, "email"),
+
+    // STORAGE USE SETTINGS
+    SCOPE_STORAGEUSE(PREFIX, "storageuse"),
+    STORAGEUSE_DISABLE_UPDATES(SCOPE_STORAGEUSE, "disable-storageuse-increments"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";
