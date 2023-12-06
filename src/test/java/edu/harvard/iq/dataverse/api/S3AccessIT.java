@@ -62,16 +62,15 @@ public class S3AccessIT {
                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKeyMinio, secretKeyMinio)))
                 .withEndpointConfiguration(new EndpointConfiguration("http://localhost:9000", Regions.US_EAST_1.getName())).build();
 
-        System.out.println("buckets on LocalStack before attempting to create " + BUCKET_NAME);
-        for (Bucket bucket : s3localstack.listBuckets()) {
-            System.out.println("bucket: " + bucket);
-        }
-
-        System.out.println("buckets on MinIO before attempting to create " + BUCKET_NAME);
-        for (Bucket bucket : s3minio.listBuckets()) {
-            System.out.println("bucket: " + bucket);
-        }
-
+//        System.out.println("buckets on LocalStack before attempting to create " + BUCKET_NAME);
+//        for (Bucket bucket : s3localstack.listBuckets()) {
+//            System.out.println("bucket: " + bucket);
+//        }
+//
+//        System.out.println("buckets on MinIO before attempting to create " + BUCKET_NAME);
+//        for (Bucket bucket : s3minio.listBuckets()) {
+//            System.out.println("bucket: " + bucket);
+//        }
         // create bucket if it doesn't exist
         // Note that we create the localstack bucket with conf/localstack/buckets.sh
         // because we haven't figured out how to create it properly in Java.
