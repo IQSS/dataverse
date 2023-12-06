@@ -61,7 +61,7 @@ public class GlobusOverlayAccessIOTest {
         System.setProperty("dataverse.files.globusr.type", "globus");
         System.setProperty("dataverse.files.globusr.base-store", "base");
         System.setProperty("dataverse.files.globusr.managed", "false");
-        System.setProperty("dataverse.files.globusm.label", "globusRemote");
+        System.setProperty("dataverse.files.globusr.label", "globusRemote");
         System.setProperty(
                 "dataverse.files.globusr." + AbstractRemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS,
                 "d7c42580-6538-4605-9ad8-116a61982644/hdc1");
