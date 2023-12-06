@@ -74,7 +74,9 @@ import com.google.gson.JsonSyntaxException;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
+import java.util.Optional;
 
 public class BagGenerator {
 
@@ -822,17 +824,20 @@ public class BagGenerator {
             logger.warning("No contact info available for BagIt Info file");
         }
 
-        info.append("Source-Organization: " + BundleUtil.getStringFromBundle("bagit.sourceOrganization"));
+        String orgName = JvmSettings.BAGIT_SOURCE_ORG_NAME.lookupOptional(String.class).orElse("Dataverse Installation (<Site Url>)");
+        String orgAddress = JvmSettings.BAGIT_SOURCEORG_ADDRESS.lookupOptional(String.class).orElse("<Full address>");
+        String orgEmail = JvmSettings.BAGIT_SOURCEORG_EMAIL.lookupOptional(String.class).orElse("<Email address>");
+
+        info.append("Source-Organization: " + orgName);
         // ToDo - make configurable
         info.append(CRLF);
 
-        info.append("Organization-Address: " + WordUtils.wrap(
-                BundleUtil.getStringFromBundle("bagit.sourceOrganizationAddress"), 78, CRLF + " ", true));
+        info.append("Organization-Address: " + WordUtils.wrap(orgAddress, 78, CRLF + " ", true));
+
         info.append(CRLF);
 
         // Not a BagIt standard name
-        info.append(
-                "Organization-Email: " + BundleUtil.getStringFromBundle("bagit.sourceOrganizationEmail"));
+        info.append("Organization-Email: " + orgEmail);
         info.append(CRLF);
 
         info.append("External-Description: ");
