@@ -110,6 +110,7 @@ import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
+import edu.harvard.iq.dataverse.globus.GlobusUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -3996,7 +3997,7 @@ public class Datasets extends AbstractApiBean {
             }
         }
         // Allowed to download all requested files
-        JsonObject files = globusService.getFilesMap(dataFiles, dataset);
+        JsonObject files = GlobusUtil.getFilesMap(dataFiles, dataset);
         if (GlobusAccessibleStore.isDataverseManaged(dataset.getEffectiveStorageDriverId())) {
             // If managed, give the principal read permissions
             int status = globusService.setPermissionForDownload(dataset, body.getString("principal"));

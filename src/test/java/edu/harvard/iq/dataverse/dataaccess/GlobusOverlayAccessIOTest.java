@@ -6,7 +6,6 @@ package edu.harvard.iq.dataverse.dataaccess;
 import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import org.junit.jupiter.api.AfterEach;

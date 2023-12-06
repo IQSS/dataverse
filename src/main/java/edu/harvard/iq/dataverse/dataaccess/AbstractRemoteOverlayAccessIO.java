@@ -42,7 +42,7 @@ import edu.harvard.iq.dataverse.DvObject;
 public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
     protected static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.RemoteOverlayAccessIO");
-    protected static final String REFERENCE_ENDPOINTS_WITH_BASEPATHS = "reference-endpoints-with-basepaths";
+    public static final String REFERENCE_ENDPOINTS_WITH_BASEPATHS = "reference-endpoints-with-basepaths";
     static final String BASE_STORE = "base-store";
     protected static final String SECRET_KEY = "secret-key";
     static final String URL_EXPIRATION_MINUTES = "url-expiration-minutes";

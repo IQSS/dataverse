@@ -159,9 +159,11 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
     }
 
-    /** Request read/write access for the specified principal and generate a list of accessible paths for new files for the specified dataset.
+    /**
+     * Request read/write access for the specified principal and generate a list of
+     * accessible paths for new files for the specified dataset.
      * 
-     * @param principal - the id of the Globus principal doing the transfer
+     * @param principal     - the id of the Globus principal doing the transfer
      * @param dataset
      * @param numberOfPaths - how many files are to be transferred
      * @return
@@ -230,10 +232,15 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
     }
 
-    /** Given an array of remote files to be referenced in the dataset, create a set of valid storage identifiers and return a map of the remote file paths to storage identifiers.
+    /**
+     * Given an array of remote files to be referenced in the dataset, create a set
+     * of valid storage identifiers and return a map of the remote file paths to
+     * storage identifiers.
      * 
      * @param dataset
-     * @param referencedFiles - a JSON array of remote files to be referenced in the dataset - each should be a string with the <Globus endpoint>/path/to/file
+     * @param referencedFiles - a JSON array of remote files to be referenced in the
+     *                        dataset - each should be a string with the <Globus
+     *                        endpoint>/path/to/file
      * @return - a map of supplied paths to valid storage identifiers
      */
     public JsonObject requestReferenceFileIdentifiers(Dataset dataset, JsonArray referencedFiles) {
@@ -262,15 +269,17 @@ public class GlobusServiceBean implements java.io.Serializable {
         return fileMap.build();
     }
 
-    
-    /** A cache of temporary permission requests - for upload (rw) and download (r) access.
-     * When a temporary permission request is created, it is added to the cache. After GLOBUS_CACHE_MAXAGE minutes, if a transfer has not been started, the permission will be revoked/deleted.
-     * (If a transfer has been started, the permission will not be revoked/deleted until the transfer is complete. This is handled in other methods.)
+    /**
+     * A cache of temporary permission requests - for upload (rw) and download (r)
+     * access. When a temporary permission request is created, it is added to the
+     * cache. After GLOBUS_CACHE_MAXAGE minutes, if a transfer has not been started,
+     * the permission will be revoked/deleted. (If a transfer has been started, the
+     * permission will not be revoked/deleted until the transfer is complete. This
+     * is handled in other methods.)
      */
     // Single cache of open rules/permission requests
     private final Cache<String, Long> rulesCache = Caffeine.newBuilder()
-            .expireAfterWrite(
-                    Duration.of(JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.MINUTES))
+            .expireAfterWrite(Duration.of(JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.MINUTES))
             .scheduler(Scheduler.systemScheduler()).evictionListener((ruleId, datasetId, cause) -> {
                 // Delete rules that expire
                 logger.fine("Rule " + ruleId + " expired");
@@ -280,20 +289,24 @@ public class GlobusServiceBean implements java.io.Serializable {
 
             .build();
 
-    //Convenience method to add a temporary permission request to the cache - allows logging of temporary permission requests
+    // Convenience method to add a temporary permission request to the cache -
+    // allows logging of temporary permission requests
     private void monitorTemporaryPermissions(String ruleId, long datasetId) {
         logger.fine("Adding rule " + ruleId + " for dataset " + datasetId);
         rulesCache.put(ruleId, datasetId);
     }
 
-/** Call the Globus API to get info about the transfer.
- * 
- * @param accessToken
- * @param taskId - the Globus task id supplied by the user
- * @param globusLogger - the transaction-specific logger to use (separate log files are created in general, some calls may use the class logger)
- * @return
- * @throws MalformedURLException
- */
+    /**
+     * Call the Globus API to get info about the transfer.
+     * 
+     * @param accessToken
+     * @param taskId       - the Globus task id supplied by the user
+     * @param globusLogger - the transaction-specific logger to use (separate log
+     *                     files are created in general, some calls may use the
+     *                     class logger)
+     * @return
+     * @throws MalformedURLException
+     */
     public GlobusTask getTask(String accessToken, String taskId, Logger globusLogger) throws MalformedURLException {
 
         URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task/" + taskId);
@@ -313,9 +326,12 @@ public class GlobusServiceBean implements java.io.Serializable {
         return task;
     }
 
-    /** Globus call to get an access token for the user using the long-term token we hold.
+    /**
+     * Globus call to get an access token for the user using the long-term token we
+     * hold.
      * 
-     * @param globusBasicToken - the base64 encoded Globus Basic token comprised of the <Globus user id>:<key>
+     * @param globusBasicToken - the base64 encoded Globus Basic token comprised of
+     *                         the <Globus user id>:<key>
      * @return - a valid Globus access token
      */
     public static AccessToken getClientToken(String globusBasicToken) {
@@ -433,7 +449,6 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     }
 
-
     /**
      * Cache of open download Requests This cache keeps track of the set of files
      * selected for transfer out (download) via Globus. It is a means of
@@ -480,10 +495,11 @@ public class GlobusServiceBean implements java.io.Serializable {
         return getGlobusAppUrlForDataset(d, true, null);
     }
 
-    /** Generated the App URl for upload (in) or download (out)
+    /**
+     * Generated the App URl for upload (in) or download (out)
      * 
-     * @param d - the dataset involved
-     * @param upload - boolean, true for upload, false for download
+     * @param d         - the dataset involved
+     * @param upload    - boolean, true for upload, false for download
      * @param dataFiles - a list of the DataFiles to be downloaded
      * @return
      */
@@ -516,7 +532,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                     + "/globusUploadParameters?locale=" + localeCode;
         } else {
             // Download
-            JsonObject files = getFilesMap(dataFiles, d);
+            JsonObject files = GlobusUtil.getFilesMap(dataFiles, d);
 
             String downloadId = UUID.randomUUID().toString();
             downloadCache.put(downloadId, files);
@@ -540,27 +556,8 @@ public class GlobusServiceBean implements java.io.Serializable {
         return finalUrl;
     }
 
-    public JsonObject getFilesMap(List<DataFile> dataFiles, Dataset d) {
-        JsonObjectBuilder filesBuilder = Json.createObjectBuilder();
-        for (DataFile df : dataFiles) {
-            String storageId = df.getStorageIdentifier();
-            String[] parts = DataAccess.getDriverIdAndStorageLocation(DataAccess.getLocationFromStorageId(storageId, d));
-            String driverId =  parts[0];
-            String fileLocation = parts[1];
-            if (GlobusAccessibleStore.isDataverseManaged(driverId)) {
-                String endpointWithBasePath = GlobusAccessibleStore.getTransferEnpointWithPath(driverId);
-                fileLocation = endpointWithBasePath + "/" + fileLocation;
-            } else {
-                fileLocation = storageId.substring(storageId.lastIndexOf("//") + 2);
-            }
-            filesBuilder.add(df.getId().toString(), fileLocation);
-        }
-        return filesBuilder.build();
-    }
-
     private String getGlobusDownloadScript(Dataset dataset, ApiToken apiToken, List<DataFile> downloadDFList) {
         return URLTokenUtil.getScriptForUrl(getGlobusAppUrlForDataset(dataset, false, downloadDFList));
-
     }
 
     @Asynchronous
@@ -608,8 +605,8 @@ public class GlobusServiceBean implements java.io.Serializable {
                 rulesCache.invalidate(ruleId);
             }
         }
-        
-        //Wait before first check
+
+        // Wait before first check
         Thread.sleep(5000);
         // globus task status check
         task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
@@ -907,8 +904,8 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
         task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
         String taskStatus = getTaskStatus(task);
-        
-        //Transfer is done (success or failure) so delete the rule
+
+        // Transfer is done (success or failure) so delete the rule
         if (ruleId != null) {
             logger.info("Deleting: rule: " + ruleId);
             deletePermission(ruleId, dataset, globusLogger);
@@ -1150,13 +1147,14 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         return endpoint;
     }
-    
+
     // This helper method is called from the Download terms/guestbook/etc. popup,
     // when the user clicks the "ok" button. We use it, instead of calling
     // downloadServiceBean directly, in order to differentiate between single
     // file downloads and multiple (batch) downloads - since both use the same
     // terms/etc. popup.
-    public void writeGuestbookAndStartTransfer(GuestbookResponse guestbookResponse, boolean doNotSaveGuestbookResponse) {
+    public void writeGuestbookAndStartTransfer(GuestbookResponse guestbookResponse,
+            boolean doNotSaveGuestbookResponse) {
         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
         guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
 
@@ -1170,7 +1168,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             apiToken = new ApiToken();
             apiToken.setTokenString(privUrl.getToken());
         }
-        
+
         DataFile df = guestbookResponse.getDataFile();
         if (df != null) {
             logger.fine("Single datafile case for writeGuestbookAndStartTransfer");
@@ -1179,35 +1177,35 @@ public class GlobusServiceBean implements java.io.Serializable {
             if (!doNotSaveGuestbookResponse) {
                 fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
             }
-            PrimeFaces.current()
-                    .executeScript(getGlobusDownloadScript(df.getOwner(), apiToken, downloadDFList));
+            PrimeFaces.current().executeScript(getGlobusDownloadScript(df.getOwner(), apiToken, downloadDFList));
         } else {
-            //Following FileDownloadServiceBean writeGuestbookAndStartBatchDownload
+            // Following FileDownloadServiceBean writeGuestbookAndStartBatchDownload
             List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
             List<DataFile> selectedFiles = new ArrayList<DataFile>();
             for (String idAsString : list) {
                 try {
                     Long fileId = Long.parseLong(idAsString);
-                // If we need to create a GuestBookResponse record, we have to 
-                // look up the DataFile object for this file: 
-                if (!doNotSaveGuestbookResponse) {
-                    df = dataFileService.findCheapAndEasy(fileId);
-                    guestbookResponse.setDataFile(df);
-                    fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
-                    selectedFiles.add(df);
-                }
+                    // If we need to create a GuestBookResponse record, we have to
+                    // look up the DataFile object for this file:
+                    if (!doNotSaveGuestbookResponse) {
+                        df = dataFileService.findCheapAndEasy(fileId);
+                        guestbookResponse.setDataFile(df);
+                        fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+                        selectedFiles.add(df);
+                    }
                 } catch (NumberFormatException nfe) {
-                    logger.warning("A file id passed to the writeGuestbookAndStartTransfer method as a string could not be converted back to Long: " + idAsString);
+                    logger.warning(
+                            "A file id passed to the writeGuestbookAndStartTransfer method as a string could not be converted back to Long: "
+                                    + idAsString);
                     return;
                 }
 
             }
             if (!selectedFiles.isEmpty()) {
-                //Use dataset from one file - files should all be from the same dataset
-                PrimeFaces.current().executeScript(getGlobusDownloadScript(df.getOwner(), apiToken,
-                        selectedFiles));
+                // Use dataset from one file - files should all be from the same dataset
+                PrimeFaces.current().executeScript(getGlobusDownloadScript(df.getOwner(), apiToken, selectedFiles));
             }
         }
-     }
+    }
 
 }
