@@ -4145,7 +4145,7 @@ public class Datasets extends AbstractApiBean {
                                                  @Context HttpHeaders headers) {
         return response(req -> {
             DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, false);
-            return ok(permissionService.canDownloadAtLeastOneFile(getRequestUser(crc), datasetVersion));
+            return ok(permissionService.canDownloadAtLeastOneFile(req, datasetVersion));
         }, getRequestUser(crc));
     }
 }
