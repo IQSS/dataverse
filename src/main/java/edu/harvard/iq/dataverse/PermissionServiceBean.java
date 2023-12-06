@@ -842,7 +842,7 @@ public class PermissionServiceBean {
     }
 
     /**
-     * Checks if a User can download at least one file of the target DatasetVersion.
+     * Checks if a DataverseRequest can download at least one file of the target DatasetVersion.
      *
      * @param dataverseRequest DataverseRequest to check
      * @param datasetVersion DatasetVersion to check
