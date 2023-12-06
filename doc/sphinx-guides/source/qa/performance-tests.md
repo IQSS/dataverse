@@ -20,4 +20,4 @@ Please note the performance database is also used occasionally by Julian and the
 
 Executing the Performance Script
 --------------------------------
-To execute the performance test script, you need to install a local copy of the database-helper-scripts project at <https://github.com/IQSS/dataverse-helper-scripts>. We have since produced a stripped-down script that calls just the DB and ds and works with python3. 
+To execute the performance test script, you need to install a local copy of the database-helper-scripts project at <https://github.com/IQSS/dataverse-helper-scripts>. We have since produced a stripped-down script that calls just the collection and dataset and works with Python 3.
