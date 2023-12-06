@@ -292,7 +292,7 @@
                                                             <!--
                                                             <p:outputPanel id="selectedValsList" style="padding-top:.5em;">
                                                                 <ui:repeat value="#{dsf.controlledVocabularyValues}" var="cvv" rendered="#{!empty dsf.controlledVocabularyValues}">
-                                                                   <h:outputText value="#{cvv.localeStrValue}"  style="margin-right:.5em;display:inline-block;"/>
+                                                                   <h:outputText value="#{cvv.getLocaleStrValue(mdLangCode)}"  style="margin-right:.5em;display:inline-block;"/>
                                                                 </ui:repeat>
                                                             </p:outputPanel>
                                                             -->
@@ -368,12 +368,12 @@
                                                                 <p:selectOneMenu id="cvv" value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
                                                                                  rendered="#{!subdsf.datasetFieldType.allowMultiples}" filter="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" filterMatchMode="contains" >
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
-                                                                    <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
+                                                                    <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}" />
                                                                 </p:selectOneMenu>
                                                                 <!--
                                                                 <p:outputPanel id="selectedValsListCompound" style="padding-top:.5em;">
                                                                     <ui:repeat value="#{subdsf.controlledVocabularyValues}" var="cvv" rendered="#{!empty subdsf.controlledVocabularyValues}">
-                                                                        <h:outputText value="#{cvv.localeStrValue}"  style="margin-right:.5em;display:inline-block;"/>
+                                                                        <h:outputText value="#{cvv.getLocaleStrValue(mdLangCode)}"  style="margin-right:.5em;display:inline-block;"/>
                                                                     </ui:repeat>
                                                                 </p:outputPanel>
                                                                 -->
@@ -387,7 +387,7 @@
                                                                                           rendered="#{subdsf.datasetFieldType.allowMultiples}" label="#{bundle.select}" multiple="true"
                                                                                           filter="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" filterMatchMode="contains" 
                                                                                           showHeader="#{(subdsf.datasetFieldType.controlledVocabularyValues.size() lt 10) ? 'false':'true'}">
-                                                                        <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
+                                                                        <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}" />
                                                                     </p:selectCheckboxMenu>
 
                                                                 <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty subdsf.validationMessage}">
