@@ -8,8 +8,9 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,8 +36,8 @@ public class GlobusOverlayAccessIOTest {
     private String authority = "10.5072";
     private String identifier = "F2ABCDEF";
 
-    @BeforeEach
-    public void setUp() {
+    @BeforeAll
+    public static void setUp() {
         // Base Store
         System.setProperty("dataverse.files.base.type", DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
         System.setProperty("dataverse.files.base.label", "default");
@@ -65,20 +66,11 @@ public class GlobusOverlayAccessIOTest {
                 "dataverse.files.globusr." + AbstractRemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS,
                 "d7c42580-6538-4605-9ad8-116a61982644/hdc1");
         System.setProperty("dataverse.files.globusr.remote-store-name", "DemoDataCorp");
-        dataset = MocksFactory.makeDataset();
-        dataset.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, authority, identifier, "/",
-                DOIServiceBean.DOI_RESOLVER_URL, null));
-        mDatafile = MocksFactory.makeDataFile();
-        mDatafile.setOwner(dataset);
-        mDatafile.setStorageIdentifier("globusm://" + baseStoreId1);
 
-        rDatafile = MocksFactory.makeDataFile();
-        rDatafile.setOwner(dataset);
-        rDatafile.setStorageIdentifier("globusr://" + baseStoreId2 + "//" + logoPath);
     }
 
-    @AfterEach
-    public void tearDown() {
+    @AfterAll
+    public static void tearDown() {
         System.clearProperty("dataverse.files.base.type");
         System.clearProperty("dataverse.files.base.label");
         System.clearProperty("dataverse.files.base.directory");
@@ -100,6 +92,18 @@ public class GlobusOverlayAccessIOTest {
 
     @Test
     void testGlobusOverlayIdentifiers() throws IOException {
+
+        dataset = MocksFactory.makeDataset();
+        dataset.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, authority, identifier, "/",
+                DOIServiceBean.DOI_RESOLVER_URL, null));
+        mDatafile = MocksFactory.makeDataFile();
+        mDatafile.setOwner(dataset);
+        mDatafile.setStorageIdentifier("globusm://" + baseStoreId1);
+
+        rDatafile = MocksFactory.makeDataFile();
+        rDatafile.setOwner(dataset);
+        rDatafile.setStorageIdentifier("globusr://" + baseStoreId2 + "//" + logoPath);
+
         assertTrue(GlobusOverlayAccessIO.isValidIdentifier("globusm", mDatafile.getStorageIdentifier()));
         assertTrue(GlobusOverlayAccessIO.isValidIdentifier("globusr", rDatafile.getStorageIdentifier()));
         assertFalse(GlobusOverlayAccessIO.isValidIdentifier("globusm", "globusr://localid//../of/the/hill"));
