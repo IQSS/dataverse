@@ -4141,10 +4141,11 @@ public class Datasets extends AbstractApiBean {
     public Response getCanDownloadAtLeastOneFile(@Context ContainerRequestContext crc,
                                                  @PathParam("id") String datasetId,
                                                  @PathParam("versionId") String versionId,
+                                                 @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                                  @Context UriInfo uriInfo,
                                                  @Context HttpHeaders headers) {
         return response(req -> {
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, false);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned);
             return ok(permissionService.canDownloadAtLeastOneFile(req, datasetVersion));
         }, getRequestUser(crc));
     }
