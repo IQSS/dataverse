@@ -277,6 +277,8 @@ public class GlobusServiceBean implements java.io.Serializable {
      * permission will not be revoked/deleted until the transfer is complete. This
      * is handled in other methods.)
      */
+    // ToDo - nominally this doesn't need to be as long as the allowed time for the
+    // downloadCache so there could be two separate settings.
     // Single cache of open rules/permission requests
     private final Cache<String, Long> rulesCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.of(JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.MINUTES))
