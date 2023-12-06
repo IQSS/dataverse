@@ -105,6 +105,7 @@ Note that when using the dataverse-globus app or the return from the previous ca
 In the managed case, the JSON body sent must include the id of the Globus user that will perform the transfer and the number of files that will be transferred:
 
 .. code-block:: bash
+
   {
     "principal":"d15d4244-fc10-47f3-a790-85bdb6db9a75", 
     "numberOfFiles":2
@@ -113,6 +114,7 @@ In the managed case, the JSON body sent must include the id of the Globus user t
 In the remote reference case, the JSON body sent must include the Globus endpoint/paths that will be referenced:
 
 .. code-block:: bash
+
   {
     "referencedFiles":[
       "d8c42580-6528-4605-9ad8-116a61982644/hdc1/test1.txt"
@@ -120,6 +122,7 @@ In the remote reference case, the JSON body sent must include the Globus endpoin
   }
     
 The response will include a JSON object. In the managed case, the map is from new assigned file storageidentifiers and specific paths on the managed Globus endpoint:
+
 .. code-block:: bash
 
   {
@@ -161,7 +164,6 @@ In the managed case, once a Globus transfer has been initiated a final API call 
                     "files": [{"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"globusm://18b3972213f-f6b5c2221423", "fileName":"file1.txt", "mimeType":"text/plain", "checksum": {"@type": "MD5", "@value": "1234"}}, \
                     {"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"globusm://18b39722140-50eb7d3c5ece", "fileName":"file2.txt", "mimeType":"text/plain", "checksum": {"@type": "MD5", "@value": "2345"}}]}"
 
-  
   curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:multipart/form-data" -X POST "$SERVER_URL/api/datasets/:persistentId/addGlobusFiles -F "jsonData=$JSON_DATA""
 
 Note that the mimetype is multipart/form-data, matching the /addFiles API call. ALso note that the API_TOKEN is not needed when using a signed URL.
@@ -191,6 +193,7 @@ To begin downloading files, the requestGlobusDownload URL is used:
 The JSON body sent should include a list of file ids to download and, for a managed endpoint, the Globus principal that will make the transfer:
 
 .. code-block:: bash
+
   {
     "principal":"d15d4244-fc10-47f3-a790-85bdb6db9a75", 
     "fileIds":[60, 61]
