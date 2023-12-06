@@ -5,8 +5,13 @@ API Changelog
     :local:
     :depth: 1
 
-6.1
----
+v6.1
+----
+
+New
+~~~
+- **/api/dataverses/{id}/datasetSchema**: See :ref:`get-dataset-json-schema`.
+- **/api/dataverses/{id}/validateDatasetJson**: See :ref:`validate-dataset-json`.
 
 New
 ~~~
@@ -17,8 +22,8 @@ Changes
 ~~~~~~~
 - **/api/datasets/{id}/versions/{versionId}/citation**: This endpoint now accepts a new boolean optional query parameter "includeDeaccessioned", which, if enabled, causes the endpoint to consider deaccessioned versions when searching for versions to obtain the citation. See :ref:`get-citation`.
 
-6.0
----
+v6.0
+----
 
 Changes
 ~~~~~~~
