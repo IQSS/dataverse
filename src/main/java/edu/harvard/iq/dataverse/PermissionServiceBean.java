@@ -851,11 +851,13 @@ public class PermissionServiceBean {
         if (user.isSuperuser()) {
             return true;
         }
-        if (hasReleasedFiles(datasetVersion)) {
+        if (hasUnrestrictedReleasedFiles(datasetVersion)) {
             return true;
         }
         for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
-            if (userOn(user, fileMetadata.getDataFile()).has(Permission.DownloadFile)) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(user, dataFile));
+            if (hasGroupPermissionsFor(ras, dataFile, EnumSet.of(Permission.DownloadFile))) {
                 return true;
             }
         }
@@ -863,7 +865,7 @@ public class PermissionServiceBean {
     }
 
     /**
-     * Checks if a DatasetVersion has released files.
+     * Checks if a DatasetVersion has unrestricted released files.
      *
      * This method is mostly based on {@link #isPublicallyDownloadable(DvObject)} although in this case, instead of basing
      * the search on a particular file, it searches for the total number of files in the target version that are present
@@ -872,7 +874,7 @@ public class PermissionServiceBean {
      * @param targetDatasetVersion DatasetVersion to check
      * @return boolean indicating whether the dataset version has released files or not
      */
-    private boolean hasReleasedFiles(DatasetVersion targetDatasetVersion) {
+    private boolean hasUnrestrictedReleasedFiles(DatasetVersion targetDatasetVersion) {
         Dataset targetDataset = targetDatasetVersion.getDataset();
         if (!targetDataset.isReleased()) {
             return false;
