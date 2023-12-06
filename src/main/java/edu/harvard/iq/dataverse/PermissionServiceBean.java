@@ -451,8 +451,9 @@ public class PermissionServiceBean {
 
             if (!df.isRestricted()) {
                 if (df.getOwner().getReleasedVersion() != null) {
-                    if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                        for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
+                    List<FileMetadata> fileMetadatas = df.getOwner().getReleasedVersion().getFileMetadatas();
+                    if (fileMetadatas != null) {
+                        for (FileMetadata fm : fileMetadatas) {
                             if (df.equals(fm.getDataFile())) {
                                 return true;
                             }
