@@ -539,6 +539,27 @@ If you wish to change which store is used by default, you'll need to delete the 
 
 It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
 
+.. _labels-file-stores:
+
+Labels for File Stores
+++++++++++++++++++++++
+
+If you find yourself adding many file stores with various configurations such as per-file limits and direct upload, you might find it helpful to make the label descriptive.
+
+For example, instead of simply labeling an S3 store as "S3"...
+
+.. code-block:: none
+
+    ./asadmin create-jvm-options "\-Ddataverse.files.s3xl.label=S3"
+
+... you might want to include some extra information such as the example below.
+
+.. code-block:: none
+
+    ./asadmin create-jvm-options "\-Ddataverse.files.s3xl.label=S3XL, Filesize limit: 100GB, direct-upload"
+
+Please keep in mind that the UI will only show so many characters, so labels are best kept short.
+
 .. _storage-files-dir:
 
 File Storage
@@ -1608,6 +1629,25 @@ The workflow id returned in this call (or available by doing a GET of /api/admin
 
 Once these steps are taken, new publication requests will automatically trigger submission of an archival copy to the specified archiver, Chronopolis' DuraCloud component in this example. For Chronopolis, as when using the API, it is currently the admin's responsibility to snap-shot the DuraCloud space and monitor the result. Failure of the workflow, (e.g. if DuraCloud is unavailable, the configuration is wrong, or the space for this dataset already exists due to a prior publication action or use of the API), will create a failure message but will not affect publication itself.
 
+.. _bag-info.txt:
+
+Configuring bag-info.txt
+++++++++++++++++++++++++
+
+Out of the box, placeholder values like below will be placed in bag-info.txt:
+
+.. code-block:: text
+
+  Source-Organization: Dataverse Installation (<Site Url>)
+  Organization-Address: <Full address>
+  Organization-Email: <Email address>
+
+To customize these values for your institution, use the following JVM options:
+
+- :ref:`dataverse.bagit.sourceorg.name`
+- :ref:`dataverse.bagit.sourceorg.address`
+- :ref:`dataverse.bagit.sourceorg.email`
+
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
 
@@ -2489,6 +2529,13 @@ This setting was added to keep S3 direct upload lightweight. When that feature i
 
 See also :ref:`s3-direct-upload-features-disabled`.
 
+.. _dataverse.storageuse.disable-storageuse-increments:
+
+dataverse.storageuse.disable-storageuse-increments
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+This setting serves the role of an emergency "kill switch" that will disable maintaining the real time record of storage use for all the datasets and collections in the database. Because of the experimental nature of this feature (see :doc:`/admin/collectionquotas`) that hasn't been used in production setting as of this release, v6.1 this setting is provided in case these updates start causing database race conditions and conflicts on a busy server. 
+
 dataverse.auth.oidc.*
 +++++++++++++++++++++
 
@@ -2505,6 +2552,33 @@ This setting enables functionality to allow guestbooks to be displayed when a us
 See also :ref:`guestbook-at-request-api` in the API Guide, and .
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_GUESTBOOK_AT_REQUEST``.
+
+.. _dataverse.bagit.sourceorg.name:
+
+dataverse.bagit.sourceorg.name
+++++++++++++++++++++++++++++++
+
+The name for your institution that you'd like to appear in bag-info.txt. See :ref:`bag-info.txt`.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_NAME``.
+
+.. _dataverse.bagit.sourceorg.address:
+
+dataverse.bagit.sourceorg.address
++++++++++++++++++++++++++++++++++
+
+The mailing address for your institution that you'd like to appear in bag-info.txt. See :ref:`bag-info.txt`. The example in https://datatracker.ietf.org/doc/html/rfc8493 uses commas as separators: ``1 Main St., Cupertino, California, 11111``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_ADDRESS``.
+
+.. _dataverse.bagit.sourceorg.email:
+
+dataverse.bagit.sourceorg.email
++++++++++++++++++++++++++++++++
+
+The email for your institution that you'd like to appear in bag-info.txt. See :ref:`bag-info.txt`.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_EMAIL``.
 
 .. _feature-flags:
 
