@@ -852,6 +852,7 @@ public class PermissionServiceBean {
         if (dataverseRequest.getUser().isSuperuser()) {
             return true;
         }
+        // This is a shortcut to avoid having to check version files if the condition is met
         if (hasUnrestrictedReleasedFiles(datasetVersion)) {
             return true;
         }
