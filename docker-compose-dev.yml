@@ -212,7 +212,7 @@ services:
       - minio_storage:/data
     environment:
       MINIO_ROOT_USER: 4cc355_k3y
-      MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k35
+      MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k3y
     command: server /data
 
 networks:
