@@ -80,7 +80,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import static java.lang.Thread.sleep;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.hamcrest.CoreMatchers;
 
@@ -90,11 +89,7 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.contains;
-
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class DatasetsIT {
@@ -4123,10 +4118,10 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void testGetCanDownloadAtLeastOneFile() {
-        Response createUser = UtilIT.createRandomUser();
-        createUser.then().assertThat().statusCode(OK.getStatusCode());
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+    public void testGetCanDownloadAtLeastOneFile() throws InterruptedException {
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
@@ -4135,15 +4130,65 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
 
-        // Call with valid dataset id
-        Response canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, apiToken);
+        // Upload file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String fileId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.id");
+
+        // Publish dataset version
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Make sure the dataset is published
+        Thread.sleep(3000);
+
+        // Create a second user to call the getCanDownloadAtLeastOneFile method
+        Response createSecondUserResponse = UtilIT.createRandomUser();
+        createSecondUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String secondUserApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+        String secondUserUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
+
+        // Call with a valid dataset id when a file is released
+        Response canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, secondUserApiToken);
         canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
         boolean canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
         assertTrue(canDownloadAtLeastOneFile);
 
+        // Restrict file
+        Response restrictFileResponse = UtilIT.restrictFile(fileId, true, apiToken);
+        restrictFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Publish dataset version
+        publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Make sure the dataset is published
+        Thread.sleep(3000);
+
+        // Call with a valid dataset id when a file is restricted and the user does not have access
+        canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, secondUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertFalse(canDownloadAtLeastOneFile);
+
+        // Grant restricted file access to the user
+        Response grantFileAccessResponse = UtilIT.grantFileAccess(fileId, "@" + secondUserUsername, apiToken);
+        grantFileAccessResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Call with a valid dataset id when a file is restricted and the user has access
+        canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, secondUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertTrue(canDownloadAtLeastOneFile);
+
         // Call with invalid dataset id
-        Response getUserPermissionsOnDatasetInvalidIdResponse = UtilIT.getCanDownloadAtLeastOneFile("testInvalidId", DS_VERSION_LATEST, apiToken);
+        Response getUserPermissionsOnDatasetInvalidIdResponse = UtilIT.getCanDownloadAtLeastOneFile("testInvalidId", DS_VERSION_LATEST, secondUserApiToken);
         getUserPermissionsOnDatasetInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 }
