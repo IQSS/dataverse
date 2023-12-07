@@ -2431,7 +2431,7 @@ dataverse.api.show-label-for-incomplete-when-published
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Even when you do not allow incomplete metadata to be saved in dataverse, some metadata may end up being incomplete, e.g., after making a metadata field mandatory. Datasets where that field is
-not filled out, become incomplete, and therefore can be labeled with the ``incomplete metadat`` label. By default, this label is only shown for draft datasets. However, in some situations, you
+not filled out, become incomplete, and therefore can be labeled with the ``incomplete metadata`` label. By default, this label is only shown for draft datasets. However, in some situations, you
 may want to show the label also for published datasets. For example, when an admin needs to have an overview of the datasets that are no longer valid after a metadata fields update,
 enabling this option will show the ``incomplete metadata`` labels on published datasets, but only to the users that can edit the specific datasets. Note that you need to reindex the datasets
 after changing the metadata definitions. Reindexing will update the labels and other dataset information according to the new situation.
