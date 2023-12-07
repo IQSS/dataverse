@@ -223,7 +223,19 @@ public class UtilIT {
                 .post("/api/admin/validateDataFileHashValue/" + fileId + "?key=" + apiToken);
         return response;
     }
-    
+
+    public static Response clearThumbnailFailureFlags() {
+        Response response = given()
+                .delete("/api/admin/clearThumbnailFailureFlag");
+        return response;
+    }
+
+    public static Response clearThumbnailFailureFlag(long fileId) {
+        Response response = given()
+                .delete("/api/admin/clearThumbnailFailureFlag/" + fileId);
+        return response;
+    }
+
     private static String getAuthenticatedUserAsJsonString(String persistentUserId, String firstName, String lastName, String authenticationProviderId, String identifier) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("authenticationProviderId", authenticationProviderId);
@@ -405,6 +417,23 @@ public class UtilIT {
             requestSpec.queryParam("guestbookId", guestbookId);
         }
         return requestSpec.get("/api/dataverses/" + dataverseAlias + "/guestbookResponses/");
+    }
+
+    static Response getCollectionSchema(String dataverseAlias, String apiToken) {
+        Response getCollectionSchemaResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/dataverses/" + dataverseAlias + "/datasetSchema");
+        return getCollectionSchemaResponse;
+    }
+
+    static Response validateDatasetJson(String dataverseAlias, String datasetJson, String apiToken) {
+        Response getValidateDatasetJsonResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(datasetJson)
+                .contentType("application/json")
+                .post("/api/dataverses/" + dataverseAlias + "/validateDatasetJson");
+        return getValidateDatasetJsonResponse;
     }
 
     static Response createRandomDatasetViaNativeApi(String dataverseAlias, String apiToken) {
@@ -2983,6 +3012,31 @@ public class UtilIT {
                 .get("/api/dataverses/" + dataverseId + "/storagesize");
     }
     
+    static Response checkCollectionQuota(String collectionId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + collectionId + "/storage/quota");
+    }
+    
+    static Response setCollectionQuota(String collectionId, long allocatedSize, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/dataverses/" + collectionId + "/storage/quota/" + allocatedSize);
+        return response;
+    }
+    
+    static Response disableCollectionQuota(String collectionId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/dataverses/" + collectionId + "/storage/quota");
+        return response;
+    }
+    
+    static Response checkCollectionStorageUse(String collectionId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + collectionId + "/storage/use");
+    }
     
     /**
      * Determine the "payload" storage size of a dataverse
@@ -3575,4 +3629,11 @@ public class UtilIT {
         return requestSpecification
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
     }
+
+    static Response downloadTmpFile(String fullyQualifiedPathToFile, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/downloadTmpFile?fullyQualifiedPathToFile=" + fullyQualifiedPathToFile);
+    }
+
 }
