@@ -12,9 +12,6 @@ New
 ~~~
 - **/api/dataverses/{id}/datasetSchema**: See :ref:`get-dataset-json-schema`.
 - **/api/dataverses/{id}/validateDatasetJson**: See :ref:`validate-dataset-json`.
-
-New
-~~~
 - **/api/admin/clearThumbnailFailureFlag**: See :ref:`thumbnail_reset`.
 - **/api/admin/downloadTmpFile**: See :ref:`download-file-from-tmp`.
 
