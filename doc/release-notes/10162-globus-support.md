@@ -1,7 +1,7 @@
 Globus support in Dataverse has been expanded to include support for using file-based Globus endpoints, including the case where files are stored on tape and are not immediately accessible, 
 and for referencing files stored on remote Globus endpoints. Support for using the Globus S3 Connector with an S3 store has been retained but requires changes to the Dataverse configuration. 
 Further details can be found in the [Big Data Support section of the Dataverse Guides](https://guides.dataverse.org/en/latest/developers/big-data-support.html#big-data-support)
-- Globus functionality remains 'experimental'/advanced in that it requires significant setup, differs in multiple ways from other file storage mechanisms, and may continue to evolve with the potential for backward incomatibilities.
+- Globus functionality remains 'experimental'/advanced in that it requires significant setup, differs in multiple ways from other file storage mechanisms, and may continue to evolve with the potential for backward incompatibilities.
 - The functionality is configured per store and replaces the previous single-S3-Connector-per-Dataverse-instance model
 - Adding files to a dataset, and accessing files is supported via the Dataverse user interface through a separate [dataverse-globus app](https://github.com/scholarsportal/dataverse-globus)
 - The functionality is also accessible via APIs (combining calls to the Dataverse and Globus APIs)

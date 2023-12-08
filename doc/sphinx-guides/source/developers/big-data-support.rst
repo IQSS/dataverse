@@ -149,7 +149,7 @@ Globus File Transfer
 
 Note: Globus file transfer is still experimental but feedback is welcome! See :ref:`support`.
 
-Users can transfer files via `Globus <ttps://www.globus.org>`_ into and out of datasets, or reference files on a remote Globus endpoint, when their Dataverse installation is configured to use a Globus accessible store(s) 
+Users can transfer files via `Globus <https://www.globus.org>`_ into and out of datasets, or reference files on a remote Globus endpoint, when their Dataverse installation is configured to use a Globus accessible store(s) 
 and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ app has been properly installed and configured.
 
 Globus endpoints can be in a variety of places, from data centers to personal computers. 
@@ -168,7 +168,7 @@ Dataverse-managed endpoints must be Globus 'guest collections' hosted on either 
 S3 connector which requires a paid Globus subscription at the host institution). In either case, Dataverse is configured with the Globus credentials of a user account that can manage the endpoint.
 Users will need a Globus account, which can be obtained via their institution or directly from Globus (at no cost).
 
-With the file-system endpoint, Dataverse does not currently have access to the file contents. Thus, functionlity related to ingest, previews, fixity hash validation, etc. are not available. (Using the S3-based endpoint, Dataverse has access via S3 and all functionlity normally associated with direct uploads to S3 is available.)
+With the file-system endpoint, Dataverse does not currently have access to the file contents. Thus, functionality related to ingest, previews, fixity hash validation, etc. are not available. (Using the S3-based endpoint, Dataverse has access via S3 and all functionality normally associated with direct uploads to S3 is available.)
 
 For the reference use case, Dataverse must be configured with a list of allowed endpoint/base paths from which files may be referenced. In this case, since Dataverse is not accessing the remote endpoint itself, it does not need Globus credentials. 
 Users will need a Globus account in this case, and the remote endpoint must be configured to allow them access (i.e. be publicly readable, or potentially involving some out-of-band mechanism to request access (that could be described in the dataset's Terms of Use and Access).

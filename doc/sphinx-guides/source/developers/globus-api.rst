@@ -71,7 +71,7 @@ The getDatasetMetadata and getFileListing URLs are just signed versions of the s
 If called for a dataset using a store that is configured with a remote Globus endpoint(s), the return response is similar but the response includes a
 the "managed" parameter will be false, the "endpoint" parameter is replaced with a JSON array of "referenceEndpointsWithPaths" and the
 requestGlobusTransferPaths and addGlobusFiles URLs are replaced with ones for requestGlobusReferencePaths and addFiles. All of these calls are
-describe further below.
+described further below.
 
 The call to set up for a transfer out (download) is similar:
 
