@@ -5312,36 +5312,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-/* These appear to be unused - toDo - delete
-    private Boolean downloadButtonAllEnabled = null;
 
-    public boolean isDownloadAllButtonEnabled() {
-
-        if (downloadButtonAllEnabled == null) {
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                if (!this.fileDownloadHelper.canDownloadFile(fmd)) {
-                    downloadButtonAllEnabled = false;
-                    break;
-                }
-            }
-            downloadButtonAllEnabled = true;
-        }
-        return downloadButtonAllEnabled;
-    }
-
-    public boolean isDownloadSelectedButtonEnabled(){
-
-        if( this.selectedFiles == null || this.selectedFiles.isEmpty() ){
-            return false;
-        }
-        for (FileMetadata fmd : this.selectedFiles){
-            if (this.fileDownloadHelper.canDownloadFile(fmd)){
-                return true;
-            }
-        }
-        return false;
-    }
-*/
     public boolean isFileAccessRequestMultiSignUpButtonRequired(){
         if (isSessionUserAuthenticated()){
             return false;

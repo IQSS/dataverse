@@ -50,7 +50,7 @@ public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends 
     protected static final String REMOTE_STORE_URL = "remote-store-url";
     
     // Whether Dataverse can access the file bytes
-    //Currently True for the Globus store when using the S3Connector, and Remote Stores like simple web servers where the URLs resolve to the actual file bits
+    // Currently False only for the Globus store when using the S3Connector, and Remote Stores like simple web servers where the URLs resolve to the actual file bits
     static final String FILES_NOT_ACCESSIBLE_BY_DATAVERSE = "files-not-accessible-by-dataverse";
 
     protected StorageIO<DvObject> baseStore = null;

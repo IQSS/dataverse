@@ -160,11 +160,11 @@ In the managed case, once a Globus transfer has been initiated a final API call 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
-  export JSON_DATA="{"taskIdentifier":"3f530302-6c48-11ee-8428-378be0d9c521", \
+  export JSON_DATA='{"taskIdentifier":"3f530302-6c48-11ee-8428-378be0d9c521", \
                     "files": [{"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"globusm://18b3972213f-f6b5c2221423", "fileName":"file1.txt", "mimeType":"text/plain", "checksum": {"@type": "MD5", "@value": "1234"}}, \
-                    {"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"globusm://18b39722140-50eb7d3c5ece", "fileName":"file2.txt", "mimeType":"text/plain", "checksum": {"@type": "MD5", "@value": "2345"}}]}"
+                    {"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"globusm://18b39722140-50eb7d3c5ece", "fileName":"file2.txt", "mimeType":"text/plain", "checksum": {"@type": "MD5", "@value": "2345"}}]}'
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:multipart/form-data" -X POST "$SERVER_URL/api/datasets/:persistentId/addGlobusFiles -F "jsonData=$JSON_DATA""
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:multipart/form-data" -X POST "$SERVER_URL/api/datasets/:persistentId/addGlobusFiles -F "jsonData=$JSON_DATA"
 
 Note that the mimetype is multipart/form-data, matching the /addFiles API call. ALso note that the API_TOKEN is not needed when using a signed URL.
 

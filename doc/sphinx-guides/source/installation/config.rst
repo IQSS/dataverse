@@ -499,8 +499,8 @@ Logging & Slow Performance
 
 .. _file-storage:
 
-File Storage: Using a Local Filesystem and/or Swift and/or Object Stores and/or Trusted Remote Stores and/or Globus Stores
---------------------------------------------------------------------------------------------------------------------------
+File Storage
+------------
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara6/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
@@ -999,7 +999,8 @@ See :doc:`/developers/big-data-support` for additional information on how to use
 In addition to having the type "globus" and requiring a label, Globus Stores share many options with Trusted Remote Stores and options to specify and access a Globus endpoint(s). As with Remote Stores, Globus Stores also use a baseStore - a file, s3, or swift store that can be used to store additional ancillary dataset files (e.g. metadata exports, thumbnails, auxiliary files, etc.).
 These and other available options are described in the table below.
 
-There are two types of Globus stores
+There are two types of Globus stores:
+
 - managed - where Dataverse manages the Globus endpoint, deciding where transferred files are stored and managing access control for users transferring files to/from Dataverse
 - remote - where Dataverse references files that remain on trusted remote Globus endpoints
 
@@ -1024,7 +1025,7 @@ Once you have configured a globus store, it is recommended that you install the 
     dataverse.files.<id>.globus-token                        <?>                 A Globus token (base64 endcoded <Globus user id>:<Credential> 
                                                                                  for a managed store) - using a microprofile alias is recommended            (none)
     dataverse.files.<id>.reference-endpoints-with-basepaths  <?>                 A comma separated list of *remote* trusted Globus endpoint id/<basePath>s   (none)
-    dataverse.files.<id>.files-not-accessible-by-dataverse   ``true``/``false``  Should be true for S3 Connector-based *managed* stores                      ``false``
+    dataverse.files.<id>.files-not-accessible-by-dataverse   ``true``/``false``  Should be false for S3 Connector-based *managed* stores, true for others    ``false``
     
     =======================================================  ==================  ==========================================================================  ===================
     
