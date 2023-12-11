@@ -3686,4 +3686,36 @@ public class UtilIT {
                 .get("/api/admin/downloadTmpFile?fullyQualifiedPathToFile=" + fullyQualifiedPathToFile);
     }
 
+    static Response setDatasetStorageDriver(Integer datasetId, String driverLabel, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(driverLabel)
+                .put("/api/datasets/" + datasetId + "/storageDriver");
+    }
+    
+    
+    //Globus Store related - not currently used
+    
+    static Response getDatasetGlobusUploadParameters(Integer datasetId, String locale, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/datasets/" + datasetId + "/globusUploadParameters?locale=" + locale);
+    }
+    
+    static Response getDatasetGlobusDownloadParameters(Integer datasetId, String locale, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/datasets/" + datasetId + "/globusDownloadParameters?locale=" + locale);
+    }
+    
+    static Response requestGlobusDownload(Integer datasetId, JsonObject body, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(body)
+                .contentType("application/json")
+                .post("/api/datasets/" + datasetId + "/requestGlobusDownload");
+    }
+
 }
