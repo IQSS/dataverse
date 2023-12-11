@@ -505,6 +505,56 @@ The fully expanded example above (without environment variables) looks like this
 
 .. note:: Previous endpoints ``$SERVER/api/dataverses/$id/metadatablocks/:isRoot`` and ``POST https://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
 
+.. _get-dataset-json-schema:
+
+Retrieve a Dataset JSON Schema for a Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Retrieves a JSON schema customized for a given collection in order to validate a dataset JSON file prior to creating the dataset. This
+first version of the schema only includes required elements and fields. In the future we plan to improve the schema by adding controlled
+vocabulary and more robust dataset field format testing:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/datasetSchema"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/datasetSchema"
+
+Note: you must have "Add Dataset" permission in the given collection to invoke this endpoint.
+
+While it is recommended to download a copy of the JSON Schema from the collection (as above) to account for any fields that have been marked as required, you can also download a minimal :download:`dataset-schema.json <../_static/api/dataset-schema.json>` to get a sense of the schema when no customizations have been made.
+
+.. _validate-dataset-json:
+
+Validate Dataset JSON File for a Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Validates a dataset JSON file customized for a given collection prior to creating the dataset. The validation only tests for json formatting
+and the presence of required elements:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/$ID/validateDatasetJson" -H 'Content-type:application/json' --upload-file dataset.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root/validateDatasetJson" -H 'Content-type:application/json' --upload-file dataset.json
+
+Note: you must have "Add Dataset" permission in the given collection to invoke this endpoint.
 
 .. _create-dataset-command: 
 
@@ -753,6 +803,41 @@ The following attributes are supported:
 * ``description`` Description
 * ``affiliation`` Affiliation
 * ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
+
+.. _collection-storage-quotas:
+  
+Collection Storage Quotas
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: 
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
+
+Will output the storage quota allocated (in bytes), or a message indicating that the quota is not defined for the specific collection. The user identified by the API token must have the ``Manage`` permission on the collection. 
+
+
+To set or change the storage allocation quota for a collection:
+
+.. code-block:: 
+
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota/$SIZE_IN_BYTES"
+
+This is API is superuser-only.
+  
+
+To delete a storage quota configured for a collection:
+
+.. code-block:: 
+
+  curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/storage/quota"
+
+This is API is superuser-only.
+
+Use the ``/settings`` API to enable or disable the enforcement of storage quotas that are defined across the instance via the following setting. For example,
+
+.. code-block:: 
+
+   curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:UseStorageQuotas
 
 
 Datasets
@@ -2491,6 +2576,8 @@ Get Dataset By Private URL Token
 
   curl "$SERVER_URL/api/datasets/privateUrlDatasetVersion/$PRIVATE_URL_TOKEN"
 
+.. _get-citation:
+
 Get Citation
 ~~~~~~~~~~~~
 
@@ -2501,6 +2588,16 @@ Get Citation
   export VERSION=1.0
 
   curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER"
+
+By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+
+If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl -H "Accept:application/json" "$SERVER_URL/api/datasets/:persistentId/versions/$VERSION/{version}/citation?persistentId=$PERSISTENT_IDENTIFIER&includeDeaccessioned=true"
 
 Get Citation by Private URL Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -5322,7 +5419,6 @@ A curl example using allowing access to a dataset's metadata
 Please see :ref:`dataverse.api.signature-secret` for the configuration option to add a shared secret, enabling extra
 security.
 
-
 .. _send-feedback:
 
 Send Feedback To Contact(s)
@@ -5349,6 +5445,33 @@ A curl example using an ``ID``
 
 Note that this call could be useful in coordinating with dataset authors (assuming they are also contacts) as an alternative/addition to the functionality provided by :ref:`return-a-dataset`.
 
+.. _thumbnail_reset:
+
+Reset Thumbnail Failure Flags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If Dataverse attempts to create a thumbnail image for an image or PDF file and the attempt fails, Dataverse will set a flag for the file to avoid repeated attempts to generate the thumbnail.
+For cases where the problem may have been temporary (or fixed in a later Dataverse release), the API calls below can be used to reset this flag for all files or for a given file.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=1234
+
+  curl -X DELETE $SERVER_URL/api/admin/clearThumbnailFailureFlag
+  
+  curl -X DELETE $SERVER_URL/api/admin/clearThumbnailFailureFlag/$FILE_ID
+
+.. _download-file-from-tmp:
+
+Download File from /tmp
+~~~~~~~~~~~~~~~~~~~~~~~
+
+As a superuser::
+
+    GET /api/admin/downloadTmpFile?fullyQualifiedPathToFile=/tmp/foo.txt
+
+Note that this API is probably only useful for testing.
 
 MyData
 ------
