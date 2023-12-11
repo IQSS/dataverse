@@ -116,12 +116,12 @@ We'd like to rate limit commands (CreateDataset, etc.) so that we can keep them 
 Solr
 ~~~~
 
-While in the past Solr performance hasn't been much of a concern, in recent years we've noticed performance problems when Harvard Dataverse is under load. We are investigating in `#9635 <https://github.com/IQSS/dataverse/issues/9635>`_.
+While in the past Solr performance hasn't been much of a concern, in recent years we've noticed performance problems when Harvard Dataverse is under load. Improvements were made in `PR #10050 <https://github.com/IQSS/dataverse/pull/10050>`_, for example.
 
 Datasets with Large Numbers of Files or Versions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We'd like to scale Dataverse to better handle large number of files or versions (`#9763 <https://github.com/IQSS/dataverse/issues/9763>`_).
+We'd like to scale Dataverse to better handle large number of files or versions. Progress was made in `PR #9883 <https://github.com/IQSS/dataverse/pull/9883>`_.
 
 Withstanding Bots
 ~~~~~~~~~~~~~~~~~
@@ -183,7 +183,7 @@ Most likely there is training available that is oriented toward performance. The
 Learn from the Community How They Monitor Performance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Some members of the Dataverse community are likely users of newish tools like the ELK stack (Elasticsearch, Logstash, and Kibana), the TICK stack (Telegraph InfluxDB Chronograph and Kapacitor), GoAccess, Prometheus, Graphite, and more we haven't even heard of. In the :doc:`/admin/monitoring` section of the Admin Guide, we already encourage the community to share findings (, but we could dedicate time to this topic at our annual meeting or community calls.
+Some members of the Dataverse community are likely users of newish tools like the ELK stack (Elasticsearch, Logstash, and Kibana), the TICK stack (Telegraph InfluxDB Chronograph and Kapacitor), GoAccess, Prometheus, Graphite, and more we haven't even heard of. In the :doc:`/admin/monitoring` section of the Admin Guide, we already encourage the community to share findings, but we could dedicate time to this topic at our annual meeting or community calls.
 
 Teach the Community to Do Performance Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
