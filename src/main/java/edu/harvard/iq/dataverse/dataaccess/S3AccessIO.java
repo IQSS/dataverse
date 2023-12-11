@@ -91,6 +91,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Config config = ConfigProvider.getConfig();
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");
+    static final String URL_EXPIRATION_MINUTES = "url-expiration-minutes";
+    static final String CUSTOM_ENDPOINT_URL = "custom-endpoint-url";
+    static final String PROXY_URL = "proxy-url";
+    static final String BUCKET_NAME = "bucket-name";
+    static final String MIN_PART_SIZE = "min-part-size";
+    static final String CUSTOM_ENDPOINT_REGION = "custom-endpoint-region";
+    static final String PATH_STYLE_ACCESS = "path-style-access";
+    static final String PAYLOAD_SIGNING = "payload-signing";
+    static final String CHUNKED_ENCODING = "chunked-encoding";
+    static final String PROFILE = "profile";
     
     private boolean mainDriver = true;
 
@@ -106,8 +116,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             minPartSize = getMinPartSize(driverId);
             s3=getClient(driverId);
             tm=getTransferManager(driverId);
-            endpoint = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url", "");
-            proxy = System.getProperty("dataverse.files." + driverId + ".proxy-url", "");
+            endpoint = getConfigParam(CUSTOM_ENDPOINT_URL, "");
+            proxy = getConfigParam(PROXY_URL, "");
             if(!StringUtil.isEmpty(proxy)&&StringUtil.isEmpty(endpoint)) {
                 logger.severe(driverId + " config error: Must specify a custom-endpoint-url if proxy-url is specified");
             }
@@ -209,14 +219,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             
             if (isReadAccess) {
-                key = getMainFileKey();
-                ObjectMetadata objectMetadata = null; 
-                try {
-                    objectMetadata = s3.getObjectMetadata(bucketName, key);
-                } catch (SdkClientException sce) {
-                    throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
-                }
-                this.setSize(objectMetadata.getContentLength());
+                this.setSize(retrieveSizeFromMedia());
 
                 if (dataFile.getContentType() != null
                         && dataFile.getContentType().equals("text/tab-separated-values")
@@ -851,7 +854,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public boolean downloadRedirectEnabled() {
-        String optionValue = System.getProperty("dataverse.files." + this.driverId + ".download-redirect");
+        String optionValue = getConfigParam(DOWNLOAD_REDIRECT);
         if ("true".equalsIgnoreCase(optionValue)) {
             return true;
         }
@@ -1075,7 +1078,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     int getUrlExpirationMinutes() {
-        String optionValue = System.getProperty("dataverse.files." + this.driverId + ".url-expiration-minutes"); 
+        String optionValue = getConfigParam(URL_EXPIRATION_MINUTES); 
         if (optionValue != null) {
             Integer num; 
             try {
@@ -1091,7 +1094,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     private static String getBucketName(String driverId) {
-        return System.getProperty("dataverse.files." + driverId + ".bucket-name");
+        return getConfigParamForDriver(driverId, BUCKET_NAME);
     }
     
     private static long getMinPartSize(String driverId) {
@@ -1099,7 +1102,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         // (minimum allowed is 5*1024**2 but it probably isn't worth the complexity starting at ~5MB. Also -  confirmed that they use base 2 definitions)
         long min = 5 * 1024 * 1024l; 
 
-        String partLength = System.getProperty("dataverse.files." + driverId + ".min-part-size");
+        String partLength = getConfigParamForDriver(driverId, MIN_PART_SIZE);
         try {
             if (partLength != null) {
                 long val = Long.parseLong(partLength);
@@ -1148,12 +1151,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
              * Pass in a URL pointing to your S3 compatible storage.
              * For possible values see https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/client/builder/AwsClientBuilder.EndpointConfiguration.html
              */
-            String s3CEUrl = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url", "");
+            String s3CEUrl = getConfigParamForDriver(driverId, CUSTOM_ENDPOINT_URL, "");
             /**
              * Pass in a region to use for SigV4 signing of requests.
              * Defaults to "dataverse" as it is not relevant for custom S3 implementations.
              */
-            String s3CERegion = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-region", "dataverse");
+            String s3CERegion = getConfigParamForDriver(driverId, CUSTOM_ENDPOINT_REGION, "dataverse");
 
             // if the admin has set a system property (see below) we use this endpoint URL instead of the standard ones.
             if (!s3CEUrl.isEmpty()) {
@@ -1163,7 +1166,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
              * Pass in a boolean value if path style access should be used within the S3 client.
              * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
              */
-            Boolean s3pathStyleAccess = Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".path-style-access", "false"));
+            Boolean s3pathStyleAccess = Boolean.parseBoolean(getConfigParamForDriver(driverId, PATH_STYLE_ACCESS, "false"));
             // some custom S3 implementations require "PathStyleAccess" as they us a path, not a subdomain. default = false
             s3CB.withPathStyleAccessEnabled(s3pathStyleAccess);
 
@@ -1171,12 +1174,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
              * Pass in a boolean value if payload signing should be used within the S3 client.
              * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
              */
-            Boolean s3payloadSigning = Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".payload-signing","false"));
+            Boolean s3payloadSigning = Boolean.parseBoolean(getConfigParamForDriver(driverId, PAYLOAD_SIGNING,"false"));
             /**
              * Pass in a boolean value if chunked encoding should not be used within the S3 client.
              * Anything but case-insensitive "false" will lead to value of true, which is default value, too.
              */
-            Boolean s3chunkedEncoding = Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".chunked-encoding","true"));
+            Boolean s3chunkedEncoding = Boolean.parseBoolean(getConfigParamForDriver(driverId, CHUNKED_ENCODING,"true"));
             // Openstack SWIFT S3 implementations require "PayloadSigning" set to true. default = false
             s3CB.setPayloadSigningEnabled(s3payloadSigning);
             // Openstack SWIFT S3 implementations require "ChunkedEncoding" set to false. default = true
@@ -1191,9 +1194,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
              * * if a profile and static credentials are both explicitly set, the profile will be used preferentially, and 
              * * if no store-specific credentials are set, the global credentials will be preferred over using any "default" profile credentials that are found.
              */
+
             ArrayList<AWSCredentialsProvider> providers = new ArrayList<>();
 
-            String s3profile = System.getProperty("dataverse.files." + driverId + ".profile");
+            String s3profile = getConfigParamForDriver(driverId, PROFILE);
             boolean allowInstanceCredentials = true;
             // Assume that instance credentials should not be used if the profile is
             // actually set for this store or if static creds are provided (below).
@@ -1414,5 +1418,21 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             this.deleteFile(f);
         }
         return toDelete;
+    }
+
+    @Override
+    public long retrieveSizeFromMedia() throws IOException {
+        key = getMainFileKey();
+        ObjectMetadata objectMetadata = null;
+        try {
+            objectMetadata = s3.getObjectMetadata(bucketName, key);
+        } catch (SdkClientException sce) {
+            throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")");
+        }
+        return objectMetadata.getContentLength();
+    }
+    
+    public static String getNewIdentifier(String driverId) {
+        return driverId + DataAccess.SEPARATOR + getConfigParamForDriver(driverId, BUCKET_NAME) + ":" + FileUtil.generateStorageIdentifier();
     }
 }
