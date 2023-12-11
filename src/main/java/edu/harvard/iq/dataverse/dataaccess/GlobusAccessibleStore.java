@@ -65,7 +65,11 @@ public interface GlobusAccessibleStore {
     }
     
     public static boolean isGlobusAccessible(String storeId) {
-        if(StorageIO.getConfigParamForDriver(storeId, StorageIO.TYPE).equals(DataAccess.GLOBUS)) {
+        String type = StorageIO.getConfigParamForDriver(storeId, StorageIO.TYPE);
+        if (type.equals(DataAccess.GLOBUS)) {
+            return true;
+        } else if (type.equals(DataAccess.S3)
+                && StorageIO.getConfigParamForDriver(storeId, TRANSFER_ENDPOINT_WITH_BASEPATH) != null) {
             return true;
         }
         return false;
