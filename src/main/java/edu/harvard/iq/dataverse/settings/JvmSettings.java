@@ -50,6 +50,7 @@ public enum JvmSettings {
     UPLOADS_DIRECTORY(SCOPE_FILES, "uploads"),
     DOCROOT_DIRECTORY(SCOPE_FILES, "docroot"),
     GUESTBOOK_AT_REQUEST(SCOPE_FILES, "guestbook-at-request"),
+    GLOBUS_CACHE_MAXAGE(SCOPE_FILES, "globus-cache-maxage"),
     
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),
@@ -149,6 +150,13 @@ public enum JvmSettings {
     // NetCDF SETTINGS
     SCOPE_NETCDF(PREFIX, "netcdf"),
     GEO_EXTRACT_S3_DIRECT_UPLOAD(SCOPE_NETCDF, "geo-extract-s3-direct-upload"),
+
+    // BAGIT SETTINGS
+    SCOPE_BAGIT(PREFIX, "bagit"),
+    SCOPE_BAGIT_SOURCEORG(SCOPE_BAGIT, "sourceorg"),
+    BAGIT_SOURCE_ORG_NAME(SCOPE_BAGIT_SOURCEORG, "name"),
+    BAGIT_SOURCEORG_ADDRESS(SCOPE_BAGIT_SOURCEORG, "address"),
+    BAGIT_SOURCEORG_EMAIL(SCOPE_BAGIT_SOURCEORG, "email"),
 
     // STORAGE USE SETTINGS
     SCOPE_STORAGEUSE(PREFIX, "storageuse"),

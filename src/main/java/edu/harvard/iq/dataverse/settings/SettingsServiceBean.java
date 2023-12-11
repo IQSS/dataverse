@@ -461,18 +461,6 @@ public class SettingsServiceBean {
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
 
-        /**
-         * Basic Globus Token for Globus Application
-         */
-        GlobusBasicToken,
-        /**
-         * GlobusEndpoint is Globus endpoint for Globus application
-         */
-        GlobusEndpoint,
-        /** 
-         * Comma separated list of Globus enabled stores
-         */
-        GlobusStores,
         /** Globus App URL
          * 
          */

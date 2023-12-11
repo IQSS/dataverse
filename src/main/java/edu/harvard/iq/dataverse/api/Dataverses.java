@@ -45,6 +45,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteCollectionQuotaCommand
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetSchemaCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetCollectionQuotaCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetCollectionStorageUseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetRootCommand;
@@ -72,6 +73,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContri
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ValidateDatasetJsonCommand;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -130,7 +132,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
@@ -236,6 +237,40 @@ public class Dataverses extends AbstractApiBean {
 
         }
     }
+    
+    @POST
+    @AuthRequired
+    @Path("{identifier}/validateDatasetJson")
+    @Consumes("application/json")
+    public Response validateDatasetJson(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String idtf) {
+        User u = getRequestUser(crc);
+        try {
+            String validationMessage = execCommand(new ValidateDatasetJsonCommand(createDataverseRequest(u), findDataverseOrDie(idtf), body));
+            return ok(validationMessage);
+        } catch (WrappedResponse ex) {
+            Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, null, ex);
+            return ex.getResponse();
+        }
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/datasetSchema")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDatasetSchema(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
+        User u = getRequestUser(crc);
+
+        try {
+            String datasetSchema = execCommand(new GetDatasetSchemaCommand(createDataverseRequest(u), findDataverseOrDie(idtf)));
+            JsonObject jsonObject = JsonUtil.getJsonObject(datasetSchema);
+            return Response.ok(jsonObject).build();
+        } catch (WrappedResponse ex) {
+            Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, null, ex);
+            return ex.getResponse();
+        }
+    }
+            
+    
 
     @POST
     @AuthRequired

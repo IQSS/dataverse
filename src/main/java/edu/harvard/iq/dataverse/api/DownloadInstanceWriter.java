@@ -22,6 +22,7 @@ import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Provider;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -206,14 +207,15 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         redirect_url_str = null;
                     }
                 }
-                
-                if (systemConfig.isGlobusFileDownload() && systemConfig.getGlobusStoresList()
-                        .contains(DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier()))) {
+                String driverId = DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier());
+                if (systemConfig.isGlobusFileDownload() && (GlobusAccessibleStore.acceptsGlobusTransfers(driverId) || GlobusAccessibleStore.allowsGlobusReferences(driverId))) {
                     if (di.getConversionParam() != null) {
                         if (di.getConversionParam().equals("format")) {
 
                             if ("GlobusTransfer".equals(di.getConversionParamValue())) {
-                                redirect_url_str = globusService.getGlobusAppUrlForDataset(dataFile.getOwner(), false, dataFile);
+                                List<DataFile> downloadDFList = new ArrayList<DataFile>(1);
+                                downloadDFList.add(dataFile);
+                                redirect_url_str = globusService.getGlobusAppUrlForDataset(dataFile.getOwner(), false, downloadDFList);
                             }
                         }
                     }
