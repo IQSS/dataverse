@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,17 +20,39 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.xml.sax.SAXException;
 
-public class SiteMapUtilTest {
+class SiteMapUtilTest {
 
+    @TempDir
+    Path tempDir;
+    Path tempDocroot;
+    
+    @BeforeEach
+    void setup() throws IOException {
+        // NOTE: This might be unsafe for parallel tests, but our @SystemProperty helper does not yet support
+        //       lookups from vars or methods.
+        System.setProperty("test.filesDir", tempDir.toString());
+        this.tempDocroot = tempDir.resolve("docroot");
+        Files.createDirectory(tempDocroot);
+    }
+    
+    @AfterEach
+    void teardown() {
+        System.clearProperty("test.filesDir");
+    }
+    
     @Test
-    public void testUpdateSiteMap() throws IOException, ParseException {
-
+    void testUpdateSiteMap() throws IOException, ParseException, SAXException {
+        // given
         List<Dataverse> dataverses = new ArrayList<>();
         String publishedDvString = "publishedDv1";
         Dataverse publishedDataverse = new Dataverse();
@@ -77,47 +98,24 @@ public class SiteMapUtilTest {
         datasetVersions.add(datasetVersion);
         deaccessioned.setVersions(datasetVersions);
         datasets.add(deaccessioned);
-
-        Path tmpDirPath = Files.createTempDirectory(null);
-        String tmpDir = tmpDirPath.toString();
-        File docroot = new File(tmpDir + File.separator + "docroot");
-        docroot.mkdirs();
-        System.setProperty("com.sun.aas.instanceRoot", tmpDir);
-
+        
+        // when
         SiteMapUtil.updateSiteMap(dataverses, datasets);
-
-        String pathToTest = tmpDirPath + File.separator + "docroot" + File.separator + "sitemap";
-        String pathToSiteMap = pathToTest + File.separator + "sitemap.xml";
-
-        Exception wellFormedXmlException = null;
-        try {
-            assertTrue(XmlValidator.validateXmlWellFormed(pathToSiteMap));
-        } catch (Exception ex) {
-            System.out.println("Exception caught checking that XML is well formed: " + ex);
-            wellFormedXmlException = ex;
-        }
-        assertNull(wellFormedXmlException);
-
-        Exception notValidAgainstSchemaException = null;
-        try {
-            assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap, new URL("https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd")));
-        } catch (MalformedURLException | SAXException ex) {
-            System.out.println("Exception caught validating XML against the sitemap schema: " + ex);
-            notValidAgainstSchemaException = ex;
-        }
-        assertNull(notValidAgainstSchemaException);
+        
+        // then
+        String pathToSiteMap = tempDocroot.resolve("sitemap").resolve("sitemap.xml").toString();
+        assertDoesNotThrow(() -> XmlValidator.validateXmlWellFormed(pathToSiteMap));
+        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap, new URL("https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd")));
 
         File sitemapFile = new File(pathToSiteMap);
         String sitemapString = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(sitemapFile.getAbsolutePath()))));
-        System.out.println("sitemap: " + sitemapString);
+        //System.out.println("sitemap: " + sitemapString);
 
         assertTrue(sitemapString.contains("1955-11-12"));
         assertTrue(sitemapString.contains(publishedPid));
         assertFalse(sitemapString.contains(unpublishedPid));
         assertFalse(sitemapString.contains(harvestedPid));
         assertFalse(sitemapString.contains(deaccessionedPid));
-
-        System.clearProperty("com.sun.aas.instanceRoot");
 
     }
 

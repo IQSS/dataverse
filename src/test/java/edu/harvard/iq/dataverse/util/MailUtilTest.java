@@ -80,7 +80,7 @@ public class MailUtilTest {
     @Test
     public void testSubjectRequestFileAccess() {
         userNotification.setType(UserNotification.Type.REQUESTFILEACCESS);
-        assertEquals("LibraScholar: Access has been requested for a restricted file", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
+        assertEquals("LibraScholar: Access has been requested for a restricted file in dataset \"\"", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
     
     @Test

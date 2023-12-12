@@ -7,22 +7,24 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
+                
     <ui:fragment rendered="#{DatasetPage.editMode != 'CREATE'}">
-
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <p:focus context="guestbookUIFragment"/>
-        <p class="help-block">
-            #{bundle['file.downloadDialog.tip']}
-        </p>
-        <p:fragment id="guestbookMessages">
-            <div class="container messagePanel">
-                <iqbs:messages collapsible="true" />
-            </div>
-        </p:fragment>
-        
+        <ui:fragment rendered="#{termsGuestbookPopupAction != bundle.download}">
+            <p class="help-block">
+                #{someActivelyEmbargoedFiles ? bundle['file.requestAccessTermsDialog.embargoed.tip'] : bundle['file.requestAccessTermsDialog.tip']}
+            </p>
+            <p class="help-block" jsf:rendered="#{someActivelyEmbargoedFiles}">
+                #{bundle['file.requestAccessTermsDialog.embargoed']}
+            </p>
+        </ui:fragment>
+        <ui:fragment rendered="#{termsGuestbookPopupAction != bundle.download}">
+            <p class="help-block">
+                #{bundle['file.downloadDialog.tip']}
+            </p>
+        </ui:fragment>
         <div class="form-horizontal terms">
-        
         <div class="form-group">
             <label jsf:for="fdLicense" class="col-sm-3 control-label">
                 #{bundle['file.dataFilesTab.terms.list.license']} </label>
@@ -53,7 +55,6 @@
                 </p>
             </div>
         </div>
-        
 
         <ui:fragment rendered="#{empty workingVersion.termsOfUseAndAccess.license}">
             <div class="form-group"
@@ -141,7 +142,10 @@
                 value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}"
                 escape="false" />
         </div>
-        <p:fragment rendered="#{workingVersion.dataset.guestbook != null and workingVersion.dataset.guestbook.enabled and downloadPopupRequired}" id="guestbookUIFragment">
+            <p:fragment rendered="#{guestbookAndTermsPopupRequired and ((termsGuestbookPopupAction != bundle.download) != guestbookPopupRequiredAtDownload)}" id="guestbookUIFragment">
+                <div class="container messagePanel">
+                    <iqbs:messages collapsible="true" />
+                </div>
                 <!--
                 Only validate the active context. For example, the user might be filling out
                 the guestbook on the Preview tab rather than after clicking the "download file"
@@ -247,8 +251,8 @@
                 </div>
             </p:fragment>
         </div>
-        <div class="button-block">
-            <!--
+        <div class="button-block" jsf:rendered="#{termsGuestbookPopupAction == bundle.download}">
+        <!--
             The "process" directive below is very important. Without it, the
             setters on the GuestbookResponse object can be called twice leading
             to form values (name, email, etc) to be overwritten by the object in
@@ -266,15 +270,25 @@
             -->
             <!--REGULAR DOWNLOAD BUTTON, NO EXTERNAL TOOL, NOT THE PREVIEW TAB-->
             <!--Note: the guestbookResponse.fileFormat is being set in xhtml via the initial download buttons in file-download-button-fragment.xhtml -->
+            
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                              rendered="#{guestbookResponse.fileFormat != 'externalTool' and
                                          guestbookResponse.fileFormat != 'package' and
-                                         popupContext != 'previewTab'}"
-                             actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
+                                         popupContext != 'previewTab' and not isGlobusTransfer}"
+                             actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse, false)}"
                              update="guestbookUIFragment">
                 <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
-            <!--PREVIEW TAB BUTTON-->
+            <!--  REGULAR GLOBUS TRANSFER -->
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                             rendered="#{guestbookResponse.fileFormat != 'externalTool' and
+                                         guestbookResponse.fileFormat != 'package' and
+                                         popupContext != 'previewTab' and isGlobusTransfer}"
+                             actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse, true)}"
+                             update="guestbookUIFragment">
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
+            </p:commandButton>
+                        <!--PREVIEW TAB BUTTON-->
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                              rendered="#{popupContext == 'previewTab'}"
                              actionListener="#{FilePage.showPreview(guestbookResponse)}"
@@ -295,10 +309,27 @@
                              update="guestbookUIFragment">
                 <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
-            <!--CANCEL BUTTON We don't render the Cancel button on the Preview tab because there is no popup to close.-->
-            <button class="btn btn-link" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" type="button" jsf:rendered="#{popupContext != 'previewTab'}">
+            <button class="btn btn-link" onclick="PF('guestbookAndTermsPopup').hide();PF('blockDatasetForm').hide();" type="button">
                 #{bundle.cancel}
             </button>
+        </div>
+        <div class="button-block" jsf:rendered="#{termsGuestbookPopupAction == bundle['file.requestAccess']}">
+        <!--TODO - add "Accept and" if ToA exist?-->
+            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!guestbookPopupRequiredAtDownload}" value="#{bundle['file.requestAccess']}"
+                    actionListener="#{fileDownloadHelper.writeGuestbookResponseAndRequestAccess(guestbookResponse)}"
+                    update="guestbookUIFragment"
+                    oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
+                    <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
+            </p:commandLink>
+
+            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{guestbookPopupRequiredAtDownload}" value="#{bundle['file.requestAccess']}"
+                    actionListener="#{fileDownloadHelper.requestAccessIndirect()}"
+                    update="guestbookUIFragment"
+                    oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
+                    <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
+            </p:commandLink>
+
+            <button type="button" class="btn btn-default" onclick="PF('guestbookAndTermsPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
     </ui:fragment>
 </ui:composition>

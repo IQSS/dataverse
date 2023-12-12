@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import edu.harvard.iq.dataverse.util.testing.SystemProperty;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@LocalJvmSettings
 class JvmSettingsTest {
     @Test
     @JvmSetting(key = JvmSettings.VERSION, value = "foobar")

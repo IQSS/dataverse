@@ -893,7 +893,7 @@ public class SystemConfig {
         }
 
     }
-
+    
     public boolean isPublicInstall(){
         boolean saneDefault = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
@@ -941,16 +941,11 @@ public class SystemConfig {
     }
 
     public boolean isGlobusDownload() {
-        return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), false);
+        return getMethodAvailable(FileDownloadMethods.GLOBUS.toString(), false);
     }
     
     public boolean isGlobusFileDownload() {
         return (isGlobusDownload() && settingsService.isTrueForKey(SettingsServiceBean.Key.GlobusSingleFileTransfer, false));
-    }
-
-    public List<String> getGlobusStoresList() {
-    String globusStores = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusStores, "");
-    return Arrays.asList(globusStores.split("\\s*,\\s*"));
     }
 
     private Boolean getMethodAvailable(String method, boolean upload) {
@@ -1163,5 +1158,19 @@ public class SystemConfig {
         }
         
         return !ret; 
+    }
+    
+    public boolean isStorageQuotasEnforced() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.UseStorageQuotas, false);
+    }
+    
+    /**
+     * This method should only be used for testing of the new storage quota 
+     * mechanism, temporarily. (it uses the same value as the quota for 
+     * *everybody* regardless of the circumstances, defined as a database 
+     * setting)
+     */
+    public Long getTestStorageQuotaLimit() {
+        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.StorageQuotaSizeInBytes);
     }
 }

@@ -20,6 +20,7 @@
     <properties>
         <skipUnitTests>false</skipUnitTests>
         <skipIntegrationTests>false</skipIntegrationTests>
+        <it.groups>integration</it.groups>
         
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
@@ -28,7 +29,6 @@
         <reload4j.version>1.2.18.4</reload4j.version>
         <flyway.version>9.21.2</flyway.version>
         <jhove.version>1.20.1</jhove.version>
-        <jacoco.version>0.8.7</jacoco.version>
         <poi.version>5.2.1</poi.version>
         <tika.version>2.4.1</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
@@ -359,12 +359,12 @@
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-servlet</artifactId>
-            <version>6.0.0-SNAPSHOT</version>
+            <version>10.0.0.Final</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-config-prettyfaces</artifactId>
-            <version>6.0.0-SNAPSHOT</version>
+            <version>10.0.0.Final</version>
         </dependency>
         <dependency>
             <groupId>edu.ucsb.nceas</groupId>
@@ -414,8 +414,15 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>10.7.1</version>
+            <version>10.13.2</version>
         </dependency>
+        <!-- Caching library, current main use case is for OIDC authentication -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.1.8</version>
+        </dependency>
+        
         <!-- New and Improved GDCC XOAI library! -->
         <dependency>
             <groupId>io.gdcc</groupId>
@@ -600,6 +607,29 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.github.dasniko</groupId>
+            <artifactId>testcontainers-keycloak</artifactId>
+            <version>3.0.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>localstack</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!--
+            Brute force solution until we are on Jakarta EE 10.
+            Otherwise, we get very cryptic errors about missing bundle files on test runs.
+            See also https://github.com/jakartaee/jakartaee-api/issues/61
+        -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>4.0.4</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
@@ -617,24 +647,23 @@
             <version>${smallrye-mpconfig.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+            <version>3.2.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
-        <!--        <testResources>
+        <testResources>
             <testResource>
-                <directory>${project.basedir}/src/main/resources</directory>
-            </testResource>
-        </testResources>-->
-        <!--        <testResources>
-            <testResource>
-              <directory>${project.basedir}/src/test/java</directory>
-              <excludes>
-                  <exclude>**/*.java</exclude>
-              </excludes>
+                <directory>${project.basedir}/src/test/resources</directory>
             </testResource>
             <testResource>
-              <directory>${project.basedir}/src/test/resources</directory>
+                <directory>${project.basedir}/conf/keycloak</directory>
+                <targetPath>keycloak</targetPath>
             </testResource>
-          </testResources>-->
+        </testResources>
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -712,24 +741,94 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
-                <configuration>
-                    <destfile>${basedir}/target/coverage-reports/jacoco-unit.exec</destfile>
-                    <datafile>${basedir}/target/coverage-reports/jacoco-unit.exec</datafile>
-                </configuration>
                 <executions>
                     <execution>
                         <id>jacoco-initialize</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/coverage-reports/jacoco-unit.exec</destFile>
+                            <propertyName>surefire.jacoco.args</propertyName>
+                            <skip>${skipUnitTests}</skip>
+                            <includes>
+                                <include>edu/harvard/iq/dataverse/*</include>
+                                <include>io/gdcc/*</include>
+                                <include>org/dataverse/*</include>
+                            </includes>
+                        </configuration>
                     </execution>
                     <execution>
-                        <id>jacoco-site</id>
-                        <phase>package</phase>
+                        <id>jacoco-after-unit</id>
+                        <phase>test</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/coverage-reports/jacoco-unit.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report</outputDirectory>
+                            <skip>${skipUnitTests}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-initialize-it</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/coverage-reports/jacoco-integration.exec</destFile>
+                            <propertyName>failsafe.jacoco.args</propertyName>
+                            <skip>${skipIntegrationTests}</skip>
+                            <includes>
+                                <include>edu/harvard/iq/dataverse/*</include>
+                                <include>io/gdcc/*</include>
+                                <include>org/dataverse/*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-after-it</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/coverage-reports/jacoco-integration.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-integration-test-coverage-report</outputDirectory>
+                            <skip>${skipIntegrationTests}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-merge-unit-and-it</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>merge</goal>
+                        </goals>
+                        <configuration>
+                            <fileSets>
+                                <fileSet>
+                                    <directory>${project.build.directory}/coverage-reports/</directory>
+                                    <includes>
+                                        <include>*.exec</include>
+                                    </includes>
+                                </fileSet>
+                            </fileSets>
+                            <destFile>${project.build.directory}/coverage-reports/merged.exec</destFile>
+                            <skip>${skipIntegrationTests}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/coverage-reports/merged.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
+                            <skip>${skipIntegrationTests}</skip>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -744,6 +843,9 @@
                         <version>2.3.1</version>
                     </dependency>
                 </dependencies>
+                <configuration>
+                    <jacocoReports>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report/jacoco.xml</jacocoReports>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -753,7 +855,26 @@
                     <!-- testsToExclude come from the profile-->
                     <excludedGroups>${testsToExclude}</excludedGroups>
                     <skip>${skipUnitTests}</skip>
+                    <argLine>${surefire.jacoco.args} ${argLine}</argLine>
                 </configuration>
+            </plugin>
+            <!-- Run mvn verify to execute these Testcontainers based integration tests. Needs Docker! -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <groups>${it.groups}</groups>
+                    <argLine>${failsafe.jacoco.args} ${argLine}</argLine>
+                    <skip>${skipIntegrationTests}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -891,6 +1012,14 @@
                                         <skip>true</skip>
                                     </run>
                                 </image>
+
+                                <image>
+                                    <name>gdcc/dev_nginx:unstable</name>
+                                    <build>
+                                        <contextDir>${project.basedir}/modules/nginx</contextDir>
+                                    </build>
+                                </image>
+
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
                         </configuration>

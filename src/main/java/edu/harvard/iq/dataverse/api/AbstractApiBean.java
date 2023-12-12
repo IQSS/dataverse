@@ -45,11 +45,13 @@ import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
-import java.io.StringReader;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,9 +64,9 @@ import jakarta.ejb.EJBException;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
 import jakarta.persistence.EntityManager;
@@ -132,23 +134,21 @@ public abstract class AbstractApiBean {
          * In the common case of the wrapped response being of type JSON,
          * return the message field it has (if any).
          * @return the content of a message field, or {@code null}.
+         * @throws JsonException when JSON parsing fails.
          */
         String getWrappedMessageWhenJson() {
             if ( response.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE) ) {
                 Object entity = response.getEntity();
                 if ( entity == null ) return null;
 
-                String json = entity.toString();
-                try ( StringReader rdr = new StringReader(json) ){
-                    JsonReader jrdr = Json.createReader(rdr);
-                    JsonObject obj = jrdr.readObject();
-                    if ( obj.containsKey("message") ) {
-                        JsonValue message = obj.get("message");
-                        return message.getValueType() == ValueType.STRING ? obj.getString("message") : message.toString();
-                    } else {
-                        return null;
-                    }
+                JsonObject obj = JsonUtil.getJsonObject(entity.toString());
+                if ( obj.containsKey("message") ) {
+                    JsonValue message = obj.get("message");
+                    return message.getValueType() == ValueType.STRING ? obj.getString("message") : message.toString();
+                } else {
+                    return null;
                 }
+
             } else {
                 return null;
             }
@@ -708,6 +708,12 @@ public abstract class AbstractApiBean {
             .add("data", value).build() ).build();
     }
 
+    protected Response ok(long value) {
+        return Response.ok().entity(Json.createObjectBuilder()
+                .add("status", ApiConstants.STATUS_OK)
+                .add("data", value).build()).build();
+    }
+
     /**
      * @param data Payload to return.
      * @param mediaType Non-JSON media type.
@@ -719,6 +725,11 @@ public abstract class AbstractApiBean {
         if(downloadFilename != null) {
             res = res.header("Content-Disposition", "attachment; filename=" + downloadFilename);
         }
+        return res.build();
+    }
+
+    protected Response ok(InputStream inputStream) {
+        ResponseBuilder res = Response.ok().entity(inputStream).type(MediaType.valueOf(FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT));
         return res.build();
     }
 
