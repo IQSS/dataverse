@@ -4288,7 +4288,7 @@ public class Datasets extends AbstractApiBean {
                     headers);
 
             if (dsv.getArchivalCopyLocation() == null) {
-                return error(Status.NO_CONTENT, "This dataset version has not been archived");
+                return error(Status.NOT_FOUND, "This dataset version has not been archived");
             } else {
                 JsonObject status = JsonUtil.getJsonObject(dsv.getArchivalCopyLocation());
                 return ok(status);
