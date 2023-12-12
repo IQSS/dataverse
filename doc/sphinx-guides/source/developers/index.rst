@@ -21,6 +21,7 @@ Developer Guide
    documentation
    api-design
    security
+   performance
    dependencies
    debugging
    coding-style
