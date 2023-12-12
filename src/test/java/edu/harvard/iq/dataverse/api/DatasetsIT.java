@@ -4225,7 +4225,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
     }
 
     @Test
-    public void testGetCanDownloadAtLeastOneFile() throws InterruptedException {
+    public void testGetCanDownloadAtLeastOneFile() {
         Response createUserResponse = UtilIT.createRandomUser();
         createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
@@ -4252,9 +4252,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Make sure the dataset is published
-        Thread.sleep(3000);
-
         // Create a second user to call the getCanDownloadAtLeastOneFile method
         Response createSecondUserResponse = UtilIT.createRandomUser();
         createSecondUserResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -4274,9 +4271,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Publish dataset version
         publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
-
-        // Make sure the dataset is published
-        Thread.sleep(3000);
 
         // Call with a valid dataset id when a file is restricted and the user does not have access
         canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, secondUserApiToken);
