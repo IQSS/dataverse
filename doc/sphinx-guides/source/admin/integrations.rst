@@ -193,7 +193,7 @@ This connector facilitates seamless two-way transfer of datasets and files, emph
 It is a lightweight client-side web application built using React and relying on the Dataverse External Tool feature, allowing for easy deployment on modern integration systems. Currently, it supports small to medium-sized files, with plans to enable support for large files and signed Dataverse endpoints in the future.
 
 What kind of user is the feature intended for?
-The feature is intended for researchers, scientists and data analyst who are working with Dataverse instances and JupyterHub looking to ease the data transfer process.
+The feature is intended for researchers, scientists and data analyst who are working with Dataverse instances and JupyterHub looking to ease the data transfer process. See `presentation <https://harvard.zoom.us/rec/share/0RpoN_a7HPXF9jpBovtvxVgcaEbqrv5ZBSIKISVemdZjswGxOzbalQYpjebCbLA1.y2ZjRXYxhq8C_SU7>`_ for details.
 
 .. _integrations-discovery:
 
