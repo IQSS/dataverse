@@ -4017,7 +4017,7 @@ public class Datasets extends AbstractApiBean {
                                               @Context UriInfo uriInfo,
                                               @Context HttpHeaders headers) {
         return response(req -> ok(
-                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, includeDeaccessioned).getCitation(true, false)), getRequestUser(crc));
+                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, false).getCitation(true, false)), getRequestUser(crc));
     }
 
     @POST
