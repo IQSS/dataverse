@@ -81,7 +81,7 @@
                 <!-- send | cancel buttons -->
                 <div class="button-block">
                     <p:commandButton styleClass="btn btn-default" value="#{bundle['contact.send']}"
-                                   update="@form" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('contactForm').hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
+                                   update="@form,messagePanel" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('contactForm').hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
                         <f:param name="DO_VALIDATION" value="true"/>
                     </p:commandButton>
                     <button class="btn btn-link" onclick="PF('contactForm').hide()" type="button">
