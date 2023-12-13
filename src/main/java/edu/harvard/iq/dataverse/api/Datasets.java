@@ -2189,7 +2189,6 @@ public class Datasets extends AbstractApiBean {
             Dataset dataset = findDatasetOrDie(idSupplied);
             String reasonForReturn = null;
             reasonForReturn = json.getString("reasonForReturn");
-            // TODO: Once we add a box for the curator to type into, pass the reason for return to the ReturnDatasetToAuthorCommand and delete this check and call to setReturnReason on the API side.
             if (reasonForReturn == null || reasonForReturn.isEmpty()) {
                 return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("dataset.reject.datasetNotInReview"));
             }
