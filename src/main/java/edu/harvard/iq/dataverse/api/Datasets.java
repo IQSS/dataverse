@@ -487,7 +487,7 @@ public class Datasets extends AbstractApiBean {
                                @Context HttpHeaders headers) {
         return response( req -> {
 
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, includeFiles == null ? false : includeFiles);
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, includeFiles == null ? true : includeFiles);
 
             if (dsv == null || dsv.getId() == null) {
                 return notFound("Dataset version not found");
