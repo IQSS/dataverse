@@ -97,7 +97,6 @@ import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -106,9 +105,7 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
-
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -127,7 +124,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -151,7 +147,6 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import jakarta.ws.rs.core.Response.Status;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
-
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -268,12 +263,10 @@ public class Datasets extends AbstractApiBean {
         }, getRequestUser(crc));
     }
     
-    // TODO: 
     // This API call should, ideally, call findUserOrDie() and the GetDatasetCommand 
     // to obtain the dataset that we are trying to export - which would handle
     // Auth in the process... For now, Auth isn't necessary - since export ONLY 
     // WORKS on published datasets, which are open to the world. -- L.A. 4.5
-    
     @GET
     @Path("/export")
     @Produces({"application/xml", "application/json", "application/html", "application/ld+json" })
@@ -494,7 +487,7 @@ public class Datasets extends AbstractApiBean {
                                @Context HttpHeaders headers) {
         return response( req -> {
 
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, includeFiles == null ? true : includeFiles);
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, includeFiles == null ? false : includeFiles);
 
             if (dsv == null || dsv.getId() == null) {
                 return notFound("Dataset version not found");
@@ -525,7 +518,7 @@ public class Datasets extends AbstractApiBean {
                                     @Context UriInfo uriInfo,
                                     @Context HttpHeaders headers) {
         return response(req -> {
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, includeDeaccessioned);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, true);
             DatasetVersionFilesServiceBean.FileOrderCriteria fileOrderCriteria;
             try {
                 fileOrderCriteria = orderCriteria != null ? DatasetVersionFilesServiceBean.FileOrderCriteria.valueOf(orderCriteria) : DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ;
@@ -575,7 +568,7 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException e) {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
             }
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, includeDeaccessioned);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, true);
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
             jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion, fileSearchCriteria));
             jsonObjectBuilder.add("perContentType", json(datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion, fileSearchCriteria)));
@@ -3052,7 +3045,7 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException e) {
                 return error(Response.Status.BAD_REQUEST, "Invalid mode: " + mode);
             }
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers, includeDeaccessioned, includeDeaccessioned);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers, includeDeaccessioned, true);
             long datasetStorageSize = datasetVersionFilesServiceBean.getFilesDownloadSize(datasetVersion, fileSearchCriteria, fileDownloadSizeMode);
             String message = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), datasetStorageSize);
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
