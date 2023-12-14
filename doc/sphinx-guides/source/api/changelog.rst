@@ -5,25 +5,26 @@ API Changelog
     :local:
     :depth: 1
 
-v6.1
-----
+6.2
+---
+Changes
+~~~~~~~
+- **/api/datasets/{id}/versions/{versionId}**: The includeFiles parameter has been renamed to excludeFiles. The default behavior remains the same, which is to include files. However, when excludeFiles is set to true, the files will be excluded. A bug that caused the API to only return a deaccessioned dataset if the user had edit privileges has been fixed.
 
-New
-~~~
-- **/api/dataverses/{id}/datasetSchema**: See :ref:`get-dataset-json-schema`.
-- **/api/dataverses/{id}/validateDatasetJson**: See :ref:`validate-dataset-json`.
+
+6.1
+---
 
 New
 ~~~
 - **/api/admin/clearThumbnailFailureFlag**: See :ref:`thumbnail_reset`.
-- **/api/admin/downloadTmpFile**: See :ref:`download-file-from-tmp`.
 
 Changes
 ~~~~~~~
 - **/api/datasets/{id}/versions/{versionId}/citation**: This endpoint now accepts a new boolean optional query parameter "includeDeaccessioned", which, if enabled, causes the endpoint to consider deaccessioned versions when searching for versions to obtain the citation. See :ref:`get-citation`.
 
-v6.0
-----
+6.0
+---
 
 Changes
 ~~~~~~~
