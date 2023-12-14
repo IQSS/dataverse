@@ -1466,7 +1466,7 @@ public class UtilIT {
         return getDatasetVersion(persistentId, versionNumber, apiToken, false, false);
     }
 
-    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean skipFiles, boolean includeDeaccessioned) {
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles, boolean includeDeaccessioned) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
@@ -1474,7 +1474,7 @@ public class UtilIT {
                         + versionNumber
                         + "?persistentId="
                         + persistentId
-                        + (skipFiles ? "&includeFiles=false" : ""));
+                        + (excludeFiles ? "&excludeFiles=true" : ""));
     }
 
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {

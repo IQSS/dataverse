@@ -3,29 +3,23 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
 import edu.harvard.iq.dataverse.FileSearchCriteria;
 import io.restassured.RestAssured;
-
 import static edu.harvard.iq.dataverse.DatasetVersion.ARCHIVE_NOTE_MAX_LENGTH;
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static io.restassured.RestAssured.given;
-
 import io.restassured.path.json.JsonPath;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.jupiter.api.Disabled;
-
 import jakarta.json.JsonObject;
-
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
@@ -35,26 +29,17 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static jakarta.ws.rs.core.Response.Status.CONFLICT;
 import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
-
 import edu.harvard.iq.dataverse.DataFile;
-
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
-
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import io.restassured.parsing.Parser;
-
 import static io.restassured.path.json.JsonPath.with;
-
 import io.restassured.path.xml.XmlPath;
-
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
-
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
@@ -63,7 +48,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,7 +55,6 @@ import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
-
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
@@ -79,31 +62,24 @@ import jakarta.ws.rs.core.Response.Status;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.hamcrest.CoreMatchers;
-
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.contains;
-
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-
 public class DatasetsIT {
 
     private static final Logger logger = Logger.getLogger(DatasetsIT.class.getCanonicalName());
     
-    
-
     @BeforeAll
     public static void setUpClass() {
         
@@ -668,8 +644,8 @@ public class DatasetsIT {
         
         // Now check that the file is NOT shown, when we ask the versions api to 
         // skip files: 
-        boolean skipFiles = true; 
-        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, skipFiles, false);
+        boolean excludeFiles = true; 
+        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, excludeFiles, false);
         unpublishedDraft.prettyPrint();
         unpublishedDraft.then().assertThat()
                 .body("data.files", equalTo(null))
@@ -718,7 +694,7 @@ public class DatasetsIT {
                 .body("data.size()", equalTo(1));
         
         // And now call the "short", no-files version of the same api
-        versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms, skipFiles);
+        versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms, excludeFiles);
         versionsResponse.prettyPrint();
         versionsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())

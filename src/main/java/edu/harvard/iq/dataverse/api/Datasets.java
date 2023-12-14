@@ -481,22 +481,26 @@ public class Datasets extends AbstractApiBean {
     public Response getVersion(@Context ContainerRequestContext crc,
                                @PathParam("id") String datasetId,
                                @PathParam("versionId") String versionId,
-                               @QueryParam("includeFiles") Boolean includeFiles,
+                               @QueryParam("excludeFiles") Boolean excludeFiles,
                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                @Context UriInfo uriInfo,
                                @Context HttpHeaders headers) {
         return response( req -> {
+            
+           
+            //If excludeFiles is null the default is to provide the files and because of this we need to check permissions. 
+            boolean checkPerms = excludeFiles == null ? true : !excludeFiles;
 
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, includeFiles == null ? true : includeFiles);
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, checkPerms);
 
             if (dsv == null || dsv.getId() == null) {
                 return notFound("Dataset version not found");
             }
 
-            if (includeFiles == null ? true : includeFiles) {
+            if (excludeFiles == null ? true : !excludeFiles) {
                 dsv = datasetversionService.findDeep(dsv.getId());
             }
-            return ok(json(dsv, includeFiles == null ? true : includeFiles));
+            return ok(json(dsv, excludeFiles == null ? true : !excludeFiles));
         }, getRequestUser(crc));
     }
 
