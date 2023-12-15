@@ -214,6 +214,11 @@ Geodisy
 
 `Geodisy <https://researchdata.library.ubc.ca/find/geodisy>`_ will take your Dataverse installation’s data, search for geospatial metadata and files, and copy them to a new system that allows for visual searching. Your original data and search methods are untouched; you have the benefit of both. For more information, please refer to `Geodisy's GitHub Repository. <https://github.com/ubc-library/geodisy>`_
 
+DataONE
++++++++
+
+`DataONE <https://dataone.org/>`_ is a community driven program providing access to data across multiple `member repositories <https://www.dataone.org/network/>`_, supporting enhanced search and discovery of Earth and environmental data. Membership is free and is most easily achieved by providing schema.org data via `science-on-schema.org <https://science-on-schema.org>`_ metadata markup on dataset landing pages, support for which is native in Dataverse. Learn more about joining the network `here <https://www.dataone.org/jointhenetwork/>`_.
+
 Research Data Preservation
 --------------------------
 
