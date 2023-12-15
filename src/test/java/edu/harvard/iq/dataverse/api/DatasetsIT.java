@@ -639,7 +639,6 @@ public class DatasetsIT {
         Response unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
         unpublishedDraft.prettyPrint();
         unpublishedDraft.then().assertThat()
-                .body("data.files.size()", equalTo(1))
                 .statusCode(OK.getStatusCode());
         
         // Now check that the file is NOT shown, when we ask the versions api to 
@@ -648,15 +647,15 @@ public class DatasetsIT {
         unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, excludeFiles, false);
         unpublishedDraft.prettyPrint();
         unpublishedDraft.then().assertThat()
-                .body("data.files", equalTo(null))
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data.files", equalTo(null));
 
         excludeFiles = false; 
         unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, excludeFiles, false);
         unpublishedDraft.prettyPrint();
         unpublishedDraft.then().assertThat()
-                .body("data.files.size()", equalTo(1))
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data.files.size()", equalTo(1));
 
         
 
