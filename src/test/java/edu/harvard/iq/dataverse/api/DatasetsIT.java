@@ -4258,7 +4258,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String secondUserApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
         String secondUserUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
 
-        // Call with a valid dataset id when a file is released
+        // Call when a file is released
         Response canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, secondUserApiToken);
         canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
         boolean canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
@@ -4272,7 +4272,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Call with a valid dataset id when a file is restricted and the user does not have access
+        // Call when a file is restricted and the user does not have access
         canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, secondUserApiToken);
         canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
         canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
@@ -4282,8 +4282,30 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response grantFileAccessResponse = UtilIT.grantFileAccess(fileId, "@" + secondUserUsername, apiToken);
         grantFileAccessResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Call with a valid dataset id when a file is restricted and the user has access
+        // Call when a file is restricted and the user has access
         canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, secondUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertTrue(canDownloadAtLeastOneFile);
+
+        // Create a third user to call the getCanDownloadAtLeastOneFile method
+        Response createThirdUserResponse = UtilIT.createRandomUser();
+        createThirdUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String thirdUserApiToken = UtilIT.getApiTokenFromResponse(createThirdUserResponse);
+        String thirdUserUsername = UtilIT.getUsernameFromResponse(createThirdUserResponse);
+
+        // Call when a file is restricted and the user does not have access
+        canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, thirdUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertFalse(canDownloadAtLeastOneFile);
+
+        // Grant fileDownloader role on the dataset to the user
+        Response grantDatasetFileDownloaderRoleOnDatasetResponse = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + thirdUserUsername, apiToken);
+        grantDatasetFileDownloaderRoleOnDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Call when a file is restricted and the user has fileDownloader role on the dataset
+        canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, thirdUserApiToken);
         canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
         canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
         assertTrue(canDownloadAtLeastOneFile);
