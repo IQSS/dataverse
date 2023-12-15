@@ -651,6 +651,15 @@ public class DatasetsIT {
                 .body("data.files", equalTo(null))
                 .statusCode(OK.getStatusCode());
 
+        excludeFiles = false; 
+        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, excludeFiles, false);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .body("data.files.size()", equalTo(1))
+                .statusCode(OK.getStatusCode());
+
+        
+
         // Publish collection and dataset
         UtilIT.publishDataverseViaNativeApi(collectionAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
@@ -694,11 +703,83 @@ public class DatasetsIT {
                 .body("data.size()", equalTo(1));
         
         // And now call the "short", no-files version of the same api
+        excludeFiles = true;
         versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms, excludeFiles);
         versionsResponse.prettyPrint();
         versionsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].files", equalTo(null));
+
+
+        
+        //Set of tests on non-deaccesioned dataset
+                
+        boolean includeDeaccessioned = true;
+        excludeFiles = true;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+        
+        excludeFiles = false;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));
+        
+        includeDeaccessioned = false;
+        excludeFiles = true;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+
+        excludeFiles = false;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));
+
+        
+        //We deaccession the dataset
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        //Set of tests on deaccesioned dataset, only 3/9 should return OK message
+
+        includeDeaccessioned = true;
+        excludeFiles = true;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+        excludeFiles = false;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(404);
+        
+        includeDeaccessioned = false;
+        excludeFiles = true;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(404);
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(404);
+        excludeFiles = false;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(404);
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(404);
+
+      
+
+
+
+
+        
+        
+
+        
     }
 
     
