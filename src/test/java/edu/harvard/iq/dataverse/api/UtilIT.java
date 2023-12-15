@@ -1839,15 +1839,15 @@ public class UtilIT {
         return getDatasetVersions(idOrPersistentId, apiToken, false);
     }
 
-    static Response getDatasetVersions(String idOrPersistentId, String apiToken, boolean skipFiles) {
-        return getDatasetVersions(idOrPersistentId, apiToken, null, null, skipFiles);
+    static Response getDatasetVersions(String idOrPersistentId, String apiToken, boolean excludeFiles) {
+        return getDatasetVersions(idOrPersistentId, apiToken, null, null, excludeFiles);
     }
 
     static Response getDatasetVersions(String idOrPersistentId, String apiToken, Integer offset, Integer limit) {
         return getDatasetVersions(idOrPersistentId, apiToken, offset, limit, false);
     }
 
-    static Response getDatasetVersions(String idOrPersistentId, String apiToken, Integer offset, Integer limit, boolean skipFiles) {
+    static Response getDatasetVersions(String idOrPersistentId, String apiToken, Integer offset, Integer limit, boolean excludeFiles) {
         logger.info("Getting Dataset Versions");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -1855,11 +1855,11 @@ public class UtilIT {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
-        if (skipFiles) {
+        if (excludeFiles) {
             if ("".equals(optionalQueryParam)) {
-                optionalQueryParam = "?includeFiles=false";
+                optionalQueryParam = "?excludeFiles=true";
             } else {
-                optionalQueryParam = optionalQueryParam.concat("&includeFiles=false");
+                optionalQueryParam = optionalQueryParam.concat("&excludeFiles=true");
             }
         }
         if (offset != null) {
@@ -1881,6 +1881,9 @@ public class UtilIT {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
+        String io = "/api/datasets/" + idInPath + "/versions" + optionalQueryParam;
+        System.out.println(io);
+        
         return requestSpecification.get("/api/datasets/" + idInPath + "/versions" + optionalQueryParam);
     }
 
