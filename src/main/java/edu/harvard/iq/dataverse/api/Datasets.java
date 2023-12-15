@@ -463,14 +463,15 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions")
-    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("includeFiles") Boolean includeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("excludeFiles") Boolean excludeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
 
         return response( req -> {
             Dataset dataset = findDatasetOrDie(id);
+            Boolean deepLookup = excludeFiles == null ? true : !excludeFiles;
 
-            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, (includeFiles == null ? true : includeFiles)) )
+            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, deepLookup) )
                                 .stream()
-                                .map( d -> json(d, includeFiles == null ? true : includeFiles) )
+                                .map( d -> json(d, deepLookup) )
                                 .collect(toJsonArray()));
         }, getRequestUser(crc));
     }
@@ -491,7 +492,8 @@ public class Datasets extends AbstractApiBean {
             //If excludeFiles is null the default is to provide the files and because of this we need to check permissions. 
             boolean checkPerms = excludeFiles == null ? true : !excludeFiles;
 
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, checkPerms);
+            Dataset dst = findDatasetOrDie(datasetId);
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, dst, uriInfo, headers, includeDeaccessioned, checkPerms);
 
             if (dsv == null || dsv.getId() == null) {
                 return notFound("Dataset version not found");
@@ -2792,7 +2794,7 @@ public class Datasets extends AbstractApiBean {
 
             @Override
             public Command<DatasetVersion> handleLatestPublished() {
-                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned);
+                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned, checkPerms);
             }
         }));
         if (dsv == null || dsv.getId() == null) {
