@@ -4326,7 +4326,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response grantDatasetFileDownloaderRoleOnCollectionResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, "fileDownloader", "@" + fourthUserUsername, apiToken);
         grantDatasetFileDownloaderRoleOnCollectionResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        // Call when a file is restricted and the user has fileDownloader role on the dataset
+        // Call when a file is restricted and the user has fileDownloader role on the collection
         canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, fourthUserApiToken);
         canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
         canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
