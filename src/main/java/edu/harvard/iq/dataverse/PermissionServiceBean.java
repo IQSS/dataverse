@@ -849,11 +849,6 @@ public class PermissionServiceBean {
      * @return boolean indicating whether the user can download at least one file or not
      */
     public boolean canDownloadAtLeastOneFile(DataverseRequest dataverseRequest, DatasetVersion datasetVersion) {
-        User user = dataverseRequest.getUser();
-        if (user.isSuperuser()) {
-            return true;
-        }
-        // This is a shortcut to avoid having to check version files if the condition is met
         if (hasUnrestrictedReleasedFiles(datasetVersion)) {
             return true;
         }
@@ -861,7 +856,7 @@ public class PermissionServiceBean {
         for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
             Set<RoleAssignee> roleAssignees = new HashSet<>(groupService.groupsFor(dataverseRequest, dataFile));
-            roleAssignees.add(user);
+            roleAssignees.add(dataverseRequest.getUser());
             if (hasGroupPermissionsFor(roleAssignees, dataFile, EnumSet.of(Permission.DownloadFile))) {
                 return true;
             }
