@@ -4310,6 +4310,28 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
         assertTrue(canDownloadAtLeastOneFile);
 
+        // Create a fourth user to call the getCanDownloadAtLeastOneFile method
+        Response createFourthUserResponse = UtilIT.createRandomUser();
+        createFourthUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String fourthUserApiToken = UtilIT.getApiTokenFromResponse(createFourthUserResponse);
+        String fourthUserUsername = UtilIT.getUsernameFromResponse(createFourthUserResponse);
+
+        // Call when a file is restricted and the user does not have access
+        canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, fourthUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertFalse(canDownloadAtLeastOneFile);
+
+        // Grant fileDownloader role on the collection to the user
+        Response grantDatasetFileDownloaderRoleOnCollectionResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, "fileDownloader", "@" + fourthUserUsername, apiToken);
+        grantDatasetFileDownloaderRoleOnCollectionResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Call when a file is restricted and the user has fileDownloader role on the dataset
+        canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, fourthUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertTrue(canDownloadAtLeastOneFile);
+
         // Call with invalid dataset id
         Response getUserPermissionsOnDatasetInvalidIdResponse = UtilIT.getCanDownloadAtLeastOneFile("testInvalidId", DS_VERSION_LATEST, secondUserApiToken);
         getUserPermissionsOnDatasetInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
