@@ -2689,7 +2689,7 @@ In particular, the user permissions that this API call checks, returned as boole
 Know If a User Can Download at Least One File from a Dataset Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This API endpoint indicates if the calling user can download at least one file from a dataset version. Note that Shibboleth group permissions are not considered.
+This API endpoint indicates if the calling user can download at least one file from a dataset version. Note that permissions based on :ref:`shib-groups` are not considered.
 
 .. code-block:: bash
 
