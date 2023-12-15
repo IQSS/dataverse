@@ -1881,8 +1881,6 @@ public class UtilIT {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
-        String io = "/api/datasets/" + idInPath + "/versions" + optionalQueryParam;
-        System.out.println(io);
         
         return requestSpecification.get("/api/datasets/" + idInPath + "/versions" + optionalQueryParam);
     }
