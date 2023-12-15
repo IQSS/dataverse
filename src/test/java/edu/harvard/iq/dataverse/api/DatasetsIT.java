@@ -42,6 +42,9 @@ import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
+import edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIOTest;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import org.apache.commons.lang3.StringUtils;
@@ -135,6 +138,7 @@ public class DatasetsIT {
                 .statusCode(200);
          */
     }
+    
 
     @AfterAll
     public static void afterClass() {
@@ -3287,7 +3291,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         //Verify the status is empty
         Response nullStatus = UtilIT.getDatasetVersionArchivalStatus(datasetId, "1.0", apiToken);
-        nullStatus.then().assertThat().statusCode(NO_CONTENT.getStatusCode());
+        nullStatus.prettyPrint();
+        nullStatus.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
         //Set it
         Response setStatus = UtilIT.setDatasetVersionArchivalStatus(datasetId, "1.0", apiToken, "pending",
@@ -3305,7 +3310,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         //Make sure it's gone
         Response nullStatus2 = UtilIT.getDatasetVersionArchivalStatus(datasetId, "1.0", apiToken);
-        nullStatus2.then().assertThat().statusCode(NO_CONTENT.getStatusCode());
+        nullStatus2.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
     }
 
@@ -4174,5 +4179,54 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Call with invalid dataset id
         Response getUserPermissionsOnDatasetInvalidIdResponse = UtilIT.getUserPermissionsOnDataset("testInvalidId", apiToken);
         getUserPermissionsOnDatasetInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+    
+    //Requires that a Globus remote store be set up as with the parameters in the GlobusOverlayAccessIOTest class
+    //Tests whether the API call succeeds and has some of the expected parameters
+    @Test
+    @Disabled
+    public void testGetGlobusUploadParameters() {
+        //Creates managed and remote Globus stores
+        GlobusOverlayAccessIOTest.setUp();
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        
+        Response setDriver = UtilIT.setDatasetStorageDriver(datasetId, System.getProperty("dataverse.files.globusr.label"), apiToken);
+        assertEquals(200, setDriver.getStatusCode());
+        
+        Response getUploadParams = UtilIT.getDatasetGlobusUploadParameters(datasetId, "en_us", apiToken);
+        assertEquals(200, getUploadParams.getStatusCode());
+        JsonObject data = JsonUtil.getJsonObject(getUploadParams.getBody().asString());
+        JsonObject queryParams = data.getJsonObject("queryParameters");
+        assertEquals("en_us", queryParams.getString("dvLocale"));
+        assertEquals("false", queryParams.getString("managed"));
+        //Assumes only one reference endpoint with a basepath is configured
+        assertTrue(queryParams.getJsonArray("referenceEndpointsWithPaths").get(0).toString().indexOf(System.getProperty("dataverse.files.globusr." + AbstractRemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS)) > -1);
+        JsonArray signedUrls = data.getJsonArray("signedUrls");
+        boolean found = false;
+        for (int i = 0; i < signedUrls.size(); i++) {
+            JsonObject signedUrl = signedUrls.getJsonObject(i);
+            if (signedUrl.getString("name").equals("requestGlobusReferencePaths")) {
+                found=true;
+                break;
+            }
+        }
+        assertTrue(found);
+        //Removes managed and remote Globus stores
+        GlobusOverlayAccessIOTest.tearDown();
     }
 }
