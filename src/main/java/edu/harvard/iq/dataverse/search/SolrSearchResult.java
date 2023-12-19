@@ -1277,7 +1277,7 @@ public class SolrSearchResult {
         if (this.isDraftState()) {
             return false;
         }
-        if (!JvmSettings.UI_SHOW_VALIDITY_LABEL.lookupOptional(Boolean.class).orElse(false)) {
+        if (!JvmSettings.UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED.lookupOptional(Boolean.class).orElse(false)) {
             return true;
         }
 		return !canUpdateDataset.test(this);

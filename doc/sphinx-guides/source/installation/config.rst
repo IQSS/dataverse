@@ -2444,10 +2444,10 @@ Defaults to ``false``.
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
-.. _dataverse.api.show-label-for-incomplete-when-published:
+.. _dataverse.ui.show-validity-label-when-published:
 
-dataverse.api.show-label-for-incomplete-when-published
-++++++++++++++++++++++++++++++++++++++++++++++++++++++
+dataverse.ui.show-validity-label-when-published
++++++++++++++++++++++++++++++++++++++++++++++++
 
 Even when you do not allow incomplete metadata to be saved in dataverse, some metadata may end up being incomplete, e.g., after making a metadata field mandatory. Datasets where that field is
 not filled out, become incomplete, and therefore can be labeled with the ``incomplete metadata`` label. By default, this label is only shown for draft datasets. However, in some situations, you
