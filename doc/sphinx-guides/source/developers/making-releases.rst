@@ -125,9 +125,11 @@ Go to https://jenkins.dataverse.org/job/IQSS_Dataverse_Internal/ and make the fo
 
 Click "Save" then "Build Now".
 
-The build number will appear in ``/api/info/version`` (along with the commit mentioned above) from a running installation (e.g. ``{"version":"5.10.1","build":"907-b844672``).
+This will build the war file, and then automatically deploy it on dataverse-internal. Verify that the application has deployed successfully. 
 
-Note that the build number comes from script in an early build step...
+The build number will appear in ``/api/info/version`` (along with the commit mentioned above) from a running installation (e.g. ``{"version":"5.10.1","build":"907-b844672``). 
+
+Note that the build number comes from the following script in an early Jenkins build step...
 
 .. code-block:: bash
 
@@ -142,11 +144,15 @@ Build Installer (dvinstall.zip)
 ssh into the dataverse-internal server and do the following:
 
 - In a git checkout of the dataverse source switch to the master branch and pull the latest.
-- Copy the war file from the previous step to the ``target`` directory in the root of the repo (create it, if necessary).
+- Copy the war file from the previous step to the ``target`` directory in the root of the repo (create it, if necessary):
+- ``mkdir target``
+- ``cp /tmp/dataverse-5.10.1.war target``
 - ``cd scripts/installer``
 - ``make``
 
 A zip file called ``dvinstall.zip`` should be produced.
+
+Alternatively, you can build the installer on your own dev. instance. But make sure you use the war file produced in the step above, not a war file build from master on your own system! That's because we want the released application war file to contain the build number described above. Download the war file directly from Jenkins, or from dataverse-internal. 
 
 Make Artifacts Available for Download
 -------------------------------------
@@ -161,6 +167,11 @@ Upload the following artifacts to the draft release you created:
   - metadata block tsv files
   - config files
 
+Deploy on Demo
+--------------
+
+Now that you have the release ready to go, give it one final test by deploying it on demo. Note that this is also an opportunity to re-test the upgrade checklist as described in the release note. 
+
 Publish the Release
 -------------------
 
@@ -171,7 +182,14 @@ Update Guides Link
 
 "latest" at https://guides.dataverse.org/en/latest/ is a symlink to the directory with the latest release. That directory (e.g. ``5.10.1``) was put into place by the Jenkins "guides" job described above.
 
-ssh into the guides server and update the symlink to point to the latest release.
+ssh into the guides server and update the symlink to point to the latest release, as in the example below.
+
+.. code-block:: bash
+
+  cd /var/www/html/en
+  ln -s 5.10.1 latest
+
+
 
 Close Milestone on GitHub and Create a New One
 ----------------------------------------------
