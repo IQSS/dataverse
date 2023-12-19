@@ -170,7 +170,7 @@ Upload the following artifacts to the draft release you created:
 Deploy on Demo
 --------------
 
-Now that you have the release ready to go, give it one final test by deploying it on demo. Note that this is also an opportunity to re-test the upgrade checklist as described in the release note. 
+Now that you have the release ready to go, give it one final test by deploying it on https://demo.dataverse.org . Note that this is also an opportunity to re-test the upgrade checklist as described in the release note. 
 
 Publish the Release
 -------------------
