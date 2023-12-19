@@ -3286,7 +3286,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         //Verify the status is empty
         Response nullStatus = UtilIT.getDatasetVersionArchivalStatus(datasetId, "1.0", apiToken);
-        nullStatus.then().assertThat().statusCode(NO_CONTENT.getStatusCode());
+        nullStatus.prettyPrint();
+        nullStatus.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
         //Set it
         Response setStatus = UtilIT.setDatasetVersionArchivalStatus(datasetId, "1.0", apiToken, "pending",
@@ -3304,7 +3305,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         //Make sure it's gone
         Response nullStatus2 = UtilIT.getDatasetVersionArchivalStatus(datasetId, "1.0", apiToken);
-        nullStatus2.then().assertThat().statusCode(NO_CONTENT.getStatusCode());
+        nullStatus2.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
     }
 
