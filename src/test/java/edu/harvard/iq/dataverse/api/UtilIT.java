@@ -2391,6 +2391,56 @@ public class UtilIT {
                 .delete("/api/admin/storageSites/" + storageSiteId);
     }
 
+    static Response listStorageDrivers(String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/dataverse/storageDrivers");
+    }
+
+    static Response getStorageDriver(String dvAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/dataverse/" + dvAlias + "/storageDriver");
+    }
+
+    static Response setStorageDriver(String dvAlias, String label, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(label)
+                .put("/api/admin/dataverse/" + dvAlias + "/storageDriver");
+    }
+
+    static Response getUploadUrls(String idOrPersistentIdOfDataset, long sizeInBytes, String apiToken) {
+        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/" + idInPath + "/uploadurls?size=" + sizeInBytes + optionalQueryParam);
+    }
+
+    static Response uploadFileDirect(String url, InputStream inputStream) {
+        return given()
+                .header("x-amz-tagging", "dv-state=temp")
+                .body(inputStream)
+                .put(url);
+    }
+
+    static Response downloadFileNoRedirect(Integer fileId, String apiToken) {
+        return given().when().redirects().follow(false)
+                .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
+    }
+
+    static Response downloadFromUrl(String url) {
+        return given().get(url);
+    }
+
     static Response metricsDataversesToMonth(String yyyymm, String queryParams) {
         String optionalYyyyMm = "";
         if (yyyymm != null) {
@@ -3635,6 +3685,38 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/admin/downloadTmpFile?fullyQualifiedPathToFile=" + fullyQualifiedPathToFile);
+    }
+
+    static Response setDatasetStorageDriver(Integer datasetId, String driverLabel, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(driverLabel)
+                .put("/api/datasets/" + datasetId + "/storageDriver");
+    }
+    
+    
+    //Globus Store related - not currently used
+    
+    static Response getDatasetGlobusUploadParameters(Integer datasetId, String locale, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/datasets/" + datasetId + "/globusUploadParameters?locale=" + locale);
+    }
+    
+    static Response getDatasetGlobusDownloadParameters(Integer datasetId, String locale, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/datasets/" + datasetId + "/globusDownloadParameters?locale=" + locale);
+    }
+    
+    static Response requestGlobusDownload(Integer datasetId, JsonObject body, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(body)
+                .contentType("application/json")
+                .post("/api/datasets/" + datasetId + "/requestGlobusDownload");
     }
 
 }

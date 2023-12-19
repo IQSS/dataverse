@@ -499,14 +499,14 @@ Logging & Slow Performance
 
 .. _file-storage:
 
-File Storage: Using a Local Filesystem and/or Swift and/or Object Stores and/or Trusted Remote Stores
------------------------------------------------------------------------------------------------------
+File Storage
+------------
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara6/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
-A Dataverse installation can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
+A Dataverse installation can alternately store files in a Swift or S3-compatible object store, or on a Globus endpoint, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
 
-A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web-accessible trusted remote store.
+A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web or Globus accessible trusted remote store.
 
 A Dataverse installation can be configured to allow out of band upload by setting the ``dataverse.files.\<id\>.upload-out-of-band`` JVM option to ``true``.
 By default, Dataverse supports uploading files via the :ref:`add-file-api`. With S3 stores, a direct upload process can be enabled to allow sending the file directly to the S3 store (without any intermediate copies on the Dataverse server).
@@ -979,7 +979,7 @@ Once you have configured a trusted remote store, you can point your users to the
     dataverse.files.<id>.type                    ``remote``          **Required** to mark this storage as remote.                                (none)
     dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage.                  (none)
     dataverse.files.<id>.base-url                <?>                 **Required** All files must have URLs of the form <baseUrl>/* .             (none)
-    dataverse.files.<id>.base-store              <?>                 **Optional** The id of a base store (of type file, s3, or swift).           (the default store)
+    dataverse.files.<id>.base-store              <?>                 **Required** The id of a base store (of type file, s3, or swift).           (the default store)
     dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download (should usually be true).                            ``false``
     dataverse.files.<id>.secret-key               <?>                 A key used to sign download requests sent to the remote store. Optional.   (none)
     dataverse.files.<id>.url-expiration-minutes  <?>                 If direct downloads and using signing: time until links expire. Optional.   60
@@ -988,6 +988,47 @@ Once you have configured a trusted remote store, you can point your users to the
     
     ===========================================  ==================  ==========================================================================  ===================
 
+.. _globus-storage:
+
+Globus Storage
+++++++++++++++
+
+Globus stores allow Dataverse to manage files stored in Globus endpoints or to reference files in remote Globus endpoints, with users leveraging Globus to transfer files to/from Dataverse (rather than using HTTP/HTTPS).
+See :doc:`/developers/big-data-support` for additional information on how to use a globus store. Consult the `Globus documentation <https://docs.globus.org/>`_ for information about using Globus and configuring Globus endpoints.
+
+In addition to having the type "globus" and requiring a label, Globus Stores share many options with Trusted Remote Stores and options to specify and access a Globus endpoint(s). As with Remote Stores, Globus Stores also use a baseStore - a file, s3, or swift store that can be used to store additional ancillary dataset files (e.g. metadata exports, thumbnails, auxiliary files, etc.).
+These and other available options are described in the table below.
+
+There are two types of Globus stores:
+
+- managed - where Dataverse manages the Globus endpoint, deciding where transferred files are stored and managing access control for users transferring files to/from Dataverse
+- remote - where Dataverse references files that remain on trusted remote Globus endpoints
+
+A managed Globus store connects to standard/file-based Globus endpoint. It is also possible to configure an S3 store as a managed store, if the managed endpoint uses an underlying S3 store via the Globus S3 Connector.
+With the former, Dataverse has no direct access to the file contents and functionality related to ingest, fixity hash validation, etc. are not available. With the latter, Dataverse can access files internally via S3 and the functionality supported is similar to that when using S3 direct upload. 
+
+Once you have configured a globus store, or configured an S3 store for Globus access, it is recommended that you install the `dataverse-globus app <https://github.com/scholarsportal/dataverse-globus>`_ to allow transfers in/out of Dataverse to be initated via the Dataverse user interface. Alternately, you can point your users to the :doc:`/developers/globus-api` for information about API support.
+
+.. table::
+    :align: left
+
+    =======================================================  ==================  ==========================================================================  ===================
+    JVM Option                                               Value               Description                                                                 Default value
+    =======================================================  ==================  ==========================================================================  ===================
+    dataverse.files.<id>.type                                ``globus``          **Required** to mark this storage as globus enabled.                        (none)
+    dataverse.files.<id>.label                               <?>                 **Required** label to be shown in the UI for this storage.                  (none)
+    dataverse.files.<id>.base-store                          <?>                 **Required** The id of a base store (of type file, s3, or swift).           (the default store)
+    dataverse.files.<id>.remote-store-name                   <?>                 A short name used in the UI to indicate where a file is located. Optional.  (none)
+    dataverse.files.<id>.remote-store-url                    <?>                 A url to an info page about the remote store used in the UI. Optional.      (none)
+    dataverse.files.<id>.managed                             ``true``/``false``  Whether dataverse manages an associated Globus endpoint                     ``false``
+    dataverse.files.<id>.transfer-endpoint-with-basepath     <?>                 The *managed* Globus endpoint id and associated base path for file storage  (none)
+    dataverse.files.<id>.globus-token                        <?>                 A Globus token (base64 endcoded <Globus user id>:<Credential> 
+                                                                                 for a managed store) - using a microprofile alias is recommended            (none)
+    dataverse.files.<id>.reference-endpoints-with-basepaths  <?>                 A comma separated list of *remote* trusted Globus endpoint id/<basePath>s   (none)
+    dataverse.files.<id>.files-not-accessible-by-dataverse   ``true``/``false``  Should be false for S3 Connector-based *managed* stores, true for others    ``false``
+    
+    =======================================================  ==================  ==========================================================================  ===================
+    
 .. _temporary-file-storage:
 
 Temporary Upload File Storage
@@ -4063,24 +4104,9 @@ The URL of an LDN Inbox to which the LDN Announce workflow step will send messag
 
 The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
 
-.. _:GlobusBasicToken:
+.. _:GlobusSettings:
 
-:GlobusBasicToken
-+++++++++++++++++
-
-GlobusBasicToken encodes credentials for Globus integration. See :ref:`globus-support` for details.
-
-:GlobusEndpoint
-+++++++++++++++
-
-GlobusEndpoint is Globus endpoint id used with Globus integration. See :ref:`globus-support` for details.
-
-:GlobusStores
-+++++++++++++
-
-A comma-separated list of the S3 stores that are configured to support Globus integration. See :ref:`globus-support` for details.
-
-:GlobusAppURL
+:GlobusAppUrl
 +++++++++++++
 
 The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been deployed to support Globus integration. See :ref:`globus-support` for details.

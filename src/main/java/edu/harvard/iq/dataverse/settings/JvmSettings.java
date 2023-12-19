@@ -50,6 +50,7 @@ public enum JvmSettings {
     UPLOADS_DIRECTORY(SCOPE_FILES, "uploads"),
     DOCROOT_DIRECTORY(SCOPE_FILES, "docroot"),
     GUESTBOOK_AT_REQUEST(SCOPE_FILES, "guestbook-at-request"),
+    GLOBUS_CACHE_MAXAGE(SCOPE_FILES, "globus-cache-maxage"),
     
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),
