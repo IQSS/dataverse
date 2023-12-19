@@ -24,6 +24,7 @@ The task at or near release time is to collect these notes into a single doc.
 - Create an issue in GitHub to track the work of creating release notes for the upcoming release.
 - Create a branch, add a .md file for the release (ex. 5.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the issue-specific release notes mentioned above.
 - Delete the previously-created, issue-specific release notes as the content is added to the main release notes file.
+- Include instructions to describe the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure.
 - Take the release notes .md through the regular Code Review and QA process.
 
 Create a GitHub Issue and Branch for the Release
