@@ -2769,15 +2769,25 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    /*
+     * This method will default includeDeaccessioned to false and checkPermsWhenDeaccessioned to false. Use it only when you are sure that the you don't need to work with
+     * a deaccessioned dataset.
+     */
     private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers) throws WrappedResponse {
         //The checkPerms was added to check the permissions ONLY when the dataset is deaccessioned.
         return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, false, false);
     }
-
+    
+    /*
+     * This method will checkPermsWhenDeaccessioned to true. Be aware that the version will be only be obtainable if the user has edit permissions.
+     */
     private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned) throws WrappedResponse{
         return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, includeDeaccessioned, true);
     }
 
+    /*
+     * This method will let you define when the permissions should be checked for a deaccesioned dataset. If checkPermsWhenDeaccessioned is true, the version will be only be obtainable if the user has edit permissions.
+     */
     private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
         DatasetVersion dsv = execCommand(handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>() {
 
