@@ -31,6 +31,7 @@ import jakarta.inject.Named;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -183,6 +184,9 @@ public class EjbDataverseEngine {
     
     @EJB
     ConfirmEmailServiceBean confirmEmailService;
+    
+    @EJB
+    StorageUseServiceBean storageUseService; 
     
     @EJB
     EjbDataverseEngineInner innerEngine;
@@ -528,6 +532,12 @@ public class EjbDataverseEngine {
                 public DatasetLinkingServiceBean dsLinking() {
                     return dsLinking;
                 }
+                
+                @Override
+                public StorageUseServiceBean storageUse() {
+                    return storageUseService;
+                }
+                
                 @Override
                 public DataverseEngine engine() {
                     return new DataverseEngine() {

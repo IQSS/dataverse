@@ -41,9 +41,13 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteCollectionQuotaCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetSchemaCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetCollectionQuotaCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetCollectionStorageUseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetRootCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseStorageSizeCommand;
@@ -63,11 +67,13 @@ import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SetCollectionQuotaCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ValidateDatasetJsonCommand;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -126,7 +132,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
@@ -232,6 +237,40 @@ public class Dataverses extends AbstractApiBean {
 
         }
     }
+    
+    @POST
+    @AuthRequired
+    @Path("{identifier}/validateDatasetJson")
+    @Consumes("application/json")
+    public Response validateDatasetJson(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String idtf) {
+        User u = getRequestUser(crc);
+        try {
+            String validationMessage = execCommand(new ValidateDatasetJsonCommand(createDataverseRequest(u), findDataverseOrDie(idtf), body));
+            return ok(validationMessage);
+        } catch (WrappedResponse ex) {
+            Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, null, ex);
+            return ex.getResponse();
+        }
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/datasetSchema")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDatasetSchema(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
+        User u = getRequestUser(crc);
+
+        try {
+            String datasetSchema = execCommand(new GetDatasetSchemaCommand(createDataverseRequest(u), findDataverseOrDie(idtf)));
+            JsonObject jsonObject = JsonUtil.getJsonObject(datasetSchema);
+            return Response.ok(jsonObject).build();
+        } catch (WrappedResponse ex) {
+            Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, null, ex);
+            return ex.getResponse();
+        }
+    }
+            
+    
 
     @POST
     @AuthRequired
@@ -937,7 +976,62 @@ public class Dataverses extends AbstractApiBean {
                 execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf), includeCached)))), getRequestUser(crc));
     }
     
+    @GET
+    @AuthRequired
+    @Path("{identifier}/storage/quota")
+    public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+        try {
+            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
+            if (bytesAllocated != null) {
+                return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation"),bytesAllocated));
+            }
+            return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
     
+    @POST
+    @AuthRequired
+    @Path("{identifier}/storage/quota/{bytesAllocated}")
+    public Response setCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("bytesAllocated") Long bytesAllocated) throws WrappedResponse {
+        try {
+            execCommand(new SetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), bytesAllocated));
+            return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/storage/quota")
+    public Response deleteCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+        try {
+            execCommand(new DeleteCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
+            return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.deleted"));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    /**
+     *
+     * @param crc
+     * @param identifier
+     * @return
+     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse 
+     * @todo: add an optional parameter that would force the recorded storage use
+     * to be recalculated (or should that be a POST version of this API?)
+     */
+    @GET
+    @AuthRequired
+    @Path("{identifier}/storage/use")
+    public Response getCollectionStorageUse(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) throws WrappedResponse {
+        return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.use"),
+                execCommand(new GetCollectionStorageUseCommand(req, findDataverseOrDie(identifier))))), getRequestUser(crc));
+    }
+
     @GET
     @AuthRequired
     @Path("{identifier}/roles")

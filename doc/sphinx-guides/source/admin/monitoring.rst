@@ -1,7 +1,7 @@
 Monitoring
 ===========
 
-Once you're in production, you'll want to set up some monitoring. This page may serve as a starting point for you but you are encouraged to share your ideas with the Dataverse community!
+Once you're in production, you'll want to set up some monitoring. This page may serve as a starting point for you but you are encouraged to share your ideas with the Dataverse community! You may also be interested in the :doc:`/developers/performance` section of the Developer Guide.
 
 .. contents:: Contents:
 	:local:
