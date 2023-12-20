@@ -173,16 +173,18 @@ public class SavedSearches extends AbstractApiBean {
 
     @DELETE
     @Path("{id}")
-    public Response delete(@PathParam("id") long doomedId) {
-        boolean disabled = true;
-        if (disabled) {
-            return error(BAD_REQUEST, "Saved Searches can not safely be deleted because links can not safely be deleted. See https://github.com/IQSS/dataverse/issues/1364 for details.");
-        }
+    public Response delete(@PathParam("id") long doomedId, @QueryParam("unlink") boolean unlink) {
         SavedSearch doomed = savedSearchSvc.find(doomedId);
         if (doomed == null) {
             return error(NOT_FOUND, "Could not find saved search id " + doomedId);
         }
-        boolean wasDeleted = savedSearchSvc.delete(doomedId);
+        boolean wasDeleted;
+        try {
+            wasDeleted = savedSearchSvc.delete(doomedId, unlink);
+        } catch (Exception e) {
+            return error(INTERNAL_SERVER_ERROR, "Problem while trying to unlink links of saved search id " + doomedId);
+        }
+
         if (wasDeleted) {
             return ok(Json.createObjectBuilder().add("Deleted", doomedId));
         } else {
