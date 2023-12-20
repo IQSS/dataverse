@@ -4638,4 +4638,19 @@ public class Datasets extends AbstractApiBean {
         jsonObjectBuilder.add("canDeleteDatasetDraft", permissionService.userOn(requestUser, dataset).has(Permission.DeleteDatasetDraft));
         return ok(jsonObjectBuilder);
     }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/canDownloadAtLeastOneFile")
+    public Response getCanDownloadAtLeastOneFile(@Context ContainerRequestContext crc,
+                                                 @PathParam("id") String datasetId,
+                                                 @PathParam("versionId") String versionId,
+                                                 @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                                 @Context UriInfo uriInfo,
+                                                 @Context HttpHeaders headers) {
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned);
+            return ok(permissionService.canDownloadAtLeastOneFile(req, datasetVersion));
+        }, getRequestUser(crc));
+    }
 }
