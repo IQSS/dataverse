@@ -3547,6 +3547,12 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId + "/userPermissions");
     }
 
+    static Response getCanDownloadAtLeastOneFile(String datasetId, String versionId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/versions/" + versionId + "/canDownloadAtLeastOneFile");
+    }
+
     static Response createFileEmbargo(Integer datasetId, Integer fileId, String dateAvailable, String apiToken) {
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
         jsonBuilder.add("dateAvailable", dateAvailable);
