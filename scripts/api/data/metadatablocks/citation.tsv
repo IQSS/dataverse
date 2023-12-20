@@ -138,7 +138,7 @@
 	authorIdentifierScheme	DAI		5
 	authorIdentifierScheme	ResearcherID		6
 	authorIdentifierScheme	ScopusID		7
-	language	Abkhaz		0
+	language	Abkhaz		0	abk	ab
 	language	Afar		1	aar	aa
 	language	Afrikaans		2	afr	af
 	language	Akan		3	aka	ak
@@ -220,7 +220,7 @@
 	language	Khmer		79	khm	km
 	language	Kikuyu, Gikuyu		80	kik	ki
 	language	Kinyarwanda		81	kin	rw
-	language	Kyrgyz		82											
+	language	Kirghiz, Kyrgyz		82	kir	ky									
 	language	Komi		83	kom	kv
 	language	Kongo		84	kon	kg
 	language	Korean		85	kor	ko
@@ -249,7 +249,7 @@
 	language	Nauru		108	nau	na
 	language	Navajo, Navaho		109	nav	nv
 	language	Northern Ndebele		110	nde	nd
-	language	Nepali		111	nep	ne
+	language	Nepali (macrolanguage)		111	nep	ne
 	language	Ndonga		112	ndo	ng
 	language	Norwegian Bokmål		113	nob	nb
 	language	Norwegian Nynorsk		114	nno	nn
@@ -284,12 +284,12 @@
 	language	Shona		143	sna	sn
 	language	Sinhala, Sinhalese		144	sin	si
 	language	Slovak		145	slk	slo	sk
-	language	Slovene		146	slv	sl
+	language	Slovenian		146	slv	sl
 	language	Somali		147	som	so
 	language	Southern Sotho		148	sot	st
 	language	Spanish, Castilian		149	spa	es
 	language	Sundanese		150	sun	su
-	language	Swahili		151	swa	sw
+	language	Swahili (macrolanguage)		151	swa	sw
 	language	Swati		152	ssw	ss
 	language	Swedish		153	swe	sv
 	language	Tamil		154	tam	ta
