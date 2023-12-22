@@ -21,7 +21,7 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
     EZIDService ezidService;
     
     // This has a sane default in microprofile-config.properties
-    private final String baseUrl = JvmSettings.EZID_API_URL.lookup();
+    private final String baseUrl = JvmSettings.EZID_API_URL.lookup("ezid");
     
     public DOIEZIdServiceBean() {
         // Creating the service doesn't do any harm, just initializing some object data here.
@@ -31,8 +31,8 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
         
         try {
             // These have (obviously) no default, but still are optional to make the provider optional
-            String username = JvmSettings.EZID_USERNAME.lookupOptional().orElse(null);
-            String password = JvmSettings.EZID_PASSWORD.lookupOptional().orElse(null);
+            String username = JvmSettings.EZID_USERNAME.lookupOptional("ezid").orElse(null);
+            String password = JvmSettings.EZID_PASSWORD.lookupOptional("ezid").orElse(null);
             
             if (username != null ^ password != null) {
                 logger.log(Level.WARNING, "You must give both username and password. Will not try to login.");

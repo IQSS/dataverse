@@ -36,7 +36,7 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
 
     //ToDo - handle dataset/file defaults for local system
     public static final String PERMA_RESOLVER_URL = JvmSettings.PERMALINK_BASEURL
-        .lookupOptional()
+        .lookupOptional("permalink")
         .orElse(SystemConfig.getDataverseSiteUrlStatic());
     
     String authority = null; 

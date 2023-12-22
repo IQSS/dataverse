@@ -70,7 +70,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
     
     public static final String HDL_PROTOCOL = "hdl";
-    int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class);
+    int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class, "handlenet");
     public static final String HTTP_HDL_RESOLVER_URL = "http://hdl.handle.net/";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     
@@ -231,8 +231,8 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     private PublicKeyAuthenticationInfo getAuthInfo(String handlePrefix) {
         logger.log(Level.FINE,"getAuthInfo");
         byte[] key = null;
-        String adminCredFile = JvmSettings.HANDLENET_KEY_PATH.lookup();
-        int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class);
+        String adminCredFile = JvmSettings.HANDLENET_KEY_PATH.lookup("handlenet");
+        int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class, "handlenet");
        
         key = readKey(adminCredFile);        
         PrivateKey privkey = null;
@@ -278,7 +278,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         try {
             byte[] secKey = null;
             if ( Util.requiresSecretKey(key) ) {
-                String secret = JvmSettings.HANDLENET_KEY_PASSPHRASE.lookup();
+                String secret = JvmSettings.HANDLENET_KEY_PASSPHRASE.lookup("handlenet");
                 secKey = secret.getBytes(StandardCharsets.UTF_8);
             }
             key = Util.decrypt(key, secKey);
@@ -348,8 +348,8 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         String handle = getDvObjectHandle(dvObject);
         String authHandle = getAuthenticationHandle(dvObject);
     
-        String adminCredFile = JvmSettings.HANDLENET_KEY_PATH.lookup();
-        int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class);
+        String adminCredFile = JvmSettings.HANDLENET_KEY_PATH.lookup("handlenet");
+        int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class, "handlenet");
        
         byte[] key = readKey(adminCredFile);
         PrivateKey privkey = readPrivKey(key, adminCredFile);

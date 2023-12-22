@@ -91,30 +91,33 @@ public enum JvmSettings {
 
     // PERSISTENT IDENTIFIER SETTINGS
     SCOPE_PID(PREFIX, "pid"),
+    SCOPE_PID_PROVIDER(SCOPE_PID),
+    PID_PROVIDER_TYPE(SCOPE_PID_PROVIDER, "type"),
+    PID_PROVIDER_NAME(SCOPE_PID_PROVIDER, "name"),
     
     // PROVIDER EZID (legacy) - these settings were formerly kept together with DataCite ones
-    SCOPE_PID_EZID(SCOPE_PID, "ezid"),
-    EZID_API_URL(SCOPE_PID_EZID, "api-url", "doi.baseurlstring"),
-    EZID_USERNAME(SCOPE_PID_EZID, "username", "doi.username"),
-    EZID_PASSWORD(SCOPE_PID_EZID, "password", "doi.password"),
+    SCOPE_PID_EZID(SCOPE_PID_PROVIDER, "ezid"),
+    EZID_API_URL(SCOPE_PID_EZID, "api-url"),
+    EZID_USERNAME(SCOPE_PID_EZID, "username"),
+    EZID_PASSWORD(SCOPE_PID_EZID, "password"),
     
     // PROVIDER DATACITE
-    SCOPE_PID_DATACITE(SCOPE_PID, "datacite"),
-    DATACITE_MDS_API_URL(SCOPE_PID_DATACITE, "mds-api-url", "doi.baseurlstring"),
-    DATACITE_REST_API_URL(SCOPE_PID_DATACITE, "rest-api-url", "doi.dataciterestapiurlstring", "doi.mdcbaseurlstring"),
-    DATACITE_USERNAME(SCOPE_PID_DATACITE, "username", "doi.username"),
-    DATACITE_PASSWORD(SCOPE_PID_DATACITE, "password", "doi.password"),
+    SCOPE_PID_DATACITE(SCOPE_PID_PROVIDER, "datacite"),
+    DATACITE_MDS_API_URL(SCOPE_PID_DATACITE, "mds-api-url"),
+    DATACITE_REST_API_URL(SCOPE_PID_DATACITE, "rest-api-url"),
+    DATACITE_USERNAME(SCOPE_PID_DATACITE, "username"),
+    DATACITE_PASSWORD(SCOPE_PID_DATACITE, "password"),
     
     // PROVIDER PERMALINK
-    SCOPE_PID_PERMALINK(SCOPE_PID, "permalink"),
-    PERMALINK_BASEURL(SCOPE_PID_PERMALINK, "base-url", "perma.baseurlstring"),
+    SCOPE_PID_PERMALINK(SCOPE_PID_PROVIDER, "permalink"),
+    PERMALINK_BASEURL(SCOPE_PID_PERMALINK, "base-url"),
     
     // PROVIDER HANDLE
-    SCOPE_PID_HANDLENET(SCOPE_PID, "handlenet"),
-    HANDLENET_INDEX(SCOPE_PID_HANDLENET, "index", "dataverse.handlenet.index"),
+    SCOPE_PID_HANDLENET(SCOPE_PID_PROVIDER, "handlenet"),
+    HANDLENET_INDEX(SCOPE_PID_HANDLENET, "index"),
     SCOPE_PID_HANDLENET_KEY(SCOPE_PID_HANDLENET, "key"),
-    HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path", "dataverse.handlenet.admcredfile"),
-    HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase", "dataverse.handlenet.admprivphrase"),
+    HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path"),
+    HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase"),
 
     // SPI SETTINGS
     SCOPE_SPI(PREFIX, "spi"),

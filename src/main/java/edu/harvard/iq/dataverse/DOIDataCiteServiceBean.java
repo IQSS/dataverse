@@ -186,9 +186,9 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
     private void deleteDraftIdentifier(DvObject dvObject) throws IOException {
     	
     	//ToDo - incorporate into DataCiteRESTfulClient
-        String baseUrl = JvmSettings.DATACITE_REST_API_URL.lookup();
-        String username = JvmSettings.DATACITE_USERNAME.lookup();
-        String password = JvmSettings.DATACITE_PASSWORD.lookup();
+        String baseUrl = JvmSettings.DATACITE_REST_API_URL.lookup("datacite");
+        String username = JvmSettings.DATACITE_USERNAME.lookup("datacite");
+        String password = JvmSettings.DATACITE_PASSWORD.lookup("datacite");
         GlobalId doi = dvObject.getGlobalId();
         /**
          * Deletes the DOI from DataCite if it can. Returns 204 if PID was deleted
