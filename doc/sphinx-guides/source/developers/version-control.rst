@@ -65,7 +65,9 @@ The example of creating a pull request below has to do with fixing an important 
 Find or Create a GitHub Issue
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For guidance on which issue to work on, please ask! Also, see https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md
+Issue is a bug (unexpected behavior) or a new feature in Dataverse, to know how to find or create an issue in dataverse please see https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md
+
+For guidance on which issue to work on, please ask! with email to support@dataverse.org 
 
 Let's say you want to tackle https://github.com/IQSS/dataverse/issues/3728 which points out a typo in a page of the Dataverse Software's documentation.
 
@@ -79,7 +81,7 @@ Always create your feature branch from the latest code in develop, pulling the l
 Commit Your Change to Your New Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Making a commit (or several commits) to that branch. Ideally the first line of your commit message includes the number of the issue you are addressing, such as ``Fixed BlockedApiPolicy #3728``.
+Making a commit (or several commits) to that branch, enter a description of the changes you have made. Ideally the first line of your commit message includes the number of the issue you are addressing, such as ``Fixed BlockedApiPolicy #3728``.
 
 Push Your Branch to GitHub
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,7 +91,9 @@ Push your feature branch to your fork of the Dataverse Software. Your git comman
 Make a Pull Request
 ~~~~~~~~~~~~~~~~~~~
 
-Make a pull request to get approval to merge your changes into the develop branch. Note that once a pull request is created, we'll remove the corresponding issue from our kanban board so that we're only tracking one card.
+Make a pull request to get approval to merge your changes into the develop branch.
+If the pull request notes indicate that release notes are necessary, the workflow can then verify the existence of a corresponding file and respond with a 'thank you!' message. On the other hand, if no release notes are detected, the contributor can be gently reminded of their absence. Please see :doc:`making-releases` for guidance on writing release notes.
+Note that once a pull request is created, we'll remove the corresponding issue from our kanban board so that we're only tracking one card.
 
 Feedback on the pull request template we use is welcome! Here's an example of a pull request for issue #3827: https://github.com/IQSS/dataverse/pull/3827
 
