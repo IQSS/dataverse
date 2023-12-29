@@ -30,17 +30,17 @@
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	astroType	Image		0											
 	astroType	Mosaic		1											
-	astroType	EventList		2											
+	astroType	Event List		2											
 	astroType	Spectrum		3											
 	astroType	Cube		4											
 	astroType	Table		5											
 	astroType	Catalog		6											
-	astroType	LightCurve		7											
+	astroType	Light Curve		7											
 	astroType	Simulation		8											
 	astroType	Figure		9											
 	astroType	Artwork		10											
 	astroType	Animation		11											
-	astroType	PrettyPicture		12											
+	astroType	Pretty Picture		12											
 	astroType	Documentation		13											
 	astroType	Other		14											
 	astroType	Library		15											
@@ -50,5 +50,5 @@
 	astroType	Observation		19											
 	astroType	Object		20											
 	astroType	Value		21											
-	astroType	ValuePair		22											
+	astroType	Value Pair		22											
 	astroType	Survey		23											
