@@ -99,7 +99,6 @@ import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -108,10 +107,8 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
-
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.globus.GlobusUtil;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -130,7 +127,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
@@ -154,7 +150,6 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import jakarta.ws.rs.core.Response.Status;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
-
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -271,12 +266,10 @@ public class Datasets extends AbstractApiBean {
         }, getRequestUser(crc));
     }
     
-    // TODO: 
     // This API call should, ideally, call findUserOrDie() and the GetDatasetCommand 
     // to obtain the dataset that we are trying to export - which would handle
     // Auth in the process... For now, Auth isn't necessary - since export ONLY 
     // WORKS on published datasets, which are open to the world. -- L.A. 4.5
-    
     @GET
     @Path("/export")
     @Produces({"application/xml", "application/json", "application/html", "application/ld+json" })
@@ -473,14 +466,15 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions")
-    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("includeFiles") Boolean includeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("excludeFiles") Boolean excludeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
 
         return response( req -> {
             Dataset dataset = findDatasetOrDie(id);
+            Boolean deepLookup = excludeFiles == null ? true : !excludeFiles;
 
-            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, (includeFiles == null ? true : includeFiles)) )
+            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, deepLookup) )
                                 .stream()
-                                .map( d -> json(d, includeFiles == null ? true : includeFiles) )
+                                .map( d -> json(d, deepLookup) )
                                 .collect(toJsonArray()));
         }, getRequestUser(crc));
     }
@@ -491,21 +485,27 @@ public class Datasets extends AbstractApiBean {
     public Response getVersion(@Context ContainerRequestContext crc,
                                @PathParam("id") String datasetId,
                                @PathParam("versionId") String versionId,
-                               @QueryParam("includeFiles") Boolean includeFiles,
+                               @QueryParam("excludeFiles") Boolean excludeFiles,
                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                @Context UriInfo uriInfo,
                                @Context HttpHeaders headers) {
         return response( req -> {
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned);
+            
+           
+            //If excludeFiles is null the default is to provide the files and because of this we need to check permissions. 
+            boolean checkPerms = excludeFiles == null ? true : !excludeFiles;
+
+            Dataset dst = findDatasetOrDie(datasetId);
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, dst, uriInfo, headers, includeDeaccessioned, checkPerms);
 
             if (dsv == null || dsv.getId() == null) {
                 return notFound("Dataset version not found");
             }
 
-            if (includeFiles == null ? true : includeFiles) {
+            if (excludeFiles == null ? true : !excludeFiles) {
                 dsv = datasetversionService.findDeep(dsv.getId());
             }
-            return ok(json(dsv, includeFiles == null ? true : includeFiles));
+            return ok(json(dsv, excludeFiles == null ? true : !excludeFiles));
         }, getRequestUser(crc));
     }
 
@@ -2772,11 +2772,26 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    /*
+     * includeDeaccessioned default to false and checkPermsWhenDeaccessioned to false. Use it only when you are sure that the you don't need to work with
+     * a deaccessioned dataset.
+     */
     private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers) throws WrappedResponse {
-        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, false);
+        //The checkPerms was added to check the permissions ONLY when the dataset is deaccessioned.
+        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, false, false);
+    }
+    
+    /*
+     * checkPermsWhenDeaccessioned default to true. Be aware that the version will be only be obtainable if the user has edit permissions.
+     */
+    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned) throws WrappedResponse{
+        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, includeDeaccessioned, true);
     }
 
-    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned) throws WrappedResponse {
+    /*
+     * Will allow to define when the permissions should be checked when a deaccesioned dataset is requested. If the user doesn't have edit permissions will result in an error.
+     */
+    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
         DatasetVersion dsv = execCommand(handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>() {
 
             @Override
@@ -2791,12 +2806,12 @@ public class Datasets extends AbstractApiBean {
 
             @Override
             public Command<DatasetVersion> handleSpecific(long major, long minor) {
-                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned);
+                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned, checkPermsWhenDeaccessioned);
             }
 
             @Override
             public Command<DatasetVersion> handleLatestPublished() {
-                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned);
+                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
             }
         }));
         if (dsv == null || dsv.getId() == null) {
@@ -4503,7 +4518,7 @@ public class Datasets extends AbstractApiBean {
                                               @Context UriInfo uriInfo,
                                               @Context HttpHeaders headers) {
         return response(req -> ok(
-                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned).getCitation(true, false)), getRequestUser(crc));
+                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, false).getCitation(true, false)), getRequestUser(crc));
     }
 
     @POST
@@ -4514,7 +4529,7 @@ public class Datasets extends AbstractApiBean {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.deaccessionDataset.invalid.version.identifier.error", List.of(DS_VERSION_LATEST_PUBLISHED)));
         }
         return response(req -> {
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, false);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             try {
                 JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
                 datasetVersion.setVersionNote(jsonObject.getString("deaccessionReason"));
