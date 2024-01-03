@@ -40,6 +40,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  *
  * @author luopc
@@ -186,7 +188,7 @@ public class DOIDataCiteRegisterService {
 
         DataCiteMetadataTemplate metadataTemplate = new DataCiteMetadataTemplate();
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
-        metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
+        metadataTemplate.setCreators(Arrays.asList(metadata.get("datacite.creator").split("; ")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
             //While getDescriptionPlainText strips < and > from HTML, it leaves '&' (at least so we need to xml escape as well
@@ -237,7 +239,7 @@ public class DOIDataCiteRegisterService {
 
         DataCiteMetadataTemplate metadataTemplate = new DataCiteMetadataTemplate();
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
-        metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
+        metadataTemplate.setCreators(Arrays.asList(metadata.get("datacite.creator").split("; ")));
 
         metadataTemplate.setDescription(AbstractPidProvider.UNAVAILABLE);
 
@@ -341,7 +343,7 @@ public class DOIDataCiteRegisterService {
             DataCiteRESTfullClient client = getClient();
             String xmlMetadata = client.getMetadata(identifier.substring(identifier.indexOf(":") + 1));
             AbstractPidProvider.GlobalIdMetadataTemplate template = doiDataCiteServiceBean.new GlobalIdMetadataTemplate(xmlMetadata);
-            metadata.put("datacite.creator", Util.getStrFromList(template.getCreators()));
+            metadata.put("datacite.creator", String.join("; ", template.getCreators()));
             metadata.put("datacite.title", template.getTitle());
             metadata.put("datacite.publisher", template.getPublisher());
             metadata.put("datacite.publicationyear", template.getPublisherYear());
@@ -384,7 +386,7 @@ class DataCiteMetadataTemplate {
 
     static {
         try (InputStream in = DataCiteMetadataTemplate.class.getResourceAsStream("datacite_metadata_template.xml")) {
-            template = Util.readAndClose(in, "utf-8");
+            template = new String(in.readAllBytes(),StandardCharset.UTF_8);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "datacite metadata template load error");
             logger.log(Level.SEVERE, "String " + e.toString());
@@ -657,60 +659,4 @@ class DataCiteMetadataTemplate {
     public void setPublisherYear(String publisherYear) {
         this.publisherYear = publisherYear;
     }
-}
-
-public class Util {
-
-    public static void close(InputStream in) {
-        if (in != null) {
-            try {
-                in.close();
-            } catch (IOException e) {
-                throw new RuntimeException("Fail to close InputStream");
-            }
-        }
-    }
-
-    public static String readAndClose(InputStream inStream, String encoding) {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        byte[] buf = new byte[128];
-        String data;
-        try {
-            int cnt;
-            while ((cnt = inStream.read(buf)) >= 0) {
-                outStream.write(buf, 0, cnt);
-            }
-            data = outStream.toString(encoding);
-        } catch (IOException ioe) {
-            throw new RuntimeException("IOException");
-        } finally {
-            close(inStream);
-        }
-        return data;
-    }
-
-    public static List<String> getListFromStr(String str) {
-        return Arrays.asList(str.split("; "));
-//        List<String> authors = new ArrayList();
-//        int preIdx = 0;
-//        for(int i=0;i<str.length();i++){
-//            if(str.charAt(i)==';'){
-//                authors.add(str.substring(preIdx,i).trim());
-//                preIdx = i+1;
-//            }
-//        }
-//        return authors;
-    }
-
-    public static String getStrFromList(List<String> authors) {
-        StringBuilder str = new StringBuilder();
-        for (String author : authors) {
-            if (str.length() > 0) {
-                str.append("; ");
-            }
-            str.append(author);
-        }
-        return str.toString();
-    }
-    
 }
