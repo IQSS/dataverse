@@ -121,6 +121,18 @@ Its goal is to make the dashboard adjustable for a Dataverse installation's need
 
 The integrations dashboard is currently in development. A preview and more information can be found at: `rdm-integration GitHub repository <https://github.com/libis/rdm-integration>`_
 
+Globus
+++++++
+
+Globus transfer uses an efficient transfer mechanism and has additional features that make it suitable for large files and large numbers of files:
+
+* robust file transfer capable of restarting after network or endpoint failures
+* third-party transfer, which enables a user accessing a Dataverse installation in their desktop browser to initiate transfer of their files from a remote endpoint (i.e. on a local high-performance computing cluster), directly to an S3 store managed by the Dataverse installation
+
+Users can transfer files via `Globus <https://www.globus.org>`_ into and out of datasets, or reference files on a remote Globus endpoint, when their Dataverse installation is configured to use a Globus accessible store(s) 
+and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ app has been properly installed and configured.
+
+
 Embedding Data on Websites
 --------------------------
 
