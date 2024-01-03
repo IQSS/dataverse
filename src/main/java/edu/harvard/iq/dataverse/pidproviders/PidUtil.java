@@ -122,10 +122,8 @@ public class PidUtil {
     static Map<String, GlobalIdServiceBean> providerMap = new HashMap<String, GlobalIdServiceBean>();
     static Map<String, GlobalIdServiceBean> unmanagedProviderMap = new HashMap<String, GlobalIdServiceBean>();
 
-    public static void addAllToProviderList(List<GlobalIdServiceBean> list) {
-        for (GlobalIdServiceBean pidProvider : list) {
-            providerMap.put(pidProvider.getProviderInformation().get(0), pidProvider);
-        }
+    public static void addToProviderList(GlobalIdServiceBean pidProvider) {
+        providerMap.put(pidProvider.getName(), pidProvider);
     }
 
     public static void addAllToUnmanagedProviderList(List<GlobalIdServiceBean> list) {

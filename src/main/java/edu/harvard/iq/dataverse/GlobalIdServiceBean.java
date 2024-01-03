@@ -65,6 +65,12 @@ public interface GlobalIdServiceBean {
     String getUrlPrefix();
     String getSeparator();
     
+    String getProtocol();
+    String getProviderType();
+    String getName();
+    
+    
+    //ToDo - now need to get the correct provider based on the protocol, authority, and shoulder (for new pids)/indentifier (for existing pids)
     static GlobalIdServiceBean getBean(String protocol, CommandContext ctxt) {
         final Function<CommandContext, GlobalIdServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
         if ( protocolHandler != null ) {
@@ -111,6 +117,7 @@ public interface GlobalIdServiceBean {
      *         {@code null} if parsing failed.
      */
     public GlobalId parsePersistentId(String identifierString);
+    
     public GlobalId parsePersistentId(String protocol, String authority, String identifier);
 
     
@@ -177,6 +184,7 @@ public interface GlobalIdServiceBean {
         
         return true;
     }
+
 }
 
 
@@ -194,6 +202,7 @@ public interface GlobalIdServiceBean {
  * Static utility class for dispatching implementing beans, based on protocol and providers.
  * @author michael
  */
+// FWIW: For lists of PIDs not managed by the provider covered by authority/shoulder, we need a way to add them to one provider and exlude them if another registered provider handles their authority/shoulder (probably rare?)
 class BeanDispatcher {
     static final Map<String, Function<CommandContext, GlobalIdServiceBean>> DISPATCHER = new HashMap<>();
 

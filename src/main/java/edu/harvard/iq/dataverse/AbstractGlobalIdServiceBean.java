@@ -33,7 +33,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     protected Boolean configured = null;
     
     public static String UNAVAILABLE = ":unav";
-
+    
     @Override
     public Map<String, String> getMetadataForCreateIndicator(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getMetadataForCreateIndicator(DvObject)");
@@ -697,4 +697,5 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             return configured.booleanValue();
         }
     }
+    
 }

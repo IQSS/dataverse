@@ -32,6 +32,8 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
     private static final String RESERVED = "reserved";
     private static final String DRAFT = "draft";
 
+    public static final String TYPE = "datacite";
+
     @EJB
     DOIDataCiteRegisterService doiDataCiteRegisterService;
 

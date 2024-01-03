@@ -91,9 +91,15 @@ public enum JvmSettings {
 
     // PERSISTENT IDENTIFIER SETTINGS
     SCOPE_PID(PREFIX, "pid"),
+    PID_PROVIDERS(SCOPE_PID, "providers"),
+    PROVIDERS_DIRECTORY(SCOPE_PID, "provider-implementations-directory"),
     SCOPE_PID_PROVIDER(SCOPE_PID),
     PID_PROVIDER_TYPE(SCOPE_PID_PROVIDER, "type"),
     PID_PROVIDER_NAME(SCOPE_PID_PROVIDER, "name"),
+    PID_PROVIDER_AUTHORITY(SCOPE_PID_PROVIDER, "authority"),
+    PID_PROVIDER_SHOULDER(SCOPE_PID_PROVIDER, "shoulder"),
+    PID_PROVIDER_MANAGED_LIST(SCOPE_PID_PROVIDER, "managed-list"),
+    PID_PROVIDER_EXCLUDED_LIST(SCOPE_PID_PROVIDER, "excluded-list"),
     
     // PROVIDER EZID (legacy) - these settings were formerly kept together with DataCite ones
     SCOPE_PID_EZID(SCOPE_PID_PROVIDER, "ezid"),

@@ -20,6 +20,8 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
     
     EZIDService ezidService;
     
+    public static final String TYPE = "ezid";
+    
     // This has a sane default in microprofile-config.properties
     private final String baseUrl = JvmSettings.EZID_API_URL.lookup("ezid");
     

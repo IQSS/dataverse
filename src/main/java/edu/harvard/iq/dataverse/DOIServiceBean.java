@@ -75,4 +75,8 @@ public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
     protected String getProviderKeyName() {
         return null;
     }
+    
+    public String getProtocol() {
+        return DOI_PROTOCOL;
+    }
 }
