@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.IOException;
@@ -32,7 +30,7 @@ public class PidUtilTest {
     @Mock
     private SettingsServiceBean settingsServiceBean;
     @InjectMocks
-    private PermaLinkPidProviderServiceBean p = new PermaLinkPidProviderServiceBean();
+    private PermaLinkPidProvider p = new PermaLinkPidProvider();
     
 
     @BeforeEach
@@ -49,7 +47,7 @@ public class PidUtilTest {
         String username = System.getenv("DataCiteUsername");
         String password = System.getenv("DataCitePassword");
         String baseUrl = "https://api.test.datacite.org";
-        GlobalId pid = new GlobalId(DOIServiceBean.DOI_PROTOCOL,"10.70122","QE5A-XN55", "/", DOIServiceBean.DOI_RESOLVER_URL, null);
+        GlobalId pid = new GlobalId(DOIProvider.DOI_PROTOCOL,"10.70122","QE5A-XN55", "/", DOIProvider.DOI_RESOLVER_URL, null);
         try {
             JsonObjectBuilder result = PidUtil.queryDoi(pid, baseUrl, username, password);
             String out = JsonUtil.prettyPrint(result.build());
@@ -61,12 +59,12 @@ public class PidUtilTest {
     
     @Test
     public void testGetPermaLink() throws IOException {
-        List<GlobalIdServiceBean> list = new ArrayList<GlobalIdServiceBean>();
+        List<PidProvider> list = new ArrayList<PidProvider>();
         
 
         list.add(p);
         PidUtil.addAllToProviderList(list);
-        GlobalId pid = new GlobalId(PermaLinkPidProviderServiceBean.PERMA_PROTOCOL,"DANSLINK","QE5A-XN55", "", p.getUrlPrefix(), PermaLinkPidProviderServiceBean.PERMA_PROVIDER_NAME);
+        GlobalId pid = new GlobalId(PermaLinkPidProvider.PERMA_PROTOCOL,"DANSLINK","QE5A-XN55", "", p.getUrlPrefix(), PermaLinkPidProvider.PERMA_PROVIDER_NAME);
         System.out.println(pid.asString());
         System.out.println(pid.asURL());
         

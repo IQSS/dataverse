@@ -3,9 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.pidproviders.datacite;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetAuthor;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.DataCiteDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider.GlobalIdMetadataTemplate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,7 +56,7 @@ public class DOIDataCiteRegisterService {
     DataverseServiceBean dataverseService;
 
     @EJB
-    DOIDataCiteServiceBean doiDataCiteServiceBean;
+    DataCiteDOIProvider doiDataCiteServiceBean;
     
         
     //A singleton since it, and the httpClient in it can be reused.
@@ -183,7 +192,7 @@ public class DOIDataCiteRegisterService {
             //While getDescriptionPlainText strips < and > from HTML, it leaves '&' (at least so we need to xml escape as well
             String description = StringEscapeUtils.escapeXml10(dataset.getLatestVersion().getDescriptionPlainText());
             if (description.isEmpty() || description.equals(DatasetField.NA_VALUE)) {
-                description = AbstractGlobalIdServiceBean.UNAVAILABLE;
+                description = AbstractPidProvider.UNAVAILABLE;
             }
             metadataTemplate.setDescription(description);
         }
@@ -192,7 +201,7 @@ public class DOIDataCiteRegisterService {
             //Note: File metadata is not escaped like dataset metadata is, so adding an xml escape here.
             //This could/should be removed if the datafile methods add escaping
             String fileDescription = StringEscapeUtils.escapeXml10(df.getDescription());
-            metadataTemplate.setDescription(fileDescription == null ? AbstractGlobalIdServiceBean.UNAVAILABLE : fileDescription);
+            metadataTemplate.setDescription(fileDescription == null ? AbstractPidProvider.UNAVAILABLE : fileDescription);
             String datasetPid = df.getOwner().getGlobalId().asString();
             metadataTemplate.setDatasetIdentifier(datasetPid);
         } else {
@@ -208,13 +217,13 @@ public class DOIDataCiteRegisterService {
         }
         
         if (title.isEmpty() || title.equals(DatasetField.NA_VALUE)) {
-            title = AbstractGlobalIdServiceBean.UNAVAILABLE;
+            title = AbstractPidProvider.UNAVAILABLE;
         }
         
         metadataTemplate.setTitle(title);
         String producerString = BrandingUtil.getRootDataverseCollectionName();
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
-            producerString = AbstractGlobalIdServiceBean.UNAVAILABLE;
+            producerString = AbstractPidProvider.UNAVAILABLE;
         }
         metadataTemplate.setPublisher(producerString);
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
@@ -230,7 +239,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
 
-        metadataTemplate.setDescription(AbstractGlobalIdServiceBean.UNAVAILABLE);
+        metadataTemplate.setDescription(AbstractPidProvider.UNAVAILABLE);
 
         String title =metadata.get("datacite.title");
         
@@ -239,7 +248,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setAuthors(null);
         
         metadataTemplate.setTitle(title);
-        String producerString = AbstractGlobalIdServiceBean.UNAVAILABLE;
+        String producerString = AbstractPidProvider.UNAVAILABLE;
 
         metadataTemplate.setPublisher(producerString);
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
@@ -331,7 +340,7 @@ public class DOIDataCiteRegisterService {
         try {
             DataCiteRESTfullClient client = getClient();
             String xmlMetadata = client.getMetadata(identifier.substring(identifier.indexOf(":") + 1));
-            DOIDataCiteServiceBean.GlobalIdMetadataTemplate template = doiDataCiteServiceBean.new GlobalIdMetadataTemplate(xmlMetadata);
+            AbstractPidProvider.GlobalIdMetadataTemplate template = doiDataCiteServiceBean.new GlobalIdMetadataTemplate(xmlMetadata);
             metadata.put("datacite.creator", Util.getStrFromList(template.getCreators()));
             metadata.put("datacite.title", template.getTitle());
             metadata.put("datacite.publisher", template.getPublisher());
@@ -507,7 +516,7 @@ class DataCiteMetadataTemplate {
             }
 
         } else {
-            creatorsElement.append("<creator><creatorName>").append(AbstractGlobalIdServiceBean.UNAVAILABLE).append("</creatorName></creator>");
+            creatorsElement.append("<creator><creatorName>").append(AbstractPidProvider.UNAVAILABLE).append("</creatorName></creator>");
         }
 
         xmlMetadata = xmlMetadata.replace("${creators}", creatorsElement.toString());
@@ -650,7 +659,7 @@ class DataCiteMetadataTemplate {
     }
 }
 
-class Util {
+public class Util {
 
     public static void close(InputStream in) {
         if (in != null) {

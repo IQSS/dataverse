@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command;
 
-import edu.harvard.iq.dataverse.DOIDataCiteServiceBean;
-import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -32,8 +29,11 @@ import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.DOIEZIdProvider;
+import edu.harvard.iq.dataverse.pidproviders.DataCiteDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.FakeDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -100,15 +100,15 @@ public interface CommandContext {
 
     public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
 
-    public DOIEZIdServiceBean doiEZId();
+    public DOIEZIdProvider doiEZId();
 
-    public DOIDataCiteServiceBean doiDataCite();
+    public DataCiteDOIProvider doiDataCite();
 
-    public FakePidProviderServiceBean fakePidProvider();
+    public FakeDOIProvider fakePidProvider();
 
-    public HandlenetServiceBean handleNet();
+    public HandlePidProvider handleNet();
 
-    public PermaLinkPidProviderServiceBean permaLinkProvider();
+    public PermaLinkPidProvider permaLinkProvider();
 
     public GuestbookServiceBean guestbooks();
 

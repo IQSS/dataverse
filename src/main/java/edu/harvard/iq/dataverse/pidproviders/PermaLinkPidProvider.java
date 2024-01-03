@@ -1,9 +1,7 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
-import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -26,10 +24,9 @@ import jakarta.ejb.Stateless;
  * This will be overridable by a configurable parameter to support use of an external resolver.
  * 
  */
-@Stateless
-public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean {
+public class PermaLinkPidProvider extends AbstractPidProvider {
 
-    private static final Logger logger = Logger.getLogger(PermaLinkPidProviderServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(PermaLinkPidProvider.class.getCanonicalName());
 
     public static final String PERMA_PROTOCOL = "perma";
     public static final String PERMA_PROVIDER_NAME = "PERMA";
@@ -137,8 +134,8 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
                 identifier = identifierString.substring(authority.length());
             }
         }
-        identifier = GlobalIdServiceBean.formatIdentifierString(identifier);
-        if (GlobalIdServiceBean.testforNullTerminator(identifier)) {
+        identifier = PidProvider.formatIdentifierString(identifier);
+        if (PidProvider.testforNullTerminator(identifier)) {
             return null;
         }
         return new GlobalId(PERMA_PROTOCOL, authority, identifier, separator, getUrlPrefix(), PERMA_PROVIDER_NAME);
@@ -156,5 +153,26 @@ public class PermaLinkPidProviderServiceBean extends AbstractGlobalIdServiceBean
     public String getUrlPrefix() {
         
         return PERMA_RESOLVER_URL + "/citation?persistentId=" + PERMA_PROTOCOL + ":";
+    }
+
+
+    @Override
+    public String getProtocol() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    @Override
+    public String getProviderType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    @Override
+    public String getName() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

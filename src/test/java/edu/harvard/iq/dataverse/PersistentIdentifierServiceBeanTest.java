@@ -7,8 +7,12 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.DOIEZIdProvider;
+import edu.harvard.iq.dataverse.pidproviders.DataCiteDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.FakeDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,13 +37,13 @@ public class PersistentIdentifierServiceBeanTest {
     private SettingsServiceBean settingsServiceBean;
 
     @InjectMocks
-    DOIEZIdServiceBean ezidServiceBean = new DOIEZIdServiceBean();
+    DOIEZIdProvider ezidServiceBean = new DOIEZIdProvider();
     @InjectMocks
-    DOIDataCiteServiceBean dataCiteServiceBean = new DOIDataCiteServiceBean();
+    DataCiteDOIProvider dataCiteServiceBean = new DataCiteDOIProvider();
     @InjectMocks
-    FakePidProviderServiceBean fakePidProviderServiceBean = new FakePidProviderServiceBean();
-    HandlenetServiceBean hdlServiceBean = new HandlenetServiceBean();
-    PermaLinkPidProviderServiceBean permaLinkServiceBean = new PermaLinkPidProviderServiceBean(); 
+    FakeDOIProvider fakePidProviderServiceBean = new FakeDOIProvider();
+    HandlePidProvider hdlServiceBean = new HandlePidProvider();
+    PermaLinkPidProvider permaLinkServiceBean = new PermaLinkPidProvider(); 
     
     CommandContext ctxt;
     
@@ -48,27 +52,27 @@ public class PersistentIdentifierServiceBeanTest {
         MockitoAnnotations.initMocks(this);
         ctxt = new TestCommandContext(){
             @Override
-            public HandlenetServiceBean handleNet() {
+            public HandlePidProvider handleNet() {
                 return hdlServiceBean;
             }
 
             @Override
-            public DOIDataCiteServiceBean doiDataCite() {
+            public DataCiteDOIProvider doiDataCite() {
                 return dataCiteServiceBean;
             }
 
             @Override
-            public DOIEZIdServiceBean doiEZId() {
+            public DOIEZIdProvider doiEZId() {
                 return ezidServiceBean;
             }
 
             @Override
-            public FakePidProviderServiceBean fakePidProvider() {
+            public FakeDOIProvider fakePidProvider() {
                 return fakePidProviderServiceBean;
             }
             
             @Override
-            public PermaLinkPidProviderServiceBean permaLinkProvider() {
+            public PermaLinkPidProvider permaLinkProvider() {
                 return permaLinkServiceBean;
             }
             
@@ -84,34 +88,34 @@ public class PersistentIdentifierServiceBeanTest {
         Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.DoiProvider, "")).thenReturn("EZID");
         
         assertEquals(ezidServiceBean, 
-                     GlobalIdServiceBean.getBean("doi", ctxt));
+                     PidProvider.getBean("doi", ctxt));
         
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.DoiProvider, "DataCite");
         Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.DoiProvider, "")).thenReturn("DataCite");
 
         assertEquals(dataCiteServiceBean, 
-                     GlobalIdServiceBean.getBean("doi", ctxt));
+                     PidProvider.getBean("doi", ctxt));
 
         ctxt.settings().setValueForKey(SettingsServiceBean.Key.DoiProvider, "FAKE");
         Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.DoiProvider, "")).thenReturn("FAKE");
 
         assertEquals(fakePidProviderServiceBean,
-                GlobalIdServiceBean.getBean("doi", ctxt));
+                PidProvider.getBean("doi", ctxt));
 
         assertEquals(hdlServiceBean, 
-                     GlobalIdServiceBean.getBean("hdl", ctxt));
+                     PidProvider.getBean("hdl", ctxt));
         
         assertEquals(permaLinkServiceBean, 
-                GlobalIdServiceBean.getBean("perma", ctxt));
+                PidProvider.getBean("perma", ctxt));
     }
     
      @Test
     public void testGetBean_String_CommandContext_BAD() {
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.DoiProvider, "non-existent-provider");
-        assertNull(GlobalIdServiceBean.getBean("doi", ctxt));
+        assertNull(PidProvider.getBean("doi", ctxt));
         
         
-        assertNull(GlobalIdServiceBean.getBean("non-existent-protocol", ctxt));
+        assertNull(PidProvider.getBean("non-existent-protocol", ctxt));
     }
 
     /**
@@ -124,15 +128,15 @@ public class PersistentIdentifierServiceBeanTest {
         Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.DoiProvider, "")).thenReturn("EZID");
         
         assertEquals(ezidServiceBean, 
-                     GlobalIdServiceBean.getBean("doi", ctxt));
+                     PidProvider.getBean("doi", ctxt));
         
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.Protocol, "hdl");
         assertEquals(hdlServiceBean, 
-                     GlobalIdServiceBean.getBean("hdl", ctxt));
+                     PidProvider.getBean("hdl", ctxt));
         
         ctxt.settings().setValueForKey( SettingsServiceBean.Key.Protocol, "perma");
         assertEquals(permaLinkServiceBean, 
-                     GlobalIdServiceBean.getBean("perma", ctxt));
+                     PidProvider.getBean("perma", ctxt));
     }
 
    

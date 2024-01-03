@@ -7,12 +7,13 @@ package edu.harvard.iq.dataverse.export;
 
 import com.google.gson.Gson;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
+import edu.harvard.iq.dataverse.pidproviders.DOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -56,7 +57,7 @@ public class OpenAireExportUtilTest {
         String persistentAgency = "doi";
         String persistentAuthority = "10.123";
         String persistentId = "123";
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, DOIServiceBean.DOI_RESOLVER_URL, null);
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, DOIProvider.DOI_RESOLVER_URL, null);
 
         // when
         OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.asURL(), null);
@@ -76,7 +77,7 @@ public class OpenAireExportUtilTest {
         String persistentAgency = "hdl";
         String persistentAuthority = "1902.1";
         String persistentId = "111012";
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, HandlenetServiceBean.HDL_RESOLVER_URL, null);
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, HandlePidProvider.HDL_RESOLVER_URL, null);
 
         // when
         OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.asURL(), null);

@@ -1,14 +1,14 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FakeDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -80,7 +80,7 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
                  * Dataverse) but aren't findable to be used. That could be the case if, for
                  * example, someone was importing a draft dataset from elsewhere.
                  */
-                GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(ds.getProtocol(), ctxt);
+                PidProvider globalIdServiceBean = PidProvider.getBean(ds.getProtocol(), ctxt);
                 if (globalIdServiceBean != null) {
                     if (globalIdServiceBean.alreadyRegistered(ds.getGlobalId(), true)) {
                         return;

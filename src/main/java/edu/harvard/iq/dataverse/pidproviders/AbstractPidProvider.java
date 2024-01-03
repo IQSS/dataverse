@@ -1,5 +1,14 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.pidproviders;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetAuthor;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.datacite.Util;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
@@ -15,9 +24,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean {
+public abstract class AbstractPidProvider implements PidProvider {
 
-    private static final Logger logger = Logger.getLogger(AbstractGlobalIdServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(AbstractPidProvider.class.getCanonicalName());
 
     @Inject
     DataverseServiceBean dataverseService;
@@ -252,12 +261,12 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             // before and after it
             // Strip any whitespace, ; and ' from authority (should finding them cause a
             // failure instead?)
-            authority = GlobalIdServiceBean.formatIdentifierString(identifierString.substring(0, index));
-            if (GlobalIdServiceBean.testforNullTerminator(authority)) {
+            authority = PidProvider.formatIdentifierString(identifierString.substring(0, index));
+            if (PidProvider.testforNullTerminator(authority)) {
                 return null;
             }
-            identifier = GlobalIdServiceBean.formatIdentifierString(identifierString.substring(index + 1));
-            if (GlobalIdServiceBean.testforNullTerminator(identifier)) {
+            identifier = PidProvider.formatIdentifierString(identifierString.substring(index + 1));
+            if (PidProvider.testforNullTerminator(identifier)) {
                 return null;
             }
         } else {
@@ -273,7 +282,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             return null;
         }
         logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getProviderInformation().get(0));
-        if(!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
+        if(!PidProvider.isValidGlobalId(protocol, authority, identifier)) {
             return null;
         }
         return new GlobalId(protocol, authority, identifier, getSeparator(), getUrlPrefix(),
@@ -383,7 +392,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     }
 
     
-    class GlobalIdMetadataTemplate {
+    public class GlobalIdMetadataTemplate {
 
 
     private   String template;

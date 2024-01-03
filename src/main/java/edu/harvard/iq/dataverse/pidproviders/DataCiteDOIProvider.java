@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.pidproviders;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -12,7 +12,10 @@ import java.util.logging.Logger;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.datacite.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
@@ -22,10 +25,9 @@ import org.apache.commons.httpclient.HttpStatus;
  *
  * @author luopc
  */
-@Stateless
-public class DOIDataCiteServiceBean extends DOIServiceBean {
+public class DataCiteDOIProvider extends DOIProvider {
 
-    private static final Logger logger = Logger.getLogger(DOIDataCiteServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DataCiteDOIProvider.class.getCanonicalName());
     
     private static final String PUBLIC = "public";
     private static final String FINDABLE = "findable";
@@ -246,5 +248,21 @@ public class DOIDataCiteServiceBean extends DOIServiceBean {
     @Override
     protected String getProviderKeyName() {
         return "DataCite";
+    }
+
+
+
+    @Override
+    public String getProviderType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+
+    @Override
+    public String getName() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -11,7 +11,6 @@ import jakarta.ejb.Stateless;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.NotImplementedException;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 
@@ -20,10 +19,9 @@ import edu.harvard.iq.dataverse.GlobalId;
  * 
  */
 
-@Stateless
-public class UnmanagedDOIServiceBean extends DOIServiceBean {
+public class UnmanagedDOIProvider extends DOIProvider {
 
-    private static final Logger logger = Logger.getLogger(UnmanagedDOIServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(UnmanagedDOIProvider.class.getCanonicalName());
 
     @PostConstruct
     private void init() {
@@ -76,8 +74,20 @@ public class UnmanagedDOIServiceBean extends DOIServiceBean {
         return List.of("UnmanagedDOIProvider", "");
     }
 
+    @Override
+    public String getProviderType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 
     // PID recognition
-    // Done by DOIServiceBean
+    // Done by DOIProvider
 
 }

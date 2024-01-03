@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import java.io.IOException;
 import java.util.concurrent.Future;
@@ -99,7 +100,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         }   
         
         if (!doomed.isHarvested()) {
-            GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+            PidProvider idServiceBean = PidProvider.getBean(ctxt);
             try {
                 if (idServiceBean.alreadyRegistered(doomed)) {
                     idServiceBean.deleteIdentifier(doomed);

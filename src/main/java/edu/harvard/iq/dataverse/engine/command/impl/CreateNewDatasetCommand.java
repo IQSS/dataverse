@@ -12,12 +12,12 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.util.logging.Logger;
 
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import java.util.List;
 import java.sql.Timestamp;
@@ -72,7 +72,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     @Override
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
         if ( nonEmpty(getDataset().getIdentifier()) ) {
-            GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(getDataset().getProtocol(), ctxt);
+            PidProvider idServiceBean = PidProvider.getBean(getDataset().getProtocol(), ctxt);
             if ( !idServiceBean.isGlobalIdUnique(getDataset().getGlobalId()) ) {
                 throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                                  getDataset().getIdentifier(), getDataset().getProtocol(), getDataset().getAuthority()), 
@@ -88,7 +88,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
 
     @Override
     protected void handlePid(Dataset theDataset, CommandContext ctxt) throws CommandException {
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+        PidProvider idServiceBean = PidProvider.getBean(ctxt);
         if(!idServiceBean.isConfigured()) {
             throw new IllegalCommandException("PID Provider " + idServiceBean.getProviderInformation().get(0) + " is not configured.", this);
         }

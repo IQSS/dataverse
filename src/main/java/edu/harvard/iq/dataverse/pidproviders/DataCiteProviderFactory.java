@@ -1,14 +1,12 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
-import edu.harvard.iq.dataverse.DOIDataCiteServiceBean;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 class DataCiteProviderFactory extends PidProviderFactory {
     
-    public GlobalIdServiceBean createProvider(String providerName) {
+    public PidProvider createProvider(String providerName) {
             String providerType=JvmSettings.PID_PROVIDER_TYPE.lookup(providerName);
-            if(!providerType.equals(DOIDataCiteServiceBean.TYPE)) {
+            if(!providerType.equals(DataCiteDOIProvider.TYPE)) {
                 //Being asked to create a non-DataCite provider
                 return null;
             }
@@ -20,10 +18,10 @@ class DataCiteProviderFactory extends PidProviderFactory {
             String password = JvmSettings.DATACITE_PASSWORD.lookup(providerName);
             String[] whitelist = JvmSettings.PID_PROVIDER_WHITELIST.lookup(providerName).split(",");
             
-            return new DOIDataCiteServiceBean(providerAuthority, providerShoulder, mdsUrl, apiUrl, username, password);
+            return new DataCiteDOIProvider(providerAuthority, providerShoulder, mdsUrl, apiUrl, username, password);
     }
 
     public String getType() {
-        return DOIDataCiteServiceBean.TYPE;
+        return DataCiteDOIProvider.TYPE;
     }
 }

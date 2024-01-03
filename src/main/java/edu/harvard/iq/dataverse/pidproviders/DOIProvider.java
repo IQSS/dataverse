@@ -1,8 +1,9 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.pidproviders;
 
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 
-public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
+public abstract class DOIProvider extends AbstractPidProvider {
 
     public static final String DOI_PROTOCOL = "doi";
     public static final String DOI_RESOLVER_URL = "https://doi.org/";
@@ -10,7 +11,7 @@ public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
     public static final String DXDOI_RESOLVER_URL = "https://dx.doi.org/";
     public static final String HTTP_DXDOI_RESOLVER_URL = "http://dx.doi.org/";
 
-    public DOIServiceBean() {
+    public DOIProvider() {
         super();
     }
 
@@ -36,7 +37,7 @@ public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
             return null;
         }
         GlobalId globalId = super.parsePersistentId(protocol, identifierString);
-        if (globalId!=null && !GlobalIdServiceBean.checkDOIAuthority(globalId.getAuthority())) {
+        if (globalId!=null && !PidProvider.checkDOIAuthority(globalId.getAuthority())) {
             return null;
         }
         return globalId;

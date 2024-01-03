@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.DOIEZIdProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -62,7 +64,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     IndexServiceBean indexService;
 
     @EJB
-    DOIEZIdServiceBean doiEZIdServiceBean;
+    DOIEZIdProvider doiEZIdServiceBean;
 
     @EJB
     SettingsServiceBean settingsService;
@@ -958,7 +960,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     */
     @Asynchronous
     public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
+        PidProvider idServiceBean = PidProvider.getBean(dataset.getProtocol(), commandEngine.getContext());
 
         //If the Id type is sequential and Dependent then write file idenitifiers outside the command
         String datasetIdentifier = dataset.getIdentifier();

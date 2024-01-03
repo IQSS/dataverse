@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
@@ -23,7 +24,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  * Deletes a data file, both DB entity and filesystem object.
@@ -202,7 +202,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 */
             }
         }
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+        PidProvider idServiceBean = PidProvider.getBean(ctxt);
         try {
             if (idServiceBean.alreadyRegistered(doomed)) {
                 idServiceBean.deleteIdentifier(doomed);

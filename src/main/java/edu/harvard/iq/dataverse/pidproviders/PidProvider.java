@@ -1,19 +1,22 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.pidproviders;
 
-import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+
+import static edu.harvard.iq.dataverse.pidproviders.PidProvider.logger;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public interface GlobalIdServiceBean {
+public interface PidProvider {
 
-    static final Logger logger = Logger.getLogger(GlobalIdServiceBean.class.getCanonicalName());
+    static final Logger logger = Logger.getLogger(PidProvider.class.getCanonicalName());
 
     boolean alreadyRegistered(DvObject dvo) throws Exception;
     
@@ -71,10 +74,10 @@ public interface GlobalIdServiceBean {
     
     
     //ToDo - now need to get the correct provider based on the protocol, authority, and shoulder (for new pids)/indentifier (for existing pids)
-    static GlobalIdServiceBean getBean(String protocol, CommandContext ctxt) {
-        final Function<CommandContext, GlobalIdServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
+    static PidProvider getBean(String protocol, CommandContext ctxt) {
+        final Function<CommandContext, PidProvider> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
         if ( protocolHandler != null ) {
-            GlobalIdServiceBean theBean = protocolHandler.apply(ctxt);
+            PidProvider theBean = protocolHandler.apply(ctxt);
             if(theBean != null && theBean.isConfigured()) {
                 logger.fine("getBean returns " + theBean.getProviderInformation().get(0) + " for protocol " + protocol);
             }
@@ -85,7 +88,7 @@ public interface GlobalIdServiceBean {
         }
     }
 
-    static GlobalIdServiceBean getBean(CommandContext ctxt) {
+    static PidProvider getBean(CommandContext ctxt) {
         return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
     }
     
@@ -126,16 +129,16 @@ public interface GlobalIdServiceBean {
         if (protocol == null || authority == null || identifier == null) {
             return false;
         }
-        if(!authority.equals(GlobalIdServiceBean.formatIdentifierString(authority))) {
+        if(!authority.equals(PidProvider.formatIdentifierString(authority))) {
             return false;
         }
-        if (GlobalIdServiceBean.testforNullTerminator(authority)) {
+        if (PidProvider.testforNullTerminator(authority)) {
             return false;
         }
-        if(!identifier.equals(GlobalIdServiceBean.formatIdentifierString(identifier))) {
+        if(!identifier.equals(PidProvider.formatIdentifierString(identifier))) {
             return false;
         }
-        if (GlobalIdServiceBean.testforNullTerminator(identifier)) {
+        if (PidProvider.testforNullTerminator(identifier)) {
             return false;
         }
         return true;
@@ -204,7 +207,7 @@ public interface GlobalIdServiceBean {
  */
 // FWIW: For lists of PIDs not managed by the provider covered by authority/shoulder, we need a way to add them to one provider and exlude them if another registered provider handles their authority/shoulder (probably rare?)
 class BeanDispatcher {
-    static final Map<String, Function<CommandContext, GlobalIdServiceBean>> DISPATCHER = new HashMap<>();
+    static final Map<String, Function<CommandContext, PidProvider>> DISPATCHER = new HashMap<>();
 
     static {
         DISPATCHER.put("hdl", ctxt->ctxt.handleNet() );
@@ -220,6 +223,6 @@ class BeanDispatcher {
             }
         });
         
-        DISPATCHER.put(PermaLinkPidProviderServiceBean.PERMA_PROTOCOL, ctxt->ctxt.permaLinkProvider() );
+        DISPATCHER.put(PermaLinkPidProvider.PERMA_PROTOCOL, ctxt->ctxt.permaLinkProvider() );
     }
 }

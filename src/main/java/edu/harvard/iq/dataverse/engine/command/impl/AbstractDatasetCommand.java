@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.sql.Timestamp;
@@ -23,7 +24,6 @@ import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 
 import jakarta.validation.ConstraintViolation;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -152,7 +152,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt, boolean retry) throws CommandException {
         if (!theDataset.isIdentifierRegistered()) {
-            GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
+            PidProvider globalIdServiceBean = PidProvider.getBean(theDataset.getProtocol(), ctxt);
             if ( globalIdServiceBean != null ) {
                 try {
                     if (globalIdServiceBean.alreadyRegistered(theDataset)) {

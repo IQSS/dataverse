@@ -18,8 +18,12 @@
    Version 3.0.
 */
 
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.pidproviders;
 
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
@@ -60,21 +64,20 @@ import org.apache.commons.lang3.NotImplementedException;
  * As of now, it only does the registration updates, to accommodate 
  * the modifyRegistration datasets API sub-command.
  */
-@Stateless
-public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
+public class HandlePidProvider extends AbstractPidProvider {
 
     @EJB
     DataverseServiceBean dataverseService;
     @EJB 
     SettingsServiceBean settingsService;
-    private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(HandlePidProvider.class.getCanonicalName());
     
     public static final String HDL_PROTOCOL = "hdl";
     int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class, "handlenet");
     public static final String HTTP_HDL_RESOLVER_URL = "http://hdl.handle.net/";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     
-    public HandlenetServiceBean() {
+    public HandlePidProvider() {
         logger.log(Level.FINE,"Constructor");
         configured = true;
     }
@@ -437,6 +440,24 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     @Override
     public String getUrlPrefix() {
         return HDL_RESOLVER_URL;
+    }
+
+    @Override
+    public String getProtocol() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getProviderType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
 

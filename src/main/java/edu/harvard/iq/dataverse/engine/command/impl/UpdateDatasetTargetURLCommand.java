@@ -10,10 +10,11 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Date;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  *
@@ -36,7 +37,7 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
             throw new PermissionException("Update Target URL can only be called by superusers.",
                     this, Collections.singleton(Permission.EditDataset), target);
         }
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(target.getProtocol(), ctxt);
+        PidProvider idServiceBean = PidProvider.getBean(target.getProtocol(), ctxt);
         try {
             String doiRetString = idServiceBean.modifyIdentifierTargetURL(target);
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {

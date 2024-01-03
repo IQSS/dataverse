@@ -17,8 +17,11 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.DOIEZIdProvider;
+import edu.harvard.iq.dataverse.pidproviders.DataCiteDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.FakeDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -114,19 +117,19 @@ public class EjbDataverseEngine {
     DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels;
 
     @EJB
-    DOIEZIdServiceBean doiEZId;
+    DOIEZIdProvider doiEZId;
     
     @EJB
-    DOIDataCiteServiceBean doiDataCite;
+    DataCiteDOIProvider doiDataCite;
 
     @EJB
-    FakePidProviderServiceBean fakePidProvider;
+    FakeDOIProvider fakePidProvider;
 
     @EJB
-    HandlenetServiceBean handleNet;
+    HandlePidProvider handleNet;
     
     @EJB
-    PermaLinkPidProviderServiceBean permaLinkProvider;
+    PermaLinkPidProvider permaLinkProvider;
     
     @EJB
     SettingsServiceBean settings;
@@ -484,27 +487,27 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
-                public DOIEZIdServiceBean doiEZId() {
+                public DOIEZIdProvider doiEZId() {
                     return doiEZId;
                 }
                 
                 @Override
-                public DOIDataCiteServiceBean doiDataCite() {
+                public DataCiteDOIProvider doiDataCite() {
                     return doiDataCite;
                 }
 
                 @Override
-                public FakePidProviderServiceBean fakePidProvider() {
+                public FakeDOIProvider fakePidProvider() {
                     return fakePidProvider;
                 }
 
                 @Override
-                public HandlenetServiceBean handleNet() {
+                public HandlePidProvider handleNet() {
                     return handleNet;
                 }
 
                 @Override
-                public PermaLinkPidProviderServiceBean permaLinkProvider() {
+                public PermaLinkPidProvider permaLinkProvider() {
                     return permaLinkProvider;
                 }
                 

@@ -17,6 +17,7 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.BufferedReader;
@@ -204,7 +205,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
         FileUtil.generateS3PackageStorageIdentifier(packageFile);
 
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
+        PidProvider idServiceBean = PidProvider.getBean(packageFile.getProtocol(), commandEngine.getContext());
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
             String packageIdentifier = idServiceBean.generateDataFileIdentifier(packageFile);
             packageFile.setIdentifier(packageIdentifier);
@@ -223,7 +224,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
         if (!packageFile.isIdentifierRegistered()) {
             String doiRetString = "";
-            idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
+            idServiceBean = PidProvider.getBean(commandEngine.getContext());
             try {
                 doiRetString = idServiceBean.createIdentifier(packageFile);
             } catch (Throwable e) {

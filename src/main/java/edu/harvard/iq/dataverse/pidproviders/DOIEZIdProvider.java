@@ -1,5 +1,9 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.pidproviders;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
@@ -13,10 +17,9 @@ import jakarta.ejb.Stateless;
  *
  * @author skraffmiller
  */
-@Stateless
-public class DOIEZIdServiceBean extends DOIServiceBean {
+public class DOIEZIdProvider extends DOIProvider {
     
-    private static final Logger logger = Logger.getLogger(DOIEZIdServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DOIEZIdProvider.class.getCanonicalName());
     
     EZIDService ezidService;
     
@@ -25,7 +28,7 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
     // This has a sane default in microprofile-config.properties
     private final String baseUrl = JvmSettings.EZID_API_URL.lookup("ezid");
     
-    public DOIEZIdServiceBean() {
+    public DOIEZIdProvider() {
         // Creating the service doesn't do any harm, just initializing some object data here.
         // Makes sure we don't run into NPEs from the other methods, but will obviously fail if the
         // login below does not work.
@@ -279,6 +282,17 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
     @Override
     protected String getProviderKeyName() {
         return "EZID";
+    }
+
+    @Override
+    public String getProviderType() {
+        return TYPE;
+    }
+
+    @Override
+    public String getName() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

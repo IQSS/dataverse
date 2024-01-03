@@ -24,11 +24,6 @@ import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
-
-import edu.harvard.iq.dataverse.DOIDataCiteServiceBean;
-import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import io.gdcc.spi.export.Exporter;
@@ -107,7 +102,7 @@ public class PidProviderFactoryBean {
         for (String name : providers) {
             String type = JvmSettings.PID_PROVIDER_TYPE.lookup(name);
             if (pidProviderFactoryMap.containsKey(type)) {
-                GlobalIdServiceBean provider = pidProviderFactoryMap.get(type).createPidProvider(name);
+                PidProvider provider = pidProviderFactoryMap.get(type).createPidProvider(name);
                 PidUtil.addToProviderList(provider);
             }
         }

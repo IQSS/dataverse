@@ -1,9 +1,8 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
-import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
+
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,7 +14,7 @@ import org.apache.commons.lang3.NotImplementedException;
  * 
  */
 @Stateless
-public class UnmanagedHandlenetServiceBean extends AbstractGlobalIdServiceBean {
+public class UnmanagedHandlenetServiceBean extends AbstractPidProvider {
 
     private static final Logger logger = Logger.getLogger(UnmanagedHandlenetServiceBean.class.getCanonicalName());
 
@@ -71,19 +70,19 @@ public class UnmanagedHandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public GlobalId parsePersistentId(String pidString) {
-        if (pidString.startsWith(HandlenetServiceBean.HDL_RESOLVER_URL)) {
-            pidString = pidString.replace(HandlenetServiceBean.HDL_RESOLVER_URL,
-                    (HandlenetServiceBean.HDL_PROTOCOL + ":"));
-        } else if (pidString.startsWith(HandlenetServiceBean.HTTP_HDL_RESOLVER_URL)) {
-            pidString = pidString.replace(HandlenetServiceBean.HTTP_HDL_RESOLVER_URL,
-                    (HandlenetServiceBean.HDL_PROTOCOL + ":"));
+        if (pidString.startsWith(HandlePidProvider.HDL_RESOLVER_URL)) {
+            pidString = pidString.replace(HandlePidProvider.HDL_RESOLVER_URL,
+                    (HandlePidProvider.HDL_PROTOCOL + ":"));
+        } else if (pidString.startsWith(HandlePidProvider.HTTP_HDL_RESOLVER_URL)) {
+            pidString = pidString.replace(HandlePidProvider.HTTP_HDL_RESOLVER_URL,
+                    (HandlePidProvider.HDL_PROTOCOL + ":"));
         }
         return super.parsePersistentId(pidString);
     }
 
     @Override
     public GlobalId parsePersistentId(String protocol, String identifierString) {
-        if (!HandlenetServiceBean.HDL_PROTOCOL.equals(protocol)) {
+        if (!HandlePidProvider.HDL_PROTOCOL.equals(protocol)) {
             return null;
         }
         GlobalId globalId = super.parsePersistentId(protocol, identifierString);
@@ -92,7 +91,7 @@ public class UnmanagedHandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
-        if (!HandlenetServiceBean.HDL_PROTOCOL.equals(protocol)) {
+        if (!HandlePidProvider.HDL_PROTOCOL.equals(protocol)) {
             return null;
         }
         return super.parsePersistentId(protocol, authority, identifier);
@@ -100,6 +99,6 @@ public class UnmanagedHandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public String getUrlPrefix() {
-        return HandlenetServiceBean.HDL_RESOLVER_URL;
+        return HandlePidProvider.HDL_RESOLVER_URL;
     }
 }

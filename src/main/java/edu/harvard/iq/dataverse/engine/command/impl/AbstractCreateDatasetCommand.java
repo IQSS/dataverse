@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.io.IOException;
@@ -81,7 +82,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         additionalParameterTests(ctxt);
         
         Dataset theDataset = getDataset();
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+        PidProvider idServiceBean = PidProvider.getBean(ctxt);
         if ( isEmpty(theDataset.getIdentifier()) ) {
             theDataset.setIdentifier(idServiceBean.generateDatasetIdentifier(theDataset));
         }

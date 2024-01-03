@@ -10,11 +10,12 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
+
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import java.io.IOException;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -52,7 +53,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         // Get the idServiceBean that is configured to mint new IDs
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
+        PidProvider idServiceBean = PidProvider.getBean(protocol, ctxt);
         try {
             //Test to see if identifier already present
             //if so, leave.
@@ -77,7 +78,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
                 if (!idServiceBean.registerWhenPublished()) {
                     // Should register ID before publicize() is called
-                    // For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
+                    // For example, DOIEZIdProvider tries to recreate the id if the identifier isn't registered before
                     // publicizeIdentifier is called
                     target.setIdentifierRegistered(true);
                     target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
@@ -107,7 +108,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                         if (doiRetString != null && doiRetString.contains(df.getIdentifier())) {
                             if (!idServiceBean.registerWhenPublished()) {
                                 // Should register ID before publicize() is called
-                                // For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
+                                // For example, DOIEZIdProvider tries to recreate the id if the identifier isn't registered before
                                 // publicizeIdentifier is called
                                 df.setIdentifierRegistered(true);
                                 df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
@@ -145,7 +146,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
     private Boolean processMigrateHandle (CommandContext ctxt){
         boolean retval = true;
         if(!target.isInstanceofDataset()) return false;
-        if(!target.getProtocol().equals(HandlenetServiceBean.HDL_PROTOCOL)) return false;
+        if(!target.getProtocol().equals(HandlePidProvider.HDL_PROTOCOL)) return false;
         
         AlternativePersistentIdentifier api = new AlternativePersistentIdentifier();
         api.setProtocol(target.getProtocol());

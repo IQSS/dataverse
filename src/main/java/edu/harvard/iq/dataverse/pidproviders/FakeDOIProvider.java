@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 
@@ -11,10 +10,9 @@ import java.util.logging.Logger;
 
 import jakarta.ejb.Stateless;
 
-@Stateless
-public class FakePidProviderServiceBean extends DOIServiceBean {
+public class FakeDOIProvider extends DOIProvider {
 
-    private static final Logger logger = Logger.getLogger(FakePidProviderServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(FakeDOIProvider.class.getCanonicalName());
 
     
     //Only need to check locally
@@ -72,6 +70,18 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
     @Override
     protected String getProviderKeyName() {
         return "FAKE";
+    }
+
+    @Override
+    public String getProviderType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

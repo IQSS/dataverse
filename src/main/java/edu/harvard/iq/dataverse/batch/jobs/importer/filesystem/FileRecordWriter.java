@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
@@ -58,7 +59,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.servlet.http.HttpServletRequest;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 @Named
 @Dependent
@@ -360,7 +360,7 @@ public class FileRecordWriter extends AbstractItemWriter {
         
     if (commandEngine.getContext().systemConfig().isFilePIDsEnabledForCollection(dataset.getOwner())) {
 
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
+        PidProvider idServiceBean = PidProvider.getBean(packageFile.getProtocol(), commandEngine.getContext());
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
             packageFile.setIdentifier(idServiceBean.generateDataFileIdentifier(packageFile));
         }
@@ -376,7 +376,7 @@ public class FileRecordWriter extends AbstractItemWriter {
 
         if (!packageFile.isIdentifierRegistered()) {
             String doiRetString = "";
-            idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
+            idServiceBean = PidProvider.getBean(commandEngine.getContext());
             try {
                 doiRetString = idServiceBean.createIdentifier(packageFile);
             } catch (Throwable e) {

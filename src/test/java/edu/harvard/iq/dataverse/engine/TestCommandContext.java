@@ -11,8 +11,11 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.DOIEZIdProvider;
+import edu.harvard.iq.dataverse.pidproviders.DataCiteDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.FakeDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -122,27 +125,27 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
-    public DOIEZIdServiceBean doiEZId() {
+    public DOIEZIdProvider doiEZId() {
         return null;
     }
 
     @Override
-    public DOIDataCiteServiceBean doiDataCite() {
+    public DataCiteDOIProvider doiDataCite() {
         return null;
     }
 
     @Override
-    public FakePidProviderServiceBean fakePidProvider() {
+    public FakeDOIProvider fakePidProvider() {
         return null;
     }
 
     @Override
-    public HandlenetServiceBean handleNet() {
+    public HandlePidProvider handleNet() {
         return null;
     }
 
     @Override
-    public PermaLinkPidProviderServiceBean permaLinkProvider() {
+    public PermaLinkPidProvider permaLinkProvider() {
         return null;
     }
     
