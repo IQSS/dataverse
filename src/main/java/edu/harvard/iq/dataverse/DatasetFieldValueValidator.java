@@ -212,6 +212,18 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         }
 
+        if (fieldType.equals(FieldType.BOOLEAN) && !lengthOnly) {
+            boolean validBoolean = isValidBoolean(value.getValue());
+            if (!validBoolean) {
+                try {
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidBoolean")).addConstraintViolation();
+                } catch (NullPointerException e) {
+                    return false;
+                }
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -300,5 +312,11 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             throw new IllegalArgumentException(String.format("Value (%s) not in range (%s-%s)", returnVal.isNaN() ? "missing" : returnVal, min, max));
         }
         return returnVal;
+    }
+
+    private boolean isValidBoolean(String value) {
+        return Optional.ofNullable(value)
+                       .map(v -> v.equalsIgnoreCase("true") || v.equalsIgnoreCase("false"))
+                       .orElse(false);
     }
 }

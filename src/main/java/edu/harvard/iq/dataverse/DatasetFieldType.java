@@ -36,7 +36,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
      * The set of possible metatypes of the field. Used for validation and layout.
      */
     public enum FieldType {
-        TEXT, TEXTBOX, DATE, EMAIL, URL, FLOAT, INT, NONE
+        TEXT, TEXTBOX, DATE, EMAIL, URL, FLOAT, INT, BOOLEAN, NONE
     };    
     
     @Id

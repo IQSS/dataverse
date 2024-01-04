@@ -146,7 +146,8 @@ Each of the three main sections own sets of properties:
 |                           |                                                        |                                                          | \• textbox            |
 |                           |                                                        |                                                          | \• url                |
 |                           |                                                        |                                                          | \• int                |
-|                           |                                                        |                                                          | \• float              |
+|                           |                                                        |                                                          | \• float
+|                           |                                                        |                                                          | \• Boolean              |
 |                           |                                                        |                                                          | \• See below for      |
 |                           |                                                        |                                                          | fieldtype definitions |
 +---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
@@ -314,6 +315,9 @@ FieldType definitions
 +---------------+------------------------------------+
 | float         | A floating point number destined   |
 |               | for a numeric field.               |
++---------------+------------------------------------+
+| Boolean       | A boolean value intended for a     |
+|               | boolean field.                     |
 +---------------+------------------------------------+
 
 displayFormat variables
