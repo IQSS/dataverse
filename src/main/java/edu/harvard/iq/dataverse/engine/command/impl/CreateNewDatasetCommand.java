@@ -89,7 +89,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     @Override
     protected void handlePid(Dataset theDataset, CommandContext ctxt) throws CommandException {
         PidProvider idServiceBean = PidProvider.getBean(ctxt);
-        if(!idServiceBean.isConfigured()) {
+        if(!idServiceBean.canManagePID()) {
             throw new IllegalCommandException("PID Provider " + idServiceBean.getProviderInformation().get(0) + " is not configured.", this);
         }
         if ( !idServiceBean.registerWhenPublished() ) {
