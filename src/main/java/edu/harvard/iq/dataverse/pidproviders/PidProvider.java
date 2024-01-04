@@ -192,6 +192,12 @@ public interface PidProvider {
 
     public void setPidProviderServiceBean(PidProviderFactoryBean pidProviderFactoryBean);
 
+    String getDatafilePidFormat();
+
+    Set<String> getManagedSet();
+
+    Set<String> getExcludedSet();
+
 }
 
 
