@@ -860,7 +860,16 @@ public class HarvestingServerIT {
         logger.info("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
         assertEquals(200, deleteResponse.getStatusCode(), "Failed to delete the control multi-record set");
     }
-    
+
+    @Test
+    public void testInvalidQueryParams() {
+        // "foo" is not a valid verb
+        String oaiVerbPath = "/oai?foo=bar";
+        Response identifyResponse = given().get(oaiVerbPath);
+        // TODO Why is this 500? https://github.com/IQSS/dataverse/issues/9275
+        identifyResponse.then().assertThat().statusCode(500);
+    }
+
     // TODO: 
     // What else can we test? 
     // Some ideas: 
