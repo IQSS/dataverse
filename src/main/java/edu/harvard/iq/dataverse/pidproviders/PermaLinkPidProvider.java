@@ -28,6 +28,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
     private static final Logger logger = Logger.getLogger(PermaLinkPidProvider.class.getCanonicalName());
 
     public static final String PERMA_PROTOCOL = "perma";
+    public static final String TYPE = "perma";
     public static final String PERMA_PROVIDER_NAME = "PERMA";
 
     // ToDo - remove
@@ -35,21 +36,23 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
     public static final String PERMA_RESOLVER_URL = JvmSettings.PERMALINK_BASE_URL.lookupOptional("permalink")
             .orElse(SystemConfig.getDataverseSiteUrlStatic());
 
+    
+
     String authority = null;
     private String separator = "";
 
     private String baseUrl;
 
-    public PermaLinkPidProvider(String providerAuthority, String providerShoulder, String identifierGenerationStyle,
-            String datafilePidFormat, String managedList, String excludedList, String baseUrl) {
-        super(PERMA_PROTOCOL, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
+    public PermaLinkPidProvider(String name, String providerAuthority, String providerShoulder, String identifierGenerationStyle,
+            String datafilePidFormat, String managedList, String excludedList, String baseUrl, String separator) {
+        super(name, PERMA_PROTOCOL, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
                 managedList, excludedList);
         this.baseUrl = baseUrl;
+        this.separator = separator;
     }
 
     @Override
     public String getSeparator() {
-        // The perma default
         return separator;
     }
 
@@ -99,7 +102,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
         // Generate if needed (i.e. datafile case where we don't create/register early
-        // (even with reigsterWhenPublished == false))
+        // (even with registerWhenPublished == false))
         if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()) {
             dvObject = generateIdentifier(dvObject);
         }
@@ -151,20 +154,12 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
 
     @Override
     public String getProtocol() {
-        // TODO Auto-generated method stub
-        return null;
+        return PERMA_PROTOCOL;
     }
 
     @Override
     public String getProviderType() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getName() {
-        // TODO Auto-generated method stub
-        return null;
+        return PERMA_PROTOCOL;
     }
 
     public String getBaseUrl() {

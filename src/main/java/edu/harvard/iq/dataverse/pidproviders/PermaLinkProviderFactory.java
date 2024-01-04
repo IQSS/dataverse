@@ -8,7 +8,7 @@ class PermaLinkProviderFactory implements PidProviderFactory {
     @Override
     public PidProvider createPidProvider(String providerName) {
         String providerType = JvmSettings.PID_PROVIDER_TYPE.lookup(providerName);
-        if (!providerType.equals(EZIdDOIProvider.TYPE)) {
+        if (!providerType.equals(PermaLinkPidProvider.TYPE)) {
             // Being asked to create a non-EZId provider
             return null;
         }
@@ -20,15 +20,18 @@ class PermaLinkProviderFactory implements PidProviderFactory {
                 .orElse(SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
         String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookup(providerName);
         String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookup(providerName);
-        
-        String baseUrl = JvmSettings.PERMALINK_BASE_URL.lookupOptional(providerName).orElse(SystemConfig.getDataverseSiteUrlStatic());;
 
-        return new PermaLinkPidProvider(providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
-                managedList, excludedList, baseUrl);
+        String baseUrl = JvmSettings.PERMALINK_BASE_URL.lookupOptional(providerName)
+                .orElse(SystemConfig.getDataverseSiteUrlStatic());
+        ;
+        String separator = JvmSettings.PERMALINK_SEPARATOR.lookupOptional(providerName).orElse("");
+
+        return new PermaLinkPidProvider(providerName, providerAuthority, providerShoulder, identifierGenerationStyle,
+                datafilePidFormat, managedList, excludedList, baseUrl, separator);
     }
 
     public String getType() {
-        return FakeDOIProvider.TYPE;
+        return PermaLinkPidProvider.TYPE;
     }
 
 }
