@@ -9,5 +9,5 @@ SET strvalue =
     ELSE cvv.strvalue
   END
 FROM datasetfieldtype dft
-WHERE dft.name = 'astroType'
- AND cvv.datasetfieldtype_id = dft.id;
+WHERE dft.name = 'astroType' AND cvv.datasetfieldtype_id = dft.id 
+and (cvv.strvalue = 'LightCurve' or cvv.strvalue = 'EventList' or cvv.strvalue = 'PrettyPicture' or cvv.strvalue = 'ValuePair') ;
