@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -858,7 +857,7 @@ public class IndexServiceBean {
         String parentDatasetTitle = "TBD";
         if (datasetVersion != null) {
 
-            solrInputDocument.addField(SearchFields.DATASET_LICENSE, datasetVersion.getTermsOfUseAndAccess().getLicense().getName());
+            addLicenseToSolrDoc(solrInputDocument, datasetVersion);
 
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
             solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
@@ -1247,7 +1246,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
 
                     datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
-                    datafileSolrInputDocument.addField(SearchFields.DATASET_LICENSE, datasetVersion.getTermsOfUseAndAccess().getLicense().getName());
+                    addLicenseToSolrDoc(datafileSolrInputDocument, datasetVersion);
 
                     /**
                      * for rules on sorting files see
@@ -1615,6 +1614,12 @@ public class IndexServiceBean {
             subtrees.add(pathBuilder.toString());
         }
         return subtrees;
+    }
+
+    private void addLicenseToSolrDoc(SolrInputDocument solrInputDocument, DatasetVersion datasetVersion) {
+        if (datasetVersion != null && datasetVersion.getTermsOfUseAndAccess() != null && datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
+            solrInputDocument.addField(SearchFields.DATASET_LICENSE, datasetVersion.getTermsOfUseAndAccess().getLicense().getName());
+        }
     }
 
     private void addDataverseReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataverse dataverse) {
