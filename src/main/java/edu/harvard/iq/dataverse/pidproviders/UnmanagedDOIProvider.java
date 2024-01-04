@@ -18,8 +18,7 @@ public class UnmanagedDOIProvider extends DOIProvider {
 
     private static final String NAME = "UnmanagedDOIProvider";
 
-    public UnmanagedDOIProvider(String providerAuthority, String providerShoulder, String identifierGenerationStyle,
-            String datafilePidFormat) {
+    public UnmanagedDOIProvider() {
         super(NAME);
     }
 
