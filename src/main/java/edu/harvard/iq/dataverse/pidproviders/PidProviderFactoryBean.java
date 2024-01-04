@@ -125,7 +125,7 @@ public class PidProviderFactoryBean {
                 PidUtil.addToProviderList(provider);
             }
         }
-        PidUtil.addAllToUnmanagedProviderList(Arrays.asList(unmanagedDOISvc, unmanagedHandleSvc));
+        PidUtil.addAllToUnmanagedProviderList(Arrays.asList(new UnmanagedDOIProvider(), new UnmanagedHandlePidProvider(), new UnmanagedPermaLinkPidProvider()));
     }
 
     public String getProducer() {
