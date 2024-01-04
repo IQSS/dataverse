@@ -863,11 +863,35 @@ public class HarvestingServerIT {
 
     @Test
     public void testInvalidQueryParams() {
-        // "foo" is not a valid verb
-        String oaiVerbPath = "/oai?foo=bar";
-        Response identifyResponse = given().get(oaiVerbPath);
-        // TODO Why is this 500? https://github.com/IQSS/dataverse/issues/9275
-        identifyResponse.then().assertThat().statusCode(500);
+
+        // The query parameter "verb" must appear.
+        Response noVerbArg = given().get("/oai?foo=bar");
+        noVerbArg.prettyPrint();
+        noVerbArg.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // This should be "badVerb"
+                .body("oai.error.@code", equalTo("badArgument"))
+                .body("oai.error", equalTo("No argument 'verb' found"));
+
+        // The query parameter "verb" cannot appear more than once.
+        Response repeated = given().get( "/oai?verb=foo&verb=bar");
+        repeated.prettyPrint();
+        repeated.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // This should be "badVerb"
+                .body("oai.error.@code", equalTo("badArgument"))
+                .body("oai.error", equalTo("Verb must be singular, given: '[foo, bar]'"));
+
+    }
+
+    @Test
+    public void testNoSuchSetError() {
+        Response noSuchSet = given().get("/oai?verb=ListIdentifiers&set=census&metadataPrefix=dc");
+        noSuchSet.prettyPrint();
+        noSuchSet.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("oai.error.@code", equalTo("noRecordsMatch"))
+                .body("oai.error", equalTo("Requested set 'census' does not exist"));
     }
 
     // TODO: 

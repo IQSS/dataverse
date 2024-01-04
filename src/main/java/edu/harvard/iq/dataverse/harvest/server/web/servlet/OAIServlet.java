@@ -31,8 +31,11 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import io.gdcc.xoai.exceptions.BadArgumentException;
+import io.gdcc.xoai.exceptions.BadVerbException;
 import io.gdcc.xoai.exceptions.OAIException;
 import io.gdcc.xoai.model.oaipmh.Granularity;
+import io.gdcc.xoai.model.oaipmh.verbs.Verb;
 import io.gdcc.xoai.services.impl.SimpleResumptionTokenFormat;
 import org.apache.commons.lang3.StringUtils;
 
@@ -256,9 +259,18 @@ public class OAIServlet extends HttpServlet {
                         "Sorry. OAI Service is disabled on this Dataverse node.");
                 return;
             }
-                        
-            RawRequest rawRequest = RequestBuilder.buildRawRequest(httpServletRequest.getParameterMap());
-            
+
+            RawRequest rawRequest = null;
+            try {
+                rawRequest = RequestBuilder.buildRawRequest(httpServletRequest.getParameterMap());
+            } catch (BadVerbException bve) {
+                // Verb.Type is required. Hard-code one.
+                rawRequest = new RawRequest(Verb.Type.Identify);
+                // Ideally, withError would accept a BadVerbException.
+                BadArgumentException bae = new BadArgumentException(bve.getLocalizedMessage());
+                rawRequest.withError(bae);
+            }
+
             OAIPMH handle = dataProvider.handle(rawRequest);
             response.setContentType("text/xml;charset=UTF-8");
 
