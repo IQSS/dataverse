@@ -8,7 +8,7 @@ class FakeProviderFactory implements PidProviderFactory {
     @Override
     public PidProvider createPidProvider(String providerName) {
         String providerType = JvmSettings.PID_PROVIDER_TYPE.lookup(providerName);
-        if (!providerType.equals(EZIdDOIProvider.TYPE)) {
+        if (!providerType.equals(FakeDOIProvider.TYPE)) {
             // Being asked to create a non-EZId provider
             return null;
         }
@@ -21,8 +21,8 @@ class FakeProviderFactory implements PidProviderFactory {
         String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookup(providerName);
         String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookup(providerName);
 
-        return new FakeDOIProvider(providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
-                managedList, excludedList);
+        return new FakeDOIProvider(providerName, providerAuthority, providerShoulder, identifierGenerationStyle,
+                datafilePidFormat, managedList, excludedList);
     }
 
     public String getType() {

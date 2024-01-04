@@ -31,26 +31,37 @@ public abstract class AbstractPidProvider implements PidProvider {
 
     private String protocol;
 
-    private String authority;
+    private String authority = null;
 
-    private String shoulder;
+    private String shoulder = null;
 
-    private String identifierGenerationStyle;
+    private String identifierGenerationStyle = null;
 
-    private String datafilePidFormat;
+    private String datafilePidFormat = null;
 
-    private List<String> managedList;
+    private HashSet<String> managedSet;
 
-    private List<String> excludedList;
+    private HashSet<String> excludedSet;
+
+    private String name;
     
-    AbstractPidProvider(String protocol, String authority, String shoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
+    AbstractPidProvider(String name, String protocol)
+    {
+        this.name = name;
+        this.protocol = protocol;
+        this.managedSet = new HashSet<String>(); 
+        this.excludedSet = new HashSet<String>();
+    }
+    
+    AbstractPidProvider(String name, String protocol, String authority, String shoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
+        this.name = name;
         this.protocol = protocol;
         this.authority = authority;
         this.shoulder = shoulder;
         this.identifierGenerationStyle = identifierGenerationStyle;
         this.datafilePidFormat = datafilePidFormat;
-        this.managedList = Arrays.asList(managedList.split(",\\s")); 
-        this.excludedList = Arrays.asList(excludedList.split(",\\s"));
+        this.managedSet = new HashSet<String>(Arrays.asList(managedList.split(",\\s"))); 
+        this.excludedSet = new HashSet<String>(Arrays.asList(excludedList.split(",\\s")));
         
     }
     
@@ -259,13 +270,14 @@ public abstract class AbstractPidProvider implements PidProvider {
         if (identifierString == null) {
             return null;
         }
-        int index = identifierString.indexOf('/');
+        int index = identifierString.indexOf(getSeparator());
         if (index > 0 && (index + 1) < identifierString.length()) {
             // '/' found with one or more characters
             // before and after it
             // Strip any whitespace, ; and ' from authority (should finding them cause a
             // failure instead?)
             authority = PidProvider.formatIdentifierString(identifierString.substring(0, index));
+            
             if (PidProvider.testforNullTerminator(authority)) {
                 return null;
             }
@@ -273,8 +285,23 @@ public abstract class AbstractPidProvider implements PidProvider {
             if (PidProvider.testforNullTerminator(identifier)) {
                 return null;
             }
-            ToDo - test specific authority/shoulder and against managed and excluded lists (should be maps?)
-            add unmanagedPermaProvider?
+            //Check authority/identifier if this is a provider that manages specific identifiers
+            // /is not one of the unmanaged providers that has null authority
+            if (getAuthority() != null) {
+
+                String cleanIdentifier = authority + getSeparator() + identifier;
+                /*
+                 * Test if this provider manages this identifier - return null if it does not It
+                 * does if ((the identifier's authority and shoulder match the provider's), or
+                 * the identifier in on the managed set), and the identifier is not in the
+                 * excluded set.
+                 */
+                if (!(((authority.equals(getAuthority()) && identifier.startsWith(getShoulder()))
+                        || getManagedSet().contains(cleanIdentifier)) && !getExcludedSet().contains(cleanIdentifier))) {
+                    return null;
+                }
+            }
+
         } else {
             logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string",
                     identifierString);
@@ -725,16 +752,23 @@ public abstract class AbstractPidProvider implements PidProvider {
         return identifierGenerationStyle;
     }
 
+    @Override
     public String getDatafilePidFormat() {
         return datafilePidFormat;
     }
 
-    public List<String> getManagedList() {
-        return managedList;
+    @Override
+    public Set<String> getManagedSet() {
+        return managedSet;
     }
 
-    public List<String> getExcludedList() {
-        return excludedList;
+    @Override
+    public Set<String> getExcludedSet() {
+        return excludedSet;
     }
-    
+
+    @Override
+    public String getName() {
+        return name;
+    }
 }

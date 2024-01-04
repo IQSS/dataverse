@@ -8,7 +8,7 @@ class HandleProviderFactory implements PidProviderFactory {
     @Override
     public PidProvider createPidProvider(String providerName) {
         String providerType = JvmSettings.PID_PROVIDER_TYPE.lookup(providerName);
-        if (!providerType.equals(EZIdDOIProvider.TYPE)) {
+        if (!providerType.equals(HandlePidProvider.TYPE)) {
             // Being asked to create a non-EZId provider
             return null;
         }
@@ -20,18 +20,20 @@ class HandleProviderFactory implements PidProviderFactory {
                 .orElse(SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
         String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookup(providerName);
         String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookup(providerName);
-        
+
         int index = JvmSettings.HANDLENET_INDEX.lookup(Integer.class, providerName);
-        boolean independentHandleService = JvmSettings.HANDLENET_INDEPENDENT_SERVICE.lookupOptional(Boolean.class, providerName).orElse(false);
+        boolean independentHandleService = JvmSettings.HANDLENET_INDEPENDENT_SERVICE
+                .lookupOptional(Boolean.class, providerName).orElse(false);
         String handleAuthHandle = JvmSettings.HANDLENET_AUTH_HANDLE.lookup(providerName);
         String path = JvmSettings.HANDLENET_KEY_PATH.lookup(providerName);
         String passphrase = JvmSettings.HANDLENET_KEY_PASSPHRASE.lookup(providerName);
-        return new HandlePidProvider(providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
-                managedList, excludedList, index, independentHandleService, handleAuthHandle, path, passphrase);
+        return new HandlePidProvider(providerName, providerAuthority, providerShoulder, identifierGenerationStyle,
+                datafilePidFormat, managedList, excludedList, index, independentHandleService, handleAuthHandle, path,
+                passphrase);
     }
 
     public String getType() {
-        return HandlePidProvider.HDL_PROTOCOL;
+        return HandlePidProvider.TYPE;
     }
 
 }

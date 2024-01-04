@@ -25,7 +25,7 @@ class DataCiteProviderFactory implements PidProviderFactory {
             String password = JvmSettings.DATACITE_PASSWORD.lookup(providerName);
 
             
-            return new DataCiteDOIProvider(providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList, mdsUrl, apiUrl, username, password);
+            return new DataCiteDOIProvider(providerName, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList, mdsUrl, apiUrl, username, password);
     }
 
     public String getType() {

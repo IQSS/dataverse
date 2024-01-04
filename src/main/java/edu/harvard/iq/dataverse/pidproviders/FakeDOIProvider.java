@@ -6,16 +6,14 @@ import edu.harvard.iq.dataverse.GlobalId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 public class FakeDOIProvider extends DOIProvider {
 
-    private static final Logger logger = Logger.getLogger(FakeDOIProvider.class.getCanonicalName());
     static final String TYPE = "FAKE";
 
-    public FakeDOIProvider(String providerAuthority, String providerShoulder, String identifierGenerationStyle,
+    public FakeDOIProvider(String name, String providerAuthority, String providerShoulder, String identifierGenerationStyle,
             String datafilePidFormat, String managedList, String excludedList) {
-        super(providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
+        super(name, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
     }
 
     //Only need to check locally
@@ -77,17 +75,6 @@ public class FakeDOIProvider extends DOIProvider {
 
     @Override
     public String getProviderType() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getName() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public static String getType() {
         return TYPE;
     }
 

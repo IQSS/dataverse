@@ -38,12 +38,20 @@ public class DataCiteDOIProvider extends DOIProvider {
     @EJB
     DOIDataCiteRegisterService doiDataCiteRegisterService;
 
-    public DataCiteDOIProvider(String providerAuthority, String providerShoulder, String managedList,
-            String excludedList, String mdsUrl, String apiUrl, String username, String password,
-            String identifierGenerationStyle, String datafilePidFormat) {
-        super(providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList,
+    private String mdsUrl;
+    private String apiUrl;
+    private String username;
+    private String password;
+
+    public DataCiteDOIProvider(String name, String providerAuthority, String providerShoulder, String managedList,
+            String excludedList, String identifierGenerationStyle, String datafilePidFormat, String mdsUrl,
+            String apiUrl, String username, String password) {
+        super(name, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList,
                 excludedList);
-        // TODO Auto-generated constructor stub
+        this.mdsUrl = mdsUrl;
+        this.apiUrl = apiUrl;
+        this.username = username;
+        this.password = password;
     }
 
     @Override
@@ -268,4 +276,21 @@ public class DataCiteDOIProvider extends DOIProvider {
         // TODO Auto-generated method stub
         return null;
     }
+
+    public String getMdsUrl() {
+        return mdsUrl;
+    }
+
+    public String getApiUrl() {
+        return apiUrl;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
 }

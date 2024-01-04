@@ -63,8 +63,11 @@ public class HandlePidProvider extends AbstractPidProvider {
     private static final Logger logger = Logger.getLogger(HandlePidProvider.class.getCanonicalName());
     
     public static final String HDL_PROTOCOL = "hdl";
+    public static final String TYPE = "hdl";
     public static final String HTTP_HDL_RESOLVER_URL = "http://hdl.handle.net/";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
+
+    
     
     int handlenetIndex;
     private boolean isIndependentHandleService;
@@ -72,9 +75,9 @@ public class HandlePidProvider extends AbstractPidProvider {
     private String keyPath;
     private String keyPassphrase;
     
-    HandlePidProvider(String authority, String shoulder, String identifierGenerationStyle,
+    HandlePidProvider(String name, String authority, String shoulder, String identifierGenerationStyle,
             String datafilePidFormat, String managedList, String excludedList, int index, boolean isIndependentService, String authHandle, String path, String passphrase) {
-        super(HDL_PROTOCOL, authority, shoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
+        super(name, HDL_PROTOCOL, authority, shoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
         this.handlenetIndex = index;
         this.isIndependentHandleService = isIndependentService;
         this.authHandle = authHandle;
@@ -442,20 +445,12 @@ public class HandlePidProvider extends AbstractPidProvider {
 
     @Override
     public String getProtocol() {
-        // TODO Auto-generated method stub
-        return null;
+        return HDL_PROTOCOL;
     }
 
     @Override
     public String getProviderType() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getName() {
-        // TODO Auto-generated method stub
-        return null;
+        return TYPE;
     }
 
     public String getKeyPath() {

@@ -11,8 +11,13 @@ public abstract class DOIProvider extends AbstractPidProvider {
     public static final String DXDOI_RESOLVER_URL = "https://dx.doi.org/";
     public static final String HTTP_DXDOI_RESOLVER_URL = "http://dx.doi.org/";
 
-    public DOIProvider(String providerAuthority, String providerShoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
-        super(DOI_PROTOCOL, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
+    public DOIProvider(String name, String providerAuthority, String providerShoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
+        super(name, DOI_PROTOCOL, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
+    }
+
+    //For Unmanged provider
+    public DOIProvider(String name) {
+        super(name, DOI_PROTOCOL);
     }
 
     @Override

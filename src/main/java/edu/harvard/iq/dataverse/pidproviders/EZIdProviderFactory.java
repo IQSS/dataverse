@@ -25,7 +25,7 @@ class EZIdProviderFactory implements PidProviderFactory {
         String username = JvmSettings.EZID_USERNAME.lookup(providerName);
         String password = JvmSettings.EZID_PASSWORD.lookup(providerName);
 
-        return new EZIdDOIProvider(providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
+        return new EZIdDOIProvider(providerName, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
                 managedList, excludedList, baseUrl, username, password);
     }
 
