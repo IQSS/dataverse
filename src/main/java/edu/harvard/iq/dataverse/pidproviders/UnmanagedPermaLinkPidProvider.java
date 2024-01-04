@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -14,13 +15,14 @@ import org.apache.commons.lang3.NotImplementedException;
  * 
  */
 @Stateless
-public class UnmanagedHandlenetServiceBean extends AbstractPidProvider {
+public class UnmanagedPermaLinkPidProvider extends AbstractPidProvider {
 
-    private static final Logger logger = Logger.getLogger(UnmanagedHandlenetServiceBean.class.getCanonicalName());
-
-    public UnmanagedHandlenetServiceBean() {
+    private static final Logger logger = Logger.getLogger(UnmanagedPermaLinkPidProvider.class.getCanonicalName());
+    private static final String NAME = "UnmanagedPermaLinkProvider";
+    
+    public UnmanagedPermaLinkPidProvider() {
+        super(NAME, PermaLinkPidProvider.PERMA_PROTOCOL);
         logger.log(Level.FINE, "Constructor");
-        configured = true;
     }
 
     @Override
@@ -55,7 +57,7 @@ public class UnmanagedHandlenetServiceBean extends AbstractPidProvider {
 
     @Override
     public List<String> getProviderInformation() {
-        return List.of("UnmanagedHandle", "");
+        return List.of("UnmanagedPermaLink", "");
     }
 
     @Override
@@ -69,20 +71,8 @@ public class UnmanagedHandlenetServiceBean extends AbstractPidProvider {
     }
 
     @Override
-    public GlobalId parsePersistentId(String pidString) {
-        if (pidString.startsWith(HandlePidProvider.HDL_RESOLVER_URL)) {
-            pidString = pidString.replace(HandlePidProvider.HDL_RESOLVER_URL,
-                    (HandlePidProvider.HDL_PROTOCOL + ":"));
-        } else if (pidString.startsWith(HandlePidProvider.HTTP_HDL_RESOLVER_URL)) {
-            pidString = pidString.replace(HandlePidProvider.HTTP_HDL_RESOLVER_URL,
-                    (HandlePidProvider.HDL_PROTOCOL + ":"));
-        }
-        return super.parsePersistentId(pidString);
-    }
-
-    @Override
     public GlobalId parsePersistentId(String protocol, String identifierString) {
-        if (!HandlePidProvider.HDL_PROTOCOL.equals(protocol)) {
+        if (!PermaLinkPidProvider.PERMA_PROTOCOL.equals(protocol)) {
             return null;
         }
         GlobalId globalId = super.parsePersistentId(protocol, identifierString);
@@ -91,7 +81,7 @@ public class UnmanagedHandlenetServiceBean extends AbstractPidProvider {
 
     @Override
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
-        if (!HandlePidProvider.HDL_PROTOCOL.equals(protocol)) {
+        if (!PermaLinkPidProvider.PERMA_PROTOCOL.equals(protocol)) {
             return null;
         }
         return super.parsePersistentId(protocol, authority, identifier);
@@ -99,6 +89,11 @@ public class UnmanagedHandlenetServiceBean extends AbstractPidProvider {
 
     @Override
     public String getUrlPrefix() {
-        return HandlePidProvider.HDL_RESOLVER_URL;
+        return SystemConfig.getDataverseSiteUrlStatic()+ "/citation?persistentId=" + PermaLinkPidProvider.PERMA_PROTOCOL + ":";
+    }
+
+    @Override
+    public String getProviderType() {
+        return PermaLinkPidProvider.TYPE;
     }
 }

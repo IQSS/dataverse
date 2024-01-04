@@ -3,11 +3,6 @@ package edu.harvard.iq.dataverse.pidproviders;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.Stateless;
-
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -21,12 +16,12 @@ import edu.harvard.iq.dataverse.GlobalId;
 
 public class UnmanagedDOIProvider extends DOIProvider {
 
+    private static final String NAME = "UnmanagedDOIProvider";
+
     public UnmanagedDOIProvider(String providerAuthority, String providerShoulder, String identifierGenerationStyle,
             String datafilePidFormat) {
-        super(providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat);
+        super(NAME);
     }
-
-    private static final Logger logger = Logger.getLogger(UnmanagedDOIProvider.class.getCanonicalName());
 
     @Override
     public boolean canManagePID() {
@@ -75,14 +70,12 @@ public class UnmanagedDOIProvider extends DOIProvider {
 
     @Override
     public String getProviderType() {
-        // TODO Auto-generated method stub
-        return null;
+        return "unamagedDOI";
     }
 
     @Override
     public String getName() {
-        // TODO Auto-generated method stub
-        return null;
+        return NAME;
     }
 
     // PID recognition
