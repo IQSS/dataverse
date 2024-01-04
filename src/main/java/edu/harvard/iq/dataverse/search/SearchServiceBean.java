@@ -231,6 +231,7 @@ public class SearchServiceBean {
             solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
             solrQuery.addFacetField(SearchFields.METADATA_SOURCE);
             solrQuery.addFacetField(SearchFields.PUBLICATION_YEAR);
+            solrQuery.addFacetField(SearchFields.DATASET_LICENSE);
             /**
              * @todo when a new method on datasetFieldService is available
              * (retrieveFacetsByDataverse?) only show the facets that the
@@ -712,10 +713,12 @@ public class SearchServiceBean {
         boolean unpublishedAvailable = false;
         boolean deaccessionedAvailable = false;
         boolean hideMetadataSourceFacet = true;
+        boolean hideLicenseFacet = true;
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
             int numMetadataSources = 0;
+            int numLicenses = 0;
             String metadataBlockName = "";
             String datasetFieldName = "";
             /**
@@ -741,23 +744,23 @@ public class SearchServiceBean {
 //                logger.info("field: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
                 String localefriendlyName = null;
                 if (facetFieldCount.getCount() > 0) {
-                   if(metadataBlockName.length() > 0 ) {
-                       localefriendlyName = getLocaleTitle(datasetFieldName,facetFieldCount.getName(), metadataBlockName);
+                    if(metadataBlockName.length() > 0 ) {
+                        localefriendlyName = getLocaleTitle(datasetFieldName,facetFieldCount.getName(), metadataBlockName);
                     } else if (facetField.getName().equals(SearchFields.METADATA_TYPES)) {
-                       Optional<DataverseMetadataBlockFacet> metadataBlockFacet = metadataBlockFacets.stream().filter(blockFacet -> blockFacet.getMetadataBlock().getName().equals(facetFieldCount.getName())).findFirst();
-                       if (metadataBlockFacet.isEmpty()) {
+                        Optional<DataverseMetadataBlockFacet> metadataBlockFacet = metadataBlockFacets.stream().filter(blockFacet -> blockFacet.getMetadataBlock().getName().equals(facetFieldCount.getName())).findFirst();
+                        if (metadataBlockFacet.isEmpty()) {
                            // metadata block facet is not configured to be displayed => ignore
                            continue;
-                       }
+                        }
 
-                       localefriendlyName = metadataBlockFacet.get().getMetadataBlock().getLocaleDisplayFacet();
-                   } else {
-                       try {
+                        localefriendlyName = metadataBlockFacet.get().getMetadataBlock().getLocaleDisplayFacet();
+                        } else {
+                        try {
                            localefriendlyName = BundleUtil.getStringFromPropertyFile(facetFieldCount.getName(), "Bundle");
-                       } catch (Exception e) {
+                        } catch (Exception e) {
                            localefriendlyName = facetFieldCount.getName();
-                       }
-                   }
+                        }
+                    }
                     FacetLabel facetLabel = new FacetLabel(localefriendlyName, facetFieldCount.getCount());
                     // quote field facets
                     facetLabel.setFilterQuery(facetField.getName() + ":\"" + facetFieldCount.getName() + "\"");
@@ -770,14 +773,18 @@ public class SearchServiceBean {
                         } else if (facetFieldCount.getName().equals(IndexServiceBean.getDEACCESSIONED_STRING())) {
                             deaccessionedAvailable = true;
                         }
-                    }
-                    if (facetField.getName().equals(SearchFields.METADATA_SOURCE)) {
+                    } else if (facetField.getName().equals(SearchFields.METADATA_SOURCE)) {
                         numMetadataSources++;
+                    } else if (facetField.getName().equals(SearchFields.DATASET_LICENSE)) {
+                        numLicenses++;
                     }
                 }
             }
             if (numMetadataSources > 1) {
                 hideMetadataSourceFacet = false;
+            }
+            if (numLicenses > 1) {
+                hideLicenseFacet = false;
             }
             facetCategory.setName(facetField.getName());
             // hopefully people will never see the raw facetField.getName() because it may well have an _s at the end
@@ -853,6 +860,10 @@ public class SearchServiceBean {
                     }
                 } else if (facetCategory.getName().equals(SearchFields.METADATA_SOURCE)) {
                     if (!hideMetadataSourceFacet) {
+                        facetCategoryList.add(facetCategory);
+                    }
+                } else if (facetCategory.getName().equals(SearchFields.DATASET_LICENSE)) {
+                    if (!hideLicenseFacet) {
                         facetCategoryList.add(facetCategory);
                     }
                 } else {

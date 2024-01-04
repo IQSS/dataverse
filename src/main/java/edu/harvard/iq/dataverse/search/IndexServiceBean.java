@@ -784,6 +784,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.DATASET_PERSISTENT_ID, dataset.getGlobalId().toString());
         solrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
+
         boolean valid;
         if (!indexableDataset.getDatasetVersion().isDraft()) {
             valid = true;
@@ -856,6 +857,8 @@ public class IndexServiceBean {
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
         String parentDatasetTitle = "TBD";
         if (datasetVersion != null) {
+
+            solrInputDocument.addField(SearchFields.DATASET_LICENSE, datasetVersion.getTermsOfUseAndAccess().getLicense().getName());
 
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
             solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
@@ -1244,6 +1247,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
 
                     datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
+                    datafileSolrInputDocument.addField(SearchFields.DATASET_LICENSE, datasetVersion.getTermsOfUseAndAccess().getLicense().getName());
 
                     /**
                      * for rules on sorting files see
