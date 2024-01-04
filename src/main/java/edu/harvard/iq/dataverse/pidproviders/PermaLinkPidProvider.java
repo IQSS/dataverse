@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.pidproviders;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.util.HashMap;
@@ -11,17 +10,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.Stateless;
-
 /**
- * PermaLink provider
- * This is a minimalist permanent ID provider intended for use with 'real' datasets/files where the use case none-the-less doesn't lend itself to the use of DOIs or Handles, e.g.
- * * due to cost
- * * for a catalog/archive where Dataverse has a dataset representing a dataset with DOI/handle stored elsewhere
+ * PermaLink provider This is a minimalist permanent ID provider intended for
+ * use with 'real' datasets/files where the use case none-the-less doesn't lend
+ * itself to the use of DOIs or Handles, e.g. * due to cost * for a
+ * catalog/archive where Dataverse has a dataset representing a dataset with
+ * DOI/handle stored elsewhere
  * 
- * The initial implementation will mint identifiers locally and will provide the existing page URLs (using the ?persistentID=<id> format). 
- * This will be overridable by a configurable parameter to support use of an external resolver.
+ * The initial implementation will mint identifiers locally and will provide the
+ * existing page URLs (using the ?persistentID=<id> format). This will be
+ * overridable by a configurable parameter to support use of an external
+ * resolver.
  * 
  */
 public class PermaLinkPidProvider extends AbstractPidProvider {
@@ -31,44 +30,37 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
     public static final String PERMA_PROTOCOL = "perma";
     public static final String PERMA_PROVIDER_NAME = "PERMA";
 
-    //ToDo - handle dataset/file defaults for local system
-    public static final String PERMA_RESOLVER_URL = JvmSettings.PERMALINK_BASEURL
-        .lookupOptional("permalink")
-        .orElse(SystemConfig.getDataverseSiteUrlStatic());
-    
-    String authority = null; 
+    // ToDo - remove
+    @Deprecated
+    public static final String PERMA_RESOLVER_URL = JvmSettings.PERMALINK_BASE_URL.lookupOptional("permalink")
+            .orElse(SystemConfig.getDataverseSiteUrlStatic());
+
+    String authority = null;
     private String separator = "";
-    
-    @PostConstruct
-    private void init() {
-        if(PERMA_PROTOCOL.equals(settingsService.getValueForKey(Key.Protocol))){
-            authority = JvmSettings.PID_PROVIDER_AUTHORITY.lookup("permalink");
-            configured=true;
-        };
-        
+
+    private String baseUrl;
+
+    public PermaLinkPidProvider(String providerAuthority, String providerShoulder, String identifierGenerationStyle,
+            String datafilePidFormat, String managedList, String excludedList, String baseUrl) {
+        super(PERMA_PROTOCOL, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
+                managedList, excludedList);
+        this.baseUrl = baseUrl;
     }
-    
-    
-    //Only used in PidUtilTest - haven't figured out how to mock a PostConstruct call directly
-    // ToDo - remove after work to allow more than one Pid Provider which is expected to not use stateless beans
-    public void reInit() {
-        init();
-    }
-    
+
     @Override
     public String getSeparator() {
-        //The perma default
+        // The perma default
         return separator;
     }
-    
+
     @Override
     public boolean alreadyRegistered(GlobalId globalId, boolean noProviderDefault) {
         // Perma doesn't manage registration, so we assume all local PIDs can be treated
         // as registered
-        boolean existsLocally = !dvObjectService.isGlobalIdLocallyUnique(globalId);
+        boolean existsLocally = !pidProviderService.isGlobalIdLocallyUnique(globalId);
         return existsLocally ? existsLocally : noProviderDefault;
     }
-    
+
     @Override
     public boolean registerWhenPublished() {
         return false;
@@ -76,14 +68,16 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
 
     @Override
     public List<String> getProviderInformation() {
-        return List.of(PERMA_PROVIDER_NAME, PERMA_RESOLVER_URL);
+        return List.of(PERMA_PROVIDER_NAME, getBaseUrl());
     }
 
     @Override
     public String createIdentifier(DvObject dvo) throws Throwable {
-        //Call external resolver and send landing URL?
-        //FWIW: Return value appears to only be used in RegisterDvObjectCommand where success requires finding the dvo identifier in this string. (Also logged a couple places).
-        return(dvo.getGlobalId().asString());
+        // Call external resolver and send landing URL?
+        // FWIW: Return value appears to only be used in RegisterDvObjectCommand where
+        // success requires finding the dvo identifier in this string. (Also logged a
+        // couple places).
+        return (dvo.getGlobalId().asString());
     }
 
     @Override
@@ -104,20 +98,20 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
 
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
-        //Generate if needed (i.e. datafile case where we don't create/register early (even with reigsterWhenPublished == false))
-        if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+        // Generate if needed (i.e. datafile case where we don't create/register early
+        // (even with reigsterWhenPublished == false))
+        if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()) {
             dvObject = generateIdentifier(dvObject);
         }
-        //Call external resolver and send landing URL?
+        // Call external resolver and send landing URL?
         return true;
     }
 
     @Override
     public GlobalId parsePersistentId(String pidString) {
-        //ToDo - handle local PID resolver for dataset/file
+        // ToDo - handle local PID resolver for dataset/file
         if (pidString.startsWith(getUrlPrefix())) {
-            pidString = pidString.replace(getUrlPrefix(),
-                    (PERMA_PROTOCOL + ":"));
+            pidString = pidString.replace(getUrlPrefix(), (PERMA_PROTOCOL + ":"));
         }
         return super.parsePersistentId(pidString);
     }
@@ -140,7 +134,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
         }
         return new GlobalId(PERMA_PROTOCOL, authority, identifier, separator, getUrlPrefix(), PERMA_PROVIDER_NAME);
     }
-    
+
     @Override
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
         if (!PERMA_PROTOCOL.equals(protocol)) {
@@ -151,10 +145,9 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
 
     @Override
     public String getUrlPrefix() {
-        
-        return PERMA_RESOLVER_URL + "/citation?persistentId=" + PERMA_PROTOCOL + ":";
-    }
 
+        return getBaseUrl() + "/citation?persistentId=" + PERMA_PROTOCOL + ":";
+    }
 
     @Override
     public String getProtocol() {
@@ -162,17 +155,19 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
         return null;
     }
 
-
     @Override
     public String getProviderType() {
         // TODO Auto-generated method stub
         return null;
     }
 
-
     @Override
     public String getName() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
     }
 }

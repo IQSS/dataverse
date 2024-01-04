@@ -39,7 +39,6 @@ public interface PidProvider {
     
     boolean registerWhenPublished();
     boolean canManagePID();
-    boolean isConfigured();
     
     List<String> getProviderInformation();
 
@@ -71,6 +70,9 @@ public interface PidProvider {
     String getProtocol();
     String getProviderType();
     String getName();
+    String getAuthority();
+    String getShoulder();
+    String getIdentifierGenerationStyle();
     
     
     //ToDo - now need to get the correct provider based on the protocol, authority, and shoulder (for new pids)/indentifier (for existing pids)
@@ -78,7 +80,7 @@ public interface PidProvider {
         final Function<CommandContext, PidProvider> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
         if ( protocolHandler != null ) {
             PidProvider theBean = protocolHandler.apply(ctxt);
-            if(theBean != null && theBean.isConfigured()) {
+            if(theBean != null) {
                 logger.fine("getBean returns " + theBean.getProviderInformation().get(0) + " for protocol " + protocol);
             }
             return theBean;
@@ -187,6 +189,8 @@ public interface PidProvider {
         
         return true;
     }
+
+    public void setPidProviderServiceBean(PidProviderFactoryBean pidProviderFactoryBean);
 
 }
 

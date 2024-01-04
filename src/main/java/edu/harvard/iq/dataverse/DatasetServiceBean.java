@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.DOIEZIdProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -62,9 +61,6 @@ public class DatasetServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
-
-    @EJB
-    DOIEZIdProvider doiEZIdServiceBean;
 
     @EJB
     SettingsServiceBean settingsService;

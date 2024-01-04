@@ -24,8 +24,14 @@ import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
-import edu.harvard.iq.dataverse.export.ExportService;
+import jakarta.inject.Inject;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import io.gdcc.spi.export.Exporter;
 
 /**
@@ -40,6 +46,18 @@ public class PidProviderFactoryBean {
 
     private static final Logger logger = Logger.getLogger(PidProviderFactoryBean.class.getCanonicalName());
 
+    @Inject
+    DataverseServiceBean dataverseService;
+    @EJB
+    protected
+    SettingsServiceBean settingsService;
+    @Inject
+    protected
+    DvObjectServiceBean dvObjectService;
+    @Inject
+    SystemConfig systemConfig;
+
+    
     private ServiceLoader<PidProviderFactory> loader;
     private Map<String, PidProviderFactory> pidProviderFactoryMap = new HashMap<>();
 
@@ -103,10 +121,25 @@ public class PidProviderFactoryBean {
             String type = JvmSettings.PID_PROVIDER_TYPE.lookup(name);
             if (pidProviderFactoryMap.containsKey(type)) {
                 PidProvider provider = pidProviderFactoryMap.get(type).createPidProvider(name);
+                provider.setPidProviderServiceBean(this);
                 PidUtil.addToProviderList(provider);
             }
         }
         PidUtil.addAllToUnmanagedProviderList(Arrays.asList(unmanagedDOISvc, unmanagedHandleSvc));
     }
+
+    public String getProducer() {
+        return dataverseService.getRootDataverseName();
+    }
+
+    public boolean isGlobalIdLocallyUnique(GlobalId globalId) {
+        return dvObjectService.isGlobalIdLocallyUnique(globalId);
+    }
+
+    public String generateNewIdentifierByStoredProcedure() {
+        return dvObjectService.generateNewIdentifierByStoredProcedure();
+    }
+    
+    
 
 }

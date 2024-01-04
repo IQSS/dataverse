@@ -21,20 +21,14 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
 import java.security.PrivateKey;
 
 /* Handlenet imports: */
@@ -66,20 +60,27 @@ import org.apache.commons.lang3.NotImplementedException;
  */
 public class HandlePidProvider extends AbstractPidProvider {
 
-    @EJB
-    DataverseServiceBean dataverseService;
-    @EJB 
-    SettingsServiceBean settingsService;
     private static final Logger logger = Logger.getLogger(HandlePidProvider.class.getCanonicalName());
     
     public static final String HDL_PROTOCOL = "hdl";
-    int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class, "handlenet");
     public static final String HTTP_HDL_RESOLVER_URL = "http://hdl.handle.net/";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
     
-    public HandlePidProvider() {
-        logger.log(Level.FINE,"Constructor");
-        configured = true;
+    int handlenetIndex;
+    private boolean isIndependentHandleService;
+    private String authHandle;
+    private String keyPath;
+    private String keyPassphrase;
+    
+    HandlePidProvider(String authority, String shoulder, String identifierGenerationStyle,
+            String datafilePidFormat, String managedList, String excludedList, int index, boolean isIndependentService, String authHandle, String path, String passphrase) {
+        super(HDL_PROTOCOL, authority, shoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
+        this.handlenetIndex = index;
+        this.isIndependentHandleService = isIndependentService;
+        this.authHandle = authHandle;
+        this.keyPath = path;
+        this.keyPassphrase = passphrase;
+
     }
 
     @Override
@@ -234,10 +235,9 @@ public class HandlePidProvider extends AbstractPidProvider {
     private PublicKeyAuthenticationInfo getAuthInfo(String handlePrefix) {
         logger.log(Level.FINE,"getAuthInfo");
         byte[] key = null;
-        String adminCredFile = JvmSettings.HANDLENET_KEY_PATH.lookup("handlenet");
-        int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class, "handlenet");
+        String adminCredFile = getKeyPath();
        
-        key = readKey(adminCredFile);        
+        key = readKey(adminCredFile);
         PrivateKey privkey = null;
         privkey = readPrivKey(key, adminCredFile);
         String authHandle =  getAuthenticationHandle(handlePrefix);
@@ -247,8 +247,8 @@ public class HandlePidProvider extends AbstractPidProvider {
     }
     private String getRegistrationUrl(DvObject dvObject) {
         logger.log(Level.FINE,"getRegistrationUrl");
-        String siteUrl = systemConfig.getDataverseSiteUrl();
-        String targetUrl = siteUrl + dvObject.getTargetUrl() + "hdl:" + dvObject.getAuthority()         
+        String siteUrl = SystemConfig.getDataverseSiteUrlStatic();
+        String targetUrl = siteUrl + dvObject.getTargetUrl() + "hdl:" + dvObject.getAuthority()
                 + "/" + dvObject.getIdentifier();         
         return targetUrl;
     }
@@ -281,8 +281,7 @@ public class HandlePidProvider extends AbstractPidProvider {
         try {
             byte[] secKey = null;
             if ( Util.requiresSecretKey(key) ) {
-                String secret = JvmSettings.HANDLENET_KEY_PASSPHRASE.lookup("handlenet");
-                secKey = secret.getBytes(StandardCharsets.UTF_8);
+                secKey = getKeyPassphrase().getBytes(StandardCharsets.UTF_8);
             }
             key = Util.decrypt(key, secKey);
             privkey = Util.getPrivateKeyFromBytes(key, 0);
@@ -307,9 +306,9 @@ public class HandlePidProvider extends AbstractPidProvider {
     
     private String getAuthenticationHandle(String handlePrefix) {
         logger.log(Level.FINE,"getAuthenticationHandle");
-        if (systemConfig.getHandleAuthHandle()!=null) {
-            return systemConfig.getHandleAuthHandle();
-        } else if (systemConfig.isIndependentHandleService()) {
+        if (getHandleAuthHandle()!=null) {
+            return getHandleAuthHandle();
+        } else if (isIndependentHandleService()) {
             return handlePrefix + "/ADMIN";
         } else {
             return "0.NA/" + handlePrefix;
@@ -351,9 +350,8 @@ public class HandlePidProvider extends AbstractPidProvider {
         String handle = getDvObjectHandle(dvObject);
         String authHandle = getAuthenticationHandle(dvObject);
     
-        String adminCredFile = JvmSettings.HANDLENET_KEY_PATH.lookup("handlenet");
-        int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class, "handlenet");
-       
+        String adminCredFile = getKeyPath();
+        
         byte[] key = readKey(adminCredFile);
         PrivateKey privkey = readPrivKey(key, adminCredFile);
 
@@ -458,6 +456,22 @@ public class HandlePidProvider extends AbstractPidProvider {
     public String getName() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public String getKeyPath() {
+        return keyPath;
+    }
+
+    public String getKeyPassphrase() {
+        return keyPassphrase;
+    }
+
+    public boolean isIndependentHandleService() {
+        return isIndependentHandleService;
+    }
+    
+    public String getHandleAuthHandle() {
+        return authHandle;
     }
 }
 

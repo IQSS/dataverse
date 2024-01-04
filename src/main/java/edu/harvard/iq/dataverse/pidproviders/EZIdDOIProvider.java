@@ -17,41 +17,40 @@ import jakarta.ejb.Stateless;
  *
  * @author skraffmiller
  */
-public class DOIEZIdProvider extends DOIProvider {
+public class EZIdDOIProvider extends DOIProvider {
     
-    private static final Logger logger = Logger.getLogger(DOIEZIdProvider.class.getCanonicalName());
+
+
+    private static final Logger logger = Logger.getLogger(EZIdDOIProvider.class.getCanonicalName());
     
     EZIDService ezidService;
     
     public static final String TYPE = "ezid";
     
-    // This has a sane default in microprofile-config.properties
-    private final String baseUrl = JvmSettings.EZID_API_URL.lookup("ezid");
+    private String baseUrl;
     
-    public DOIEZIdProvider() {
+    
+    public EZIdDOIProvider(String providerAuthority, String providerShoulder, String identifierGenerationStyle,
+            String datafilePidFormat, String managedList, String excludedList, String baseUrl, String username, String password) {
+        super(providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
         // Creating the service doesn't do any harm, just initializing some object data here.
         // Makes sure we don't run into NPEs from the other methods, but will obviously fail if the
         // login below does not work.
-        this.ezidService = new EZIDService(this.baseUrl);
+        this.baseUrl = baseUrl;
+        this.ezidService = new EZIDService(baseUrl);
         
         try {
-            // These have (obviously) no default, but still are optional to make the provider optional
-            String username = JvmSettings.EZID_USERNAME.lookupOptional("ezid").orElse(null);
-            String password = JvmSettings.EZID_PASSWORD.lookupOptional("ezid").orElse(null);
-            
-            if (username != null ^ password != null) {
-                logger.log(Level.WARNING, "You must give both username and password. Will not try to login.");
-            }
-            
+
             if (username != null && password != null) {
                 this.ezidService.login(username, password);
-                this.configured = true;
+            } else {
+                logger.log(Level.WARNING, "You must give both username and password. Will not try to login.");
             }
         } catch (EZIDException e) {
             // We only do the warnings here, but the object still needs to be created.
             // The EJB stateless thing expects this to go through, and it is requested on any
             // global id parsing.
-            logger.log(Level.WARNING, "Login failed to {0}", this.baseUrl);
+            logger.log(Level.WARNING, "Login failed to {0}", baseUrl);
             logger.log(Level.WARNING, "Exception String: {0}", e.toString());
             logger.log(Level.WARNING, "Localized message: {0}", e.getLocalizedMessage());
             logger.log(Level.WARNING, "Cause:", e.getCause());

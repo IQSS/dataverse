@@ -21,13 +21,12 @@ import edu.harvard.iq.dataverse.GlobalId;
 
 public class UnmanagedDOIProvider extends DOIProvider {
 
-    private static final Logger logger = Logger.getLogger(UnmanagedDOIProvider.class.getCanonicalName());
-
-    @PostConstruct
-    private void init() {
-        // Always on
-        configured = true;
+    public UnmanagedDOIProvider(String providerAuthority, String providerShoulder, String identifierGenerationStyle,
+            String datafilePidFormat) {
+        super(providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat);
     }
+
+    private static final Logger logger = Logger.getLogger(UnmanagedDOIProvider.class.getCanonicalName());
 
     @Override
     public boolean canManagePID() {
@@ -85,7 +84,6 @@ public class UnmanagedDOIProvider extends DOIProvider {
         // TODO Auto-generated method stub
         return null;
     }
-
 
     // PID recognition
     // Done by DOIProvider

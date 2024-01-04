@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+
 
 public abstract class DOIProvider extends AbstractPidProvider {
 
@@ -11,8 +11,8 @@ public abstract class DOIProvider extends AbstractPidProvider {
     public static final String DXDOI_RESOLVER_URL = "https://dx.doi.org/";
     public static final String HTTP_DXDOI_RESOLVER_URL = "http://dx.doi.org/";
 
-    public DOIProvider() {
-        super();
+    public DOIProvider(String providerAuthority, String providerShoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
+        super(DOI_PROTOCOL, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
     }
 
     @Override
@@ -54,23 +54,6 @@ public abstract class DOIProvider extends AbstractPidProvider {
 
     public String getUrlPrefix() {
         return DOI_RESOLVER_URL;
-    }
-
-    @Override
-    public boolean isConfigured() {
-        if (configured == null) {
-            if (getProviderKeyName() == null) {
-                configured = false;
-            } else {
-                String doiProvider = settingsService.getValueForKey(Key.DoiProvider, "");
-                if (getProviderKeyName().equals(doiProvider)) {
-                    configured = true;
-                } else if (!doiProvider.isEmpty()) {
-                    configured = false;
-                }
-            }
-        }
-        return super.isConfigured();
     }
 
     protected String getProviderKeyName() {

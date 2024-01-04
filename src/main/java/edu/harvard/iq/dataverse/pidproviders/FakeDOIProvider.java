@@ -8,13 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import jakarta.ejb.Stateless;
-
 public class FakeDOIProvider extends DOIProvider {
 
     private static final Logger logger = Logger.getLogger(FakeDOIProvider.class.getCanonicalName());
+    static final String TYPE = "FAKE";
 
-    
+    public FakeDOIProvider(String providerAuthority, String providerShoulder, String identifierGenerationStyle,
+            String datafilePidFormat, String managedList, String excludedList) {
+        super(providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
+    }
+
     //Only need to check locally
     public boolean isGlobalIdUnique(GlobalId globalId) {
         try {
@@ -27,7 +30,7 @@ public class FakeDOIProvider extends DOIProvider {
     
     @Override
     public boolean alreadyRegistered(GlobalId globalId, boolean noProviderDefault) {
-        boolean existsLocally = !dvObjectService.isGlobalIdLocallyUnique(globalId);
+        boolean existsLocally = !pidProviderService.isGlobalIdLocallyUnique(globalId);
         return existsLocally ? existsLocally : noProviderDefault;
     }
 
@@ -82,6 +85,10 @@ public class FakeDOIProvider extends DOIProvider {
     public String getName() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public static String getType() {
+        return TYPE;
     }
 
 }

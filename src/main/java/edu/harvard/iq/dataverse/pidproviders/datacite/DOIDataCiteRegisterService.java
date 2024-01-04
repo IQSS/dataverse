@@ -386,7 +386,7 @@ class DataCiteMetadataTemplate {
 
     static {
         try (InputStream in = DataCiteMetadataTemplate.class.getResourceAsStream("datacite_metadata_template.xml")) {
-            template = new String(in.readAllBytes(),StandardCharset.UTF_8);
+            template = new String(in.readAllBytes(),StandardCharsets.UTF_8);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "datacite metadata template load error");
             logger.log(Level.SEVERE, "String " + e.toString());

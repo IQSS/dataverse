@@ -4,16 +4,11 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.pidproviders.datacite.Util;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
-import jakarta.ejb.EJB;
-import jakarta.inject.Inject;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,24 +19,40 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+
+
 public abstract class AbstractPidProvider implements PidProvider {
 
     private static final Logger logger = Logger.getLogger(AbstractPidProvider.class.getCanonicalName());
 
-    @Inject
-    DataverseServiceBean dataverseService;
-    @EJB
-    protected
-    SettingsServiceBean settingsService;
-    @Inject
-    protected
-    DvObjectServiceBean dvObjectService;
-    @Inject
-    SystemConfig systemConfig;
-
-    protected Boolean configured = null;
-    
     public static String UNAVAILABLE = ":unav";
+    
+    PidProviderFactoryBean pidProviderService;
+
+    private String protocol;
+
+    private String authority;
+
+    private String shoulder;
+
+    private String identifierGenerationStyle;
+
+    private String datafilePidFormat;
+
+    private List<String> managedList;
+
+    private List<String> excludedList;
+    
+    AbstractPidProvider(String protocol, String authority, String shoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
+        this.protocol = protocol;
+        this.authority = authority;
+        this.shoulder = shoulder;
+        this.identifierGenerationStyle = identifierGenerationStyle;
+        this.datafilePidFormat = datafilePidFormat;
+        this.managedList = Arrays.asList(managedList.split(",\\s")); 
+        this.excludedList = Arrays.asList(excludedList.split(",\\s"));
+        
+    }
     
     @Override
     public Map<String, String> getMetadataForCreateIndicator(DvObject dvObjectIn) {
@@ -67,7 +78,7 @@ public abstract class AbstractPidProvider implements PidProvider {
             authorString = UNAVAILABLE;
         }
 
-        String producerString = dataverseService.getRootDataverseName();
+        String producerString = pidProviderService.getProducer();
 
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = UNAVAILABLE;
@@ -101,7 +112,7 @@ public abstract class AbstractPidProvider implements PidProvider {
 
     protected String getTargetUrl(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getTargetUrl");
-        return systemConfig.getDataverseSiteUrl() + dvObjectIn.getTargetUrl() + dvObjectIn.getGlobalId().asString();
+        return SystemConfig.getDataverseSiteUrlStatic() + dvObjectIn.getTargetUrl() + dvObjectIn.getGlobalId().asString();
     }
     
     @Override
@@ -150,8 +161,8 @@ public abstract class AbstractPidProvider implements PidProvider {
     @Override
     public DvObject generateIdentifier(DvObject dvObject) {
 
-        String protocol = dvObject.getProtocol() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : dvObject.getProtocol();
-        String authority = dvObject.getAuthority() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : dvObject.getAuthority();
+        String protocol = dvObject.getProtocol() == null ? getProtocol() : dvObject.getProtocol();
+        String authority = dvObject.getAuthority() == null ? getAuthority() : dvObject.getAuthority();
         if (dvObject.isInstanceofDataset()) {
             dvObject.setIdentifier(generateDatasetIdentifier((Dataset) dvObject));
         } else {
@@ -169,10 +180,9 @@ public abstract class AbstractPidProvider implements PidProvider {
     //ToDo just send the DvObject.DType
     public String generateDatasetIdentifier(Dataset dataset) {
         //ToDo - track these in the bean
-        String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
+        String shoulder = getShoulder();
 
-        switch (identifierType) {
+        switch (getIdentifierGenerationStyle()) {
             case "randomString":
                 return generateIdentifierAsRandomString(dataset, shoulder);
             case "storedProcGenerated":
@@ -193,7 +203,7 @@ public abstract class AbstractPidProvider implements PidProvider {
      * @return {@code true} if the identifier is unique, {@code false} otherwise.
      */
     public boolean isGlobalIdUnique(GlobalId globalId) {
-        if ( ! dvObjectService.isGlobalIdLocallyUnique(globalId)  ) {
+        if ( ! pidProviderService.isGlobalIdLocallyUnique(globalId)) {
             return false; // duplication found in local database
         }
 
@@ -228,9 +238,6 @@ public abstract class AbstractPidProvider implements PidProvider {
      */
     @Override
     public GlobalId parsePersistentId(String fullIdentifierString) {
-        if(!isConfigured()) {
-            return null;
-        }
         // Occasionally, the protocol separator character ':' comes in still
         // URL-encoded as %3A (usually as a result of the URL having been 
         // encoded twice):
@@ -247,9 +254,6 @@ public abstract class AbstractPidProvider implements PidProvider {
     }
 
     protected GlobalId parsePersistentId(String protocol, String identifierString) {
-        if(!isConfigured()) {
-            return null;
-        }
         String authority;
         String identifier;
         if (identifierString == null) {
@@ -269,6 +273,8 @@ public abstract class AbstractPidProvider implements PidProvider {
             if (PidProvider.testforNullTerminator(identifier)) {
                 return null;
             }
+            ToDo - test specific authority/shoulder and against managed and excluded lists (should be maps?)
+            add unmanagedPermaProvider?
         } else {
             logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string",
                     identifierString);
@@ -278,9 +284,6 @@ public abstract class AbstractPidProvider implements PidProvider {
     }
     
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
-        if(!isConfigured()) {
-            return null;
-        }
         logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getProviderInformation().get(0));
         if(!PidProvider.isValidGlobalId(protocol, authority, identifier)) {
             return null;
@@ -297,8 +300,7 @@ public abstract class AbstractPidProvider implements PidProvider {
 
     @Override
     public String generateDataFileIdentifier(DataFile datafile) {
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
+        String doiDataFileFormat = getDatafilePidFormat();
         
         String prepend = "";
         if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
@@ -308,12 +310,12 @@ public abstract class AbstractPidProvider implements PidProvider {
             datafile.setAuthority(datafile.getOwner().getAuthority());
         } else {
             //If there's a shoulder prepend independent identifiers with it
-            prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
-            datafile.setProtocol(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol));
-            datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority));
+            prepend = getShoulder();
+            datafile.setProtocol(getProtocol());
+            datafile.setAuthority(getAuthority());
         }
  
-        switch (doiIdentifierType) {
+        switch (getIdentifierGenerationStyle()) {
             case "randomString":
                 return generateIdentifierAsRandomString(datafile, prepend);
             case "storedProcGenerated":
@@ -352,7 +354,7 @@ public abstract class AbstractPidProvider implements PidProvider {
     private String generateIdentifierFromStoredProcedureIndependent(DvObject dvo, String prepend) {
         String identifier; 
         do {
-            String identifierFromStoredProcedure = dvObjectService.generateNewIdentifierByStoredProcedure();
+            String identifierFromStoredProcedure = pidProviderService.generateNewIdentifierByStoredProcedure();
             // some diagnostics here maybe - is it possible to determine that it's failing 
             // because the stored procedure hasn't been created in the database?
             if (identifierFromStoredProcedure == null) {
@@ -399,7 +401,7 @@ public abstract class AbstractPidProvider implements PidProvider {
 
     public GlobalIdMetadataTemplate(){
         try (InputStream in = GlobalIdMetadataTemplate.class.getResourceAsStream("datacite_metadata_template.xml")) {
-            template = Util.readAndClose(in, "utf-8");
+            template = new String(in.readAllBytes(),StandardCharsets.UTF_8);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "datacite metadata template load error");
             logger.log(Level.SEVERE, "String " + e.toString());
@@ -666,7 +668,7 @@ public abstract class AbstractPidProvider implements PidProvider {
 
         GlobalIdMetadataTemplate metadataTemplate = new GlobalIdMetadataTemplate();
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
-        metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
+        metadataTemplate.setCreators(Arrays.asList(metadata.get("datacite.creator").split("; ")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
             metadataTemplate.setDescription(dataset.getLatestVersion().getDescriptionPlainText());
@@ -680,7 +682,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         metadataTemplate.setTitle(dvObject.getCurrentName());
-        String producerString = dataverseService.getRootDataverseName();
+        String producerString = pidProviderService.getProducer();
         if (producerString.isEmpty()  || producerString.equals(DatasetField.NA_VALUE) ) {
             producerString = UNAVAILABLE;
         }
@@ -699,12 +701,40 @@ public abstract class AbstractPidProvider implements PidProvider {
     }
     
     @Override
-    public boolean isConfigured() {
-        if(configured==null) {
-            return false;
-        } else {
-            return configured.booleanValue();
-        }
+    public void setPidProviderServiceBean(PidProviderFactoryBean pidProviderServiceBean) {
+        this.pidProviderService = pidProviderServiceBean;
+    }
+    
+    @Override
+    public String getProtocol() {
+        return protocol;
+    }
+
+    @Override
+    public String getAuthority() {
+        return authority;
+    }
+
+    @Override
+    public String getShoulder() {
+        return shoulder;
+    }
+
+    @Override
+    public String getIdentifierGenerationStyle() {
+        return identifierGenerationStyle;
+    }
+
+    public String getDatafilePidFormat() {
+        return datafilePidFormat;
+    }
+
+    public List<String> getManagedList() {
+        return managedList;
+    }
+
+    public List<String> getExcludedList() {
+        return excludedList;
     }
     
 }

@@ -17,7 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.DOIEZIdProvider;
+import edu.harvard.iq.dataverse.pidproviders.EZIdDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.DataCiteDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.FakeDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
@@ -117,7 +117,7 @@ public class EjbDataverseEngine {
     DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels;
 
     @EJB
-    DOIEZIdProvider doiEZId;
+    EZIdDOIProvider doiEZId;
     
     @EJB
     DataCiteDOIProvider doiDataCite;
@@ -487,7 +487,7 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
-                public DOIEZIdProvider doiEZId() {
+                public EZIdDOIProvider doiEZId() {
                     return doiEZId;
                 }
                 
