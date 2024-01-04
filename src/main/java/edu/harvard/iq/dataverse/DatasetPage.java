@@ -4438,7 +4438,6 @@ public class DatasetPage implements java.io.Serializable {
      * See: dataset-versions.xhtml, remoteCommand 'postLoadVersionTablList'
     */
     public void postLoadSetVersionTabList(){
-
         if (this.getVersionTabList().isEmpty() && workingVersion.isDeaccessioned()){
             setVersionTabList(resetVersionTabList());
         }
@@ -4554,9 +4553,12 @@ public class DatasetPage implements java.io.Serializable {
 
 
     private List<DatasetVersion> resetVersionTabList() {
+        logger.fine("resetting Versions tab list");
         //if (true)return null;
         List<DatasetVersion> retList = new ArrayList<>();
 
+        this.dataset = datasetService.findDeep(this.dataset.getId());
+        
         if (permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
             for (DatasetVersion version : dataset.getVersions()) {
                 Collection<FileMetadata> fml = version.getFileMetadatas();
@@ -4576,6 +4578,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
         }
+        logger.fine("done resetting versions tab list");
         return retList;
     }
 
