@@ -19,7 +19,8 @@ public class UnmanagedDOIProvider extends DOIProvider {
     private static final String ID = "UnmanagedDOIProvider";
 
     public UnmanagedDOIProvider() {
-        super(ID);
+        //Also using ID as label
+        super(ID, ID);
     }
 
     @Override

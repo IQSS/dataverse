@@ -21,7 +21,8 @@ public class UnmanagedPermaLinkPidProvider extends AbstractPidProvider {
     private static final String ID = "UnmanagedPermaLinkProvider";
     
     public UnmanagedPermaLinkPidProvider() {
-        super(ID, PermaLinkPidProvider.PERMA_PROTOCOL);
+        // Also using ID as label
+        super(ID, ID, PermaLinkPidProvider.PERMA_PROTOCOL);
         logger.log(Level.FINE, "Constructor");
     }
 

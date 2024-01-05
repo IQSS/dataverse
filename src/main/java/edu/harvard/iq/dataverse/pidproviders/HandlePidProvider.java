@@ -75,9 +75,9 @@ public class HandlePidProvider extends AbstractPidProvider {
     private String keyPath;
     private String keyPassphrase;
     
-    HandlePidProvider(String name, String authority, String shoulder, String identifierGenerationStyle,
+    HandlePidProvider(String id, String label, String authority, String shoulder, String identifierGenerationStyle,
             String datafilePidFormat, String managedList, String excludedList, int index, boolean isIndependentService, String authHandle, String path, String passphrase) {
-        super(name, HDL_PROTOCOL, authority, shoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
+        super(id, label, HDL_PROTOCOL, authority, shoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
         this.handlenetIndex = index;
         this.isIndependentHandleService = isIndependentService;
         this.authHandle = authHandle;

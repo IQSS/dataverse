@@ -12,6 +12,7 @@ class HandleProviderFactory implements PidProviderFactory {
             // Being asked to create a non-EZId provider
             return null;
         }
+        String providerLabel = JvmSettings.PID_PROVIDER_LABEL.lookup(providerId);
         String providerAuthority = JvmSettings.PID_PROVIDER_AUTHORITY.lookup(providerId);
         String providerShoulder = JvmSettings.PID_PROVIDER_SHOULDER.lookupOptional(providerId).orElse("");
         String identifierGenerationStyle = JvmSettings.PID_PROVIDER_IDENTIFIER_GENERATION_STYLE
@@ -27,7 +28,7 @@ class HandleProviderFactory implements PidProviderFactory {
         String handleAuthHandle = JvmSettings.HANDLENET_AUTH_HANDLE.lookup(providerId);
         String path = JvmSettings.HANDLENET_KEY_PATH.lookup(providerId);
         String passphrase = JvmSettings.HANDLENET_KEY_PASSPHRASE.lookup(providerId);
-        return new HandlePidProvider(providerId, providerAuthority, providerShoulder, identifierGenerationStyle,
+        return new HandlePidProvider(providerId, providerLabel, providerAuthority, providerShoulder, identifierGenerationStyle,
                 datafilePidFormat, managedList, excludedList, index, independentHandleService, handleAuthHandle, path,
                 passphrase);
     }

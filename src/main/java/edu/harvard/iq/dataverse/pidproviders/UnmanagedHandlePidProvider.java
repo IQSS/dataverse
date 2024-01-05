@@ -22,7 +22,8 @@ public class UnmanagedHandlePidProvider extends AbstractPidProvider {
     private static final String ID = "UnmanagedHandleProvider";
 
     public UnmanagedHandlePidProvider() {
-        super(ID, HandlePidProvider.HDL_PROTOCOL);
+        // Also using ID as label
+        super(ID, ID, HandlePidProvider.HDL_PROTOCOL);
         logger.log(Level.FINE, "Constructor");
 
     }

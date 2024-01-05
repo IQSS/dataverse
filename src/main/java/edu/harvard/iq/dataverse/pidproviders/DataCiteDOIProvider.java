@@ -43,10 +43,10 @@ public class DataCiteDOIProvider extends DOIProvider {
     private String username;
     private String password;
 
-    public DataCiteDOIProvider(String name, String providerAuthority, String providerShoulder, String managedList,
+    public DataCiteDOIProvider(String id, String label, String providerAuthority, String providerShoulder, String managedList,
             String excludedList, String identifierGenerationStyle, String datafilePidFormat, String mdsUrl,
             String apiUrl, String username, String password) {
-        super(name, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList,
+        super(id, label, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList,
                 excludedList);
         this.mdsUrl = mdsUrl;
         this.apiUrl = apiUrl;

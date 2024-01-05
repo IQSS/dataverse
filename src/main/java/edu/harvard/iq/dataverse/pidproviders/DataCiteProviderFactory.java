@@ -12,6 +12,7 @@ class DataCiteProviderFactory implements PidProviderFactory {
             // Being asked to create a non-DataCite provider
             return null;
         }
+        String providerLabel = JvmSettings.PID_PROVIDER_LABEL.lookup(providerId);
         String providerAuthority = JvmSettings.PID_PROVIDER_AUTHORITY.lookup(providerId);
         String providerShoulder = JvmSettings.PID_PROVIDER_SHOULDER.lookupOptional(providerId).orElse("");
         String identifierGenerationStyle = JvmSettings.PID_PROVIDER_IDENTIFIER_GENERATION_STYLE
@@ -26,7 +27,7 @@ class DataCiteProviderFactory implements PidProviderFactory {
         String username = JvmSettings.DATACITE_USERNAME.lookup(providerId);
         String password = JvmSettings.DATACITE_PASSWORD.lookup(providerId);
 
-        return new DataCiteDOIProvider(providerId, providerAuthority, providerShoulder, identifierGenerationStyle,
+        return new DataCiteDOIProvider(providerId, providerLabel, providerAuthority, providerShoulder, identifierGenerationStyle,
                 datafilePidFormat, managedList, excludedList, mdsUrl, apiUrl, username, password);
     }
 

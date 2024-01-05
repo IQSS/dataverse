@@ -32,12 +32,12 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @ExtendWith(MockitoExtension.class)
 @LocalJvmSettings
-@JvmSetting(key = JvmSettings.PID_PROVIDER_NAME, value = "perma1", varArgs = "perma1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "perma1", varArgs = "perma1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "perma1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "DANSLINK", varArgs = "perma1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "QE", varArgs = "perma1")
 @JvmSetting(key = JvmSettings.PERMALINK_SEPARATOR, value = "-", varArgs = "perma1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_NAME, value = "perma2", varArgs = "perma2")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "perma2", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "DANSLINK", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PERMALINK_SEPARATOR, value = "/", varArgs = "perma2")

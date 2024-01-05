@@ -12,6 +12,7 @@ class EZIdProviderFactory implements PidProviderFactory {
             // Being asked to create a non-EZId provider
             return null;
         }
+        String providerLabel = JvmSettings.PID_PROVIDER_LABEL.lookup(providerId);
         String providerAuthority = JvmSettings.PID_PROVIDER_AUTHORITY.lookup(providerId);
         String providerShoulder = JvmSettings.PID_PROVIDER_SHOULDER.lookupOptional(providerId).orElse("");
         String identifierGenerationStyle = JvmSettings.PID_PROVIDER_IDENTIFIER_GENERATION_STYLE
@@ -25,7 +26,7 @@ class EZIdProviderFactory implements PidProviderFactory {
         String username = JvmSettings.EZID_USERNAME.lookup(providerId);
         String password = JvmSettings.EZID_PASSWORD.lookup(providerId);
 
-        return new EZIdDOIProvider(providerId, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
+        return new EZIdDOIProvider(providerId, providerLabel, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
                 managedList, excludedList, baseUrl, username, password);
     }
 

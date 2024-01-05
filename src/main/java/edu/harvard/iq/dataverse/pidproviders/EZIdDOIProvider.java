@@ -30,9 +30,9 @@ public class EZIdDOIProvider extends DOIProvider {
     private String baseUrl;
     
     
-    public EZIdDOIProvider(String name, String providerAuthority, String providerShoulder, String identifierGenerationStyle,
+    public EZIdDOIProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle,
             String datafilePidFormat, String managedList, String excludedList, String baseUrl, String username, String password) {
-        super(name, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
+        super(id, label, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
         // Creating the service doesn't do any harm, just initializing some object data here.
         // Makes sure we don't run into NPEs from the other methods, but will obviously fail if the
         // login below does not work.

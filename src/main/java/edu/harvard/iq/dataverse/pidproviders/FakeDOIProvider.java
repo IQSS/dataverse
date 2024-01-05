@@ -11,9 +11,9 @@ public class FakeDOIProvider extends DOIProvider {
 
     static final String TYPE = "FAKE";
 
-    public FakeDOIProvider(String name, String providerAuthority, String providerShoulder, String identifierGenerationStyle,
+    public FakeDOIProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle,
             String datafilePidFormat, String managedList, String excludedList) {
-        super(name, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
+        super(id, label, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
     }
 
     //Only need to check locally

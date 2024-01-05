@@ -40,9 +40,9 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
 
     private String baseUrl;
 
-    public PermaLinkPidProvider(String name, String providerAuthority, String providerShoulder, String identifierGenerationStyle,
+    public PermaLinkPidProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle,
             String datafilePidFormat, String managedList, String excludedList, String baseUrl, String separator) {
-        super(name, PERMA_PROTOCOL, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
+        super(id, label, PERMA_PROTOCOL, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat,
                 managedList, excludedList);
         this.baseUrl = baseUrl;
         this.separator = separator;

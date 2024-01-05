@@ -12,6 +12,7 @@ class PermaLinkProviderFactory implements PidProviderFactory {
             // Being asked to create a non-EZId provider
             return null;
         }
+        String providerLabel = JvmSettings.PID_PROVIDER_LABEL.lookup(providerId);
         String providerAuthority = JvmSettings.PID_PROVIDER_AUTHORITY.lookup(providerId);
         String providerShoulder = JvmSettings.PID_PROVIDER_SHOULDER.lookupOptional(providerId).orElse("");
         String identifierGenerationStyle = JvmSettings.PID_PROVIDER_IDENTIFIER_GENERATION_STYLE
@@ -26,7 +27,7 @@ class PermaLinkProviderFactory implements PidProviderFactory {
         ;
         String separator = JvmSettings.PERMALINK_SEPARATOR.lookupOptional(providerId).orElse("");
 
-        return new PermaLinkPidProvider(providerId, providerAuthority, providerShoulder, identifierGenerationStyle,
+        return new PermaLinkPidProvider(providerId, providerLabel, providerAuthority, providerShoulder, identifierGenerationStyle,
                 datafilePidFormat, managedList, excludedList, baseUrl, separator);
     }
 
