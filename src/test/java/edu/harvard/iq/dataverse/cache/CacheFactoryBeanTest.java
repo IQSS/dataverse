@@ -1,9 +1,12 @@
 package edu.harvard.iq.dataverse.cache;
 
+import ai.grakn.redismock.RedisServer;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,13 +30,14 @@ public class CacheFactoryBeanTest {
     CacheFactoryBean cache = new CacheFactoryBean();
     AuthenticatedUser authUser = new AuthenticatedUser();
     String action;
+    static RedisServer mockRedisServer;
 
     @BeforeEach
-    public void setup() {
-        lenient().doReturn("localhost").when(systemConfig).getRedisBaseHost();
-        lenient().doReturn("6379").when(systemConfig).getRedisBasePort();
-        lenient().doReturn("default").when(systemConfig).getRedisUser();
-        lenient().doReturn("redis_secret").when(systemConfig).getRedisPassword();
+    public void setup() throws IOException {
+        lenient().doReturn(mockRedisServer.getHost()).when(systemConfig).getRedisBaseHost();
+        lenient().doReturn(String.valueOf(mockRedisServer.getBindPort())).when(systemConfig).getRedisBasePort();
+        lenient().doReturn(null).when(systemConfig).getRedisUser();
+        lenient().doReturn(null).when(systemConfig).getRedisPassword();
         lenient().doReturn(30).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(0), anyInt());
         lenient().doReturn(60).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(1), anyInt());
         lenient().doReturn(120).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(2), anyInt());
@@ -40,6 +45,16 @@ public class CacheFactoryBeanTest {
         cache.init();
         authUser.setRateLimitTier(1); // reset to default
         action = "cmd-" + UUID.randomUUID();
+    }
+    @BeforeAll
+    public static void init() throws IOException {
+        mockRedisServer = RedisServer.newRedisServer();
+        mockRedisServer.start();
+    }
+    @AfterAll
+    public static void cleanup() {
+        if (mockRedisServer != null)
+            mockRedisServer.stop();
     }
     @Test
     public void testGuestUserGettingRateLimited() throws InterruptedException {
