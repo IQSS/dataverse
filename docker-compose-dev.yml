@@ -12,6 +12,10 @@ services:
       DATAVERSE_DB_HOST: postgres
       DATAVERSE_DB_PASSWORD: secret
       DATAVERSE_DB_USER: ${DATAVERSE_DB_USER}
+      DATAVERSE_REDIS_HOST: "redis"
+      DATAVERSE_REDIS_PORT: "6379"
+      DATAVERSE_REDIS_USER: "default"
+      DATAVERSE_REDIS_PASSWORD: "redis_secret"
       ENABLE_JDWP: "1"
       DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
       DATAVERSE_AUTH_OIDC_ENABLED: "1"
@@ -54,6 +58,7 @@ services:
       - dev_postgres
       - dev_solr
       - dev_dv_initializer
+      - redis_dev
     volumes:
       - ./docker-dev-volumes/app/data:/dv
       - ./docker-dev-volumes/app/secrets:/secrets
@@ -214,6 +219,17 @@ services:
       MINIO_ROOT_USER: 4cc355_k3y
       MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k3y
     command: server /data
+
+  dev_redis:
+    container_name: "redis_dev"
+    hostname: "redis"
+    image: redis/redis-stack:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - dataverse
+    command: ["redis-server","--bind","redis","--port","6379","--requirepass","redis_secret" ]
 
 networks:
   dataverse:
