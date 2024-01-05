@@ -1,8 +1,12 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,19 +30,17 @@ import static org.junit.jupiter.api.Assertions.*;
  * Useful for testing but requires DataCite credentials, etc.
  */
 @ExtendWith(MockitoExtension.class)
+@LocalJvmSettings
 public class PidUtilTest {
+
     @Mock
     private SettingsServiceBean settingsServiceBean;
-    @InjectMocks
-    private PermaLinkPidProvider p = new PermaLinkPidProvider();
-    
 
     @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
-        Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol)).thenReturn("perma");
-        Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("DANSLINK");
-        p.reInit();
+//        Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol)).thenReturn("perma");
+//        Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("DANSLINK");
     }
     
     @Disabled
@@ -58,13 +60,17 @@ public class PidUtilTest {
     }
     
     @Test
+    @JvmSetting(key = JvmSettings.PID_PROVIDER_NAME, value = "perma1", varArgs = "api-bearer-auth")
+    @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "perma1")
+    @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "DANSLINK", varArgs = "perma1")
+    @JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "QE", varArgs = "perma1")
+    @JvmSetting(key = JvmSettings.PID_PROVIDER_IDENTIFIER_GENERATION_STYLE, value = PermaLinkPidProvider.TYPE, varArgs = "perma1")
     public void testGetPermaLink() throws IOException {
-        List<PidProvider> list = new ArrayList<PidProvider>();
         
-
-        list.add(p);
-        PidUtil.addAllToProviderList(list);
-        GlobalId pid = new GlobalId(PermaLinkPidProvider.PERMA_PROTOCOL,"DANSLINK","QE5A-XN55", "", p.getUrlPrefix(), PermaLinkPidProvider.PERMA_PROVIDER_NAME);
+        PidProvider p = new PermaLinkProviderFactory().createPidProvider("perma1");
+        PidUtil.clearPidProviders();
+        PidUtil.addToProviderList(p);
+        GlobalId pid = new GlobalId(PermaLinkPidProvider.PERMA_PROTOCOL,"DANSLINK","QE5A-XN55", "", p.getUrlPrefix(), "perma1");
         System.out.println(pid.asString());
         System.out.println(pid.asURL());
         
