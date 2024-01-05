@@ -15,6 +15,7 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -31,11 +32,33 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @ExtendWith(MockitoExtension.class)
 @LocalJvmSettings
+@JvmSetting(key = JvmSettings.PID_PROVIDER_NAME, value = "perma1", varArgs = "perma1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "perma1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "DANSLINK", varArgs = "perma1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "QE", varArgs = "perma1")
+@JvmSetting(key = JvmSettings.PERMALINK_SEPARATOR, value = "-", varArgs = "perma1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_NAME, value = "perma2", varArgs = "perma2")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "perma2")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "DANSLINK", varArgs = "perma2")
+@JvmSetting(key = JvmSettings.PERMALINK_SEPARATOR, value = "/", varArgs = "perma2")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "QE", varArgs = "perma2")
 public class PidUtilTest {
 
     @Mock
     private SettingsServiceBean settingsServiceBean;
 
+    @BeforeAll
+    //FWIW @JvmSetting doesn't appear to work with @BeforeAll
+    public static void setUpClass() throws Exception {
+        //ToDo - permalinks: use one "" separator and update code to allow prioritizing PidProviders
+        PidProvider p = new PermaLinkProviderFactory().createPidProvider("perma1");
+        PidUtil.clearPidProviders();
+        PidUtil.addToProviderList(p);
+        p = new PermaLinkProviderFactory().createPidProvider("perma2");
+        PidUtil.addToProviderList(p);
+
+    }
+    
     @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
@@ -60,25 +83,28 @@ public class PidUtilTest {
     }
     
     @Test
-    @JvmSetting(key = JvmSettings.PID_PROVIDER_NAME, value = "perma1", varArgs = "api-bearer-auth")
-    @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "perma1")
-    @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "DANSLINK", varArgs = "perma1")
-    @JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "QE", varArgs = "perma1")
-    @JvmSetting(key = JvmSettings.PID_PROVIDER_IDENTIFIER_GENERATION_STYLE, value = PermaLinkPidProvider.TYPE, varArgs = "perma1")
     public void testGetPermaLink() throws IOException {
-        
-        PidProvider p = new PermaLinkProviderFactory().createPidProvider("perma1");
-        PidUtil.clearPidProviders();
-        PidUtil.addToProviderList(p);
-        GlobalId pid = new GlobalId(PermaLinkPidProvider.PERMA_PROTOCOL,"DANSLINK","QE5A-XN55", "", p.getUrlPrefix(), "perma1");
+        PidProvider p = PidUtil.getPidProvider("perma1");
+            GlobalId pid = new GlobalId(PermaLinkPidProvider.PERMA_PROTOCOL,"DANSLINK","QE-5A-XN55", "-", p.getUrlPrefix(), "perma1");
         System.out.println(pid.asString());
         System.out.println(pid.asURL());
         
+        
+        
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid.asString());
         assertEquals(pid.asString(), pid2.asString());
+        assertEquals("perma1", pid2.getProviderName());
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid.asURL());
         assertEquals(pid.asString(), pid3.asString());
+        assertEquals("perma1", pid3.getProviderName());
+
+        p = PidUtil.getPidProvider("perma2");
+        GlobalId pid5 = new GlobalId(PermaLinkPidProvider.PERMA_PROTOCOL,"DANSLINK","QE/5A-XN55", "/", p.getUrlPrefix(), "perma2");
+        GlobalId pid6 = PidUtil.parseAsGlobalID(pid5.asString());
+        assertEquals("perma2", pid6.getProviderName());
+        assertEquals(pid5.asString(), pid6.asString());
         
+
     }
 
 }
