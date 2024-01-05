@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
@@ -186,9 +187,9 @@ public class PidUtil {
      * This method should be deprecated/removed when further refactoring to support
      * multiple PID providers is done. At that point, when the providers aren't
      * beans, this code can be moved into other classes that go in the providerMap.
-     * If this method is not kept in sync with the DOIProvider and
-     * HandlePidProvider implementations, the tests using it won't be valid tests
-     * of the production code.
+     * If this method is not kept in sync with the DOIProvider and HandlePidProvider
+     * implementations, the tests using it won't be valid tests of the production
+     * code.
      */
 
     private static GlobalId parseUnmanagedDoiOrHandle(String protocol, String authority, String identifier) {
@@ -210,4 +211,46 @@ public class PidUtil {
         }
         return new GlobalId(protocol, authority, identifier, "/", urlPrefix, null);
     }
+
+    /**
+     * Get a PidProvider by name. GlobalIds have a getProviderName() method so this
+     * method is often used as
+     * getPidProvider(dvObject.getGlobalId().getProviderName(); (which will fail if
+     * the GlobalId is null - use PidProviderFactoryBean.getPidProvider(DvObject) if
+     * you aren't sure.
+     * 
+     */
+
+    public static PidProvider getPidProvider(String name) {
+        for (PidProvider pidProvider : providerMap.values()) {
+            if (name.equals(pidProvider.getName())) {
+                return pidProvider;
+            }
+        }
+        for (PidProvider pidProvider : unmanagedProviderMap.values()) {
+            if (name.equals(pidProvider.getName())) {
+                return pidProvider;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get a PidProvider by protocol/authority/shoulder.
+     */
+    public static PidProvider getPidProvider(String protocol, String authority, String shoulder) {
+        for (PidProvider pidProvider : providerMap.values()) {
+            if (protocol.equals(pidProvider.getProtocol()) && authority.equals(pidProvider.getAuthority())
+                    && shoulder.equals(pidProvider.getShoulder())) {
+                return pidProvider;
+            }
+        }
+        for (PidProvider pidProvider : unmanagedProviderMap.values()) {
+            if (protocol.equals(pidProvider.getProtocol())) {
+                return pidProvider;
+            }
+        }
+        return null;
+    }
+
 }

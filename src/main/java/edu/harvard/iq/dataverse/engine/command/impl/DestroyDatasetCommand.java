@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -16,6 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,18 +102,21 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         }   
         
         if (!doomed.isHarvested()) {
-            PidProvider idServiceBean = PidProvider.getBean(ctxt);
-            try {
-                if (idServiceBean.alreadyRegistered(doomed)) {
-                    idServiceBean.deleteIdentifier(doomed);
-                    for (DataFile df : doomed.getFiles()) {
-                        idServiceBean.deleteIdentifier(df);
+            GlobalId pid = doomed.getGlobalId();
+            if (pid != null) {
+                PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderName());
+                try {
+                    if (pidProvider.alreadyRegistered(doomed)) {
+                        pidProvider.deleteIdentifier(doomed);
+                        for (DataFile df : doomed.getFiles()) {
+                            pidProvider.deleteIdentifier(df);
+                        }
                     }
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Identifier deletion was not successful:", e.getMessage());
                 }
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "Identifier deletion was not successful:", e.getMessage());
             }
-        } 
+        }
         
         toReIndex = managedDoomed.getOwner();
 

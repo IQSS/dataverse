@@ -204,10 +204,9 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         fmd.setDatasetVersion(dataset.getLatestVersion());
 
         FileUtil.generateS3PackageStorageIdentifier(packageFile);
-
-        PidProvider idServiceBean = PidProvider.getBean(packageFile.getProtocol(), commandEngine.getContext());
+        PidProvider pidProvider = commandEngine.getContext().pidProviderFactory().getPidProvider(dataset);
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
-            String packageIdentifier = idServiceBean.generateDataFileIdentifier(packageFile);
+            String packageIdentifier = pidProvider.generateDataFileIdentifier(packageFile);
             packageFile.setIdentifier(packageIdentifier);
         }
 
@@ -224,15 +223,15 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
         if (!packageFile.isIdentifierRegistered()) {
             String doiRetString = "";
-            idServiceBean = PidProvider.getBean(commandEngine.getContext());
+            pidProvider = commandEngine.getContext().pidProviderFactory().getPidProvider(dataset);
             try {
-                doiRetString = idServiceBean.createIdentifier(packageFile);
+                doiRetString = pidProvider.createIdentifier(packageFile);
             } catch (Throwable e) {
 
             }
 
             // Check return value to make sure registration succeeded
-            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
+            if (!pidProvider.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
                 packageFile.setIdentifierRegistered(true);
                 packageFile.setGlobalIdCreateTime(new Date());
             }

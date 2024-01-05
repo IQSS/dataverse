@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
@@ -49,15 +50,12 @@ public class PidProviderFactoryBean {
     @Inject
     DataverseServiceBean dataverseService;
     @EJB
-    protected
-    SettingsServiceBean settingsService;
+    protected SettingsServiceBean settingsService;
     @Inject
-    protected
-    DvObjectServiceBean dvObjectService;
+    protected DvObjectServiceBean dvObjectService;
     @Inject
     SystemConfig systemConfig;
 
-    
     private ServiceLoader<PidProviderFactory> loader;
     private Map<String, PidProviderFactory> pidProviderFactoryMap = new HashMap<>();
 
@@ -125,21 +123,45 @@ public class PidProviderFactoryBean {
                 PidUtil.addToProviderList(provider);
             }
         }
-        PidUtil.addAllToUnmanagedProviderList(Arrays.asList(new UnmanagedDOIProvider(), new UnmanagedHandlePidProvider(), new UnmanagedPermaLinkPidProvider()));
+        PidUtil.addAllToUnmanagedProviderList(Arrays.asList(new UnmanagedDOIProvider(),
+                new UnmanagedHandlePidProvider(), new UnmanagedPermaLinkPidProvider()));
     }
 
-    public String getProducer() {
+    String getProducer() {
         return dataverseService.getRootDataverseName();
     }
 
-    public boolean isGlobalIdLocallyUnique(GlobalId globalId) {
+    boolean isGlobalIdLocallyUnique(GlobalId globalId) {
         return dvObjectService.isGlobalIdLocallyUnique(globalId);
     }
 
-    public String generateNewIdentifierByStoredProcedure() {
+    String generateNewIdentifierByStoredProcedure() {
         return dvObjectService.generateNewIdentifierByStoredProcedure();
     }
+
+    /**
+     *  A method to get the PidProvider for a given DvObject - intended for use when it is not known whether the object has a PID yet or not.
+     *  If it does, the PidUtil method can be called directly to get the PidProvider.
+     * @param dvObject
+     * @return - a PidProvider for the object (may be one of the Unmanaged providers)
+     */
     
-    
+    public PidProvider getPidProvider(DvObject dvObject) {
+        GlobalId pid = dvObject.getGlobalId();
+        if (pid != null) {
+            return PidUtil.getPidProvider(pid.getProviderName());
+        } else {
+            // ToDo - get parent settings rather than global
+            String nonNullDefaultIfKeyNotFound = "";
+            String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol,
+                    nonNullDefaultIfKeyNotFound);
+            String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority,
+                    nonNullDefaultIfKeyNotFound);
+            String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder,
+                    nonNullDefaultIfKeyNotFound);
+
+            return PidUtil.getPidProvider(protocol, authority, shoulder);
+        }
+    }
 
 }

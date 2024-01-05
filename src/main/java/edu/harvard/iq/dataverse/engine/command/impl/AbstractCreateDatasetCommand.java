@@ -82,9 +82,10 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         additionalParameterTests(ctxt);
         
         Dataset theDataset = getDataset();
-        PidProvider idServiceBean = PidProvider.getBean(ctxt);
+        PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(theDataset);
+        
         if ( isEmpty(theDataset.getIdentifier()) ) {
-            theDataset.setIdentifier(idServiceBean.generateDatasetIdentifier(theDataset));
+            theDataset.setIdentifier(pidProvider.generateDatasetIdentifier(theDataset));
         }
         
         DatasetVersion dsv = getVersionToPersist(theDataset);
@@ -118,7 +119,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         	theDataset.setStorageIdentifier(driverId  + DataAccess.SEPARATOR + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
         }
         if (theDataset.getIdentifier()==null) {
-            theDataset.setIdentifier(idServiceBean.generateDatasetIdentifier(theDataset));
+            theDataset.setIdentifier(pidProvider.generateDatasetIdentifier(theDataset));
         }
         
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)

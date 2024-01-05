@@ -67,7 +67,7 @@ public class GlobalId implements java.io.Serializable {
         return identifier;
     }
     
-    public String getProvider() {
+    public String getProviderName() {
         return managingProviderName;
     }
 

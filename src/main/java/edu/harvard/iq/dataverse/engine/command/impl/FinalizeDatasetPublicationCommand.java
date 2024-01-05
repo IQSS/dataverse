@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -387,9 +388,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = getDataset().getProtocol();
         String authority = getDataset().getAuthority();
-        PidProvider idServiceBean = PidProvider.getBean(protocol, ctxt);
+        PidProvider pidProvider = PidUtil.getPidProvider(getDataset().getGlobalId().getProviderName());
  
-        if (idServiceBean != null) {
+        if (pidProvider != null) {
             
             try {
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
@@ -405,6 +406,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // an authority that's different from what's currently configured.
                 // Additionaly in 4.9.3 we have added a system variable to disable 
                 // registering file PIDs on the installation level.
+                //ToDo - update to handle multiple PidProviders
                 if (((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority))
                         || dataFilePIDFormat.equals("INDEPENDENT"))
                         && isFilePIDsEnabled
@@ -414,17 +416,17 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     for (DataFile df : dataset.getFiles()) {
                         logger.log(Level.FINE, "registering global id for file {0}", df.getId());
                         //A false return value indicates a failure in calling the service
-                        if (!idServiceBean.publicizeIdentifier(df)) {
+                        if (!pidProvider.publicizeIdentifier(df)) {
                             throw new Exception();
                         }
                         df.setGlobalIdCreateTime(getTimestamp());
                         df.setIdentifierRegistered(true);
                     }
                 }
-                if (!idServiceBean.publicizeIdentifier(dataset)) {
+                if (!pidProvider.publicizeIdentifier(dataset)) {
                     throw new Exception();
                 }
-                dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
+                dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the pidProvider.
                 dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
                 logger.warning("Failed to register the identifier "+dataset.getGlobalId().asString()+", or to register a file in the dataset; notifying the user(s), unlocking the dataset");
@@ -433,7 +435,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
                 
                 ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.finalizePublication);
-                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()), this);
+                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", pidProvider.getProviderInformation()), this);
             }
         }
     }

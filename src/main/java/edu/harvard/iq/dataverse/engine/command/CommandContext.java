@@ -29,11 +29,7 @@ import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.EZIdDOIProvider;
-import edu.harvard.iq.dataverse.pidproviders.DataCiteDOIProvider;
-import edu.harvard.iq.dataverse.pidproviders.FakeDOIProvider;
-import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -100,15 +96,7 @@ public interface CommandContext {
 
     public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
 
-    public EZIdDOIProvider doiEZId();
-
-    public DataCiteDOIProvider doiDataCite();
-
-    public FakeDOIProvider fakePidProvider();
-
-    public HandlePidProvider handleNet();
-
-    public PermaLinkPidProvider permaLinkProvider();
+    public PidProviderFactoryBean pidProviderFactory();
 
     public GuestbookServiceBean guestbooks();
 

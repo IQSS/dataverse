@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.httpclient.HttpException;
 
@@ -42,11 +41,10 @@ public class DeletePidCommand extends AbstractVoidCommand {
                     this, Collections.singleton(Permission.EditDataset), dataset);
         }
 
-        String nonNullDefaultIfKeyNotFound = "";
-        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        PidProvider idServiceBean = PidProvider.getBean(protocol, ctxt);
+        PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(dataset);
+        
         try {
-            idServiceBean.deleteIdentifier(dataset); 
+            pidProvider.deleteIdentifier(dataset); 
             // Success! Clear the create time, etc.
             dataset.setGlobalIdCreateTime(null);
             dataset.setIdentifierRegistered(false);

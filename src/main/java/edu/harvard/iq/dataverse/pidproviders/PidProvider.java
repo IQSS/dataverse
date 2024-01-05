@@ -74,26 +74,6 @@ public interface PidProvider {
     String getShoulder();
     String getIdentifierGenerationStyle();
     
-    
-    //ToDo - now need to get the correct provider based on the protocol, authority, and shoulder (for new pids)/indentifier (for existing pids)
-    static PidProvider getBean(String protocol, CommandContext ctxt) {
-        final Function<CommandContext, PidProvider> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
-        if ( protocolHandler != null ) {
-            PidProvider theBean = protocolHandler.apply(ctxt);
-            if(theBean != null) {
-                logger.fine("getBean returns " + theBean.getProviderInformation().get(0) + " for protocol " + protocol);
-            }
-            return theBean;
-        } else {
-            logger.log(Level.SEVERE, "Unknown protocol: {0}", protocol);
-            return null;
-        }
-    }
-
-    static PidProvider getBean(CommandContext ctxt) {
-        return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
-    }
-    
     public static Optional<GlobalId> parse(String identifierString) {
         try {
             return Optional.of(PidUtil.parseAsGlobalID(identifierString));
@@ -198,41 +178,4 @@ public interface PidProvider {
 
     Set<String> getExcludedSet();
 
-}
-
-
-/*
- * ToDo - replace this with a mechanism like BrandingUtilHelper that would read
- * the config and create PidProviders, one per set of config values and serve
- * those as needed. The help has to be a bean to autostart and to hand the
- * required service beans to the PidProviders. That may boil down to just the
- * dvObjectService (to check for local identifier conflicts) since it will be
- * the helper that has to read settings/get systewmConfig values.
- * 
- */
-
-/**
- * Static utility class for dispatching implementing beans, based on protocol and providers.
- * @author michael
- */
-// FWIW: For lists of PIDs not managed by the provider covered by authority/shoulder, we need a way to add them to one provider and exlude them if another registered provider handles their authority/shoulder (probably rare?)
-class BeanDispatcher {
-    static final Map<String, Function<CommandContext, PidProvider>> DISPATCHER = new HashMap<>();
-
-    static {
-        DISPATCHER.put("hdl", ctxt->ctxt.handleNet() );
-        DISPATCHER.put("doi", ctxt->{
-            String doiProvider = ctxt.settings().getValueForKey(Key.DoiProvider, "");
-            switch ( doiProvider ) {
-                case "EZID": return ctxt.doiEZId();
-                case "DataCite": return ctxt.doiDataCite();
-                case "FAKE": return ctxt.fakePidProvider();
-                default: 
-                    logger.log(Level.SEVERE, "Unknown doiProvider: {0}", doiProvider);
-                    return null;
-            }
-        });
-        
-        DISPATCHER.put(PermaLinkPidProvider.PERMA_PROTOCOL, ctxt->ctxt.permaLinkProvider() );
-    }
 }

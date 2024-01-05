@@ -46,9 +46,10 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
             //the single dataset update api checks for drafts before calling the command
             return;
         }
-        PidProvider idServiceBean = PidProvider.getBean(target.getProtocol(), ctxt);
+        PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(target);
+        
         try {
-            Boolean doiRetString = idServiceBean.publicizeIdentifier(target);
+            Boolean doiRetString = pidProvider.publicizeIdentifier(target);
             if (doiRetString) {
                 target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 ctxt.em().merge(target);
@@ -70,7 +71,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                                     currentGlobalIdProtocol.equals(protocol) || // right protocol to create dependent DOIs, or
                                     dataFilePIDFormat.equals("INDEPENDENT"))// or independent. TODO(pm) - check authority too
                     ) {
-                        doiRetString = idServiceBean.publicizeIdentifier(df);
+                        doiRetString = pidProvider.publicizeIdentifier(df);
                         if (doiRetString) {
                             df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                             ctxt.em().merge(df);

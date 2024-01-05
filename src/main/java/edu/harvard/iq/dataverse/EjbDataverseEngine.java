@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.pidproviders.DataCiteDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.FakeDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -117,20 +118,8 @@ public class EjbDataverseEngine {
     DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels;
 
     @EJB
-    EZIdDOIProvider doiEZId;
-    
-    @EJB
-    DataCiteDOIProvider doiDataCite;
+    PidProviderFactoryBean pidProviderFactory;
 
-    @EJB
-    FakeDOIProvider fakePidProvider;
-
-    @EJB
-    HandlePidProvider handleNet;
-    
-    @EJB
-    PermaLinkPidProvider permaLinkProvider;
-    
     @EJB
     SettingsServiceBean settings;
     
@@ -487,28 +476,8 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
-                public EZIdDOIProvider doiEZId() {
-                    return doiEZId;
-                }
-                
-                @Override
-                public DataCiteDOIProvider doiDataCite() {
-                    return doiDataCite;
-                }
-
-                @Override
-                public FakeDOIProvider fakePidProvider() {
-                    return fakePidProvider;
-                }
-
-                @Override
-                public HandlePidProvider handleNet() {
-                    return handleNet;
-                }
-
-                @Override
-                public PermaLinkPidProvider permaLinkProvider() {
-                    return permaLinkProvider;
+                public PidProviderFactoryBean pidProviderFactory() {
+                    return pidProviderFactory;
                 }
                 
                 @Override

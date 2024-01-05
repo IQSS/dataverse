@@ -360,9 +360,9 @@ public class FileRecordWriter extends AbstractItemWriter {
         
     if (commandEngine.getContext().systemConfig().isFilePIDsEnabledForCollection(dataset.getOwner())) {
 
-        PidProvider idServiceBean = PidProvider.getBean(packageFile.getProtocol(), commandEngine.getContext());
+        PidProvider pidProvider = commandEngine.getContext().pidProviderFactory().getPidProvider(packageFile);
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
-            packageFile.setIdentifier(idServiceBean.generateDataFileIdentifier(packageFile));
+            packageFile.setIdentifier(pidProvider.generateDataFileIdentifier(packageFile));
         }
         String nonNullDefaultIfKeyNotFound = "";
         String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
@@ -376,15 +376,15 @@ public class FileRecordWriter extends AbstractItemWriter {
 
         if (!packageFile.isIdentifierRegistered()) {
             String doiRetString = "";
-            idServiceBean = PidProvider.getBean(commandEngine.getContext());
+
             try {
-                doiRetString = idServiceBean.createIdentifier(packageFile);
+                doiRetString = pidProvider.createIdentifier(packageFile);
             } catch (Throwable e) {
                 
             }
 
             // Check return value to make sure registration succeeded
-            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
+            if (!pidProvider.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
                 packageFile.setIdentifierRegistered(true);
                 packageFile.setGlobalIdCreateTime(new Date());
             }

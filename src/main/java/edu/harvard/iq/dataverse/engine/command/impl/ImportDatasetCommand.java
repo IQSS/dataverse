@@ -80,9 +80,9 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
                  * Dataverse) but aren't findable to be used. That could be the case if, for
                  * example, someone was importing a draft dataset from elsewhere.
                  */
-                PidProvider globalIdServiceBean = PidProvider.getBean(ds.getProtocol(), ctxt);
-                if (globalIdServiceBean != null) {
-                    if (globalIdServiceBean.alreadyRegistered(ds.getGlobalId(), true)) {
+                PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(ds);
+                if (pidProvider != null) {
+                    if (pidProvider.alreadyRegistered(ds.getGlobalId(), true)) {
                         return;
                     }
                 }

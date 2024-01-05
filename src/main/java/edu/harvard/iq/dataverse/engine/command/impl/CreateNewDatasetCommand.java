@@ -72,8 +72,9 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     @Override
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
         if ( nonEmpty(getDataset().getIdentifier()) ) {
-            PidProvider idServiceBean = PidProvider.getBean(getDataset().getProtocol(), ctxt);
-            if ( !idServiceBean.isGlobalIdUnique(getDataset().getGlobalId()) ) {
+            PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(getDataset());
+            
+            if ( !pidProvider.isGlobalIdUnique(getDataset().getGlobalId()) ) {
                 throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
                                                                  getDataset().getIdentifier(), getDataset().getProtocol(), getDataset().getAuthority()), 
                     this);
@@ -88,11 +89,11 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
 
     @Override
     protected void handlePid(Dataset theDataset, CommandContext ctxt) throws CommandException {
-        PidProvider idServiceBean = PidProvider.getBean(ctxt);
-        if(!idServiceBean.canManagePID()) {
-            throw new IllegalCommandException("PID Provider " + idServiceBean.getProviderInformation().get(0) + " is not configured.", this);
+        PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(theDataset);
+        if(!pidProvider.canManagePID()) {
+            throw new IllegalCommandException("PID Provider " + pidProvider.getProviderInformation().get(0) + " is not configured.", this);
         }
-        if ( !idServiceBean.registerWhenPublished() ) {
+        if ( !pidProvider.registerWhenPublished() ) {
             // pre-register a persistent id
             registerExternalIdentifier(theDataset, ctxt, true);
         }

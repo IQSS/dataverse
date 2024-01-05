@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -955,10 +956,11 @@ public class DatasetServiceBean implements java.io.Serializable {
      they can be run in sequence). -- L.A. Mar. 2018
     */
     @Asynchronous
+    @Deprecated
     public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
-        PidProvider idServiceBean = PidProvider.getBean(dataset.getProtocol(), commandEngine.getContext());
+        PidProvider pidProvider = PidUtil.getPidProvider(dataset.getGlobalId().getProviderName());
 
-        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
+        //If the Id type is sequential and Dependent then write file identifiers outside the command
         String datasetIdentifier = dataset.getIdentifier();
         Long maxIdentifier = null;
 
@@ -977,7 +979,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                     maxIdentifier++;
                     datafile.setIdentifier(datasetIdentifier + "/" + maxIdentifier.toString());
                 } else {
-                    datafile.setIdentifier(idServiceBean.generateDataFileIdentifier(datafile));
+                    datafile.setIdentifier(pidProvider.generateDataFileIdentifier(datafile));
                 }
 
                 if (datafile.getProtocol() == null) {
@@ -993,14 +995,14 @@ public class DatasetServiceBean implements java.io.Serializable {
 
                 try {
                     logger.log(Level.FINE, "creating identifier");
-                    doiRetString = idServiceBean.createIdentifier(datafile);
+                    doiRetString = pidProvider.createIdentifier(datafile);
                 } catch (Throwable e) {
                     logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
                     doiRetString = "";
                 }
 
                 // Check return value to make sure registration succeeded
-                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(datafile.getIdentifier())) {
+                if (!pidProvider.registerWhenPublished() && doiRetString.contains(datafile.getIdentifier())) {
                     datafile.setIdentifierRegistered(true);
                     datafile.setGlobalIdCreateTime(new Date());
                 }
