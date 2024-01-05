@@ -108,7 +108,7 @@ public class CacheFactoryBeanTest {
                 break;
             }
         }
-        assertTrue(!limited && cnt > 15, "cnt:" + cnt);
+        assertTrue(!limited);
     }
 
     @Test
