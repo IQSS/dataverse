@@ -146,8 +146,8 @@ Each of the three main sections own sets of properties:
 |                           |                                                        |                                                          | \• textbox            |
 |                           |                                                        |                                                          | \• url                |
 |                           |                                                        |                                                          | \• int                |
-|                           |                                                        |                                                          | \• float
-|                           |                                                        |                                                          | \• Boolean              |
+|                           |                                                        |                                                          | \• float              |
+|                           |                                                        |                                                          | \• Boolean            |
 |                           |                                                        |                                                          | \• See below for      |
 |                           |                                                        |                                                          | fieldtype definitions |
 +---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
