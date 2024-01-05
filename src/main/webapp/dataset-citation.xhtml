@@ -33,13 +33,13 @@
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <h:commandLink id="endNoteLink" value="#{bundle['dataset.cite.downloadBtn.xml']}" action="#{DatasetPage.fileDownloadService.downloadDatasetCitationXML(DatasetPage.dataset)}"/>
+                            <h:commandLink id="endNoteLink" value="#{bundle['dataset.cite.downloadBtn.xml']}" action="#{DatasetPage.fileDownloadService.downloadDatasetCitationXML(DatasetPage.workingVersion)}"/>
                         </li>
                         <li>
-                            <h:commandLink id="risLink" value="#{bundle['dataset.cite.downloadBtn.ris']}" action="#{DatasetPage.fileDownloadService.downloadDatasetCitationRIS(DatasetPage.dataset)}"/>
+                            <h:commandLink id="risLink" value="#{bundle['dataset.cite.downloadBtn.ris']}" action="#{DatasetPage.fileDownloadService.downloadDatasetCitationRIS(DatasetPage.workingVersion)}"/>
                         </li>
                         <li>
-                            <h:commandLink id="bibLink" value="#{bundle['dataset.cite.downloadBtn.bib']}" action="#{DatasetPage.fileDownloadService.downloadDatasetCitationBibtex(DatasetPage.dataset)}" target="_blank"/>
+                            <h:commandLink id="bibLink" value="#{bundle['dataset.cite.downloadBtn.bib']}" action="#{DatasetPage.fileDownloadService.downloadDatasetCitationBibtex(DatasetPage.workingVersion)}" target="_blank"/>
                         </li>
                     </ul>
                 </div>
