@@ -41,10 +41,6 @@ import jakarta.persistence.TemporalType;
 @Named
 public class OAIRecordServiceBean implements java.io.Serializable {
     @EJB 
-    OAISetServiceBean oaiSetService;    
-    @EJB 
-    IndexServiceBean indexService;
-    @EJB 
     DatasetServiceBean datasetService;
     @EJB 
     SettingsServiceBean settingsService;
@@ -55,7 +51,23 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     EntityManager em;   
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean");
-        
+    
+    /**
+     * Updates the OAI records for the set specified
+     * @param setName    name of the OAI set
+     * @param datasetIds ids of the datasets that are candidates for this OAI set
+     * @param updateTime time stamp
+     * @param doExport   attempt to export datasets that haven't been exported yet
+     * @param confirmed  true if the datasetIds above were looked up in the database 
+     *                   - as opposed to in the search engine. Meaning, that it is
+     *                   confirmed that any dataset not on this list that's currently 
+     *                   in the set is no longer in the database and should be 
+     *                   marked as deleted without any further checks. Otherwise 
+     *                   we'll want to double-check if the dataset still exists
+     *                   as published. This is to prevent marking existing datasets 
+     *                   as deleted during a full reindex and such.
+     * @param setUpdateLogger dedicated Logger 
+     */
     public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport, boolean confirmed, Logger setUpdateLogger) {
         // create Map of OaiRecords
         List<OAIRecord> oaiRecords = findOaiRecordsBySetName(setName);
