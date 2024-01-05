@@ -29,7 +29,6 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
 
     public static final String PERMA_PROTOCOL = "perma";
     public static final String TYPE = "perma";
-    public static final String PERMA_PROVIDER_NAME = "PERMA";
 
     // ToDo - remove
     @Deprecated
@@ -147,7 +146,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
             //Doesn't match shoulder
             return null;
         }
-        return new GlobalId(PERMA_PROTOCOL, getAuthority(), identifier, separator, getUrlPrefix(), PERMA_PROVIDER_NAME);
+        return new GlobalId(PERMA_PROTOCOL, getAuthority(), identifier, separator, getUrlPrefix(), getName());
     }
 
     @Override
