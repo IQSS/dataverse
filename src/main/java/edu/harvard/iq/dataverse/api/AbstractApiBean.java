@@ -784,7 +784,10 @@ public abstract class AbstractApiBean {
     protected Response forbidden( String msg ) {
         return error( Status.FORBIDDEN, msg );
     }
-    protected Response rateLimited( String msg ) { return error( Status.TOO_MANY_REQUESTS, msg ); }
+
+    protected Response rateLimited( String msg ) {
+        return error( Status.TOO_MANY_REQUESTS, msg );
+    }
 
     protected Response conflict( String msg ) {
         return error( Status.CONFLICT, msg );
