@@ -18,8 +18,8 @@ class PermaLinkProviderFactory implements PidProviderFactory {
                 .lookupOptional(providerName).orElse("randomString");
         String datafilePidFormat = JvmSettings.PID_PROVIDER_DATAFILE_PID_FORMAT.lookupOptional(providerName)
                 .orElse(SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
-        String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookup(providerName);
-        String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookup(providerName);
+        String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookupOptional(providerName).orElse("");
+        String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookupOptional(providerName).orElse("");
 
         String baseUrl = JvmSettings.PERMALINK_BASE_URL.lookupOptional(providerName)
                 .orElse(SystemConfig.getDataverseSiteUrlStatic());

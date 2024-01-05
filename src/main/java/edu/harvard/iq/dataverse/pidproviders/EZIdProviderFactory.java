@@ -18,8 +18,8 @@ class EZIdProviderFactory implements PidProviderFactory {
                 .lookupOptional(providerName).orElse("randomString");
         String datafilePidFormat = JvmSettings.PID_PROVIDER_DATAFILE_PID_FORMAT.lookupOptional(providerName)
                 .orElse(SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
-        String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookup(providerName);
-        String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookup(providerName);
+        String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookupOptional(providerName).orElse("");
+        String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookupOptional(providerName).orElse("");
 
         String baseUrl = JvmSettings.EZID_API_URL.lookup(providerName);
         String username = JvmSettings.EZID_USERNAME.lookup(providerName);
