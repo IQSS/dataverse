@@ -1,0 +1,45 @@
+name: "Shellcheck"
+on:
+    push:
+        branches:
+            - develop
+        paths:
+            - conf/solr/**/.sh
+            - modules/container-base/**/*.sh
+            - modules/container-configbaker/**/*.sh
+    pull_request:
+        branches:
+            - develop
+        paths:
+            - conf/solr/**/*.sh
+            - modules/container-base/**/*.sh
+            - modules/container-configbaker/**/*.sh
+jobs:
+    shellcheck:
+        name: Shellcheck
+        runs-on: ubuntu-latest
+        permissions:
+            pull-requests: write
+        steps:
+            - uses: actions/checkout@v3
+            - name: shellcheck
+              uses: reviewdog/action-shellcheck@v1
+              with:
+                  github_token: ${{ secrets.github_token }}
+                  reporter: github-pr-review # Change reporter.
+                  fail_on_error: true
+                  # Container base image uses dumb-init shebang, so nail to using bash
+                  shellcheck_flags: "--shell=bash --external-sources"
+                  # Exclude old scripts
+                  exclude: |
+                      */.git/*
+                      doc/*
+                      downloads/*
+                      scripts/database/*
+                      scripts/globalid/*
+                      scripts/icons/*
+                      scripts/installer/*
+                      scripts/issues/*
+                      scripts/r/*
+                      scripts/tests/*
+                      tests/*

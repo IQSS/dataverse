@@ -687,7 +687,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         reader.readOpeningTag(TAG_VARIABLE_LABELS);
 
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
-            String variableLabel = reader.readString(DTAVersion == 117? 81: 321);
+            String variableLabel = reader.readUtfString(DTAVersion == 117? 81: 321);
             logger.fine("variable " + i + ": label=" + variableLabel);
             if ((variableLabel != null) && (!variableLabel.equals(""))) {
                 dataTable.getDataVariables().get(i).setLabel(variableLabel);
@@ -1213,7 +1213,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 }
                 label_length = (int)(label_end - label_offset);
 
-                category_value_labels[i] = new String(Arrays.copyOfRange(labelBytes, (int)label_offset, (int)label_end-1), "US-ASCII");
+                category_value_labels[i] = new String(Arrays.copyOfRange(labelBytes, (int)label_offset, (int)label_end-1), "UTF8");
                 total_label_bytes += label_length;
             }
 

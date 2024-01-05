@@ -95,6 +95,11 @@ Each of the three main sections own sets of properties:
 | displayName    | Acts as a brief label for display related to this       | Should be relatively brief. The limit is 256 character, |
 |                | #metadataBlock.                                         | but very long names might cause display problems.       |
 +----------------+---------------------------------------------------------+---------------------------------------------------------+
+| displayFacet   | Label displayed in the search area when this            | Should be brief. Long names will cause display problems |
+|                | #metadataBlock is configured as a search facet          | in the search area.                                     |
+|                | for a collection. See                                   |                                                         |
+|                | :ref:`the API <metadata-block-facet-api>`.              |                                                         |
++----------------+---------------------------------------------------------+---------------------------------------------------------+
 | blockURI       | Associates the properties in a block with an external   | The citation #metadataBlock has the blockURI            |
 |                | URI.                                                    | https://dataverse.org/schema/citation/ which assigns a  |
 |                | Properties will be assigned the                         | default global URI to terms such as                     |
@@ -386,12 +391,16 @@ Metadata Block Setup
 
 Now that you understand the TSV format used for metadata blocks, the next step is to attempt to make improvements to existing metadata blocks or create entirely new metadata blocks. For either task, you should have a Dataverse Software development environment set up for testing where you can drop the database frequently while you make edits to TSV files. Once you have tested your TSV files, you should consider making a pull request to contribute your improvement back to the community.
 
+.. _exploring-metadata-blocks:
+
 Exploring Metadata Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In addition to studying the TSV files themselves you might find the following highly experimental and subject-to-change API endpoints useful to understand the metadata blocks that have already been loaded into your Dataverse installation:
+In addition to studying the TSV files themselves you will probably find the :ref:`metadata-blocks-api` API helpful in getting a structured dump of metadata blocks in JSON format.
 
-You can get a dump of metadata fields (yes, the output is odd, please open a issue) like this:
+There are also a few older, highly experimental, and subject-to-change API endpoints under the "admin" API documented below but the public API above is preferred.
+
+You can get a dump of metadata fields like this:
 
 ``curl http://localhost:8080/api/admin/datasetfield``
 
@@ -404,12 +413,9 @@ Setting Up a Dev Environment for Testing
 
 You have several options for setting up a dev environment for testing metadata block changes:
 
-- Vagrant: See the :doc:`/developers/tools` section of the Developer Guide.
-- docker-aio: See https://github.com/IQSS/dataverse/tree/develop/conf/docker-aio
+- Docker: See :doc:`/container/index`.
 - AWS deployment: See the :doc:`/developers/deployment` section of the Developer Guide.
 - Full dev environment: See the :doc:`/developers/dev-environment` section of the Developer Guide.
-
-To get a clean environment in Vagrant, you'll be running ``vagrant destroy``. In Docker, you'll use ``docker rm``. For a full dev environment or AWS installation, you might find ``rebuild`` and related scripts at ``scripts/deploy/phoenix.dataverse.org`` useful.
 
 Editing TSV files
 ~~~~~~~~~~~~~~~~~
@@ -448,11 +454,15 @@ metadatablock.name=(the value of **name** property from #metadatablock)
 
 metadatablock.displayName=(the value of **displayName** property from #metadatablock)
 
+metadatablock.displayFacet=(the value of **displayFacet** property from #metadatablock)
+
 example:
 
 metadatablock.name=citation
 
 metadatablock.displayName=Citation Metadata
+
+metadatablock.displayFacet=Citation
 
 #datasetField (field) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -490,6 +500,8 @@ Running a curl command like "load" example above should make the new custom meta
 
 ``curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
 
+.. _update-solr-schema:
+
 Updating the Solr Schema
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -501,7 +513,7 @@ the Solr schema configuration, including any enabled metadata schemas:
 
 ``curl "http://localhost:8080/api/admin/index/solr/schema"``
 
-You can use :download:`update-fields.sh <../../../../conf/solr/8.11.1/update-fields.sh>` to easily add these to the
+You can use :download:`update-fields.sh <../../../../conf/solr/9.3.0/update-fields.sh>` to easily add these to the
 Solr schema you installed for your Dataverse installation.
 
 The script needs a target XML file containing your Solr schema. (See the :doc:`/installation/prerequisites/` section of
@@ -525,7 +537,7 @@ from some place else than your Dataverse installation).
 Please note that reconfigurations of your Solr index might require a re-index. Usually release notes indicate
 a necessary re-index, but for your custom metadata you will need to keep track on your own.
 
-Please note also that if you are going to make a pull request updating ``conf/solr/8.11.1/schema.xml`` with fields you have
+Please note also that if you are going to make a pull request updating ``conf/solr/9.3.0/schema.xml`` with fields you have
 added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you
 don't care about) to create a complete list of fields. (This might change in the future.)
 
@@ -572,6 +584,58 @@ These are all defined in the :ref:`:CVocConf <:CVocConf>` setting as a JSON arra
 The scripts required can be hosted locally or retrieved dynamically from https://gdcc.github.io/ (similar to how dataverse-previewers work).
 
 Please note that in addition to the :ref:`:CVocConf` described above, an alternative is the :ref:`:ControlledVocabularyCustomJavaScript` setting.
+
+Protecting MetadataBlocks
+-------------------------
+
+Dataverse can be configured to only allow entries for a metadata block to be changed (created, edited, deleted) by entities that know a defined secret key. 
+Metadata blocks protected by such a key are referred to as "System" metadata blocks. 
+A primary use case for system metadata blocks is to handle metadata created by third-party tools interacting with Dataverse where unintended changes to the metadata could cause a failure. Examples might include archiving systems or workflow engines.
+To protect an existing metadatablock, one must set a key (recommended to be long and un-guessable) for that block:
+
+dataverse.metadata.block-system-metadata-keys.<block name>=<key value>
+
+This can be done using system properties (see :ref:`jvm-options`), environment variables or other MicroProfile Config mechanisms supported by the app server.
+   `See Payara docs for supported sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html#config-sources>`_. Note that a Payara restart may be required to enable the new option.
+
+For these secret keys, Payara password aliases are recommended.
+
+   Alias creation example using the codemeta metadata block (actual name: codeMeta20):
+
+   .. code-block:: shell
+
+      echo "AS_ADMIN_ALIASPASSWORD=1234ChangeMeToSomethingLong" > /tmp/key.txt
+      asadmin create-password-alias --passwordfile /tmp/key.txt dataverse.metadata.block-system-metadata-keys.codeMeta20
+      rm /tmp/key.txt
+      
+   Alias deletion example for the codemeta metadata block (removes protected status)
+   
+   .. code-block:: shell
+
+      asadmin delete-password-alias dataverse.metadata.block-system-metadata-keys.codeMeta20
+
+A Payara restart is required after these example commands.
+
+When protected via a key, a metadata block will not be shown in the user interface when a dataset is being created or when metadata is being edited. Entries in such a system metadata block will be shown to users, consistent with Dataverse's design in which all metadata in published datasets is publicly visible.
+
+Note that protecting a block with required fields, or using a template with an entry in a protected block, will make it impossible to create a new dataset via the user interface. Also note that for this reason protecting the citation metadatablock is not recommended. (Creating a dataset also automatically sets the date of deposit field in the citation block, which would be prohibited if the citation block is protected.) 
+
+To remove proted status and return a block to working normally, remove the associated key.
+
+To add metadata to a system metadata block via API, one must include an additional key of the form 
+
+mdkey.<blockName>=<key value>
+
+as an HTTP Header or query parameter (case sensitive) for each system metadata block to any API call in which metadata values are changed in that block. Multiple keys are allowed if more than one system metadatablock is being changed in a given API call.
+
+For example, following the :ref:`Add Dataset Metadata <add-semantic-metadata>` example from the :doc:`/developers/dataset-semantic-metadata-api`:
+
+.. code-block:: bash
+
+  curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -H 'mdkey.codeMeta20:1234ChangeMeToSomethingLong' -d '{"codeVersion": "1.0.0", "@context":{"codeVersion": "https://schema.org/softwareVersion"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata"
+  
+  curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -d '{"codeVersion": "1.0.1", "@context":{"codeVersion": "https://schema.org/softwareVersion"}}' "$SERVER_URL/api/datasets/$DATASET_ID/metadata?mdkey.codeMeta20=1234ChangeMeToSomethingLong&replace=true"
+    
 
 Tips from the Dataverse Community
 ---------------------------------

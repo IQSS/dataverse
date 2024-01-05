@@ -146,6 +146,8 @@ Microsoft Azure AD, GitHub, and Google Log In
 
 You can also convert your Dataverse installation account to use authentication provided by GitHub, Microsoft, or Google. These options may be found in the "Other options" section of the log in page, and function similarly to how ORCID is outlined above. If you would like to convert your account away from using one of these services for log in, then you can follow the same steps as listed above for converting away from the ORCID log in.
 
+.. _my-data:
+
 My Data
 -------
 

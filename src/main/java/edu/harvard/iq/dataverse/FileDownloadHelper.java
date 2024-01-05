@@ -18,10 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.primefaces.PrimeFaces;
 //import org.primefaces.context.RequestContext;
 
@@ -324,13 +324,12 @@ public class FileDownloadHelper implements java.io.Serializable {
      private boolean processRequestAccess(DataFile file, Boolean sendNotification) {
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
-             if(file.getFileAccessRequesters() == null){
-                 file.setFileAccessRequesters(new ArrayList());
-             }
-             file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
+             AuthenticatedUser user = (AuthenticatedUser) session.getUser();
+             file.addFileAccessRequester(user);
+
              // create notification if necessary
              if (sendNotification) {
-                 fileDownloadService.sendRequestFileAccessNotification(file, (AuthenticatedUser) session.getUser());
+                 fileDownloadService.sendRequestFileAccessNotification(file, user);
              }           
              JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
              return true;

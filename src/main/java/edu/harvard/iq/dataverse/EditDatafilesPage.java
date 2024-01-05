@@ -5,7 +5,9 @@ import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
@@ -31,11 +33,13 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.WebloaderUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
@@ -53,23 +57,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ActionEvent;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonArray;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonReader;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -77,10 +81,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.event.FacesEvent;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.faces.event.AjaxBehaviorEvent;
+import jakarta.faces.event.FacesEvent;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.primefaces.PrimeFaces;
@@ -539,7 +543,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
 
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
 
         //TODO: review if we we need this check; 
         // as getEditVersion should either return the exisiting draft or create a new one      
@@ -586,8 +590,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                                                 datafileService,
                                                 permissionService,
                                                 commandEngine,
-                                                systemConfig,
-                                                licenseServiceBean);
+                                                systemConfig);
                         
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
                     dataset,
@@ -890,7 +893,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // ToDo - FileMetadataUtil.removeFileMetadataFromList should handle these two
                 // removes so they could be put after this if clause and the else clause could
                 // be removed.
-                dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                dataset.getOrCreateEditVersion().getFileMetadatas().remove(markedForDelete);
                 fileMetadatas.remove(markedForDelete);
 
                 filesToBeDeleted.add(markedForDelete);
@@ -907,7 +910,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // 1. delete the filemetadata from the local display list: 
                 FileMetadataUtil.removeFileMetadataFromList(fileMetadatas, markedForDelete);
                 // 2. delete the filemetadata from the version: 
-                FileMetadataUtil.removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
+                FileMetadataUtil.removeFileMetadataFromList(dataset.getOrCreateEditVersion().getFileMetadatas(), markedForDelete);
             }
 
             if (markedForDelete.getDataFile().getId() == null) {
@@ -1201,7 +1204,7 @@ public class EditDatafilesPage implements java.io.Serializable {
              */
         }
 
-        workingVersion = dataset.getEditVersion();
+        workingVersion = dataset.getOrCreateEditVersion();
         logger.fine("working version id: " + workingVersion.getId());
 
         if (FileEditMode.EDIT == mode && Referrer.FILE == referrer) {
@@ -2425,10 +2428,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             return false;
         }
 
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
-            filesRootDirectory = "/tmp/files";
-        }
+        // Retrieve via MPCONFIG. Has sane default /tmp/dataverse from META-INF/microprofile-config.properties
+        String filesRootDirectory = JvmSettings.FILES_DIRECTORY.lookup();
 
         String fileSystemName = filesRootDirectory + "/temp/" + fileSystemId;
 
@@ -3067,6 +3068,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         return settingsWrapper.isGlobusUpload()
                 && settingsWrapper.isGlobusEnabledStorageDriver(dataset.getEffectiveStorageDriverId());
     }
+    
+    public boolean webloaderUploadSupported() {
+        return settingsWrapper.isWebloaderUpload() && StorageIO.isDirectUploadEnabled(dataset.getEffectiveStorageDriverId());
+    }
 
     private void populateFileMetadatas() {
         fileMetadatas = new ArrayList<>();
@@ -3105,5 +3110,19 @@ public class EditDatafilesPage implements java.io.Serializable {
     //Determines whether this Dataset uses a public store and therefore doesn't support embargoed or restricted files
     public boolean isHasPublicStore() {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(dataset.getEffectiveStorageDriverId()));
+    }
+    
+    public String getWebloaderUrlForDataset(Dataset d) {
+        String localeCode = session.getLocaleCode();
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            ApiToken apiToken = authService.getValidApiTokenForUser((AuthenticatedUser) user);
+            return WebloaderUtil.getWebloaderUrl(d, apiToken, localeCode,
+                    settingsService.getValueForKey(SettingsServiceBean.Key.WebloaderUrl));
+        } else {
+            // Shouldn't normally happen (seesion timeout? bug?)
+            logger.warning("getWebloaderUrlForDataset called for non-Authenticated user");
+            return null;
+        }
     }
 }

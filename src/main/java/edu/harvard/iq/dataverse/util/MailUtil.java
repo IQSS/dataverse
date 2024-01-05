@@ -8,8 +8,8 @@ import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.SystemEm
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 
 public class MailUtil {
 
@@ -34,8 +34,12 @@ public class MailUtil {
         List<String> rootDvNameAsList = Arrays.asList(BrandingUtil.getInstallationBrandName());
         String datasetDisplayName = "";
 
-        if (objectOfNotification != null && (objectOfNotification instanceof Dataset)  ) {
-            datasetDisplayName = ((Dataset)objectOfNotification).getDisplayName();
+        if (objectOfNotification != null) {
+            if (objectOfNotification instanceof Dataset) {
+                datasetDisplayName = ((Dataset) objectOfNotification).getDisplayName();
+            } else if (objectOfNotification instanceof DatasetVersion) {
+                datasetDisplayName = ((DatasetVersion) objectOfNotification).getDataset().getDisplayName();
+            }
         }
 
         switch (userNotification.getType()) {

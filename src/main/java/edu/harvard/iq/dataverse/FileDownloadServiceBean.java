@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.Ma
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
@@ -29,16 +28,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.primefaces.PrimeFaces;
 //import org.primefaces.context.RequestContext;
@@ -299,7 +298,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         ApiToken apiToken = null;
         User user = session.getUser();
         DatasetVersion version = fmd.getDatasetVersion();
-        if (version.isDraft() || (fmd.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fmd))) {
+        if (version.isDraft() || fmd.getDatasetVersion().isDeaccessioned() || (fmd.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fmd))) {
             apiToken = getApiToken(user);
         }
         DataFile dataFile = null;
@@ -349,6 +348,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         downloadCitationXML(null, dataset, false);
     }
 
+    public void downloadDatasetCitationXML(DatasetVersion version) {
+        // DatasetVersion-level citation: 
+        DataCitation citation=null;
+        citation = new DataCitation(version);
+
+        String fileNameString;
+        fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + ".xml";
+        downloadXML(citation, fileNameString);
+    }
+
     public void downloadDatafileCitationXML(FileMetadata fileMetadata) {
         downloadCitationXML(fileMetadata, null, false);
     }
@@ -364,9 +373,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else {
             citation= new DataCitation(fileMetadata, direct);
         }
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        response.setContentType("text/xml");
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
@@ -375,14 +381,21 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             // Datafile-level citation:
             fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.ENDNOTE);
         }
+        downloadXML(citation, fileNameString);
+    }
+
+    public void downloadXML(DataCitation citation, String fileNameString) {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("text/xml");
         response.setHeader("Content-Disposition", fileNameString);
+
         try {
             ServletOutputStream out = response.getOutputStream();
             citation.writeAsEndNoteCitation(out);
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
-
         }
     }
     
@@ -390,6 +403,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         downloadCitationRIS(null, dataset, false);
 
+    }
+
+    public void downloadDatasetCitationRIS(DatasetVersion version) {
+        // DatasetVersion-level citation: 
+        DataCitation citation=null;
+        citation = new DataCitation(version);
+
+        String fileNameString;
+        fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + ".ris";
+        downloadRIS(citation, fileNameString);
     }
 
     public void downloadDatafileCitationRIS(FileMetadata fileMetadata) {
@@ -408,10 +431,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             citation= new DataCitation(fileMetadata, direct);
         }
 
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        response.setContentType("application/download");
-
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
@@ -420,6 +439,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             // Datafile-level citation:
             fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.RIS);
         }
+        downloadRIS(citation, fileNameString);
+    }
+    
+    public void downloadRIS(DataCitation citation, String fileNameString) {
+        //SEK 12/3/2018 changing this to open the json in a new tab. 
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("application/download");
         response.setHeader("Content-Disposition", fileNameString);
 
         try {
@@ -442,6 +469,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     }
 
+    public void downloadDatasetCitationBibtex(DatasetVersion version) {
+        // DatasetVersion-level citation: 
+        DataCitation citation=null;
+        citation = new DataCitation(version);
+
+        String fileNameString;
+        fileNameString = "inline;filename=" + getFileNameFromPid(citation.getPersistentId()) + ".bib";
+        downloadBibtex(citation, fileNameString);
+    }
+
     public void downloadDatafileCitationBibtex(FileMetadata fileMetadata) {
         downloadCitationBibtex(fileMetadata, null, false);
     }
@@ -457,12 +494,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } else {
             citation= new DataCitation(fileMetadata, direct);
         }
-        //SEK 12/3/2018 changing this to open the json in a new tab. 
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        
-        //Fix for 6029 FireFox was failing to parse it when content type was set to json 
-        response.setContentType("text/plain;charset=utf-8");
         
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
@@ -472,6 +503,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             // Datafile-level citation:
             fileNameString = "inline;filename=" + getFileNameFromPid(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.BIBTEX);
         }
+        downloadBibtex(citation, fileNameString);
+    }
+
+    public void downloadBibtex(DataCitation citation, String fileNameString) {
+        //SEK 12/3/2018 changing this to open the json in a new tab. 
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        
+        //Fix for 6029 FireFox was failing to parse it when content type was set to json 
+        response.setContentType("text/plain");
         response.setHeader("Content-Disposition", fileNameString);
 
         try {
@@ -489,7 +530,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             return false;
         }
         DataFile file = datafileService.find(fileId);
-        if (!file.getFileAccessRequesters().contains((AuthenticatedUser)session.getUser())) {
+        if (!file.containsFileAccessRequestFromUser(session.getUser())) {
             try {
                 commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));                        
                 return true;
