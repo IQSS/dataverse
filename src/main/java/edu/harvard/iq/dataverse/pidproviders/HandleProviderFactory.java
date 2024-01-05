@@ -6,28 +6,28 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 class HandleProviderFactory implements PidProviderFactory {
 
     @Override
-    public PidProvider createPidProvider(String providerName) {
-        String providerType = JvmSettings.PID_PROVIDER_TYPE.lookup(providerName);
+    public PidProvider createPidProvider(String providerId) {
+        String providerType = JvmSettings.PID_PROVIDER_TYPE.lookup(providerId);
         if (!providerType.equals(HandlePidProvider.TYPE)) {
             // Being asked to create a non-EZId provider
             return null;
         }
-        String providerAuthority = JvmSettings.PID_PROVIDER_AUTHORITY.lookup(providerName);
-        String providerShoulder = JvmSettings.PID_PROVIDER_SHOULDER.lookupOptional(providerName).orElse("");
+        String providerAuthority = JvmSettings.PID_PROVIDER_AUTHORITY.lookup(providerId);
+        String providerShoulder = JvmSettings.PID_PROVIDER_SHOULDER.lookupOptional(providerId).orElse("");
         String identifierGenerationStyle = JvmSettings.PID_PROVIDER_IDENTIFIER_GENERATION_STYLE
-                .lookupOptional(providerName).orElse("randomString");
-        String datafilePidFormat = JvmSettings.PID_PROVIDER_DATAFILE_PID_FORMAT.lookupOptional(providerName)
+                .lookupOptional(providerId).orElse("randomString");
+        String datafilePidFormat = JvmSettings.PID_PROVIDER_DATAFILE_PID_FORMAT.lookupOptional(providerId)
                 .orElse(SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
-        String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookupOptional(providerName).orElse("");
-        String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookupOptional(providerName).orElse("");
+        String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookupOptional(providerId).orElse("");
+        String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookupOptional(providerId).orElse("");
 
-        int index = JvmSettings.HANDLENET_INDEX.lookup(Integer.class, providerName);
+        int index = JvmSettings.HANDLENET_INDEX.lookup(Integer.class, providerId);
         boolean independentHandleService = JvmSettings.HANDLENET_INDEPENDENT_SERVICE
-                .lookupOptional(Boolean.class, providerName).orElse(false);
-        String handleAuthHandle = JvmSettings.HANDLENET_AUTH_HANDLE.lookup(providerName);
-        String path = JvmSettings.HANDLENET_KEY_PATH.lookup(providerName);
-        String passphrase = JvmSettings.HANDLENET_KEY_PASSPHRASE.lookup(providerName);
-        return new HandlePidProvider(providerName, providerAuthority, providerShoulder, identifierGenerationStyle,
+                .lookupOptional(Boolean.class, providerId).orElse(false);
+        String handleAuthHandle = JvmSettings.HANDLENET_AUTH_HANDLE.lookup(providerId);
+        String path = JvmSettings.HANDLENET_KEY_PATH.lookup(providerId);
+        String passphrase = JvmSettings.HANDLENET_KEY_PASSPHRASE.lookup(providerId);
+        return new HandlePidProvider(providerId, providerAuthority, providerShoulder, identifierGenerationStyle,
                 datafilePidFormat, managedList, excludedList, index, independentHandleService, handleAuthHandle, path,
                 passphrase);
     }

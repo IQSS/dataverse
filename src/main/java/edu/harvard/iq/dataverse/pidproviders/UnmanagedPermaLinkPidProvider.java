@@ -18,10 +18,10 @@ import org.apache.commons.lang3.NotImplementedException;
 public class UnmanagedPermaLinkPidProvider extends AbstractPidProvider {
 
     private static final Logger logger = Logger.getLogger(UnmanagedPermaLinkPidProvider.class.getCanonicalName());
-    private static final String NAME = "UnmanagedPermaLinkProvider";
+    private static final String ID = "UnmanagedPermaLinkProvider";
     
     public UnmanagedPermaLinkPidProvider() {
-        super(NAME, PermaLinkPidProvider.PERMA_PROTOCOL);
+        super(ID, PermaLinkPidProvider.PERMA_PROTOCOL);
         logger.log(Level.FINE, "Constructor");
     }
 

@@ -16,10 +16,10 @@ import edu.harvard.iq.dataverse.GlobalId;
 
 public class UnmanagedDOIProvider extends DOIProvider {
 
-    private static final String NAME = "UnmanagedDOIProvider";
+    private static final String ID = "UnmanagedDOIProvider";
 
     public UnmanagedDOIProvider() {
-        super(NAME);
+        super(ID);
     }
 
     @Override
@@ -73,8 +73,8 @@ public class UnmanagedDOIProvider extends DOIProvider {
     }
 
     @Override
-    public String getName() {
-        return NAME;
+    public String getId() {
+        return ID;
     }
 
     // PID recognition

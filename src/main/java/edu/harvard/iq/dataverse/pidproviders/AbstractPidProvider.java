@@ -43,18 +43,18 @@ public abstract class AbstractPidProvider implements PidProvider {
 
     private HashSet<String> excludedSet;
 
-    private String name;
+    private String id;
     
-    AbstractPidProvider(String name, String protocol)
+    AbstractPidProvider(String id, String protocol)
     {
-        this.name = name;
+        this.id = id;
         this.protocol = protocol;
         this.managedSet = new HashSet<String>(); 
         this.excludedSet = new HashSet<String>();
     }
     
-    AbstractPidProvider(String name, String protocol, String authority, String shoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
-        this.name = name;
+    AbstractPidProvider(String id, String protocol, String authority, String shoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
+        this.id = id;
         this.protocol = protocol;
         this.authority = authority;
         this.shoulder = shoulder;
@@ -768,7 +768,7 @@ public abstract class AbstractPidProvider implements PidProvider {
     }
 
     @Override
-    public String getName() {
-        return name;
+    public String getId() {
+        return id;
     }
 }

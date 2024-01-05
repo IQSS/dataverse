@@ -68,7 +68,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
 
     @Override
     public List<String> getProviderInformation() {
-        return List.of(getName(), getBaseUrl());
+        return List.of(getId(), getBaseUrl());
     }
 
     @Override
@@ -146,7 +146,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
             //Doesn't match shoulder
             return null;
         }
-        return new GlobalId(PERMA_PROTOCOL, getAuthority(), identifier, separator, getUrlPrefix(), getName());
+        return new GlobalId(PERMA_PROTOCOL, getAuthority(), identifier, separator, getUrlPrefix(), getId());
     }
 
     @Override

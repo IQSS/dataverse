@@ -120,7 +120,7 @@ public class PidUtil {
     static Map<String, PidProvider> unmanagedProviderMap = new HashMap<String, PidProvider>();
 
     public static void addToProviderList(PidProvider pidProvider) {
-        providerMap.put(pidProvider.getName(), pidProvider);
+        providerMap.put(pidProvider.getId(), pidProvider);
     }
 
     public static void addAllToUnmanagedProviderList(List<PidProvider> list) {
@@ -222,12 +222,12 @@ public class PidUtil {
 
     public static PidProvider getPidProvider(String name) {
         for (PidProvider pidProvider : providerMap.values()) {
-            if (name.equals(pidProvider.getName())) {
+            if (name.equals(pidProvider.getId())) {
                 return pidProvider;
             }
         }
         for (PidProvider pidProvider : unmanagedProviderMap.values()) {
-            if (name.equals(pidProvider.getName())) {
+            if (name.equals(pidProvider.getId())) {
                 return pidProvider;
             }
         }

@@ -271,12 +271,6 @@ public class DataCiteDOIProvider extends DOIProvider {
         return null;
     }
 
-    @Override
-    public String getName() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     public String getMdsUrl() {
         return mdsUrl;
     }

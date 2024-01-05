@@ -6,27 +6,27 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 class PermaLinkProviderFactory implements PidProviderFactory {
 
     @Override
-    public PidProvider createPidProvider(String providerName) {
-        String providerType = JvmSettings.PID_PROVIDER_TYPE.lookup(providerName);
+    public PidProvider createPidProvider(String providerId) {
+        String providerType = JvmSettings.PID_PROVIDER_TYPE.lookup(providerId);
         if (!providerType.equals(PermaLinkPidProvider.TYPE)) {
             // Being asked to create a non-EZId provider
             return null;
         }
-        String providerAuthority = JvmSettings.PID_PROVIDER_AUTHORITY.lookup(providerName);
-        String providerShoulder = JvmSettings.PID_PROVIDER_SHOULDER.lookupOptional(providerName).orElse("");
+        String providerAuthority = JvmSettings.PID_PROVIDER_AUTHORITY.lookup(providerId);
+        String providerShoulder = JvmSettings.PID_PROVIDER_SHOULDER.lookupOptional(providerId).orElse("");
         String identifierGenerationStyle = JvmSettings.PID_PROVIDER_IDENTIFIER_GENERATION_STYLE
-                .lookupOptional(providerName).orElse("randomString");
-        String datafilePidFormat = JvmSettings.PID_PROVIDER_DATAFILE_PID_FORMAT.lookupOptional(providerName)
+                .lookupOptional(providerId).orElse("randomString");
+        String datafilePidFormat = JvmSettings.PID_PROVIDER_DATAFILE_PID_FORMAT.lookupOptional(providerId)
                 .orElse(SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
-        String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookupOptional(providerName).orElse("");
-        String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookupOptional(providerName).orElse("");
+        String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookupOptional(providerId).orElse("");
+        String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookupOptional(providerId).orElse("");
 
-        String baseUrl = JvmSettings.PERMALINK_BASE_URL.lookupOptional(providerName)
+        String baseUrl = JvmSettings.PERMALINK_BASE_URL.lookupOptional(providerId)
                 .orElse(SystemConfig.getDataverseSiteUrlStatic());
         ;
-        String separator = JvmSettings.PERMALINK_SEPARATOR.lookupOptional(providerName).orElse("");
+        String separator = JvmSettings.PERMALINK_SEPARATOR.lookupOptional(providerId).orElse("");
 
-        return new PermaLinkPidProvider(providerName, providerAuthority, providerShoulder, identifierGenerationStyle,
+        return new PermaLinkPidProvider(providerId, providerAuthority, providerShoulder, identifierGenerationStyle,
                 datafilePidFormat, managedList, excludedList, baseUrl, separator);
     }
 

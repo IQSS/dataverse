@@ -19,10 +19,10 @@ import org.apache.commons.lang3.NotImplementedException;
 public class UnmanagedHandlePidProvider extends AbstractPidProvider {
 
     private static final Logger logger = Logger.getLogger(UnmanagedHandlePidProvider.class.getCanonicalName());
-    private static final String NAME = "UnmanagedHandleProvider";
+    private static final String ID = "UnmanagedHandleProvider";
 
     public UnmanagedHandlePidProvider() {
-        super(NAME, HandlePidProvider.HDL_PROTOCOL);
+        super(ID, HandlePidProvider.HDL_PROTOCOL);
         logger.log(Level.FINE, "Constructor");
 
     }
@@ -111,7 +111,7 @@ public class UnmanagedHandlePidProvider extends AbstractPidProvider {
     }
 
     @Override
-    public String getName() {
-        return NAME;
+    public String getId() {
+        return ID;
     }
 }

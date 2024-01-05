@@ -289,7 +289,7 @@ public class EZIdDOIProvider extends DOIProvider {
     }
 
     @Override
-    public String getName() {
+    public String getId() {
         // TODO Auto-generated method stub
         return null;
     }

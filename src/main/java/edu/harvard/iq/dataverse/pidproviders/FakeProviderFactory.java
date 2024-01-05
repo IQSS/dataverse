@@ -6,22 +6,22 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 class FakeProviderFactory implements PidProviderFactory {
 
     @Override
-    public PidProvider createPidProvider(String providerName) {
-        String providerType = JvmSettings.PID_PROVIDER_TYPE.lookup(providerName);
+    public PidProvider createPidProvider(String providerId) {
+        String providerType = JvmSettings.PID_PROVIDER_TYPE.lookup(providerId);
         if (!providerType.equals(FakeDOIProvider.TYPE)) {
             // Being asked to create a non-EZId provider
             return null;
         }
-        String providerAuthority = JvmSettings.PID_PROVIDER_AUTHORITY.lookup(providerName);
-        String providerShoulder = JvmSettings.PID_PROVIDER_SHOULDER.lookupOptional(providerName).orElse("");
+        String providerAuthority = JvmSettings.PID_PROVIDER_AUTHORITY.lookup(providerId);
+        String providerShoulder = JvmSettings.PID_PROVIDER_SHOULDER.lookupOptional(providerId).orElse("");
         String identifierGenerationStyle = JvmSettings.PID_PROVIDER_IDENTIFIER_GENERATION_STYLE
-                .lookupOptional(providerName).orElse("randomString");
-        String datafilePidFormat = JvmSettings.PID_PROVIDER_DATAFILE_PID_FORMAT.lookupOptional(providerName)
+                .lookupOptional(providerId).orElse("randomString");
+        String datafilePidFormat = JvmSettings.PID_PROVIDER_DATAFILE_PID_FORMAT.lookupOptional(providerId)
                 .orElse(SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
-        String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookup(providerName);
-        String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookup(providerName);
+        String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookup(providerId);
+        String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookup(providerId);
 
-        return new FakeDOIProvider(providerName, providerAuthority, providerShoulder, identifierGenerationStyle,
+        return new FakeDOIProvider(providerId, providerAuthority, providerShoulder, identifierGenerationStyle,
                 datafilePidFormat, managedList, excludedList);
     }
 

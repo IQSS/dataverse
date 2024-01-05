@@ -69,7 +69,7 @@ public interface PidProvider {
     
     String getProtocol();
     String getProviderType();
-    String getName();
+    String getId();
     String getAuthority();
     String getShoulder();
     String getIdentifierGenerationStyle();
