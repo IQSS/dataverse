@@ -3,29 +3,23 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
 import edu.harvard.iq.dataverse.FileSearchCriteria;
 import io.restassured.RestAssured;
-
 import static edu.harvard.iq.dataverse.DatasetVersion.ARCHIVE_NOTE_MAX_LENGTH;
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static io.restassured.RestAssured.given;
-
 import io.restassured.path.json.JsonPath;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.jupiter.api.Disabled;
-
 import jakarta.json.JsonObject;
-
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
@@ -35,29 +29,20 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static jakarta.ws.rs.core.Response.Status.CONFLICT;
 import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
-
 import edu.harvard.iq.dataverse.DataFile;
-
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
-
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIOTest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import io.restassured.parsing.Parser;
-
 import static io.restassured.path.json.JsonPath.with;
-
 import io.restassured.path.xml.XmlPath;
-
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
-
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
@@ -66,7 +51,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,7 +58,6 @@ import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
-
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObjectBuilder;
@@ -82,31 +65,20 @@ import jakarta.ws.rs.core.Response.Status;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
 import static java.lang.Thread.sleep;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.hamcrest.CoreMatchers;
-
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.contains;
-
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DatasetsIT {
 
     private static final Logger logger = Logger.getLogger(DatasetsIT.class.getCanonicalName());
     
-    
-
     @BeforeAll
     public static void setUpClass() {
         
@@ -138,7 +110,7 @@ public class DatasetsIT {
                 .statusCode(200);
          */
     }
-    
+
 
     @AfterAll
     public static void afterClass() {
@@ -667,17 +639,25 @@ public class DatasetsIT {
         Response unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
         unpublishedDraft.prettyPrint();
         unpublishedDraft.then().assertThat()
-                .body("data.files.size()", equalTo(1))
                 .statusCode(OK.getStatusCode());
         
         // Now check that the file is NOT shown, when we ask the versions api to 
         // skip files: 
-        boolean skipFiles = true; 
-        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, skipFiles, false);
+        boolean excludeFiles = true; 
+        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, excludeFiles, false);
         unpublishedDraft.prettyPrint();
         unpublishedDraft.then().assertThat()
-                .body("data.files", equalTo(null))
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data.files", equalTo(null));
+
+        excludeFiles = false; 
+        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, excludeFiles, false);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files.size()", equalTo(1));
+
+        
 
         // Publish collection and dataset
         UtilIT.publishDataverseViaNativeApi(collectionAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
@@ -722,11 +702,83 @@ public class DatasetsIT {
                 .body("data.size()", equalTo(1));
         
         // And now call the "short", no-files version of the same api
-        versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms, skipFiles);
+        excludeFiles = true;
+        versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms, excludeFiles);
         versionsResponse.prettyPrint();
         versionsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].files", equalTo(null));
+
+
+        
+        //Set of tests on non-deaccesioned dataset
+                
+        boolean includeDeaccessioned = true;
+        excludeFiles = true;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+        
+        excludeFiles = false;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));
+        
+        includeDeaccessioned = false;
+        excludeFiles = true;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+
+        excludeFiles = false;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));
+
+        
+        //We deaccession the dataset
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        //Set of tests on deaccesioned dataset, only 3/9 should return OK message
+
+        includeDeaccessioned = true;
+        excludeFiles = true;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+        excludeFiles = false;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(404);
+        
+        includeDeaccessioned = false;
+        excludeFiles = true;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(404);
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(404);
+        excludeFiles = false;
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(404);
+        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
+            then().assertThat().statusCode(404);
+
+      
+
+
+
+
+        
+        
+
+        
     }
 
     
@@ -4180,7 +4232,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response getUserPermissionsOnDatasetInvalidIdResponse = UtilIT.getUserPermissionsOnDataset("testInvalidId", apiToken);
         getUserPermissionsOnDatasetInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
-    
+
     //Requires that a Globus remote store be set up as with the parameters in the GlobusOverlayAccessIOTest class
     //Tests whether the API call succeeds and has some of the expected parameters
     @Test
@@ -4201,13 +4253,13 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-        
+
         Response makeSuperUser = UtilIT.makeSuperUser(username);
         assertEquals(200, makeSuperUser.getStatusCode());
-        
+
         Response setDriver = UtilIT.setDatasetStorageDriver(datasetId, System.getProperty("dataverse.files.globusr.label"), apiToken);
         assertEquals(200, setDriver.getStatusCode());
-        
+
         Response getUploadParams = UtilIT.getDatasetGlobusUploadParameters(datasetId, "en_us", apiToken);
         assertEquals(200, getUploadParams.getStatusCode());
         JsonObject data = JsonUtil.getJsonObject(getUploadParams.getBody().asString());
@@ -4228,5 +4280,118 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertTrue(found);
         //Removes managed and remote Globus stores
         GlobusOverlayAccessIOTest.tearDown();
+    }
+
+    @Test
+    public void testGetCanDownloadAtLeastOneFile() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPersistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        // Upload file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String fileId = JsonPath.from(uploadResponse.body().asString()).getString("data.files[0].dataFile.id");
+
+        // Publish dataset version
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Create a second user to call the getCanDownloadAtLeastOneFile method
+        Response createSecondUserResponse = UtilIT.createRandomUser();
+        createSecondUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String secondUserApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+        String secondUserUsername = UtilIT.getUsernameFromResponse(createSecondUserResponse);
+
+        // Call when a file is released
+        Response canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, secondUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        boolean canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertTrue(canDownloadAtLeastOneFile);
+
+        // Restrict file
+        Response restrictFileResponse = UtilIT.restrictFile(fileId, true, apiToken);
+        restrictFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Publish dataset version
+        publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Call when a file is restricted and the user does not have access
+        canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, secondUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertFalse(canDownloadAtLeastOneFile);
+
+        // Grant restricted file access to the user
+        Response grantFileAccessResponse = UtilIT.grantFileAccess(fileId, "@" + secondUserUsername, apiToken);
+        grantFileAccessResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Call when a file is restricted and the user has access
+        canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, secondUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertTrue(canDownloadAtLeastOneFile);
+
+        // Create a third user to call the getCanDownloadAtLeastOneFile method
+        Response createThirdUserResponse = UtilIT.createRandomUser();
+        createThirdUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String thirdUserApiToken = UtilIT.getApiTokenFromResponse(createThirdUserResponse);
+        String thirdUserUsername = UtilIT.getUsernameFromResponse(createThirdUserResponse);
+
+        // Call when a file is restricted and the user does not have access
+        canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, thirdUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertFalse(canDownloadAtLeastOneFile);
+
+        // Grant fileDownloader role on the dataset to the user
+        Response grantDatasetFileDownloaderRoleOnDatasetResponse = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + thirdUserUsername, apiToken);
+        grantDatasetFileDownloaderRoleOnDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Call when a file is restricted and the user has fileDownloader role on the dataset
+        canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, thirdUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertTrue(canDownloadAtLeastOneFile);
+
+        // Create a fourth user to call the getCanDownloadAtLeastOneFile method
+        Response createFourthUserResponse = UtilIT.createRandomUser();
+        createFourthUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String fourthUserApiToken = UtilIT.getApiTokenFromResponse(createFourthUserResponse);
+        String fourthUserUsername = UtilIT.getUsernameFromResponse(createFourthUserResponse);
+
+        // Call when a file is restricted and the user does not have access
+        canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, fourthUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertFalse(canDownloadAtLeastOneFile);
+
+        // Grant fileDownloader role on the collection to the user
+        Response grantDatasetFileDownloaderRoleOnCollectionResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, "fileDownloader", "@" + fourthUserUsername, apiToken);
+        grantDatasetFileDownloaderRoleOnCollectionResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Call when a file is restricted and the user has fileDownloader role on the collection
+        canDownloadAtLeastOneFileResponse = UtilIT.getCanDownloadAtLeastOneFile(Integer.toString(datasetId), DS_VERSION_LATEST, fourthUserApiToken);
+        canDownloadAtLeastOneFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        canDownloadAtLeastOneFile = JsonPath.from(canDownloadAtLeastOneFileResponse.body().asString()).getBoolean("data");
+        assertTrue(canDownloadAtLeastOneFile);
+
+        // Call with invalid dataset id
+        Response getUserPermissionsOnDatasetInvalidIdResponse = UtilIT.getCanDownloadAtLeastOneFile("testInvalidId", DS_VERSION_LATEST, secondUserApiToken);
+        getUserPermissionsOnDatasetInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 }
