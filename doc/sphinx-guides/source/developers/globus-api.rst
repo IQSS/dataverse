@@ -2,6 +2,7 @@ Globus Transfer API
 ===================
 
 The Globus API addresses three use cases:
+
 * Transfer to a Dataverse-managed Globus endpoint (File-based or using the Globus S3 Connector)
 * Reference of files that will remain in a remote Globus endpoint
 * Transfer from a Dataverse-managed Globus endpoint

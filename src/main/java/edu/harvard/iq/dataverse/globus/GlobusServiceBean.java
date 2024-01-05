@@ -240,7 +240,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         MakeRequestResponse result = null;
         String body = "{\"DATA_TYPE\":\"mkdir\",\"path\":\"" + dir + "\"}";
         try {
-            logger.info(body);
+            logger.fine(body);
             URL url = new URL(
                     "https://transfer.api.globusonline.org/v0.10/operation/endpoint/" + endpoint.getId() + "/mkdir");
             result = makeRequest(url, "Bearer", endpoint.getClientToken(), "POST", body);
