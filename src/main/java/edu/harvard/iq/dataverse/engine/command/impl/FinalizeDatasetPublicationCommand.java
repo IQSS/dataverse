@@ -388,7 +388,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = getDataset().getProtocol();
         String authority = getDataset().getAuthority();
-        PidProvider pidProvider = PidUtil.getPidProvider(getDataset().getGlobalId().getProviderName());
+        PidProvider pidProvider = PidUtil.getPidProvider(getDataset().getGlobalId().getProviderId());
  
         if (pidProvider != null) {
             

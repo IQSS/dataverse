@@ -153,7 +153,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt, boolean retry) throws CommandException {
         if (!theDataset.isIdentifierRegistered()) {
-            PidProvider pidProvider = PidUtil.getPidProvider(theDataset.getGlobalId().getProviderName());
+            PidProvider pidProvider = PidUtil.getPidProvider(theDataset.getGlobalId().getProviderId());
             if ( pidProvider != null ) {
                 try {
                     if (pidProvider.alreadyRegistered(theDataset)) {

@@ -958,7 +958,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     @Asynchronous
     @Deprecated
     public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
-        PidProvider pidProvider = PidUtil.getPidProvider(dataset.getGlobalId().getProviderName());
+        PidProvider pidProvider = PidUtil.getPidProvider(dataset.getGlobalId().getProviderId());
 
         //If the Id type is sequential and Dependent then write file identifiers outside the command
         String datasetIdentifier = dataset.getIdentifier();

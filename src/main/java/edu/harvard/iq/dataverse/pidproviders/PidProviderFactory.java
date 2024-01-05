@@ -4,6 +4,6 @@ public interface PidProviderFactory {
     
     public String getType();
     
-    public PidProvider createPidProvider(String name);
+    public PidProvider createPidProvider(String id);
 
 }

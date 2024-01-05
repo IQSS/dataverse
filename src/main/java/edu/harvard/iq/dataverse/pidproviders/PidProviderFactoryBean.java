@@ -149,7 +149,7 @@ public class PidProviderFactoryBean {
     public PidProvider getPidProvider(DvObject dvObject) {
         GlobalId pid = dvObject.getGlobalId();
         if (pid != null) {
-            return PidUtil.getPidProvider(pid.getProviderName());
+            return PidUtil.getPidProvider(pid.getProviderId());
         } else {
             // ToDo - get parent settings rather than global
             String nonNullDefaultIfKeyNotFound = "";

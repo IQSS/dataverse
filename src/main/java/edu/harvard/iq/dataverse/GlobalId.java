@@ -33,7 +33,7 @@ public class GlobalId implements java.io.Serializable {
           this.separator = separator;
         }
         this.urlPrefix = urlPrefix;
-        this.managingProviderName = providerName;
+        this.managingProviderId = providerName;
     }
     
     // protocol the identifier system, e.g. "doi"
@@ -42,7 +42,7 @@ public class GlobalId implements java.io.Serializable {
     private String protocol;
     private String authority;
     private String identifier;
-    private String managingProviderName;
+    private String managingProviderId;
     private String separator = "/";
     private String urlPrefix;
 
@@ -67,8 +67,8 @@ public class GlobalId implements java.io.Serializable {
         return identifier;
     }
     
-    public String getProviderName() {
-        return managingProviderName;
+    public String getProviderId() {
+        return managingProviderId;
     }
 
     public String toString() {

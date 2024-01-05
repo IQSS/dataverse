@@ -38,7 +38,7 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
             throw new PermissionException("Update Target URL can only be called by superusers.",
                     this, Collections.singleton(Permission.EditDataset), target);
         }
-        PidProvider pidProvider = PidUtil.getPidProvider(target.getGlobalId().getProviderName());
+        PidProvider pidProvider = PidUtil.getPidProvider(target.getGlobalId().getProviderId());
         try {
             String doiRetString = pidProvider.modifyIdentifierTargetURL(target);
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {

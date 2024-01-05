@@ -206,7 +206,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         }
         GlobalId pid = doomed.getGlobalId();
         if (pid != null) {
-            PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderName());
+            PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
 
             try {
                 if (pidProvider.alreadyRegistered(doomed)) {
