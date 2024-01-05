@@ -151,6 +151,8 @@ public class OAISetServiceBean implements java.io.Serializable {
         String query = managedSet.getDefinition();
 
         List<Long> datasetIds;
+        boolean databaseLookup = false; // As opposed to a search engine lookup
+        
         try {
             if (!oaiSet.isDefaultSet()) {
                 datasetIds = expandSetQuery(query);
@@ -161,6 +163,7 @@ public class OAISetServiceBean implements java.io.Serializable {
                 // including the unpublished drafts and deaccessioned ones.
                 // Those will be filtered out further down the line. 
                 datasetIds = datasetService.findAllLocalDatasetIds();
+                databaseLookup = true; 
             }
         } catch (OaiSetException ose) {
             datasetIds = null;
@@ -171,7 +174,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         // they will be properly marked as "deleted"! -- L.A. 4.5
         //if (datasetIds != null && !datasetIds.isEmpty()) {
         exportLogger.info("Calling OAI Record Service to re-export " + datasetIds.size() + " datasets.");
-        oaiRecordService.updateOaiRecords(managedSet.getSpec(), datasetIds, new Date(), true, exportLogger);
+        oaiRecordService.updateOaiRecords(managedSet.getSpec(), datasetIds, new Date(), true, databaseLookup, exportLogger);
         //}
         managedSet.setUpdateInProgress(false);
 

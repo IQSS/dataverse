@@ -55,13 +55,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     EntityManager em;   
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean");
-
-    public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport) {
-        updateOaiRecords(setName, datasetIds, updateTime, doExport, logger);
-    }
-    
-    public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport, Logger setUpdateLogger) {
-
+        
+    public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport, boolean confirmed, Logger setUpdateLogger) {
         // create Map of OaiRecords
         List<OAIRecord> oaiRecords = findOaiRecordsBySetName(setName);
         Map<String, OAIRecord> recordMap = new HashMap<>();
@@ -101,9 +96,6 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                         DatasetVersion releasedVersion = dataset.getReleasedVersion();
                         Date publicationDate = releasedVersion == null ? null : releasedVersion.getReleaseTime();
 
-                        //if (dataset.getPublicationDate() != null
-                        //        && (dataset.getLastExportTime() == null
-                        //        || dataset.getLastExportTime().before(dataset.getPublicationDate()))) {
                         if (publicationDate != null
                                 && (dataset.getLastExportTime() == null
                                 || dataset.getLastExportTime().before(publicationDate))) {
@@ -125,7 +117,9 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         }
 
         // anything left in the map should be marked as removed!
-        markOaiRecordsAsRemoved( recordMap.values(), updateTime, setUpdateLogger);
+        markOaiRecordsAsRemoved(recordMap.values(), updateTime, confirmed, setUpdateLogger);
+        
+                   
         
     }
     
@@ -162,7 +156,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         }
     }
     
-    
+   /*
     // Updates any existing OAI records for this dataset
     // Should be called whenever there's a change in the release status of the Dataset
     // (i.e., when it's published or deaccessioned), so that the timestamps and 
@@ -201,13 +195,31 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             logger.fine("Null returned - no records found.");
         }
     }
+*/
     
-    public void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Date updateTime, Logger setUpdateLogger) {
+    public void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Date updateTime, boolean confirmed, Logger setUpdateLogger) {
         for (OAIRecord oaiRecord : records) {
             if ( !oaiRecord.isRemoved() ) {
-                setUpdateLogger.fine("marking OAI record "+oaiRecord.getGlobalId()+" as removed");
-                oaiRecord.setRemoved(true);
-                oaiRecord.setLastUpdateTime(updateTime);
+                boolean confirmedRemoved = confirmed; 
+                if (!confirmedRemoved) {
+                    Dataset lookedUp = datasetService.findByGlobalId(oaiRecord.getGlobalId());
+                    if (lookedUp == null) {
+                        confirmedRemoved = true;
+                    } else if (lookedUp.getLastExportTime() == null) {
+                        confirmedRemoved = true; 
+                    } else {                   
+                        boolean isReleased = lookedUp.getReleasedVersion() != null;
+                        if (!isReleased) {
+                            confirmedRemoved = true;
+                        }
+                    }
+                }
+                
+                if (confirmedRemoved) {
+                    setUpdateLogger.fine("marking OAI record "+oaiRecord.getGlobalId()+" as removed");
+                    oaiRecord.setRemoved(true);
+                    oaiRecord.setLastUpdateTime(updateTime);
+                } 
             } else {
                 setUpdateLogger.fine("OAI record "+oaiRecord.getGlobalId()+" is already marked as removed.");
             }
