@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionComman
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.exception.RateLimitCommandException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
@@ -421,7 +422,7 @@ public abstract class AbstractApiBean {
         }));
         return dsv;
     }
-    
+
     protected DataFile findDataFileOrDie(String id) throws WrappedResponse {
         
         DataFile datafile;
@@ -576,6 +577,8 @@ public abstract class AbstractApiBean {
         try {
             return engineSvc.submit(cmd);
 
+        } catch (RateLimitCommandException ex) {
+            throw new WrappedResponse(rateLimited(ex.getMessage()));
         } catch (IllegalCommandException ex) {
             //for 8859 for api calls that try to update datasets with TOA out of compliance
                 if (ex.getMessage().toLowerCase().contains("terms of use")){
@@ -777,11 +780,12 @@ public abstract class AbstractApiBean {
     protected Response badRequest( String msg ) {
         return error( Status.BAD_REQUEST, msg );
     }
-    
+
     protected Response forbidden( String msg ) {
         return error( Status.FORBIDDEN, msg );
     }
-    
+    protected Response rateLimited( String msg ) { return error( Status.TOO_MANY_REQUESTS, msg ); }
+
     protected Response conflict( String msg ) {
         return error( Status.CONFLICT, msg );
     }

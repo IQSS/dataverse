@@ -1174,11 +1174,50 @@ public class SystemConfig {
         return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.StorageQuotaSizeInBytes);
     }
     /**
-     * Should we store tab-delimited files produced during ingest *with* the 
-     * variable name header line included? 
+     * Should we store tab-delimited files produced during ingest *with* the
+     * variable name header line included?
      * @return boolean - defaults to false.
      */
     public boolean isStoringIngestedFilesWithHeaders() {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders, false);
+    }
+
+    /*
+    RateLimitUtil will parse the json to create a List<RateLimitSetting>
+     */
+    public String getRateLimitsJson() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingCapacityByTierAndAction, "");
+    }
+
+    public Integer getIntFromCSVStringOrDefault(final SettingsServiceBean.Key settingKey, final Integer index, final Integer defaultValue) {
+        Integer value = defaultValue;
+        if (settingKey != null && !settingKey.equals("")) {
+            String csv = settingsService.getValueForKey(settingKey, "");
+            try {
+                int[] values = Arrays.stream(csv.split(",")).mapToInt(Integer::parseInt).toArray();
+                value = index > values.length ? defaultValue : Integer.valueOf(values[index]);
+            } catch (NumberFormatException nfe) {
+                logger.warning(nfe.getMessage());
+            }
+        }
+
+        return value;
+    }
+
+    public String getRedisBaseHost() {
+        String saneDefault = "redis";
+        return System.getProperty("DATAVERSE_REDIS_HOST",saneDefault);
+    }
+    public String getRedisBasePort() {
+        String saneDefault = "6379";
+        return System.getProperty("DATAVERSE_REDIS_PORT",saneDefault);
+    }
+    public String getRedisUser() {
+        String saneDefault = "default";
+        return System.getProperty("DATAVERSE_REDIS_USER",saneDefault);
+    }
+    public String getRedisPassword() {
+        String saneDefault = "redis_secret";
+        return System.getProperty("DATAVERSE_REDIS_PASSWORD",saneDefault);
     }
 }

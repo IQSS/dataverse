@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
@@ -16,6 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.exception.RateLimitCommandException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
@@ -49,7 +51,6 @@ import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
 import static jakarta.ejb.TransactionAttributeType.SUPPORTS;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
 /**
@@ -190,7 +191,9 @@ public class EjbDataverseEngine {
     
     @EJB
     EjbDataverseEngineInner innerEngine;
-    
+
+    @EJB
+    CacheFactoryBean cacheFactory;
     
     @Resource
     EJBContext ejbCtxt;
@@ -216,7 +219,11 @@ public class EjbDataverseEngine {
 
         try {
             logRec.setUserIdentifier( aCommand.getRequest().getUser().getIdentifier() );
-            
+            // Check for rate limit exceeded. Must be done before anything else to prevent unnecessary processing.
+            if (!cacheFactory.checkRate(aCommand.getRequest().getUser(), aCommand.getClass().getSimpleName())) {
+                throw new RateLimitCommandException(BundleUtil.getStringFromBundle("command.exception.user.ratelimited", Arrays.asList(aCommand.getClass().getSimpleName())), aCommand);
+            }
+
             // Check permissions - or throw an exception
             Map<String, ? extends Set<Permission>> requiredMap = aCommand.getRequiredPermissions();
             if (requiredMap == null) {
