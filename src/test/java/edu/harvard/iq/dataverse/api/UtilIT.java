@@ -48,7 +48,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
 import java.util.Collections;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {
@@ -2491,6 +2491,25 @@ public class UtilIT {
         RequestSpecification requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/downloads/toMonth" + optionalYyyyMm + optionalQueryParams);
     }
+
+    static Response metricsAccountsToMonth(String yyyymm, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/accounts/toMonth/" + yyyymm + optionalQueryParams);
+    }
+
+    static Response metricsAccountsTimeSeries(String mediaType, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
+        RequestSpecification requestSpecification = given();
+        requestSpecification.contentType(mediaType);
+        return requestSpecification.get("/api/info/metrics/accounts/monthly" + optionalQueryParams);
+    }
     
     static Response metricsDataversesPastDays(String days, String queryParams) {
         String optionalQueryParams = "";
@@ -2526,6 +2545,15 @@ public class UtilIT {
         }
         RequestSpecification requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/downloads/pastDays/" + days + optionalQueryParams);
+    }
+
+    static Response metricsAccountsPastDays(String days, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/accounts/pastDays/" + days + optionalQueryParams);
     }
 
     static Response metricsDataversesByCategory(String queryParams) {
