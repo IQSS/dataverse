@@ -257,7 +257,7 @@ public class DataCiteDOIProvider extends DOIProvider {
 
     @Override
     public List<String> getProviderInformation() {
-        return List.of("DataCite", "https://status.datacite.org");
+        return List.of(getId(), "https://status.datacite.org");
     }
 
     @Override

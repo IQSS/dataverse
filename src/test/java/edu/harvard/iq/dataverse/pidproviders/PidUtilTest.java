@@ -52,7 +52,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @JvmSetting(key = JvmSettings.PERMALINK_BASE_URL, value = "https://example.org/123", varArgs = "perma2")
 // Datacite 1
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "dataCite 1", varArgs = "dc1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "dc1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = DataCiteDOIProvider.TYPE, varArgs = "dc1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5072", varArgs = "dc1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "FK2", varArgs = "dc1")
 @JvmSetting(key = JvmSettings.DATACITE_MDS_API_URL, value = "https://mds.test.api.org/", varArgs = "dc1")
@@ -137,25 +137,43 @@ public class PidUtilTest {
     
     @Test
     public void testPermaLinkParsing() throws IOException {
-        PidProvider p = PidUtil.getPidProvider("perma1");
-        
+        //Verify that we can parse a valid perma link associated with perma1
         String pid1String = "perma:DANSLINK-QE-5A-XN55";
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
         assertEquals(pid1String, pid2.asString());
+        //Check that it was parsed by perma1 and that the URL is correct, etc
         assertEquals("perma1", pid2.getProviderId());
         assertEquals(SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + pid1String, pid2.asURL());
         assertEquals("DANSLINK", pid2.getAuthority());
         assertEquals(PermaLinkPidProvider.PERMA_PROTOCOL, pid2.getProtocol());
+        
+        //Verify that parsing the URL form works
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
         assertEquals(pid1String, pid3.asString());
         assertEquals("perma1", pid3.getProviderId());
 
+        //Repeat the basics with a permalink associated with perma2
         String  pid4String = "perma:DANSLINK/QE-5A-XN55";
         GlobalId pid5 = PidUtil.parseAsGlobalID(pid4String);
         assertEquals("perma2", pid5.getProviderId());
         assertEquals(pid4String, pid5.asString());
         assertEquals("https://example.org/123/citation?persistentId=" + pid4String, pid5.asURL());
 
+    }
+    
+    @Test
+    public void testDOIParsing() throws IOException {
+        
+        String pid1String = "doi:10.5072/FK2ABCDEF";
+        GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
+        assertEquals(pid1String, pid2.asString());
+        assertEquals("dc1", pid2.getProviderId());
+        assertEquals("https://doi.org/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
+        assertEquals("10.5072", pid2.getAuthority());
+        assertEquals(DOIProvider.DOI_PROTOCOL, pid2.getProtocol());
+        GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
+        assertEquals(pid1String, pid3.asString());
+        assertEquals("dc1", pid3.getProviderId());
     }
 
 }
