@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
@@ -253,4 +252,12 @@ public class PidUtil {
         return null;
     }
 
+    /**
+     * Method to clear all managed/unmanaged PidProviders. Only for testing as these
+     * lists are only loaded once by the @Stateless PidProviderFactoryBean in Dataverse.
+     */
+    public static void clearPidProviders() {
+        providerMap.clear();
+        unmanagedProviderMap.clear();
+    }
 }
