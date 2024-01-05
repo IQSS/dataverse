@@ -37,8 +37,6 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
             .orElse(SystemConfig.getDataverseSiteUrlStatic());
 
     
-
-    String authority = null;
     private String separator = "";
 
     private String baseUrl;
@@ -71,7 +69,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
 
     @Override
     public List<String> getProviderInformation() {
-        return List.of(PERMA_PROVIDER_NAME, getBaseUrl());
+        return List.of(getName(), getBaseUrl());
     }
 
     @Override
@@ -113,6 +111,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
     @Override
     public GlobalId parsePersistentId(String pidString) {
         // ToDo - handle local PID resolver for dataset/file
+        logger.info("Parsing in Perma: " + pidString);
         if (pidString.startsWith(getUrlPrefix())) {
             pidString = pidString.replace(getUrlPrefix(), (PERMA_PROTOCOL + ":"));
         }
@@ -121,21 +120,34 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
 
     @Override
     public GlobalId parsePersistentId(String protocol, String identifierString) {
-        logger.fine("Checking Perma: " + identifierString);
+        logger.info("Checking Perma: " + identifierString);
         if (!PERMA_PROTOCOL.equals(protocol)) {
             return null;
         }
         String identifier = null;
-        if (authority != null) {
-            if (identifierString.startsWith(authority)) {
-                identifier = identifierString.substring(authority.length());
+        if (getAuthority() != null) {
+            if (identifierString.startsWith(getAuthority())) {
+                identifier = identifierString.substring(getAuthority().length());
+            } else {
+                //Doesn't match authority
+                return null;
+            }
+            if (identifier.startsWith(separator)) {
+                identifier = identifier.substring(separator.length());
+            } else {
+                //Doesn't match separator
+                return null;
             }
         }
         identifier = PidProvider.formatIdentifierString(identifier);
         if (PidProvider.testforNullTerminator(identifier)) {
             return null;
         }
-        return new GlobalId(PERMA_PROTOCOL, authority, identifier, separator, getUrlPrefix(), PERMA_PROVIDER_NAME);
+        if(!identifier.startsWith(getShoulder())) {
+            //Doesn't match shoulder
+            return null;
+        }
+        return new GlobalId(PERMA_PROTOCOL, getAuthority(), identifier, separator, getUrlPrefix(), PERMA_PROVIDER_NAME);
     }
 
     @Override
