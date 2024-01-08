@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -15,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.Disabled;
@@ -32,9 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Useful for testing but requires DataCite credentials, etc.
- */
+
 @ExtendWith(MockitoExtension.class)
 @LocalJvmSettings
 //Perma 1
@@ -53,14 +54,49 @@ import static org.junit.jupiter.api.Assertions.*;
 // Datacite 1
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "dataCite 1", varArgs = "dc1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = DataCiteDOIProvider.TYPE, varArgs = "dc1")
-@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5072", varArgs = "dc1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5073", varArgs = "dc1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "FK2", varArgs = "dc1")
-@JvmSetting(key = JvmSettings.DATACITE_MDS_API_URL, value = "https://mds.test.api.org/", varArgs = "dc1")
+@JvmSetting(key = JvmSettings.DATACITE_MDS_API_URL, value = "https://mds.test.datacite.org/", varArgs = "dc1")
 @JvmSetting(key = JvmSettings.DATACITE_REST_API_URL, value = "https://api.test.datacite.org", varArgs ="dc1")
 @JvmSetting(key = JvmSettings.DATACITE_USERNAME, value = "test", varArgs ="dc1")
 @JvmSetting(key = JvmSettings.DATACITE_PASSWORD, value = "changeme", varArgs ="dc1")
+//Datacite 2
+@JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "dataCite 2", varArgs = "dc2")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = DataCiteDOIProvider.TYPE, varArgs = "dc2")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5072", varArgs = "dc2")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "FK3", varArgs = "dc2")
+@JvmSetting(key = JvmSettings.DATACITE_MDS_API_URL, value = "https://mds.test.datacite.org/", varArgs = "dc2")
+@JvmSetting(key = JvmSettings.DATACITE_REST_API_URL, value = "https://api.test.datacite.org", varArgs ="dc2")
+@JvmSetting(key = JvmSettings.DATACITE_USERNAME, value = "test2", varArgs ="dc2")
+@JvmSetting(key = JvmSettings.DATACITE_PASSWORD, value = "changeme2", varArgs ="dc2")
+//EZID 1
+@JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "EZId 1", varArgs = "ez1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = EZIdDOIProvider.TYPE, varArgs = "ez1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5072", varArgs = "ez1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "FK2", varArgs = "ez1")
+@JvmSetting(key = JvmSettings.EZID_API_URL, value = "https://ezid.cdlib.org/", varArgs = "ez1")
+@JvmSetting(key = JvmSettings.EZID_USERNAME, value = "apitest", varArgs ="ez1")
+@JvmSetting(key = JvmSettings.EZID_PASSWORD, value = "apitest", varArgs ="ez1")
+//FAKE 1
+@JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "FAKE 1", varArgs = "fake1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = FakeDOIProvider.TYPE, varArgs = "fake1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5074", varArgs = "fake1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "FK", varArgs = "fake1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "doi:10.5073/FK3ABCDEF", varArgs ="fake1")
+
+//HANDLE 1
+@JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "HDL 1", varArgs = "hdl1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = HandlePidProvider.TYPE, varArgs = "hdl1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "20.500.1234", varArgs = "hdl1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "", varArgs = "hdl1")
+@JvmSetting(key = JvmSettings.HANDLENET_AUTH_HANDLE, value = "20.500.1234/ADMIN", varArgs ="hdl1")
+@JvmSetting(key = JvmSettings.HANDLENET_INDEPENDENT_SERVICE, value = "true", varArgs ="hdl1")
+@JvmSetting(key = JvmSettings.HANDLENET_INDEX, value = "1", varArgs ="hdl1")
+@JvmSetting(key = JvmSettings.HANDLENET_KEY_PASSPHRASE, value = "passphrase", varArgs ="hdl1")
+@JvmSetting(key = JvmSettings.HANDLENET_KEY_PATH, value = "/tmp/cred", varArgs ="hdl1")
+
 //List to instantiate
-@JvmSetting(key = JvmSettings.PID_PROVIDERS, value = "perma1, perma2, dc1")
+@JvmSetting(key = JvmSettings.PID_PROVIDERS, value = "perma1, perma2, dc1, dc2, ez1, fake1, hdl1")
 
 public class PidUtilTest {
 
@@ -90,6 +126,8 @@ public class PidUtilTest {
             PidProviderFactory factory = pidProviderFactoryMap.get(type);
             PidUtil.addToProviderList(factory.createPidProvider(providerId));
         }
+        PidUtil.addAllToUnmanagedProviderList(Arrays.asList(new UnmanagedDOIProvider(),
+                new UnmanagedHandlePidProvider(), new UnmanagedPermaLinkPidProvider()));
     }
     
     @AfterAll
@@ -104,6 +142,9 @@ public class PidUtilTest {
 //        Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("DANSLINK");
     }
     
+    /**
+     * Useful for testing but requires DataCite credentials, etc.
+     */
     @Disabled
     @Test
     public void testGetDoi() throws IOException {
@@ -132,6 +173,8 @@ public class PidUtilTest {
         assertTrue(p.getUrlPrefix().startsWith(SystemConfig.getDataverseSiteUrlStatic()));
         p = PidUtil.getPidProvider("perma2");
         assertTrue(p.getUrlPrefix().startsWith("https://example.org/123"));
+        p = PidUtil.getPidProvider("dc2");
+        assertEquals("FK3", p.getShoulder());
         
     }
     
@@ -164,16 +207,96 @@ public class PidUtilTest {
     @Test
     public void testDOIParsing() throws IOException {
         
-        String pid1String = "doi:10.5072/FK2ABCDEF";
+        String pid1String = "doi:10.5073/FK2ABCDEF";
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
         assertEquals(pid1String, pid2.asString());
         assertEquals("dc1", pid2.getProviderId());
         assertEquals("https://doi.org/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
-        assertEquals("10.5072", pid2.getAuthority());
+        assertEquals("10.5073", pid2.getAuthority());
         assertEquals(DOIProvider.DOI_PROTOCOL, pid2.getProtocol());
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
         assertEquals(pid1String, pid3.asString());
         assertEquals("dc1", pid3.getProviderId());
+        
+        String pid4String = "doi:10.5072/FK3ABCDEF";
+        GlobalId pid4 = PidUtil.parseAsGlobalID(pid4String);
+        assertEquals(pid4String, pid4.asString());
+        assertEquals("dc2", pid4.getProviderId());
+
+        String pid5String = "doi:10.5072/FK2ABCDEF";
+        GlobalId pid5 = PidUtil.parseAsGlobalID(pid5String);
+        assertEquals(pid5String, pid5.asString());
+        assertEquals("ez1", pid5.getProviderId());
+        
+        String pid6String = "doi:10.5074/FKABCDEF";
+        GlobalId pid6 = PidUtil.parseAsGlobalID(pid6String);
+        assertEquals(pid6String, pid6.asString());
+        assertEquals("fake1", pid6.getProviderId());
+
+
+    }
+    
+    @Test
+    public void testHandleParsing() throws IOException {
+        
+        String pid1String = "hdl:20.500.1234/10052";
+        GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
+        assertEquals(pid1String, pid2.asString());
+        assertEquals("hdl1", pid2.getProviderId());
+        assertEquals("https://hdl.handle.net/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
+        assertEquals("20.500.1234", pid2.getAuthority());
+        assertEquals(HandlePidProvider.HDL_PROTOCOL, pid2.getProtocol());
+        GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
+        assertEquals(pid1String, pid3.asString());
+        assertEquals("hdl1", pid3.getProviderId());
     }
 
+    @Test
+    public void testUnmanagedParsing() throws IOException {
+        
+        String pid1String = "hdl:20.500.3456/10052";
+        GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
+        assertEquals(pid1String, pid2.asString());
+        assertEquals("UnmanagedHandleProvider", pid2.getProviderId());
+        assertEquals("https://hdl.handle.net/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
+        assertEquals("20.500.3456", pid2.getAuthority());
+        assertEquals(HandlePidProvider.HDL_PROTOCOL, pid2.getProtocol());
+        GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
+        assertEquals(pid1String, pid3.asString());
+        assertEquals("UnmanagedHandleProvider", pid3.getProviderId());
+        
+        String pid5String = "doi:10.6083/FK2ABCDEF";
+        GlobalId pid5 = PidUtil.parseAsGlobalID(pid5String);
+        assertEquals(pid5String, pid5.asString());
+        assertEquals("UnmanagedDOIProvider", pid5.getProviderId());
+
+    }
+    
+    @Test
+    public void testFindingPidGenerators() throws IOException {
+        
+        Dataset dataset1 = new Dataset();
+        Dataverse dataverse1 = new Dataverse();
+        dataset1.setOwner(dataverse1);
+        String pidGeneratorSpecs = Json.createObjectBuilder().add("protocol", DOIProvider.DOI_PROTOCOL).add("authority","10.5072").add("shoulder", "FK2").build().toString();
+        dataverse1.setPidGeneratorSpecs(pidGeneratorSpecs);
+        assertEquals(pidGeneratorSpecs, dataverse1.getPidGeneratorSpecs());
+        assertEquals("ez1", dataverse1.getEffectivePidGenerator().getId());
+        assertEquals("ez1", dataset1.getEffectivePidGenerator().getId());
+        
+        dataset1.setAuthority("10.5073");
+        dataset1.setProtocol(DOIProvider.DOI_PROTOCOL);
+        dataset1.setIdentifier("FK2ABCDEF");
+        
+        dataset1.setPidGenerator(null);
+        assertEquals("dc1", dataset1.getGlobalId().getProviderId());
+        assertEquals("dc1", dataset1.getEffectivePidGenerator().getId());
+        
+        dataset1.setPidGenerator(null);
+        dataset1.setIdentifier("FK3ABCDEF");
+        assertEquals("fake1", dataset1.getGlobalId().getProviderId());
+        assertEquals("ez1", dataset1.getEffectivePidGenerator().getId());
+        
+        
+    }
 }
