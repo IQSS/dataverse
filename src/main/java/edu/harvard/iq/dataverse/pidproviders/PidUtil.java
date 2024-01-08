@@ -234,13 +234,33 @@ public class PidUtil {
         return null;
     }
 
+
+
+    /**
+     * Method to clear all managed/unmanaged PidProviders. Only for testing as these
+     * lists are only loaded once by the @Stateless PidProviderFactoryBean in Dataverse.
+     */
+    public static void clearPidProviders() {
+        providerMap.clear();
+        unmanagedProviderMap.clear();
+    }
+
+    public static PidProvider getDefaultPidGenerator() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     /**
      * Get a PidProvider by protocol/authority/shoulder.
      */
     public static PidProvider getPidProvider(String protocol, String authority, String shoulder) {
+        return getPidProvider(protocol, authority, shoulder, AbstractPidProvider.SEPARATOR);
+    }
+    
+    public static PidProvider getPidProvider(String protocol, String authority, String shoulder, String separator) {
         for (PidProvider pidProvider : providerMap.values()) {
             if (protocol.equals(pidProvider.getProtocol()) && authority.equals(pidProvider.getAuthority())
-                    && shoulder.equals(pidProvider.getShoulder())) {
+                    && shoulder.equals(pidProvider.getShoulder()) && separator.equals(pidProvider.getSeparator())) {
                 return pidProvider;
             }
         }
@@ -250,14 +270,5 @@ public class PidUtil {
             }
         }
         return null;
-    }
-
-    /**
-     * Method to clear all managed/unmanaged PidProviders. Only for testing as these
-     * lists are only loaded once by the @Stateless PidProviderFactoryBean in Dataverse.
-     */
-    public static void clearPidProviders() {
-        providerMap.clear();
-        unmanagedProviderMap.clear();
     }
 }

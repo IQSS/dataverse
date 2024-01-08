@@ -179,4 +179,6 @@ public interface PidProvider {
 
     Set<String> getExcludedSet();
 
+    boolean canCreatePidsLike(GlobalId pid);
+
 }

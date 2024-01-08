@@ -1,14 +1,22 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.storageuse.StorageUse;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.CascadeType;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -42,6 +50,11 @@ public abstract class DvObjectContainer extends DvObject {
     private String metadataLanguage=null;
     
     private Boolean guestbookAtRequest = null;
+    
+    private String pidGeneratorSpecs = null;
+    
+    @Transient
+    private PidProvider pidGenerator = null;
    
     @OneToOne(mappedBy = "dvObjectContainer",cascade={ CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval=true)
     private StorageUse storageUse;
@@ -175,4 +188,63 @@ public abstract class DvObjectContainer extends DvObject {
     public void setStorageUse(StorageUse storageUse) {
         this.storageUse = storageUse;
     }
+
+    
+    /* Dataverse collections and dataset can be configured to use different PidProviders as PID generators for contained objects (datasets or data files). 
+     * This mechanism is similar to others except that the stored value is a JSON object defining the protocol, authority, shoulder, and, optionally, the separator for the PidProvider. 
+     */
+        
+    public String getPidGeneratorSpecs() {
+        return pidGeneratorSpecs;
+    }
+
+    public void setPidGeneratorSpecs(String pidGeneratorSpecs) {
+        this.pidGeneratorSpecs = pidGeneratorSpecs;
+    }
+
+    public PidProvider getPidGenerator() {
+        return pidGenerator;
+    }
+
+    public void setPidGenerator(PidProvider pidGenerator) {
+        this.pidGenerator = pidGenerator;
+        JsonObjectBuilder job = jakarta.json.Json.createObjectBuilder();
+        if (pidGenerator != null) {
+            this.pidGeneratorSpecs = job.add("protocol", pidGenerator.getProtocol())
+                    .add("authority", pidGenerator.getAuthority()).add("shoulder", pidGenerator.getShoulder())
+                    .add("separator", pidGenerator.getSeparator()).build().toString();
+        } else {
+            this.pidGeneratorSpecs = null;
+        }
+    }
+
+    public PidProvider getEffectivePidGenerator() {
+        PidProvider pidGenerator = getPidGenerator();
+        if (pidGenerator == null) {
+            String specs = getPidGeneratorSpecs();
+            if (StringUtils.isBlank(specs)) {
+                GlobalId pid = getGlobalId();
+                if ((pid != null) && PidUtil.getPidProvider(pid.getProviderId()).canCreatePidsLike(pid)) {
+                    pidGenerator = PidUtil.getPidProvider(pid.getProviderId());
+                } else {
+                    if (getOwner() != null) {
+                        pidGenerator = getOwner().getEffectivePidGenerator();
+                    }
+                }
+            } else {
+                JsonObject providerSpecs = JsonUtil.getJsonObject(specs);
+                if (providerSpecs.containsKey("separator")) {
+                    pidGenerator = PidUtil.getPidProvider(providerSpecs.getString("protocol"),
+                            providerSpecs.getString("authority"), providerSpecs.getString("shoulder"),
+                            providerSpecs.getString("separator"));
+                } else {
+                    pidGenerator = PidUtil.getPidProvider(providerSpecs.getString("protocol"),
+                            providerSpecs.getString("authority"), providerSpecs.getString("shoulder"));
+                }
+            }
+        }
+        setPidGenerator(pidGenerator);
+        return pidGenerator;
+    }
+
 }

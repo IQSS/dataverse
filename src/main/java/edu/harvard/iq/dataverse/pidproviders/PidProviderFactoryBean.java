@@ -145,7 +145,7 @@ public class PidProviderFactoryBean {
      * @param dvObject
      * @return - a PidProvider for the object (may be one of the Unmanaged providers)
      */
-    
+    @Deprecated
     public PidProvider getPidProvider(DvObject dvObject) {
         GlobalId pid = dvObject.getGlobalId();
         if (pid != null) {
@@ -164,4 +164,21 @@ public class PidProviderFactoryBean {
         }
     }
 
+
+    public PidProvider getDefaultPidGenerator() {
+        Optional<String> pidProviderDefaultId = JvmSettings.PID_DEFAULT_PROVIDER.lookupOptional(String.class);
+        if(pidProviderDefaultId.isPresent()) {
+            return PidUtil.getPidProvider(pidProviderDefaultId.get());
+        } else {
+            String nonNullDefaultIfKeyNotFound = "";
+            String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol,
+                    nonNullDefaultIfKeyNotFound);
+            String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority,
+                    nonNullDefaultIfKeyNotFound);
+            String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder,
+                    nonNullDefaultIfKeyNotFound);
+
+            return PidUtil.getPidProvider(protocol, authority, shoulder);
+        }
+    }
 }
