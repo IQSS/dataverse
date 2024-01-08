@@ -1,77 +1,66 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersionFilesServiceBean;
 import edu.harvard.iq.dataverse.FileSearchCriteria;
-import io.restassured.RestAssured;
-import static edu.harvard.iq.dataverse.DatasetVersion.ARCHIVE_NOTE_MAX_LENGTH;
-import static edu.harvard.iq.dataverse.api.ApiConstants.*;
-import static io.restassured.RestAssured.given;
-import io.restassured.path.json.JsonPath;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.logging.Logger;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.junit.jupiter.api.Disabled;
-import jakarta.json.JsonObject;
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
-import static jakarta.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static jakarta.ws.rs.core.Response.Status.CONFLICT;
-import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
-import edu.harvard.iq.dataverse.DataFile;
-import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIOTest;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import io.restassured.parsing.Parser;
-import static io.restassured.path.json.JsonPath.with;
-import io.restassured.path.xml.XmlPath;
-import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
-import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.parsing.Parser;
+import io.restassured.path.json.JsonPath;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.response.Response;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.core.Response.Status;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.Files;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.ws.rs.core.Response.Status;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.DatasetVersion.ARCHIVE_NOTE_MAX_LENGTH;
+import static edu.harvard.iq.dataverse.api.ApiConstants.*;
+import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
+import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
+import static io.restassured.RestAssured.given;
+import static io.restassured.path.json.JsonPath.with;
+import static jakarta.ws.rs.core.Response.Status.*;
 import static java.lang.Thread.sleep;
-import org.hamcrest.CoreMatchers;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -3548,7 +3537,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getVersionFilesResponsePaginated.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].label", equalTo(testFileName1))
-                .body("data[1].label", equalTo(testFileName2));
+                .body("data[1].label", equalTo(testFileName2))
+                .body("total_count", equalTo(5));
+        String x = getVersionFilesResponsePaginated.prettyPrint();
 
         int fileMetadatasCount = getVersionFilesResponsePaginated.jsonPath().getList("data").size();
         assertEquals(testPageSize, fileMetadatasCount);
@@ -3562,7 +3553,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getVersionFilesResponsePaginated.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].label", equalTo(testFileName3))
-                .body("data[1].label", equalTo(testFileName4));
+                .body("data[1].label", equalTo(testFileName4))
+                .body("total_count", equalTo(5));
 
         fileMetadatasCount = getVersionFilesResponsePaginated.jsonPath().getList("data").size();
         assertEquals(testPageSize, fileMetadatasCount);
