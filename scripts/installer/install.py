@@ -422,9 +422,13 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
    conn.close()
 
    if int(pg_major_version) >= 15:
+      admin_conn_string = "dbname='"+pgDb+"' user='postgres' password='"+pgAdminPassword+"' host='"+pgHost+"'"
+      conn = psycopg2.connect(admin_conn_string)
+      conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+      cur = conn.cursor()
       conn_cmd = "GRANT CREATE ON SCHEMA public TO "+pgUser+";"
-      print("PostgreSQL 15 or higher detected. Running " + conn_cmd)
       try:
+         print("PostgreSQL 15 or higher detected. Running " + conn_cmd)
          cur.execute(conn_cmd)
       except:
          if force:
