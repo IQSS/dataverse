@@ -26,6 +26,7 @@ public abstract class AbstractPidProvider implements PidProvider {
     private static final Logger logger = Logger.getLogger(AbstractPidProvider.class.getCanonicalName());
 
     public static String UNAVAILABLE = ":unav";
+    public static final String SEPARATOR = "/";
     
     PidProviderFactoryBean pidProviderService;
 
@@ -63,7 +64,12 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.shoulder = shoulder;
         this.identifierGenerationStyle = identifierGenerationStyle;
         this.datafilePidFormat = datafilePidFormat;
-        this.managedSet = new HashSet<String>(Arrays.asList(managedList.split(",\\s"))); 
+        logger.info("managedList in " + getId() + ": " + managedList);
+        this.managedSet = new HashSet<String>(Arrays.asList(managedList.split(",\\s")));
+        Iterator<String> iter = managedSet.iterator();
+        while (iter.hasNext()) {
+        logger.info("managedSet in " + getId() + ": " + iter.next());
+        }
         this.excludedSet = new HashSet<String>(Arrays.asList(excludedList.split(",\\s")));
         
     }
@@ -288,22 +294,6 @@ public abstract class AbstractPidProvider implements PidProvider {
             if (PidProvider.testforNullTerminator(identifier)) {
                 return null;
             }
-            //Check authority/identifier if this is a provider that manages specific identifiers
-            // /is not one of the unmanaged providers that has null authority
-            if (getAuthority() != null) {
-
-                String cleanIdentifier = authority + getSeparator() + identifier;
-                /*
-                 * Test if this provider manages this identifier - return null if it does not It
-                 * does if ((the identifier's authority and shoulder match the provider's), or
-                 * the identifier in on the managed set), and the identifier is not in the
-                 * excluded set.
-                 */
-                if (!(((authority.equals(getAuthority()) && identifier.startsWith(getShoulder()))
-                        || getManagedSet().contains(cleanIdentifier)) && !getExcludedSet().contains(cleanIdentifier))) {
-                    return null;
-                }
-            }
 
         } else {
             logger.log(Level.INFO, "Error parsing identifier: {0}: '':<authority>/<identifier>'' not found in string",
@@ -318,6 +308,27 @@ public abstract class AbstractPidProvider implements PidProvider {
         if(!PidProvider.isValidGlobalId(protocol, authority, identifier)) {
             return null;
         }
+        //Check authority/identifier if this is a provider that manages specific identifiers
+        // /is not one of the unmanaged providers that has null authority
+        if (getAuthority() != null) {
+
+            String cleanIdentifier = protocol + ":" + authority + getSeparator() + identifier;
+            /*
+             * Test if this provider manages this identifier - return null if it does not It
+             * does if ((the identifier's authority and shoulder match the provider's), or
+             * the identifier in on the managed set), and the identifier is not in the
+             * excluded set.
+             */
+            logger.info("managed set size for " + getId() + ": " + getManagedSet().size());
+            logger.info("clean pid in " + getId() + ": " + cleanIdentifier);
+            
+            logger.info("managed in " + getId() + ": " + getManagedSet().contains(cleanIdentifier));
+            
+            if (!(((authority.equals(getAuthority()) && identifier.startsWith(getShoulder()))
+                    || getManagedSet().contains(cleanIdentifier)) && !getExcludedSet().contains(cleanIdentifier))) {
+                return null;
+            }
+        }
         return new GlobalId(protocol, authority, identifier, getSeparator(), getUrlPrefix(),
                 getProviderInformation().get(0));
     }
@@ -325,7 +336,7 @@ public abstract class AbstractPidProvider implements PidProvider {
     
     public String getSeparator() {
         //The standard default
-        return "/";
+        return SEPARATOR;
     }
 
     @Override
@@ -335,7 +346,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         String prepend = "";
         if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
             //If format is dependent then pre-pend the dataset identifier 
-            prepend = datafile.getOwner().getIdentifier() + "/";
+            prepend = datafile.getOwner().getIdentifier() + SEPARATOR;
             datafile.setProtocol(datafile.getOwner().getProtocol());
             datafile.setAuthority(datafile.getOwner().getAuthority());
         } else {
@@ -778,5 +789,10 @@ public abstract class AbstractPidProvider implements PidProvider {
     @Override
     public String getLabel() {
         return label;
+    }
+    
+    @Override
+    public boolean canCreatePidsLike(GlobalId pid) {
+        return canManagePID() && !managedSet.contains(pid.asString());
     }
 }
