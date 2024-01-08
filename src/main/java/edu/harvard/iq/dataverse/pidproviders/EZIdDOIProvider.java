@@ -231,7 +231,7 @@ public class EZIdDOIProvider extends DOIProvider {
     
     @Override
     public List<String> getProviderInformation(){
-        return List.of("EZID", this.baseUrl);
+        return List.of(getId(), this.baseUrl);
     }
 
     @Override
@@ -287,12 +287,5 @@ public class EZIdDOIProvider extends DOIProvider {
     public String getProviderType() {
         return TYPE;
     }
-
-    @Override
-    public String getId() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }
 

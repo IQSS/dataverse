@@ -58,7 +58,7 @@ public class UnmanagedPermaLinkPidProvider extends AbstractPidProvider {
 
     @Override
     public List<String> getProviderInformation() {
-        return List.of("UnmanagedPermaLink", "");
+        return List.of(getId(), "");
     }
 
     @Override

@@ -65,17 +65,12 @@ public class UnmanagedDOIProvider extends DOIProvider {
 
     @Override
     public List<String> getProviderInformation() {
-        return List.of("UnmanagedDOIProvider", "");
+        return List.of(getId(), "");
     }
 
     @Override
     public String getProviderType() {
         return "unamagedDOI";
-    }
-
-    @Override
-    public String getId() {
-        return ID;
     }
 
     // PID recognition

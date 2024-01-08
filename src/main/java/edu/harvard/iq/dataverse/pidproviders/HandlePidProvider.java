@@ -387,7 +387,7 @@ public class HandlePidProvider extends AbstractPidProvider {
     
     @Override
     public List<String> getProviderInformation(){
-        return List.of("Handle", "https://hdl.handle.net");
+        return List.of(getId(), "https://hdl.handle.net");
     }
 
 

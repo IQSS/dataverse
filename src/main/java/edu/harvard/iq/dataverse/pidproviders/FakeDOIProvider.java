@@ -39,7 +39,7 @@ public class FakeDOIProvider extends DOIProvider {
 
     @Override
     public List<String> getProviderInformation() {
-        return List.of("FAKE", "https://dataverse.org");
+        return List.of(getId(), "https://dataverse.org");
     }
 
     @Override

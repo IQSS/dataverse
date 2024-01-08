@@ -19,8 +19,8 @@ class FakeProviderFactory implements PidProviderFactory {
                 .lookupOptional(providerId).orElse("randomString");
         String datafilePidFormat = JvmSettings.PID_PROVIDER_DATAFILE_PID_FORMAT.lookupOptional(providerId)
                 .orElse(SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
-        String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookup(providerId);
-        String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookup(providerId);
+        String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookupOptional(providerId).orElse("");;
+        String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookupOptional(providerId).orElse("");;
 
         return new FakeDOIProvider(providerId, providerLabel, providerAuthority, providerShoulder, identifierGenerationStyle,
                 datafilePidFormat, managedList, excludedList);

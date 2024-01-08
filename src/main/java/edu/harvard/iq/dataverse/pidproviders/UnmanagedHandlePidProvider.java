@@ -60,7 +60,7 @@ public class UnmanagedHandlePidProvider extends AbstractPidProvider {
 
     @Override
     public List<String> getProviderInformation() {
-        return List.of("UnmanagedHandle", "");
+        return List.of(getId(), "");
     }
 
     @Override
@@ -109,10 +109,5 @@ public class UnmanagedHandlePidProvider extends AbstractPidProvider {
     @Override
     public String getProviderType() {
         return "unamagedHandle";
-    }
-
-    @Override
-    public String getId() {
-        return ID;
     }
 }
