@@ -869,8 +869,7 @@ public class HarvestingServerIT {
         noVerbArg.prettyPrint();
         noVerbArg.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // This should be "badVerb"
-                .body("oai.error.@code", equalTo("badArgument"))
+                .body("oai.error.@code", equalTo("badVerb"))
                 .body("oai.error", equalTo("No argument 'verb' found"));
 
         // The query parameter "verb" cannot appear more than once.
@@ -878,8 +877,7 @@ public class HarvestingServerIT {
         repeated.prettyPrint();
         repeated.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                // This should be "badVerb"
-                .body("oai.error.@code", equalTo("badArgument"))
+                .body("oai.error.@code", equalTo("badVerb"))
                 .body("oai.error", equalTo("Verb must be singular, given: '[foo, bar]'"));
 
     }

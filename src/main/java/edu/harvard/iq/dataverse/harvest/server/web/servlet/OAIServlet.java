@@ -31,11 +31,9 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import io.gdcc.xoai.exceptions.BadArgumentException;
 import io.gdcc.xoai.exceptions.BadVerbException;
 import io.gdcc.xoai.exceptions.OAIException;
 import io.gdcc.xoai.model.oaipmh.Granularity;
-import io.gdcc.xoai.model.oaipmh.verbs.Verb;
 import io.gdcc.xoai.services.impl.SimpleResumptionTokenFormat;
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,6 +49,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 import javax.xml.stream.XMLStreamException;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -260,18 +259,15 @@ public class OAIServlet extends HttpServlet {
                 return;
             }
 
-            RawRequest rawRequest = null;
+            Map<String, String[]> params = httpServletRequest.getParameterMap();
+            OAIPMH handle;
             try {
-                rawRequest = RequestBuilder.buildRawRequest(httpServletRequest.getParameterMap());
+                RawRequest rawRequest = RequestBuilder.buildRawRequest(params);
+                handle = dataProvider.handle(rawRequest);
             } catch (BadVerbException bve) {
-                // Verb.Type is required. Hard-code one.
-                rawRequest = new RawRequest(Verb.Type.Identify);
-                // Ideally, withError would accept a BadVerbException.
-                BadArgumentException bae = new BadArgumentException(bve.getLocalizedMessage());
-                rawRequest.withError(bae);
+                handle = dataProvider.handle(params);
             }
 
-            OAIPMH handle = dataProvider.handle(rawRequest);
             response.setContentType("text/xml;charset=UTF-8");
 
             try (XmlWriter xmlWriter = new XmlWriter(response.getOutputStream(), repositoryConfiguration);) {
