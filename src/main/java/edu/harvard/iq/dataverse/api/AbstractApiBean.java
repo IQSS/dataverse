@@ -635,6 +635,7 @@ public abstract class AbstractApiBean {
             .add("data", bld).build())
             .type(MediaType.APPLICATION_JSON).build();
     }
+
     protected Response ok( JsonArrayBuilder bld , long totalCount) {
         return Response.ok(Json.createObjectBuilder()
                         .add("status", ApiConstants.STATUS_OK)
@@ -642,6 +643,7 @@ public abstract class AbstractApiBean {
                         .add("data", bld).build())
                 .type(MediaType.APPLICATION_JSON).build();
     }
+
     protected Response ok( JsonArray ja ) {
         return Response.ok(Json.createObjectBuilder()
             .add("status", ApiConstants.STATUS_OK)
