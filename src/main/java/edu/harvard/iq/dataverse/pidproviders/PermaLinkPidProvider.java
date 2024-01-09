@@ -29,6 +29,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
 
     public static final String PERMA_PROTOCOL = "perma";
     public static final String TYPE = "perma";
+    public static final String SEPARATOR = "";
 
     // ToDo - remove
     @Deprecated
@@ -36,7 +37,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
             .orElse(SystemConfig.getDataverseSiteUrlStatic());
 
     
-    private String separator = "";
+    private String separator = SEPARATOR;
 
     private String baseUrl;
 
@@ -122,6 +123,25 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
         logger.info("Checking Perma: " + identifierString);
         if (!PERMA_PROTOCOL.equals(protocol)) {
             return null;
+        }
+        String cleanIdentifier = PERMA_PROTOCOL + ":" + identifierString;
+        // With permalinks, we have to check the sets before parsing since the permalinks in these sets could have different authority, spearator, and shoulders
+        if (getExcludedSet().contains(cleanIdentifier)) {
+            return null;
+        }
+        if(getManagedSet().contains(cleanIdentifier)) {
+            /** With a variable separator that could also be empty, there is no way to determine the authority and shoulder for an unknown permalink.
+             * Since knowing this split isn't relevant for permalinks except for minting, the code below just assumes the authority
+             * is the first 4 characters and that the separator and the shoulder are empty.
+             * If this is found to cause issues, users should be able to use a managed permalink provider as a work-around. The code here could 
+             * be changed to allow default lengths for the authority, separator, and shoulder and/or to add a list of known (but unmanaged) authority, separator, shoulder combos.
+             */
+            if(identifierString.length() < 4) {
+                return new GlobalId(protocol, "", identifierString, SEPARATOR, getUrlPrefix(),
+                        getProviderInformation().get(0));
+            }
+            return new GlobalId(protocol, identifierString.substring(0,4), identifierString.substring(4), SEPARATOR, getUrlPrefix(),
+                    getProviderInformation().get(0));
         }
         String identifier = null;
         if (getAuthority() != null) {

@@ -14,11 +14,10 @@ import org.apache.commons.lang3.NotImplementedException;
  * It does not implement any of the methods related to PID CRUD
  * 
  */
-@Stateless
 public class UnmanagedPermaLinkPidProvider extends AbstractPidProvider {
 
     private static final Logger logger = Logger.getLogger(UnmanagedPermaLinkPidProvider.class.getCanonicalName());
-    private static final String ID = "UnmanagedPermaLinkProvider";
+    static final String ID = "UnmanagedPermaLinkProvider";
     
     public UnmanagedPermaLinkPidProvider() {
         // Also using ID as label
@@ -76,8 +75,17 @@ public class UnmanagedPermaLinkPidProvider extends AbstractPidProvider {
         if (!PermaLinkPidProvider.PERMA_PROTOCOL.equals(protocol)) {
             return null;
         }
-        GlobalId globalId = super.parsePersistentId(protocol, identifierString);
-        return globalId;
+        /** With a variable separator that could also be empty, there is no way to determine the authority and shoulder for an unknown/unmanaged permalink.
+         * Since knowing this split isn't relevant for unmanaged permalinks, the code below just assumes the authority
+         * is the first 4 characters and that the separator and the shoulder are empty.
+         * If this is found to cause issues, users should be able to use a managed permalink provider as a work-around. The code here could 
+         * be changed to allow default lengths for the authority, separator, and shoulder and/or to add a list of known (but unmanaged) authority, separator, shoulder combos.
+         */
+        if(identifierString.length() < 4) {
+            logger.warning("A short unmanaged permalink was found - assuming the authority is empty: " + identifierString);
+            return super.parsePersistentId(protocol, "", identifierString);
+        }
+        return super.parsePersistentId(protocol, identifierString.substring(0, 4), identifierString.substring(4));
     }
 
     @Override
@@ -96,5 +104,10 @@ public class UnmanagedPermaLinkPidProvider extends AbstractPidProvider {
     @Override
     public String getProviderType() {
         return PermaLinkPidProvider.TYPE;
+    }
+    
+    @Override
+    public String getSeparator() {
+        return PermaLinkPidProvider.SEPARATOR;
     }
 }
