@@ -74,6 +74,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ValidateDatasetJsonCommand;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -559,12 +560,10 @@ public class Dataverses extends AbstractApiBean {
             ds.setOwner(owner);
             ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc);
           //ToDo - verify PID is one Dataverse can manage (protocol/authority/shoulder match)
-            if(!
-            (ds.getAuthority().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Authority))&& 
-            ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol))&&
-            ds.getIdentifier().startsWith(settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder)))) {
-                throw new BadRequestException("Cannot recreate a dataset that has a PID that doesn't match the server's settings");
-            }
+          if (!PidUtil.getPidProvider(ds.getGlobalId().getProviderId()).canManagePID()) {
+              throw new BadRequestException(
+                      "Cannot recreate a dataset that has a PID that doesn't match the server's settings");
+          }
             if(!dvObjectSvc.isGlobalIdLocallyUnique(ds.getGlobalId())) {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }

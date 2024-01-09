@@ -194,7 +194,7 @@ public class SettingsServiceBean {
         /** authority for global id */
         Authority,
         /** DoiProvider for global id */
-        DoiProvider,
+        //DoiProvider,
         /** Shoulder for global id - used to create a common prefix on identifiers */
         Shoulder,
         /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
@@ -351,14 +351,14 @@ public class SettingsServiceBean {
         'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
         'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
         */
-        DataFilePIDFormat, 
+        //DataFilePIDFormat, 
         /* Json array of supported languages
         */
         Languages,
         /*
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */
-        PIDAsynchRegFileCount,
+        //PIDAsynchRegFileCount,
         /**
          * 
          */
@@ -367,12 +367,12 @@ public class SettingsServiceBean {
         /**
          * Indicates if the Handle service is setup to work 'independently' (No communication with the Global Handle Registry)
          */
-        IndependentHandleService,
+        //IndependentHandleService,
 
         /**
         Handle to use for authentication if the default is not being used
         */
-        HandleAuthHandle,
+        //HandleAuthHandle,
 
         /**
          * Archiving can be configured by providing an Archiver class name (class must extend AstractSubmitToArchiverCommand)

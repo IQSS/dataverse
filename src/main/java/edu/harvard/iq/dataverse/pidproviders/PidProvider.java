@@ -179,6 +179,13 @@ public interface PidProvider {
 
     Set<String> getExcludedSet();
 
+    /** 
+     * Whether related pids can be created by this pid provider
+     * @see edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider#canCreatePidsLike(GlobalId) more details in the abstract implementation
+     * 
+     * @param pid
+     * @return - whether related pids can be created by this pid provider. 
+     */
     boolean canCreatePidsLike(GlobalId pid);
 
 }

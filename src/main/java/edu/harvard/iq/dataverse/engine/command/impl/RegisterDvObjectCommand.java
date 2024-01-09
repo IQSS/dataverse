@@ -40,14 +40,14 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         
-        if(this.migrateHandle){
-            //Only continue if you can successfully migrate the handle
-            if (!processMigrateHandle(ctxt)) return;
-        }
         DvObjectContainer container = (target instanceof DvObjectContainer) ? (DvObjectContainer) target : target.getOwner();
         // Get the pidProvider that is configured to mint new IDs
         PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(container);
-
+        if(this.migrateHandle){
+            //Only continue if you can successfully migrate the handle
+            if (HandlePidProvider.HDL_PROTOCOL.equals(pidProvider.getProtocol()) || !processMigrateHandle(ctxt)) return;
+        }
+        
         try {
             //Test to see if identifier already present
             //if so, leave.

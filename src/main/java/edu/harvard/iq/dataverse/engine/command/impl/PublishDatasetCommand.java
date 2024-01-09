@@ -130,24 +130,15 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // ...
             // Additionaly in 4.9.3 we have added a system variable to disable 
             // registering file PIDs on the installation level.
-            String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
-            String currentGlobalAuthority= ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
-            String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
             boolean registerGlobalIdsForFiles = 
-                    (currentGlobalIdProtocol.equals(theDataset.getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT")) 
-                    && ctxt.systemConfig().isFilePIDsEnabledForCollection(theDataset.getOwner());
-            
-            if ( registerGlobalIdsForFiles ){
-                registerGlobalIdsForFiles = currentGlobalAuthority.equals( theDataset.getAuthority() );
-	    }
+                    ctxt.systemConfig().isFilePIDsEnabledForCollection(getDataset().getOwner()) &&
+                            ctxt.dvObjects().getEffectivePidGenerator(getDataset()).canCreatePidsLike(getDataset().getGlobalId());
             
             boolean validatePhysicalFiles = ctxt.systemConfig().isDatafileValidationOnPublishEnabled();
 
             // As of v5.0, publishing a dataset is always done asynchronously, 
             // with the dataset locked for the duration of the operation. 
             
-            //if ((registerGlobalIdsForFiles || validatePhysicalFiles) 
-            //        && theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) { 
                 
             String info = "Publishing the dataset; "; 
             info += registerGlobalIdsForFiles ? "Registering PIDs for Datafiles; " : "";
@@ -178,15 +169,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // method:
             //ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
             return new PublishDatasetResult(theDataset, Status.Inprogress);
-
-            /**
-              * Code for for "synchronous" (while-you-wait) publishing 
-              * is preserved below, commented out:
-            } else {
-                // Synchronous publishing (no workflow involved)
-                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(theDataset, getRequest(),datasetExternallyReleased));
-                return new PublishDatasetResult(theDataset, Status.Completed);
-            } */
         }
     }
     

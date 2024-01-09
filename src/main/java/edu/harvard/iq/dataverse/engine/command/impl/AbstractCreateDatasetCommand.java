@@ -108,12 +108,11 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         
-        String nonNullDefaultIfKeyNotFound = "";
         if (theDataset.getProtocol()==null) {
-            theDataset.setProtocol(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound));
+            theDataset.setProtocol(pidProvider.getProtocol());
         }
         if (theDataset.getAuthority()==null) {
-            theDataset.setAuthority(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound));
+            theDataset.setAuthority(pidProvider.getAuthority());
         }
         if (theDataset.getStorageIdentifier() == null) {
         	String driverId = theDataset.getEffectiveStorageDriverId();

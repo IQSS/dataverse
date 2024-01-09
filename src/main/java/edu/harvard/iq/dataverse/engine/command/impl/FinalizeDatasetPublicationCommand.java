@@ -393,9 +393,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         if (pidProvider != null) {
             
             try {
-                String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
-                String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
-                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
                 boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabledForCollection(getDataset().getOwner());
                 // We will skip trying to register the global identifiers for datafiles 
                 // if "dependent" file-level identifiers are requested, AND the naming 
@@ -406,9 +403,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // an authority that's different from what's currently configured.
                 // Additionaly in 4.9.3 we have added a system variable to disable 
                 // registering file PIDs on the installation level.
-                //ToDo - update to handle multiple PidProviders
-                if (((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority))
-                        || dataFilePIDFormat.equals("INDEPENDENT"))
+                boolean registerGlobalIdsForFiles = 
+                        ctxt.systemConfig().isFilePIDsEnabledForCollection(getDataset().getOwner()) &&
+                                ctxt.dvObjects().getEffectivePidGenerator(dataset).canCreatePidsLike(dataset.getGlobalId());
+                
+                if (registerGlobalIdsForFiles
                         && isFilePIDsEnabled
                         && dataset.getLatestVersion().getMinorVersionNumber() != null
                         && dataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)) {

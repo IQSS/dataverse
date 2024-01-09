@@ -15,6 +15,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
@@ -1288,5 +1290,9 @@ public class DataversePage implements java.io.Serializable {
 
     public Set<Entry<String, String>> getGuestbookEntryOptions() {
         return settingsWrapper.getGuestbookEntryOptions(this.dataverse).entrySet();
+    }
+    
+    public Set<String> getPidProviderIds() {
+        return PidUtil.getManagedProviderIds();
     }
 }

@@ -57,20 +57,19 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                 ctxt.em().flush();
                 // When updating, we want to traverse through files even if the dataset itself
                 // didn't need updating.
-                String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
-                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
                 boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabledForCollection(target.getOwner());
                 // We will skip trying to update the global identifiers for datafiles if they
                 // aren't being used.
                 // If they are, we need to assure that there's an existing PID or, as when
-                // creating PIDs, that the protocol matches that of the dataset DOI if
-                // we're going to create a DEPENDENT file PID.
-                String protocol = target.getProtocol();
+                // creating PIDs, that it's possible.
+                
+                boolean canCreatePidsForFiles = 
+                                isFilePIDsEnabled && ctxt.dvObjects().getEffectivePidGenerator(target).canCreatePidsLike(target.getGlobalId());
+                
                 for (DataFile df : target.getFiles()) {
                     if (isFilePIDsEnabled && // using file PIDs and
                             (!(df.getIdentifier() == null || df.getIdentifier().isEmpty()) || // identifier exists, or
-                                    currentGlobalIdProtocol.equals(protocol) || // right protocol to create dependent DOIs, or
-                                    dataFilePIDFormat.equals("INDEPENDENT"))// or independent. TODO(pm) - check authority too
+                                     canCreatePidsForFiles) // we can create PIDs for files
                     ) {
                         doiRetString = pidProvider.publicizeIdentifier(df);
                         if (doiRetString) {

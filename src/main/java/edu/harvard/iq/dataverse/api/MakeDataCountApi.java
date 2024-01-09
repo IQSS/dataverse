@@ -2,10 +2,14 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.DataCiteDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -131,8 +135,14 @@ public class MakeDataCountApi extends AbstractApiBean {
     public Response updateCitationsForDataset(@PathParam("id") String id) throws IOException {
         try {
             Dataset dataset = findDatasetOrDie(id);
-            String persistentId = dataset.getGlobalId().toString();
-            //ToDo - if this isn't a DOI?
+            GlobalId pid = dataset.getGlobalId();
+            PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
+            // Only supported for DOIs and for DataCite DOI providers
+            if(!DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType())) {
+                return error(Status.BAD_REQUEST, "Only DataCite DOI providers are supported");
+            }
+            String persistentId = pid.toString();
+
             // DataCite wants "doi=", not "doi:".
             String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
             // Request max page size and then loop to handle multiple pages

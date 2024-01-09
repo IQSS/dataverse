@@ -43,6 +43,8 @@ import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.DOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.DataCiteDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
@@ -1925,9 +1927,6 @@ public class DatasetPage implements java.io.Serializable {
 
         guestbookResponse = new GuestbookResponse();
 
-        String nonNullDefaultIfKeyNotFound = "";
-        protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         String sortOrder = getSortOrder();
         if(sortOrder != null) {
             FileMetadata.setCategorySortOrder(sortOrder);
@@ -2330,7 +2329,8 @@ public class DatasetPage implements java.io.Serializable {
         // With DataCite, we try to reserve the DOI when the dataset is created. Sometimes this
         // fails because DataCite is down. We show the message below to set expectations that the
         // "Publish" button won't work until the DOI has been reserved using the "Reserve PID" API.
-        if (settingsWrapper.isDataCiteInstallation() && dataset.getGlobalIdCreateTime() == null && editMode != EditMode.CREATE) {
+        PidProvider pidProvider = PidUtil.getPidProvider(dataset.getGlobalId().getProviderId());
+        if (DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType()) && dataset.getGlobalIdCreateTime() == null && editMode != EditMode.CREATE) {
             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.pidNotReserved.message"),
                     BundleUtil.getStringFromBundle("dataset.locked.pidNotReserved.message.details"));
         }
@@ -6395,6 +6395,10 @@ public class DatasetPage implements java.io.Serializable {
             signpostingLinkHeader = sr.getLinks();
         }
         return signpostingLinkHeader;
+    }
+    
+    public boolean isDOI() {
+        return DOIProvider.DOI_PROTOCOL.equals(dataset.getGlobalId().getProtocol());
     }
 
 }

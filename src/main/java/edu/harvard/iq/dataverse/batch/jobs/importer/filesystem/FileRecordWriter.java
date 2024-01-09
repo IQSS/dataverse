@@ -364,14 +364,11 @@ public class FileRecordWriter extends AbstractItemWriter {
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
             packageFile.setIdentifier(pidProvider.generateDataFileIdentifier(packageFile));
         }
-        String nonNullDefaultIfKeyNotFound = "";
-        String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         if (packageFile.getProtocol() == null) {
-            packageFile.setProtocol(protocol);
+            packageFile.setProtocol(pidProvider.getProtocol());
         }
         if (packageFile.getAuthority() == null) {
-            packageFile.setAuthority(authority);
+            packageFile.setAuthority(pidProvider.getAuthority());
         }
 
         if (!packageFile.isIdentifierRegistered()) {

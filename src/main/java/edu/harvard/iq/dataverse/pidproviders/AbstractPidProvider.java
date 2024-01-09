@@ -795,7 +795,19 @@ public abstract class AbstractPidProvider implements PidProvider {
     }
     
     @Override
+    /**
+     * True if this provider can manage PIDs in general, this pid is not in the
+     * managedSet (meaning it is managed but the provider does not generally manage
+     * it's protocol/authority/separator/shoulder) and either this provider is the
+     * same as the pid's or we're allowed to create INDEPENDENT pids. The latter
+     * clause covers the potential case where the effective pid provider/generator
+     * for the dataset is set to a different one that handles the dataset's pid
+     * itself. In this case, we can create file PIDs if they are independent.
+     * @param pid - the related pid to check
+     * @return true if this provider can manage PIDs like the one supplied 
+     */
     public boolean canCreatePidsLike(GlobalId pid) {
-        return canManagePID() && !managedSet.contains(pid.asString());
+        return canManagePID() && !managedSet.contains(pid.asString())
+                && (getIdentifierGenerationStyle().equals("INDEPENDENT") || getId().equals(pid.getProviderId()));
     }
 }
