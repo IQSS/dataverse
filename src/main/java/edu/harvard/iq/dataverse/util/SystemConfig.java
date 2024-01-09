@@ -1194,7 +1194,7 @@ public class SystemConfig {
         if (settingKey != null && !settingKey.equals("")) {
             String csv = settingsService.getValueForKey(settingKey, "");
             try {
-                int[] values = Arrays.stream(csv.split(",")).mapToInt(Integer::parseInt).toArray();
+                int[] values = csv.isEmpty() ? new int[0] : Arrays.stream(csv.split(",")).mapToInt(Integer::parseInt).toArray();
                 value = index > values.length ? defaultValue : Integer.valueOf(values[index]);
             } catch (NumberFormatException nfe) {
                 logger.warning(nfe.getMessage());
