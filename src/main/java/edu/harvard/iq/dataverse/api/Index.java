@@ -335,7 +335,7 @@ public class Index extends AbstractApiBean {
      * clear the entry from Solr regardless.
      */
     @DELETE
-    @Path("datasets/clear/{id}")
+    @Path("datasets/{id}/clear")
     public Response clearDatasetFromIndex(@PathParam("id") Long id) {
         Dataset dataset = datasetService.find(id);
         // We'll attempt to delete the Solr document regardless of whether the 
