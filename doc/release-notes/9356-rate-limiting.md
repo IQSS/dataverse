@@ -1,4 +1,4 @@
-Rate limiting has been added to prevent users from over taxing the system either deliberately or by runaway automated processes. Rate limiting can be configured on a tier level with tier 0 being reserved for guest users and tiers 1-any for authenticated users. Administrator/Superuser accounts are exempt from rate limiting.
+Rate limiting has been added to prevent users from over taxing the system either deliberately or by runaway automated processes. Rate limiting can be configured on a tier level with tier 0 being reserved for guest users and tiers 1-any for authenticated users. Superuser accounts are exempt from rate limiting.
 Rate limits can be imposed on command APIs by configuring the tier, the command, and the hourly limit in the database.
 Two database settings configure the rate limiting.
 RateLimitingDefaultCapacityTiers is a comma separated list of default values for each tier. In the following example, the default for tier 0 (guest users) is set to 10,000 calls per command per hour and tier 1 (authenticated users) is set to 20,000 calls per command per hour. Tiers not specified in this setting will default to -1 (No Limit).
