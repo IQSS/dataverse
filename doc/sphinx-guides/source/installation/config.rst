@@ -1073,10 +1073,10 @@ Note: If either of these settings exist in the database rate limiting will be en
 - Redis server configuration is handled through environment variables. The following environment variables are used to configure access to the server:
   DATAVERSE_REDIS_HOST; DATAVERSE_REDIS_PORT; DATAVERSE_REDIS_USER; DATAVERSE_REDIS_PASSWORD.
   Defaults for docker testing:
-      DATAVERSE_REDIS_HOST: "redis"
-      DATAVERSE_REDIS_PORT: "6379"
-      DATAVERSE_REDIS_USER: "default"
-      DATAVERSE_REDIS_PASSWORD: "redis_secret"
+  DATAVERSE_REDIS_HOST: "redis"
+  DATAVERSE_REDIS_PORT: "6379"
+  DATAVERSE_REDIS_USER: "default"
+  DATAVERSE_REDIS_PASSWORD: "redis_secret"
 
 .. _Branding Your Installation:
 
