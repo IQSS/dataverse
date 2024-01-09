@@ -480,7 +480,6 @@ public class Datasets extends AbstractApiBean {
             } catch (IllegalArgumentException e) {
                 return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
             }
-            // TODO: should we count the total every time or only when offset = 0?
             return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, fileSearchCriteria, fileOrderCriteria)),
                     datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion, fileSearchCriteria));
         }, getRequestUser(crc));

@@ -639,7 +639,7 @@ public abstract class AbstractApiBean {
     protected Response ok( JsonArrayBuilder bld , long totalCount) {
         return Response.ok(Json.createObjectBuilder()
                         .add("status", ApiConstants.STATUS_OK)
-                        .add("total_count", totalCount)
+                        .add("totalCount", totalCount)
                         .add("data", bld).build())
                 .type(MediaType.APPLICATION_JSON).build();
     }

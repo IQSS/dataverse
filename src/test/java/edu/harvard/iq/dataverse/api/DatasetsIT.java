@@ -3538,7 +3538,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("data[0].label", equalTo(testFileName1))
                 .body("data[1].label", equalTo(testFileName2))
-                .body("total_count", equalTo(5));
+                .body("totalCount", equalTo(5));
 
         int fileMetadatasCount = getVersionFilesResponsePaginated.jsonPath().getList("data").size();
         assertEquals(testPageSize, fileMetadatasCount);
@@ -3553,7 +3553,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(OK.getStatusCode())
                 .body("data[0].label", equalTo(testFileName3))
                 .body("data[1].label", equalTo(testFileName4))
-                .body("total_count", equalTo(5));
+                .body("totalCount", equalTo(5));
 
         fileMetadatasCount = getVersionFilesResponsePaginated.jsonPath().getList("data").size();
         assertEquals(testPageSize, fileMetadatasCount);
