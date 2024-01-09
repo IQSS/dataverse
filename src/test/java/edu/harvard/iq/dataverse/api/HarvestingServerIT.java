@@ -560,6 +560,7 @@ public class HarvestingServerIT {
         // Now, let's clear this dataset from Solr: 
         Response solrClearResponse = UtilIT.indexClearDataset(singleSetDatasetDatabaseId);
         assertEquals(200, solrClearResponse.getStatusCode());
+        solrClearResponse.prettyPrint();
         
         // Now, let's re-export the set. The search query that defines the set 
         // will no longer find it (todo: confirm this first?). However, since 
@@ -570,7 +571,7 @@ public class HarvestingServerIT {
         
         exportSetResponse = UtilIT.exportOaiSet(setName);
         assertEquals(200, exportSetResponse.getStatusCode());
-        Thread.sleep(10000L); // wait for just a second, to be safe 
+        Thread.sleep(1000L); // wait for just a second, to be safe 
         
         // OAI Test 5. Check ListIdentifiers again:
         
@@ -596,6 +597,43 @@ public class HarvestingServerIT {
         // TODO: (?) we could also destroy the dataset for real now, and make 
         // sure the "deleted" attribute has been added to the OAI record. 
         
+        // While we are at it, let's now destroy this dataset for real, and 
+        // make sure the "deleted" attribute is actually added once the set 
+        // is re-exported:
+        
+        Response destroyDatasetResponse = UtilIT.destroyDataset(singleSetDatasetPersistentId, adminUserAPIKey);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+        destroyDatasetResponse.prettyPrint();
+        
+        // Confirm that it no longer exists: 
+        Response datasetNotFoundResponse = UtilIT.nativeGet(singleSetDatasetDatabaseId, adminUserAPIKey);
+        assertEquals(404, datasetNotFoundResponse.getStatusCode());
+        
+        // Repeat the whole production with re-exporting set and checking 
+        // ListIdentifiers:
+        
+        exportSetResponse = UtilIT.exportOaiSet(setName);
+        assertEquals(200, exportSetResponse.getStatusCode());
+        Thread.sleep(1000L); // wait for just a second, to be safe 
+        System.out.println("re-exported the dataset again, with the control dataset destroyed");
+        
+        // OAI Test 6. Check ListIdentifiers again:
+        
+        listIdentifiersResponse = UtilIT.getOaiListIdentifiers(setName, "oai_dc");
+        assertEquals(OK.getStatusCode(), listIdentifiersResponse.getStatusCode());
+
+        // Validate the service section of the OAI response: 
+        responseXmlPath = validateOaiVerbResponse(listIdentifiersResponse, "ListIdentifiers");
+
+        // ... and confirm that the record for our dataset is still listed...
+        ret = responseXmlPath.getList("OAI-PMH.ListIdentifiers.header");
+        assertEquals(1, ret.size());
+        assertEquals(singleSetDatasetPersistentId, responseXmlPath
+                .getString("OAI-PMH.ListIdentifiers.header.identifier"));
+  
+        // ... BUT, it should be marked as "deleted" now:
+        assertEquals(responseXmlPath.getString("OAI-PMH.ListIdentifiers.header.@status"), "deleted");
+
     }
     
     // This test will attempt to create a set with multiple records (enough 
@@ -910,7 +948,7 @@ public class HarvestingServerIT {
     // TODO: 
     // What else can we test? 
     // Some ideas: 
-    // - Test handling of deleted dataset records
+    // - Test handling of deleted dataset records - DONE! 
     // - Test "from" and "until" time parameters
     // - Validate full verb response records against XML schema
     //   (for each supported metadata format, possibly?)

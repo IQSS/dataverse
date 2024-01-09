@@ -65,7 +65,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
      *                   marked as deleted without any further checks. Otherwise 
      *                   we'll want to double-check if the dataset still exists
      *                   as published. This is to prevent marking existing datasets 
-     *                   as deleted during a full reindex and such.
+     *                   as deleted during a full reindex etc.
      * @param setUpdateLogger dedicated Logger 
      */
     public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport, boolean confirmed, Logger setUpdateLogger) {
