@@ -1070,50 +1070,6 @@ Note: If either of these settings exist in the database rate limiting will be en
   In the following example, calls made by a guest user (tier 0) for API GetLatestPublishedDatasetVersionCommand is further limited to only 10 calls per hour, while an authenticated user (tier 1) will be able to make 30 calls per hour to the same API.
   curl http://localhost:8080/api/admin/settings/:RateLimitingCapacityByTierAndAction -X PUT -d '{"rateLimits":[{"tier": 0, "limitPerHour": 10, "actions": ["GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand"]}, {"tier": 0, "limitPerHour": 1, "actions": ["CreateGuestbookResponseCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}, {"tier": 1, "limitPerHour": 30, "actions": ["CreateGuestbookResponseCommand", "GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}]}'
 
-.. code-block:: json
-  {
-    "rateLimits": [
-      {
-        "tier": 0,
-	    "limitPerHour": 10,
-	    "actions": [
-            "GetLatestPublishedDatasetVersionCommand",
-            "GetPrivateUrlCommand",
-            "GetDatasetCommand",
-            "GetLatestAccessibleDatasetVersionCommand"
-        ]
-      },
-      {
-        "tier": 0,
-        "limitPerHour": 1,
-        "actions": [
-          "CreateGuestbookResponseCommand",
-          "UpdateDatasetVersionCommand",
-          "DestroyDatasetCommand",
-          "DeleteDataFileCommand",
-          "FinalizeDatasetPublicationCommand",
-          "PublishDatasetCommand"
-        ]
-      },
-      {
-        "tier": 1,
-        "limitPerHour": 30,
-        "actions": [
-          "CreateGuestbookResponseCommand",
-          "GetLatestPublishedDatasetVersionCommand",
-          "GetPrivateUrlCommand",
-          "GetDatasetCommand",
-          "GetLatestAccessibleDatasetVersionCommand",
-          "UpdateDatasetVersionCommand",
-          "DestroyDatasetCommand",
-          "DeleteDataFileCommand",
-          "FinalizeDatasetPublicationCommand",
-          "PublishDatasetCommand"
-        ]
-      }
-    ]
-  }
-
 - Redis server configuration is handled through environment variables. The following environment variables are used to configure access to the server:
   DATAVERSE_REDIS_HOST; DATAVERSE_REDIS_PORT; DATAVERSE_REDIS_USER; DATAVERSE_REDIS_PASSWORD.
   Defaults for docker testing:
