@@ -19,7 +19,7 @@ import org.apache.commons.lang3.NotImplementedException;
 public class UnmanagedHandlePidProvider extends AbstractPidProvider {
 
     private static final Logger logger = Logger.getLogger(UnmanagedHandlePidProvider.class.getCanonicalName());
-    private static final String ID = "UnmanagedHandleProvider";
+    static final String ID = "UnmanagedHandleProvider";
 
     public UnmanagedHandlePidProvider() {
         // Also using ID as label

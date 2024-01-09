@@ -64,14 +64,18 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.shoulder = shoulder;
         this.identifierGenerationStyle = identifierGenerationStyle;
         this.datafilePidFormat = datafilePidFormat;
-        logger.info("managedList in " + getId() + ": " + managedList);
         this.managedSet = new HashSet<String>(Arrays.asList(managedList.split(",\\s")));
-        Iterator<String> iter = managedSet.iterator();
-        while (iter.hasNext()) {
-        logger.info("managedSet in " + getId() + ": " + iter.next());
-        }
         this.excludedSet = new HashSet<String>(Arrays.asList(excludedList.split(",\\s")));
-        
+        if (logger.isLoggable(Level.FINE)) {
+            Iterator<String> iter = managedSet.iterator();
+            while (iter.hasNext()) {
+                logger.fine("managedSet in " + getId() + ": " + iter.next());
+            }
+            iter = excludedSet.iterator();
+            while (iter.hasNext()) {
+                logger.fine("excludedSet in " + getId() + ": " + iter.next());
+            }
+        }
     }
     
     @Override
@@ -314,15 +318,14 @@ public abstract class AbstractPidProvider implements PidProvider {
 
             String cleanIdentifier = protocol + ":" + authority + getSeparator() + identifier;
             /*
-             * Test if this provider manages this identifier - return null if it does not It
-             * does if ((the identifier's authority and shoulder match the provider's), or
-             * the identifier in on the managed set), and the identifier is not in the
-             * excluded set.
+             * Test if this provider manages this identifier - return null if it does not.
+             * It does match if ((the identifier's authority and shoulder match the
+             * provider's), or the identifier is in the managed set), and, in either case,
+             * the identifier is not in the excluded set.
              */
-            logger.info("managed set size for " + getId() + ": " + getManagedSet().size());
-            logger.info("clean pid in " + getId() + ": " + cleanIdentifier);
-            
-            logger.info("managed in " + getId() + ": " + getManagedSet().contains(cleanIdentifier));
+            logger.fine("clean pid in " + getId() + ": " + cleanIdentifier);
+            logger.fine("managed in " + getId() + ": " + getManagedSet().contains(cleanIdentifier));
+            logger.fine("excluded from " + getId() + ": " + getExcludedSet().contains(cleanIdentifier));
             
             if (!(((authority.equals(getAuthority()) && identifier.startsWith(getShoulder()))
                     || getManagedSet().contains(cleanIdentifier)) && !getExcludedSet().contains(cleanIdentifier))) {

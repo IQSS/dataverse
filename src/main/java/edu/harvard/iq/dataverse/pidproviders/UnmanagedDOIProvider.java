@@ -16,7 +16,7 @@ import edu.harvard.iq.dataverse.GlobalId;
 
 public class UnmanagedDOIProvider extends DOIProvider {
 
-    private static final String ID = "UnmanagedDOIProvider";
+    static final String ID = "UnmanagedDOIProvider";
 
     public UnmanagedDOIProvider() {
         //Also using ID as label

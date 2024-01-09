@@ -44,11 +44,14 @@ import static org.junit.jupiter.api.Assertions.*;
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "DANSLINK", varArgs = "perma1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "QE", varArgs = "perma1")
 @JvmSetting(key = JvmSettings.PERMALINK_SEPARATOR, value = "-", varArgs = "perma1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_EXCLUDED_LIST, value = "perma:DANSLINKQE123456, perma:bad, perma:LINKIT123456", varArgs ="perma1")
+
 //Perma 2
 @JvmSetting(key = JvmSettings.PID_PROVIDER_LABEL, value = "perma 2", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = PermaLinkPidProvider.TYPE, varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "DANSLINK", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "QE", varArgs = "perma2")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "perma:LINKIT/FK2ABCDEF", varArgs ="perma2")
 @JvmSetting(key = JvmSettings.PERMALINK_SEPARATOR, value = "/", varArgs = "perma2")
 @JvmSetting(key = JvmSettings.PERMALINK_BASE_URL, value = "https://example.org/123", varArgs = "perma2")
 // Datacite 1
@@ -56,6 +59,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = DataCiteDOIProvider.TYPE, varArgs = "dc1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "10.5073", varArgs = "dc1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "FK2", varArgs = "dc1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_EXCLUDED_LIST, value = "doi:10.5073/FK2123456", varArgs ="dc1")
 @JvmSetting(key = JvmSettings.DATACITE_MDS_API_URL, value = "https://mds.test.datacite.org/", varArgs = "dc1")
 @JvmSetting(key = JvmSettings.DATACITE_REST_API_URL, value = "https://api.test.datacite.org", varArgs ="dc1")
 @JvmSetting(key = JvmSettings.DATACITE_USERNAME, value = "test", varArgs ="dc1")
@@ -89,6 +93,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @JvmSetting(key = JvmSettings.PID_PROVIDER_TYPE, value = HandlePidProvider.TYPE, varArgs = "hdl1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_AUTHORITY, value = "20.500.1234", varArgs = "hdl1")
 @JvmSetting(key = JvmSettings.PID_PROVIDER_SHOULDER, value = "", varArgs = "hdl1")
+@JvmSetting(key = JvmSettings.PID_PROVIDER_MANAGED_LIST, value = "hdl:20.20.20/FK2ABCDEF", varArgs ="hdl1")
 @JvmSetting(key = JvmSettings.HANDLENET_AUTH_HANDLE, value = "20.500.1234/ADMIN", varArgs ="hdl1")
 @JvmSetting(key = JvmSettings.HANDLENET_INDEPENDENT_SERVICE, value = "true", varArgs ="hdl1")
 @JvmSetting(key = JvmSettings.HANDLENET_INDEX, value = "1", varArgs ="hdl1")
@@ -253,23 +258,91 @@ public class PidUtilTest {
 
     @Test
     public void testUnmanagedParsing() throws IOException {
-        
+        // A handle managed not managed in the hdl1 provider
         String pid1String = "hdl:20.500.3456/10052";
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
         assertEquals(pid1String, pid2.asString());
-        assertEquals("UnmanagedHandleProvider", pid2.getProviderId());
-        assertEquals("https://hdl.handle.net/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
+        //Only parsed by the unmanaged provider
+        assertEquals(UnmanagedHandlePidProvider.ID, pid2.getProviderId());
+        assertEquals(HandlePidProvider.HDL_RESOLVER_URL + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
         assertEquals("20.500.3456", pid2.getAuthority());
         assertEquals(HandlePidProvider.HDL_PROTOCOL, pid2.getProtocol());
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
         assertEquals(pid1String, pid3.asString());
-        assertEquals("UnmanagedHandleProvider", pid3.getProviderId());
+        assertEquals(UnmanagedHandlePidProvider.ID, pid3.getProviderId());
         
+        //Same for DOIs
         String pid5String = "doi:10.6083/FK2ABCDEF";
         GlobalId pid5 = PidUtil.parseAsGlobalID(pid5String);
         assertEquals(pid5String, pid5.asString());
-        assertEquals("UnmanagedDOIProvider", pid5.getProviderId());
+        assertEquals(UnmanagedDOIProvider.ID, pid5.getProviderId());
 
+        //And Permalinks
+        String pid6String = "perma:NOTDANSQEABCDEF";
+        GlobalId pid6 = PidUtil.parseAsGlobalID(pid6String);
+        assertEquals(pid6String, pid6.asString());
+        assertEquals(UnmanagedPermaLinkPidProvider.ID, pid6.getProviderId());
+
+    }
+    
+    @Test
+    public void testExcludedSetParsing() throws IOException {
+        
+        String pid1String = "doi:10.5073/FK2123456";
+        GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
+        assertEquals(pid1String, pid2.asString());
+        assertEquals(UnmanagedDOIProvider.ID, pid2.getProviderId());
+        assertEquals("https://doi.org/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
+        assertEquals("10.5073", pid2.getAuthority());
+        assertEquals(DOIProvider.DOI_PROTOCOL, pid2.getProtocol());
+        GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
+        assertEquals(pid1String, pid3.asString());
+        assertEquals(UnmanagedDOIProvider.ID, pid3.getProviderId());
+        
+        String pid4String = "perma:bad";
+        GlobalId pid4 = PidUtil.parseAsGlobalID(pid4String);
+        assertEquals(pid4String, pid4.asString());
+        assertEquals(UnmanagedPermaLinkPidProvider.ID, pid4.getProviderId());
+
+        String pid5String = "perma:DANSLINKQE123456";
+        GlobalId pid5 = PidUtil.parseAsGlobalID(pid5String);
+        assertEquals(pid5String, pid5.asString());
+        assertEquals(UnmanagedPermaLinkPidProvider.ID, pid5.getProviderId());
+        
+        String pid6String = "perma:LINKIT123456";
+        GlobalId pid6 = PidUtil.parseAsGlobalID(pid6String);
+        assertEquals(pid6String, pid6.asString());
+        assertEquals(UnmanagedPermaLinkPidProvider.ID, pid6.getProviderId());
+
+
+    }
+    
+    @Test
+    public void testManagedSetParsing() throws IOException {
+        
+        String pid1String = "doi:10.5073/FK3ABCDEF";
+        GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
+        assertEquals(pid1String, pid2.asString());
+        assertEquals("fake1", pid2.getProviderId());
+        assertEquals("https://doi.org/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
+        assertEquals("10.5073", pid2.getAuthority());
+        assertEquals(DOIProvider.DOI_PROTOCOL, pid2.getProtocol());
+        GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
+        assertEquals(pid1String, pid3.asString());
+        assertEquals("fake1", pid3.getProviderId());
+        assertFalse(PidUtil.getPidProvider(pid3.getProviderId()).canCreatePidsLike(pid3));
+        
+        String pid4String = "hdl:20.20.20/FK2ABCDEF";
+        GlobalId pid4 = PidUtil.parseAsGlobalID(pid4String);
+        assertEquals(pid4String, pid4.asString());
+        assertEquals("hdl1", pid4.getProviderId());
+        assertFalse(PidUtil.getPidProvider(pid4.getProviderId()).canCreatePidsLike(pid4));
+
+        String pid5String = "perma:LINKIT/FK2ABCDEF";
+        GlobalId pid5 = PidUtil.parseAsGlobalID(pid5String);
+        assertEquals(pid5String, pid5.asString());
+        assertEquals("perma2", pid5.getProviderId());
+        assertFalse(PidUtil.getPidProvider(pid5.getProviderId()).canCreatePidsLike(pid5));
     }
     
     @Test
@@ -279,20 +352,23 @@ public class PidUtilTest {
         Dataverse dataverse1 = new Dataverse();
         dataset1.setOwner(dataverse1);
         String pidGeneratorSpecs = Json.createObjectBuilder().add("protocol", DOIProvider.DOI_PROTOCOL).add("authority","10.5072").add("shoulder", "FK2").build().toString();
+        //Set a PID generator on the parent
         dataverse1.setPidGeneratorSpecs(pidGeneratorSpecs);
         assertEquals(pidGeneratorSpecs, dataverse1.getPidGeneratorSpecs());
+        //Verify that the parent's PID generator is the effective one
         assertEquals("ez1", dataverse1.getEffectivePidGenerator().getId());
         assertEquals("ez1", dataset1.getEffectivePidGenerator().getId());
-        
+        //Change dataset to have a provider and verify that it is used instead of any effective one
         dataset1.setAuthority("10.5073");
         dataset1.setProtocol(DOIProvider.DOI_PROTOCOL);
         dataset1.setIdentifier("FK2ABCDEF");
-        
+        //Reset to get rid of cached @transient value
         dataset1.setPidGenerator(null);
         assertEquals("dc1", dataset1.getGlobalId().getProviderId());
         assertEquals("dc1", dataset1.getEffectivePidGenerator().getId());
         
         dataset1.setPidGenerator(null);
+        //Now set identifier so that the provider has this one in it's managed list (and therefore we can't mint new PIDs in the same auth/shoulder) and therefore we get the effective pid generator
         dataset1.setIdentifier("FK3ABCDEF");
         assertEquals("fake1", dataset1.getGlobalId().getProviderId());
         assertEquals("ez1", dataset1.getEffectivePidGenerator().getId());
