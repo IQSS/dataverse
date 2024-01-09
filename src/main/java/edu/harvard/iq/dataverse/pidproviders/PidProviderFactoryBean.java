@@ -139,32 +139,6 @@ public class PidProviderFactoryBean {
         return dvObjectService.generateNewIdentifierByStoredProcedure();
     }
 
-    /**
-     *  A method to get the PidProvider for a given DvObject - intended for use when it is not known whether the object has a PID yet or not.
-     *  If it does, the PidUtil method can be called directly to get the PidProvider.
-     * @param dvObject
-     * @return - a PidProvider for the object (may be one of the Unmanaged providers)
-     */
-    @Deprecated
-    public PidProvider getPidProvider(DvObject dvObject) {
-        GlobalId pid = dvObject.getGlobalId();
-        if (pid != null) {
-            return PidUtil.getPidProvider(pid.getProviderId());
-        } else {
-            // ToDo - get parent settings rather than global
-            String nonNullDefaultIfKeyNotFound = "";
-            String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol,
-                    nonNullDefaultIfKeyNotFound);
-            String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority,
-                    nonNullDefaultIfKeyNotFound);
-            String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder,
-                    nonNullDefaultIfKeyNotFound);
-
-            return PidUtil.getPidProvider(protocol, authority, shoulder);
-        }
-    }
-
-
     public PidProvider getDefaultPidGenerator() {
         Optional<String> pidProviderDefaultId = JvmSettings.PID_DEFAULT_PROVIDER.lookupOptional(String.class);
         if(pidProviderDefaultId.isPresent()) {

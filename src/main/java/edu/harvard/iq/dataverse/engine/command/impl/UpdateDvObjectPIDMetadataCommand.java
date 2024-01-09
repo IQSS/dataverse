@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
@@ -46,7 +47,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
             //the single dataset update api checks for drafts before calling the command
             return;
         }
-        PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(target);
+        PidProvider pidProvider = PidUtil.getPidProvider(target.getGlobalId().getProviderId());
         
         try {
             Boolean doiRetString = pidProvider.publicizeIdentifier(target);

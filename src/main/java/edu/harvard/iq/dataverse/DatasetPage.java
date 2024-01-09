@@ -2121,7 +2121,7 @@ public class DatasetPage implements java.io.Serializable {
         	//Need to assign an identifier prior to calls to requestDirectUploadUrl if direct upload is used.
             if ( isEmpty(dataset.getIdentifier()) && systemConfig.directUploadEnabled(dataset) ) {
                 CommandContext ctxt = commandEngine.getContext();
-                PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(dataset);
+                PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(dataset);
                 dataset.setIdentifier(pidProvider.generateDatasetIdentifier(dataset));
             }
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());

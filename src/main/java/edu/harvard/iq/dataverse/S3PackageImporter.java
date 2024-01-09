@@ -204,7 +204,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         fmd.setDatasetVersion(dataset.getLatestVersion());
 
         FileUtil.generateS3PackageStorageIdentifier(packageFile);
-        PidProvider pidProvider = commandEngine.getContext().pidProviderFactory().getPidProvider(dataset);
+        PidProvider pidProvider = commandEngine.getContext().dvObjects().getEffectivePidGenerator(dataset);
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
             String packageIdentifier = pidProvider.generateDataFileIdentifier(packageFile);
             packageFile.setIdentifier(packageIdentifier);
@@ -223,7 +223,6 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
         if (!packageFile.isIdentifierRegistered()) {
             String doiRetString = "";
-            pidProvider = commandEngine.getContext().pidProviderFactory().getPidProvider(dataset);
             try {
                 doiRetString = pidProvider.createIdentifier(packageFile);
             } catch (Throwable e) {

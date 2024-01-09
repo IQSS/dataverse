@@ -42,7 +42,7 @@ public class ReservePidCommand extends AbstractVoidCommand {
                     this, Collections.singleton(Permission.EditDataset), dataset);
         }
 
-        PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(dataset);
+        PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(dataset);
         
         try {
             String returnString = pidProvider.createIdentifier(dataset);

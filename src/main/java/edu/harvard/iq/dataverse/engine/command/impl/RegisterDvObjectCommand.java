@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.AlternativePersistentIdentifier;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -12,13 +12,8 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
-
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
-import java.io.IOException;
-import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -49,15 +44,15 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //Only continue if you can successfully migrate the handle
             if (!processMigrateHandle(ctxt)) return;
         }
-        String nonNullDefaultIfKeyNotFound = "";
-        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+        DvObjectContainer container = (target instanceof DvObjectContainer) ? (DvObjectContainer) target : target.getOwner();
         // Get the pidProvider that is configured to mint new IDs
-        PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(target);
+        PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(container);
+
         try {
             //Test to see if identifier already present
             //if so, leave.
             if (target.getIdentifier() == null || target.getIdentifier().isEmpty()) {
+                
                 if (target.isInstanceofDataset()) {
                     target.setIdentifier(pidProvider.generateDatasetIdentifier((Dataset) target));
 
@@ -65,12 +60,13 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     target.setIdentifier(pidProvider.generateDataFileIdentifier((DataFile) target));
                 }
                 if (target.getProtocol() == null) {
-                    target.setProtocol(protocol);
+                    target.setProtocol(pidProvider.getProtocol());
                 }
                 if (target.getAuthority() == null) {
-                    target.setAuthority(authority);
+                    target.setAuthority(pidProvider.getAuthority());
                 }
             }
+
             if (pidProvider.alreadyRegistered(target)) {
                 return;
             }
@@ -98,10 +94,10 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                         if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
                             df.setIdentifier(pidProvider.generateDataFileIdentifier(df));
                             if (df.getProtocol() == null || df.getProtocol().isEmpty()) {
-                                df.setProtocol(protocol);
+                                df.setProtocol(pidProvider.getProtocol());
                             }
                             if (df.getAuthority() == null || df.getAuthority().isEmpty()) {
-                                df.setAuthority(authority);
+                                df.setAuthority(pidProvider.getAuthority());
                             }
                         }
                         doiRetString = pidProvider.createIdentifier(df);

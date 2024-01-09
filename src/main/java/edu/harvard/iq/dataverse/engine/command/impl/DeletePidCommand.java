@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.httpclient.HttpException;
 
@@ -37,24 +38,26 @@ public class DeletePidCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
         if (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()) {
-            throw new PermissionException(BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"),
-                    this, Collections.singleton(Permission.EditDataset), dataset);
+            throw new PermissionException(BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"), this,
+                    Collections.singleton(Permission.EditDataset), dataset);
         }
 
-        PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(dataset);
-        
+        PidProvider pidProvider = PidUtil.getPidProvider(dataset.getGlobalId().getProviderId());
+
         try {
-            pidProvider.deleteIdentifier(dataset); 
+            pidProvider.deleteIdentifier(dataset);
             // Success! Clear the create time, etc.
             dataset.setGlobalIdCreateTime(null);
             dataset.setIdentifierRegistered(false);
             ctxt.datasets().merge(dataset);
         } catch (HttpException hex) {
-        	String message = BundleUtil.getStringFromBundle("pids.deletePid.failureExpected", Arrays.asList(dataset.getGlobalId().asString(), Integer.toString(hex.getReasonCode())));
+            String message = BundleUtil.getStringFromBundle("pids.deletePid.failureExpected",
+                    Arrays.asList(dataset.getGlobalId().asString(), Integer.toString(hex.getReasonCode())));
             logger.info(message);
             throw new IllegalCommandException(message, this);
         } catch (Exception ex) {
-        	String message = BundleUtil.getStringFromBundle("pids.deletePid.failureOther", Arrays.asList(dataset.getGlobalId().asString(), ex.getLocalizedMessage()));
+            String message = BundleUtil.getStringFromBundle("pids.deletePid.failureOther",
+                    Arrays.asList(dataset.getGlobalId().asString(), ex.getLocalizedMessage()));
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }

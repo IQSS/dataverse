@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.UserNotification;
@@ -13,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
@@ -71,14 +73,18 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
      */
     @Override
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
-        if ( nonEmpty(getDataset().getIdentifier()) ) {
-            PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(getDataset());
-            
-            if ( !pidProvider.isGlobalIdUnique(getDataset().getGlobalId()) ) {
-                throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
-                                                                 getDataset().getIdentifier(), getDataset().getProtocol(), getDataset().getAuthority()), 
-                    this);
-           }
+        if (nonEmpty(getDataset().getIdentifier())) {
+            GlobalId pid = getDataset().getGlobalId();
+            if (pid != null) {
+                PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
+
+                if (!pidProvider.isGlobalIdUnique(pid)) {
+                    throw new IllegalCommandException(String.format(
+                            "Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
+                            getDataset().getIdentifier(), getDataset().getProtocol(), getDataset().getAuthority()),
+                            this);
+                }
+            }
         }
     }
     
@@ -89,7 +95,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
 
     @Override
     protected void handlePid(Dataset theDataset, CommandContext ctxt) throws CommandException {
-        PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(theDataset);
+        PidProvider pidProvider = PidUtil.getPidProvider(theDataset.getGlobalId().getProviderId());
         if(!pidProvider.canManagePID()) {
             throw new IllegalCommandException("PID Provider " + pidProvider.getProviderInformation().get(0) + " is not configured.", this);
         }

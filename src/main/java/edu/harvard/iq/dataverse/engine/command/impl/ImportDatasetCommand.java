@@ -7,8 +7,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.pidproviders.FakeDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -80,7 +80,7 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
                  * Dataverse) but aren't findable to be used. That could be the case if, for
                  * example, someone was importing a draft dataset from elsewhere.
                  */
-                PidProvider pidProvider = ctxt.pidProviderFactory().getPidProvider(ds);
+                PidProvider pidProvider = PidUtil.getPidProvider(ds.getGlobalId().getProviderId());
                 if (pidProvider != null) {
                     if (pidProvider.alreadyRegistered(ds.getGlobalId(), true)) {
                         return;
