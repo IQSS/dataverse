@@ -290,10 +290,11 @@ GitHub documents how to make changes to a fork at https://help.github.com/articl
 How to Update a "develop Branch to develop Branch" Pull Request
 --------------------------------------------
 
-This section is to let show how to update a develop branch to develop branch Pull Request. Make sure all of the above steps are done away from your normal code.
+This section is to show how to update a develop branch to develop branch Pull Request. Make sure all of the above steps are done away from your normal code.
 
 .. code-block:: bash
 
+	#clone the dataverse repository
         git clone git@github.com:IQSS/dataverse.git
 	cd dataverse
 	git remote add my_dataverse_repo git@github.com:my_dataverse_repo/dataverse.git
