@@ -154,7 +154,7 @@ import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 import java.util.Comparator;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -991,7 +991,7 @@ public class DatasetPage implements java.io.Serializable {
 
         try {
             queryResponse = solrClientService.getSolrClient().query(solrQuery);
-        } catch (HttpSolrClient.RemoteSolrException ex) {
+        } catch (RemoteSolrException ex) {
             logger.fine("Remote Solr Exception: " + ex.getLocalizedMessage());
             String msg = ex.getLocalizedMessage();
             if (msg.contains(SearchFields.FILE_DELETED)) {

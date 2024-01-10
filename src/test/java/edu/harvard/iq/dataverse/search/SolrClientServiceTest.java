@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +39,7 @@ class SolrClientServiceTest {
         clientService.init();
         
         // then
-        HttpSolrClient client = (HttpSolrClient) clientService.getSolrClient();
+        Http2SolrClient client = (Http2SolrClient) clientService.getSolrClient();
         assertEquals(url, client.getBaseURL());
     }
     
@@ -55,7 +55,7 @@ class SolrClientServiceTest {
         clientService.init();
         
         // then
-        HttpSolrClient client = (HttpSolrClient) clientService.getSolrClient();
+        Http2SolrClient client = (Http2SolrClient) clientService.getSolrClient();
         assertEquals(url, client.getBaseURL());
     }
 }

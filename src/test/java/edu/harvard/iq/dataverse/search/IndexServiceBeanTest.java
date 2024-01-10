@@ -1,16 +1,26 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.DOIServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Dataverse.DataverseType;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,11 +31,15 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @LocalJvmSettings
@@ -40,7 +54,7 @@ public class IndexServiceBeanTest {
     private SettingsServiceBean settingsService;
     @InjectMocks
     private SystemConfig systemConfig = new SystemConfig();
-    
+
     @BeforeEach
     public void setUp() {
         dataverse = MocksFactory.makeDataverse();
@@ -53,36 +67,6 @@ public class IndexServiceBeanTest {
         BrandingUtil.injectServices(indexService.dataverseService, indexService.settingsService);
 
         Mockito.when(indexService.dataverseService.findRootDataverse()).thenReturn(dataverse);
-    }
-    
-    @Test
-    public void testInitWithDefaults() {
-        // given
-        String url = "http://localhost:8983/solr/collection1";
-        
-        // when
-        indexService.init();
-        
-        // then
-        HttpSolrClient client = (HttpSolrClient) indexService.solrServer;
-        assertEquals(url, client.getBaseURL());
-    }
-    
-    
-    @Test
-    @JvmSetting(key = JvmSettings.SOLR_HOST, value = "foobar")
-    @JvmSetting(key = JvmSettings.SOLR_PORT, value = "1234")
-    @JvmSetting(key = JvmSettings.SOLR_CORE, value = "test")
-    void testInitWithConfig() {
-        // given
-        String url = "http://foobar:1234/solr/test";
-        
-        // when
-        indexService.init();
-        
-        // then
-        HttpSolrClient client = (HttpSolrClient) indexService.solrServer;
-        assertEquals(url, client.getBaseURL());
     }
 
     @Test
@@ -125,6 +109,7 @@ public class IndexServiceBeanTest {
         assertTrue(!doc.get().containsKey("geolocation"));
         assertTrue(!doc.get().containsKey("boundingBox"));
     }
+
     private DatasetField constructBoundingBoxValue(String datasetFieldTypeName, String value) {
         DatasetField retVal = new DatasetField();
         retVal.setDatasetFieldType(new DatasetFieldType(datasetFieldTypeName, DatasetFieldType.FieldType.TEXT, false));

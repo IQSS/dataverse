@@ -1,6 +1,28 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DataFileTag;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValueValidator;
+import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.Embargo;
+import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
@@ -14,7 +36,6 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -39,8 +60,6 @@ import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import jakarta.ejb.AsyncResult;
 import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
@@ -55,11 +74,9 @@ import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
@@ -109,16 +126,15 @@ public class IndexServiceBean {
     @EJB
     SettingsServiceBean settingsService;
     @EJB
-    SolrClientService solrClientService;
+    SolrClientService solrClientService; // only for query index on Solr
+    @EJB
+    SolrClientIndexService solrClientIndexService; // only for add, update, or remove index on Solr
     @EJB
     DataFileServiceBean dataFileService;
 
     @EJB
     VariableServiceBean variableService;
-    
-    @EJB
-    IndexBatchServiceBean indexBatchService;
-    
+
     @EJB
     DatasetFieldServiceBean datasetFieldService;
 
@@ -138,37 +154,10 @@ public class IndexServiceBean {
     private static final String IN_REVIEW_STRING = "In Review";
     private static final String DEACCESSIONED_STRING = "Deaccessioned";
     public static final String HARVESTED = "Harvested";
-    private String rootDataverseName;
     private Dataverse rootDataverseCached;
-    SolrClient solrServer;
 
     private VariableMetadataUtil variableMetadataUtil;
 
-    @PostConstruct
-    public void init() {
-        // Get from MPCONFIG. Might be configured by a sysadmin or simply return the default shipped with
-        // resources/META-INF/microprofile-config.properties.
-        String protocol = JvmSettings.SOLR_PROT.lookup();
-        String path = JvmSettings.SOLR_PATH.lookup();
-    
-        String urlString = protocol + "://" + systemConfig.getSolrHostColonPort() + path;
-        solrServer = new HttpSolrClient.Builder(urlString).build();
-
-        rootDataverseName = findRootDataverseCached().getName();
-    }
-
-    @PreDestroy
-    public void close() {
-        if (solrServer != null) {
-            try {
-                solrServer.close();
-            } catch (IOException e) {
-                logger.warning("Solr closing error: " + e);
-            }
-            solrServer = null;
-        }
-    }
-   
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) throws SolrServerException, IOException{
         return indexDataverse(dataverse, false);
@@ -303,7 +292,7 @@ public class IndexServiceBean {
         String status;
         try {
             if (dataverse.getId() != null) {
-                solrClientService.getSolrClient().add(docs);
+                solrClientIndexService.getSolrClient().add(docs);
             } else {
                 logger.info("WARNING: indexing of a dataverse with no id attempted");
             }
@@ -313,7 +302,7 @@ public class IndexServiceBean {
             return new AsyncResult<>(status);
         }
         try {
-            solrClientService.getSolrClient().commit();
+            solrClientIndexService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             status = ex.toString();
             logger.info(status);
@@ -1447,8 +1436,8 @@ public class IndexServiceBean {
         final SolrInputDocuments docs = toSolrDocs(indexableDataset, datafilesInDraftVersion);
 
         try {
-            solrClientService.getSolrClient().add(docs.getDocuments());
-            solrClientService.getSolrClient().commit();
+            solrClientIndexService.getSolrClient().add(docs.getDocuments());
+            solrClientIndexService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             if (ex.getCause() instanceof SolrServerException) {
                 throw new SolrServerException(ex);
@@ -1689,8 +1678,8 @@ public class IndexServiceBean {
 
             sid.removeField(SearchFields.SUBTREE);
             sid.addField(SearchFields.SUBTREE, paths);
-            UpdateResponse addResponse = solrClientService.getSolrClient().add(sid);
-            UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
+            UpdateResponse addResponse = solrClientIndexService.getSolrClient().add(sid);
+            UpdateResponse commitResponse = solrClientIndexService.getSolrClient().commit();
             if (object.isInstanceofDataset()) {
                 for (DataFile df : dataset.getFiles()) {
                     solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, df.getId().toString()));
@@ -1703,8 +1692,8 @@ public class IndexServiceBean {
                         }
                         sid.removeField(SearchFields.SUBTREE);
                         sid.addField(SearchFields.SUBTREE, paths);
-                        addResponse = solrClientService.getSolrClient().add(sid);
-                        commitResponse = solrClientService.getSolrClient().commit();
+                        addResponse = solrClientIndexService.getSolrClient().add(sid);
+                        commitResponse = solrClientIndexService.getSolrClient().commit();
                     }
                 }
             }
@@ -1746,12 +1735,12 @@ public class IndexServiceBean {
         logger.fine("deleting Solr document for dataverse " + doomed.getId());
         UpdateResponse updateResponse;
         try {
-            updateResponse = solrClientService.getSolrClient().deleteById(solrDocIdentifierDataverse + doomed.getId());
+            updateResponse = solrClientIndexService.getSolrClient().deleteById(solrDocIdentifierDataverse + doomed.getId());
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            solrClientService.getSolrClient().commit();
+            solrClientIndexService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1771,12 +1760,12 @@ public class IndexServiceBean {
         logger.fine("deleting Solr document: " + doomed);
         UpdateResponse updateResponse;
         try {
-            updateResponse = solrClientService.getSolrClient().deleteById(doomed);
+            updateResponse = solrClientIndexService.getSolrClient().deleteById(doomed);
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            solrClientService.getSolrClient().commit();
+            solrClientIndexService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1968,7 +1957,7 @@ public class IndexServiceBean {
             boolean done = false;
             while (!done) {
                 q.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
-                QueryResponse rsp = solrServer.query(q);
+                QueryResponse rsp = solrClientService.getSolrClient().query(q);
                 String nextCursorMark = rsp.getNextCursorMark();
                 SolrDocumentList list = rsp.getResults();
                 for (SolrDocument doc: list) {
@@ -2003,7 +1992,7 @@ public class IndexServiceBean {
             solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
             QueryResponse rsp = null;
             try {
-                rsp = solrServer.query(solrQuery);
+                rsp = solrClientService.getSolrClient().query(solrQuery);
              } catch (SolrServerException | IOException ex) {
                 throw new SearchException("Error searching Solr type: " + type, ex);
 

@@ -46,9 +46,7 @@ public class SolrIndexServiceBean {
     @EJB
     DataverseRoleServiceBean rolesSvc;
     @EJB
-    IndexServiceBean indexService;
-    @EJB
-    SolrClientService solrClientService;
+    SolrClientIndexService solrClientService;
 
     public static String numRowsClearedByClearAllIndexTimes = "numRowsClearedByClearAllIndexTimes";
     public static String messageString = "message";
