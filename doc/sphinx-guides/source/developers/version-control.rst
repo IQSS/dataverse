@@ -287,4 +287,6 @@ GitHub documents how to make changes to a fork at https://help.github.com/articl
 
 ----
 
+How to Update a "develop Branch to develop Branch" Pull Request
+--------------------------------------------
 Previous: :doc:`troubleshooting` | Next: :doc:`sql-upgrade-scripts`
