@@ -294,9 +294,10 @@ This section is to show how to update a develop branch to develop branch Pull Re
 
 .. code-block:: bash
 
-	#clone the dataverse repository
+	# clone the dataverse repo
         git clone git@github.com:IQSS/dataverse.git
 	cd dataverse
+	# add your remote dataverse repo to the cloned dataverse repo
 	git remote add my_dataverse_repo git@github.com:my_dataverse_repo/dataverse.git
 	git fetch my_dataverse_repo
 	# make a new branch not called develop
