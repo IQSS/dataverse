@@ -37,7 +37,7 @@
                         <label jsf:for="userEmail" class="col-sm-3 control-label">#{bundle['contact.from']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                         <div class="col-sm-9">
                             <p:inputText id="userEmail" styleClass="form-control" size="30" value="#{sendFeedbackDialog.userEmail}"
-                                         validator="#{sendFeedbackDialog.validateUserEmail}" validatorMessage="#{bundle['contact.from.invalid']}" requiredMessage="#{bundle['contact.from.required']}" required="#{param['DO_VALIDATION']}"/>
+                                         validator="#{sendFeedbackDialog.validateUserEmail}" validatorMessage="#{bundle['contact.from.invalid']}" requiredMessage="#{bundle['contact.from.required']}" required="#{param['DO_VALIDATION']}" placeholder="#{bundle['contact.from.emailPlaceholder']}"/>
                             <h:message for="userEmail" styleClass="bg-danger text-danger"/>
                         </div>
                     </div>
@@ -81,7 +81,7 @@
                 <!-- send | cancel buttons -->
                 <div class="button-block">
                     <p:commandButton styleClass="btn btn-default" value="#{bundle['contact.send']}"
-                                   update="@form" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('contactForm').hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
+                                   update="@form,messagePanel" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('contactForm').hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
                         <f:param name="DO_VALIDATION" value="true"/>
                     </p:commandButton>
                     <button class="btn btn-link" onclick="PF('contactForm').hide()" type="button">
