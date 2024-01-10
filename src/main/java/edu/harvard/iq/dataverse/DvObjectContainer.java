@@ -202,14 +202,22 @@ public abstract class DvObjectContainer extends DvObject {
         this.pidGeneratorSpecs = pidGeneratorSpecs;
     }
 
-    public PidProvider getPidGenerator() {
-        return pidGenerator;
+    //Used in JSF when selecting the PidGenerator
+    public String getPidGeneratorId() {
+        return getEffectivePidGenerator().getId();
+    }
+    
+    //Used in JSF when setting the PidGenerator
+    public void setPidGeneratorId(String pidGeneratorId) {
+        // Note that the "default" provider will not be found so will result in
+        // setPidGenerator(null), which unsets the pidGenerator/Specs as desired
+        setPidGenerator(PidUtil.getPidProvider(pidGeneratorId));
     }
 
     public void setPidGenerator(PidProvider pidGenerator) {
         this.pidGenerator = pidGenerator;
-        JsonObjectBuilder job = jakarta.json.Json.createObjectBuilder();
         if (pidGenerator != null) {
+            JsonObjectBuilder job = jakarta.json.Json.createObjectBuilder();
             this.pidGeneratorSpecs = job.add("protocol", pidGenerator.getProtocol())
                     .add("authority", pidGenerator.getAuthority()).add("shoulder", pidGenerator.getShoulder())
                     .add("separator", pidGenerator.getSeparator()).build().toString();
@@ -219,7 +227,6 @@ public abstract class DvObjectContainer extends DvObject {
     }
 
     public PidProvider getEffectivePidGenerator() {
-        PidProvider pidGenerator = getPidGenerator();
         if (pidGenerator == null) {
             String specs = getPidGeneratorSpecs();
             if (StringUtils.isBlank(specs)) {
@@ -242,8 +249,8 @@ public abstract class DvObjectContainer extends DvObject {
                             providerSpecs.getString("authority"), providerSpecs.getString("shoulder"));
                 }
             }
+            setPidGenerator(pidGenerator);
         }
-        setPidGenerator(pidGenerator);
         return pidGenerator;
     }
 

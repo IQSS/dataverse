@@ -283,17 +283,17 @@
                                             <p:message for="dsGuestbookEntryOption" display="text"/>
                                         </div>
                                     </div>
-                                    <div class="col-xs-12 form-group" jsf:rendered="#{DataversePage.getGuestbookEntryOptions().size()>2}">
-                                        <h:outputLabel for="dsGuestbookEntryOption" styleClass="control-label">
-                                            #{bundle.guestbookEntryOption} 
+                                    <div class="col-xs-12 form-group" jsf:rendered="#{DataversePage.getPidProviderOptions().size()>2}">
+                                        <h:outputLabel for="dsPidProviderOption" styleClass="control-label">
+                                            #{bundle.pidProviderOption} 
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.guestbookentryatrequest.title']}"></span>
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.pidProvider.title']}"></span>
                                         </h:outputLabel>
                                         <div class="form-col-container">
-                                            <h:selectOneMenu id="dsGuestbookEntryOption" styleClass="form-control" value="#{DataversePage.dataverse.guestbookEntryAtRequest}">
-                                                <f:selectItems value="#{DataversePage.getGuestbookEntryOptions()}" var="option" itemLabel="#{option.getValue()}" itemValue="#{option.getKey()}"/>
+                                            <h:selectOneMenu id="dsPidProviderOption" styleClass="form-control" value="#{DataversePage.dataverse.pidGenerator}">
+                                                <f:selectItems value="#{DataversePage.getPidProviderOptions()}" var="option" itemLabel="#{option.getValue()}" itemValue="#{option.getKey()}"/>
                                             </h:selectOneMenu>
-                                            <p:message for="dsGuestbookEntryOption" display="text"/>
+                                            <p:message for="dsPidProviderOption" display="text"/>
                                         </div>
                                     </div>
                                 </div>
