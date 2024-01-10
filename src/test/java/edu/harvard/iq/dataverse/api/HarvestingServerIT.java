@@ -106,9 +106,9 @@ public class HarvestingServerIT {
         // So wait for all of this to finish.
         UtilIT.sleepForReexport(singleSetDatasetPersistentId, adminUserAPIKey, 10);
         
-        // ... And let's create 4 more datasets for a multi-dataset experiment:
+        // ... And let's create 5 more datasets for a multi-dataset experiment:
         
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             // create dataset: 
             createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, adminUserAPIKey);
             createDatasetResponse.prettyPrint();
@@ -653,9 +653,13 @@ public class HarvestingServerIT {
         // in the class init: 
 
         String setName = UtilIT.getRandomString(6);
-        String setQuery = "(dsPersistentId:" + singleSetDatasetIdentifier;
+        String setQuery = "";
         for (String persistentId : extraDatasetsIdentifiers) {
-            setQuery = setQuery.concat(" OR dsPersistentId:" + persistentId);
+            if (setQuery.equals("")) {
+                setQuery = "(dsPersistentId:" + persistentId;
+            } else {
+                setQuery = setQuery.concat(" OR dsPersistentId:" + persistentId);
+            }
         }
         setQuery = setQuery.concat(")");
 
@@ -796,7 +800,6 @@ public class HarvestingServerIT {
         
         boolean allDatasetsListed = true; 
         
-        allDatasetsListed = persistentIdsInListIdentifiers.contains(singleSetDatasetIdentifier);
         for (String persistentId : extraDatasetsIdentifiers) {
             allDatasetsListed = allDatasetsListed && persistentIdsInListIdentifiers.contains(persistentId); 
         }
@@ -921,12 +924,11 @@ public class HarvestingServerIT {
         // Record the last identifier listed on this final page:
         persistentIdsInListRecords.add(ret.get(0).substring(ret.get(0).lastIndexOf('/') + 1));
         
-        // Finally, let's confirm that the expected 5 datasets have been listed
+        // Finally, let's confirm again that the expected 5 datasets have been listed
         // as part of this Set: 
         
         allDatasetsListed = true; 
         
-        allDatasetsListed = persistentIdsInListRecords.contains(singleSetDatasetIdentifier);
         for (String persistentId : extraDatasetsIdentifiers) {
             allDatasetsListed = allDatasetsListed && persistentIdsInListRecords.contains(persistentId); 
         }
