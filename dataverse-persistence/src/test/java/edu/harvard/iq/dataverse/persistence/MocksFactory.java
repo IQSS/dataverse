@@ -289,6 +289,18 @@ public class MocksFactory {
         return create(name, value, Arrays.asList(subfields));
     }
 
+    public static DatasetField createCVV(String name, String... values) {
+        DatasetField field = new DatasetField();
+        DatasetFieldType type = new DatasetFieldType();
+        type.setName(name);
+        field.setDatasetFieldType(type);
+        for (String value : values) {
+            ControlledVocabularyValue vocabValue = new ControlledVocabularyValue(null, value, type);
+            field.getControlledVocabularyValues().add(vocabValue);
+        }
+        return field;
+    }
+
     public static DataverseRole makeRole(String name) {
         DataverseRole dvr = new DataverseRole();
 

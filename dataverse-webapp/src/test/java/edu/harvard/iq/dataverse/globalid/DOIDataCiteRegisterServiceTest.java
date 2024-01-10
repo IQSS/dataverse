@@ -2,14 +2,11 @@ package edu.harvard.iq.dataverse.globalid;
 
 import com.google.api.client.util.Lists;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.persistence.MocksFactory;
+import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.cache.DOIDataCiteRegisterCache;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,11 +20,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import static edu.harvard.iq.dataverse.persistence.MocksFactory.create;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -110,9 +107,13 @@ class DOIDataCiteRegisterServiceTest {
                 " xmlns=\"http://datacite.org/schema/kernel-4\"" +
                 " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
                 "<identifier identifierType=\"DOI\">Testid</identifier>" +
-                "<creators><creator><creatorName>authorName</creatorName><affiliation " +
-                "affiliationIdentifier=\"authorAffiliationIdentifier\" affiliationIdentifierScheme=\"ROR\">" +
-                "authorAffiliation</affiliation></creator></creators>" +
+                "<creators>" +
+                "<creator>" +
+                "<creatorName>authorName</creatorName>" +
+                "<nameIdentifier schemeURI=\"https://orcid.org/\" nameIdentifierScheme=\"ORCID\">0000-0001-0002-0003</nameIdentifier>" +
+                "<affiliation affiliationIdentifier=\"authorAffiliationIdentifier\" affiliationIdentifierScheme=\"ROR\">authorAffiliation</affiliation>" +
+                "</creator>" +
+                "</creators>" +
                 "<titles>" +
                 "<title>title</title>" +
                 "</titles>" +
@@ -247,108 +248,58 @@ class DOIDataCiteRegisterServiceTest {
     }
 
     private void addDatasetFieldsToDsVersion(DatasetVersion dsv) {
-        MetadataBlock citationMetadataBlock = new MetadataBlock();
-        citationMetadataBlock.setId(1L);
-        citationMetadataBlock.setName("citation");
-        citationMetadataBlock.setDisplayName("Citation Metadata");
-        citationMetadataBlock.setNamespaceUri("https://dataverse.org/schema/citation/");
-
         List<DatasetField> fields = new ArrayList<>();
 
-        addTitleField(citationMetadataBlock, fields);
-        addDescriptionField(citationMetadataBlock, fields);
-        addAuthorField(citationMetadataBlock, fields);
-        addGrantNumberField(citationMetadataBlock, fields);
+        addTitleField(fields);
+        addDescriptionField(fields);
+        addAuthorField(fields);
+        addGrantNumberField(fields);
 
         dsv.setDatasetFields(fields);
     }
 
     private void addGrantFieldWithNoAgencyToDsVersion(DatasetVersion dsv) {
-        MetadataBlock citationMetadataBlock = new MetadataBlock();
-        citationMetadataBlock.setId(1L);
-        citationMetadataBlock.setName("citation");
-        citationMetadataBlock.setDisplayName("Citation Metadata");
-        citationMetadataBlock.setNamespaceUri("https://dataverse.org/schema/citation/");
+        DatasetField grantNumberField =
+                create(DatasetFieldConstant.grantNumber, "",
+                        create(DatasetFieldConstant.grantNumberAgencyIdentifier, "grantNumberAgencyIdentifier"),
+                        create(DatasetFieldConstant.grantNumberProgram, "grantNumberProgram"),
+                        create(DatasetFieldConstant.grantNumberValue, "grantNumberValue"));
 
-        List<DatasetField> fields = new ArrayList<>();
-
-        DatasetFieldType grantNumberAgencyIdentifierFieldType = MocksFactory.makeDatasetFieldType("grantNumberAgencyIdentifier", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetField grantNumberAgencyIdentifierField = createField(grantNumberAgencyIdentifierFieldType, "grantNumberAgencyIdentifier");
-
-        DatasetFieldType grantNumberProgramFieldType = MocksFactory.makeDatasetFieldType("grantNumberProgram", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetField grantNumberProgramField = createField(grantNumberProgramFieldType, "grantNumberProgram");
-
-        DatasetFieldType grantNumberValueFieldType = MocksFactory.makeDatasetFieldType("grantNumberValue", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetField grantNumberValueField = createField(grantNumberValueFieldType, "grantNumberValue");
-
-        DatasetFieldType grantNumberFieldType = MocksFactory.makeComplexDatasetFieldType("grantNumber", true, citationMetadataBlock,
-                grantNumberAgencyIdentifierFieldType, grantNumberProgramFieldType, grantNumberValueFieldType);
-        grantNumberFieldType.setDisplayOnCreate(true);
-        DatasetField grantNumberField = createField(grantNumberFieldType, "grantNumber");
-        grantNumberField.setDatasetFieldsChildren(Arrays.asList(grantNumberAgencyIdentifierField, grantNumberProgramField, grantNumberValueField));
-        fields.add(grantNumberField);
-
-        dsv.setDatasetFields(fields);
+        dsv.setDatasetFields(Collections.singletonList(grantNumberField));
     }
 
-    private void addGrantNumberField(MetadataBlock citationMetadataBlock, List<DatasetField> fields) {
-        DatasetFieldType grantNumberAgencyFieldType = MocksFactory.makeDatasetFieldType("grantNumberAgency", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetField grantNumberAgencyField = createField(grantNumberAgencyFieldType, "grantNumberAgency");
+    private void addGrantNumberField(List<DatasetField> fields) {
+        DatasetField grantNumberField =
+                create(DatasetFieldConstant.grantNumber, "",
+                        create(DatasetFieldConstant.grantNumberAgency, "grantNumberAgency"),
+                        create(DatasetFieldConstant.grantNumberAgencyIdentifier, "grantNumberAgencyIdentifier"),
+                        create(DatasetFieldConstant.grantNumberProgram, "grantNumberProgram"),
+                        create(DatasetFieldConstant.grantNumberValue, "grantNumberValue"));
 
-        DatasetFieldType grantNumberAgencyIdentifierFieldType = MocksFactory.makeDatasetFieldType("grantNumberAgencyIdentifier", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetField grantNumberAgencyIdentifierField = createField(grantNumberAgencyIdentifierFieldType, "grantNumberAgencyIdentifier");
-
-        DatasetFieldType grantNumberProgramFieldType = MocksFactory.makeDatasetFieldType("grantNumberProgram", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetField grantNumberProgramField = createField(grantNumberProgramFieldType, "grantNumberProgram");
-
-        DatasetFieldType grantNumberValueFieldType = MocksFactory.makeDatasetFieldType("grantNumberValue", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetField grantNumberValueField = createField(grantNumberValueFieldType, "grantNumberValue");
-
-        DatasetFieldType grantNumberFieldType = MocksFactory.makeComplexDatasetFieldType("grantNumber", true, citationMetadataBlock,
-                grantNumberAgencyFieldType, grantNumberAgencyIdentifierFieldType, grantNumberProgramFieldType, grantNumberValueFieldType);
-        grantNumberFieldType.setDisplayOnCreate(true);
-        DatasetField grantNumberField = createField(grantNumberFieldType, "grantNumber");
-        grantNumberField.setDatasetFieldsChildren(Arrays.asList(grantNumberAgencyField, grantNumberAgencyIdentifierField, grantNumberProgramField, grantNumberValueField));
         fields.add(grantNumberField);
     }
 
-    private void addAuthorField(MetadataBlock citationMetadataBlock, List<DatasetField> fields) {
-        DatasetFieldType authorNameFieldType = MocksFactory.makeDatasetFieldType("authorName", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetField authorNameField = createField(authorNameFieldType, "authorName");
+    private void addAuthorField(List<DatasetField> fields) {
+        DatasetField authorField =
+                create(DatasetFieldConstant.author, "",
+                        create(DatasetFieldConstant.authorName, "authorName"),
+                        create(DatasetFieldConstant.authorAffiliation, "authorAffiliation"),
+                        create(DatasetFieldConstant.authorAffiliationIdentifier, "authorAffiliationIdentifier"),
+                        create(DatasetFieldConstant.authorIdType, "ORCID"),
+                        create(DatasetFieldConstant.authorIdValue, "0000-0001-0002-0003"));
 
-        DatasetFieldType authorAffiliationFieldType = MocksFactory.makeDatasetFieldType("authorAffiliation", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetField authorAffiliationField = createField(authorAffiliationFieldType, "authorAffiliation");
-
-        DatasetFieldType authorAffiliationIdentifierFieldType = MocksFactory.makeDatasetFieldType("authorAffiliationIdentifier", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetField authorAffiliationIdentifierField = createField(authorAffiliationIdentifierFieldType, "authorAffiliationIdentifier");
-
-        DatasetFieldType authorFieldType = MocksFactory.makeComplexDatasetFieldType("author", true, citationMetadataBlock,
-                authorNameFieldType, authorAffiliationFieldType, authorAffiliationIdentifierFieldType);
-        authorFieldType.setDisplayOnCreate(true);
-        DatasetField authorField = createField(authorFieldType, "author");
-        authorField.setDatasetFieldsChildren(Arrays.asList(authorNameField, authorAffiliationField, authorAffiliationIdentifierField));
         fields.add(authorField);
     }
 
-    private void addDescriptionField(MetadataBlock citationMetadataBlock, List<DatasetField> fields) {
-        DatasetFieldType descriptionTextType = MocksFactory.makeDatasetFieldType("dsDescriptionValue", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetField descriptionTextField = createField(descriptionTextType, "dsDescriptionValue");
+    private void addDescriptionField(List<DatasetField> fields) {
+        DatasetField descriptionField =
+                create(DatasetFieldConstant.description, "",
+                        create(DatasetFieldConstant.descriptionText, "dsDescriptionValue"));
 
-        DatasetFieldType descriptionType = MocksFactory.makeDatasetFieldType("dsDescription", FieldType.TEXT, false, citationMetadataBlock);
-        DatasetField dsDescriptionField = createField(descriptionType, "dsDescription");
-        dsDescriptionField.setDatasetFieldsChildren(Collections.singletonList(descriptionTextField));
-        fields.add(dsDescriptionField);
+        fields.add(descriptionField);
     }
 
-    private void addTitleField(MetadataBlock citationMetadataBlock, List<DatasetField> fields) {
-        DatasetFieldType titleFieldType = MocksFactory.makeDatasetFieldType("title", FieldType.TEXT, false, citationMetadataBlock);
-        fields.add(createField(titleFieldType, "title"));
-    }
-
-    private DatasetField createField(DatasetFieldType titleFieldType, String value) {
-        DatasetField datasetField = new DatasetField();
-        datasetField.setFieldValue(value);
-        datasetField.setDatasetFieldType(titleFieldType);
-        return datasetField;
+    private void addTitleField(List<DatasetField> fields) {
+        fields.add(create(DatasetFieldConstant.title, "title"));
     }
 }

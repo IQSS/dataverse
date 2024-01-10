@@ -81,12 +81,11 @@ public class DataCiteResourceCreator {
     private Creator extractCreator(DatasetAuthor author) {
         Creator creator = new Creator(author.getName().getDisplayValue());
         if (StringUtils.isNotBlank(author.getIdType())
-                && StringUtils.isNotBlank(author.getIdValue())
-                && author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
+                && StringUtils.isNotBlank(author.getIdValue())) {
             NameIdentifier nameIdentifier;
             switch (author.getIdType()) {
                 case "ORCID":
-                    nameIdentifier = new NameIdentifier(author.getIdValue(), "https://orcid.org/", "ORICD");
+                    nameIdentifier = new NameIdentifier(author.getIdValue(), "https://orcid.org/", "ORCID");
                     break;
                 case "ISNI":
                     nameIdentifier = new NameIdentifier(author.getIdValue(), "http://isni.org/isni/", "ISNI");
