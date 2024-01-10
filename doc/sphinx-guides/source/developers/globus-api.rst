@@ -1,6 +1,9 @@
 Globus Transfer API
 ===================
 
+.. contents:: |toctitle|
+        :local:
+
 The Globus API addresses three use cases:
 
 * Transfer to a Dataverse-managed Globus endpoint (File-based or using the Globus S3 Connector)
