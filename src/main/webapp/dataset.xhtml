@@ -585,7 +585,7 @@
                                                         </span>
                                                 </div>
                                                 <!-- Make Data Count citations (DOIs only, not Handles) -->
-                                                <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled and DatasetPage.doi">
+                                                <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled and DatasetPage.doi}">
                                                     <p:commandLink oncomplete="PF('citationsDialog').show();">
                                                         <h:outputFormat value="{0} #{bundle['metrics.citations']}">
                                                             <f:param value="#{fn:length(datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
