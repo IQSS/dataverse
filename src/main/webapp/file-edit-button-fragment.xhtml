@@ -25,7 +25,6 @@
     configureTools - for single file, list of configureTools for the file
     bean - the named value of the backing bean for the below method(s), also used by isFilePg param
     unrestrictFileAction - name of the method on the above bean to call for unrestrict (method must take a boolean)    
-    editFileAction - for selected files, name of method on the above bean to send for edit metadata
     refreshTagsPopoupAction - for selected files, name of method on the above bean to refresh tags popup
     -->            
     </ui:remove>
@@ -38,7 +37,7 @@
         <p:commandLink onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                     return false;"                        
                        oncomplete="if(#{fileMetadata!=null}) window.location.assign('/editdatafiles.xhtml?selectedFileIds=#{fileMetadata.dataFile.id}&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}#{isFilePg?'&#38;referrer=FILE':''}&#38;version=#{fileMetadata.datasetVersion.version}')"
-                       action="#{bean[editFileAction]()}">
+                       action="#{bean.editFileMetadata()}">
             <h:outputText value="#{bundle['file.metadata']}"/>
         </p:commandLink>
     </li>
@@ -96,8 +95,7 @@
             <p:commandLink      update="@([id$=fileEmbargoPopup])" 
                                 onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                             return false;" 
-                                oncomplete="PF('fileEmbargoPopup').show();"
-                                action="#{bean[refreshEmbargoPopoupAction]()}">
+                                oncomplete="PF('fileEmbargoPopup').show();">
                                 <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                 <h:outputText value="#{bundle['file.embargo']}"/>
             </p:commandLink> 

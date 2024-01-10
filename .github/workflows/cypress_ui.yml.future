@@ -2,6 +2,7 @@
 #
 #   THIS IS AN OLD TRAVIS-CI.ORG JOB FILE
 #   To be used with Github Actions, it would be necessary to refactor it.
+#   In addition, it needs to be rewritten to use our modern containers.
 #   Keeping it as the future example it has been before.
 #   See also #5846
 #
@@ -30,8 +31,6 @@ jobs:
         directories:
           # we also need to cache folder with Cypress binary
           - ~/.cache
-          # we want to cache the Glassfish and Solr dependencies as well
-          - conf/docker-aio/dv/deps
       before_install:
         - cd tests
       install:

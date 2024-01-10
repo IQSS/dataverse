@@ -2,17 +2,17 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Base of the object hierarchy for "anything that can be inside a dataverse".
@@ -30,9 +30,13 @@ import javax.persistence.*;
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",
             query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
+    @NamedQuery(name = "DvObject.findIdByGlobalId",
+            query = "SELECT o.id FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByAlternativeGlobalId",
             query = "SELECT o FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
+    @NamedQuery(name = "DvObject.findIdByAlternativeGlobalId",
+            query = "SELECT o.id FROM DvObject o, AlternativePersistentIdentifier a  WHERE o.id = a.dvObject.id and a.identifier=:identifier and a.authority=:authority and a.protocol=:protocol and o.dtype=:dtype"),
 
     @NamedQuery(name = "DvObject.findByProtocolIdentifierAuthority",
             query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol"),
@@ -152,7 +156,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     private String identifier;
     
     private boolean identifierRegistered;
-    
+        
     private transient GlobalId globalId = null;
     
     @OneToMany(mappedBy = "dvObject", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -174,6 +178,9 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      */
     private boolean previewImageAvailable;
     
+    @OneToOne(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
+    private StorageQuota storageQuota;
+    
     public boolean isPreviewImageAvailable() {
         return previewImageAvailable;
     }
@@ -181,7 +188,23 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     public void setPreviewImageAvailable(boolean status) {
         this.previewImageAvailable = status;
     }
+    
+    /**
+     * Indicates whether a previous attempt to generate a preview image has failed,
+     * regardless of size. This could be due to the file not being accessible, or a
+     * real failure in generating the thumbnail. In both cases, we won't want to try
+     * again every time the preview/thumbnail is requested for a view.
+     */
+    private boolean previewImageFail;
 
+    public boolean isPreviewImageFail() {
+        return previewImageFail;
+    }
+
+    public void setPreviewImageFail(boolean previewImageFail) {
+        this.previewImageFail = previewImageFail;
+    }
+    
     public Timestamp getModificationTime() {
         return modificationTime;
     }
@@ -455,6 +478,14 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.storageIdentifier = storageIdentifier;
     }
     
+    public StorageQuota getStorageQuota() {
+        return storageQuota;
+    }
+    
+    public void setStorageQuota(StorageQuota storageQuota) {
+        this.storageQuota = storageQuota;
+    }
+
     /**
      * 
      * @param other 
@@ -462,6 +493,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      */
     public abstract boolean isAncestorOf( DvObject other );
     
+
     @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     List<RoleAssignment> roleAssignments;
+    
 }

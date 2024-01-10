@@ -1,21 +1,23 @@
 package edu.harvard.iq.dataverse.api;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
-import com.jayway.restassured.path.json.JsonPath;
-import org.junit.Test;
-import com.jayway.restassured.response.Response;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static javax.ws.rs.core.Response.Status.ACCEPTED;
-import static javax.ws.rs.core.Response.Status.OK;
+
+import org.junit.jupiter.api.Test;
+
+import io.restassured.RestAssured;
+import static io.restassured.RestAssured.given;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * This class tests Harvesting Client functionality. 
@@ -41,7 +43,7 @@ public class HarvestingClientsIT {
     private static String adminUserAPIKey;
     private static String harvestCollectionAlias; 
     
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
         
@@ -214,7 +216,7 @@ public class HarvestingClientsIT {
         
             assertEquals(OK.getStatusCode(), getClientResponse.getStatusCode());
             JsonPath responseJsonPath = getClientResponse.body().jsonPath();
-            assertNotNull("Invalid JSON in GET client response", responseJsonPath);
+            assertNotNull(responseJsonPath, "Invalid JSON in GET client response");
             assertEquals(ApiConstants.STATUS_OK, responseJsonPath.getString("status"));
             
             String clientStatus = responseJsonPath.getString("data.status");
@@ -228,10 +230,10 @@ public class HarvestingClientsIT {
                         + getClientResponse.prettyPrint());
                 // Check the values in the response:
                 // a) Confirm that the harvest has completed: 
-                assertEquals("Unexpected client status: "+clientStatus, "inActive", clientStatus);
+                assertEquals("inActive", clientStatus, "Unexpected client status: "+clientStatus);
                 
                 // b) Confirm that it has actually succeeded:
-                assertEquals("Last harvest not reported a success (took "+i+" seconds)", "SUCCESS", responseJsonPath.getString("data.lastResult"));
+                assertEquals("SUCCESS", responseJsonPath.getString("data.lastResult"), "Last harvest not reported a success (took "+i+" seconds)");
                 String harvestTimeStamp = responseJsonPath.getString("data.lastHarvest");
                 assertNotNull(harvestTimeStamp); 
                 

@@ -22,11 +22,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Logger;
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 
 /**
  *
@@ -105,6 +105,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         // all the attribute of the file that are stored in the database: 
         
         // the file size: 
+        long archivalFileSize = uningest.getFilesize();
         uningest.setFilesize(storedOriginalFileSize);
         
         // original file format:
@@ -170,8 +171,20 @@ public class UningestFileCommand extends AbstractVoidCommand  {
             logger.warning("Io Exception deleting all aux objects : " + uningest.getId());
         }
         
+        // Finally, adjust the recorded storage use for the ancestral 
+        // DvObjectContainers (the parent dataset + all the parent collections
+        // up to the root):
+        if (archivalFileSize > 0) {
+            ctxt.storageUse().incrementStorageSizeRecursively(uningest.getOwner().getId(), (0L - archivalFileSize));
+        }
+        
     }
     
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        
+        return true; 
+    }
     
     private void resetIngestStats(DataFile uningest, CommandContext ctxt){
         

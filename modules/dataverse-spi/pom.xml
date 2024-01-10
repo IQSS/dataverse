@@ -13,7 +13,7 @@
     
     <groupId>io.gdcc</groupId>
     <artifactId>dataverse-spi</artifactId>
-    <version>1.0.0${project.version.suffix}</version>
+    <version>2.0.0${project.version.suffix}</version>
     <packaging>jar</packaging>
     
     <name>Dataverse SPI Plugin API</name>

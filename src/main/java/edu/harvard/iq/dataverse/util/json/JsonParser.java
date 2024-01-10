@@ -34,7 +34,6 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import org.apache.commons.validator.routines.DomainValidator;
 
-import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -50,13 +49,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
 
 /**
  * Parses JSON objects into domain objects.
@@ -152,6 +150,10 @@ public class JsonParser {
                     dv.setDataverseType(dvtype);
                 }
             }
+        }
+        
+        if (jobj.containsKey("filePIDsEnabled")) {
+            dv.setFilePIDsEnabled(jobj.getBoolean("filePIDsEnabled"));
         }
 
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
@@ -678,8 +680,7 @@ public class JsonParser {
         // convert DTO to datasetField so we can back valid values.
         Gson gson = new Gson();
         String jsonString = gson.toJson(geoCoverageDTO);
-        JsonReader jsonReader = Json.createReader(new StringReader(jsonString));
-        JsonObject obj = jsonReader.readObject();
+        JsonObject obj = JsonUtil.getJsonObject(jsonString);
         DatasetField geoCoverageField = parseField(obj);
 
         // add back valid values

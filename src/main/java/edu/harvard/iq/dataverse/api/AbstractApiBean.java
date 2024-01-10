@@ -45,11 +45,13 @@ import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
-import java.io.StringReader;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,24 +59,24 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.*;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.*;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.Response.Status;
 
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
@@ -132,23 +134,21 @@ public abstract class AbstractApiBean {
          * In the common case of the wrapped response being of type JSON,
          * return the message field it has (if any).
          * @return the content of a message field, or {@code null}.
+         * @throws JsonException when JSON parsing fails.
          */
         String getWrappedMessageWhenJson() {
             if ( response.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE) ) {
                 Object entity = response.getEntity();
                 if ( entity == null ) return null;
 
-                String json = entity.toString();
-                try ( StringReader rdr = new StringReader(json) ){
-                    JsonReader jrdr = Json.createReader(rdr);
-                    JsonObject obj = jrdr.readObject();
-                    if ( obj.containsKey("message") ) {
-                        JsonValue message = obj.get("message");
-                        return message.getValueType() == ValueType.STRING ? obj.getString("message") : message.toString();
-                    } else {
-                        return null;
-                    }
+                JsonObject obj = JsonUtil.getJsonObject(entity.toString());
+                if ( obj.containsKey("message") ) {
+                    JsonValue message = obj.get("message");
+                    return message.getValueType() == ValueType.STRING ? obj.getString("message") : message.toString();
+                } else {
+                    return null;
                 }
+
             } else {
                 return null;
             }
@@ -708,6 +708,12 @@ public abstract class AbstractApiBean {
             .add("data", value).build() ).build();
     }
 
+    protected Response ok(long value) {
+        return Response.ok().entity(Json.createObjectBuilder()
+                .add("status", ApiConstants.STATUS_OK)
+                .add("data", value).build()).build();
+    }
+
     /**
      * @param data Payload to return.
      * @param mediaType Non-JSON media type.
@@ -719,6 +725,11 @@ public abstract class AbstractApiBean {
         if(downloadFilename != null) {
             res = res.header("Content-Disposition", "attachment; filename=" + downloadFilename);
         }
+        return res.build();
+    }
+
+    protected Response ok(InputStream inputStream) {
+        ResponseBuilder res = Response.ok().entity(inputStream).type(MediaType.valueOf(FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT));
         return res.build();
     }
 

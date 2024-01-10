@@ -17,20 +17,21 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Lock;
-import static javax.ejb.LockType.READ;
-import static javax.ejb.LockType.WRITE;
-import javax.ejb.Singleton;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Lock;
+import static jakarta.ejb.LockType.READ;
+import static jakarta.ejb.LockType.WRITE;
+import jakarta.ejb.Singleton;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  *
@@ -121,6 +122,15 @@ public class AuthenticationProvidersRegistrationServiceBean {
                         logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
                     }
         });
+        
+        // Add providers registered via MPCONFIG
+        if (JvmSettings.OIDC_ENABLED.lookupOptional(Boolean.class).orElse(false)) {
+            try {
+                registerProvider(OIDCAuthenticationProviderFactory.buildFromSettings());
+            } catch (AuthorizationSetupException e) {
+                logger.log(Level.SEVERE, "Exception setting up an OIDC auth provider via MicroProfile Config", e);
+            }
+        }
     }
 
     private void registerProviderFactory(AuthenticationProviderFactory aFactory) 

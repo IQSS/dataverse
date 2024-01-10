@@ -17,24 +17,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.NamedStoredProcedureQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.OrderBy;
-import javax.persistence.ParameterMode;
-import javax.persistence.StoredProcedureParameter;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.NamedStoredProcedureQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.StoredProcedureParameter;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.storageuse.StorageUse;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
@@ -43,6 +44,10 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
  * @author skraffmiller
  */
 @NamedQueries({
+    // Dataset.findById should only be used if you're going to iterate over files (otherwise, lazy loading in DatasetService.find() is better).
+    // If you are going to iterate over files, preferably call the DatasetService.findDeep() method i.s.o. using this query directly.
+    @NamedQuery(name = "Dataset.findById", 
+                query = "SELECT o FROM Dataset o LEFT JOIN FETCH o.files WHERE o.id=:id"),
     @NamedQuery(name = "Dataset.findIdStale",
                query = "SELECT d.id FROM Dataset d WHERE d.indexTime is NULL OR d.indexTime < d.modificationTime"),
     @NamedQuery(name = "Dataset.findIdStalePermission",
@@ -154,6 +159,23 @@ public class Dataset extends DvObjectContainer {
         this.citationDateDatasetFieldType = citationDateDatasetFieldType;
     }    
 
+    // Per DataCite best practices, the citation date of a dataset may need 
+    // to be adjusted to reflect the latest embargo availability date of any 
+    // file within the first published version. 
+    // If any files are embargoed in the first version, this date will be
+    // calculated and cached here upon its publication, in the 
+    // FinalizeDatasetPublicationCommand. 
+    private Timestamp embargoCitationDate;
+    
+    public Timestamp getEmbargoCitationDate() {
+        return embargoCitationDate;
+    }
+
+    public void setEmbargoCitationDate(Timestamp embargoCitationDate) {
+        this.embargoCitationDate = embargoCitationDate;
+    }
+    
+    
     
     @ManyToOne
     @JoinColumn(name="template_id",nullable = true)
@@ -168,6 +190,10 @@ public class Dataset extends DvObjectContainer {
     }
 
     public Dataset() {
+        this(false);
+    }
+    
+    public Dataset(boolean isHarvested) {
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setDataset(this);
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -175,6 +201,11 @@ public class Dataset extends DvObjectContainer {
         datasetVersion.setVersionNumber((long) 1);
         datasetVersion.setMinorVersionNumber((long) 0);
         versions.add(datasetVersion);
+        
+        if (!isHarvested) {
+            StorageUse storageUse = new StorageUse(this); 
+            this.setStorageUse(storageUse);
+        }
     }
     
     /**
@@ -672,20 +703,10 @@ public class Dataset extends DvObjectContainer {
         Timestamp citationDate = null;
         //Only calculate if this dataset doesn't use an alternate date field for publication date
         if (citationDateDatasetFieldType == null) {
-            List<DatasetVersion> versions = this.versions;
-            // TODo - is this ever not version 1.0 (or draft if not published yet)
-            DatasetVersion oldest = versions.get(versions.size() - 1);
             citationDate = super.getPublicationDate();
-            if (oldest.isPublished()) {
-                List<FileMetadata> fms = oldest.getFileMetadatas();
-                for (FileMetadata fm : fms) {
-                    Embargo embargo = fm.getDataFile().getEmbargo();
-                    if (embargo != null) {
-                        Timestamp embDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
-                        if (citationDate.compareTo(embDate) < 0) {
-                            citationDate = embDate;
-                        }
-                    }
+            if (embargoCitationDate != null) {
+                if (citationDate.compareTo(embargoCitationDate) < 0) {
+                    return embargoCitationDate;
                 }
             }
         }
@@ -858,6 +879,12 @@ public class Dataset extends DvObjectContainer {
         return null;
     }
 
+    public boolean hasEnabledGuestbook(){
+        Guestbook gb = this.getGuestbook();
+
+        return ( gb != null && gb.isEnabled());
+    }
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

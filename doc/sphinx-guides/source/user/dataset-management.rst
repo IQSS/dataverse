@@ -200,6 +200,7 @@ Previewers are available for the following file types:
 
 - Text
 - PDF
+- Markdown
 - Tabular (CSV, Excel, etc., see :doc:`tabulardataingest/index`)
 - Code (R, etc.)
 - Images (PNG, GIF, JPG)
@@ -208,7 +209,9 @@ Previewers are available for the following file types:
 - Zip (preview and extract/download)
 - HTML
 - GeoJSON
-- NetCDF/HDF5 (NcML format)
+- GeoTIFF
+- Shapefile
+- NetCDF/HDF5
 - Hypothes.is
 
 Additional file types will be added to the `dataverse-previewers <https://github.com/gdcc/dataverse-previewers>`_ repo before they are listed above so please check there for the latest information or to request (or contribute!) an additional file previewer.
@@ -225,9 +228,8 @@ Additional download options available for tabular data (found in the same drop-d
 - As tab-delimited data (with the variable names in the first row); 
 - The original file uploaded by the user; 
 - Saved as R data (if the original file was not in R format); 
-- Variable Metadata (as a `DDI Codebook <http://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file);
-- Data File Citation (currently in either RIS, EndNote XML, or BibTeX format). 
-
+- Variable Metadata (as a `DDI Codebook <https://www.ddialliance.org/Specification/DDI-Codebook/>`_ XML file);
+- Data File Citation (currently in either RIS, EndNote XML, or BibTeX format).
 
 Differentially Private (DP) Metadata can also be accessed for restricted tabular files if the data depositor has created a DP Metadata Release. See :ref:`dp-release-create` for more information.
 
@@ -329,10 +331,12 @@ You can also search for files within datasets that have been tagged as "Workflow
 
 |cw-image6|
 
+.. _fits:
+
 Astronomy (FITS)
 ----------------
 
-Metadata found in the header section of `Flexible Image Transport System (FITS) files <http://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by the Dataverse Software, aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable and browsable (facets) at the Dataset-level.
+Metadata found in the header section of `Flexible Image Transport System (FITS) files <https://fits.gsfc.nasa.gov/fits_primer.html>`_ are automatically extracted by the Dataverse Software, aggregated and displayed in the Astronomy Domain-Specific Metadata of the Dataset that the file belongs to. This FITS file metadata, is therefore searchable and browsable (facets) at the Dataset-level.
 
 .. _geojson:
 
@@ -341,15 +345,40 @@ GeoJSON
 
 A map will be shown as a preview of GeoJSON files when the previewer has been enabled (see :ref:`file-previews`). See also a `video demo <https://www.youtube.com/watch?v=EACJJaV3O1c&t=588s>`_ of the GeoJSON previewer by its author, Kaitlin Newson.
 
+.. _geotiff:
+
+GeoTIFF
+-------
+
+A map is also displayed as a preview of GeoTiFF image files, whose previewer must be enabled (see :ref:`file-previews`). Since GeoTIFFs do not have their own mimetype, it is advisable to use this previewer only when GeoTIFFs are used (and not "normal" TIFs). For performance reasons, this previewer has a file size limit of 15 MB and a row/column limit of 50,000 so that larger files are not loaded.
+
+.. _shapefile:
+
+Shapefile
+---------
+
+Another previewer can be enabled for shapefiles (see :ref:`file-previews`). This previewer only works with zipped shapefiles (see :doc:`/developers/geospatial`). A file size limit of 20 MB is set for this previewer (also because of performance reasons).
+
 .. _netcdf-and-hdf5:
 
 NetCDF and HDF5
 ---------------
 
+H5Web Previewer
+~~~~~~~~~~~~~~~
+
+NetCDF and HDF5 files can be explored and visualized with H5Web_, which has been adapted into a file previewer tool (see :ref:`file-previews`) that can be enabled in your Dataverse installation.
+
+.. _H5Web: https://h5web.panosc.eu
+
+|h5web|
+
 NcML
 ~~~~
 
 For NetCDF and HDF5 files, an attempt will be made to extract metadata in NcML_ (XML) format and save it as an auxiliary file. (See also :doc:`/developers/aux-file-support` in the Developer Guide.) A previewer for these NcML files is available (see :ref:`file-previews`).
+
+Please note that only modern versions of these formats, the ones based on HDF5 such as NetCDF 4+ and HDF5 itself (rather than HDF4), will yield an NcML auxiliary file.
 
 .. _NcML: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
 
@@ -371,8 +400,11 @@ Please note the following rules regarding these fields:
 - If West Longitude and East Longitude are both over 180 (outside the expected -180:180 range), 360 will be subtracted to shift the values from the 0:360 range to the expected -180:180 range.
 - If either West Longitude or East Longitude are less than zero but the other longitude is greater than 180 (which would imply an indeterminate domain, a lack of clarity of if the domain is -180:180 or 0:360), metadata will be not be extracted.
 - If the bounding box was successfully populated, the subsequent removal of the NetCDF or HDF5 file from the dataset does not automatically remove the bounding box from the dataset metadata. You must remove the bounding box manually, if desired.
+- This feature is disabled if S3 direct upload is enabled (see :ref:`s3-direct-upload-features-disabled`) unless :ref:`dataverse.netcdf.geo-extract-s3-direct-upload` has been set to true.
 
 If the bounding box was successfully populated, :ref:`geospatial-search` should be able to find it.
+
+.. _compressed-files:
 
 Compressed Files
 ----------------
@@ -463,7 +495,7 @@ Choosing a License
 ------------------
 
 Each Dataverse installation provides a set of license(s) data can be released under, and whether users can specify custom terms instead (see below). 
-One of the available licenses (often the `Creative Commons CC0 Public Domain Dedication <http://creativecommons.org/publicdomain/zero/1.0>`_) serves as the default if you do not make an explicit choice.
+One of the available licenses (often the `Creative Commons CC0 Public Domain Dedication <https://creativecommons.org/publicdomain/zero/1.0>`_) serves as the default if you do not make an explicit choice.
 If you want to apply one of the other available licenses to your dataset, you can change it on the Terms tab of your Dataset page.
 
 License Selection and Professional Norms
@@ -751,7 +783,7 @@ The "Compute" button on dataset and file pages will allow you to compute on a si
 Cloud Storage Access
 --------------------
 
-If you need to access a dataset in a more flexible way than the Compute button provides, then you can use the Cloud Storage Access box on the dataset page to copy the dataset's container name. This unique identifer can then be used to allow direct access to the dataset.
+If you need to access a dataset in a more flexible way than the Compute button provides, then you can use the Cloud Storage Access box on the dataset page to copy the dataset's container name. This unique identifier can then be used to allow direct access to the dataset.
 
 .. _deaccession:
 
@@ -793,6 +825,8 @@ If you deaccession the most recently published version of the dataset but not al
 .. |cw-image6| image:: ./img/file-tags-facets.png
    :class: img-responsive
 .. |bagit-image1| image:: ./img/bagit-handler-errors.png
+   :class: img-responsive
+.. |h5web| image:: ./img/h5web.png
    :class: img-responsive
    
 .. _Make Data Count: https://makedatacount.org

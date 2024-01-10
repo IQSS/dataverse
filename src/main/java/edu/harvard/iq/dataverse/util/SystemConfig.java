@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -12,15 +13,15 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
 import org.passay.CharacterRule;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-import javax.json.JsonValue;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
 import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -892,7 +893,7 @@ public class SystemConfig {
         }
 
     }
-
+    
     public boolean isPublicInstall(){
         boolean saneDefault = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
@@ -940,16 +941,11 @@ public class SystemConfig {
     }
 
     public boolean isGlobusDownload() {
-        return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), false);
+        return getMethodAvailable(FileDownloadMethods.GLOBUS.toString(), false);
     }
     
     public boolean isGlobusFileDownload() {
         return (isGlobusDownload() && settingsService.isTrueForKey(SettingsServiceBean.Key.GlobusSingleFileTransfer, false));
-    }
-
-    public List<String> getGlobusStoresList() {
-    String globusStores = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusStores, "");
-    return Arrays.asList(globusStores.split("\\s*,\\s*"));
     }
 
     private Boolean getMethodAvailable(String method, boolean upload) {
@@ -995,9 +991,29 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound);
     }
 
-    public boolean isFilePIDsEnabled() {
-        boolean safeDefaultIfKeyNotFound = true;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);
+    public boolean isFilePIDsEnabledForCollection(Dataverse collection) {
+        if (collection == null) {
+            return false;
+        }
+        
+        Dataverse thisCollection = collection; 
+        
+        // If neither enabled nor disabled specifically for this collection,
+        // the parent collection setting is inhereted (recursively): 
+        while (thisCollection.getFilePIDsEnabled() == null) {
+            if (thisCollection.getOwner() == null) {
+                // We've reached the root collection, and file PIDs registration
+                // hasn't been explicitly enabled, therefore we presume that it is
+                // subject to how the registration is configured for the 
+                // entire instance:
+                return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, false); 
+            }
+            thisCollection = thisCollection.getOwner();
+        }
+        
+        // If present, the setting of the first direct ancestor collection 
+        // takes precedent:
+        return thisCollection.getFilePIDsEnabled();
     }
     
     public boolean isIndependentHandleService() {
@@ -1142,5 +1158,19 @@ public class SystemConfig {
         }
         
         return !ret; 
+    }
+    
+    public boolean isStorageQuotasEnforced() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.UseStorageQuotas, false);
+    }
+    
+    /**
+     * This method should only be used for testing of the new storage quota 
+     * mechanism, temporarily. (it uses the same value as the quota for 
+     * *everybody* regardless of the circumstances, defined as a database 
+     * setting)
+     */
+    public Long getTestStorageQuotaLimit() {
+        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.StorageQuotaSizeInBytes);
     }
 }

@@ -178,11 +178,12 @@
                                                                 <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
                                                                 <li jsf:rendered="#{!DatasetPage.versionHasTabular}">                 
                                                                     <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllOriginal()}" styleClass="btn-download" 
-                                                                                   oncomplete="showPopup();">
+                                                                                   oncomplete="showPopup(false);">
                                                                     #{bundle.download}
                                                                         <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
                                                                             <f:param value="#{DatasetPage.sizeOfDataset}" />
                                                                         </h:outputFormat>
+                                                                        <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                                                     </p:commandLink>
                                                                 </li>
 
@@ -191,12 +192,13 @@
                                                                     <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
                                                                     <li jsf:rendered="#{ DatasetPage.sizeOfDatasetOrig != '0 B'  and !(DatasetPage.tooLargeToDownloadOriginal) }">
                                                                         <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllOriginal()}" 
-                                                                                       oncomplete="showPopup();"
+                                                                                       oncomplete="showPopup(false);"
                                                                                        styleClass="btn-download">
                                                                             #{bundle.downloadOriginal}
                                                                             <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
                                                                                 <f:param value="#{DatasetPage.sizeOfDatasetOrig}" />
                                                                             </h:outputFormat>
+                                                                            <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                                                         </p:commandLink>
                                                                     </li>
                                                                     <!-- Original Format too big -->
@@ -206,7 +208,7 @@
                                                                     </ui:fragment>
                                                                     <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
                                                                     <li jsf:rendered="#{!DatasetPage.tooLargeToDownloadArchival}">
-                                                                        <p:commandLink update="@form" oncomplete="showPopup();" 
+                                                                        <p:commandLink update="@form" oncomplete="showPopup(false);" 
                                                                                        actionListener="#{DatasetPage.startDownloadAllArchival()}" styleClass="btn-download">
                                                                                 #{bundle.downloadArchival}
                                                                             <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
@@ -228,9 +230,14 @@
                                                             </ui:fragment>
                                                             <ui:fragment rendered="#{settingsWrapper.globusDownload and settingsWrapper.isGlobusEnabledStorageDriver(DatasetPage.dataset.effectiveStorageDriverId)}">
                                                                 <li>
-                                                                    <h:commandLink styleClass="btn-download" action="#{DatasetPage.startGlobusTransfer()}">
-                                                                        <h:outputText value="Globus Transfer"/>
-                                                                    </h:commandLink>
+                                                                    <p:commandLink update="@form" oncomplete="showPopup(true);" 
+                                                                                       actionListener="#{DatasetPage.startGlobusTransfer(true, false)}" styleClass="btn-download">
+                                                                                #{bundle.transfer}
+                                                                        <h:outputFormat value="#{bundle['dataset.accessBtn.transfer.size']}">
+                                                                            <f:param value="#{DatasetPage.sizeOfDataset}" />
+                                                                        </h:outputFormat>
+                                                                        <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                                                                        </p:commandLink>
                                                                 </li>
                                                             </ui:fragment>
                                                             
@@ -315,13 +322,13 @@
                                             <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
                                                 <div class="btn-group">
                                                     <!-- Publish BTN -->
-                                                    <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !DatasetPage.valid}">
+                                                    <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !valid}">
                                                         <c:if test="#{!((showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedExternalStatuses) and showPublishLink)}">
-                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !DatasetPage.valid ? 'disabled' : ''}"/>
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess or !valid ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
                                                         </c:if>
                                                         <c:if test="#{(showSubmitForReviewLink or showReturnToAuthorLink or not empty DatasetPage.allowedExternalStatuses) and showPublishLink}">
-                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess  or !DatasetPage.valid ? 'disabled' : ''}"/>
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing or !DatasetPage.hasValidTermsOfAccess  or !valid ? 'disabled' : ''}"/>
                                                             <f:passThroughAttribute name="data-toggle" value="dropdown"/>
                                                             <f:passThroughAttribute name="aria-haspopup" value="true"/>
                                                             <f:passThroughAttribute name="aria-expanded" value="false"/>
@@ -453,6 +460,17 @@
                                                                 <h:outputText value="#{bundle['dataset.editBtn.itemLabel.thumbnailsAndWidgets']}"/>
                                                             </h:outputLink>
                                                         </li>
+                                                        <ui:fragment rendered="#{DatasetPage.datasetConfigureTools.size() >= 1}">
+                                                            <li class="dropdown-header">#{bundle['dataset.accessBtn.header.configure']} <span class="glyphicon glyphicon-cog"/></li>
+                                                            <!-- Configure tool links -->
+                                                            <ui:repeat var="tool" value="#{DatasetPage.datasetConfigureTools}">
+                                                                <li>
+                                                                    <p:commandLink styleClass="btn-explore" actionListener="#{DatasetPage.setDatasetConfigureTool(tool)}" process="@this" update="datasetForm:configureToolDialog" oncomplete="PF('configureToolDialog').show();">
+                                                                        <h:outputText value="#{tool.getDisplayNameLang()}"/>
+                                                                    </p:commandLink>
+                                                                </li>
+                                                            </ui:repeat>
+                                                        </ui:fragment>
                                                         <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
                                                             <li role="separator" class="divider"></li>
                                                             <li>
@@ -538,7 +556,7 @@
                                                 <!-- Classic downloads -->
                                                 <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">
                                                     <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                        <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
+                                                        <f:param value="#{guestbookResponseServiceBean.getDownloadCountByDatasetId(DatasetPage.dataset.id)}"/>
                                                     </h:outputFormat>
                                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                           data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.default.tip']}"></span>
@@ -560,9 +578,9 @@
                                                           data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span>
                                                     <span jsf:rendered="#{settingsWrapper.getMDCStartDate()!=null}">        
                                                         <h:outputFormat value="#{bundle['metrics.downloads.nonMDC']}">
-                                                            <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate())}"/>
+                                                            <f:param value="#{guestbookResponseServiceBean.getDownloadCountByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate())}"/>
                                                         </h:outputFormat>
-                                                        <span jsf:rendered="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate()) > 0}" class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                        <span jsf:rendered="#{guestbookResponseServiceBean.getDownloadCountByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate()) > 0}" class="glyphicon glyphicon-question-sign tooltip-icon"
                                                             data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.premakedatacount.tip']}"></span>)
                                                         </span>
                                                 </div>
@@ -990,6 +1008,19 @@
                             </button>
                         </div>
                     </p:dialog>
+                    <p:dialog id="configureToolDialog" styleClass="smallPopUp" header="#{DatasetPage.datasetConfigureTool.displayNameLang}" widgetVar="configureToolDialog" modal="true">
+                        <p class="help-block">
+                            <h:outputFormat value="#{DatasetPage.datasetConfigureTool.description}" escape="false"/>
+                        </p>
+                        <div class="button-block">
+                            <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.configure(DatasetPage.datasetConfigureTool)}" oncomplete="PF('configureToolDialog').hide();">
+                                <h:outputFormat value="#{bundle['continue']}"/>
+                            </p:commandLink>
+                            <button class="btn btn-link" onclick="PF('configureToolDialog').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
+                        </div>
+                    </p:dialog>
                     <p:dialog id="citationsDialog" styleClass="smallPopUp" header="#{bundle['metrics.citations.dialog.header']}" widgetVar="citationsDialog" modal="true">
                         <p class="help-block">
                             <h:outputFormat value="#{bundle['metrics.citations.dialog.help']}" escape="false">
@@ -1059,12 +1090,34 @@
                         <div class="button-block">
                             <p class="help-block">#{bundle['dataset.downloadUnrestricted']}</p>
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" 
-                                             rendered="#{!DatasetPage.downloadPopupRequired}"
+                                             rendered="#{!DatasetPage.guestbookAndTermsPopupRequired}"
                                              action="#{DatasetPage.startMultipleFileDownload()}"/>
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadMixed').hide();"
-                                             rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}"
-                                             oncomplete="PF('downloadPopup').show();" />
+                                             rendered="#{DatasetPage.guestbookAndTermsPopupRequired and !settingsWrapper.rsyncDownload}"
+                                             oncomplete="PF('guestbookAndTermsPopup').show();" />
                             <button class="btn btn-link" onclick="PF('downloadMixed').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
+                        </div>
+                    </p:dialog>
+                    <p:dialog id="globusTransferMixed" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForTransfer']}" widgetVar="globusTransferMixed" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.mixedSelectedFilesForTransfer']}</p>
+                        <table>
+                            <ui:repeat var="resFile" value="#{DatasetPage.selectedNonGlobusTransferableFiles}" >
+                                <tr>
+                                    <td>#{resFile.label}</td>
+                                </tr>
+                            </ui:repeat>
+                        </table>
+                        <div class="button-block">
+                            <p class="help-block">#{bundle['dataset.transferUnrestricted']}</p>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('globusTransferMixed').hide()" 
+                                             rendered="#{!DatasetPage.guestbookAndTermsPopupRequired}"
+                                             action="#{DatasetPage.startGlobusTransfer(false, true)}"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('globusTransferMixed').hide();"
+                                             rendered="#{DatasetPage.guestbookAndTermsPopupRequired and !settingsWrapper.rsyncDownload}"
+                                             oncomplete="PF('guestbookAndTermsPopup').show();" />
+                            <button class="btn btn-link" onclick="PF('globusTransferMixed').hide();" type="button">
                                 #{bundle.cancel}
                             </button>
                         </div>
@@ -1505,16 +1558,21 @@
                         </div>
                     </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
-                    <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
+                    <p:dialog id="guestbookAndTermsPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="guestbookAndTermsPopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-                        <ui:include src="file-download-popup-fragment.xhtml">
+                        <ui:include src="guestbook-terms-popup-fragment.xhtml">
                             <ui:param name="popupContext" value="downloadDataset"/>
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
-                            <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
+                            <ui:param name="guestbookAndTermsPopupRequired" value="#{DatasetPage.guestbookAndTermsPopupRequired}"/>
+                            <ui:param name="guestbookPopupRequired" value="#{DatasetPage.guestbookPopupRequired}"/>
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                             <ui:param name="hasRestrictedFile" value="#{DatasetPage.downloadingRestrictedFiles()}"/>
                             <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
+                            <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
+                            <ui:param name="termsGuestbookPopupAction" value="#{DatasetPage.termsGuestbookPopupAction}"/>
+                            <ui:param name="guestbookPopupRequiredAtDownload" value="#{DatasetPage.guestbookPopupRequiredAtDownload}"/>
+                            <ui:param name="isGlobusTransfer" value="#{DatasetPage.globusTransferRequested}"/>
                         </ui:include>
                     </p:dialog>
                     <!-- Preview Guestbook -->
@@ -1541,16 +1599,8 @@
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="package-download-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
-                            <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
+                            <ui:param name="guestbookAndTermsPopupRequired" value="#{DatasetPage.guestbookAndTermsPopupRequired}"/>
                             <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
-                            <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
-                        </ui:include>
-                    </p:dialog>
-                    <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}" widgetVar="requestAccessPopup" modal="true">
-                        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-                        <ui:include src="file-request-access-popup-fragment.xhtml">
-                            <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
-                            <ui:param name="someActivelyEmbargoedFiles" value="#{DatasetPage.cantRequestDueToEmbargo}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>
@@ -1599,6 +1649,12 @@
                                     </p:fragment>
                                 </div>
                             </div>
+                        </div>
+                        <div>
+                            <p:fragment rendered="#{!empty DatasetPage.alreadyLinkedDataverses}"> 
+                            <h:outputLabel  value="#{bundle['dataset.linking.popop.already.linked.note']}"/>&#160;
+                            <h:outputText rendered="#{!empty DatasetPage.alreadyLinkedDataverses }" value="#{DatasetPage.alreadyLinkedDataverses}"/>
+                            </p:fragment>
                         </div>
                         <div class="button-block">
                             <p:commandButton id="saveLinkButton" styleClass="btn btn-default"    
@@ -1883,10 +1939,14 @@
                         $('button[id$="updateOwnerDataverse"]').trigger('click');
                     }
                     
-                    function showPopup() {
+                    function showPopup(isTransfer) {
                         var outcome = document.getElementById("datasetForm:validateFilesOutcome").value;
                         if (outcome ==='Mixed'){
-                            PF('downloadMixed').show();
+                            if(isTransfer) {
+                               PF('globusTransferMixed').show();
+                            } else {
+                                PF('downloadMixed').show();
+                            }
                         }
                         if (outcome ==='FailEmpty'){
                             PF('selectFilesForDownload').show();
@@ -1898,7 +1958,7 @@
                             PF('downloadInvalid').show();
                         }
                         if (outcome ==='GuestbookRequired'){
-                            PF('downloadPopup').show();
+                            PF('guestbookAndTermsPopup').show();
                         }
                     }
                     

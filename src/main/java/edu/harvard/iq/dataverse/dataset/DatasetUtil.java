@@ -7,7 +7,10 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -44,6 +47,7 @@ import org.apache.commons.lang3.EnumUtils;
 public class DatasetUtil {
 
     private static final Logger logger = Logger.getLogger(DatasetUtil.class.getCanonicalName());
+    public static final String datasetDefaultSummaryFieldNames = "dsDescription,subject,keyword,publication,notesText";
     public static String datasetLogoFilenameFinal = "dataset_logo_original";
     public static String datasetLogoThumbnail = "dataset_logo";
     public static String thumbExtension = ".thumb";
@@ -407,6 +411,69 @@ public class DatasetUtil {
             return nonDefaultDatasetThumbnail;
         }
     }
+    
+    public static InputStream getLogoAsInputStream(Dataset dataset) {
+        if (dataset == null) {
+            return null;
+        }
+        StorageIO<Dataset> dataAccess = null;
+
+        try {
+            dataAccess = DataAccess.getStorageIO(dataset);
+        } catch (IOException ioex) {
+            logger.warning("getLogo(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier()
+                    + " (" + ioex.getMessage() + ")");
+        }
+
+        InputStream in = null;
+        try {
+            if (dataAccess == null) {
+                logger.warning(
+                        "getLogo(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier());
+            } else {
+                in = dataAccess.getAuxFileAsInputStream(datasetLogoFilenameFinal);
+            }
+        } catch (IOException ex) {
+            logger.fine(
+                    "Dataset-level thumbnail file does not exist, or failed to open; will try to find an image file that can be used as the thumbnail.");
+        }
+
+        if (in == null) {
+            DataFile thumbnailFile = dataset.getThumbnailFile();
+
+            if (thumbnailFile == null) {
+                if (dataset.isUseGenericThumbnail()) {
+                    logger.fine("Dataset (id :" + dataset.getId() + ") does not have a logo and is 'Use Generic'.");
+                    return null;
+                } else {
+                    thumbnailFile = attemptToAutomaticallySelectThumbnailFromDataFiles(dataset, null);
+                    if (thumbnailFile == null) {
+                        logger.fine("Dataset (id :" + dataset.getId()
+                                + ") does not have a logo available that could be selected automatically.");
+                        return null;
+                    } else {
+
+                    }
+                }
+            }
+            if (thumbnailFile.isRestricted()) {
+                logger.fine("Dataset (id :" + dataset.getId()
+                        + ") has a logo the user selected but the file must have later been restricted. Returning null.");
+                return null;
+            }
+
+            try {
+                in = ImageThumbConverter.getImageThumbnailAsInputStream(thumbnailFile.getStorageIO(),
+                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE).getInputStream();
+            } catch (IOException ioex) {
+                logger.warning("getLogo(): Failed to get logo from DataFile for " + dataset.getStorageIdentifier()
+                        + " (" + ioex.getMessage() + ")");
+                ioex.printStackTrace();
+            }
+
+        }
+        return in;
+    }
 
     /**
      * The dataset logo is the file that a user uploads which is *not* one of
@@ -429,32 +496,33 @@ public class DatasetUtil {
         return false;
     }
 
-    public static List<DatasetField> getDatasetSummaryFields(DatasetVersion datasetVersion, String customFields) {
-        
-        List<DatasetField> datasetFields = new ArrayList<>();
-        
-        //if customFields are empty, go with default fields. 
-        if(customFields==null || customFields.isEmpty()){
-               customFields="dsDescription,subject,keyword,publication,notesText";
-        }
-        
-        String[] customFieldList= customFields.split(",");
-        Map<String,DatasetField> DatasetFieldsSet=new HashMap<>(); 
-        
+    public static List<DatasetField> getDatasetSummaryFields(DatasetVersion datasetVersion, String customFieldNames) {
+        Map<String, DatasetField> datasetFieldsSet = new HashMap<>();
         for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
-            DatasetFieldsSet.put(dsf.getDatasetFieldType().getName(),dsf); 
+            datasetFieldsSet.put(dsf.getDatasetFieldType().getName(), dsf);
         }
-        
-        for(String cfl : customFieldList)
-        {
-                DatasetField df = DatasetFieldsSet.get(cfl);
-                if(df!=null)
-                datasetFields.add(df);
+        String[] summaryFieldNames = getDatasetSummaryFieldNames(customFieldNames);
+        List<DatasetField> datasetSummaryFields = new ArrayList<>();
+        for (String summaryFieldName : summaryFieldNames) {
+            DatasetField df = datasetFieldsSet.get(summaryFieldName);
+            if (df != null) {
+                datasetSummaryFields.add(df);
+            }
         }
-            
-        return datasetFields;
+        return datasetSummaryFields;
     }
-    
+
+    public static String[] getDatasetSummaryFieldNames(String customFieldNames) {
+        String summaryFieldNames;
+        // If the custom fields are empty, go with the default fields.
+        if(customFieldNames == null || customFieldNames.isEmpty()){
+            summaryFieldNames = datasetDefaultSummaryFieldNames;
+        } else {
+            summaryFieldNames = customFieldNames;
+        }
+        return summaryFieldNames.split(",");
+    }
+
     public static boolean isRsyncAppropriateStorageDriver(Dataset dataset){
         // ToDo - rsync was written before multiple store support and currently is hardcoded to use the DataAccess.S3 store.
         // When those restrictions are lifted/rsync can be configured per store, this test should check that setting
@@ -495,18 +563,34 @@ public class DatasetUtil {
     
     public static boolean validateDatasetMetadataExternally(Dataset ds, String executable, DataverseRequest request) {
         String sourceAddressLabel = "0.0.0.0"; 
+        String userIdentifier = "guest";
         
         if (request != null) {
             IpAddress sourceAddress = request.getSourceAddress();
             if (sourceAddress != null) {
                 sourceAddressLabel = sourceAddress.toString();
             }
+            
+            AuthenticatedUser user = request.getAuthenticatedUser();
+            
+            if (user != null) {
+                userIdentifier = user.getUserIdentifier();
+            }
         }
         
         String jsonMetadata; 
         
+        // We are sending the dataset metadata encoded in our standard json 
+        // format, with a couple of extra elements added, such as the ids of 
+        // the home collection and the user, in order to make it easier 
+        // for the filter to whitelist by these attributes. 
+        
         try {
-            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion())).add("sourceAddress", sourceAddressLabel).build().toString();
+            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion(), true))
+                    .add("sourceAddress", sourceAddressLabel)
+                    .add("userIdentifier", userIdentifier)
+                    .add("parentAlias", ds.getOwner().getAlias())
+                    .build().toString();
         } catch (Exception ex) {
             logger.warning("Failed to export dataset metadata as json; "+ex.getMessage() == null ? "" : ex.getMessage());
             return false; 
@@ -522,7 +606,7 @@ public class DatasetUtil {
         try {
             File tempFile = File.createTempFile("datasetMetadataCheck", ".tmp");
             FileUtils.writeStringToFile(tempFile, jsonMetadata);
-                                    
+            
             // run the external executable: 
             String[] params = { executable, tempFile.getAbsolutePath() };
             Process p = Runtime.getRuntime().exec(params);
@@ -561,10 +645,10 @@ public class DatasetUtil {
         // Return the URI
         // For standard licenses, just return the stored URI
         return (license != null) ? license.getUri().toString()
-                // For custom terms, construct a URI with :draft or the version number in the URI
+                // For custom terms, construct a URI with draft version constant or the version number in the URI
                 : (dsv.getVersionState().name().equals("DRAFT")
                         ? dsv.getDataverseSiteUrl()
-                                + "/api/datasets/:persistentId/versions/:draft/customlicense?persistentId="
+                                + "/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "/customlicense?persistentId="
                                 + dsv.getDataset().getGlobalId().asString()
                         : dsv.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/" + dsv.getVersionNumber()
                                 + "." + dsv.getMinorVersionNumber() + "/customlicense?persistentId="

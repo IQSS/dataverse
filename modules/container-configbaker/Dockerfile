@@ -18,7 +18,7 @@ ENV SCRIPT_DIR="/scripts" \
 ENV PATH="${PATH}:${SCRIPT_DIR}" \
     BOOTSTRAP_DIR="${SCRIPT_DIR}/bootstrap"
 
-ARG APK_PACKAGES="curl bind-tools netcat-openbsd jq bash dumb-init wait4x"
+ARG APK_PACKAGES="curl bind-tools netcat-openbsd jq bash dumb-init wait4x ed"
 
 RUN true && \
   # Install necessary software and tools
@@ -26,17 +26,19 @@ RUN true && \
   # Make our working directories
   mkdir -p ${SCRIPT_DIR} ${SECRETS_DIR} ${SOLR_TEMPLATE}
 
-# Get in the scripts and make them executable (just in case...)
+# Get in the scripts 
 COPY maven/scripts maven/solr/update-fields.sh ${SCRIPT_DIR}/
+# Copy the data from scripts/api that provide the common base setup you'd get from the installer.
+# ".dockerignore" will take care of taking only the bare necessities
+COPY maven/setup ${SCRIPT_DIR}/bootstrap/base/
+# Make the scripts executable
 RUN chmod +x ${SCRIPT_DIR}/*.sh ${BOOTSTRAP_DIR}/*/*.sh
 
 # Copy the Solr config bits
 COPY --from=solr /opt/solr/server/solr/configsets/_default ${SOLR_TEMPLATE}/
 COPY maven/solr/*.xml ${SOLR_TEMPLATE}/conf/
+RUN rm ${SOLR_TEMPLATE}/conf/managed-schema.xml
 
-# Copy the data from scripts/api that provide the common base setup you'd get from the installer.
-# ".dockerignore" will take care of taking only the bare necessities
-COPY maven/setup ${SCRIPT_DIR}/bootstrap/base/
 
 # Set the entrypoint to tini (as a process supervisor)
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]

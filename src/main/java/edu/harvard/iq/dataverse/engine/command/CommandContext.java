@@ -39,10 +39,11 @@ import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import java.util.Stack;
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * An interface for accessing Dataverse's resources, user info etc. Used by the
@@ -126,6 +127,8 @@ public interface CommandContext {
     public UserNotificationServiceBean notifications();
 
     public AuthenticationServiceBean authentication();
+    
+    public StorageUseServiceBean storageUse();
 
     public SystemConfig systemConfig();
 

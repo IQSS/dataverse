@@ -5,7 +5,7 @@ then
     EC2_HTTP_LOCATION="<EC2 INSTANCE HTTP ADDRESS>"
 fi
 
-DATAVERSE_APP_DIR=/usr/local/payara5/glassfish/domains/domain1/applications/dataverse; export DATAVERSE_APP_DIR
+DATAVERSE_APP_DIR=/usr/local/payara6/glassfish/domains/domain1/applications/dataverse; export DATAVERSE_APP_DIR
 
 # restart app server
 

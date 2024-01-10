@@ -6,9 +6,9 @@ import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -16,8 +16,8 @@ import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.util.Collection;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IngestFrequencyTest {
 

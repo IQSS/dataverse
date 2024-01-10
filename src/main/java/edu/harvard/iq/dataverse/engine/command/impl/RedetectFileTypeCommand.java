@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Logger;
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 @RequiredPermissions(Permission.EditDataset)
 public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
@@ -83,12 +83,8 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
                 throw new CommandException("Exception while attempting to save the new file type: " + EjbUtil.ejbExceptionToString(ex), this);
             }
             Dataset dataset = fileToRedetect.getOwner();
-            try {
-                boolean doNormalSolrDocCleanUp = true;
-                ctxt.index().indexDataset(dataset, doNormalSolrDocCleanUp);
-            } catch (Exception ex) {
-                logger.info("Exception while reindexing files during file type redetection: " + ex.getLocalizedMessage());
-            }
+            boolean doNormalSolrDocCleanUp = true;
+            ctxt.index().asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
             try {
                 ExportService instance = ExportService.getInstance();
                 instance.exportAllFormats(dataset);

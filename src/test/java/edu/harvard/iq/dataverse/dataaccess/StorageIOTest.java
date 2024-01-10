@@ -21,8 +21,9 @@ import java.util.Arrays;
 import java.util.List;
 //import org.apache.commons.httpclient.Header;
 //import org.apache.commons.httpclient.methods.GetMethod;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -241,5 +242,17 @@ public class StorageIOTest {
         List<DataVariable> dvs = Arrays.asList(new DataVariable[]{var, var});
         assertEquals("Random	Random\n", instance.generateVariableHeader(dvs));
         assertEquals(null, instance.generateVariableHeader(null));
+    }
+    
+    @Test
+    public void testGetConfigParam() {
+        System.setProperty("dataverse.files.globus.type", "globus");
+    assertEquals("globus", StorageIO.getConfigParamForDriver("globus", StorageIO.TYPE));
+    System.clearProperty("dataverse.files.globus.type");
+    }
+    
+    @Test
+    public void testGetConfigParamWithDefault() {
+    assertEquals(DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER, StorageIO.getConfigParamForDriver("globus", AbstractRemoteOverlayAccessIO.BASE_STORE, DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER));
     }
 }

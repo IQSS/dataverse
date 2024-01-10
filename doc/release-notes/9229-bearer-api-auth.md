@@ -1,1 +1,0 @@
-A feature flag called "api-bearer-auth" has been added. This allows OIDC useraccounts to send authenticated API requests using Bearer Tokens. Note: This feature is limited to OIDC! For more information, see http://preview.guides.gdcc.io/en/develop/installation/config.html#feature-flags
