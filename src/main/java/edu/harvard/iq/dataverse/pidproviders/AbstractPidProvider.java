@@ -183,20 +183,27 @@ public abstract class AbstractPidProvider implements PidProvider {
      * that would be done at construction.)
      */
     @Override
-    public DvObject generateIdentifier(DvObject dvObject) {
+    public DvObject generatePid(DvObject dvObject) {
 
-        String protocol = dvObject.getProtocol() == null ? getProtocol() : dvObject.getProtocol();
-        String authority = dvObject.getAuthority() == null ? getAuthority() : dvObject.getAuthority();
+        if (dvObject.getProtocol() == null) {
+            dvObject.setProtocol(protocol);
+        } else {
+            if (!dvObject.getProtocol().equals(getProtocol())) {
+                logger.warning("The protocol of the DvObject (" + dvObject.getProtocol() + ") does not match the configured protocol (" + getProtocol() + ")");
+                throw new IllegalArgumentException("The protocol of the DvObject (" + dvObject.getProtocol() + ") doesn't match that of the provider, id: " + getId());
+            }
+        }
+        if (dvObject.getAuthority() == null) {
+            dvObject.setAuthority(authority);
+        } else {
+            logger.warning("The authority of the DvObject (" + dvObject.getAuthority() + ") does not match the configured authority (" + getAuthority() + ")");
+            throw new IllegalArgumentException("The authority of the DvObject (" + dvObject.getAuthority() + ") doesn't match that of the provider, id: " + getId());
+        
+        }
         if (dvObject.isInstanceofDataset()) {
             dvObject.setIdentifier(generateDatasetIdentifier((Dataset) dvObject));
         } else {
             dvObject.setIdentifier(generateDataFileIdentifier((DataFile) dvObject));
-        }
-        if (dvObject.getProtocol() == null) {
-            dvObject.setProtocol(protocol);
-        }
-        if (dvObject.getAuthority() == null) {
-            dvObject.setAuthority(authority);
         }
         return dvObject;
     }
@@ -308,7 +315,7 @@ public abstract class AbstractPidProvider implements PidProvider {
     }
     
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
-        logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getProviderInformation().get(0));
+        logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getId());
         if(!PidProvider.isValidGlobalId(protocol, authority, identifier)) {
             return null;
         }
@@ -333,7 +340,7 @@ public abstract class AbstractPidProvider implements PidProvider {
             }
         }
         return new GlobalId(protocol, authority, identifier, getSeparator(), getUrlPrefix(),
-                getProviderInformation().get(0));
+                getId());
     }
 
     
@@ -384,7 +391,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         String identifier = null;
         do {
             identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();
-        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0))));
+        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getId())));
 
         return identifier;
     }
@@ -405,7 +412,7 @@ public abstract class AbstractPidProvider implements PidProvider {
                 return null; 
             }
             identifier = prepend + identifierFromStoredProcedure;
-        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0))));
+        } while (!isGlobalIdUnique(new GlobalId(dvo.getProtocol(), dvo.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getId())));
         
         return identifier;
     }
@@ -432,7 +439,7 @@ public abstract class AbstractPidProvider implements PidProvider {
             retVal++;
             identifier = prepend + retVal.toString();
 
-        } while (existingIdentifiers.contains(identifier) || !isGlobalIdUnique(new GlobalId(datafile.getProtocol(), datafile.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getProviderInformation().get(0))));
+        } while (existingIdentifiers.contains(identifier) || !isGlobalIdUnique(new GlobalId(datafile.getProtocol(), datafile.getAuthority(), identifier, this.getSeparator(), this.getUrlPrefix(), this.getId())));
 
         return identifier;
     }
