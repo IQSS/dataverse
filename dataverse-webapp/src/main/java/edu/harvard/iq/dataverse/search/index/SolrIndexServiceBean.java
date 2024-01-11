@@ -78,10 +78,6 @@ public class SolrIndexServiceBean {
         if (dvObject == null) {
             return new IndexResponse("problem indexing... null DvObject passed in");
         }
-        if (dvObject.isInstanceofDataverse() && ((Dataverse)dvObject).isRoot()) {
-            return new IndexResponse("DvObject is root Dataverse. Skipping.");
-        }
-
         List<PermissionsSolrDoc> definitionPoints = solrDocFactory.determinePermissionsDocsOnSelfOnly(dvObject);
 
         try {
