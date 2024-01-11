@@ -64,7 +64,10 @@ public class FakeDOIProvider extends DOIProvider {
     }
 
     @Override
-    public boolean publicizeIdentifier(DvObject studyIn) {
+    public boolean publicizeIdentifier(DvObject dvObject) {
+        if(dvObject.isInstanceofDataFile() && dvObject.getGlobalId()==null) {
+            generatePid(dvObject);
+        }
         return true;
     }
     
