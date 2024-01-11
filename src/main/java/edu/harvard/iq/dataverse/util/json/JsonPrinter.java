@@ -570,6 +570,8 @@ public class JsonPrinter {
         fieldsBld.add("multiple", fld.isAllowMultiples());
         fieldsBld.add("isControlledVocabulary", fld.isControlledVocabulary());
         fieldsBld.add("displayFormat", fld.getDisplayFormat());
+        fieldsBld.add("isRequired", fld.isRequired());
+        fieldsBld.add("displayOrder", fld.getDisplayOrder());
         if (fld.isControlledVocabulary()) {
             // If the field has a controlled vocabulary,
             // add all values to the resulting JSON
