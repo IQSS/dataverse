@@ -158,7 +158,7 @@
                 <div class="main-menu-container">
                     <nav class="main-menu">
                         <ul class="nav navbar-nav">
-                            <li jsf:rendered="#{dataverseSession.user.authenticated}">
+                            <li jsf:rendered="#{dataverseHeaderFragment.shouldShowAddDatasetButton()}">
                                 <h:form styleClass="navbar-form navbar-left navbar-form-link navbar-highlighted-link">
                                     <p:commandLink action="#{CreateDatasetDialog.init()}" update="create-dataset-dialog"
                                                    oncomplete="primeFacesShowModal('createDatasetDialog', this)">

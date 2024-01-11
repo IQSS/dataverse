@@ -24,7 +24,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,8 +108,12 @@ public class DataverseHeaderFragment implements Serializable {
         initBreadcrumbsForFileMetadata(fmd, subPage);
     }
 
-    public Boolean shouldShowUnconfirmedMailInfoBanner() {
+    public boolean shouldShowUnconfirmedMailInfoBanner() {
         return confirmEmailService.hasEffectivelyUnconfirmedMail(dataverseSession.getUser());
+    }
+
+    public boolean shouldShowAddDatasetButton() {
+        return dataverseSession.getUser().isAuthenticated() && !confirmEmailService.hasEffectivelyUnconfirmedMail(dataverseSession.getUser());
     }
 
     public void initBreadcrumbsForFileMetadata(FileMetadata fmd, String subPage) {
