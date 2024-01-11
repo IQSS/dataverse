@@ -86,7 +86,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(theDataset);
         
         if ( isEmpty(theDataset.getIdentifier()) ) {
-            theDataset.setIdentifier(pidProvider.generateDatasetIdentifier(theDataset));
+            pidProvider.generatePid(theDataset);
         }
         
         DatasetVersion dsv = getVersionToPersist(theDataset);
@@ -119,7 +119,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         	theDataset.setStorageIdentifier(driverId  + DataAccess.SEPARATOR + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
         }
         if (theDataset.getIdentifier()==null) {
-            theDataset.setIdentifier(pidProvider.generateDatasetIdentifier(theDataset));
+            pidProvider.generatePid(theDataset);
         }
         
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)

@@ -52,19 +52,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //Test to see if identifier already present
             //if so, leave.
             if (target.getIdentifier() == null || target.getIdentifier().isEmpty()) {
-                
-                if (target.isInstanceofDataset()) {
-                    target.setIdentifier(pidProvider.generateDatasetIdentifier((Dataset) target));
-
-                } else {
-                    target.setIdentifier(pidProvider.generateDataFileIdentifier((DataFile) target));
-                }
-                if (target.getProtocol() == null) {
-                    target.setProtocol(pidProvider.getProtocol());
-                }
-                if (target.getAuthority() == null) {
-                    target.setAuthority(pidProvider.getAuthority());
-                }
+                pidProvider.generatePid(target);
             }
 
             if (pidProvider.alreadyRegistered(target)) {
@@ -92,13 +80,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     Dataset dataset = (Dataset) target;
                     for (DataFile df : dataset.getFiles()) {
                         if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
-                            df.setIdentifier(pidProvider.generateDataFileIdentifier(df));
-                            if (df.getProtocol() == null || df.getProtocol().isEmpty()) {
-                                df.setProtocol(pidProvider.getProtocol());
-                            }
-                            if (df.getAuthority() == null || df.getAuthority().isEmpty()) {
-                                df.setAuthority(pidProvider.getAuthority());
-                            }
+                            pidProvider.generatePid(df);
                         }
                         doiRetString = pidProvider.createIdentifier(df);
                         if (doiRetString != null && doiRetString.contains(df.getIdentifier())) {

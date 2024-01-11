@@ -206,15 +206,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         FileUtil.generateS3PackageStorageIdentifier(packageFile);
         PidProvider pidProvider = commandEngine.getContext().dvObjects().getEffectivePidGenerator(dataset);
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
-            String packageIdentifier = pidProvider.generateDataFileIdentifier(packageFile);
-            packageFile.setIdentifier(packageIdentifier);
-        }
-
-        if (packageFile.getProtocol() == null) {
-            packageFile.setProtocol(pidProvider.getProtocol());
-        }
-        if (packageFile.getAuthority() == null) {
-            packageFile.setAuthority(pidProvider.getAuthority());
+            pidProvider.generatePid(packageFile);
         }
 
         if (!packageFile.isIdentifierRegistered()) {

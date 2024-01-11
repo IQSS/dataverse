@@ -362,13 +362,7 @@ public class FileRecordWriter extends AbstractItemWriter {
 
         PidProvider pidProvider = commandEngine.getContext().dvObjects().getEffectivePidGenerator(dataset);
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
-            packageFile.setIdentifier(pidProvider.generateDataFileIdentifier(packageFile));
-        }
-        if (packageFile.getProtocol() == null) {
-            packageFile.setProtocol(pidProvider.getProtocol());
-        }
-        if (packageFile.getAuthority() == null) {
-            packageFile.setAuthority(pidProvider.getAuthority());
+            pidProvider.generatePid(packageFile);
         }
 
         if (!packageFile.isIdentifierRegistered()) {

@@ -60,8 +60,6 @@ public interface PidProvider {
     
     boolean publicizeIdentifier(DvObject studyIn);
     
-    String generateDatasetIdentifier(Dataset dataset);
-    String generateDataFileIdentifier(DataFile datafile);
     boolean isGlobalIdUnique(GlobalId globalId);
     
     String getUrlPrefix();

@@ -160,7 +160,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                         int attempts = 0;
                         if(retry) {
                             do  {
-                                theDataset.setIdentifier(pidProvider.generateDatasetIdentifier(theDataset));
+                                pidProvider.generatePid(theDataset);
                                 logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
                                     new Object[]{theDataset.getId(), theDataset.getIdentifier()});
                                 attempts++;

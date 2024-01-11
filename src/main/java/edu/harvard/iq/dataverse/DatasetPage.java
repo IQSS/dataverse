@@ -2108,8 +2108,6 @@ public class DatasetPage implements java.io.Serializable {
             editMode = EditMode.CREATE;
             selectedHostDataverse = dataverseService.find(ownerId);
             dataset.setOwner(selectedHostDataverse);
-            dataset.setProtocol(protocol);
-            dataset.setAuthority(authority);
 
             if (dataset.getOwner() == null) {
                 return permissionsWrapper.notFound();
@@ -2121,7 +2119,7 @@ public class DatasetPage implements java.io.Serializable {
             if ( isEmpty(dataset.getIdentifier()) && systemConfig.directUploadEnabled(dataset) ) {
                 CommandContext ctxt = commandEngine.getContext();
                 PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(dataset);
-                dataset.setIdentifier(pidProvider.generateDatasetIdentifier(dataset));
+                pidProvider.generatePid(dataset);
             }
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
