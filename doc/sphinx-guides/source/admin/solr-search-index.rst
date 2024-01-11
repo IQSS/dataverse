@@ -89,7 +89,7 @@ To re-index a dataset by its database ID:
 Clearing a Dataset from Solr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This API will clear the Solr entry for the dataset specified. It can be useful if you have reasons to stop showing a published dataset in search results and/or on Collection pages, but don't want to destroy and purge it from the database just yet. 
+This API will clear the Solr entry for the dataset specified. It can be useful if you have reasons to want to hide a published dataset from showing in search results and/or on Collection pages, but don't want to destroy and purge it from the database just yet. 
 
 ``curl -X DELETE http://localhost:8080/api/admin/index/datasets/<DATABASE_ID>``
 
