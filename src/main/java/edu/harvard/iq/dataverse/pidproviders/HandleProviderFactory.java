@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
+import com.google.auto.service.AutoService;
+
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
-class HandleProviderFactory implements PidProviderFactory {
-
+@AutoService(PidProviderFactory.class)
+public class HandleProviderFactory implements PidProviderFactory {
+    
     @Override
     public PidProvider createPidProvider(String providerId) {
         String providerType = JvmSettings.PID_PROVIDER_TYPE.lookup(providerId);
