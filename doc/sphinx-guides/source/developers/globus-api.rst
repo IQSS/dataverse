@@ -72,7 +72,7 @@ The response includes the id for the Globus endpoint to use along with several s
 
 The getDatasetMetadata and getFileListing URLs are just signed versions of the standard Dataset metadata and file listing API calls. The other two are Globus specific.
 
-If called for a dataset using a store that is configured with a remote Globus endpoint(s), the return response is similar but the response includes a
+If called for, a dataset using a store that is configured with a remote Globus endpoint(s), the return response is similar but the response includes a
 the "managed" parameter will be false, the "endpoint" parameter is replaced with a JSON array of "referenceEndpointsWithPaths" and the
 requestGlobusTransferPaths and addGlobusFiles URLs are replaced with ones for requestGlobusReferencePaths and addFiles. All of these calls are
 described further below.
@@ -91,7 +91,7 @@ The returned response includes the same getDatasetMetadata and getFileListing UR
 Performing an Upload/Transfer In
 --------------------------------
 
-The information from the API call above can be used to provide a user with information about the dataset and to prepare to transfer or to reference files (based on the "managed" parameter). 
+The information from the API call above can be used to provide a user with information about the dataset and to prepare to transfer (managed=true) or to reference files (managed=false).
 
 Once the user identifies which files are to be added, the requestGlobusTransferPaths or requestGlobusReferencePaths URLs can be called. These both reference the same API call but must be used with different entries in the JSON body sent:
 
