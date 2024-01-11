@@ -268,12 +268,12 @@ public class MetricsUtilTest {
 
     private List<ChartMetrics> allMetrics() {
         return Lists.newArrayList(
-                new ChartMetrics(2018.0, (double) 4, 7L),
-                new ChartMetrics(2018.0, (double) 5, 1L),
-                new ChartMetrics(2018.0, (double) 6, 0L),
-                new ChartMetrics(2019.0, (double) 1, 78L),
-                new ChartMetrics(2020.0, (double) 11, 9L),
-                new ChartMetrics(2020.0, (double) 12, 8L)
+                new ChartMetrics(2018, 4, 7L),
+                new ChartMetrics(2018, 5, 1L),
+                new ChartMetrics(2018, 6, 0L),
+                new ChartMetrics(2019, 1, 78L),
+                new ChartMetrics(2020, 11, 9L),
+                new ChartMetrics(2020, 12, 8L)
         );
     }
 }

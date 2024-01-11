@@ -8,14 +8,14 @@ public class ChartMetrics {
     private int month;
     private Long count;
 
-    public ChartMetrics(Double year, Double month, Long count) {
-        this.year = year.intValue();
-        this.month = month.intValue();
+    public ChartMetrics(int year, int month, Long count) {
+        this.year = year;
+        this.month = month;
         this.count = count;
     }
 
-    public ChartMetrics(Double year, Long count) {
-        this.year = year.intValue();
+    public ChartMetrics(int year, Long count) {
+        this.year = year;
         this.count = count;
     }
 

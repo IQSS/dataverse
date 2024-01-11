@@ -210,8 +210,11 @@ public class MetricsServiceBean implements Serializable {
 
     private List<ChartMetrics> mapToChartMetrics(List<Object[]> result) {
         return result.stream()
-                .peek(dm -> dm[2] = dm[2] instanceof BigDecimal ?  ((BigDecimal) dm[2]).longValue() : dm[2])
-                .map(dm -> new ChartMetrics((Double) dm[0], (Double) dm[1], (Long) dm[2]))
+                .map(dm -> new ChartMetrics(
+                        dm[0] instanceof BigDecimal ?  ((BigDecimal) dm[0]).intValue() : ((Integer)dm[0]),
+                        dm[1] instanceof BigDecimal ?  ((BigDecimal) dm[1]).intValue() : ((Integer)dm[1]),
+                        dm[2] instanceof BigDecimal ?  ((BigDecimal) dm[2]).longValue() : ((Long)dm[2]))
+                )
                 .collect(Collectors.toList());
     }
 

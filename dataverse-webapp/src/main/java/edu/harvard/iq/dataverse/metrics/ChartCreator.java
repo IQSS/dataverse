@@ -22,7 +22,7 @@ public class ChartCreator {
                 MetricsUtil.countMetricsPerYearAndFillMissingYears(metrics, MAX_YEARS_PER_CHART);
 
         if (yearlyMetrics.isEmpty()) {
-            yearlyMetrics.add(new ChartMetrics((double) LocalDateTime.now().getYear(), 0L));
+            yearlyMetrics.add(new ChartMetrics(LocalDateTime.now().getYear(), 0L));
         }
 
         String xLabel = BundleUtil.getStringFromBundle("metrics.chart.xAxis.year.label");
@@ -40,7 +40,7 @@ public class ChartCreator {
                 MetricsUtil.countCumulativeMetricsPerYearAndFillMissingYears(metrics, MAX_YEARS_PER_CHART);
 
         if (yearlyCumulativeMetrics.isEmpty()) {
-            yearlyCumulativeMetrics.add(new ChartMetrics((double) LocalDateTime.now().getYear(), 0L));
+            yearlyCumulativeMetrics.add(new ChartMetrics(LocalDateTime.now().getYear(), 0L));
         }
 
         String xLabel = BundleUtil.getStringFromBundle("metrics.chart.xAxis.year.label");

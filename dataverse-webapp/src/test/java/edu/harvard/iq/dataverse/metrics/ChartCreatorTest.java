@@ -40,9 +40,9 @@ public class ChartCreatorTest {
 
     private List<ChartMetrics> generateSampleDatasetsMetrics() {
         return Arrays.asList(
-                new ChartMetrics(2018.0, (double) 4, 7L),
-                new ChartMetrics(2019.0, (double) 1, 78L),
-                new ChartMetrics(2020.0, (double) 12, 8L)
+                new ChartMetrics(2018, 4, 7L),
+                new ChartMetrics(2019, 1, 78L),
+                new ChartMetrics(2020, 12, 8L)
         );
     }
 }

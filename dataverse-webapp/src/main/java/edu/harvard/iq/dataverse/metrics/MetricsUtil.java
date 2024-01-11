@@ -200,7 +200,7 @@ public class MetricsUtil {
                 }));
 
         return counts.entrySet().stream()
-                .map(integerLongEntry -> new ChartMetrics((double) integerLongEntry.getKey(), integerLongEntry.getValue()))
+                .map(integerLongEntry -> new ChartMetrics(integerLongEntry.getKey(), integerLongEntry.getValue()))
                 .sorted(Comparator.comparing(ChartMetrics::getYear))
                 .collect(Collectors.toList());
     }
@@ -213,7 +213,7 @@ public class MetricsUtil {
                 .peek(metrics -> months.removeIf(month -> month == metrics.getMonth()))
                 .collect(Collectors.toList());
 
-        months.forEach(month -> filteredMetrics.add(new ChartMetrics((double) year, (double) month, 0L)));
+        months.forEach(month -> filteredMetrics.add(new ChartMetrics(year, month, 0L)));
         filteredMetrics.sort(Comparator.comparing(ChartMetrics::getMonth));
         return filteredMetrics;
     }
@@ -244,7 +244,7 @@ public class MetricsUtil {
     private static List<ChartMetrics> fillMetricsFromMinToMaxYear(List<ChartMetrics> missingYearsMetrics, int minYear, int maxYear) {
         List<Integer> years = getListWithYears(minYear, maxYear);
         List<ChartMetrics> filledYearsMetrics = new ArrayList<>();
-        years.forEach(year -> filledYearsMetrics.add(new ChartMetrics((double) year,
+        years.forEach(year -> filledYearsMetrics.add(new ChartMetrics(year,
                 missingYearsMetrics.stream()
                         .filter(metric -> metric.getYear() == year)
                         .mapToLong(ChartMetrics::getCount)

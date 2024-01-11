@@ -69,7 +69,7 @@ public class PublishedDatasetsChart implements Serializable {
         mode = ChartMode.CUMULATIVE;
 
         if (chartMetrics.isEmpty()) {
-            yearlyStats.add(new ChartMetrics((double) LocalDateTime.now().getYear(), 0L));
+            yearlyStats.add(new ChartMetrics(LocalDateTime.now().getYear(), 0L));
             selectedYear = LocalDate.now().getYear();
         } else {
             yearlyStats = MetricsUtil.countMetricsPerYearAndFillMissingYearsDescending(chartMetrics);
