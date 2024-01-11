@@ -1189,18 +1189,21 @@ public class SystemConfig {
         return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingCapacityByTierAndAction, "");
     }
 
-    public Integer getIntFromCSVStringOrDefault(final SettingsServiceBean.Key settingKey, final Integer index, final Integer defaultValue) {
-        Integer value = defaultValue;
+    public int getIntFromCSVStringOrDefault(final SettingsServiceBean.Key settingKey, int index, int defaultValue) {
+        int value = defaultValue;
         if (settingKey != null && !settingKey.equals("")) {
             String csv = settingsService.getValueForKey(settingKey, "");
             try {
-                int[] values = csv.isEmpty() ? new int[0] : Arrays.stream(csv.split(",")).mapToInt(Integer::parseInt).toArray();
-                value = index > values.length ? defaultValue : Integer.valueOf(values[index]);
+                if (!csv.isEmpty()) {
+                    int[] values = Arrays.stream(csv.split(",")).mapToInt(Integer::parseInt).toArray();
+                    if (index < values.length) {
+                        value = values[index];
+                    }
+                }
             } catch (NumberFormatException nfe) {
                 logger.warning(nfe.getMessage());
             }
         }
-
         return value;
     }
 

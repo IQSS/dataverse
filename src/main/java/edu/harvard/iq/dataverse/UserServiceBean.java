@@ -147,7 +147,7 @@ public class UserServiceBean {
         user.setMutedEmails(Type.tokenizeToSet((String) dbRowValues[15]));
         user.setMutedNotifications(Type.tokenizeToSet((String) dbRowValues[15]));
 
-        user.setRateLimitTier(Integer.valueOf((int)dbRowValues[16]));
+        user.setRateLimitTier((int)dbRowValues[16]);
 
         user.setRoles(roles);
         return user;

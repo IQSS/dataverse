@@ -146,8 +146,8 @@ public class AuthenticatedUser implements User, Serializable {
     @Transient
     private Set<Type> mutedNotificationsSet = new HashSet<>();
 
-    @Column(nullable=true)
-    private Integer rateLimitTier;
+    @Column
+    private int rateLimitTier;
 
     @PrePersist
     void prePersist() {
@@ -400,10 +400,10 @@ public class AuthenticatedUser implements User, Serializable {
         this.deactivatedTime = deactivatedTime;
     }
 
-    public Integer getRateLimitTier() {
+    public int getRateLimitTier() {
         return rateLimitTier;
     }
-    public void setRateLimitTier(Integer rateLimitTier) {
+    public void setRateLimitTier(int rateLimitTier) {
         this.rateLimitTier = rateLimitTier;
     }
 
