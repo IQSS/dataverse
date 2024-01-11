@@ -126,7 +126,7 @@ public class PidUtil {
 
     public static void addAllToUnmanagedProviderList(List<PidProvider> list) {
         for (PidProvider pidProvider : list) {
-            unmanagedProviderMap.put(pidProvider.getProviderInformation().get(0), pidProvider);
+            unmanagedProviderMap.put(pidProvider.getId(), pidProvider);
         }
     }
 

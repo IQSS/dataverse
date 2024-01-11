@@ -81,7 +81,7 @@ public class DataCiteDOIProvider extends DOIProvider {
     public String createIdentifier(DvObject dvObject) throws Exception {
         logger.log(Level.FINE, "createIdentifier");
         if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()) {
-            dvObject = generateIdentifier(dvObject);
+            dvObject = generatePid(dvObject);
         }
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getMetadataForCreateIndicator(dvObject);
@@ -239,7 +239,7 @@ public class DataCiteDOIProvider extends DOIProvider {
     public boolean publicizeIdentifier(DvObject dvObject) {
         logger.log(Level.FINE, "updateIdentifierStatus");
         if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()) {
-            dvObject = generateIdentifier(dvObject);
+            dvObject = generatePid(dvObject);
         }
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getUpdateMetadata(dvObject);

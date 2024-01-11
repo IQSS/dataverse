@@ -54,7 +54,7 @@ public interface PidProvider {
     
     Map<String,String> getMetadataForTargetURL(DvObject dvObject);
     
-    DvObject generateIdentifier(DvObject dvObject);
+    DvObject generatePid(DvObject dvObject);
     
     String getIdentifier(DvObject dvObject);
     

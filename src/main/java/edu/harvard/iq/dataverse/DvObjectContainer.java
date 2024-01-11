@@ -11,8 +11,6 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.CascadeType;
 import java.util.Optional;
-import java.util.logging.Logger;
-
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;

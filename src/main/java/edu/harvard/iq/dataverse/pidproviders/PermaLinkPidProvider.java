@@ -102,7 +102,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
         // Generate if needed (i.e. datafile case where we don't create/register early
         // (even with registerWhenPublished == false))
         if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()) {
-            dvObject = generateIdentifier(dvObject);
+            dvObject = generatePid(dvObject);
         }
         // Call external resolver and send landing URL?
         return true;
@@ -138,10 +138,10 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
              */
             if(identifierString.length() < 4) {
                 return new GlobalId(protocol, "", identifierString, SEPARATOR, getUrlPrefix(),
-                        getProviderInformation().get(0));
+                        getId());
             }
             return new GlobalId(protocol, identifierString.substring(0,4), identifierString.substring(4), SEPARATOR, getUrlPrefix(),
-                    getProviderInformation().get(0));
+                    getId());
         }
         String identifier = null;
         if (getAuthority() != null) {

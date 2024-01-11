@@ -405,7 +405,7 @@ public class HandlePidProvider extends AbstractPidProvider {
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
         if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()){
-            generateIdentifier(dvObject);
+            generatePid(dvObject);
         }
         return updateIdentifierStatus(dvObject, "public");
 

@@ -403,8 +403,8 @@ public class DvObjectServiceBean implements java.io.Serializable {
      */
     public PidProvider getEffectivePidGenerator(DvObjectContainer dvObjectContainer) {
         PidProvider pidGenerator = dvObjectContainer.getEffectivePidGenerator();
-        if(pidGenerator == null) {
-                pidGenerator = pidProviderFactoryBean.getDefaultPidGenerator();
+        if (pidGenerator == null) {
+            pidGenerator = pidProviderFactoryBean.getDefaultPidGenerator();
         }
         return pidGenerator;
     }

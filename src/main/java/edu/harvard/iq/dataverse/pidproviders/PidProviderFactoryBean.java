@@ -102,8 +102,10 @@ public class PidProviderFactoryBean {
          */
         loader.forEach(providerFactory -> {
             String type = providerFactory.getType();
+            logger.fine("Loaded PidProviderFactory of type: " + type);
             // If no entry for this providerName yet or if it is an external exporter
             if (!pidProviderFactoryMap.containsKey(type) || providerFactory.getClass().getClassLoader().equals(cl)) {
+                logger.fine("Adding PidProviderFactory of type: " + type + " to the map");
                 pidProviderFactoryMap.put(type, providerFactory);
             }
             logger.log(Level.FINE,

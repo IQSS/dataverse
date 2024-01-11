@@ -97,7 +97,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     protected void handlePid(Dataset theDataset, CommandContext ctxt) throws CommandException {
         PidProvider pidProvider = PidUtil.getPidProvider(theDataset.getGlobalId().getProviderId());
         if(!pidProvider.canManagePID()) {
-            throw new IllegalCommandException("PID Provider " + pidProvider.getProviderInformation().get(0) + " is not configured.", this);
+            throw new IllegalCommandException("PID Provider " + pidProvider.getId() + " is not configured.", this);
         }
         if ( !pidProvider.registerWhenPublished() ) {
             // pre-register a persistent id
