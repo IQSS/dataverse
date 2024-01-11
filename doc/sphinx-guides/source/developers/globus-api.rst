@@ -157,7 +157,7 @@ In the remote/reference case, the map is from the initially supplied endpoint/pa
 Adding Files to the Dataset
 ---------------------------
 
-In the managed case, once a Globus transfer has been initiated a final API call is made to Dataverse to provide it with the task identifier of the transfer and information about the files being transferred:
+In the managed case, you must initiate a Globus transfer and take note of its task identifier. As in the JSON example below, you will pass it as ``taskIdentifier`` along with details about the files you are transferring:
 
 .. code-block:: bash
 
