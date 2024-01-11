@@ -23,7 +23,7 @@ public class RateLimitUtil {
     protected static final Map<String, Integer> rateLimitMap = new HashMap<>();
     public static final int NO_LIMIT = -1;
 
-    public static int getCapacityByTier(SystemConfig systemConfig, Integer tier) {
+    public static int getCapacityByTier(SystemConfig systemConfig, int tier) {
         return systemConfig.getIntFromCSVStringOrDefault(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers, tier, NO_LIMIT);
     }
 
