@@ -170,7 +170,7 @@ In the managed case, once a Globus transfer has been initiated a final API call 
 
   curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:multipart/form-data" -X POST "$SERVER_URL/api/datasets/:persistentId/addGlobusFiles -F "jsonData=$JSON_DATA"
 
-Note that the mimetype is multipart/form-data, matching the /addFiles API call. ALso note that the API_TOKEN is not needed when using a signed URL.
+Note that the mimetype is multipart/form-data, matching the /addFiles API call. Also note that the API_TOKEN is not needed when using a signed URL.
 
 With this information, Dataverse will begin to monitor the transfer and when it completes, will add all files for which the transfer succeeded.
 As the transfer can take significant time and the API call is asynchronous, the only way to determine if the transfer succeeded via API is to use the standard calls to check the dataset lock state and contents.
