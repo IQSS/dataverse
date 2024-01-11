@@ -16,7 +16,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,7 +26,9 @@ public class UningestPage implements Serializable {
     private UningestService uningestService;
     private DatasetRepository datasetRepository;
     private DataverseSession dataverseSession;
+    private DataverseRequestServiceBean dataverseRequestService;
     private PermissionsWrapper permissionsWrapper;
+    private PermissionServiceBean permissionService;
     private SystemConfig systemConfig;
     private UningestInfoService uningestInfoService;
 
@@ -62,13 +63,17 @@ public class UningestPage implements Serializable {
     @Inject
     public UningestPage(UningestService uningestService, DatasetRepository datasetRepository,
                         DataverseSession dataverseSession, PermissionsWrapper permissionsWrapper,
-                        SystemConfig systemConfig, UningestInfoService uningestInfoService) {
+                        SystemConfig systemConfig, UningestInfoService uningestInfoService,
+                        PermissionServiceBean permissionServiceBean,
+                        DataverseRequestServiceBean dataverseRequestService) {
         this.uningestService = uningestService;
         this.datasetRepository = datasetRepository;
         this.dataverseSession = dataverseSession;
         this.permissionsWrapper = permissionsWrapper;
         this.systemConfig = systemConfig;
         this.uningestInfoService = uningestInfoService;
+        this.permissionService = permissionServiceBean;
+        this.dataverseRequestService = dataverseRequestService;
     }
 
     // -------------------- LOGIC --------------------
@@ -79,10 +84,13 @@ public class UningestPage implements Serializable {
         }
         this.dataset = datasetRepository.getById(datasetId);
         if (!permissionsWrapper.canCurrentUserUpdateDataset(dataset)
-                || dataset.isLocked()
                 || systemConfig.isReadonlyMode()) {
             return permissionsWrapper.notAuthorized();
         }
+        if (permissionService.checkEditDatasetLockNonThrowing(dataset, dataverseRequestService.getDataverseRequest())) {
+            return permissionsWrapper.notAuthorized();
+        }
+        
         DatasetVersion version = dataset.getLatestVersion();
         if (!version.isDraft()) {
             return permissionsWrapper.notFound();

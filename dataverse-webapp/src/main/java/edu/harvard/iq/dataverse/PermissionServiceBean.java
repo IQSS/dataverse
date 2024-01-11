@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.persistence.DvObject;
@@ -16,6 +15,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.group.Group;
@@ -209,28 +209,32 @@ public class PermissionServiceBean {
 
     public boolean checkEditDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command<?> command)
             throws IllegalCommandException {
+        boolean checkEditLock = checkEditDatasetLockNonThrowing(dataset, dataverseRequest);
+        if (checkEditLock) {
+            if (dataset.isLockedFor(Reason.InReview)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowedInReview"), command);
+            } else {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+            }
+        }
+        return false;
+    }
+
+    public boolean checkEditDatasetLockNonThrowing(Dataset dataset, DataverseRequest dataverseRequest) {
         if (!dataset.isLocked()) {
             return false;
         }
         if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
             // The "InReview" lock is not really a lock for curators. They can still make edits.
-            if (!isUserAllowedOn(dataverseRequest.getUser(), new PublishDatasetCommand(dataset, dataverseRequest, true), dataset)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowedInReview"), command);
+            if (!hasPermissionsFor(dataverseRequest, dataset, EnumSet.of(Permission.PublishDataset))) {
+                return true;
             }
         }
-        if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
-        }
-        if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
-        }
-        // TODO: Do we need to check for "Workflow"? Should the message be more specific?
-        if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
-        }
-        // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
-        if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+        if (dataset.isLockedFor(DatasetLock.Reason.Ingest)
+                || dataset.isLockedFor(DatasetLock.Reason.pidRegister)
+                || dataset.isLockedFor(DatasetLock.Reason.Workflow)
+                || dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+            return true;
         }
         return false;
     }

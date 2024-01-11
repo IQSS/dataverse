@@ -502,7 +502,7 @@
                                 </ui:fragment>
                             </div>
                             <div id="ingestControl"
-                                 jsf:rendered="#{dataFileServiceBean.isSelectivelyIngestableFile(fileMetadata.dataFile)}">
+                                 jsf:rendered="#{createDataset and dataFileServiceBean.isSelectivelyIngestableFile(fileMetadata.dataFile)}">
                                 <p:outputLabel styleClass="control-label" for="includeInIngest"
                                                style="margin-right:1em; margin-top:.5em"
                                                value="#{bundle['file.ingest.control.label']}"/>
