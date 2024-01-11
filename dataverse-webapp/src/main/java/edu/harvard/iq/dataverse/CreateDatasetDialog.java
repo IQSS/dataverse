@@ -81,6 +81,7 @@ public class CreateDatasetDialog implements Serializable {
                 nodesInfo.isSelectable(rootId)), rootNode);
         fetchChildNodes(firstNode);
         firstNode.setExpanded(true);
+        firstNode.setSelectable(nodesInfo.isSelectable(rootId));
         initialized = true;
     }
 
