@@ -2326,15 +2326,17 @@ public class DatasetPage implements java.io.Serializable {
             lockedDueToIngestVar = true;
         }
 
-        // With DataCite, we try to reserve the DOI when the dataset is created. Sometimes this
-        // fails because DataCite is down. We show the message below to set expectations that the
-        // "Publish" button won't work until the DOI has been reserved using the "Reserve PID" API.
-        PidProvider pidProvider = PidUtil.getPidProvider(dataset.getGlobalId().getProviderId());
-        if (DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType()) && dataset.getGlobalIdCreateTime() == null && editMode != EditMode.CREATE) {
-            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.pidNotReserved.message"),
-                    BundleUtil.getStringFromBundle("dataset.locked.pidNotReserved.message.details"));
+        if (dataset.getGlobalIdCreateTime() == null && editMode != EditMode.CREATE) {
+            // With DataCite, we try to reserve the DOI when the dataset is created. Sometimes this
+            // fails because DataCite is down. We show the message below to set expectations that the
+            // "Publish" button won't work until the DOI has been reserved using the "Reserve PID" API.
+            PidProvider pidProvider = PidUtil.getPidProvider(dataset.getGlobalId().getProviderId());
+            if (DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType())) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN,
+                        BundleUtil.getStringFromBundle("dataset.locked.pidNotReserved.message"),
+                        BundleUtil.getStringFromBundle("dataset.locked.pidNotReserved.message.details"));
+            }
         }
-        
         //if necessary refresh publish message also
         
         displayPublishMessage();
