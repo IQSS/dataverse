@@ -366,12 +366,14 @@ public class PidUtilTest {
         dataset1.setPidGenerator(null);
         assertEquals("dc1", dataset1.getGlobalId().getProviderId());
         assertEquals("dc1", dataset1.getEffectivePidGenerator().getId());
+        assertTrue(PidUtil.getPidProvider(dataset1.getEffectivePidGenerator().getId()).canCreatePidsLike(dataset1.getGlobalId()));
         
         dataset1.setPidGenerator(null);
         //Now set identifier so that the provider has this one in it's managed list (and therefore we can't mint new PIDs in the same auth/shoulder) and therefore we get the effective pid generator
         dataset1.setIdentifier("FK3ABCDEF");
         assertEquals("fake1", dataset1.getGlobalId().getProviderId());
         assertEquals("ez1", dataset1.getEffectivePidGenerator().getId());
+        
         
         
     }
