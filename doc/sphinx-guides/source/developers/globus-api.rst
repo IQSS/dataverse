@@ -102,7 +102,7 @@ Once the user identifies which files are to be added, the requestGlobusTransferP
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
   export LOCALE=en-US
  
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST "$SERVER_URL/api/datasets/:persistentId/requestGlobusUpload"
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST "$SERVER_URL/api/datasets/:persistentId/requestGlobusUploadPaths"
 
 Note that when using the dataverse-globus app or the return from the previous call, the URL for this call will be signed and no API_TOKEN is needed. 
   
