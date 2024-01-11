@@ -283,7 +283,7 @@
                                             <p:message for="dsGuestbookEntryOption" display="text"/>
                                         </div>
                                     </div>
-                                    <div class="col-xs-12 form-group" jsf:rendered="#{DataversePage.getPidProviderOptions().size()>2}">
+                                    <div class="col-xs-12 form-group" jsf:rendered="#{dataverseSession.user.superuser and DataversePage.getPidProviderOptions().size()>2}">
                                         <h:outputLabel for="dsPidProviderOption" styleClass="control-label">
                                             #{bundle.pidProviderOption} 
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
