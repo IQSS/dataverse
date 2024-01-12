@@ -379,14 +379,20 @@ public class PidUtilTest {
     }
     
     @Test
+    @JvmSetting(key = JvmSettings.LEGACY_DATACITE_MDS_API_URL, value = "https://mds.test.datacite.org/")
+    @JvmSetting(key = JvmSettings.LEGACY_DATACITE_REST_API_URL, value = "https://api.test.datacite.org")
+    @JvmSetting(key = JvmSettings.LEGACY_DATACITE_USERNAME, value = "test2")
+    @JvmSetting(key = JvmSettings.LEGACY_DATACITE_PASSWORD, value = "changeme2")
     public void testLegacyConfig() throws IOException {
       MockitoAnnotations.openMocks(this);
-      Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.DoiProvider)).thenReturn("FAKE");
+      Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.DoiProvider)).thenReturn("DataCite");
       Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Shoulder)).thenReturn("FK2");
 
       Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol)).thenReturn("doi");
       Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("10.5075");
 
+
+      
       String protocol = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol);
       String authority = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority);
       String shoulder = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Shoulder);
@@ -396,6 +402,7 @@ public class PidUtilTest {
           // This line is different than in PidProviderFactoryBean because here we've
           // already added the unmanaged providers, so we can't look for null
           if (!PidUtil.getPidProvider(protocol, authority, shoulder).canManagePID()) {
+              PidProvider legacy = null;
               // Try to add a legacy provider
               String identifierGenerationStyle = settingsServiceBean
                       .getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "random");
@@ -407,9 +414,9 @@ public class PidUtilTest {
                    * String baseUrl = JvmSettings.PID_EZID_BASE_URL.lookup(String.class); String
                    * username = JvmSettings.PID_EZID_USERNAME.lookup(String.class); String
                    * password = JvmSettings.PID_EZID_PASSWORD.lookup(String.class);
-                   * PidUtil.addToProviderList( new EZIdDOIProvider("legacy", "legacy", authority,
+                   * legacy = new EZIdDOIProvider("legacy", "legacy", authority,
                    * shoulder, identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl,
-                   * username, password));
+                   * username, password);
                    */
                   break;
               case "DataCite":
@@ -417,17 +424,22 @@ public class PidUtilTest {
                   String restUrl = JvmSettings.LEGACY_DATACITE_REST_API_URL.lookup(String.class);
                   String dcUsername = JvmSettings.LEGACY_DATACITE_USERNAME.lookup(String.class);
                   String dcPassword = JvmSettings.LEGACY_DATACITE_PASSWORD.lookup(String.class);
-                  if (mdsUrl == null || restUrl == null || dcUsername == null || dcPassword == null) {
-                      PidUtil.addToProviderList(new DataCiteDOIProvider("legacy", "legacy", authority, shoulder,
+                  if (mdsUrl != null && restUrl != null && dcUsername != null && dcPassword != null) {
+                      legacy = new DataCiteDOIProvider("legacy", "legacy", authority, shoulder,
                               identifierGenerationStyle, dataFilePidFormat, "", "", mdsUrl, restUrl, dcUsername,
-                              dcPassword));
+                              dcPassword);
                   }
                   break;
               case "FAKE":
                   System.out.println("Legacy FAKE found");
-                  PidUtil.addToProviderList(new FakeDOIProvider("legacy", "legacy", authority, shoulder,
-                              identifierGenerationStyle, dataFilePidFormat, "", ""));
+                  legacy = new FakeDOIProvider("legacy", "legacy", authority, shoulder,
+                              identifierGenerationStyle, dataFilePidFormat, "", "");
                   break;
+              }
+              if (legacy != null) {
+                  // Not testing parts that require this bean
+                  legacy.setPidProviderServiceBean(null);
+                  PidUtil.addToProviderList(legacy);
               }
           } else {
               System.out.println("Legacy PID provider settings found - ignored since a provider for the same protocol, authority, shoulder has been registered");
