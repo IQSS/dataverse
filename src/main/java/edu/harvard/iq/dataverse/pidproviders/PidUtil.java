@@ -246,11 +246,6 @@ public class PidUtil {
         unmanagedProviderMap.clear();
     }
 
-    public static PidProvider getDefaultPidGenerator() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     /**
      * Get a PidProvider by protocol/authority/shoulder.
      */
