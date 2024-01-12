@@ -12,13 +12,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.eclipse.microprofile.config.ConfigProvider;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -29,11 +27,8 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.pidproviders.PidProvider;
-import io.gdcc.spi.export.Exporter;
 
 /**
  * This Bean loads all of the PidProviderFactory types available (e.g. EZID,
@@ -116,14 +111,67 @@ public class PidProviderFactoryBean {
     }
 
     private void loadProviders() {
-        String[] providers = JvmSettings.PID_PROVIDERS.lookup(String[].class);
-        for (String name : providers) {
-            String type = JvmSettings.PID_PROVIDER_TYPE.lookup(name);
-            if (pidProviderFactoryMap.containsKey(type)) {
-                PidProvider provider = pidProviderFactoryMap.get(type).createPidProvider(name);
-                provider.setPidProviderServiceBean(this);
-                PidUtil.addToProviderList(provider);
+        try {
+            String[] providers = JvmSettings.PID_PROVIDERS.lookup(String[].class);
+            for (String name : providers) {
+                String type = JvmSettings.PID_PROVIDER_TYPE.lookup(name);
+                if (pidProviderFactoryMap.containsKey(type)) {
+                    PidProvider provider = pidProviderFactoryMap.get(type).createPidProvider(name);
+                    provider.setPidProviderServiceBean(this);
+                    PidUtil.addToProviderList(provider);
+                }
             }
+        } catch (NoSuchElementException e) {
+            logger.warning("No PidProviders configured");
+        }
+        String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
+        String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority);
+        String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder);
+        String provider = settingsService.getValueForKey(SettingsServiceBean.Key.DoiProvider);
+
+        if (protocol != null && authority != null && shoulder != null && provider != null) {
+            logger.warning("Found legacy settings: " + protocol + " " + authority + " " + shoulder + " " + provider);
+            if (PidUtil.getPidProvider(protocol, authority, shoulder) == null) {
+                PidProvider legacy = null;
+                // Try to add a legacy provider
+                String identifierGenerationStyle = settingsService
+                        .getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "random");
+                String dataFilePidFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat,
+                        "DEPENDENT");
+                switch (provider) {
+                case "EZID":
+                    /*
+                     * String baseUrl = JvmSettings.PID_EZID_BASE_URL.lookup(String.class); String
+                     * username = JvmSettings.PID_EZID_USERNAME.lookup(String.class); String
+                     * password = JvmSettings.PID_EZID_PASSWORD.lookup(String.class);
+                     * PidUtil.addToProviderList( new EZIdDOIProvider("legacy", "legacy", authority,
+                     * shoulder, identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl,
+                     * username, password));
+                     */
+                    break;
+                case "DataCite":
+                    String mdsUrl = JvmSettings.LEGACY_DATACITE_MDS_API_URL.lookup(String.class);
+                    String restUrl = JvmSettings.LEGACY_DATACITE_REST_API_URL.lookup(String.class);
+                    String dcUsername = JvmSettings.LEGACY_DATACITE_USERNAME.lookup(String.class);
+                    String dcPassword = JvmSettings.LEGACY_DATACITE_PASSWORD.lookup(String.class);
+                    if (mdsUrl == null || restUrl == null || dcUsername == null || dcPassword == null) {
+                        legacy = new DataCiteDOIProvider("legacy", "legacy", authority, shoulder,
+                                identifierGenerationStyle, dataFilePidFormat, "", "", mdsUrl, restUrl, dcUsername,
+                                dcPassword);
+                    }
+                    break;
+                case "FAKE":
+                    logger.warning("Adding FAKE provider");
+                    legacy = new FakeDOIProvider("legacy", "legacy", authority, shoulder,
+                                identifierGenerationStyle, dataFilePidFormat, "", "");
+                    break;
+                }
+                legacy.setPidProviderServiceBean(this);
+                PidUtil.addToProviderList(legacy);
+            } else {
+                logger.warning("Legacy PID provider settings found - ignored since a provider for the same protocol, authority, shoulder has been registered");
+            }
+            logger.info("Have " + PidUtil.getManagedProviderIds().size() + " managed PID providers");
         }
         PidUtil.addAllToUnmanagedProviderList(Arrays.asList(new UnmanagedDOIProvider(),
                 new UnmanagedHandlePidProvider(), new UnmanagedPermaLinkPidProvider()));

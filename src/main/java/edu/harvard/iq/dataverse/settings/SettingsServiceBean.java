@@ -194,7 +194,7 @@ public class SettingsServiceBean {
         /** authority for global id */
         Authority,
         /** DoiProvider for global id */
-        //DoiProvider,
+        DoiProvider,
         /** Shoulder for global id - used to create a common prefix on identifiers */
         Shoulder,
         /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
@@ -351,7 +351,7 @@ public class SettingsServiceBean {
         'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
         'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
         */
-        //DataFilePIDFormat, 
+        DataFilePIDFormat, 
         /* Json array of supported languages
         */
         Languages,
