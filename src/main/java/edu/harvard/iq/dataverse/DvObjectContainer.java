@@ -200,11 +200,16 @@ public abstract class DvObjectContainer extends DvObject {
         this.pidGeneratorSpecs = pidGeneratorSpecs;
     }
 
-    //Used in JSF when selecting the PidGenerator
+    // Used in JSF when selecting the PidGenerator
     public String getPidGeneratorId() {
-        return getEffectivePidGenerator().getId();
+        PidProvider pidGenerator = getEffectivePidGenerator();
+        if (pidGenerator == null) {
+            return "default";
+        } else {
+            return getEffectivePidGenerator().getId();
+        }
     }
-    
+   
     //Used in JSF when setting the PidGenerator
     public void setPidGeneratorId(String pidGeneratorId) {
         // Note that the "default" provider will not be found so will result in
