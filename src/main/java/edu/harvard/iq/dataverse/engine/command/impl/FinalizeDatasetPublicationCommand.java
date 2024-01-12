@@ -351,7 +351,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     // major release; we can revisit the decision if there's any
                     // indication that this makes publishing take significantly longer.
                     String driverId = FileUtil.getStorageDriver(dataFile);
-                    if(StorageIO.isDataverseAccessible(driverId) && maxFileSize == -1 || dataFile.getFilesize() < maxFileSize) {
+                    if(StorageIO.isDataverseAccessible(driverId) && (maxFileSize == -1 || dataFile.getFilesize() < maxFileSize)) {
                         FileUtil.validateDataFileChecksum(dataFile);
                     }
                     else {
