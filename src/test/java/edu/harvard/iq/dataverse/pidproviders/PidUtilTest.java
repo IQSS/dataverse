@@ -385,17 +385,17 @@ public class PidUtilTest {
       Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Shoulder)).thenReturn("FK2");
 
       Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol)).thenReturn("doi");
-      Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("10.5072");
+      Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("10.5075");
 
       String protocol = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol);
       String authority = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority);
       String shoulder = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Shoulder);
       String provider = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.DoiProvider);
 
-      PidUtil.clearPidProviders();
       if (protocol != null && authority != null && shoulder != null && provider != null) {
-          System.out.println("Looking");
-          if (PidUtil.getPidProvider(protocol, authority, shoulder) == null) {
+          // This line is different than in PidProviderFactoryBean because here we've
+          // already added the unmanaged providers, so we can't look for null
+          if (!PidUtil.getPidProvider(protocol, authority, shoulder).canManagePID()) {
               // Try to add a legacy provider
               String identifierGenerationStyle = settingsServiceBean
                       .getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "random");
@@ -435,7 +435,7 @@ public class PidUtilTest {
 
       }
       
-        String pid1String = "doi:10.5072/FK2ABCDEF";
+        String pid1String = "doi:10.5075/FK2ABCDEF";
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);    
         assertEquals(pid1String, pid2.asString());
         assertEquals("legacy", pid2.getProviderId());
