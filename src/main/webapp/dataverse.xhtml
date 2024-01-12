@@ -290,7 +290,7 @@
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.pidProvider.title']}"></span>
                                         </h:outputLabel>
                                         <div class="form-col-container">
-                                            <h:selectOneMenu id="dsPidProviderOption" styleClass="form-control" value="#{DataversePage.dataverse.pidGenerator}">
+                                            <h:selectOneMenu id="dsPidProviderOption" styleClass="form-control" value="#{DataversePage.dataverse.pidGeneratorId}">
                                                 <f:selectItems value="#{DataversePage.getPidProviderOptions()}" var="option" itemLabel="#{option.getValue()}" itemValue="#{option.getKey()}"/>
                                             </h:selectOneMenu>
                                             <p:message for="dsPidProviderOption" display="text"/>
