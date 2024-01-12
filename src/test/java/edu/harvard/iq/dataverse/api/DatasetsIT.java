@@ -1349,17 +1349,11 @@ public class DatasetsIT {
         Response notPermittedToListRoleAssignmentOnDataset = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, contributorApiToken);
         assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignmentOnDataset.getStatusCode());
 
-        // We create a new role that includes "ManageDatasetPermissions" which are required for listing role assignments
-        // of a dataset and assign it to the contributor user
+        // We assign the curator role to the contributor user
+        // (includes "ManageDatasetPermissions" which are required for listing role assignments of a dataset, but not
+        // "ManageDataversePermissions")
 
-        String pathToJsonFile = "scripts/api/data/role-contributor-plus.json";
-        Response addDataverseRoleResponse = UtilIT.addDataverseRole(pathToJsonFile, dataverseAlias, adminApiToken);
-        addDataverseRoleResponse.prettyPrint();
-        String body = addDataverseRoleResponse.getBody().asString();
-        String status = JsonPath.from(body).getString("status");
-        assertEquals("OK", status);
-
-        Response giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "contributorPlus", "@" + contributorUsername, adminApiToken);
+        Response giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + contributorUsername, adminApiToken);
         giveRandoPermission.prettyPrint();
         assertEquals(200, giveRandoPermission.getStatusCode());
 
@@ -1373,14 +1367,6 @@ public class DatasetsIT {
 
         notPermittedToListRoleAssignmentOnDataverse = UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, contributorApiToken);
         assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignmentOnDataverse.getStatusCode());
-
-        // Finally, we clean up and delete the role we created
-
-        Response deleteDataverseRoleResponse = UtilIT.deleteDataverseRole("contributorPlus", adminApiToken);
-        deleteDataverseRoleResponse.prettyPrint();
-        body = deleteDataverseRoleResponse.getBody().asString();
-        status = JsonPath.from(body).getString("status");
-        assertEquals("OK", status);
     }
 
     @Test
