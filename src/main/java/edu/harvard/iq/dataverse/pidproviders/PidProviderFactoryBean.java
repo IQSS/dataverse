@@ -152,9 +152,10 @@ public class PidProviderFactoryBean {
                 case "DataCite":
                     String mdsUrl = JvmSettings.LEGACY_DATACITE_MDS_API_URL.lookup(String.class);
                     String restUrl = JvmSettings.LEGACY_DATACITE_REST_API_URL.lookup(String.class);
-                    String dcUsername = JvmSettings.LEGACY_DATACITE_USERNAME.lookup(String.class);
-                    String dcPassword = JvmSettings.LEGACY_DATACITE_PASSWORD.lookup(String.class);
-                    if (mdsUrl == null || restUrl == null || dcUsername == null || dcPassword == null) {
+                    //Defaults for testing where no account is set up
+                    String dcUsername = JvmSettings.LEGACY_DATACITE_USERNAME.lookup(String.class,"");
+                    String dcPassword = JvmSettings.LEGACY_DATACITE_PASSWORD.lookup(String.class,"");
+                    if (mdsUrl != null && restUrl != null && dcUsername != null && dcPassword != null) {
                         legacy = new DataCiteDOIProvider("legacy", "legacy", authority, shoulder,
                                 identifierGenerationStyle, dataFilePidFormat, "", "", mdsUrl, restUrl, dcUsername,
                                 dcPassword);
@@ -166,8 +167,10 @@ public class PidProviderFactoryBean {
                                 identifierGenerationStyle, dataFilePidFormat, "", "");
                     break;
                 }
-                legacy.setPidProviderServiceBean(this);
-                PidUtil.addToProviderList(legacy);
+                if (legacy != null) {
+                    legacy.setPidProviderServiceBean(this);
+                    PidUtil.addToProviderList(legacy);
+                }
             } else {
                 logger.warning("Legacy PID provider settings found - ignored since a provider for the same protocol, authority, shoulder has been registered");
             }
