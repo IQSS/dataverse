@@ -36,12 +36,12 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
@@ -60,7 +60,6 @@ import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonReader;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.validation.ConstraintViolation;
@@ -259,9 +258,8 @@ public class ImportServiceBean {
                 throw new ImportException("Failed to transform XML metadata format "+metadataFormat+" into a DatasetDTO");
             }
         }
-        
-        JsonReader jsonReader = Json.createReader(new StringReader(json));
-        JsonObject obj = jsonReader.readObject();
+
+        JsonObject obj = JsonUtil.getJsonObject(json);
         //and call parse Json to read it into a dataset   
         try {
             JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, harvestingClient);
@@ -396,10 +394,8 @@ public class ImportServiceBean {
         // convert DTO to Json,
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(dsDTO);
-        JsonReader jsonReader = Json.createReader(new StringReader(json));
-        JsonObject obj = jsonReader.readObject();
 
-        return obj;
+        return JsonUtil.getJsonObject(json);
     }
     
     public JsonObjectBuilder doImport(DataverseRequest dataverseRequest, Dataverse owner, String xmlToParse, String fileName, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
@@ -416,8 +412,7 @@ public class ImportServiceBean {
         // convert DTO to Json, 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(dsDTO);
-        JsonReader jsonReader = Json.createReader(new StringReader(json));
-        JsonObject obj = jsonReader.readObject();
+        JsonObject obj = JsonUtil.getJsonObject(json);
         //and call parse Json to read it into a dataset   
         try {
             JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService);

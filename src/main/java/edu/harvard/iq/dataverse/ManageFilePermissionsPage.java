@@ -27,6 +27,8 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.event.ActionEvent;
@@ -71,6 +73,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     DataverseRequestServiceBean dvRequestService;
     @Inject
     PermissionsWrapper permissionsWrapper;
+    @EJB
+    FileAccessRequestServiceBean fileAccessRequestService;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
@@ -84,6 +88,15 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     public TreeMap<AuthenticatedUser, List<FileAccessRequest>> getFileAccessRequestMap() {
         return fileAccessRequestMap;
+    }
+    
+    public List<DataFile> getDataFilesForRequestor() {
+        List<FileAccessRequest> fars = fileAccessRequestMap.get(getFileRequester());
+        if (fars == null) {
+            return new ArrayList<>();
+        } else {
+            return fars.stream().map(FileAccessRequest::getDataFile).collect(Collectors.toList());
+        }
     }
 
     private final TreeMap<AuthenticatedUser,List<FileAccessRequest>> fileAccessRequestMap = new TreeMap<>();
@@ -177,14 +190,14 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 fileMap.put(file, raList);
 
                 // populate the file access requests map
-                for (FileAccessRequest fileAccessRequest : file.getFileAccessRequests()) {
-                    List<FileAccessRequest> requestedFiles = fileAccessRequestMap.get(fileAccessRequest.getAuthenticatedUser());
-                    if (requestedFiles == null) {
-                        requestedFiles = new ArrayList<>();
-                        AuthenticatedUser withProvider = authenticationService.getAuthenticatedUserWithProvider(fileAccessRequest.getAuthenticatedUser().getUserIdentifier());
-                        fileAccessRequestMap.put(withProvider, requestedFiles);
+                for (FileAccessRequest fileAccessRequest : file.getFileAccessRequests(FileAccessRequest.RequestState.CREATED)) {
+                    List<FileAccessRequest> fileAccessRequestList = fileAccessRequestMap.get(fileAccessRequest.getRequester());
+                    if (fileAccessRequestList == null) {
+                        fileAccessRequestList = new ArrayList<>();
+                        AuthenticatedUser withProvider = authenticationService.getAuthenticatedUserWithProvider(fileAccessRequest.getRequester().getUserIdentifier());
+                        fileAccessRequestMap.put(withProvider, fileAccessRequestList);
                     }
-                    requestedFiles.add(fileAccessRequest);
+                    fileAccessRequestList.add(fileAccessRequest);
                 }
             }
         }
@@ -406,16 +419,19 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                     if (file.isReleased()) {
                         sendNotification = true;
                     }
-                    // remove request, if it exist
-                    if (file.removeFileAccessRequester(roleAssignee)) {
-                        datafileService.save(file);
+                    // set request(s) granted, if they exist
+                    for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
+                        FileAccessRequest far = file.getAccessRequestForAssignee(au);
+                        far.setStateGranted();
                     }
+                    datafileService.save(file);
                 }
+
             }
 
             if (sendNotification) {
                 for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
-                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId());
+                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId());                
                 }
              }
         }
@@ -443,7 +459,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
         for (DataFile file : files) {
             if (assignRole(au, file, fileDownloaderRole)) {
-                if (file.removeFileAccessRequester(au)) {
+                FileAccessRequest far = file.getAccessRequestForAssignee(au);
+                if (far!=null) {
+                    far.setStateGranted();
                     datafileService.save(file);
                 }
                 actionPerformed = true;
@@ -475,9 +493,14 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     private void rejectAccessToRequests(AuthenticatedUser au, List<DataFile> files) {
         boolean actionPerformed = false;
         for (DataFile file : files) {
-            file.removeFileAccessRequester(au);
-            datafileService.save(file);
-            actionPerformed = true;
+            FileAccessRequest far = file.getAccessRequestForAssignee(au);
+            if(far!=null) {
+                far.setStateRejected();
+                fileAccessRequestService.save(far);
+                file.removeFileAccessRequest(far);
+                datafileService.save(file);
+                actionPerformed = true;
+            }
         }
 
         if (actionPerformed) {

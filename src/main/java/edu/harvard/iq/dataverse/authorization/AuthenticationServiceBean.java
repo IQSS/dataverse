@@ -21,10 +21,14 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2Aut
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -118,6 +122,9 @@ public class AuthenticationServiceBean {
     @EJB
     SavedSearchServiceBean savedSearchService;
 
+    @EJB
+    PrivateUrlServiceBean privateUrlService;
+ 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
         
@@ -580,7 +587,7 @@ public class AuthenticationServiceBean {
      * {@code userDisplayInfo}, a lookup entry for them based
      * UserIdentifier.getLookupStringPerAuthProvider (within the supplied
      * authentication provider), and internal user identifier (used for role
-     * assignments, etc.) based on UserIdentifier.getInternalUserIdentifer.
+     * assignments, etc.) based on UserIdentifier.getInternalUserIdentifier.
      *
      * @param userRecordId
      * @param proposedAuthenticatedUserIdentifier
@@ -605,20 +612,21 @@ public class AuthenticationServiceBean {
             proposedAuthenticatedUserIdentifier = proposedAuthenticatedUserIdentifier.trim();
         }
         // we now select a username for the generated AuthenticatedUser, or give up
-        String internalUserIdentifer = proposedAuthenticatedUserIdentifier;
+        String internalUserIdentifier = proposedAuthenticatedUserIdentifier;
         // TODO should lock table authenticated users for write here
-        if ( identifierExists(internalUserIdentifer) ) {
+        if ( identifierExists(internalUserIdentifier) ) {
             if ( ! generateUniqueIdentifier ) {
                 return null;
             }
             int i=1;
-            String identifier = internalUserIdentifer + i;
+            String identifier = internalUserIdentifier + i;
             while ( identifierExists(identifier) ) {
                 i += 1;
+                identifier = internalUserIdentifier + i;
             }
             authenticatedUser.setUserIdentifier(identifier);
         } else {
-            authenticatedUser.setUserIdentifier(internalUserIdentifer);
+            authenticatedUser.setUserIdentifier(internalUserIdentifier);
         }
         authenticatedUser = save( authenticatedUser );
         // TODO should unlock table authenticated users for write here
@@ -931,14 +939,45 @@ public class AuthenticationServiceBean {
         return query.getResultList();
     }
 
-    public ApiToken getValidApiTokenForUser(AuthenticatedUser user) {
+    /**
+     * This method gets a valid api token for an AuthenticatedUser, creating a new
+     * token if one doesn't exist or if the token is expired.
+     * 
+     * @param user
+     * @return
+     */
+    public ApiToken getValidApiTokenForAuthenticatedUser(AuthenticatedUser user) {
         ApiToken apiToken = null;
         apiToken = findApiTokenByUser(user);
-        if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+        if ((apiToken == null) || apiToken.isExpired()) {
             logger.fine("Created apiToken for user: " + user.getIdentifier());
             apiToken = generateApiTokenForUser(user);
         }
         return apiToken;
     }
 
+    /**
+     *  Gets a token for an AuthenticatedUser or a PrivateUrlUser. It will create a
+     *  new token if needed for an AuthenticatedUser. Note that, for a PrivateUrlUser, this method creates a token
+     *  with a temporary AuthenticateUser that only has a userIdentifier - needed in generating signed Urls.
+     * @param user
+     * @return a token or null (i.e. if the user is not an AuthenticatedUser or PrivateUrlUser)
+     */
+
+    public ApiToken getValidApiTokenForUser(User user) {
+        ApiToken apiToken = null;
+        if (user instanceof AuthenticatedUser) {
+            apiToken = getValidApiTokenForAuthenticatedUser((AuthenticatedUser) user);
+        } else if (user instanceof PrivateUrlUser) {
+            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+            
+            PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+            apiToken = new ApiToken();
+            apiToken.setTokenString(privateUrl.getToken());
+            AuthenticatedUser au = new AuthenticatedUser();
+            au.setUserIdentifier(privateUrlUser.getIdentifier());
+            apiToken.setAuthenticatedUser(au);
+        }
+        return apiToken;
+    }
 }

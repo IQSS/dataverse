@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -53,6 +54,9 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean datafileService;
+    
+    @EJB
+    GlobusServiceBean globusService;
 
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
@@ -60,40 +64,40 @@ public class FileDownloadHelper implements java.io.Serializable {
         this.filesForRequestAccess = new ArrayList<>();
     }
 
-    // See also @Size(max = 255) in GuestbookResponse
-     private boolean testResponseLength(String value) {
-        return !(value != null && value.length() > 255);
-     }
-
     // This helper method is called from the Download terms/guestbook/etc. popup,
     // when the user clicks the "ok" button. We use it, instead of calling
     // downloadServiceBean directly, in order to differentiate between single
-    // file downloads and multiple (batch) downloads - sice both use the same
+    // file downloads and multiple (batch) downloads - since both use the same
     // terms/etc. popup.
-    public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
-        PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
-        guestbookResponse.setDownloadtype("Download");
+    public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse, boolean isGlobusTransfer) {
+        PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+        guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
          // Note that this method is only ever called from the file-download-popup -
          // meaning we know for the fact that we DO want to save this
          // guestbookResponse permanently in the database.
-        if (guestbookResponse.getSelectedFileIds() != null) {
-            // this is a batch (multiple file) download.
-            // Although here's a chance that this is not really a batch download - i.e.,
-            // there may only be one file on the file list. But the fileDownloadService
-            // method below will check for that, and will redirect to the single download, if
-            // that's the case. -- L.A.
-            fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse);
-        } else if (guestbookResponse.getDataFile() != null) {
-            // this a single file download:
-            fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
+        if(isGlobusTransfer) {
+            globusService.writeGuestbookAndStartTransfer(guestbookResponse, true);
+        } else {
+            if (guestbookResponse.getSelectedFileIds() != null) {
+                // this is a batch (multiple file) download.
+                // Although here's a chance that this is not really a batch download - i.e.,
+                // there may only be one file on the file list. But the fileDownloadService
+                // method below will check for that, and will redirect to the single download,
+                // if
+                // that's the case. -- L.A.
+                fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse);
+            } else if (guestbookResponse.getDataFile() != null) {
+                // this a single file download:
+                fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
+            }
         }
      }
 
      public void writeGuestbookAndOpenSubset(GuestbookResponse guestbookResponse) {
 
-             PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+             PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
              PrimeFaces.current().executeScript("PF('downloadDataSubsetPopup').show()");
-             guestbookResponse.setDownloadtype("Subset");
+             guestbookResponse.setEventType(GuestbookResponse.SUBSET);
              fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
 
      }
@@ -132,22 +136,33 @@ public class FileDownloadHelper implements java.io.Serializable {
 
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
          //requestContext.execute("PF('downloadPopup').hide()");
-         PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
     }
      
     public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
 
-            PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+            PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
             PrimeFaces.current().executeScript("PF('downloadPackagePopup').show()");
             PrimeFaces.current().executeScript("handleResizeDialog('downloadPackagePopup')");
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
     }
 
+    
+    public void writeGuestbookResponseAndRequestAccess(GuestbookResponse guestbookResponse) {
+
+        if(!filesForRequestAccess.isEmpty()) {
+            /* Only for single file requests (i.e. from kebab menu) */
+            guestbookResponse.setDataFile(filesForRequestAccess.get(0));
+        }
+        PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+        fileDownloadService.writeGuestbookResponseAndRequestAccess(guestbookResponse);
+    }
+    
      /**
       * Writes a guestbook entry for either popup scenario: guestbook or terms.
       */
      public boolean writeGuestbookAndShowPreview(GuestbookResponse guestbookResponse) {
-         guestbookResponse.setDownloadtype("Explore");
+         guestbookResponse.setEventType(GuestbookResponse.EXPLORE);
          fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
          return true;
      }
@@ -284,7 +299,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         
         if (FileUtil.isRequestAccessPopupRequired(fmd.getDatasetVersion())){
             addFileForRequestAccess(fmd.getDataFile());
-            PrimeFaces.current().executeScript("PF('requestAccessPopup').show()");
+            PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
         } else {
             requestAccess(fmd.getDataFile());
         }
@@ -299,7 +314,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          DataFile notificationFile = null;
          for (DataFile file : files) {
              //Not sending notification via request method so that
-             // we can bundle them up into one nofication at dataset level
+             // we can bundle them up into one notification at dataset level
              test = processRequestAccess(file, false);
              succeeded |= test;
              if (notificationFile == null) {
@@ -307,13 +322,15 @@ public class FileDownloadHelper implements java.io.Serializable {
              }
          }
          if (notificationFile != null && succeeded) {
-             fileDownloadService.sendRequestFileAccessNotification(notificationFile, (AuthenticatedUser) session.getUser());
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(),
+                     notificationFile.getId(), (AuthenticatedUser) session.getUser());
+             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
          }
      }
     
      public void requestAccessIndirect() {
          //Called when there are multiple files and no popup
-         // or there's a popup with sigular or multiple files
+         // or there's a popup with singular or multiple files
          // The list of files for Request Access is set in the Dataset Page when
          // user clicks the request access button in the files fragment
          // (and has selected one or more files)
@@ -325,13 +342,15 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
              AuthenticatedUser user = (AuthenticatedUser) session.getUser();
-             file.addFileAccessRequester(user);
+             //This seems to be required because we don't get the updated file object back from the command called in the fileDownloadService.requestAccess call above
+             FileAccessRequest request = new FileAccessRequest(file, user);
+             file.addFileAccessRequest(request);
 
              // create notification if necessary
              if (sendNotification) {
-                 fileDownloadService.sendRequestFileAccessNotification(file, user);
-             }           
-             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
+                 fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());
+                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
+             }
              return true;
          }
          JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("file.accessRequested.alreadyRequested", Arrays.asList(file.getDisplayName())));

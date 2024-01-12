@@ -131,7 +131,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.0</revision>
+        <revision>6.1</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -165,26 +165,27 @@
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         
         <!-- NEW gdcc XOAI library implementation -->
-        <gdcc.xoai.version>5.1.0</gdcc.xoai.version>
+        <gdcc.xoai.version>5.2.0</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
-        <testcontainers.version>1.15.0</testcontainers.version>
+        <testcontainers.version>1.19.0</testcontainers.version>
         <smallrye-mpconfig.version>2.10.1</smallrye-mpconfig.version>
-        
         <junit.jupiter.version>5.10.0</junit.jupiter.version>
         <mockito.version>5.4.0</mockito.version>
+        <maven-jacoco-plugin.version>0.8.10</maven-jacoco-plugin.version>
         
         <checkstyle.version>9.3</checkstyle.version>
         
         <!-- Official Maven Plugins -->
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
-        <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
-        <maven-install-plugin.version>3.0.0-M1</maven-install-plugin.version>
-        <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
-        <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
+        <maven-dependency-plugin.version>3.5.0</maven-dependency-plugin.version>
+        <maven-install-plugin.version>3.1.1</maven-install-plugin.version>
+        <maven-surefire-plugin.version>3.1.0</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.1.0</maven-failsafe-plugin.version>
+        <maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
         <maven-release-plugin.version>3.0.0-M7</maven-release-plugin.version>
         <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
         <maven-site-plugin.version>4.0.0-M4</maven-site-plugin.version>
@@ -193,12 +194,12 @@
         <maven-flatten-plugin.version>1.3.0</maven-flatten-plugin.version>
         <maven-enforcer-plugin.version>3.3.0</maven-enforcer-plugin.version>
         
-        <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
+        <maven-checkstyle-plugin.version>3.2.2</maven-checkstyle-plugin.version>
         <nexus-staging-plugin.version>1.6.13</nexus-staging-plugin.version>
         <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.43.0</fabric8-dmp.version>
+        <fabric8-dmp.version>0.43.4</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>
@@ -256,6 +257,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${maven-resources-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <version>${maven-enforcer-plugin.version}</version>
                 </plugin>
@@ -270,6 +276,11 @@
                             <version>${checkstyle.version}</version>
                         </dependency>
                     </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${maven-jacoco-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>io.fabric8</groupId>
@@ -415,6 +426,7 @@
             <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
         </repository>
         <!-- Uncomment when using snapshot releases from Maven Central -->
+        <!--
         <repository>
             <id>oss-sonatype</id>
             <name>oss-sonatype</name>
@@ -435,7 +447,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        <!-- -->
+        -->
     </repositories>
     
     <profiles>

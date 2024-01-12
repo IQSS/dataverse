@@ -4,6 +4,7 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -57,9 +58,11 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -88,6 +91,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Config config = ConfigProvider.getConfig();
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");
+    static final String URL_EXPIRATION_MINUTES = "url-expiration-minutes";
+    static final String CUSTOM_ENDPOINT_URL = "custom-endpoint-url";
+    static final String PROXY_URL = "proxy-url";
+    static final String BUCKET_NAME = "bucket-name";
+    static final String MIN_PART_SIZE = "min-part-size";
+    static final String CUSTOM_ENDPOINT_REGION = "custom-endpoint-region";
+    static final String PATH_STYLE_ACCESS = "path-style-access";
+    static final String PAYLOAD_SIGNING = "payload-signing";
+    static final String CHUNKED_ENCODING = "chunked-encoding";
+    static final String PROFILE = "profile";
     
     private boolean mainDriver = true;
 
@@ -103,19 +116,18 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             minPartSize = getMinPartSize(driverId);
             s3=getClient(driverId);
             tm=getTransferManager(driverId);
-            endpoint = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url", "");
-            proxy = System.getProperty("dataverse.files." + driverId + ".proxy-url", "");
+            endpoint = getConfigParam(CUSTOM_ENDPOINT_URL, "");
+            proxy = getConfigParam(PROXY_URL, "");
             if(!StringUtil.isEmpty(proxy)&&StringUtil.isEmpty(endpoint)) {
                 logger.severe(driverId + " config error: Must specify a custom-endpoint-url if proxy-url is specified");
             }
-            //Not sure this is needed but moving it from the open method for now since it definitely doesn't need to run every time an object is opened.
-            try {
-                if (bucketName == null || !s3.doesBucketExistV2(bucketName)) {
-                    throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
-                }
-            } catch (SdkClientException sce) {
-                throw new IOException("ERROR: S3AccessIO - Failed to look up bucket "+bucketName+" (is AWS properly configured?): " + sce.getMessage());
-            }
+
+            // FWIW: There used to be a check here to see if the bucket exists.
+            // It was very redundant (checking every time we access any file) and didn't do
+            // much but potentially make the failure (in the unlikely case a bucket doesn't
+            // exist/just disappeared) happen slightly earlier (here versus at the first
+            // file/metadata access).
+                    
         } catch (Exception e) {
             throw new AmazonClientException(
                         "Cannot instantiate a S3 client; check your AWS credentials and region",
@@ -191,7 +203,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     }
                 } // else we're OK (assumes bucket name in storageidentifier matches the driver's bucketname)
             } else {
-                if(!storageIdentifier.substring((this.driverId + DataAccess.SEPARATOR).length()).contains(":")) {
+                if(!storageIdentifier.contains(":")) {
                     //No driver id or bucket 
                     newStorageIdentifier= this.driverId + DataAccess.SEPARATOR + bucketName + ":" + storageIdentifier;
                 } else {
@@ -207,14 +219,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             
             if (isReadAccess) {
-                key = getMainFileKey();
-                ObjectMetadata objectMetadata = null; 
-                try {
-                    objectMetadata = s3.getObjectMetadata(bucketName, key);
-                } catch (SdkClientException sce) {
-                    throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
-                }
-                this.setSize(objectMetadata.getContentLength());
+                this.setSize(retrieveSizeFromMedia());
 
                 if (dataFile.getContentType() != null
                         && dataFile.getContentType().equals("text/tab-separated-values")
@@ -849,7 +854,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public boolean downloadRedirectEnabled() {
-        String optionValue = System.getProperty("dataverse.files." + this.driverId + ".download-redirect");
+        String optionValue = getConfigParam(DOWNLOAD_REDIRECT);
         if ("true".equalsIgnoreCase(optionValue)) {
             return true;
         }
@@ -1073,7 +1078,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     int getUrlExpirationMinutes() {
-        String optionValue = System.getProperty("dataverse.files." + this.driverId + ".url-expiration-minutes"); 
+        String optionValue = getConfigParam(URL_EXPIRATION_MINUTES); 
         if (optionValue != null) {
             Integer num; 
             try {
@@ -1089,7 +1094,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     private static String getBucketName(String driverId) {
-        return System.getProperty("dataverse.files." + driverId + ".bucket-name");
+        return getConfigParamForDriver(driverId, BUCKET_NAME);
     }
     
     private static long getMinPartSize(String driverId) {
@@ -1097,7 +1102,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         // (minimum allowed is 5*1024**2 but it probably isn't worth the complexity starting at ~5MB. Also -  confirmed that they use base 2 definitions)
         long min = 5 * 1024 * 1024l; 
 
-        String partLength = System.getProperty("dataverse.files." + driverId + ".min-part-size");
+        String partLength = getConfigParamForDriver(driverId, MIN_PART_SIZE);
         try {
             if (partLength != null) {
                 long val = Long.parseLong(partLength);
@@ -1146,12 +1151,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
              * Pass in a URL pointing to your S3 compatible storage.
              * For possible values see https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/client/builder/AwsClientBuilder.EndpointConfiguration.html
              */
-            String s3CEUrl = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url", "");
+            String s3CEUrl = getConfigParamForDriver(driverId, CUSTOM_ENDPOINT_URL, "");
             /**
              * Pass in a region to use for SigV4 signing of requests.
              * Defaults to "dataverse" as it is not relevant for custom S3 implementations.
              */
-            String s3CERegion = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-region", "dataverse");
+            String s3CERegion = getConfigParamForDriver(driverId, CUSTOM_ENDPOINT_REGION, "dataverse");
 
             // if the admin has set a system property (see below) we use this endpoint URL instead of the standard ones.
             if (!s3CEUrl.isEmpty()) {
@@ -1161,7 +1166,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
              * Pass in a boolean value if path style access should be used within the S3 client.
              * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
              */
-            Boolean s3pathStyleAccess = Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".path-style-access", "false"));
+            Boolean s3pathStyleAccess = Boolean.parseBoolean(getConfigParamForDriver(driverId, PATH_STYLE_ACCESS, "false"));
             // some custom S3 implementations require "PathStyleAccess" as they us a path, not a subdomain. default = false
             s3CB.withPathStyleAccessEnabled(s3pathStyleAccess);
 
@@ -1169,41 +1174,70 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
              * Pass in a boolean value if payload signing should be used within the S3 client.
              * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
              */
-            Boolean s3payloadSigning = Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".payload-signing","false"));
+            Boolean s3payloadSigning = Boolean.parseBoolean(getConfigParamForDriver(driverId, PAYLOAD_SIGNING,"false"));
             /**
              * Pass in a boolean value if chunked encoding should not be used within the S3 client.
              * Anything but case-insensitive "false" will lead to value of true, which is default value, too.
              */
-            Boolean s3chunkedEncoding = Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".chunked-encoding","true"));
+            Boolean s3chunkedEncoding = Boolean.parseBoolean(getConfigParamForDriver(driverId, CHUNKED_ENCODING,"true"));
             // Openstack SWIFT S3 implementations require "PayloadSigning" set to true. default = false
             s3CB.setPayloadSigningEnabled(s3payloadSigning);
             // Openstack SWIFT S3 implementations require "ChunkedEncoding" set to false. default = true
             // Boolean is inverted, otherwise setting dataverse.files.<id>.chunked-encoding=false would result in leaving Chunked Encoding enabled
             s3CB.setChunkedEncodingDisabled(!s3chunkedEncoding);
 
-            /**
-             * Pass in a string value if this storage driver should use a non-default AWS S3 profile.
-             * The default is "default" which should work when only one profile exists.
+            /** Configure credentials for the S3 client. There are multiple mechanisms available. 
+             * Role-based/instance credentials are globally defined while the other mechanisms (profile, static)
+             * are defined per store. The logic below assures that 
+             * * if a store specific profile or static credentials are explicitly set, they will be used in preference to the global role-based credentials. 
+             * * if a store specific role-based credentials are explicitly set, they will be used in preference to the global instance credentials,
+             * * if a profile and static credentials are both explicitly set, the profile will be used preferentially, and 
+             * * if no store-specific credentials are set, the global credentials will be preferred over using any "default" profile credentials that are found.
              */
-            String s3profile = System.getProperty("dataverse.files." + driverId + ".profile","default");
-            ProfileCredentialsProvider profileCredentials = new ProfileCredentialsProvider(s3profile);
-    
-            // Try to retrieve credentials via Microprofile Config API, too. For production use, you should not use env
-            // vars or system properties to provide these, but use the secrets config source provided by Payara.
-            AWSStaticCredentialsProvider staticCredentials = new AWSStaticCredentialsProvider(
-                new BasicAWSCredentials(
-                    config.getOptionalValue("dataverse.files." + driverId + ".access-key", String.class).orElse(""),
-                    config.getOptionalValue("dataverse.files." + driverId + ".secret-key", String.class).orElse("")
-                ));
-            
-            //Add role-based provider as in the default provider chain
-            InstanceProfileCredentialsProvider instanceCredentials = InstanceProfileCredentialsProvider.getInstance();
+
+            ArrayList<AWSCredentialsProvider> providers = new ArrayList<>();
+
+            String s3profile = getConfigParamForDriver(driverId, PROFILE);
+            boolean allowInstanceCredentials = true;
+            // Assume that instance credentials should not be used if the profile is
+            // actually set for this store or if static creds are provided (below).
+            if (s3profile != null) {
+                allowInstanceCredentials = false;
+            }
+            // Try to retrieve credentials via Microprofile Config API, too. For production
+            // use, you should not use env vars or system properties to provide these, but 
+            // use the secrets config source provided by Payara.
+            Optional<String> accessKey = config.getOptionalValue("dataverse.files." + driverId + ".access-key", String.class);
+            Optional<String> secretKey = config.getOptionalValue("dataverse.files." + driverId + ".secret-key", String.class);
+            if (accessKey.isPresent() && secretKey.isPresent()) {
+                allowInstanceCredentials = false;
+                AWSStaticCredentialsProvider staticCredentials = new AWSStaticCredentialsProvider(
+                        new BasicAWSCredentials(
+                                accessKey.get(),
+                                secretKey.get()));
+                providers.add(staticCredentials);
+            } else if (s3profile == null) {
+                //Only use the default profile when it isn't explicitly set for this store when there are no static creds (otherwise it will be preferred).
+                s3profile = "default";
+            }
+            if (s3profile != null) {
+                providers.add(new ProfileCredentialsProvider(s3profile));
+            }
+
+            if (allowInstanceCredentials) {
+                // Add role-based provider as in the default provider chain
+                providers.add(InstanceProfileCredentialsProvider.getInstance());
+            }
             // Add all providers to chain - the first working provider will be used
-            // (role-based is first in the default cred provider chain, so we're just
+            // (role-based is first in the default cred provider chain (if no profile or
+            // static creds are explicitly set for the store), so we're just
             // reproducing that, then profile, then static credentials as the fallback)
-            AWSCredentialsProviderChain providerChain = new AWSCredentialsProviderChain(instanceCredentials, profileCredentials, staticCredentials);
+
+            // As the order is the reverse of how we added providers, we reverse the list here
+            Collections.reverse(providers);
+            AWSCredentialsProviderChain providerChain = new AWSCredentialsProviderChain(providers);
             s3CB.setCredentials(providerChain);
-            
+
             // let's build the client :-)
             AmazonS3 client =  s3CB.build();
             driverClientMap.put(driverId,  client);
@@ -1384,5 +1418,21 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             this.deleteFile(f);
         }
         return toDelete;
+    }
+
+    @Override
+    public long retrieveSizeFromMedia() throws IOException {
+        key = getMainFileKey();
+        ObjectMetadata objectMetadata = null;
+        try {
+            objectMetadata = s3.getObjectMetadata(bucketName, key);
+        } catch (SdkClientException sce) {
+            throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")");
+        }
+        return objectMetadata.getContentLength();
+    }
+    
+    public static String getNewIdentifier(String driverId) {
+        return driverId + DataAccess.SEPARATOR + getConfigParamForDriver(driverId, BUCKET_NAME) + ":" + FileUtil.generateStorageIdentifier();
     }
 }

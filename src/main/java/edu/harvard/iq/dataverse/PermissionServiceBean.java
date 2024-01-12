@@ -41,6 +41,9 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Your one-stop-shop for deciding which user can do what action on which
@@ -448,8 +451,9 @@ public class PermissionServiceBean {
 
             if (!df.isRestricted()) {
                 if (df.getOwner().getReleasedVersion() != null) {
-                    if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                        for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
+                    List<FileMetadata> fileMetadatas = df.getOwner().getReleasedVersion().getFileMetadatas();
+                    if (fileMetadatas != null) {
+                        for (FileMetadata fm : fileMetadatas) {
                             if (df.equals(fm.getDataFile())) {
                                 return true;
                             }
@@ -837,4 +841,57 @@ public class PermissionServiceBean {
         return false;
     }
 
+    /**
+     * Checks if a DataverseRequest can download at least one file of the target DatasetVersion.
+     *
+     * @param dataverseRequest DataverseRequest to check
+     * @param datasetVersion DatasetVersion to check
+     * @return boolean indicating whether the user can download at least one file or not
+     */
+    public boolean canDownloadAtLeastOneFile(DataverseRequest dataverseRequest, DatasetVersion datasetVersion) {
+        if (hasUnrestrictedReleasedFiles(datasetVersion)) {
+            return true;
+        }
+        List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            Set<RoleAssignee> roleAssignees = new HashSet<>(groupService.groupsFor(dataverseRequest, dataFile));
+            roleAssignees.add(dataverseRequest.getUser());
+            if (hasGroupPermissionsFor(roleAssignees, dataFile, EnumSet.of(Permission.DownloadFile))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a DatasetVersion has unrestricted released files.
+     *
+     * This method is mostly based on {@link #isPublicallyDownloadable(DvObject)} although in this case, instead of basing
+     * the search on a particular file, it searches for the total number of files in the target version that are present
+     * in the released version.
+     *
+     * @param targetDatasetVersion DatasetVersion to check
+     * @return boolean indicating whether the dataset version has released files or not
+     */
+    private boolean hasUnrestrictedReleasedFiles(DatasetVersion targetDatasetVersion) {
+        Dataset targetDataset = targetDatasetVersion.getDataset();
+        if (!targetDataset.isReleased()) {
+            return false;
+        }
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<DatasetVersion> datasetVersionRoot = criteriaQuery.from(DatasetVersion.class);
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        criteriaQuery
+                .select(criteriaBuilder.count(fileMetadataRoot))
+                .where(criteriaBuilder.and(
+                        criteriaBuilder.equal(fileMetadataRoot.get("dataFile").get("restricted"), false),
+                        criteriaBuilder.equal(datasetVersionRoot.get("dataset"), targetDataset),
+                        criteriaBuilder.equal(datasetVersionRoot.get("versionState"), DatasetVersion.VersionState.RELEASED),
+                        fileMetadataRoot.in(targetDatasetVersion.getFileMetadatas()),
+                        fileMetadataRoot.in(datasetVersionRoot.get("fileMetadatas"))));
+        Long result = em.createQuery(criteriaQuery).getSingleResult();
+        return result > 0;
+    }
 }
