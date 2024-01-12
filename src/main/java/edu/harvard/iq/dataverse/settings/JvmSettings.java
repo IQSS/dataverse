@@ -106,10 +106,10 @@ public enum JvmSettings {
 
     // PROVIDER DATACITE (legacy - single provider setting)
     SCOPE_LEGACY_PID_DATACITE(SCOPE_PID, "datacite"),
-    LEGACY_DATACITE_MDS_API_URL(SCOPE_LEGACY_PID_DATACITE, "mds-api-url"),
-    LEGACY_DATACITE_REST_API_URL(SCOPE_LEGACY_PID_DATACITE, "rest-api-url"),
-    LEGACY_DATACITE_USERNAME(SCOPE_LEGACY_PID_DATACITE, "username"),
-    LEGACY_DATACITE_PASSWORD(SCOPE_LEGACY_PID_DATACITE, "password"),
+    LEGACY_DATACITE_MDS_API_URL(SCOPE_LEGACY_PID_DATACITE, "mds-api-url", "doi.baseurlstring"),
+    LEGACY_DATACITE_REST_API_URL(SCOPE_LEGACY_PID_DATACITE, "rest-api-url", "doi.dataciterestapiurlstring", "doi.mdcbaseurlstring"),
+    LEGACY_DATACITE_USERNAME(SCOPE_LEGACY_PID_DATACITE, "username", "doi.username"),
+    LEGACY_DATACITE_PASSWORD(SCOPE_LEGACY_PID_DATACITE, "password", "doi.password"),
     
     // PROVIDER EZID - these settings were formerly kept together with DataCite ones
     SCOPE_PID_EZID(SCOPE_PID_PROVIDER, "ezid"),
