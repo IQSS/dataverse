@@ -197,11 +197,12 @@ public abstract class AbstractPidProvider implements PidProvider {
         if (dvObject.getAuthority() == null) {
             dvObject.setAuthority(getAuthority());
         } else {
-            logger.warning("The authority of the DvObject (" + dvObject.getAuthority()
-                    + ") does not match the configured authority (" + getAuthority() + ")");
-            throw new IllegalArgumentException("The authority of the DvObject (" + dvObject.getAuthority()
-                    + ") doesn't match that of the provider, id: " + getId());
-
+            if (!dvObject.getAuthority().equals(getAuthority())) {
+                logger.warning("The authority of the DvObject (" + dvObject.getAuthority()
+                        + ") does not match the configured authority (" + getAuthority() + ")");
+                throw new IllegalArgumentException("The authority of the DvObject (" + dvObject.getAuthority()
+                        + ") doesn't match that of the provider, id: " + getId());
+            }
         }
         if (dvObject.isInstanceofDataset()) {
             dvObject.setIdentifier(generateDatasetIdentifier((Dataset) dvObject));
