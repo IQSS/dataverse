@@ -120,6 +120,9 @@ public class EjbDataverseEngine {
     DOIDataCiteServiceBean doiDataCite;
 
     @EJB
+    DOICrossRefServiceBean doiCrossRef;
+
+    @EJB
     FakePidProviderServiceBean fakePidProvider;
 
     @EJB
@@ -491,6 +494,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DOIDataCiteServiceBean doiDataCite() {
                     return doiDataCite;
+                }
+
+                @Override
+                public DOICrossRefServiceBean doiCrossRef() {
+                    return doiCrossRef;
                 }
 
                 @Override
