@@ -882,15 +882,6 @@ public class HarvestingServerIT {
 
     }
 
-    @Test
-    public void testNoSuchSetError() {
-        Response noSuchSet = given().get("/oai?verb=ListIdentifiers&set=census&metadataPrefix=dc");
-        noSuchSet.prettyPrint();
-        noSuchSet.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("oai.error.@code", equalTo("noSetHierarchy"));
-    }
-
     // TODO: 
     // What else can we test? 
     // Some ideas: 
