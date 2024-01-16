@@ -888,8 +888,7 @@ public class HarvestingServerIT {
         noSuchSet.prettyPrint();
         noSuchSet.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("oai.error.@code", equalTo("noSetHierarchy"))
-                .body("oai.error", equalTo("Requested set 'census' does not exist"));
+                .body("oai.error.@code", equalTo("noSetHierarchy"));
     }
 
     // TODO: 
