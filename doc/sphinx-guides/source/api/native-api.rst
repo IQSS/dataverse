@@ -1066,7 +1066,11 @@ The fully expanded example above (without environment variables) looks like this
  
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files"
 
-This endpoint supports optional pagination, through the ``limit`` and ``offset`` query parameters:
+This endpoint supports optional pagination, through the ``limit`` and ``offset`` query parameters.
+
+To aid in pagination the JSON response also includes the total number of rows (totalCount) available.
+
+Usage example:
 
 .. code-block:: bash
 
