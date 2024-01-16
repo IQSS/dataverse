@@ -26,6 +26,7 @@ public class SolrQueryResponse {
     private String error;
     private Map<String, Long> dvObjectCounts = new HashMap<>();
     private Map<String, Long> publicationStatusCounts = new HashMap<>();
+    private boolean solrTemporarilyUnavailable = false;
 
     public static String DATAVERSES_COUNT_KEY = "dataverses_count";
     public static String DATASETS_COUNT_KEY = "datasets_count";
@@ -91,7 +92,14 @@ public class SolrQueryResponse {
         }
         return this.getMapCountsAsJSON(publicationStatusCounts);
     }
-       
+    
+    public boolean isSolrTemporarilyUnavailable() {
+        return solrTemporarilyUnavailable;
+    }
+    
+    public void setSolrTemporarilyUnavailable(boolean solrTemporarilyUnavailable) {
+        this.solrTemporarilyUnavailable = solrTemporarilyUnavailable;
+    }
     
     public JsonObjectBuilder getDvObjectCountsAsJSON(){
         
