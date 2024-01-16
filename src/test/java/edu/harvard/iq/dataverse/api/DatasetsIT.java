@@ -1512,6 +1512,79 @@ public class DatasetsIT {
     }
 
     @Test
+    public void testListRoleAssignments() {
+        Response createAdminUser = UtilIT.createRandomUser();
+        String adminUsername = UtilIT.getUsernameFromResponse(createAdminUser);
+        String adminApiToken = UtilIT.getApiTokenFromResponse(createAdminUser);
+        UtilIT.makeSuperUser(adminUsername);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(adminApiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Now, let's allow anyone with a Dataverse account (any "random user")
+        // to create datasets in this dataverse:
+
+        Response grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, AuthenticatedUsers.get().getIdentifier(), adminApiToken);
+        grantRole.prettyPrint();
+        assertEquals(OK.getStatusCode(), grantRole.getStatusCode());
+
+        Response createContributorUser = UtilIT.createRandomUser();
+        String contributorUsername = UtilIT.getUsernameFromResponse(createContributorUser);
+        String contributorApiToken = UtilIT.getApiTokenFromResponse(createContributorUser);
+
+        // First, we test listing role assignments on a dataverse which requires "ManageDataversePermissions"
+
+        Response notPermittedToListRoleAssignmentOnDataverse = UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, contributorApiToken);
+        assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignmentOnDataverse.getStatusCode());
+
+        Response roleAssignmentsOnDataverse = UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, adminApiToken);
+        roleAssignmentsOnDataverse.prettyPrint();
+        assertEquals(OK.getStatusCode(), roleAssignmentsOnDataverse.getStatusCode());
+
+        // Second, we test listing role assignments on a dataset which requires "ManageDatasetPermissions"
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, contributorApiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        logger.info("dataset id: " + datasetId);
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, adminApiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        assertEquals(10, identifier.length());
+
+        String protocol1 = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.protocol");
+        String authority1 = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.authority");
+        String identifier1 = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+        String datasetPersistentId = protocol1 + ":" + authority1 + "/" + identifier1;
+
+        Response notPermittedToListRoleAssignmentOnDataset = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, contributorApiToken);
+        assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignmentOnDataset.getStatusCode());
+
+        // We assign the curator role to the contributor user
+        // (includes "ManageDatasetPermissions" which are required for listing role assignments of a dataset, but not
+        // "ManageDataversePermissions")
+
+        Response giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + contributorUsername, adminApiToken);
+        giveRandoPermission.prettyPrint();
+        assertEquals(200, giveRandoPermission.getStatusCode());
+
+        // Contributor user should now be able to list dataset role assignments as well
+
+        Response roleAssignmentsOnDataset = UtilIT.getRoleAssignmentsOnDataset(datasetId.toString(), null, contributorApiToken);
+        roleAssignmentsOnDataset.prettyPrint();
+        assertEquals(OK.getStatusCode(), roleAssignmentsOnDataset.getStatusCode());
+
+        // ...but not dataverse role assignments
+
+        notPermittedToListRoleAssignmentOnDataverse = UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, contributorApiToken);
+        assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignmentOnDataverse.getStatusCode());
+    }
+
+    @Test
     public void testFileChecksum() {
 
         Response createUser = UtilIT.createRandomUser();
