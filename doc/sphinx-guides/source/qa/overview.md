@@ -33,6 +33,12 @@ A release likely spans multiple two-week sprints. Each sprint represents the pri
 
 The decision to make a release can be based on the time since the last release, some important feature needed by the community or contractual deadline, or some other logical reason to package the work completed into a named release and posted to the releases section on GitHub.
 
+## Test API
+
+The API test suite is added to and maintained by development. (See {doc}`/developers/testing` in the Developer Guide.) It is generally advisable for code contributors to add API tests when adding new functionality. The approach here is one of code coverage: exercise as much of the code base's code paths as possible, every time to catch bugs. 
+
+This type of approach is often used to give contributing developers confidence that their code didn’t introduce any obvious, major issues and is run on each commit. Since it is a broad set of tests, it is not clear whether any specific, conceivable test is run but it does add a lot of confidence that the code base is functioning due to its reach and consistency. (See {doc}`/qa/test-automation` in the Developer Guide.)
+
 ## Making a Release
 
 See {doc}`/developers/making-releases` in the Developer Guide.

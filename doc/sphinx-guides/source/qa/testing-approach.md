@@ -43,7 +43,7 @@ Think about risk. Is the feature or function part of a critical area such as per
 1. Download a file.
 
 
-## Alternative deployment and testing
+## Alternative Deployment and Testing
 
 This workflow is fine for a single person testing a PR, one at a time. It would be awkward or impossible if there were multiple people wanting to test different PRs at the same time. If a developer is testing, they would likely just deploy to their dev environment. That might be ok, but is the env is fully configured enough to offer a real-world testing scenario? 
 

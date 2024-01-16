@@ -1,4 +1,4 @@
-# QA workflow for Pull Requests
+# QA Workflow for Pull Requests
 
 ```{contents} Contents:
 :local: 
@@ -87,7 +87,8 @@
     Click the "Merge pull request" button and be sure to use the "Create a merge commit" option to include this PR into the common develop branch.
 
     Some of the reasons why we encourage using option over Rebase or Squash are:
-        -Preserving commit hitory
+
+        -Preserving commit history
         -Clearer context and treaceability
         -Easier collaboration, bug tracking and reverting
 
