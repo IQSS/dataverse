@@ -438,7 +438,7 @@ public class JsonParser {
             throw new JsonParseException(BundleUtil.getStringFromBundle("jsonparser.error.parsing.number", Arrays.asList(ex.getMessage())), ex);
         }
     }
-
+    
     private edu.harvard.iq.dataverse.license.License parseLicense(String licenseNameOrUri) throws JsonParseException {
         if (licenseNameOrUri == null){
             boolean safeDefaultIfKeyNotFound = true;
