@@ -1,23 +1,9 @@
-# Other Approaches to Deploying and Testing
+# QA workflow for Pull Requests
 
 ```{contents} Contents:
 :local: 
 :depth: 3
 ```
-
-This workflow is fine for a single person testing a PR, one at a time. It would be awkward or impossible if there were multiple people wanting to test different PRs at the same time. If a developer is testing, they would likely just deploy to their dev environment. That might be ok, but is the env is fully configured enough to offer a real-world testing scenario? An alternative might be to spin an EC2 branch on AWS, potentially using sample data. This can take some time so another option might be to spin up a few, persistent AWS instances with sample data this way, one per tester, and just deploy new builds there when you want to test. You could even configure Jenkins projects for each if desired to maintain consistency in how they’re built.
-
-## Tips and Tricks
-
-- Start testing simply, with the most obvious test. You don’t need to know all your tests upfront. As you gain comfort and understanding of how it works, try more tests until you are done. If it is a complex feature, jot down your tests in an outline format, some beforehand as a guide, and some after as things occur to you. Save the doc in a testing folder (on Google Drive). This potentially will help with future testing.
-- When in doubt, ask someone. If you are confused about how something is working, it may be something you have missed, or it could be a documentation issue, or it could be a bug! Talk to the code reviewer and the contributor/developer for their opinion and advice.
-- Always tail the server.log file while testing. Open a terminal window to the test instance and `tail -F server.log`. This helps you get a real-time sense of what the server is doing when you act and makes it easier to identify any stack trace on failure.
-- When overloaded, do the simple pull requests first to reduce the queue. It gives you a mental boost to complete something and reduces the perception of the amount of work still to be done.
-- When testing a bug fix, try reproducing the bug on the demo before testing the fix, that way you know you are taking the correct steps to verify that the fix worked.
-- When testing an optional feature that requires configuration, do a smoke test without the feature configured and then with it configured. That way you know that folks using the standard config are unaffected by the option if they choose not to configure it.
-- Back up your DB before applying an irreversible DB update and you are using a persistent/reusable platform. Just in case it fails, and you need to carry on testing something else you can use the backup.
-
-## Workflow for Completing QA on a PR
 
 1. Assign the PR you are working on to yourself.
 
@@ -98,24 +84,13 @@ This workflow is fine for a single person testing a PR, one at a time. It would 
 
 1. Merge PR
     
-    Click merge to include this PR into the common develop branch.
+    Click the "Merge pull request" button and be sure to use the "Create a merge commit" option to include this PR into the common develop branch.
+
+    Some of the reasons why we encourage using option over Rebase or Squash are:
+        -Preserving commit hitory
+        -Clearer context and treaceability
+        -Easier collaboration, bug tracking and reverting
 
 1. Delete merged branch
     
     Just a housekeeping move if the PR is from IQSS. Click the delete branch button where the merge button had been. There is no deletion for outside contributions.
-
-
-## Checklist for Completing QA on a PR
-
-1. Build the docs 
-1. Smoke test the pr 
-1. Test the new functionality
-1. Regression test 
-1. Test any upgrade instructions
-
-## Checklist for QA on Release
-
-1. Review Consolidated Release Notes, in particular upgrade instructions.
-1. Conduct performance testing and compare with the previous release.
-1. Perform clean install and smoke test.
-1. Potentially follow upgrade instructions. Though they have been performed incrementally for each PR, the sequence may need checking

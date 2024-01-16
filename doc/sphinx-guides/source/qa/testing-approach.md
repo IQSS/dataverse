@@ -1,4 +1,4 @@
-# Manual Testing Approach
+# Testing Approach
 
 ```{contents} Contents:
 :local: 
@@ -41,3 +41,10 @@ Think about risk. Is the feature or function part of a critical area such as per
 1. Upload 3 different types of files: You can use a tabular file, 50by1000.dta, an image file, and a text file.
 1. Publish the dataset.
 1. Download a file.
+
+
+## Alternative deployment and testing
+
+This workflow is fine for a single person testing a PR, one at a time. It would be awkward or impossible if there were multiple people wanting to test different PRs at the same time. If a developer is testing, they would likely just deploy to their dev environment. That might be ok, but is the env is fully configured enough to offer a real-world testing scenario? 
+
+An alternative might be to spin an EC2 branch on AWS, potentially using sample data. This can take some time so another option might be to spin up a few, persistent AWS instances with sample data this way, one per tester, and just deploy new builds there when you want to test. You could even configure Jenkins projects for each if desired to maintain consistency in how they’re built.

@@ -7,7 +7,15 @@
 
 ## Introduction
 
+The final testing activity before producing a release is performance testing. This could be done throughout the release cycle but since it is time-consuming it is done once near the end. Using a load-generating tool named {ref}`Locust <locust>`, it loads the statistically most loaded pages, according to Google Analytics, that is 50% homepage and 50% some type of dataset page. 
+
+Since dataset page weight also varies by the number of files, a selection of about 10 datasets with varying file counts is used. The pages are called randomly as a guest user with increasing levels of user load, from 1 user to 250 users. Typical daily loads in production are around the 50-user level. Though the simulated user level does have a modest amount of random think time before repeated calls, from 5-20 seconds, it is not a real-world load so direct comparisons to production are not reliable. Instead, we compare performance to prior versions of the product, and based on how that performed in production we have some idea whether this might be similar in performance or whether there is some undetected issue that appears under load, such as inefficient or too many DB queries per page.
+
+## Testing Environment
+
 To run performance tests, we have a performance test cluster on AWS that employs web, database, and Solr. The database contains a copy of production that is updated weekly on Sundays. To ensure the homepage content is consistent between test runs across releases, two scripts set the datasets that will appear on the homepage. There is a script on the web server in the default CentOS user dir and one on the database server in the default CentOS user dir. Run these scripts before conducting the tests. 
+
+Once the performance has been tested and recorded in a [Google spreadsheet](https://docs.google.com/spreadsheets/d/1lwPlifvgu3-X_6xLwq6Zr6sCOervr1mV_InHIWjh5KA/edit?usp=sharing) for this proposed version, the release will be prepared and posted.
 
 ## Access
 

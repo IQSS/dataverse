@@ -3,9 +3,9 @@
 ```{toctree}
 overview.md
 testing-infrastructure.md
-performance-tests.md
-manual-testing.md
+qa-workflow.md
+testing-approach.md
 test-automation.md
-other-approaches.md
 jenkins.md
+performance-tests.md
 ```
