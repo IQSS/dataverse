@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -340,15 +342,31 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
     /**
      * Adds information about the external vocabulary term being used in this DatasetField to the ExternalVocabularyValue table if it doesn't already exist.
-     * @param df - the primitive/parent compound field containing a newly saved value
+     *
+     * @param df                - the primitive/parent compound field containing a newly saved value
+     * @param flatDatasetFields - all fields of the datasetVersion
      */
-    public void registerExternalVocabValues(DatasetField df) {
+    public void registerExternalVocabValues(DatasetField df, List<DatasetField> flatDatasetFields) {
         DatasetFieldType dft =df.getDatasetFieldType(); 
         logger.fine("Registering for field: " + dft.getName());
         JsonObject cvocEntry = getCVocConf(true).get(dft.getId());
         if (dft.isPrimitive()) {
             for (DatasetFieldValue dfv : df.getDatasetFieldValues()) {
-                registerExternalTerm(cvocEntry, dfv.getValue());
+                logger.fine("protocol:"+ cvocEntry.getString("protocol"));
+                String[] values = new String[2];
+                values[0] = dfv.getValue();
+                if("ontoportal".equals(cvocEntry.getString("protocol"))) {
+                    Optional<DatasetField> keywordVocabulary = flatDatasetFields.stream()
+                            .filter(datasetField -> "keywordVocabulary".equals(datasetField.getDatasetFieldType().getName())
+                                    && df.getParentDatasetFieldCompoundValue().getParentDatasetField().equals(
+                                            datasetField.getParentDatasetFieldCompoundValue().getParentDatasetField()))
+                            .findFirst();
+                    if(keywordVocabulary.isPresent()) {
+                        logger.fine("keywordVocabulary:"+ keywordVocabulary.get().getValue());
+                        values[1] = keywordVocabulary.get().getValue();
+                    }
+                }
+                registerExternalTerm(cvocEntry, values);
             }
         } else {
             if (df.getDatasetFieldType().isCompound()) {
@@ -446,25 +464,25 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     /**
      * Perform a call to the external service to retrieve information about the term URI
      * @param cvocEntry - the configuration for the DatasetFieldType associated with this term 
-     * @param term - the term uri as a string
+     * @param values - array containing the term uri and sometime the vocabulary
      */
-    public void registerExternalTerm(JsonObject cvocEntry, String term) {
+    public void registerExternalTerm(JsonObject cvocEntry, String... values) {
+        String protocol = cvocEntry.getString("protocol", null);
+        boolean isOntoportal = "ontoportal".equals(protocol);
+
+        String term = values[0];
+
         if(term.isBlank()) {
             logger.fine("Ingoring blank term");
             return;
         }
 
-        String cvocUrl = cvocEntry.getString("cvoc-url");
-        String cvocUiUrl = cvocEntry.getString("cvoc-ui-url", null);
         String retrievalUri = cvocEntry.getString("retrieval-uri");
+
         String prefix = cvocEntry.getString("prefix", null);
         JsonObject headers = cvocEntry.getJsonObject("headers");
         if (headers == null) {
             headers = Json.createObjectBuilder().build();
-        }
-
-        if(cvocUiUrl != null) {
-            term = term.replace(cvocUiUrl, cvocUrl);
         }
 
         boolean isExternal = false;
@@ -478,6 +496,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 }
             }
         }
+
+        if(isOntoportal) {
+            isExternal = true;
+        }
+
         if (!isExternal) {
             logger.fine("Ignoring free text entry: " + term);
             return;
@@ -495,7 +518,12 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             }
             if (evv.getValue() == null) {
                 String adjustedTerm = (prefix==null)? term: term.replace(prefix, "");
-                retrievalUri = retrievalUri.replace("{0}", adjustedTerm);
+                if(isOntoportal && values.length > 1) {
+                    String ontologyAcronym = values[1];
+                    retrievalUri = MessageFormat.format(retrievalUri, ontologyAcronym, URLEncoder.encode(adjustedTerm, StandardCharsets.UTF_8));
+                } else {
+                    retrievalUri = retrievalUri.replace("{0}", adjustedTerm);
+                }
                 logger.fine("Didn't find " + term + ", calling " + retrievalUri);
                 try (CloseableHttpClient httpClient = HttpClients.custom()
                         .addInterceptorLast(new HttpResponseInterceptor() {

@@ -3766,10 +3766,11 @@ public class DatasetPage implements java.io.Serializable {
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             }
             dataset = commandEngine.submit(cmd);
-            for (DatasetField df : dataset.getLatestVersion().getFlatDatasetFields()) {
+            List<DatasetField> flatDatasetFields = dataset.getLatestVersion().getFlatDatasetFields();
+            for (DatasetField df : flatDatasetFields) {
                 logger.fine("Found id: " + df.getDatasetFieldType().getId());
                 if (fieldService.getCVocConf(true).containsKey(df.getDatasetFieldType().getId())) {
-                    fieldService.registerExternalVocabValues(df);
+                    fieldService.registerExternalVocabValues(df, flatDatasetFields);
                 }
             }
             if (editMode == EditMode.CREATE) {
