@@ -499,14 +499,14 @@ Logging & Slow Performance
 
 .. _file-storage:
 
-File Storage: Using a Local Filesystem and/or Swift and/or Object Stores and/or Trusted Remote Stores
------------------------------------------------------------------------------------------------------
+File Storage
+------------
 
 By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara6/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
-A Dataverse installation can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
+A Dataverse installation can alternately store files in a Swift or S3-compatible object store, or on a Globus endpoint, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
 
-A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web-accessible trusted remote store.
+A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web or Globus accessible trusted remote store.
 
 A Dataverse installation can be configured to allow out of band upload by setting the ``dataverse.files.\<id\>.upload-out-of-band`` JVM option to ``true``.
 By default, Dataverse supports uploading files via the :ref:`add-file-api`. With S3 stores, a direct upload process can be enabled to allow sending the file directly to the S3 store (without any intermediate copies on the Dataverse server).
@@ -538,6 +538,27 @@ If you wish to change which store is used by default, you'll need to delete the 
     ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
 
 It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
+
+.. _labels-file-stores:
+
+Labels for File Stores
+++++++++++++++++++++++
+
+If you find yourself adding many file stores with various configurations such as per-file limits and direct upload, you might find it helpful to make the label descriptive.
+
+For example, instead of simply labeling an S3 store as "S3"...
+
+.. code-block:: none
+
+    ./asadmin create-jvm-options "\-Ddataverse.files.s3xl.label=S3"
+
+... you might want to include some extra information such as the example below.
+
+.. code-block:: none
+
+    ./asadmin create-jvm-options "\-Ddataverse.files.s3xl.label=S3XL, Filesize limit: 100GB, direct-upload"
+
+Please keep in mind that the UI will only show so many characters, so labels are best kept short.
 
 .. _storage-files-dir:
 
@@ -958,7 +979,7 @@ Once you have configured a trusted remote store, you can point your users to the
     dataverse.files.<id>.type                    ``remote``          **Required** to mark this storage as remote.                                (none)
     dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage.                  (none)
     dataverse.files.<id>.base-url                <?>                 **Required** All files must have URLs of the form <baseUrl>/* .             (none)
-    dataverse.files.<id>.base-store              <?>                 **Optional** The id of a base store (of type file, s3, or swift).           (the default store)
+    dataverse.files.<id>.base-store              <?>                 **Required** The id of a base store (of type file, s3, or swift).           (the default store)
     dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download (should usually be true).                            ``false``
     dataverse.files.<id>.secret-key               <?>                 A key used to sign download requests sent to the remote store. Optional.   (none)
     dataverse.files.<id>.url-expiration-minutes  <?>                 If direct downloads and using signing: time until links expire. Optional.   60
@@ -967,6 +988,47 @@ Once you have configured a trusted remote store, you can point your users to the
     
     ===========================================  ==================  ==========================================================================  ===================
 
+.. _globus-storage:
+
+Globus Storage
+++++++++++++++
+
+Globus stores allow Dataverse to manage files stored in Globus endpoints or to reference files in remote Globus endpoints, with users leveraging Globus to transfer files to/from Dataverse (rather than using HTTP/HTTPS).
+See :doc:`/developers/big-data-support` for additional information on how to use a globus store. Consult the `Globus documentation <https://docs.globus.org/>`_ for information about using Globus and configuring Globus endpoints.
+
+In addition to having the type "globus" and requiring a label, Globus Stores share many options with Trusted Remote Stores and options to specify and access a Globus endpoint(s). As with Remote Stores, Globus Stores also use a baseStore - a file, s3, or swift store that can be used to store additional ancillary dataset files (e.g. metadata exports, thumbnails, auxiliary files, etc.).
+These and other available options are described in the table below.
+
+There are two types of Globus stores:
+
+- managed - where Dataverse manages the Globus endpoint, deciding where transferred files are stored and managing access control for users transferring files to/from Dataverse
+- remote - where Dataverse references files that remain on trusted remote Globus endpoints
+
+A managed Globus store connects to standard/file-based Globus endpoint. It is also possible to configure an S3 store as a managed store, if the managed endpoint uses an underlying S3 store via the Globus S3 Connector.
+With the former, Dataverse has no direct access to the file contents and functionality related to ingest, fixity hash validation, etc. are not available. With the latter, Dataverse can access files internally via S3 and the functionality supported is similar to that when using S3 direct upload. 
+
+Once you have configured a globus store, or configured an S3 store for Globus access, it is recommended that you install the `dataverse-globus app <https://github.com/scholarsportal/dataverse-globus>`_ to allow transfers in/out of Dataverse to be initated via the Dataverse user interface. Alternately, you can point your users to the :doc:`/developers/globus-api` for information about API support.
+
+.. table::
+    :align: left
+
+    =======================================================  ==================  ==========================================================================  ===================
+    JVM Option                                               Value               Description                                                                 Default value
+    =======================================================  ==================  ==========================================================================  ===================
+    dataverse.files.<id>.type                                ``globus``          **Required** to mark this storage as globus enabled.                        (none)
+    dataverse.files.<id>.label                               <?>                 **Required** label to be shown in the UI for this storage.                  (none)
+    dataverse.files.<id>.base-store                          <?>                 **Required** The id of a base store (of type file, s3, or swift).           (the default store)
+    dataverse.files.<id>.remote-store-name                   <?>                 A short name used in the UI to indicate where a file is located. Optional.  (none)
+    dataverse.files.<id>.remote-store-url                    <?>                 A url to an info page about the remote store used in the UI. Optional.      (none)
+    dataverse.files.<id>.managed                             ``true``/``false``  Whether dataverse manages an associated Globus endpoint                     ``false``
+    dataverse.files.<id>.transfer-endpoint-with-basepath     <?>                 The *managed* Globus endpoint id and associated base path for file storage  (none)
+    dataverse.files.<id>.globus-token                        <?>                 A Globus token (base64 endcoded <Globus user id>:<Credential> 
+                                                                                 for a managed store) - using a microprofile alias is recommended            (none)
+    dataverse.files.<id>.reference-endpoints-with-basepaths  <?>                 A comma separated list of *remote* trusted Globus endpoint id/<basePath>s   (none)
+    dataverse.files.<id>.files-not-accessible-by-dataverse   ``true``/``false``  Should be false for S3 Connector-based *managed* stores, true for others    ``false``
+    
+    =======================================================  ==================  ==========================================================================  ===================
+    
 .. _temporary-file-storage:
 
 Temporary Upload File Storage
@@ -1607,6 +1669,25 @@ The workflow id returned in this call (or available by doing a GET of /api/admin
 ``curl -X PUT -d {id} http://localhost:8080/api/admin/workflows/default/PostPublishDataset``
 
 Once these steps are taken, new publication requests will automatically trigger submission of an archival copy to the specified archiver, Chronopolis' DuraCloud component in this example. For Chronopolis, as when using the API, it is currently the admin's responsibility to snap-shot the DuraCloud space and monitor the result. Failure of the workflow, (e.g. if DuraCloud is unavailable, the configuration is wrong, or the space for this dataset already exists due to a prior publication action or use of the API), will create a failure message but will not affect publication itself.
+
+.. _bag-info.txt:
+
+Configuring bag-info.txt
+++++++++++++++++++++++++
+
+Out of the box, placeholder values like below will be placed in bag-info.txt:
+
+.. code-block:: text
+
+  Source-Organization: Dataverse Installation (<Site Url>)
+  Organization-Address: <Full address>
+  Organization-Email: <Email address>
+
+To customize these values for your institution, use the following JVM options:
+
+- :ref:`dataverse.bagit.sourceorg.name`
+- :ref:`dataverse.bagit.sourceorg.address`
+- :ref:`dataverse.bagit.sourceorg.email`
 
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
@@ -2489,6 +2570,13 @@ This setting was added to keep S3 direct upload lightweight. When that feature i
 
 See also :ref:`s3-direct-upload-features-disabled`.
 
+.. _dataverse.storageuse.disable-storageuse-increments:
+
+dataverse.storageuse.disable-storageuse-increments
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+This setting serves the role of an emergency "kill switch" that will disable maintaining the real time record of storage use for all the datasets and collections in the database. Because of the experimental nature of this feature (see :doc:`/admin/collectionquotas`) that hasn't been used in production setting as of this release, v6.1 this setting is provided in case these updates start causing database race conditions and conflicts on a busy server. 
+
 dataverse.auth.oidc.*
 +++++++++++++++++++++
 
@@ -2505,6 +2593,33 @@ This setting enables functionality to allow guestbooks to be displayed when a us
 See also :ref:`guestbook-at-request-api` in the API Guide, and .
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_GUESTBOOK_AT_REQUEST``.
+
+.. _dataverse.bagit.sourceorg.name:
+
+dataverse.bagit.sourceorg.name
+++++++++++++++++++++++++++++++
+
+The name for your institution that you'd like to appear in bag-info.txt. See :ref:`bag-info.txt`.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_NAME``.
+
+.. _dataverse.bagit.sourceorg.address:
+
+dataverse.bagit.sourceorg.address
++++++++++++++++++++++++++++++++++
+
+The mailing address for your institution that you'd like to appear in bag-info.txt. See :ref:`bag-info.txt`. The example in https://datatracker.ietf.org/doc/html/rfc8493 uses commas as separators: ``1 Main St., Cupertino, California, 11111``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_ADDRESS``.
+
+.. _dataverse.bagit.sourceorg.email:
+
+dataverse.bagit.sourceorg.email
++++++++++++++++++++++++++++++++
+
+The email for your institution that you'd like to appear in bag-info.txt. See :ref:`bag-info.txt`.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_BAGIT_SOURCEORG_EMAIL``.
 
 .. _feature-flags:
 
@@ -2868,7 +2983,6 @@ To enable setting file-level PIDs per collection::
 
 When :AllowEnablingFilePIDsPerCollection is true, setting File PIDs to be enabled/disabled for a given collection can be done via the Native API - see :ref:`collection-attributes-api` in the Native API Guide.
 
-
 .. _:IndependentHandleService:
 
 :IndependentHandleService
@@ -3108,6 +3222,21 @@ Whether or not to index the content of files such as PDFs. The default is false.
 If ``:SolrFullTextIndexing`` is set to true, the content of files of any size will be indexed. To set a limit in bytes for which files to index in this way:
 
 ``curl -X PUT -d 314572800 http://localhost:8080/api/admin/settings/:SolrMaxFileSizeForFullTextIndexing``
+
+
+.. _:DisableSolrFacets:
+
+:DisableSolrFacets
+++++++++++++++++++
+
+Setting this to ``true`` will make the collection ("dataverse") page start showing search results without the usual search facets on the left side of the page. A message will be shown in that column informing the users that facets are temporarily unavailable. Generating the facets is more resource-intensive for Solr than the main search results themselves, so applying this measure will significantly reduce the load on the search engine when its performance becomes an issue.
+
+This setting can be used in combination with the "circuit breaker" mechanism on the Solr side (see the "Installing Solr" section of the Installation Prerequisites guide). An admin can choose to enable it, or even create an automated system for enabling it in response to Solr beginning to drop incoming requests with the HTTP code 503.
+
+To enable the setting::
+
+  curl -X PUT -d true "http://localhost:8080/api/admin/settings/:DisableSolrFacets"
+
 
 .. _:SignUpUrl:
 
@@ -3975,24 +4104,9 @@ The URL of an LDN Inbox to which the LDN Announce workflow step will send messag
 
 The list of parent dataset field names for which the LDN Announce workflow step should send messages. See :doc:`/developers/workflows` for details.
 
-.. _:GlobusBasicToken:
+.. _:GlobusSettings:
 
-:GlobusBasicToken
-+++++++++++++++++
-
-GlobusBasicToken encodes credentials for Globus integration. See :ref:`globus-support` for details.
-
-:GlobusEndpoint
-+++++++++++++++
-
-GlobusEndpoint is Globus endpoint id used with Globus integration. See :ref:`globus-support` for details.
-
-:GlobusStores
-+++++++++++++
-
-A comma-separated list of the S3 stores that are configured to support Globus integration. See :ref:`globus-support` for details.
-
-:GlobusAppURL
+:GlobusAppUrl
 +++++++++++++
 
 The URL where the `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been deployed to support Globus integration. See :ref:`globus-support` for details.
