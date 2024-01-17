@@ -76,7 +76,7 @@ A ``jk-connector`` network listener should have already been set up when you ran
 
 You can verify this with ``./asadmin list-network-listeners``. 
 
-This enables the `AJP protocol <http://en.wikipedia.org/wiki/Apache_JServ_Protocol>`_ used in Apache configuration files below.
+This enables the `AJP protocol <https://en.wikipedia.org/wiki/Apache_JServ_Protocol>`_ used in Apache configuration files below.
 
 SSLEngine Warning Workaround
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -93,7 +93,7 @@ Configure Apache
 Enforce HTTPS
 ~~~~~~~~~~~~~
 
-To prevent attacks such as `FireSheep <http://en.wikipedia.org/wiki/Firesheep>`_, HTTPS should be enforced. https://wiki.apache.org/httpd/RewriteHTTPToHTTPS provides a good method. You **could** copy and paste that those "rewrite rule" lines into Apache's main config file at ``/etc/httpd/conf/httpd.conf`` but using Apache's "virtual hosts" feature is recommended so that you can leave the main configuration file alone and drop a host-specific file into place.
+To prevent attacks such as `FireSheep <https://en.wikipedia.org/wiki/Firesheep>`_, HTTPS should be enforced. https://wiki.apache.org/httpd/RewriteHTTPToHTTPS provides a good method. You **could** copy and paste that those "rewrite rule" lines into Apache's main config file at ``/etc/httpd/conf/httpd.conf`` but using Apache's "virtual hosts" feature is recommended so that you can leave the main configuration file alone and drop a host-specific file into place.
 
 Below is an example of how "rewrite rule" lines look within a ``VirtualHost`` block. Download a :download:`sample file <../_static/installation/files/etc/httpd/conf.d/dataverse.example.edu.conf>` , edit it to substitute your own hostname under ``ServerName``, and place it at ``/etc/httpd/conf.d/dataverse.example.edu.conf`` or a filename that matches your hostname. The file must be in ``/etc/httpd/conf.d`` and must end in ".conf" to be included in Apache's configuration.
 
@@ -235,7 +235,7 @@ Run semodule
 
 Silent is golden. No output is expected. This will place a file in ``/etc/selinux/targeted/modules/active/modules/shibboleth.pp`` and include "shibboleth" in the output of ``semodule -l``. See the ``semodule`` man page if you ever want to remove or disable the module you just added.
 
-Congrats! You've made the creator of http://stopdisablingselinux.com proud. :)
+Congrats! You've made the creator of https://stopdisablingselinux.com proud. :)
 
 Restart Apache and Shibboleth
 -----------------------------

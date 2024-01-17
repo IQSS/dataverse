@@ -58,8 +58,8 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
             throw new IllegalCommandException("Imported datasets must have a persistent global identifier.", this);
         }
         
-        if ( ! ctxt.datasets().isIdentifierLocallyUnique(ds) ) {
-            throw new IllegalCommandException("Persistent identifier " + ds.getGlobalIdString() + " already exists in this Dataverse installation.", this);
+        if ( ! ctxt.dvObjects().isGlobalIdLocallyUnique(ds.getGlobalId()) ) {
+            throw new IllegalCommandException("Persistent identifier " + ds.getGlobalId().asString() + " already exists in this Dataverse installation.", this);
         }
         
         String pid = ds.getPersistentURL();
@@ -79,15 +79,10 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
                  * that exist (and accessible in the PID provider account configured in
                  * Dataverse) but aren't findable to be used. That could be the case if, for
                  * example, someone was importing a draft dataset from elsewhere.
-                 * 
-                 * Also note that just replacing the call above with the alreadyExists() call
-                 * here would break import cases where a DOI is public but not managable with
-                 * the currently configured PID provider credentials. If this is not a valid use
-                 * case, the GET above could be removed.
                  */
                 GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(ds.getProtocol(), ctxt);
                 if (globalIdServiceBean != null) {
-                    if (globalIdServiceBean.alreadyExists(ds)) {
+                    if (globalIdServiceBean.alreadyRegistered(ds.getGlobalId(), true)) {
                         return;
                     }
                 }

@@ -18,11 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -53,7 +55,11 @@ public class DOIDataCiteRegisterService {
     
     private DataCiteRESTfullClient getClient() throws IOException {
         if (client == null) {
-            client = new DataCiteRESTfullClient(System.getProperty("doi.baseurlstring"), System.getProperty("doi.username"), System.getProperty("doi.password"));
+            client = new DataCiteRESTfullClient(
+                JvmSettings.DATACITE_MDS_API_URL.lookup(),
+                JvmSettings.DATACITE_USERNAME.lookup(),
+                JvmSettings.DATACITE_PASSWORD.lookup()
+            );
         }
         return client;
     }
@@ -546,7 +552,7 @@ class DataCiteMetadataTemplate {
 
                 datafileIdentifiers = new ArrayList<>();
                 for (DataFile dataFile : dataset.getFiles()) {
-                    if (!dataFile.getGlobalId().asString().isEmpty()) {
+                    if (dataFile.getGlobalId() != null) {
                         if (sb.toString().isEmpty()) {
                             sb.append("<relatedIdentifiers>");
                         }

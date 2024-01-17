@@ -2,6 +2,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
@@ -14,19 +15,19 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
+import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.ServerErrorException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.tika.Tika;
 
@@ -46,6 +47,8 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
     @EJB
     private SystemConfig systemConfig;
     
+    @EJB
+    StorageUseServiceBean storageUseService; 
 
     public AuxiliaryFile find(Object pk) {
         return em.find(AuxiliaryFile.class, pk);
@@ -126,6 +129,13 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
                 }
                 dataFile.getAuxiliaryFiles().add(auxFile);
             }
+            // We've just added this file to storage; increment the StorageUse
+            // record if needed. 
+            if (auxFile.getFileSize() != null 
+                    && auxFile.getFileSize() > 0 
+                    && dataFile.getOwner() != null ) {
+                storageUseService.incrementStorageSizeRecursively(dataFile.getOwner().getId(), auxFile.getFileSize());
+            }
         } catch (IOException ioex) {
             logger.severe("IO Exception trying to save auxiliary file: " + ioex.getMessage());
             throw new InternalServerErrorException();
@@ -181,6 +191,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         if (af == null) {
             throw new FileNotFoundException();
         }
+        Long auxFileSize = af.getFileSize();
         em.remove(af);
         StorageIO<?> storageIO;
         storageIO = dataFile.getStorageIO();
@@ -188,6 +199,14 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         if (storageIO.isAuxObjectCached(auxExtension)) {
             storageIO.deleteAuxObject(auxExtension);
         }
+        // We've just deleted this file from storage; update the StorageUse
+        // record if needed. 
+        if (auxFileSize != null
+                && auxFileSize > 0
+                && dataFile.getOwner() != null) {
+            storageUseService.incrementStorageSizeRecursively(dataFile.getOwner().getId(), (0L - auxFileSize));
+        }
+        
     }
 
     public List<AuxiliaryFile> findAuxiliaryFiles(DataFile dataFile) {
