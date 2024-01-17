@@ -17,29 +17,30 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
  * Get the latest version of a dataset a user can view.
+ *
  * @author Naomi
  */
 // No permission needed to view published dvObjects
 @RequiredPermissions({})
-public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
+public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     private final Dataset ds;
+    private final boolean includeDeaccessioned;
 
     public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {
+        this(aRequest, anAffectedDataset, false);
+    }
+
+    public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, boolean includeDeaccessioned) {
         super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
+        this.includeDeaccessioned = includeDeaccessioned;
     }
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-
         if (ds.getLatestVersion().isDraft() && ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
             return ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
         }
-
-        return ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(getRequest(), ds));
-
+        return ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(getRequest(), ds, includeDeaccessioned));
     }
-    
-    
-    
 }

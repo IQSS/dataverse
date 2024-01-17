@@ -40,10 +40,10 @@ After all this, you can try the "version" command again.
 
 Note that it's possible to add an ``export`` line like the one above to your ``~/.bash_profile`` file so you don't have to run it yourself when you open a new terminal.
 
-Configure AWS CLI
-~~~~~~~~~~~~~~~~~
+Configure AWS CLI with Stored Credentials
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Next you need to configure AWS CLI.
+Dataverse can access S3 using credentials stored as described below, or using an IAM role described a little further below.
 
 Create a ``.aws`` directory in your home directory (which is called ``~``) like this:
 
@@ -69,6 +69,11 @@ Create a plain text file at ``~/.aws/credentials`` with the following content::
 Then update the file and replace the values for "aws_access_key_id" and "aws_secret_access_key" with your actual credentials by following the instructions at https://aws.amazon.com/blogs/security/wheres-my-secret-access-key/
 
 If you are having trouble configuring the files manually as described above, see https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html which documents the ``aws configure`` command.
+
+Configure Role-Based S3 Access
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Amazon offers instructions on using an IAM role to grant permissions to applications running in EC2 at https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
 
 Configure Ansible File (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -5,12 +5,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -22,19 +21,18 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.persistence.*;
-import javax.validation.constraints.Pattern;
-import org.hibernate.validator.constraints.NotBlank;
+import java.util.stream.Collectors;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  *
@@ -47,16 +45,16 @@ import org.hibernate.validator.constraints.NotBlank;
                 query = "SELECT o FROM DataFile o WHERE o.creator.id=:creatorId"),
         @NamedQuery(name = "DataFile.findByReleaseUserId",
                 query = "SELECT o FROM DataFile o WHERE o.releaseUser.id=:releaseUserId"),
-        @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth", 
+        @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth",
                 query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority"),
-        @NamedQuery(name="DataFile.findDataFileThatReplacedId", 
+        @NamedQuery(name="DataFile.findDataFileThatReplacedId",
                 query="SELECT s.id FROM DataFile s WHERE s.previousDataFileId=:identifier")
 })
 @Entity
 @Table(indexes = {@Index(columnList="ingeststatus")
-		, @Index(columnList="checksumvalue")
-		, @Index(columnList="contenttype")
-		, @Index(columnList="restricted")})
+        , @Index(columnList="checksumvalue")
+        , @Index(columnList="contenttype")
+        , @Index(columnList="restricted")})
 public class DataFile extends DvObject implements Comparable {
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
     private static final long serialVersionUID = 1L;
@@ -73,7 +71,6 @@ public class DataFile extends DvObject implements Comparable {
     @Column( nullable = false )
     @Pattern(regexp = "^.*/.*$", message = "{contenttype.slash}")
     private String contentType;
-    
 
 //    @Expose    
 //    @SerializedName("storageIdentifier")
@@ -198,6 +195,28 @@ public class DataFile extends DvObject implements Comparable {
     @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<GuestbookResponse> guestbookResponses;
 
+    @OneToMany(mappedBy="dataFile",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    private List<FileAccessRequest> fileAccessRequests;
+
+    @ManyToMany
+    @JoinTable(name = "fileaccessrequests",
+    joinColumns = @JoinColumn(name = "datafile_id"),
+    inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
+    private List<AuthenticatedUser> fileAccessRequesters;
+
+    
+    public List<FileAccessRequest> getFileAccessRequests(){
+        return fileAccessRequests;
+    }
+    
+    public List<FileAccessRequest> getFileAccessRequests(FileAccessRequest.RequestState state){
+        return fileAccessRequests.stream().filter(far -> far.getState() == state).collect(Collectors.toList());
+    }
+
+    public void setFileAccessRequests(List<FileAccessRequest> fARs){
+        this.fileAccessRequests = fARs;
+    }
+    
     public List<GuestbookResponse> getGuestbookResponses() {
         return guestbookResponses;
     }
@@ -367,7 +386,17 @@ public class DataFile extends DvObject implements Comparable {
     public void setTags(List<DataFileTag> dataFileTags) {
         this.dataFileTags = dataFileTags;
     }
-    
+
+    public void addUniqueTagByLabel(String tagLabel) throws IllegalArgumentException {
+        if (tagExists(tagLabel)) {
+            return;
+        }
+        DataFileTag tag = new DataFileTag();
+        tag.setTypeByLabel(tagLabel);
+        tag.setDataFile(this);
+        addTag(tag);
+    }
+
     public void addTag(DataFileTag tag) {
         if (dataFileTags == null) {
             dataFileTags = new ArrayList<>();
@@ -416,7 +445,7 @@ public class DataFile extends DvObject implements Comparable {
                 return ingestReports.get(0).getReport();
             }
         }
-        return "Ingest failed. No further information is available.";
+        return BundleUtil.getStringFromBundle("file.ingestFailed");
     }
     
     public boolean isTabularData() {
@@ -611,7 +640,7 @@ public class DataFile extends DvObject implements Comparable {
             return BundleUtil.getStringFromBundle("file.sizeNotAvailable");
         }
     }
-
+    
     public boolean isRestricted() {
         return restricted;
     }
@@ -747,13 +776,6 @@ public class DataFile extends DvObject implements Comparable {
         }
         return null; 
     }
-    
-
-    @ManyToMany
-    @JoinTable(name = "fileaccessrequests",
-    joinColumns = @JoinColumn(name = "datafile_id"),
-    inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
-    private List<AuthenticatedUser> fileAccessRequesters;
 
     public List<AuthenticatedUser> getFileAccessRequesters() {
         return fileAccessRequesters;
@@ -762,7 +784,51 @@ public class DataFile extends DvObject implements Comparable {
     public void setFileAccessRequesters(List<AuthenticatedUser> fileAccessRequesters) {
         this.fileAccessRequesters = fileAccessRequesters;
     }
-    
+
+
+    public void addFileAccessRequest(FileAccessRequest request) {
+        if (this.fileAccessRequests == null) {
+            this.fileAccessRequests = new ArrayList<>();
+        }
+
+        this.fileAccessRequests.add(request);
+    }
+
+    public FileAccessRequest getAccessRequestForAssignee(RoleAssignee roleAssignee) {
+        if (this.fileAccessRequests == null) {
+            return null;
+        }
+
+        return this.fileAccessRequests.stream()
+                .filter(fileAccessRequest -> fileAccessRequest.getRequester().equals(roleAssignee) && fileAccessRequest.isStateCreated()).findFirst()
+                .orElse(null);
+    }
+
+    public boolean removeFileAccessRequest(FileAccessRequest request) {
+        if (this.fileAccessRequests == null) {
+            return false;
+        }
+
+        if (request != null) {
+            this.fileAccessRequests.remove(request);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean containsActiveFileAccessRequestFromUser(RoleAssignee roleAssignee) {
+        if (this.fileAccessRequests == null) {
+            return false;
+        }
+
+        Set<AuthenticatedUser> existingUsers = getFileAccessRequests(FileAccessRequest.RequestState.CREATED).stream()
+            .map(FileAccessRequest::getRequester)
+            .collect(Collectors.toSet());
+
+        return existingUsers.contains(roleAssignee);
+    }
+
     public boolean isHarvested() {
         
         Dataset ownerDataset = this.getOwner();
@@ -924,8 +990,6 @@ public class DataFile extends DvObject implements Comparable {
     
     public JsonObject asGsonObject(boolean prettyPrint){
         
-        String overarchingKey = "data";
-        
         GsonBuilder builder;
         if (prettyPrint){  // Add pretty printing
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
@@ -956,7 +1020,7 @@ public class DataFile extends DvObject implements Comparable {
         // https://github.com/IQSS/dataverse/issues/761, https://github.com/IQSS/dataverse/issues/2110, https://github.com/IQSS/dataverse/issues/3191
         //
         datasetMap.put("title", thisFileMetadata.getDatasetVersion().getTitle());
-        datasetMap.put("persistentId", getOwner().getGlobalIdString());
+        datasetMap.put("persistentId", getOwner().getGlobalId().asString());
         datasetMap.put("url", getOwner().getPersistentURL());
         datasetMap.put("version", thisFileMetadata.getDatasetVersion().getSemanticVersion());
         datasetMap.put("id", getOwner().getId());
@@ -1034,9 +1098,17 @@ public class DataFile extends DvObject implements Comparable {
         return null;
     }
     
+    @Override
+    public String getTargetUrl() {
+        return DataFile.TARGET_URL;
+    }
 
+    private boolean tagExists(String tagLabel) {
+        for (DataFileTag dataFileTag : dataFileTags) {
+            if (dataFileTag.getTypeLabel().equals(tagLabel)) {
+                return true;
+            }
+        }
+        return false;
+    }
 } // end of class
-    
-
-    
-

@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.Metric;
-import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil.MetricType;
 
 import static edu.harvard.iq.dataverse.metrics.MetricsUtil.*;
@@ -23,19 +23,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.ws.rs.core.UriInfo;
 
 @Stateless
 public class MetricsServiceBean implements Serializable {
@@ -51,7 +51,7 @@ public class MetricsServiceBean implements Serializable {
 
     /** Dataverses */
 
-    
+
     public JsonArray getDataversesTimeSeries(UriInfo uriInfo, Dataverse d) {
         Query query = em.createNativeQuery(""
                 + "select distinct to_char(date_trunc('month', dvobject.publicationdate),'YYYY-MM') as month, count(date_trunc('month', dvobject.publicationdate))\n"
@@ -64,7 +64,7 @@ public class MetricsServiceBean implements Serializable {
         List<Object[]> results = query.getResultList();
         return MetricsUtil.timeSeriesToJson(results);
     }
-    
+
     /**
      * @param yyyymm Month in YYYY-MM format.
      * @param d
@@ -129,9 +129,9 @@ public class MetricsServiceBean implements Serializable {
 
     /** Datasets */
 
-    
+
     public JsonArray getDatasetsTimeSeries(UriInfo uriInfo, String dataLocation, Dataverse d) {
-        Query query = em.createNativeQuery(                
+        Query query = em.createNativeQuery(
                 "select distinct date, count(dataset_id)\n"
                 + "from (\n"
                 + "select min(to_char(COALESCE(releasetime, createtime), 'YYYY-MM')) as date, dataset_id\n"
@@ -149,8 +149,8 @@ public class MetricsServiceBean implements Serializable {
         List<Object[]> results = query.getResultList();
         return MetricsUtil.timeSeriesToJson(results);
     }
-    
-    
+
+
     /**
      * @param yyyymm Month in YYYY-MM format.
      * @param d
@@ -180,10 +180,10 @@ public class MetricsServiceBean implements Serializable {
         // But do not use this notation if you need the values returned to
         // meaningfully identify the datasets!
 
-  
+
         Query query = em.createNativeQuery(
-                        
-                        
+
+
                 "select count(*)\n"
                         + "from (\n"
                         + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))\n"
@@ -312,7 +312,7 @@ public class MetricsServiceBean implements Serializable {
         return MetricsUtil.timeSeriesToJson(results);
     }
 
-    
+
     /**
      * @param yyyymm Month in YYYY-MM format.
      * @param d
@@ -383,13 +383,13 @@ public class MetricsServiceBean implements Serializable {
                 jab.add(stats);
             }
 
-        } catch (javax.persistence.NoResultException nr) {
+        } catch (NoResultException nr) {
             // do nothing
         }
         return jab.build();
 
     }
-    
+
     public JsonArray filesByTypeTimeSeries(Dataverse d, boolean published) {
         Query query = em.createNativeQuery("SELECT DISTINCT to_char(" + (published ? "ob.publicationdate" : "ob.createdate") + ",'YYYY-MM') as date, df.contenttype, count(df.id), coalesce(sum(df.filesize),0) "
                 + " FROM DataFile df, DvObject ob"
@@ -402,13 +402,13 @@ public class MetricsServiceBean implements Serializable {
         logger.log(Level.FINE, "Metric query: {0}", query);
         List<Object[]> results = query.getResultList();
         return MetricsUtil.timeSeriesByTypeToJson(results);
-        
+
     }
-    /** Downloads 
+    /** Downloads
      * @param d
      * @throws ParseException */
 
-    
+
     public JsonArray downloadsTimeSeries(Dataverse d) {
         // ToDo - published only?
         Query earlyDateQuery = em.createNativeQuery(""
@@ -425,17 +425,18 @@ public class MetricsServiceBean implements Serializable {
                 + "select  distinct COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "') as date, count(id)\n"
                 + "from guestbookresponse\n"
                 + ((d == null) ? "" : "where dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")")
+                + ((d == null) ? "where ":" and ") + "eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + " group by COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "') order by  COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
         List<Object[]> results = query.getResultList();
         return MetricsUtil.timeSeriesToJson(results);
     }
-    
+
     /*
      * This includes getting historic download without a timestamp if query
      * is earlier than earliest timestamped record
-     * 
+     *
      * @param yyyymm Month in YYYY-MM format.
      */
     public long downloadsToMonth(String yyyymm, Dataverse d) throws ParseException {
@@ -455,9 +456,10 @@ public class MetricsServiceBean implements Serializable {
                 Query query = em.createNativeQuery(""
                         + "select count(id)\n"
                         + "from guestbookresponse\n"
-                        + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
-                        + "or responsetime is NULL\n" // includes historic guestbook records without date
-                    + ((d==null) ? ";": "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");") 
+                        + "where (date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
+                        + "or responsetime is NULL)\n" // includes historic guestbook records without date
+                        + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
+                    + ((d==null) ? ";": "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");")
                 );
                 logger.log(Level.FINE, "Metric query: {0}", query);
                 return (long) query.getSingleResult();
@@ -478,18 +480,20 @@ public class MetricsServiceBean implements Serializable {
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
                 + "where responsetime > current_date - interval '" + days + "' day\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + ((d==null) ? ";": "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");")
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
 
         return (long) query.getSingleResult();
     }
-    
+
     public JsonArray fileDownloadsTimeSeries(Dataverse d, boolean uniqueCounts) {
         Query query = em.createNativeQuery("select distinct to_char(gb.responsetime, 'YYYY-MM') as date, ob.id, ob.protocol || ':' || ob.authority || '/' || ob.identifier as pid, count(" + (uniqueCounts ? "distinct email" : "*") + ") "
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.datafile_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier, to_char(gb.responsetime, 'YYYY-MM') order by to_char(gb.responsetime, 'YYYY-MM');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -497,13 +501,14 @@ public class MetricsServiceBean implements Serializable {
         return MetricsUtil.timeSeriesByIDAndPIDToJson(results);
 
     }
-    
+
     public JsonArray fileDownloads(String yyyymm, Dataverse d, boolean uniqueCounts) {
         Query query = em.createNativeQuery("select ob.id, ob.protocol || ':' || ob.authority || '/' || ob.identifier as pid, count(" + (uniqueCounts ? "distinct email" : "*") + ") "
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.datafile_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
                 + " and date_trunc('month', gb.responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier order by count desc;");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -519,7 +524,7 @@ public class MetricsServiceBean implements Serializable {
                 job.add(MetricsUtil.COUNT, (long) result[2]);
                 jab.add(job);
             }
-        } catch (javax.persistence.NoResultException nr) {
+        } catch (NoResultException nr) {
             // do nothing
         }
         return jab.build();
@@ -530,6 +535,7 @@ public class MetricsServiceBean implements Serializable {
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.dataset_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier, to_char(gb.responsetime, 'YYYY-MM') order by to_char(gb.responsetime, 'YYYY-MM');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -537,7 +543,7 @@ public class MetricsServiceBean implements Serializable {
         return MetricsUtil.timeSeriesByPIDToJson(results);
 
     }
-    
+
     public JsonArray uniqueDatasetDownloads(String yyyymm, Dataverse d) {
 
     //select distinct count(distinct email),dataset_id, date_trunc('month', responsetime)  from guestbookresponse group by dataset_id, date_trunc('month',responsetime) order by dataset_id,date_trunc('month',responsetime);
@@ -547,6 +553,7 @@ public class MetricsServiceBean implements Serializable {
                 + " where ob.id = gb.dataset_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
                 + " and date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier order by count(distinct email) desc;");
         JsonArrayBuilder jab = Json.createArrayBuilder();
         try {
@@ -558,16 +565,16 @@ public class MetricsServiceBean implements Serializable {
                 jab.add(job);
             }
 
-        } catch (javax.persistence.NoResultException nr) {
+        } catch (NoResultException nr) {
             // do nothing
         }
         return jab.build();
 
     }
-    
-    //MDC 
-    
-    
+
+    //MDC
+
+
     public JsonArray mdcMetricTimeSeries(MetricType metricType, String country, Dataverse d) {
         Query query = em.createNativeQuery("SELECT distinct substring(monthyear from 1 for 7) as date, coalesce(sum(" + metricType.toString() + "),0) as count FROM DatasetMetrics\n"
                 + ((d == null) ? "" : "WHERE dataset_id in ( " + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
@@ -718,7 +725,7 @@ public class MetricsServiceBean implements Serializable {
         Metric metric = null;
         try {
             metric = (Metric) query.getSingleResult();
-        } catch (javax.persistence.NoResultException nr) {
+        } catch (NoResultException nr) {
             // do nothing
             logger.fine("No result");
         } catch (NonUniqueResultException nur) {
@@ -739,7 +746,7 @@ public class MetricsServiceBean implements Serializable {
     // https://github.com/DANS-KNAW/dataverse/blob/dans-develop/src/main/java/edu/harvard/iq/dataverse/metrics/MetricsDansServiceBean.java
 
     /**
-     * 
+     *
      * @param dvId - parent dataverse id
      * @param dtype - type of object to return 'Dataverse' or 'Dataset'
      * @return - list of objects of specified type included in the subtree (includes parent dataverse if dtype is 'Dataverse')
@@ -761,7 +768,7 @@ public class MetricsServiceBean implements Serializable {
     }
 
     private List<Integer> getChildrenIdsRecursively(Long dvId, String dtype, DatasetVersion.VersionState versionState) {
-        
+
         //Intended to be called only with dvId != null
         String sql = "WITH RECURSIVE querytree AS (\n"
                 + "     SELECT id, dtype, owner_id, publicationdate\n"

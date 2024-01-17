@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import java.io.IOException;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -57,10 +58,10 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //if so, leave.
             if (target.getIdentifier() == null || target.getIdentifier().isEmpty()) {
                 if (target.isInstanceofDataset()) {
-                    target.setIdentifier(ctxt.datasets().generateDatasetIdentifier((Dataset) target, idServiceBean));
+                    target.setIdentifier(idServiceBean.generateDatasetIdentifier((Dataset) target));
 
                 } else {
-                    target.setIdentifier(ctxt.files().generateDataFileIdentifier((DataFile) target, idServiceBean));
+                    target.setIdentifier(idServiceBean.generateDataFileIdentifier((DataFile) target));
                 }
                 if (target.getProtocol() == null) {
                     target.setProtocol(protocol);
@@ -69,7 +70,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     target.setAuthority(authority);
                 }
             }
-            if (idServiceBean.alreadyExists(target)) {
+            if (idServiceBean.alreadyRegistered(target)) {
                 return;
             }
             String doiRetString = idServiceBean.createIdentifier(target);
@@ -94,7 +95,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     Dataset dataset = (Dataset) target;
                     for (DataFile df : dataset.getFiles()) {
                         if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
-                            df.setIdentifier(ctxt.files().generateDataFileIdentifier(df, idServiceBean));
+                            df.setIdentifier(idServiceBean.generateDataFileIdentifier(df));
                             if (df.getProtocol() == null || df.getProtocol().isEmpty()) {
                                 df.setProtocol(protocol);
                             }
@@ -136,22 +137,15 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //Only continue if you can successfully migrate the handle
             boolean doNormalSolrDocCleanUp = true;
             Dataset dataset = (Dataset) target;
-            try {
-                ctxt.index().indexDataset(dataset, doNormalSolrDocCleanUp);
-                ctxt.solrIndex().indexPermissionsForOneDvObject( dataset);
-            } catch (IOException | SolrServerException e) {
-                String failureLogText = "Post migrate handle dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
-                failureLogText += "\r\n" + e.getLocalizedMessage();
-                LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
-
-            }
+            ctxt.index().asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
+            ctxt.solrIndex().indexPermissionsForOneDvObject( dataset);
         }
     }
     
     private Boolean processMigrateHandle (CommandContext ctxt){
         boolean retval = true;
         if(!target.isInstanceofDataset()) return false;
-        if(!target.getProtocol().equals(GlobalId.HDL_PROTOCOL)) return false;
+        if(!target.getProtocol().equals(HandlenetServiceBean.HDL_PROTOCOL)) return false;
         
         AlternativePersistentIdentifier api = new AlternativePersistentIdentifier();
         api.setProtocol(target.getProtocol());

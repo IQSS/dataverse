@@ -69,8 +69,9 @@ In the single part case, only one call to the supplied URL is required:
 
 .. code-block:: bash
 
-    curl -H 'x-amz-tagging:dv-state=temp' -X PUT -T <filename> "<supplied url>"
+    curl -i -H 'x-amz-tagging:dv-state=temp' -X PUT -T <filename> "<supplied url>"
 
+Note that without the ``-i`` flag, you should not expect any output from the command above. With the ``-i`` flag, you should expect to see a "200 OK" response.
 
 In the multipart case, the client must send each part and collect the 'eTag' responses from the server. The calls for this are the same as the one for the single part case except that each call should send a <partSize> slice of the total file, with the last part containing the remaining bytes.
 The responses from the S3 server for these calls will include the 'eTag' for the uploaded part. 
@@ -115,8 +116,8 @@ The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.Data
 
   curl -X POST -H "X-Dataverse-key: $API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/add?persistentId=$PERSISTENT_IDENTIFIER" -F "jsonData=$JSON_DATA"
   
-Note that this API call can be used independently of the others, e.g. supporting use cases in which the file already exists in S3/has been uploaded via some out-of-band method. 
-With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifer must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
+Note that this API call can be used independently of the others, e.g. supporting use cases in which the file already exists in S3/has been uploaded via some out-of-band method. Enabling out-of-band uploads is described at :ref:`file-storage` in the Configuration Guide.
+With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifier must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
 
 To add multiple Uploaded Files to the Dataset
 ---------------------------------------------
@@ -146,8 +147,8 @@ The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.Data
 
   curl -X POST -H "X-Dataverse-key: $API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/addFiles?persistentId=$PERSISTENT_IDENTIFIER" -F "jsonData=$JSON_DATA"
 
-Note that this API call can be used independently of the others, e.g. supporting use cases in which the files already exists in S3/has been uploaded via some out-of-band method.
-With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifer must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
+Note that this API call can be used independently of the others, e.g. supporting use cases in which the files already exists in S3/has been uploaded via some out-of-band method. Enabling out-of-band uploads is described at :ref:`file-storage` in the Configuration Guide.
+With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifier must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
 
 
 Replacing an existing file in the Dataset
@@ -176,8 +177,8 @@ Note that the API call does not validate that the file matches the hash value su
 
   curl -X POST -H "X-Dataverse-key: $API_TOKEN" "$SERVER_URL/api/files/$FILE_IDENTIFIER/replace" -F "jsonData=$JSON_DATA"
   
-Note that this API call can be used independently of the others, e.g. supporting use cases in which the file already exists in S3/has been uploaded via some out-of-band method. 
-With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifer must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
+Note that this API call can be used independently of the others, e.g. supporting use cases in which the file already exists in S3/has been uploaded via some out-of-band method. Enabling out-of-band uploads is described at :ref:`file-storage` in the Configuration Guide.
+With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifier must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
 
 Replacing multiple existing files in the Dataset
 ------------------------------------------------
@@ -274,5 +275,5 @@ The JSON object returned as a response from this API call includes a "data" that
   }
 
 
-Note that this API call can be used independently of the others, e.g. supporting use cases in which the files already exists in S3/has been uploaded via some out-of-band method.
-With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifer must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
+Note that this API call can be used independently of the others, e.g. supporting use cases in which the files already exists in S3/has been uploaded via some out-of-band method. Enabling out-of-band uploads is described at :ref:`file-storage` in the Configuration Guide.
+With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifier must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.

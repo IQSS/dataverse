@@ -83,7 +83,7 @@ Basic access URI:
 
 ``/api/access/datafile/$id``
 
-.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``. However, this file access method is only effective when the FilePIDsEnabled option is enabled, which can be authorized by the admin. For further information, refer to :ref:`:FilePIDsEnabled`. 
 
   Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
 
@@ -403,3 +403,32 @@ This method returns a list of Authenticated Users who have requested access to t
 A curl example using an ``id``::
 
     curl -H "X-Dataverse-key:$API_TOKEN" -X GET http://$SERVER/api/access/datafile/{id}/listRequests
+
+User Has Requested Access to a File:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``/api/access/datafile/{id}/userFileAccessRequested``
+
+This method returns true or false depending on whether or not the calling user has requested access to a particular file.
+
+A curl example using an ``id``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "http://$SERVER/api/access/datafile/{id}/userFileAccessRequested"
+
+
+Get User Permissions on a File:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``/api/access/datafile/{id}/userPermissions``
+
+This method returns the permissions that the calling user has on a particular file.
+
+In particular, the user permissions that this method checks, returned as booleans, are the following:
+
+* Can download the file
+* Can manage the file permissions
+* Can edit the file owner dataset
+
+A curl example using an ``id``::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X GET "http://$SERVER/api/access/datafile/{id}/userPermissions"

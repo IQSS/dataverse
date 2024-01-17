@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
@@ -23,18 +24,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.EJB;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -56,7 +57,9 @@ public class Search extends AbstractApiBean {
     SolrIndexServiceBean SolrIndexService;
 
     @GET
+    @AuthRequired
     public Response search(
+            @Context ContainerRequestContext crc,
             @QueryParam("q") String query,
             @QueryParam("type") final List<String> types,
             @QueryParam("subtree") final List<String> subtrees,
@@ -79,7 +82,7 @@ public class Search extends AbstractApiBean {
 
         User user;
         try {
-            user = getUser();
+            user = getUser(crc);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -154,7 +157,9 @@ public class Search extends AbstractApiBean {
                         numResultsPerPage,
                         true, //SEK get query entities always for search API additional Dataset Information 6300  12/6/2019
                         geoPoint,
-                        geoRadius
+                        geoRadius,
+                        showFacets, // facets are expensive, no need to ask for them if not requested
+                        showRelevance // no need for highlights unless requested either
                 );
             } catch (SearchException ex) {
                 Throwable cause = ex;
@@ -227,10 +232,10 @@ public class Search extends AbstractApiBean {
         }
     }
 
-    private User getUser() throws WrappedResponse {
+    private User getUser(ContainerRequestContext crc) throws WrappedResponse {
         User userToExecuteSearchAs = GuestUser.get();
         try {
-            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (authenticatedUser != null) {
                 userToExecuteSearchAs = authenticatedUser;
             }

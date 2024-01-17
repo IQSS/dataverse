@@ -42,9 +42,9 @@
           },
           {
             "typeName": "alternativeTitle",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "Alternative Title"
+            "value": ["Alternative Title"]
           },
           {
             "typeName": "alternativeURL",
@@ -694,9 +694,10 @@
           },
           {
             "typeName": "series",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "compound",
-            "value": {
+            "value": [
+              {
               "seriesName": {
                 "typeName": "seriesName",
                 "multiple": false,
@@ -710,6 +711,7 @@
                 "value": "SeriesInformation"
               }
             }
+            ]
           },
           {
             "typeName": "software",

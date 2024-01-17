@@ -14,17 +14,16 @@ import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.LicenseDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
-import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import java.io.ByteArrayOutputStream;
+
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -102,12 +101,12 @@ public class DublinCoreExportUtil {
         String persistentAgency = datasetDto.getProtocol();
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
+        GlobalId globalId = PidUtil.parseAsGlobalID(persistentAgency, persistentAuthority, persistentId);
   
         writeFullElement(xmlw, dcFlavor+":"+"title", dto2Primitive(version, DatasetFieldConstant.title));                       
         
         xmlw.writeStartElement(dcFlavor+":"+"identifier");
-        xmlw.writeCharacters(globalId.toURL().toString());
+        xmlw.writeCharacters(globalId.asURL());
         xmlw.writeEndElement(); // decterms:identifier       
 
         writeAuthorsElement(xmlw, version, dcFlavor);
@@ -160,12 +159,12 @@ public class DublinCoreExportUtil {
         String persistentAgency = datasetDto.getProtocol();
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
+        GlobalId globalId = PidUtil.parseAsGlobalID(persistentAgency, persistentAuthority, persistentId);
   
         writeFullElement(xmlw, dcFlavor+":"+"title", dto2Primitive(version, DatasetFieldConstant.title));                       
         
         xmlw.writeStartElement(dcFlavor+":"+"identifier");
-        xmlw.writeCharacters(globalId.toURL().toString());
+        xmlw.writeCharacters(globalId.asURL());
         xmlw.writeEndElement(); // decterms:identifier       
 
         writeAuthorsElement(xmlw, version, dcFlavor); //creator
