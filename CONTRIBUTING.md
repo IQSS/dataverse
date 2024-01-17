@@ -64,4 +64,4 @@ Thanks for your contribution!
 [Community Call]: https://dataverse.org/community-calls
 [dataverse-dev Google Group]: https://groups.google.com/group/dataverse-dev
 [community contributors]: https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing
-[dev efforts]: https://github.com/orgs/IQSS/projects/2#column-5298405
+[dev efforts]: https://github.com/orgs/IQSS/projects/34/views/6
