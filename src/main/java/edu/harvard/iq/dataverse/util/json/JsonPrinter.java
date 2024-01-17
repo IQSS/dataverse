@@ -565,6 +565,7 @@ public class JsonPrinter {
         fieldsBld.add("displayName", fld.getDisplayName());
         fieldsBld.add("title", fld.getTitle());
         fieldsBld.add("type", fld.getFieldType().toString());
+        fieldsBld.add("typeClass", typeClassString(fld));
         fieldsBld.add("watermark", fld.getWatermark());
         fieldsBld.add("description", fld.getDescription());
         fieldsBld.add("multiple", fld.isAllowMultiples());

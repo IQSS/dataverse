@@ -27,6 +27,7 @@ public class MetadataBlocksIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.fields.subject.controlledVocabularyValues[0]", CoreMatchers.is("Agricultural Sciences"))
                 .body("data.fields.title.displayOrder", CoreMatchers.is(0))
+                .body("data.fields.title.typeClass", CoreMatchers.is("primitive"))
                 .body("data.fields.title.isRequired", CoreMatchers.is(true));
     }
     
