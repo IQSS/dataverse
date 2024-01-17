@@ -1,14 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
  * In order to execute this test code you must be configured with DataCite
@@ -16,12 +16,12 @@ import org.junit.Test;
  */
 public class PidsIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testGetPid() {
         String pid = "";
@@ -94,7 +94,7 @@ public class PidsIT {
          */
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testDeletePid() {
         String pid = "";
@@ -112,7 +112,7 @@ public class PidsIT {
         deletePid.prettyPrint();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testCannotPublishUntilReserved() {
         Response createUser = UtilIT.createRandomUser();
@@ -154,7 +154,7 @@ public class PidsIT {
                 .statusCode(FORBIDDEN.getStatusCode());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testDeleteDraftPidOnDelete() {
         Response createUser = UtilIT.createRandomUser();

@@ -1,12 +1,12 @@
 package edu.harvard.iq.dataverse.search;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SortByTest {
 
@@ -14,14 +14,14 @@ public class SortByTest {
     private String order;
     private SortBy instance;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.field = "field";
         this.order = SortBy.ASCENDING;
         this.instance = new SortBy(field, order);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.field = null;
         this.order = null;

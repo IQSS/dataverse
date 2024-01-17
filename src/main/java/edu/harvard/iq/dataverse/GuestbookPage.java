@@ -17,13 +17,13 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -288,19 +288,21 @@ public class GuestbookPage implements java.io.Serializable {
            
         Command<Dataverse> cmd;
         try {
+            // Per recent #dv-tech conversation w/ Jim - copying the code 
+            // below from his QDR branch; the code that used to be here called
+            // UpdateDataverseCommand when saving new guestbooks, and that involved 
+            // an unnecessary reindexing of the dataverse (and, in some cases, 
+            // reindexing of the underlying datasets). - L.A.
             if (editMode == EditMode.CREATE || editMode == EditMode.CLONE ) {
                 guestbook.setCreateTime(new Timestamp(new Date().getTime()));
-                guestbook.setUsageCount(new Long(0));
+                guestbook.setUsageCount(Long.valueOf(0));
                 guestbook.setEnabled(true);
                 dataverse.getGuestbooks().add(guestbook);
-                cmd = new UpdateDataverseCommand(dataverse, null, null, dvRequestService.getDataverseRequest(), null);                
-                commandEngine.submit(cmd);
                 create = true;
-            } else {
-                cmd = new UpdateDataverseGuestbookCommand(dataverse, guestbook, dvRequestService.getDataverseRequest());
-                commandEngine.submit(cmd);
-            }
-
+            } 
+            cmd = new UpdateDataverseGuestbookCommand(dataverse, guestbook, dvRequestService.getDataverseRequest());
+            commandEngine.submit(cmd);
+        
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
             error.append(ex).append(" ");

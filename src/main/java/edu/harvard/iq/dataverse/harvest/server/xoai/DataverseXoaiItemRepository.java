@@ -9,8 +9,8 @@ import io.gdcc.xoai.dataprovider.model.MetadataFormat;
 import io.gdcc.xoai.dataprovider.repository.ItemRepository;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -215,7 +215,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                 try {
                     Metadata metadata = getDatasetMetadata(dataset, metadataFormat.getPrefix());
                     xoaiItem.withDataset(dataset).withMetadata(metadata);
-                } catch (ExportException | IOException ex) {
+                } catch (IOException ex) {
                     // This is not supposed to happen in normal operations; 
                     // since by design only the datasets for which the metadata
                     // records have been pre-generated ("exported") should be 

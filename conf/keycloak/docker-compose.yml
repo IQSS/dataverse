@@ -3,13 +3,15 @@ version: "3.9"
 services:
 
   keycloak:
-    image: 'jboss/keycloak:16.1.1'
+    image: 'quay.io/keycloak/keycloak:21.0'
+    command:
+      - "start-dev"
+      - "--import-realm"
     environment:
-      - KEYCLOAK_USER=kcadmin
-      - KEYCLOAK_PASSWORD=kcpassword
-      - KEYCLOAK_IMPORT=/tmp/oidc-realm.json
+      - KEYCLOAK_ADMIN=kcadmin
+      - KEYCLOAK_ADMIN_PASSWORD=kcpassword
       - KEYCLOAK_LOGLEVEL=DEBUG
     ports:
       - "8090:8080"
     volumes:
-      - './oidc-realm.json:/tmp/oidc-realm.json'
+      - './test-realm.json:/opt/keycloak/data/import/test-realm.json'

@@ -8,8 +8,10 @@ import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObjectContainer;
+import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
@@ -29,22 +31,40 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+/**
+ * This class is used to generate a JSON-LD representation of a Dataverse object leveraging the OAI_ORE and other community vocabularies. As of v1.0.0,
+ * the format is being versioned and ANY CHANGES TO THE OUTPUT of this class must be reflected in a version increment (see DATAVERSE_ORE_FORMAT_VERSION).
+ * 
+ * The OREMap class is intended to record ALL the information needed to recreate an existing Dataverse dataset. As of v1.0.0, this is true with the 
+ * exception that auxiliary files are not referenced in the OREMap. While many types of auxiliary files will be regenerated automatically based on datafile
+ *  contents, Dataverse now allows manually uploaded auxiliary files and these cannot be reproduced solely from the dataset/datafile contents. 
+ */
 public class OREMap {
 
+    //Required Services
     static SettingsServiceBean settingsService;
     static DatasetFieldServiceBean datasetFieldService;
+    static SystemConfig systemConfig;
+    
     private static final Logger logger = Logger.getLogger(OREMap.class.getCanonicalName());
     
     public static final String NAME = "OREMap";
+    
+    //NOTE: Update this value whenever the output of this class is changed
+    private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.0";
+    private static final String DATAVERSE_SOFTWARE_NAME = "Dataverse";
+    private static final String DATAVERSE_SOFTWARE_URL = "https://github.com/iqss/dataverse";
+    
+    
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
     private Boolean excludeEmail = null;
@@ -64,15 +84,15 @@ public class OREMap {
         outputStream.flush();
     }
 
-    public JsonObject getOREMap() throws Exception {
+    public JsonObject getOREMap() {
         return getOREMap(false);
     }
     
-    public JsonObject getOREMap(boolean aggregationOnly) throws Exception {
+    public JsonObject getOREMap(boolean aggregationOnly) {
         return getOREMapBuilder(aggregationOnly).build();
     }
     
-    public JsonObjectBuilder getOREMapBuilder(boolean aggregationOnly) throws Exception {
+    public JsonObjectBuilder getOREMapBuilder(boolean aggregationOnly) {
 
         //Set this flag if it wasn't provided
         if(excludeEmail==null) {
@@ -87,13 +107,13 @@ public class OREMap {
         localContext.putIfAbsent(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
 
         Dataset dataset = version.getDataset();
-        String id = dataset.getGlobalId().toURL().toExternalForm();
+        String id = dataset.getGlobalId().asURL();
         JsonArrayBuilder fileArray = Json.createArrayBuilder();
         // The map describes an aggregation
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
         List<DatasetField> fields = version.getDatasetFields();
         // That has it's own metadata
-        Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
+        Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(true);
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
@@ -113,6 +133,18 @@ public class OREMap {
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
                 .add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
         addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
+        //Add version state info - DRAFT, RELEASED, DEACCESSIONED, ARCHIVED with extra info for DEACCESIONED
+        VersionState vs = version.getVersionState();
+        if(vs.equals(VersionState.DEACCESSIONED)) {
+            JsonObjectBuilder deaccBuilder = Json.createObjectBuilder();
+            deaccBuilder.add(JsonLDTerm.schemaOrg("name").getLabel(), vs.name());
+            deaccBuilder.add(JsonLDTerm.DVCore("reason").getLabel(), version.getVersionNote());
+            addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("forwardUrl"), version.getArchiveNote());
+            aggBuilder.add(JsonLDTerm.schemaOrg("creativeWorkStatus").getLabel(), deaccBuilder);
+            
+        } else {
+            aggBuilder.add(JsonLDTerm.schemaOrg("creativeWorkStatus").getLabel(), vs.name());
+        }
 
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
         if (terms.getLicense() != null) {
@@ -193,6 +225,17 @@ public class OREMap {
                 }
                 addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fileName); 
                 addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
+                Embargo embargo=df.getEmbargo(); 
+                if(embargo!=null) {
+                    String date = embargo.getFormattedDateAvailable();
+                    String reason= embargo.getReason();
+                    JsonObjectBuilder embargoObject = Json.createObjectBuilder();
+                    embargoObject.add(JsonLDTerm.DVCore("dateAvailable").getLabel(), date);
+                    if(reason!=null) {
+                        embargoObject.add(JsonLDTerm.DVCore("reason").getLabel(), reason);
+                    }
+                    aggRes.add(JsonLDTerm.DVCore("embargoed").getLabel(), embargoObject);
+                }
                 addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
                 addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
                 addIfNotNull(aggRes, JsonLDTerm.datasetVersionId, fmd.getDatasetVersion().getId());
@@ -211,7 +254,7 @@ public class OREMap {
                 // File DOI if it exists
                 String fileId = null;
                 String fileSameAs = null;
-                if (df.getGlobalId().asString().length() != 0) {
+                if (df.getGlobalId()!=null) {
                     fileId = df.getGlobalId().asString();
                     fileSameAs = SystemConfig.getDataverseSiteUrlStatic()
                             + "/api/access/datafile/:persistentId?persistentId=" + fileId + (ingested ? "&format=original":"");
@@ -257,10 +300,23 @@ public class OREMap {
             return aggBuilder.add("@context", contextBuilder.build());
         } else {
             // Now create the overall map object with it's metadata
+            
+            //Start with a reference to the Dataverse software
+            JsonObjectBuilder dvSoftwareBuilder = Json.createObjectBuilder()
+                    .add("@type", JsonLDTerm.schemaOrg("SoftwareApplication").getLabel())
+                    .add(JsonLDTerm.schemaOrg("name").getLabel(), DATAVERSE_SOFTWARE_NAME)
+                    .add(JsonLDTerm.schemaOrg("version").getLabel(), systemConfig.getVersion(true))
+                    .add(JsonLDTerm.schemaOrg("url").getLabel(), DATAVERSE_SOFTWARE_URL);
+            
+            //Now the OREMAP object itself
             JsonObjectBuilder oremapBuilder = Json.createObjectBuilder()
                     .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
                     .add(JsonLDTerm.dcTerms("creator").getLabel(), BrandingUtil.getInstallationBrandName())
                     .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
+                    //Add the version of our ORE format used
+                    .add(JsonLDTerm.schemaOrg("additionalType").getLabel(), DATAVERSE_ORE_FORMAT_VERSION)
+                    //Indicate which Dataverse version created it
+                    .add(JsonLDTerm.DVCore("generatedBy").getLabel(), dvSoftwareBuilder)
                     // Define an id for the map itself (separate from the @id of the dataset being
                     // described
                     .add("@id",
@@ -375,23 +431,7 @@ public class OREMap {
         if (!dfType.isCompound()) {
             for (String val : field.getValues_nondisplay()) {
                 if (cvocMap.containsKey(dfType.getId())) {
-                    try {
-                        JsonObject cvocEntry = cvocMap.get(dfType.getId());
-                        if (cvocEntry.containsKey("retrieval-filtering")) {
-                            JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
-                            JsonObject context = filtering.getJsonObject("@context");
-                            for (String prefix : context.keySet()) {
-                                localContext.putIfAbsent(prefix, context.getString(prefix));
-                            }
-                            vals.add(datasetFieldService.getExternalVocabularyValue(val));
-                        } else {
-                            vals.add(val);
-                        }
-                    } catch (Exception e) {
-                        logger.warning("Couldn't interpret value for : " + val + " : " + e.getMessage());
-                        logger.log(Level.FINE, ExceptionUtils.getStackTrace(e));
-                        vals.add(val);
-                    }
+                    addCvocValue(val, vals, cvocMap.get(dfType.getId()), localContext);
                 } else {
                     vals.add(val);
                 }
@@ -420,15 +460,22 @@ public class OREMap {
                         }
 
                         List<String> values = dsf.getValues_nondisplay();
-                        if (values.size() > 1) {
-                            JsonArrayBuilder childVals = Json.createArrayBuilder();
 
-                            for (String val : dsf.getValues_nondisplay()) {
+                        JsonArrayBuilder childVals = Json.createArrayBuilder();
+
+                        for (String val : dsf.getValues_nondisplay()) {
+                            logger.fine("Child name: " + dsft.getName());
+                            if (cvocMap.containsKey(dsft.getId())) {
+                                logger.fine("Calling addcvocval for: " + dsft.getName());
+                                addCvocValue(val, childVals, cvocMap.get(dsft.getId()), localContext);
+                            } else {
                                 childVals.add(val);
                             }
+                        }
+                        if (values.size() > 1) {
                             child.add(subFieldName.getLabel(), childVals);
                         } else {
-                            child.add(subFieldName.getLabel(), values.get(0));
+                            child.add(subFieldName.getLabel(), childVals.build().get(0));
                         }
                     }
                 }
@@ -440,8 +487,34 @@ public class OREMap {
         return (valArray.size() != 1) ? valArray : valArray.get(0);
     }
 
-    public static void injectSettingsService(SettingsServiceBean settingsSvc, DatasetFieldServiceBean datasetFieldSvc) {
+    private static void addCvocValue(String val, JsonArrayBuilder vals, JsonObject cvocEntry,
+            Map<String, String> localContext) {
+        try {
+            if (cvocEntry.containsKey("retrieval-filtering")) {
+                JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
+                JsonObject context = filtering.getJsonObject("@context");
+                for (String prefix : context.keySet()) {
+                    localContext.putIfAbsent(prefix, context.getString(prefix));
+                }
+                JsonObjectBuilder job = Json.createObjectBuilder(datasetFieldService.getExternalVocabularyValue(val));
+                job.add("@id", val);
+                JsonObject extVal = job.build();
+                logger.fine("Adding: " + extVal);
+                vals.add(extVal);
+            } else {
+                vals.add(val);
+            }
+        } catch (Exception e) {
+            logger.warning("Couldn't interpret value for : " + val + " : " + e.getMessage());
+            logger.log(Level.FINE, ExceptionUtils.getStackTrace(e));
+            vals.add(val);
+        }
+    }
+
+    //These are used to pick up various settings/constants from the application
+    public static void injectServices(SettingsServiceBean settingsSvc, DatasetFieldServiceBean datasetFieldSvc, SystemConfig systemCfg) {
         settingsService = settingsSvc;
         datasetFieldService = datasetFieldSvc;
+        systemConfig = systemCfg;
     }
 }
