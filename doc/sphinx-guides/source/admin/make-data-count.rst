@@ -72,7 +72,8 @@ Enable or Disable Display of Make Data Count Metrics
 
 By default, when MDC logging is enabled (when ``:MDCLogPath`` is set), your Dataverse installation will display MDC metrics instead of it's internal (legacy) metrics. You can avoid this (e.g. to collect MDC metrics for some period of time before starting to display them) by setting ``:DisplayMDCMetrics`` to false.
 
-The following discussion assumes ``:MDCLogPath`` has been set to ``/usr/local/payara5/glassfish/domains/domain1/logs/mdc``
+The following discussion assumes ``:MDCLogPath`` has been set to ``/usr/local/payara6/glassfish/domains/domain1/logs/mdc``
+You can also decide to display MDC metrics along with Dataverse's traditional download counts from the time before MDC was enabled. To do this, set the :ref:`:MDCStartDate` to when you started MDC logging.
 
 Configure Counter Processor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -102,7 +103,7 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * If you are running Counter Processor for the first time in the middle of a month, you will need create blank log files for the previous days. e.g.:
 
-  * ``cd /usr/local/payara5/glassfish/domains/domain1/logs/mdc``
+  * ``cd /usr/local/payara6/glassfish/domains/domain1/logs/mdc``
 
   * ``touch counter_2019-02-01.log``
   
@@ -146,7 +147,9 @@ Configuring Your Dataverse Installation for Make Data Count Citations
 
 Please note: as explained in the note above about limitations, this feature is not available to Dataverse installations that use Handles.
 
-To configure your Dataverse installation to pull citations from the test vs. production DataCite server see :ref:`doi.dataciterestapiurlstring` in the Installation Guide.
+To configure your Dataverse installation to pull citations from the test vs.
+production DataCite server see :ref:`dataverse.pid.datacite.rest-api-url` in
+the Installation Guide.
 
 Please note that in the curl example, Bash environment variables are used with the idea that you can set a few environment variables and copy and paste the examples as is. For example, "$DOI" could become "doi:10.5072/FK2/BL2IBM" by issuing the following export command from Bash:
 

@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.path.json.JsonPath.with;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import static io.restassured.RestAssured.given;
+import static io.restassured.path.json.JsonPath.with;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -13,27 +13,26 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import javax.ws.rs.core.Response.Status;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.OK;
-import static junit.framework.Assert.assertEquals;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import jakarta.ws.rs.core.Response.Status;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.OK;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
-import com.jayway.restassured.path.json.JsonPath;
-import static javax.ws.rs.core.Response.Status.OK;
+import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 
@@ -41,12 +40,12 @@ public class DataversesIT {
 
     private static final Logger logger = Logger.getLogger(DataversesIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
     
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
     }
@@ -373,7 +372,7 @@ public class DataversesIT {
         while (checkIndex) {
             try {   
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(4000);
                     } catch (InterruptedException ex) {
                     }                
                 Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
@@ -510,6 +509,13 @@ public class DataversesIT {
         logger.info(importDDI.prettyPrint());
         assertEquals(201, importDDI.getStatusCode());
 
+        // Under normal conditions, you shouldn't need to destroy these datasets.
+        // Uncomment if they're still around from a previous failed run.
+//        Response destroy1 = UtilIT.destroyDataset("doi:10.5072/FK2/ABCD11", apiToken);
+//        destroy1.prettyPrint();
+//        Response destroy2 = UtilIT.destroyDataset("doi:10.5072/FK2/ABCD22", apiToken);
+//        destroy2.prettyPrint();
+
         Response importDDIPid = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  "doi:10.5072/FK2/ABCD11", "no");
         logger.info(importDDIPid.prettyPrint());
         assertEquals(201, importDDIPid.getStatusCode());
@@ -561,13 +567,9 @@ public class DataversesIT {
         Integer datasetIdIntPidRel = JsonPath.from(importDDIPidRel.body().asString()).getInt("data.id");
         Response destroyDatasetResponsePidRel = UtilIT.destroyDataset(datasetIdIntPidRel, apiToken);
         assertEquals(200, destroyDatasetResponsePidRel.getStatusCode());
+        
+        UtilIT.sleepForDeadlock(UtilIT.MAXIMUM_IMPORT_DURATION);
 
-        // This last dataset we have just imported, let's give it a sec. to finish indexing (?)
-        // or whatever it is that may still be happening. (Have been seeing intermittent 500 from the next
-        // destroyDataset() line lately)
-        
-        Thread.sleep(1000L); 
-        
         Integer datasetIdIntRelease = JsonPath.from(importDDIRelease.body().asString()).getInt("data.id");
         Response destroyDatasetResponseRelease = UtilIT.destroyDataset(datasetIdIntRelease, apiToken);
         assertEquals(200, destroyDatasetResponseRelease.getStatusCode());
@@ -577,6 +579,49 @@ public class DataversesIT {
 
         Response deleteUserResponse = UtilIT.deleteUser(username);
         assertEquals(200, deleteUserResponse.getStatusCode());
+    }
+    
+    @Test
+    public void testAttributesApi() throws Exception {
+
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        if (createDataverseResponse.getStatusCode() != 201) {
+            System.out.println("A workspace for testing (a dataverse) couldn't be created in the root dataverse. The output was:\n\n" + createDataverseResponse.body().asString());
+            System.out.println("\nPlease ensure that users can created dataverses in the root in order for this test to run.");
+        } else {
+            createDataverseResponse.prettyPrint();
+        }
+        assertEquals(201, createDataverseResponse.getStatusCode());
+
+        String collectionAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        String newCollectionAlias = collectionAlias + "RENAMED";
+        
+        // Change the alias of the collection: 
+        
+        Response changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "alias", newCollectionAlias, apiToken);
+        changeAttributeResp.prettyPrint();
+        
+        changeAttributeResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("message.message", equalTo("Update successful"));
+        
+        // Check on the collection, under the new alias: 
+        
+        Response collectionInfoResponse = UtilIT.exportDataverse(newCollectionAlias, apiToken);
+        collectionInfoResponse.prettyPrint();
+        
+        collectionInfoResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.alias", equalTo(newCollectionAlias));
+        
+        // Delete the collection (again, using its new alias):
+        
+        Response deleteCollectionResponse = UtilIT.deleteDataverse(newCollectionAlias, apiToken);
+        deleteCollectionResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), deleteCollectionResponse.getStatusCode());
     }
     
 }

@@ -1,9 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -27,27 +26,25 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import org.apache.solr.client.solrj.SolrServerException;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.Path;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.PathParam;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.PathParam;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
 import java.io.InputStream;
 
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
@@ -55,11 +52,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
-import java.util.Date;
-import java.sql.Timestamp;
 
 
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 
 @Stateless
 @Path("edit")
@@ -95,9 +90,10 @@ public class EditDDI  extends AbstractApiBean {
 
 
     @PUT
-    @Consumes("application/xml")
+    @AuthRequired
     @Path("{fileId}")
-    public Response edit (InputStream body, @PathParam("fileId") String fileId) {
+    @Consumes("application/xml")
+    public Response edit(@Context ContainerRequestContext crc, InputStream body, @PathParam("fileId") String fileId) {
         DataFile dataFile = null;
         try {
             dataFile = findDataFileOrDie(fileId);
@@ -105,7 +101,7 @@ public class EditDDI  extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-        User apiTokenUser = checkAuth(dataFile);
+        User apiTokenUser = checkAuth(getRequestUser(crc), dataFile);
 
         if (apiTokenUser == null) {
             return unauthorized("Cannot edit metadata, access denied" );
@@ -244,11 +240,7 @@ public class EditDDI  extends AbstractApiBean {
         }
 
         boolean doNormalSolrDocCleanUp = true;
-        try {
-            Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
-        } catch (IOException | SolrServerException ex) {
-            logger.log(Level.SEVERE, "Couldn''t index dataset: " + ex.getMessage());
-        }
+        indexService.asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
 
         return true;
     }
@@ -426,27 +418,10 @@ public class EditDDI  extends AbstractApiBean {
     }
 
 
-    private User checkAuth(DataFile dataFile) {
-
-        User apiTokenUser = null;
-
-        try {
-            apiTokenUser = findUserOrDie();
-        } catch (WrappedResponse wr) {
-            apiTokenUser = null;
-            logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
+    private User checkAuth(User requestUser, DataFile dataFile) {
+        if (!permissionService.requestOn(createDataverseRequest(requestUser), dataFile.getOwner()).has(Permission.EditDataset)) {
+            return null;
         }
-
-        if (apiTokenUser != null) {
-            // used in an API context
-            if (!permissionService.requestOn(createDataverseRequest(apiTokenUser), dataFile.getOwner()).has(Permission.EditDataset)) {
-                apiTokenUser = null;
-            }
-        }
-
-        return apiTokenUser;
-
+        return requestUser;
     }
 }
-
-

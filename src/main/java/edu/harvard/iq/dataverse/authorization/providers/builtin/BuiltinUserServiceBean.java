@@ -9,17 +9,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 /**
  *
@@ -88,7 +88,7 @@ public class BuiltinUserServiceBean {
             return em.createNamedQuery("BuiltinUser.findByUserName", BuiltinUser.class)
                     .setParameter("userName", userName)
                     .getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             return null;
         } catch (NonUniqueResultException ex) {
             logger.log(Level.WARNING, "multiple accounts found for username {0}", userName);

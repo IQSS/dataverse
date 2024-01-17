@@ -1,19 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import java.util.logging.Logger;
-import static javax.ws.rs.core.Response.Status.OK;
-import static junit.framework.Assert.assertEquals;
-import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.hamcrest.CoreMatchers.nullValue;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import static org.hamcrest.Matchers.startsWith;
-import org.junit.After;
-import org.junit.Assert;
 
 /**
  *  NOTE: This test WILL NOT pass if your installation is not configured for Amazon S3 storage.
@@ -25,7 +20,7 @@ public class S3AccessIT {
     
     private static final Logger logger = Logger.getLogger(S3AccessIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
         

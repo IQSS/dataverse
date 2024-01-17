@@ -14,10 +14,11 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
@@ -46,17 +47,19 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import java.io.InputStream;
@@ -65,14 +68,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
 
@@ -113,12 +116,12 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.persistence.Query;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.persistence.Query;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.StreamingOutput;
 
 /**
  * Where the secure, setup API calls live.
@@ -516,10 +519,11 @@ public class Admin extends AbstractApiBean {
 
 	@Deprecated
 	@GET
+	@AuthRequired
 	@Path("authenticatedUsers")
-	public Response listAuthenticatedUsers() {
+	public Response listAuthenticatedUsers(@Context ContainerRequestContext crc) {
 		try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
+			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -534,22 +538,18 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@GET
+	@AuthRequired
 	@Path(listUsersPartialAPIPath)
 	@Produces({ "application/json" })
 	public Response filterAuthenticatedUsers(
+			@Context ContainerRequestContext crc,
 			@QueryParam("searchTerm") String searchTerm,
 			@QueryParam("selectedPage") Integer selectedPage,
 			@QueryParam("itemsPerPage") Integer itemsPerPage,
 			@QueryParam("sortKey") String sortKey
 	) {
 
-		User authUser;
-		try {
-			authUser = this.findUserOrDie();
-		} catch (AbstractApiBean.WrappedResponse ex) {
-			return error(Response.Status.FORBIDDEN,
-					BundleUtil.getStringFromBundle("dashboard.list_users.api.auth.invalid_apikey"));
-		}
+		User authUser = getRequestUser(crc);
 
 		if (!authUser.isSuperuser()) {
 			return error(Response.Status.FORBIDDEN,
@@ -602,11 +602,12 @@ public class Admin extends AbstractApiBean {
 	 *             Shib-specfic one.
 	 */
 	@PUT
+	@AuthRequired
 	@Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
 	@Deprecated
-	public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-                try {
-                        AuthenticatedUser user = findAuthenticatedUserOrDie();
+	public Response convertShibUserToBuiltin(@Context ContainerRequestContext crc, @PathParam("id") Long id, String newEmailAddress) {
+		try {
+			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -639,10 +640,11 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@PUT
+	@AuthRequired
 	@Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
-	public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
-                try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
+	public Response convertOAuthUserToBuiltin(@Context ContainerRequestContext crc, @PathParam("id") Long id, String newEmailAddress) {
+		try {
+			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -679,12 +681,13 @@ public class Admin extends AbstractApiBean {
 	 * This is used in testing via AdminIT.java but we don't expect sysadmins to use
 	 * this.
 	 */
-	@Path("authenticatedUsers/convert/builtin2shib")
 	@PUT
-	public Response builtin2shib(String content) {
+	@AuthRequired
+	@Path("authenticatedUsers/convert/builtin2shib")
+	public Response builtin2shib(@Context ContainerRequestContext crc, String content) {
 		logger.info("entering builtin2shib...");
 		try {
-			AuthenticatedUser userToRunThisMethod = findAuthenticatedUserOrDie();
+			AuthenticatedUser userToRunThisMethod = getRequestAuthenticatedUserOrDie(crc);
 			if (!userToRunThisMethod.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -829,12 +832,13 @@ public class Admin extends AbstractApiBean {
 	 * This is used in testing via AdminIT.java but we don't expect sysadmins to use
 	 * this.
 	 */
-	@Path("authenticatedUsers/convert/builtin2oauth")
 	@PUT
-	public Response builtin2oauth(String content) {
+	@AuthRequired
+	@Path("authenticatedUsers/convert/builtin2oauth")
+	public Response builtin2oauth(@Context ContainerRequestContext crc, String content) {
 		logger.info("entering builtin2oauth...");
 		try {
-			AuthenticatedUser userToRunThisMethod = findAuthenticatedUserOrDie();
+			AuthenticatedUser userToRunThisMethod = getRequestAuthenticatedUserOrDie(crc);
 			if (!userToRunThisMethod.isSuperuser()) {
 				return error(Response.Status.FORBIDDEN, "Superusers only.");
 			}
@@ -1009,14 +1013,15 @@ public class Admin extends AbstractApiBean {
 	}
 
     @DELETE
+	@AuthRequired
     @Path("roles/{id}")
-    public Response deleteRole(@PathParam("id") String id) {
+    public Response deleteRole(@Context ContainerRequestContext crc, @PathParam("id") String id) {
 
         return response(req -> {
             DataverseRole doomed = findRoleOrDie(id);
             execCommand(new DeleteRoleCommand(req, doomed));
             return ok("role " + doomed.getName() + " deleted.");
-        });
+        }, getRequestUser(crc));
     }
 
 	@Path("superuser/{identifier}")
@@ -1323,23 +1328,20 @@ public class Admin extends AbstractApiBean {
 	}
 
 	@Path("permissions/{dvo}")
+	@AuthRequired
 	@GET
-	public Response findPermissonsOn(@PathParam("dvo") String dvo) {
+	public Response findPermissonsOn(@Context ContainerRequestContext crc, @PathParam("dvo") String dvo) {
 		try {
 			DvObject dvObj = findDvo(dvo);
 			if (dvObj == null) {
 				return notFound("DvObject " + dvo + " not found");
 			}
-			try {
-				User aUser = findUserOrDie();
-				JsonObjectBuilder bld = Json.createObjectBuilder();
-				bld.add("user", aUser.getIdentifier());
-				bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
-				return ok(bld);
+			User aUser = getRequestUser(crc);
+			JsonObjectBuilder bld = Json.createObjectBuilder();
+			bld.add("user", aUser.getIdentifier());
+			bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
+			return ok(bld);
 
-			} catch (WrappedResponse wr) {
-				return wr.getResponse();
-			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Error while testing permissions", e);
 			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -1373,7 +1375,7 @@ public class Admin extends AbstractApiBean {
 					"All the tabular files in the database already have the original types set correctly; exiting.");
 		} else {
 			for (Long fileid : affectedFileIds) {
-				logger.info("found file id: " + fileid);
+				logger.fine("found file id: " + fileid);
 			}
 			info.add("message", "Found " + affectedFileIds.size()
 					+ " tabular files with missing original types. Kicking off an async job that will repair the files in the background.");
@@ -1465,16 +1467,17 @@ public class Admin extends AbstractApiBean {
 	}
 
     @POST
+	@AuthRequired
     @Path("{id}/reregisterHDLToPID")
-    public Response reregisterHdlToPID(@PathParam("id") String id) {
+    public Response reregisterHdlToPID(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
         try {
-            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(GlobalId.HDL_PROTOCOL)) {
+            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(HandlenetServiceBean.HDL_PROTOCOL)) {
                 logger.info("Bad Request protocol set to handle  " );
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
             }
             
-            User u = findUserOrDie();
+            User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
                 logger.info("Bad Request Unauthor " );
                 return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
@@ -1482,7 +1485,7 @@ public class Admin extends AbstractApiBean {
 
             DataverseRequest r = createDataverseRequest(u);
             Dataset ds = findDatasetOrDie(id);
-            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(GlobalId.HDL_PROTOCOL)) {
+            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(HandlenetServiceBean.HDL_PROTOCOL)) {
                 execCommand(new RegisterDvObjectCommand(r, ds, true));
             } else {
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.hdl.dataset"));
@@ -1500,192 +1503,305 @@ public class Admin extends AbstractApiBean {
         return ok(BundleUtil.getStringFromBundle("admin.api.migrateHDL.success"));
     }
 
-	@GET
-	@Path("{id}/registerDataFile")
-	public Response registerDataFile(@PathParam("id") String id) {
-		logger.info("Starting to register  " + id + " file id. " + new Date());
-
-		try {
-			User u = findUserOrDie();
-			DataverseRequest r = createDataverseRequest(u);
-			DataFile df = findDataFileOrDie(id);
-			if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
-				execCommand(new RegisterDvObjectCommand(r, df));
-			} else {
-				return ok("File was already registered. ");
-			}
-
-		} catch (WrappedResponse r) {
-			logger.info("Failed to register file id: " + id);
-		} catch (Exception e) {
-			logger.info("Failed to register file id: " + id + " Unexpecgted Exception " + e.getMessage());
-		}
-		return ok("Datafile registration complete. File registered successfully.");
-	}
-
-	@GET
-	@Path("/registerDataFileAll")
-	public Response registerDataFileAll() {
-		Integer count = fileService.findAll().size();
-		Integer successes = 0;
-		Integer alreadyRegistered = 0;
-		Integer released = 0;
-		Integer draft = 0;
-		logger.info("Starting to register: analyzing " + count + " files. " + new Date());
-		logger.info("Only unregistered, published files will be registered.");
-		for (DataFile df : fileService.findAll()) {
-			try {
-				if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
-					if (df.isReleased()) {
-						released++;
-						User u = findAuthenticatedUserOrDie();
-						DataverseRequest r = createDataverseRequest(u);
-						execCommand(new RegisterDvObjectCommand(r, df));
-						successes++;
-						if (successes % 100 == 0) {
-							logger.info(successes + " of  " + count + " files registered successfully. " + new Date());
-						}
-					} else {
-						draft++;
-						logger.info(draft + " of  " + count + " files not yet published");
-					}
-				} else {
-					alreadyRegistered++;
-					logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
-				}
-			} catch (WrappedResponse ex) {
-				released++;
-				logger.info("Failed to register file id: " + df.getId());
-				Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
-			} catch (Exception e) {
-				logger.info("Unexpected Exception: " + e.getMessage());
-			}
-		}
-		logger.info("Final Results:");
-		logger.info(alreadyRegistered + " of  " + count + " files were already registered. " + new Date());
-		logger.info(draft + " of  " + count + " files are not yet published. " + new Date());
-		logger.info(released + " of  " + count + " unregistered, published files to register. " + new Date());
-		logger.info(successes + " of  " + released + " unregistered, published files registered successfully. "
-				+ new Date());
-
-		return ok("Datafile registration complete." + successes + " of  " + released
-				+ " unregistered, published files registered successfully.");
-	}
-
-	@GET
-	@Path("/updateHashValues/{alg}")
-	public Response updateHashValues(@PathParam("alg") String alg, @QueryParam("num") int num) {
-		Integer count = fileService.findAll().size();
-		Integer successes = 0;
-		Integer alreadyUpdated = 0;
-		Integer rehashed = 0;
-		Integer harvested=0;
-		
-		if (num <= 0)
-			num = Integer.MAX_VALUE;
-		DataFile.ChecksumType cType = null;
-		try {
-			cType = DataFile.ChecksumType.fromString(alg);
-		} catch (IllegalArgumentException iae) {
-			return error(Status.BAD_REQUEST, "Unknown algorithm");
-		}
-		logger.info("Starting to rehash: analyzing " + count + " files. " + new Date());
-		logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
-				+ alg);
-		try {
-			User u = findAuthenticatedUserOrDie();
-			if (!u.isSuperuser())
-				return error(Status.UNAUTHORIZED, "must be superuser");
-		} catch (WrappedResponse e1) {
-			return error(Status.UNAUTHORIZED, "api key required");
-		}
-
-		for (DataFile df : fileService.findAll()) {
-			if (rehashed.intValue() >= num)
-				break;
-			InputStream in = null;
-			InputStream in2 = null; 
-			try {
-				if (df.isHarvested()) {
-					harvested++;
-				} else {
-					if (!df.getChecksumType().equals(cType)) {
-
-						rehashed++;
-						logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
-								+ df.getIdentifier());
-						// verify hash and calc new one to replace it
-						StorageIO<DataFile> storage = df.getStorageIO();
-						storage.open(DataAccessOption.READ_ACCESS);
-						if (!df.isTabularData()) {
-							in = storage.getInputStream();
-						} else {
-							// if this is a tabular file, read the preserved original "auxiliary file"
-							// instead:
-							in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-						}
-						if (in == null)
-							logger.warning("Cannot retrieve file.");
-						String currentChecksum = FileUtil.calculateChecksum(in, df.getChecksumType());
-						if (currentChecksum.equals(df.getChecksumValue())) {
-							logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
-									+ df.getIdentifier() + " is valid");
-							storage.open(DataAccessOption.READ_ACCESS);
-							if (!df.isTabularData()) {
-								in2 = storage.getInputStream();
-							} else {
-								// if this is a tabular file, read the preserved original "auxiliary file"
-								// instead:
-								in2 = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-							}
-							if (in2 == null)
-								logger.warning("Cannot retrieve file to calculate new checksum.");
-							String newChecksum = FileUtil.calculateChecksum(in2, cType);
-
-							df.setChecksumType(cType);
-							df.setChecksumValue(newChecksum);
-							successes++;
-							if (successes % 100 == 0) {
-								logger.info(
-										successes + " of  " + count + " files rehashed successfully. " + new Date());
-							}
-						} else {
-							logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
-									+ ", " + df.getIdentifier() + " is INVALID");
-						}
-					} else {
-						alreadyUpdated++;
-						if (alreadyUpdated % 100 == 0) {
-							logger.info(alreadyUpdated + " of  " + count
-									+ " files are already have hashes with the new algorithm. " + new Date());
-						}
-					}
-				}
-			} catch (Exception e) {
-				logger.warning("Unexpected Exception: " + e.getMessage());
-
-			} finally {
-				IOUtils.closeQuietly(in);
-				IOUtils.closeQuietly(in2);
-			}
-		}
-		logger.info("Final Results:");
-		logger.info(harvested + " harvested files skipped.");
-		logger.info(
-				alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
-		logger.info(rehashed + " of  " + count + " files to rehash. " + new Date());
-		logger.info(
-				successes + " of  " + rehashed + " files successfully rehashed with the new algorithm. " + new Date());
-
-		return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
-	}
-        
-    @POST
-    @Path("/computeDataFileHashValue/{fileId}/algorithm/{alg}")
-    public Response computeDataFileHashValue(@PathParam("fileId") String fileId, @PathParam("alg") String alg) {
+    @GET
+    @AuthRequired
+    @Path("{id}/registerDataFile")
+    public Response registerDataFile(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+        logger.info("Starting to register  " + id + " file id. " + new Date());
 
         try {
-            User u = findAuthenticatedUserOrDie();
+            User u = getRequestUser(crc);
+            DataverseRequest r = createDataverseRequest(u);
+            DataFile df = findDataFileOrDie(id);
+            if(!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
+                return forbidden("PIDs are not enabled for this file's collection.");
+            }
+            if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
+                execCommand(new RegisterDvObjectCommand(r, df));
+            } else {
+                return ok("File was already registered. ");
+            }
+
+        } catch (WrappedResponse r) {
+            logger.info("Failed to register file id: " + id);
+        } catch (Exception e) {
+            logger.info("Failed to register file id: " + id + " Unexpecgted Exception " + e.getMessage());
+        }
+        return ok("Datafile registration complete. File registered successfully.");
+    }
+
+    @GET
+    @AuthRequired
+    @Path("/registerDataFileAll")
+    public Response registerDataFileAll(@Context ContainerRequestContext crc) {
+        Integer count = fileService.findAll().size();
+        Integer successes = 0;
+        Integer alreadyRegistered = 0;
+        Integer released = 0;
+        Integer draft = 0;
+        Integer skipped = 0;
+        logger.info("Starting to register: analyzing " + count + " files. " + new Date());
+        logger.info("Only unregistered, published files will be registered.");
+        User u = null;
+        try {
+            u = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+        DataverseRequest r = createDataverseRequest(u);
+        for (DataFile df : fileService.findAll()) {
+            try {
+                if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
+                    if(!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
+                        skipped++;
+                        if (skipped % 100 == 0) {
+                            logger.info(skipped + " of  " + count + " files not in collections that allow file PIDs. " + new Date());
+                        }
+                    } else if (df.isReleased()) {
+                        released++;
+                        execCommand(new RegisterDvObjectCommand(r, df));
+                        successes++;
+                        if (successes % 100 == 0) {
+                            logger.info(successes + " of  " + count + " files registered successfully. " + new Date());
+                        }
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ie) {
+                            logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
+                        }
+                    } else {
+                        draft++;
+                        if (draft % 100 == 0) {
+                          logger.info(draft + " of  " + count + " files not yet published");
+                        }
+                    }
+                } else {
+                    alreadyRegistered++;
+                    if(alreadyRegistered % 100 == 0) {
+                      logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
+                    }
+                }
+            } catch (WrappedResponse ex) {
+                logger.info("Failed to register file id: " + df.getId());
+                Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception e) {
+                logger.info("Unexpected Exception: " + e.getMessage());
+            }
+            
+
+        }
+        logger.info("Final Results:");
+        logger.info(alreadyRegistered + " of  " + count + " files were already registered. " + new Date());
+        logger.info(draft + " of  " + count + " files are not yet published. " + new Date());
+        logger.info(released + " of  " + count + " unregistered, published files to register. " + new Date());
+        logger.info(successes + " of  " + released + " unregistered, published files registered successfully. "
+                + new Date());
+        logger.info(skipped + " of  " + count + " files not in collections that allow file PIDs. " + new Date());
+
+        return ok("Datafile registration complete." + successes + " of  " + released
+                + " unregistered, published files registered successfully.");
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("/registerDataFiles/{alias}")
+    public Response registerDataFilesInCollection(@Context ContainerRequestContext crc, @PathParam("alias") String alias, @QueryParam("sleep") Integer sleepInterval) {
+        Dataverse collection;
+        try {
+            collection = findDataverseOrDie(alias);
+        } catch (WrappedResponse r) {
+            return r.getResponse();
+        }
+        
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        if (superuser == null) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find the superuser to execute /admin/registerDataFiles.");
+        }
+        
+        if (!systemConfig.isFilePIDsEnabledForCollection(collection)) {
+            return ok("Registration of file-level pid is disabled in collection "+alias+"; nothing to do");
+        }
+        
+        List<DataFile> dataFiles = fileService.findByDirectCollectionOwner(collection.getId());
+        Integer count = dataFiles.size();
+        Integer countSuccesses = 0;
+        Integer countAlreadyRegistered = 0;
+        Integer countReleased = 0;
+        Integer countDrafts = 0;
+        
+        if (sleepInterval == null) {
+            sleepInterval = 1; 
+        } else if (sleepInterval.intValue() < 1) {
+            return error(Response.Status.BAD_REQUEST, "Invalid sleep interval: "+sleepInterval);
+        }
+        
+        logger.info("Starting to register: analyzing " + count + " files. " + new Date());
+        logger.info("Only unregistered, published files will be registered.");
+        
+        
+        
+        for (DataFile df : dataFiles) {
+            try {
+                if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
+                    if (df.isReleased()) {
+                        countReleased++;
+                        DataverseRequest r = createDataverseRequest(superuser);
+                        execCommand(new RegisterDvObjectCommand(r, df));
+                        countSuccesses++;
+                        if (countSuccesses % 100 == 0) {
+                            logger.info(countSuccesses + " out of " + count + " files registered successfully. " + new Date());
+                        }
+                        try {
+                            Thread.sleep(sleepInterval * 1000);
+                        } catch (InterruptedException ie) {
+                            logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
+                        }
+                    } else {
+                        countDrafts++;
+                        logger.fine(countDrafts + " out of " + count + " files not yet published");
+                    }
+                } else {
+                    countAlreadyRegistered++;
+                    logger.fine(countAlreadyRegistered + " out of " + count + " files are already registered. " + new Date());
+                }
+            } catch (WrappedResponse ex) {
+                countReleased++;
+                logger.info("Failed to register file id: " + df.getId());
+                Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception e) {
+                logger.info("Unexpected Exception: " + e.getMessage());
+            }
+        }
+        
+        logger.info(countAlreadyRegistered + " out of " + count + " files were already registered. " + new Date());
+        logger.info(countDrafts + " out of " + count + " files are not yet published. " + new Date());
+        logger.info(countReleased + " out of " + count + " unregistered, published files to register. " + new Date());
+        logger.info(countSuccesses + " out of " + countReleased + " unregistered, published files registered successfully. "
+                + new Date());
+
+        return ok("Datafile registration complete. " + countSuccesses + " out of " + countReleased
+                + " unregistered, published files registered successfully.");
+    }
+
+    @GET
+    @AuthRequired
+    @Path("/updateHashValues/{alg}")
+    public Response updateHashValues(@Context ContainerRequestContext crc, @PathParam("alg") String alg, @QueryParam("num") int num) {
+        Integer count = fileService.findAll().size();
+        Integer successes = 0;
+        Integer alreadyUpdated = 0;
+        Integer rehashed = 0;
+        Integer harvested = 0;
+
+        if (num <= 0)
+            num = Integer.MAX_VALUE;
+        DataFile.ChecksumType cType = null;
+        try {
+            cType = DataFile.ChecksumType.fromString(alg);
+        } catch (IllegalArgumentException iae) {
+            return error(Status.BAD_REQUEST, "Unknown algorithm");
+        }
+        logger.info("Starting to rehash: analyzing " + count + " files. " + new Date());
+        logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
+                + alg);
+        try {
+            User u = getRequestAuthenticatedUserOrDie(crc);
+            if (!u.isSuperuser())
+                return error(Status.UNAUTHORIZED, "must be superuser");
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+
+        for (DataFile df : fileService.findAll()) {
+            if (rehashed.intValue() >= num)
+                break;
+            InputStream in = null;
+            InputStream in2 = null;
+            try {
+                if (df.isHarvested()) {
+                    harvested++;
+                } else {
+                    if (!df.getChecksumType().equals(cType)) {
+
+                        rehashed++;
+                        logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
+                                + df.getIdentifier());
+                        // verify hash and calc new one to replace it
+                        StorageIO<DataFile> storage = df.getStorageIO();
+                        storage.open(DataAccessOption.READ_ACCESS);
+                        if (!df.isTabularData()) {
+                            in = storage.getInputStream();
+                        } else {
+                            // if this is a tabular file, read the preserved original "auxiliary file"
+                            // instead:
+                            in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                        }
+                        if (in == null)
+                            logger.warning("Cannot retrieve file.");
+                        String currentChecksum = FileUtil.calculateChecksum(in, df.getChecksumType());
+                        if (currentChecksum.equals(df.getChecksumValue())) {
+                            logger.fine("Current checksum for datafile: " + df.getFileMetadata().getLabel() + ", "
+                                    + df.getIdentifier() + " is valid");
+                            // Need to reset so we don't get the same stream (StorageIO class inputstreams
+                            // are normally only used once)
+                            storage.setInputStream(null);
+                            storage.open(DataAccessOption.READ_ACCESS);
+                            if (!df.isTabularData()) {
+                                in2 = storage.getInputStream();
+                            } else {
+                                // if this is a tabular file, read the preserved original "auxiliary file"
+                                // instead:
+                                in2 = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                            }
+                            if (in2 == null)
+                                logger.warning("Cannot retrieve file to calculate new checksum.");
+                            String newChecksum = FileUtil.calculateChecksum(in2, cType);
+
+                            df.setChecksumType(cType);
+                            df.setChecksumValue(newChecksum);
+                            successes++;
+                            if (successes % 100 == 0) {
+                                logger.info(
+                                        successes + " of  " + count + " files rehashed successfully. " + new Date());
+                            }
+                        } else {
+                            logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
+                                    + ", " + df.getIdentifier() + " is INVALID");
+                        }
+                    } else {
+                        alreadyUpdated++;
+                        if (alreadyUpdated % 100 == 0) {
+                            logger.info(alreadyUpdated + " of  " + count
+                                    + " files are already have hashes with the new algorithm. " + new Date());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                logger.warning("Unexpected Exception: " + e.getMessage());
+
+            } finally {
+                IOUtils.closeQuietly(in);
+                IOUtils.closeQuietly(in2);
+            }
+        }
+        logger.info("Final Results:");
+        logger.info(harvested + " harvested files skipped.");
+        logger.info(
+                alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
+        logger.info(rehashed + " of  " + count + " files to rehash. " + new Date());
+        logger.info(
+                successes + " of  " + rehashed + " files successfully rehashed with the new algorithm. " + new Date());
+
+        return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
+    }
+        
+    @POST
+	@AuthRequired
+    @Path("/computeDataFileHashValue/{fileId}/algorithm/{alg}")
+    public Response computeDataFileHashValue(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @PathParam("alg") String alg) {
+
+        try {
+            User u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser()) {
                 return error(Status.UNAUTHORIZED, "must be superuser");
             }
@@ -1742,11 +1858,12 @@ public class Admin extends AbstractApiBean {
     }
     
     @POST
+	@AuthRequired
     @Path("/validateDataFileHashValue/{fileId}")
-    public Response validateDataFileHashValue(@PathParam("fileId") String fileId) {
+    public Response validateDataFileHashValue(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId) {
 
         try {
-            User u = findAuthenticatedUserOrDie();
+            User u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser()) {
                 return error(Status.UNAUTHORIZED, "must be superuser");
             }
@@ -1808,12 +1925,13 @@ public class Admin extends AbstractApiBean {
     }
 
     @POST
+	@AuthRequired
     @Path("/submitDatasetVersionToArchive/{id}/{version}")
-    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid,
+    public Response submitDatasetVersionToArchive(@Context ContainerRequestContext crc, @PathParam("id") String dsid,
             @PathParam("version") String versionNumber) {
 
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
 
             Dataset ds = findDatasetOrDie(dsid);
 
@@ -1880,11 +1998,12 @@ public class Admin extends AbstractApiBean {
      * @return
      */
     @POST
+	@AuthRequired
     @Path("/archiveAllUnarchivedDatasetVersions")
-    public Response archiveAllUnarchivedDatasetVersions(@QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
+    public Response archiveAllUnarchivedDatasetVersions(@Context ContainerRequestContext crc, @QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit, @QueryParam("latestonly") boolean latestonly) {
 
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
+            AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
 
             List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
             if (dsl != null) {
@@ -1961,31 +2080,32 @@ public class Admin extends AbstractApiBean {
         }
     }
     
-	@DELETE
-	@Path("/clearMetricsCache")
-	public Response clearMetricsCache() {
-		em.createNativeQuery("DELETE FROM metric").executeUpdate();
-		return ok("all metric caches cleared.");
-	}
+    @DELETE
+    @Path("/clearMetricsCache")
+    public Response clearMetricsCache() {
+        em.createNativeQuery("DELETE FROM metric").executeUpdate();
+        return ok("all metric caches cleared.");
+    }
 
-	@DELETE
-	@Path("/clearMetricsCache/{name}")
-	public Response clearMetricsCacheByName(@PathParam("name") String name) {
-		Query deleteQuery = em.createNativeQuery("DELETE FROM metric where metricname = ?");
-		deleteQuery.setParameter(1, name);
-		deleteQuery.executeUpdate();
-		return ok("metric cache " + name + " cleared.");
-	}
+    @DELETE
+    @Path("/clearMetricsCache/{name}")
+    public Response clearMetricsCacheByName(@PathParam("name") String name) {
+        Query deleteQuery = em.createNativeQuery("DELETE FROM metric where name = ?");
+        deleteQuery.setParameter(1, name);
+        deleteQuery.executeUpdate();
+        return ok("metric cache " + name + " cleared.");
+    }
 
     @GET
+	@AuthRequired
     @Path("/dataverse/{alias}/addRoleAssignmentsToChildren")
-    public Response addRoleAssignementsToChildren(@PathParam("alias") String alias) throws WrappedResponse {
+    public Response addRoleAssignementsToChildren(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse owner = dataverseSvc.findByAlias(alias);
         if (owner == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -2008,14 +2128,15 @@ public class Admin extends AbstractApiBean {
     }
     
     @GET
+	@AuthRequired
     @Path("/dataverse/{alias}/storageDriver")
-    public Response getStorageDriver(@PathParam("alias") String alias) throws WrappedResponse {
+    public Response getStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
     	Dataverse dataverse = dataverseSvc.findByAlias(alias);
     	if (dataverse == null) {
     		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
     	}
     	try {
-    		AuthenticatedUser user = findAuthenticatedUserOrDie();
+    		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
     		if (!user.isSuperuser()) {
     			return error(Response.Status.FORBIDDEN, "Superusers only.");
     		}
@@ -2027,14 +2148,15 @@ public class Admin extends AbstractApiBean {
     }
     
     @PUT
+	@AuthRequired
     @Path("/dataverse/{alias}/storageDriver")
-    public Response setStorageDriver(@PathParam("alias") String alias, String label) throws WrappedResponse {
+    public Response setStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias, String label) throws WrappedResponse {
     	Dataverse dataverse = dataverseSvc.findByAlias(alias);
     	if (dataverse == null) {
     		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
     	}
     	try {
-    		AuthenticatedUser user = findAuthenticatedUserOrDie();
+    		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
     		if (!user.isSuperuser()) {
     			return error(Response.Status.FORBIDDEN, "Superusers only.");
     		}
@@ -2052,14 +2174,15 @@ public class Admin extends AbstractApiBean {
     }
 
     @DELETE
+	@AuthRequired
     @Path("/dataverse/{alias}/storageDriver")
-    public Response resetStorageDriver(@PathParam("alias") String alias) throws WrappedResponse {
+    public Response resetStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
     	Dataverse dataverse = dataverseSvc.findByAlias(alias);
     	if (dataverse == null) {
     		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
     	}
     	try {
-    		AuthenticatedUser user = findAuthenticatedUserOrDie();
+    		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
     		if (!user.isSuperuser()) {
     			return error(Response.Status.FORBIDDEN, "Superusers only.");
     		}
@@ -2071,10 +2194,11 @@ public class Admin extends AbstractApiBean {
     }
     
     @GET
+	@AuthRequired
     @Path("/dataverse/storageDrivers")
-    public Response listStorageDrivers() throws WrappedResponse {
+    public Response listStorageDrivers(@Context ContainerRequestContext crc) throws WrappedResponse {
     	try {
-    		AuthenticatedUser user = findAuthenticatedUserOrDie();
+    		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
     		if (!user.isSuperuser()) {
     			return error(Response.Status.FORBIDDEN, "Superusers only.");
     		}
@@ -2087,14 +2211,15 @@ public class Admin extends AbstractApiBean {
     }
     
     @GET
+	@AuthRequired
     @Path("/dataverse/{alias}/curationLabelSet")
-    public Response getCurationLabelSet(@PathParam("alias") String alias) throws WrappedResponse {
+    public Response getCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -2108,14 +2233,15 @@ public class Admin extends AbstractApiBean {
     }
 
     @PUT
+	@AuthRequired
     @Path("/dataverse/{alias}/curationLabelSet")
-    public Response setCurationLabelSet(@PathParam("alias") String alias, @QueryParam("name") String name) throws WrappedResponse {
+    public Response setCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias, @QueryParam("name") String name) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -2138,14 +2264,15 @@ public class Admin extends AbstractApiBean {
     }
 
     @DELETE
+	@AuthRequired
     @Path("/dataverse/{alias}/curationLabelSet")
-    public Response resetCurationLabelSet(@PathParam("alias") String alias) throws WrappedResponse {
+    public Response resetCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
         }
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -2157,10 +2284,11 @@ public class Admin extends AbstractApiBean {
     }
 
     @GET
+	@AuthRequired
     @Path("/dataverse/curationLabelSets")
-    public Response listCurationLabelSets() throws WrappedResponse {
+    public Response listCurationLabelSets(@Context ContainerRequestContext crc) throws WrappedResponse {
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, "Superusers only.");
             }
@@ -2251,12 +2379,13 @@ public class Admin extends AbstractApiBean {
     }
     
     @POST
+	@AuthRequired
     @Consumes("application/json")
     @Path("/requestSignedUrl")
-    public Response getSignedUrl(JsonObject urlInfo) {
+    public Response getSignedUrl(@Context ContainerRequestContext crc, JsonObject urlInfo) {
         AuthenticatedUser superuser = null;
         try {
-            superuser = findAuthenticatedUserOrDie();
+            superuser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

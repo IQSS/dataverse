@@ -409,9 +409,9 @@
           },
           {
             "typeName": "productionPlace",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "ProductionPlace"
+            "value": ["ProductionPlace"]
           },
           {
             "typeName": "contributor",
@@ -653,22 +653,38 @@
           },
           {
             "typeName": "series",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "compound",
-            "value": {
-              "seriesName": {
-                "typeName": "seriesName",
-                "multiple": false,
-                "typeClass": "primitive",
-                "value": "SeriesName"
+            "value": [ 
+              {
+		"seriesName": {
+                  "typeName": "seriesName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "SeriesName1"
+                },
+                "seriesInformation": {
+                  "typeName": "seriesInformation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "SeriesInformation1"
+                }
               },
-              "seriesInformation": {
-                "typeName": "seriesInformation",
-                "multiple": false,
-                "typeClass": "primitive",
-                "value": "SeriesInformation"
-              }
-            }
+              {
+                "seriesName": {
+                  "typeName": "seriesName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "SeriesName2"
+                },
+                "seriesInformation": {
+                  "typeName": "seriesInformation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "SeriesInformation2"
+		}
+	      }
+            ]
           },
           {
             "typeName": "software",
@@ -842,25 +858,25 @@
                   "typeName": "westLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "10"
+                  "value": "-72"
                 },
                 "eastLongitude": {
                   "typeName": "eastLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "20"
+                  "value": "-70"
                 },
                 "northLongitude": {
                   "typeName": "northLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "30"
+                  "value": "43"
                 },
                 "southLongitude": {
                   "typeName": "southLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "40"
+                  "value": "42"
                 }
               },
               {
@@ -868,25 +884,25 @@
                   "typeName": "westLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "50"
+                  "value": "-18"
                 },
                 "eastLongitude": {
                   "typeName": "eastLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "60"
+                  "value": "-13"
                 },
                 "northLongitude": {
                   "typeName": "northLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "70"
+                  "value": "29"
                 },
                 "southLongitude": {
                   "typeName": "southLongitude",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "80"
+                  "value": "28"
                 }
               }
             ]

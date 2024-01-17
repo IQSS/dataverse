@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.mocks;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;

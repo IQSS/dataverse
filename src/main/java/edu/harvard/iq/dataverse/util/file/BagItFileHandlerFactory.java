@@ -7,10 +7,10 @@ import edu.harvard.iq.dataverse.util.bagit.ManifestReader;
 import edu.harvard.iq.dataverse.util.bagit.data.FileDataProviderFactory;
 import edu.harvard.iq.dataverse.util.bagit.data.FileUtilWrapper;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Named;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.logging.Logger;

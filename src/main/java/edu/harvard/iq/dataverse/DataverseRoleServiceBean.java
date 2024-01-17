@@ -17,13 +17,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-//import javax.validation.constraints.NotNull;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+//import jakarta.validation.constraints.NotNull;
 
 /**
  *
@@ -303,7 +303,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         Set<DataverseRole> roles = dv.getRoles();
         roles.addAll(findBuiltinRoles());
 
-        while (!dv.isEffectivelyPermissionRoot()) {
+        while (dv.getOwner() != null) {
             dv = dv.getOwner();
             roles.addAll(dv.getRoles());
         }

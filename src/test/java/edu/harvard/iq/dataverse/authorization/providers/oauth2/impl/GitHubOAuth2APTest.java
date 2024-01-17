@@ -2,10 +2,10 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2UserRecord;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class GitHubOAuth2APTest extends GitHubOAuth2AP {
 

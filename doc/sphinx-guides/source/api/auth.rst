@@ -63,3 +63,20 @@ Resetting Your API Token
 ------------------------
 
 You can reset your API Token from your account page in your Dataverse installation as described in the :doc:`/user/account` section of the User Guide.
+
+.. _bearer-tokens:
+
+Bearer Tokens
+-------------
+
+Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to API tokens if your installation has been set up to use them (see :ref:`bearer-token-auth` in the Installation Guide).
+
+.. _RFC 6750: https://tools.ietf.org/html/rfc6750
+
+To test if bearer tokens are working, you can try something like the following (using the :ref:`User Information` API endpoint), substituting in parameters for your installation and user.
+
+.. code-block:: bash
+
+  export TOKEN=`curl -s -X POST --location "http://keycloak.mydomain.com:8090/realms/oidc-realm/protocol/openid-connect/token" -H "Content-Type: application/x-www-form-urlencoded" -d "username=kcuser&password=kcpassword&grant_type=password&client_id=oidc-client&client_secret=ss6gE8mODCDfqesQaSG3gwUwZqZt547E" | jq '.access_token' -r | tr -d "\n"`
+  
+  curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/users/:me
