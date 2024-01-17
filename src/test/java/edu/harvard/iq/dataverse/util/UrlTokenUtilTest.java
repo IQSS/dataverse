@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -8,6 +9,7 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@LocalJvmSettings
 class UrlTokenUtilTest {
 
     @Test
@@ -29,7 +32,7 @@ class UrlTokenUtilTest {
         DatasetVersion dv = new DatasetVersion();
         Dataset ds = new Dataset();
         ds.setId(50L);
-        ds.setGlobalId(new GlobalId("doi:10.5072/FK2ABCDEF"));
+        ds.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL,"10.5072","FK2ABCDEF",null, DOIServiceBean.DOI_RESOLVER_URL, null));
         dv.setDataset(ds);
         fmd.setDatasetVersion(dv);
         List<FileMetadata> fmdl = new ArrayList<>();

@@ -25,18 +25,31 @@ public class UserIdentifier {
     /**
      * The String used in the permission system to assign roles, for example.
      */
-    String internalUserIdentifer;
+    String internalUserIdentifier;
 
-    public UserIdentifier(String lookupStringPerAuthProvider, String internalUserIdentifer) {
+    public UserIdentifier(String lookupStringPerAuthProvider, String internalUserIdentifier) {
         this.lookupStringPerAuthProvider = lookupStringPerAuthProvider;
-        this.internalUserIdentifer = internalUserIdentifer;
+        this.internalUserIdentifier = internalUserIdentifier;
     }
 
     public String getLookupStringPerAuthProvider() {
         return lookupStringPerAuthProvider;
     }
 
+    /**
+     * @deprecated because of a typo; use {@link #getInternalUserIdentifier()} instead
+     * @see #getInternalUserIdentifier()
+     * @return the internal user identifier
+     */
+    @Deprecated
     public String getInternalUserIdentifer() {
-        return internalUserIdentifer;
+        return getInternalUserIdentifier();
+    }
+
+    /**
+     * @return the internal user identifier
+     */
+    public String getInternalUserIdentifier() {
+        return internalUserIdentifier;
     }
 }

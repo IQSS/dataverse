@@ -1,35 +1,34 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+
+import java.io.*;
 import java.util.UUID;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import java.io.File;
-import java.io.IOException;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
-import com.jayway.restassured.path.xml.XmlPath;
+import io.restassured.path.xml.XmlPath;
+import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import com.jayway.restassured.specification.RequestSpecification;
+import io.restassured.specification.RequestSpecification;
 import java.util.List;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
-import java.io.InputStream;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.util.Base64;
 import org.apache.commons.io.IOUtils;
@@ -40,19 +39,17 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
-import static com.jayway.restassured.RestAssured.put;
-import static com.jayway.restassured.path.xml.XmlPath.from;
-import static com.jayway.restassured.RestAssured.given;
+import static edu.harvard.iq.dataverse.api.ApiConstants.*;
+import static io.restassured.path.xml.XmlPath.from;
+import static io.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import java.io.StringReader;
+
 import java.util.Collections;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {
 
@@ -65,8 +62,9 @@ public class UtilIT {
     private static final String BUILTIN_USER_KEY = "burrito";
     private static final String EMPTY_STRING = "";
     public static final int MAXIMUM_INGEST_LOCK_DURATION = 15;
-    public static final int MAXIMUM_PUBLISH_LOCK_DURATION = 15;
-    
+    public static final int MAXIMUM_PUBLISH_LOCK_DURATION = 20;
+    public static final int MAXIMUM_IMPORT_DURATION = 1;
+
     private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
     
     static Matcher<String> equalToCI( String value ) {
@@ -118,6 +116,16 @@ public class UtilIT {
     public static Response createRandomUser() {
 
         return createRandomUser("user");
+    }
+
+    /**
+     * A convenience method for creating a random test user, when all you need
+     * is the api token.
+     * @return apiToken
+     */
+    public static String createRandomUserGetToken(){
+        Response createUser = createRandomUser();
+        return getApiTokenFromResponse(createUser);
     }
 
     public static Response createUser(String username, String email) {
@@ -215,7 +223,19 @@ public class UtilIT {
                 .post("/api/admin/validateDataFileHashValue/" + fileId + "?key=" + apiToken);
         return response;
     }
-    
+
+    public static Response clearThumbnailFailureFlags() {
+        Response response = given()
+                .delete("/api/admin/clearThumbnailFailureFlag");
+        return response;
+    }
+
+    public static Response clearThumbnailFailureFlag(long fileId) {
+        Response response = given()
+                .delete("/api/admin/clearThumbnailFailureFlag/" + fileId);
+        return response;
+    }
+
     private static String getAuthenticatedUserAsJsonString(String persistentUserId, String firstName, String lastName, String authenticationProviderId, String identifier) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("authenticationProviderId", authenticationProviderId);
@@ -290,7 +310,7 @@ public class UtilIT {
     static Integer getDataverseIdFromResponse(Response createDataverseResponse) {
         JsonPath createdDataverse = JsonPath.from(createDataverseResponse.body().asString());
         int dataverseId = createdDataverse.getInt("data.id");
-        logger.info("Id found in create dataverse response: " + createdDataverse);
+        logger.info("Id found in create dataverse response: " + dataverseId);
         return dataverseId;
     }
 
@@ -370,14 +390,58 @@ public class UtilIT {
         return createDataverse(alias, category, apiToken);
     }
 
+    /**
+     * A convenience method for creating a random collection and getting its
+     * alias in one step.
+     * @param apiToken
+     * @return alias
+     */
+    static String createRandomCollectionGetAlias(String apiToken){
+
+        Response createCollectionResponse = createRandomDataverse(apiToken);
+        //createDataverseResponse.prettyPrint();
+        createCollectionResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        return UtilIT.getAliasFromResponse(createCollectionResponse);
+    }
+
     static Response showDataverseContents(String alias, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .when().get("/api/dataverses/" + alias + "/contents");
     }
 
+    static Response getGuestbookResponses(String dataverseAlias, Long guestbookId, String apiToken) {
+        RequestSpecification requestSpec = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        if (guestbookId != null) {
+            requestSpec.queryParam("guestbookId", guestbookId);
+        }
+        return requestSpec.get("/api/dataverses/" + dataverseAlias + "/guestbookResponses/");
+    }
+
+    static Response getCollectionSchema(String dataverseAlias, String apiToken) {
+        Response getCollectionSchemaResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/dataverses/" + dataverseAlias + "/datasetSchema");
+        return getCollectionSchemaResponse;
+    }
+
+    static Response validateDatasetJson(String dataverseAlias, String datasetJson, String apiToken) {
+        Response getValidateDatasetJsonResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(datasetJson)
+                .contentType("application/json")
+                .post("/api/dataverses/" + dataverseAlias + "/validateDatasetJson");
+        return getValidateDatasetJsonResponse;
+    }
+
     static Response createRandomDatasetViaNativeApi(String dataverseAlias, String apiToken) {
-        String jsonIn = getDatasetJson();
+        return createRandomDatasetViaNativeApi(dataverseAlias, apiToken, false);
+    }
+
+    static Response createRandomDatasetViaNativeApi(String dataverseAlias, String apiToken, boolean withNoLicense) {
+        String jsonIn = getDatasetJson(withNoLicense);
         Response createDatasetResponse = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
@@ -387,7 +451,16 @@ public class UtilIT {
     }
 
     private static String getDatasetJson() {
-        File datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1.json");
+        return getDatasetJson(false); 
+    }
+     
+    private static String getDatasetJson(boolean nolicense) {
+        File datasetVersionJson; 
+        if (nolicense) {
+            datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1-nolicense.json");
+        } else {
+            datasetVersionJson = new File("scripts/search/tests/data/dataset-finch1.json");
+        }
         try {
             String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
             return datasetVersionAsJson;
@@ -506,7 +579,7 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
                 .contentType("application/json")
-                .put("/api/datasets/:persistentId/versions/:draft?persistentId=" + persistentId);
+                .put("/api/datasets/:persistentId/versions/" + DS_VERSION_DRAFT + "?persistentId=" + persistentId);
         return response;
     }
     
@@ -550,7 +623,14 @@ public class UtilIT {
                 .post("/api/datasets/:persistentId/modifyRegistrationMetadata/?persistentId=" + persistentId);
         return response;
     }
-    
+
+    /**
+     * Deprecated because once there are new fields in the database that Solr
+     * doesn't know about, dataset creation could be prevented, or at least
+     * subsequent search operations could fail because the dataset can't be
+     * indexed.
+     */
+    @Deprecated    
     static Response loadMetadataBlock(String apiToken, byte[] body) {
         return given()
           .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -775,7 +855,7 @@ public class UtilIT {
     static Response getCrawlableFileAccess(String datasetId, String folderName, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
-        String apiPath = "/api/datasets/" + datasetId + "/dirindex?version=:draft";
+        String apiPath = "/api/datasets/" + datasetId + "/dirindex?version=" + DS_VERSION_DRAFT;
         if (StringUtil.nonEmpty(folderName)) {
             apiPath = apiPath.concat("&folder="+folderName);
         }
@@ -794,7 +874,7 @@ public class UtilIT {
     static Response replaceFile(String fileIdOrPersistentId, String pathToFile, String jsonAsString, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -807,11 +887,17 @@ public class UtilIT {
         return requestSpecification
                 .post("/api/files/" + idInPath + "/replace" + optionalQueryParam);
     }
+
+    static Response deleteFileApi(Integer fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/files/" + fileId);
+    }
     
     static Response updateFileMetadata(String fileIdOrPersistentId, String jsonAsString, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -936,7 +1022,7 @@ public class UtilIT {
     static Response downloadFiles(String datasetIdOrPersistentId, String datasetVersion, DownloadFormat format, String apiToken) {
         String idInPath = datasetIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(datasetIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
         }
@@ -969,7 +1055,7 @@ public class UtilIT {
     static Response getFileMetadata(String fileIdOrPersistentId, String optionalFormat, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + fileIdOrPersistentId;
         }
@@ -986,7 +1072,7 @@ public class UtilIT {
     static Response getFileMetadata(String fileIdOrPersistentId, String optionalFormat) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -1227,6 +1313,12 @@ public class UtilIT {
                 .delete("/api/datasets/" + datasetId + "/destroy");
     }
 
+    static Response destroyDataset(String pid, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/:persistentId/destroy?persistentId=" + pid);
+    }
+
     static Response deleteFile(Integer fileId, String apiToken) {
         return given()
                 .auth().basic(apiToken, EMPTY_STRING)
@@ -1371,15 +1463,24 @@ public class UtilIT {
     }
 
     static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken) {
+        return getDatasetVersion(persistentId, versionNumber, apiToken, false, false);
+    }
+
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean skipFiles, boolean includeDeaccessioned) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/:persistentId/versions/" + versionNumber + "?persistentId=" + persistentId);
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
+                .get("/api/datasets/:persistentId/versions/"
+                        + versionNumber
+                        + "?persistentId="
+                        + persistentId
+                        + (skipFiles ? "&includeFiles=false" : ""));
     }
 
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/:persistentId/versions/:latest-published/metadata/citation?persistentId=" + persistentId);
+                .get("/api/datasets/:persistentId/versions/" + DS_VERSION_LATEST_PUBLISHED + "/metadata/citation?persistentId=" + persistentId);
     }
 
     static Response makeSuperUser(String username) {
@@ -1507,7 +1608,7 @@ public class UtilIT {
     static Response restrictFile(String fileIdOrPersistentId, boolean restrict, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -1521,7 +1622,7 @@ public class UtilIT {
     static Response allowAccessRequests(String datasetIdOrPersistentId, boolean allowRequests, String apiToken) {
         String idInPath = datasetIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(datasetIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
         }
@@ -1537,7 +1638,7 @@ public class UtilIT {
         System.out.print ("Reuest file acceess + apiToken: " + apiToken);
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -1555,7 +1656,7 @@ public class UtilIT {
     static Response grantFileAccess(String fileIdOrPersistentId, String identifier, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -1571,7 +1672,7 @@ public class UtilIT {
     static Response getAccessRequestList(String fileIdOrPersistentId, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -1587,7 +1688,7 @@ public class UtilIT {
     static Response rejectFileAccessRequest(String fileIdOrPersistentId, String identifier, String apiToken) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+        if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
         }
@@ -1619,7 +1720,7 @@ public class UtilIT {
         }
         String idInPath = idOrPersistentIdOfDatasetToMove; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDatasetToMove)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDatasetToMove)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDatasetToMove;
         }
@@ -1673,9 +1774,10 @@ public class UtilIT {
         return response;
     }
 
-    static Response privateUrlCreate(Integer datasetId, String apiToken) {
+    static Response privateUrlCreate(Integer datasetId, String apiToken, boolean anonymizedAccess) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("anonymizedAccess", anonymizedAccess)
                 .post("/api/datasets/" + datasetId + "/privateUrl");
         return response;
     }
@@ -1734,12 +1836,45 @@ public class UtilIT {
     }
     
     static Response getDatasetVersions(String idOrPersistentId, String apiToken) {
+        return getDatasetVersions(idOrPersistentId, apiToken, false);
+    }
+
+    static Response getDatasetVersions(String idOrPersistentId, String apiToken, boolean skipFiles) {
+        return getDatasetVersions(idOrPersistentId, apiToken, null, null, skipFiles);
+    }
+
+    static Response getDatasetVersions(String idOrPersistentId, String apiToken, Integer offset, Integer limit) {
+        return getDatasetVersions(idOrPersistentId, apiToken, offset, limit, false);
+    }
+
+    static Response getDatasetVersions(String idOrPersistentId, String apiToken, Integer offset, Integer limit, boolean skipFiles) {
         logger.info("Getting Dataset Versions");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
+        }
+        if (skipFiles) {
+            if ("".equals(optionalQueryParam)) {
+                optionalQueryParam = "?includeFiles=false";
+            } else {
+                optionalQueryParam = optionalQueryParam.concat("&includeFiles=false");
+            }
+        }
+        if (offset != null) {
+            if ("".equals(optionalQueryParam)) {
+                optionalQueryParam = "?offset="+offset;
+            } else {
+                optionalQueryParam = optionalQueryParam.concat("&offset="+offset);
+            }
+        }
+        if (limit != null) {
+            if ("".equals(optionalQueryParam)) {
+                optionalQueryParam = "?limit="+limit;
+            } else {
+                optionalQueryParam = optionalQueryParam.concat("&limit="+limit);
+            }
         }
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
@@ -1754,7 +1889,7 @@ public class UtilIT {
         logger.info("Getting Provenance JSON");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
@@ -1770,7 +1905,7 @@ public class UtilIT {
          logger.info("Getting Provenance Free Form");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
@@ -1786,7 +1921,7 @@ public class UtilIT {
         logger.info("Uploading Provenance JSON");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
@@ -1808,7 +1943,7 @@ public class UtilIT {
         //TODO: Repeated code, refactor
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
@@ -1824,7 +1959,7 @@ public class UtilIT {
         logger.info("Uploading Provenance Free Form");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
@@ -1845,7 +1980,7 @@ public class UtilIT {
 //        //TODO: Repeated code, refactor
 //        String idInPath = idOrPersistentId; // Assume it's a number.
 //        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-//        if (!NumberUtils.isNumber(idOrPersistentId)) {
+//        if (!NumberUtils.isCreatable(idOrPersistentId)) {
 //            idInPath = ":persistentId";
 //            optionalQueryParam = "?persistentId=" + idOrPersistentId;
 //        }
@@ -1891,6 +2026,7 @@ public class UtilIT {
     }
     
     static Response search(String query, String apiToken, String parameterString) {
+        sleepForDatasetIndex(query, apiToken);
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
@@ -1899,11 +2035,24 @@ public class UtilIT {
         return requestSpecification.get("/api/search?q=" + query + parameterString);
     }
 
+    private static void sleepForDatasetIndex(String query, String apiToken) {
+        if (query.contains("id:dataset") || query.contains("id:datafile")) {
+            String[] splitted = query.split("_");
+            if (splitted.length >= 2) {
+                boolean ok = UtilIT.sleepForReindex(String.valueOf(splitted[1]), apiToken, 5);
+                if (!ok) {
+                    logger.info("Still indexing after 5 seconds");
+                }
+            }
+        }
+    }
+
     static Response search(String query, String apiToken) {
         return search(query, apiToken, "");
     }
 
     static Response searchAndShowFacets(String query, String apiToken) {
+        sleepForDatasetIndex(query, apiToken);
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification = given()
@@ -2071,6 +2220,12 @@ public class UtilIT {
                 .multiPart("file", new File(pathToImageFile))
                 .put("/api/dataverses/" + dataverseAlias + "/logo");
     }
+    
+    static Response setCollectionAttribute(String dataverseAlias, String attribute, String value, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/dataverses/" + dataverseAlias + "/attribute/" + attribute + "?value=" + value);
+    }
 
     /**
      * Deprecated as the apiToken is not used by the call.
@@ -2125,7 +2280,7 @@ public class UtilIT {
     static Response dataCaptureModuleChecksumValidation(String datasetPersistentId, JsonObject jsonObject, String apiToken) {
         String persistentIdInPath = datasetPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If datasetPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(datasetPersistentId)) {
+        if (!NumberUtils.isCreatable(datasetPersistentId)) {
             persistentIdInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + datasetPersistentId;
         }
@@ -2172,7 +2327,7 @@ public class UtilIT {
     static Response getExternalToolsForDataset(String idOrPersistentIdOfDataset, String type, String apiToken) {
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -2187,7 +2342,7 @@ public class UtilIT {
     static Response getExternalToolsForFile(String idOrPersistentIdOfFile, String type, String apiToken) {
         String idInPath = idOrPersistentIdOfFile; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfFile)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfFile)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfFile;
         }
@@ -2233,6 +2388,56 @@ public class UtilIT {
     static Response deleteStorageSite(long storageSiteId) {
         return given()
                 .delete("/api/admin/storageSites/" + storageSiteId);
+    }
+
+    static Response listStorageDrivers(String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/dataverse/storageDrivers");
+    }
+
+    static Response getStorageDriver(String dvAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/dataverse/" + dvAlias + "/storageDriver");
+    }
+
+    static Response setStorageDriver(String dvAlias, String label, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(label)
+                .put("/api/admin/dataverse/" + dvAlias + "/storageDriver");
+    }
+
+    static Response getUploadUrls(String idOrPersistentIdOfDataset, long sizeInBytes, String apiToken) {
+        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/datasets/" + idInPath + "/uploadurls?size=" + sizeInBytes + optionalQueryParam);
+    }
+
+    static Response uploadFileDirect(String url, InputStream inputStream) {
+        return given()
+                .header("x-amz-tagging", "dv-state=temp")
+                .body(inputStream)
+                .put(url);
+    }
+
+    static Response downloadFileNoRedirect(Integer fileId, String apiToken) {
+        return given().when().redirects().follow(false)
+                .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
+    }
+
+    static Response downloadFromUrl(String url) {
+        return given().get(url);
     }
 
     static Response metricsDataversesToMonth(String yyyymm, String queryParams) {
@@ -2363,6 +2568,12 @@ public class UtilIT {
         RequestSpecification requestSpecification = given();
         return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
+    
+    static Response clearMetricCache(String name) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.delete("/api/admin/clearMetricsCache/" + name);
+    }
+
 
     static Response sitemapUpdate() {
         return given()
@@ -2480,10 +2691,14 @@ public class UtilIT {
         do {
             timestampResponse = UtilIT.getDatasetTimestamps(idOrPersistentId, apiToken);
             System.out.println(timestampResponse.body().asString());
-            String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
-            System.out.println(hasStaleIndex);
-            stale = Boolean.parseBoolean(hasStaleIndex);
-            
+            try {
+                String hasStaleIndex = timestampResponse.body().jsonPath().getString("data.hasStaleIndex");
+                System.out.println(hasStaleIndex);
+                stale = Boolean.parseBoolean(hasStaleIndex);
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.INFO, "no stale index property found", ex);
+                stale = false;
+            }
             try {
                 Thread.sleep(sleepStep);
                 i++;
@@ -2526,10 +2741,25 @@ public class UtilIT {
         return i <= repeats;
 
     }
-    
-    
-    
-    
+
+    // Modeled after sleepForLock but the dataset isn't locked.
+    // We have to sleep or we can't perform the next operation.
+    static Boolean sleepForDeadlock(int duration) {
+        int i = 0;
+        do {
+            try {
+                Thread.sleep(1000);
+                i++;
+                if (i > duration) {
+                    break;
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } while (true);
+        return i <= duration;
+    }
+
     //Helper function that returns true if a given search returns a non-zero response within a fixed time limit
     // a given duration returns false if still zero results after given duration
     static Boolean sleepForSearch(String searchPart, String apiToken,  String subTree, int duration) {
@@ -2563,7 +2793,7 @@ public class UtilIT {
     static Response checkDatasetLocks(String idOrPersistentId, String lockType, String apiToken) {
         String idInPath = idOrPersistentId; // Assume it's a number.
         String queryParams = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentId)) {
+        if (!NumberUtils.isCreatable(idOrPersistentId)) {
             idInPath = ":persistentId";
             queryParams = "?persistentId=" + idOrPersistentId;
         }
@@ -2628,10 +2858,12 @@ public class UtilIT {
             queryParams = "?persistentId=" + idOrPersistentId;
         }
         
-        Response response = given()
-            .header(API_TOKEN_HTTP_HEADER, apiToken)
-            .get("api/datasets/" + idInPath + "/timestamps" + queryParams);
-        return response;
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("api/datasets/" + idInPath + "/timestamps" + queryParams);
     }
     
     static Response exportOaiSet(String setName) {
@@ -2732,7 +2964,7 @@ public class UtilIT {
         System.out.println("metric: " + metric);
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -2748,7 +2980,7 @@ public class UtilIT {
         System.out.println("metric: " + metric);
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -2764,7 +2996,7 @@ public class UtilIT {
         System.out.println("metric: " + metric);
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -2780,7 +3012,7 @@ public class UtilIT {
 
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -2793,7 +3025,7 @@ public class UtilIT {
 
         String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -2830,6 +3062,31 @@ public class UtilIT {
                 .get("/api/dataverses/" + dataverseId + "/storagesize");
     }
     
+    static Response checkCollectionQuota(String collectionId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + collectionId + "/storage/quota");
+    }
+    
+    static Response setCollectionQuota(String collectionId, long allocatedSize, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/dataverses/" + collectionId + "/storage/quota/" + allocatedSize);
+        return response;
+    }
+    
+    static Response disableCollectionQuota(String collectionId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/dataverses/" + collectionId + "/storage/quota");
+        return response;
+    }
+    
+    static Response checkCollectionStorageUse(String collectionId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/" + collectionId + "/storage/use");
+    }
     
     /**
      * Determine the "payload" storage size of a dataverse
@@ -2846,7 +3103,7 @@ public class UtilIT {
     
     static Response findDatasetDownloadSize(String datasetId) {
         return given()
-                .get("/api/datasets/" + datasetId + "/versions/:latest/downloadsize");
+                .get("/api/datasets/" + datasetId + "/versions/" + DS_VERSION_LATEST + "/downloadsize");
     }
     
     static Response findDatasetDownloadSize(String datasetId, String version,  String apiToken) {
@@ -3075,7 +3332,7 @@ public class UtilIT {
     static Response archiveDataset(String idOrPersistentIdOfDataset, String version, String apiToken) {
         String idInPath = idOrPersistentIdOfDataset;
         String optionalQueryParam = "";
-        if (!NumberUtils.isNumber(idOrPersistentIdOfDataset)) {
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentIdOfDataset;
         }
@@ -3137,4 +3394,328 @@ public class UtilIT {
 
         return importDDI.post(postString);
     }
+
+    static Response retrieveMyDataAsJsonString(String apiToken, String userIdentifier, ArrayList<Long> roleIds) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json; charset=utf-8")
+                .queryParam("role_ids", roleIds)
+                .queryParam("dvobject_types", MyDataFilterParams.defaultDvObjectTypes)
+                .queryParam("published_states", MyDataFilterParams.defaultPublishedStates)
+                .get("/api/mydata/retrieve?userIdentifier=" + userIdentifier);
+        return response;
+    }
+
+    static Response createSignedUrl(String apiToken, String apiPath, String username) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(String.format("{\"url\":\"%s\",\"timeOut\":35,\"user\":\"%s\"}", getRestAssuredBaseUri() + apiPath, username))
+                .contentType("application/json")
+                .post("/api/admin/requestSignedUrl");
+        return response;
+    }
+
+    static String getSignedUrlFromResponse(Response createSignedUrlResponse) {
+        JsonPath jsonPath = JsonPath.from(createSignedUrlResponse.body().asString());
+        String signedUrl = jsonPath.getString("data.signedUrl");
+        return signedUrl;
+    }
+
+    static Response logout() {
+        Response response = given()
+                .contentType("application/json")
+                .post("/api/logout");
+        return response;
+    }
+
+    static Response getDatasetSummaryFieldNames() {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/summaryFieldNames");
+        return response;
+    }
+
+    static Response getPrivateUrlDatasetVersion(String privateUrlToken) {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/privateUrlDatasetVersion/" + privateUrlToken);
+        return response;
+    }
+
+    static Response getPrivateUrlDatasetVersionCitation(String privateUrlToken) {
+        Response response = given()
+                .contentType("application/json")
+                .get("/api/datasets/privateUrlDatasetVersion/" + privateUrlToken + "/citation");
+        return response;
+    }
+
+    static Response getDatasetVersionCitation(Integer datasetId, String version, boolean includeDeaccessioned, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation");
+        return response;
+    }
+
+    static Response getVersionFiles(Integer datasetId,
+                                    String version,
+                                    Integer limit,
+                                    Integer offset,
+                                    String contentType,
+                                    String accessStatus,
+                                    String categoryName,
+                                    String tabularTagName,
+                                    String searchText,
+                                    String orderCriteria,
+                                    boolean includeDeaccessioned,
+                                    String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .contentType("application/json")
+                .queryParam("includeDeaccessioned", includeDeaccessioned);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (limit != null) {
+            requestSpecification = requestSpecification.queryParam("limit", limit);
+        }
+        if (offset != null) {
+            requestSpecification = requestSpecification.queryParam("offset", offset);
+        }
+        if (contentType != null) {
+            requestSpecification = requestSpecification.queryParam("contentType", contentType);
+        }
+        if (accessStatus != null) {
+            requestSpecification = requestSpecification.queryParam("accessStatus", accessStatus);
+        }
+        if (categoryName != null) {
+            requestSpecification = requestSpecification.queryParam("categoryName", categoryName);
+        }
+        if (tabularTagName != null) {
+            requestSpecification = requestSpecification.queryParam("tabularTagName", tabularTagName);
+        }
+        if (searchText != null) {
+            requestSpecification = requestSpecification.queryParam("searchText", searchText);
+        }
+        if (orderCriteria != null) {
+            requestSpecification = requestSpecification.queryParam("orderCriteria", orderCriteria);
+        }
+        return requestSpecification.get("/api/datasets/" + datasetId + "/versions/" + version + "/files");
+    }
+
+    static Response createAndUploadTestFile(String persistentId, String testFileName, byte[] testFileContentInBytes, String apiToken) throws IOException {
+        Path pathToTempDir = Paths.get(Files.createTempDirectory(null).toString());
+        String pathToTestFile = pathToTempDir + File.separator + testFileName;
+        File testFile = new File(pathToTestFile);
+        FileOutputStream fileOutputStream = new FileOutputStream(testFile);
+
+        fileOutputStream.write(testFileContentInBytes);
+        fileOutputStream.flush();
+        fileOutputStream.close();
+
+        return uploadZipFileViaSword(persistentId, pathToTestFile, apiToken);
+    }
+
+    static Response getFileDownloadCount(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + dataFileId + "/downloadCount");
+    }
+
+    static Response getFileDataTables(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + dataFileId + "/dataTables");
+    }
+
+    static Response getUserFileAccessRequested(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + dataFileId + "/userFileAccessRequested");
+    }
+
+    static Response getUserPermissionsOnFile(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + dataFileId + "/userPermissions");
+    }
+
+    static Response getUserPermissionsOnDataset(String datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/userPermissions");
+    }
+
+    static Response createFileEmbargo(Integer datasetId, Integer fileId, String dateAvailable, String apiToken) {
+        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("dateAvailable", dateAvailable);
+        jsonBuilder.add("reason", "This is a test embargo");
+        jsonBuilder.add("fileIds", Json.createArrayBuilder().add(fileId));
+        String jsonString = jsonBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .contentType("application/json")
+                .urlEncodingEnabled(false)
+                .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
+    }
+
+    static Response getVersionFileCounts(Integer datasetId,
+                                         String version,
+                                         String contentType,
+                                         String accessStatus,
+                                         String categoryName,
+                                         String tabularTagName,
+                                         String searchText,
+                                         boolean includeDeaccessioned,
+                                         String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .queryParam("includeDeaccessioned", includeDeaccessioned);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (contentType != null) {
+            requestSpecification = requestSpecification.queryParam("contentType", contentType);
+        }
+        if (accessStatus != null) {
+            requestSpecification = requestSpecification.queryParam("accessStatus", accessStatus);
+        }
+        if (categoryName != null) {
+            requestSpecification = requestSpecification.queryParam("categoryName", categoryName);
+        }
+        if (tabularTagName != null) {
+            requestSpecification = requestSpecification.queryParam("tabularTagName", tabularTagName);
+        }
+        if (searchText != null) {
+            requestSpecification = requestSpecification.queryParam("searchText", searchText);
+        }
+        return requestSpecification.get("/api/datasets/" + datasetId + "/versions/" + version + "/files/counts");
+    }
+
+    static Response setFileCategories(String dataFileId, String apiToken, List<String> categories) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (String category : categories) {
+            jsonArrayBuilder.add(category);
+        }
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("categories", jsonArrayBuilder);
+        String jsonString = jsonObjectBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/files/" + dataFileId + "/metadata/categories");
+    }
+
+    static Response setFileTabularTags(String dataFileId, String apiToken, List<String> tabularTags) {
+        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        for (String tabularTag : tabularTags) {
+            jsonArrayBuilder.add(tabularTag);
+        }
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("tabularTags", jsonArrayBuilder);
+        String jsonString = jsonObjectBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/files/" + dataFileId + "/metadata/tabularTags");
+    }
+
+    static Response deleteFileInDataset(Integer fileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/files/" + fileId);
+    }
+
+    static Response getHasBeenDeleted(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + dataFileId + "/hasBeenDeleted");
+    }
+
+    static Response deaccessionDataset(Integer datasetId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("deaccessionReason", deaccessionReason);
+        if (deaccessionForwardURL != null) {
+            jsonObjectBuilder.add("deaccessionForwardURL", deaccessionForwardURL);
+        }
+        String jsonString = jsonObjectBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
+    }
+
+    static Response getDownloadSize(Integer datasetId,
+                                    String version,
+                                    String contentType,
+                                    String accessStatus,
+                                    String categoryName,
+                                    String tabularTagName,
+                                    String searchText,
+                                    String mode,
+                                    boolean includeDeaccessioned,
+                                    String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
+                .queryParam("mode", mode);
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (contentType != null) {
+            requestSpecification = requestSpecification.queryParam("contentType", contentType);
+        }
+        if (accessStatus != null) {
+            requestSpecification = requestSpecification.queryParam("accessStatus", accessStatus);
+        }
+        if (categoryName != null) {
+            requestSpecification = requestSpecification.queryParam("categoryName", categoryName);
+        }
+        if (tabularTagName != null) {
+            requestSpecification = requestSpecification.queryParam("tabularTagName", tabularTagName);
+        }
+        if (searchText != null) {
+            requestSpecification = requestSpecification.queryParam("searchText", searchText);
+        }
+        return requestSpecification
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
+    }
+
+    static Response downloadTmpFile(String fullyQualifiedPathToFile, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/admin/downloadTmpFile?fullyQualifiedPathToFile=" + fullyQualifiedPathToFile);
+    }
+
+    static Response setDatasetStorageDriver(Integer datasetId, String driverLabel, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(driverLabel)
+                .put("/api/datasets/" + datasetId + "/storageDriver");
+    }
+    
+    
+    //Globus Store related - not currently used
+    
+    static Response getDatasetGlobusUploadParameters(Integer datasetId, String locale, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/datasets/" + datasetId + "/globusUploadParameters?locale=" + locale);
+    }
+    
+    static Response getDatasetGlobusDownloadParameters(Integer datasetId, String locale, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/datasets/" + datasetId + "/globusDownloadParameters?locale=" + locale);
+    }
+    
+    static Response requestGlobusDownload(Integer datasetId, JsonObject body, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(body)
+                .contentType("application/json")
+                .post("/api/datasets/" + datasetId + "/requestGlobusDownload");
+    }
+
 }

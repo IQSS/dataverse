@@ -9,19 +9,19 @@ SWORD_ stands for "Simple Web-service Offering Repository Deposit" and is a "pro
 About
 -----
 
-Introduced in Dataverse Network (DVN) `3.6 <http://guides.dataverse.org/en/3.6.2/dataverse-api-main.html#data-deposit-api>`_, the SWORD API was formerly known as the "Data Deposit API" and ``data-deposit/v1`` appeared in the URLs. For backwards compatibility these URLs continue to work (with deprecation warnings). Due to architectural changes and security improvements (especially the introduction of API tokens) in Dataverse Software 4.0, a few backward incompatible changes were necessarily introduced and for this reason the version has been increased to ``v1.1``. For details, see :ref:`incompatible`.
+Introduced in Dataverse Network (DVN) `3.6 <https://guides.dataverse.org/en/3.6.2/dataverse-api-main.html#data-deposit-api>`_, the SWORD API was formerly known as the "Data Deposit API" and ``data-deposit/v1`` appeared in the URLs. For backwards compatibility these URLs continue to work (with deprecation warnings). Due to architectural changes and security improvements (especially the introduction of API tokens) in Dataverse Software 4.0, a few backward incompatible changes were necessarily introduced and for this reason the version has been increased to ``v1.1``. For details, see :ref:`incompatible`.
 
-The Dataverse Software implements most of SWORDv2_, which is specified at http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html . Please reference the `SWORDv2 specification`_ for expected HTTP status codes (i.e. 201, 204, 404, etc.), headers (i.e. "Location"), etc.
+The Dataverse Software implements most of SWORDv2_, which is specified at https://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html . Please reference the `SWORDv2 specification`_ for expected HTTP status codes (i.e. 201, 204, 404, etc.), headers (i.e. "Location"), etc.
 
 As a profile of AtomPub, XML is used throughout SWORD. As of Dataverse Software 4.0 datasets can also be created via JSON using the "native" API. SWORD is limited to the dozen or so fields listed below in the crosswalk, but the native API allows you to populate all metadata fields available in a Dataverse installation.
 
-.. _SWORD: http://en.wikipedia.org/wiki/SWORD_%28protocol%29
+.. _SWORD: https://en.wikipedia.org/wiki/SWORD_%28protocol%29
 
 .. _SWORDv2: http://swordapp.org/sword-v2/sword-v2-specifications/
 
 .. _RFC 5023: https://tools.ietf.org/html/rfc5023
 
-.. _SWORDv2 specification: http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html
+.. _SWORDv2 specification: https://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html
 
 .. _sword-auth:
 
@@ -86,7 +86,7 @@ New features as of v1.1
 
 - "Contact E-mail" is automatically populated from dataset owner's email.
 
-- "Subject" uses our controlled vocabulary list of subjects. This list is in the Citation Metadata of our User Guide > `Metadata References <http://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_. Otherwise, if a term does not match our controlled vocabulary list, it will put any subject terms in "Keyword". If Subject is empty it is automatically populated with "N/A".
+- "Subject" uses our controlled vocabulary list of subjects. This list is in the Citation Metadata of our User Guide > `Metadata References <https://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_. Otherwise, if a term does not match our controlled vocabulary list, it will put any subject terms in "Keyword". If Subject is empty it is automatically populated with "N/A".
 
 - Zero-length files are now allowed (but not necessarily encouraged).
 
@@ -127,7 +127,7 @@ Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse Project DB Element Cr
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:creator              |         authorName (LastName, FirstName)     |       Y      |  Author(s) for the Dataset.                                                                                                                                 |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|dcterms:subject              |   subject (Controlled Vocabulary) OR keyword |       Y      |  Controlled Vocabulary list is in our User Guide > `Metadata References <http://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_.   |                                                                                                                
+|dcterms:subject              |   subject (Controlled Vocabulary) OR keyword |       Y      |  Controlled Vocabulary list is in our User Guide > `Metadata References <https://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_.  |                                                                                                                
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:description          |              dsDescriptionValue              |       Y      |  Describing the purpose, scope or nature of the Dataset. Can also use dcterms:abstract.                                                                     |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
