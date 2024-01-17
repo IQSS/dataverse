@@ -299,8 +299,9 @@ This section is to show how to update a develop branch to develop branch Pull Re
 	cd dataverse
 	# add your remote dataverse repo to the cloned dataverse repo
 	git remote add my_dataverse_repo git@github.com:my_dataverse_repo/dataverse.git
+	# retrieve the latest commits from the remote personal repository (to the local machine)
 	git fetch my_dataverse_repo
-	# make a new branch not called develop
+	# make a new branch not called develop from the personal dataverse repository
 	git checkout my_dataverse_repo/develop -b dev1
 	git merge origin/develop
 	# delete the real develop branch locally
