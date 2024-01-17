@@ -12,7 +12,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.StringReader;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.util.HashMap;
 import java.util.logging.Logger;
 import jakarta.inject.Inject;
@@ -109,11 +110,10 @@ public class Prov extends AbstractApiBean {
         if(!systemConfig.isProvCollectionEnabled()) {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
         }
-        StringReader rdr = new StringReader(body);
         JsonObject jsonObj = null;
         
         try {
-            jsonObj = Json.createReader(rdr).readObject();
+            jsonObj = JsonUtil.getJsonObject(body);
         } catch (JsonException ex) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("api.prov.error.freeformInvalidJson"));
         }

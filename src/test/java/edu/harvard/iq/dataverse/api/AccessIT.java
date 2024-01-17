@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import io.restassured.RestAssured;
-import static io.restassured.RestAssured.given;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.DataFile;
@@ -14,7 +13,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.util.zip.ZipInputStream;
 
-import org.hamcrest.MatcherAssert;
+import jakarta.json.Json;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,15 +21,14 @@ import java.util.zip.ZipEntry;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
-import static jakarta.ws.rs.core.Response.Status.OK;
+
 import org.hamcrest.collection.IsMapContaining;
 
+import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.MatcherAssert.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -200,6 +198,8 @@ public class AccessIT {
         //Not logged in non-restricted
         Response anonDownloadOriginal = UtilIT.downloadFileOriginal(tabFile1Id);
         Response anonDownloadConverted = UtilIT.downloadFile(tabFile1Id);
+        Response anonDownloadConvertedNullKey = UtilIT.downloadFile(tabFile1Id, null);
+
         // ... and download the same tabular data file, but without the variable name header added:
         Response anonDownloadTabularNoHeader = UtilIT.downloadTabularFileNoVarHeader(tabFile1Id);
         // ... and download the same tabular file, this time requesting the "format=tab" explicitly:
@@ -208,6 +208,8 @@ public class AccessIT {
         assertEquals(OK.getStatusCode(), anonDownloadConverted.getStatusCode());
         assertEquals(OK.getStatusCode(), anonDownloadTabularNoHeader.getStatusCode());
         assertEquals(OK.getStatusCode(), anonDownloadTabularWithFormatName.getStatusCode());
+        assertEquals(UNAUTHORIZED.getStatusCode(), anonDownloadConvertedNullKey.getStatusCode());
+        
         int origSizeAnon = anonDownloadOriginal.getBody().asByteArray().length;
         int convertSizeAnon = anonDownloadConverted.getBody().asByteArray().length;
         int tabularSizeNoVarHeader = anonDownloadTabularNoHeader.getBody().asByteArray().length;
@@ -425,10 +427,7 @@ public class AccessIT {
                 }
 
                 String name = entry.getName(); 
-//                String s = String.format("Entry: %s len %d added %TD",
-//                                entry.getName(), entry.getSize(),
-//                                new Date(entry.getTime()));
-//                System.out.println(s);
+
 
                 // Once we get the entry from the zStream, the zStream is
                 // positioned read to read the raw data, and we keep
@@ -468,7 +467,7 @@ public class AccessIT {
     
     @Test
     public void testRequestAccess() throws InterruptedException {
-
+    
         String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
@@ -548,7 +547,7 @@ public class AccessIT {
         assertEquals(200, revokeFileAccessResponse.getStatusCode());
 
         listAccessRequestResponse = UtilIT.getAccessRequestList(tabFile3IdRestrictedNew.toString(), apiToken);
-        assertEquals(400, listAccessRequestResponse.getStatusCode());
+        assertEquals(404, listAccessRequestResponse.getStatusCode());
     }
 
     // This is a round trip test of uploading a zipped archive, with some folder
@@ -629,7 +628,50 @@ public class AccessIT {
         System.out.println("MD5 checksums of the unzipped file streams are correct.");
         
         System.out.println("Zip upload-and-download round trip test: success!");
-        
     }
 
+    @Test
+    public void testGetUserFileAccessRequested() {
+        // Create new user
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String newUserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        String dataFileId = Integer.toString(tabFile3IdRestricted);
+
+        // Call with new user and unrequested access file
+        Response getUserFileAccessRequestedResponse = UtilIT.getUserFileAccessRequested(dataFileId, newUserApiToken);
+        getUserFileAccessRequestedResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        boolean userFileAccessRequested = JsonPath.from(getUserFileAccessRequestedResponse.body().asString()).getBoolean("data");
+        assertFalse(userFileAccessRequested);
+
+        // Request file access for the new user
+        Response requestFileAccessResponse = UtilIT.requestFileAccess(dataFileId, newUserApiToken);
+        requestFileAccessResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Call with new user and requested access file
+        getUserFileAccessRequestedResponse = UtilIT.getUserFileAccessRequested(dataFileId, newUserApiToken);
+        getUserFileAccessRequestedResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        userFileAccessRequested = JsonPath.from(getUserFileAccessRequestedResponse.body().asString()).getBoolean("data");
+        assertTrue(userFileAccessRequested);
+    }
+
+    @Test
+    public void testGetUserPermissionsOnFile() {
+        // Call with valid file id
+        Response getUserPermissionsOnFileResponse = UtilIT.getUserPermissionsOnFile(Integer.toString(basicFileId), apiToken);
+        getUserPermissionsOnFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        boolean canDownloadFile = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canDownloadFile");
+        assertTrue(canDownloadFile);
+        boolean canEditOwnerDataset = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canEditOwnerDataset");
+        assertTrue(canEditOwnerDataset);
+        boolean canManageFilePermissions = JsonPath.from(getUserPermissionsOnFileResponse.body().asString()).getBoolean("data.canManageFilePermissions");
+        assertTrue(canManageFilePermissions);
+
+        // Call with invalid file id
+        Response getUserPermissionsOnFileInvalidIdResponse = UtilIT.getUserPermissionsOnFile("testInvalidId", apiToken);
+        getUserPermissionsOnFileInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
 }

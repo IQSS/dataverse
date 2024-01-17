@@ -2,12 +2,16 @@ package edu.harvard.iq.dataverse.api;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+
+import java.util.List;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import io.restassured.path.json.JsonPath;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 import static io.restassured.path.json.JsonPath.with;
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -30,16 +34,12 @@ import jakarta.json.JsonObjectBuilder;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 import org.hamcrest.CoreMatchers;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FilesIT {
 
@@ -1356,7 +1356,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         String apiTokenRando = createUserGetToken();
         
-        Response datasetStorageSizeResponseDraft = UtilIT.findDatasetDownloadSize(datasetId.toString(), ":draft", apiTokenRando);
+        Response datasetStorageSizeResponseDraft = UtilIT.findDatasetDownloadSize(datasetId.toString(), DS_VERSION_DRAFT, apiTokenRando);
         datasetStorageSizeResponseDraft.prettyPrint();
         assertEquals(UNAUTHORIZED.getStatusCode(), datasetStorageSizeResponseDraft.getStatusCode());  
         Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
@@ -1609,7 +1609,7 @@ public class FilesIT {
         // Expected values in the output: 
         String expectedTitleTopFolder = "Index of folder /";
         String expectedLinkTopFolder = folderName + "/";
-        String expectedLinkAhrefTopFolder = "/api/datasets/"+datasetId+"/dirindex/?version=:draft&folder=subfolder";
+        String expectedLinkAhrefTopFolder = "/api/datasets/"+datasetId+"/dirindex/?version=" + DS_VERSION_DRAFT + "&folder=subfolder";
         
         String expectedTitleSubFolder = "Index of folder /" + folderName;
         String expectedLinkAhrefSubFolder = "/api/access/datafile/" + folderName + "/" + dataFileId;
@@ -1989,7 +1989,7 @@ public class FilesIT {
         deleteResponse2.then().assertThat().statusCode(OK.getStatusCode());
 
         // Check file 2 deleted from post v1.0 draft
-        Response postv1draft = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
+        Response postv1draft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
         postv1draft.prettyPrint();
         postv1draft.then().assertThat()
                 .body("data.files.size()", equalTo(1))
@@ -2011,7 +2011,7 @@ public class FilesIT {
         downloadResponse2.then().assertThat().statusCode(OK.getStatusCode());
 
         // Check file 3 still in post v1.0 draft
-        Response postv1draft2 = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
+        Response postv1draft2 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
         postv1draft2.prettyPrint();
         postv1draft2.then().assertThat()
                 .body("data.files[0].dataFile.filename", equalTo("orcid_16x16.png"))
@@ -2026,7 +2026,7 @@ public class FilesIT {
         deleteResponse3.then().assertThat().statusCode(OK.getStatusCode());
 
         // Check file 3 deleted from post v1.0 draft
-        Response postv1draft3 = UtilIT.getDatasetVersion(datasetPid, ":draft", apiToken);
+        Response postv1draft3 = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken);
         postv1draft3.prettyPrint();
         postv1draft3.then().assertThat()
                 .body("data.files[0]", equalTo(null))
@@ -2113,5 +2113,374 @@ public class FilesIT {
             UtilIT.deleteSetting(SettingsServiceBean.Key.FilePIDsEnabled);
             UtilIT.deleteSetting(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection);
         }
+    }
+
+    @Test
+    public void testGetFileDownloadCount() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload test file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Publish collection and dataset
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // Download test file
+        int testFileId = JsonPath.from(uploadResponse.body().asString()).getInt("data.files[0].dataFile.id");
+
+        Response downloadResponse = UtilIT.downloadFile(testFileId, apiToken);
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Ensure download count is updated
+        sleep(2000);
+
+        // Get download count and assert it is 1
+        Response getFileDownloadCountResponse = UtilIT.getFileDownloadCount(Integer.toString(testFileId), apiToken);
+        getFileDownloadCountResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("1"));
+
+        // Call with invalid file id
+        Response getFileDownloadCountInvalidIdResponse = UtilIT.getFileDownloadCount("testInvalidId", apiToken);
+        getFileDownloadCountInvalidIdResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testGetFileDataTables() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload non-tabular file
+        String pathToNonTabularTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadNonTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToNonTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadNonTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that getting data tables for non-tabular file fails
+        int testNonTabularFileId = JsonPath.from(uploadNonTabularFileResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        Response getFileDataTablesForNonTabularFileResponse = UtilIT.getFileDataTables(Integer.toString(testNonTabularFileId), apiToken);
+        getFileDataTablesForNonTabularFileResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Upload tabular file
+        String pathToTabularTestFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Ensure tabular file is ingested
+        sleep(2000);
+
+        String testTabularFileId = Integer.toString(JsonPath.from(uploadTabularFileResponse.body().asString()).getInt("data.files[0].dataFile.id"));
+
+        // Get file data tables for the tabular file and assert data is obtained
+        Response getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(testTabularFileId, apiToken);
+        getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        int dataTablesNumber = JsonPath.from(getFileDataTablesForTabularFileResponse.body().asString()).getList("data").size();
+        assertTrue(dataTablesNumber > 0);
+
+        // Get file data tables for a restricted tabular file as the owner and assert data is obtained
+        Response restrictFileResponse = UtilIT.restrictFile(testTabularFileId, true, apiToken);
+        restrictFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+        getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(testTabularFileId, apiToken);
+        getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get file data tables for a restricted tabular file as other user and assert forbidden error is thrown
+        Response createRandomUser = UtilIT.createRandomUser();
+        createRandomUser.then().assertThat().statusCode(OK.getStatusCode());
+        String randomUserApiToken = UtilIT.getApiTokenFromResponse(createRandomUser);
+        getFileDataTablesForTabularFileResponse = UtilIT.getFileDataTables(testTabularFileId, randomUserApiToken);
+        getFileDataTablesForTabularFileResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+    }
+
+    @Test
+    public void testSetFileCategories() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload test file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Set categories
+        String testCategory1 = "testCategory1";
+        String testCategory2 = "testCategory2";
+        List<String> testCategories = List.of(testCategory1, testCategory2);
+        Response setFileCategoriesResponse = UtilIT.setFileCategories(dataFileId, apiToken, testCategories);
+        setFileCategoriesResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get file data and check for new categories
+        Response getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
+        getFileDataResponse.prettyPrint();
+        getFileDataResponse.then().assertThat()
+                .body("data.categories", hasItem(testCategory1))
+                .body("data.categories", hasItem(testCategory2))
+                .statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testSetFileTabularTags() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload tabular file
+        String pathToTabularTestFile = "src/test/resources/tab/test.tab";
+        Response uploadTabularFileResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTabularTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadTabularFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String tabularFileId = uploadTabularFileResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Ensure tabular file is ingested
+        sleep(2000);
+
+        // Set tabular tags
+        String testTabularTag1 = "Survey";
+        String testTabularTag2 = "Genomics";
+        // We repeat one to test that it is not duplicated
+        String testTabularTag3 = "Genomics";
+        List<String> testTabularTags = List.of(testTabularTag1, testTabularTag2, testTabularTag3);
+        Response setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, testTabularTags);
+        setFileTabularTagsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Get file data and check for new tabular tags
+        Response getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
+        getFileDataResponse.then().assertThat()
+                .body("data.dataFile.tabularTags", hasItem(testTabularTag1))
+                .body("data.dataFile.tabularTags", hasItem(testTabularTag2))
+                .statusCode(OK.getStatusCode());
+
+        int actualTabularTagsCount = getFileDataResponse.jsonPath().getList("data.dataFile.tabularTags").size();
+        assertEquals(2, actualTabularTagsCount);
+
+        // Set invalid tabular tag
+        String testInvalidTabularTag = "Invalid";
+        setFileTabularTagsResponse = UtilIT.setFileTabularTags(tabularFileId, apiToken, List.of(testInvalidTabularTag));
+        setFileTabularTagsResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Get file data and check tabular tags are unaltered
+        getFileDataResponse = UtilIT.getFileData(tabularFileId, apiToken);
+        getFileDataResponse.then().assertThat()
+                .body("data.dataFile.tabularTags", hasItem(testTabularTag1))
+                .body("data.dataFile.tabularTags", hasItem(testTabularTag2))
+                .statusCode(OK.getStatusCode());
+
+        actualTabularTagsCount = getFileDataResponse.jsonPath().getList("data.dataFile.tabularTags").size();
+        assertEquals(2, actualTabularTagsCount);
+
+        // Should receive an error when calling the endpoint for a non-tabular file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String nonTabularFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        setFileTabularTagsResponse = UtilIT.setFileTabularTags(nonTabularFileId, apiToken, List.of(testInvalidTabularTag));
+        setFileTabularTagsResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testGetHasBeenDeleted() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // Upload test file
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String dataFileId = uploadResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+
+        // Publish dataverse and dataset
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that the file has not been deleted
+        Response getHasBeenDeletedResponse = UtilIT.getHasBeenDeleted(dataFileId, apiToken);
+        getHasBeenDeletedResponse.then().assertThat().statusCode(OK.getStatusCode());
+        boolean fileHasBeenDeleted = JsonPath.from(getHasBeenDeletedResponse.body().asString()).getBoolean("data");
+        assertFalse(fileHasBeenDeleted);
+
+        // Delete test file
+        Response deleteFileInDatasetResponse = UtilIT.deleteFileInDataset(Integer.parseInt(dataFileId), apiToken);
+        deleteFileInDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Assert that the file has been deleted
+        getHasBeenDeletedResponse = UtilIT.getHasBeenDeleted(dataFileId, apiToken);
+        getHasBeenDeletedResponse.then().assertThat().statusCode(OK.getStatusCode());
+        fileHasBeenDeleted = JsonPath.from(getHasBeenDeletedResponse.body().asString()).getBoolean("data");
+        assertTrue(fileHasBeenDeleted);
+    }
+    
+    @Test
+    public void testCollectionStorageQuotas() {
+        // A minimal storage quota functionality test: 
+        // - We create a collection and define a storage quota
+        // - We configure Dataverse to enforce it 
+        // - We confirm that we can upload a file with the size under the quota
+        // - We confirm that we cannot upload a file once the quota is reached
+        // - We disable the quota on the collection via the API
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        System.out.println("dataset id: "+datasetId);
+        
+        Response checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // This brand new collection shouldn't have any quota defined yet: 
+        assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        
+        // Set quota to 1K:
+        Response setQuotaResponse = UtilIT.setCollectionQuota(dataverseAlias, 1024, apiToken);
+        setQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"), JsonPath.from(setQuotaResponse.body().asString()).getString("data.message"));
+        
+        // Check again:
+        checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation", Arrays.asList("1,024"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        UtilIT.enableSetting(SettingsServiceBean.Key.UseStorageQuotas);
+                
+        String pathToFile306bytes = "src/test/resources/FileRecordJobIT.properties"; 
+        String pathToFile1787bytes = "src/test/resources/datacite.xml";
+
+        // Upload a small file: 
+        
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile306bytes, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        // Check the recorded storage use: 
+        
+        Response checkStorageUseResponse = UtilIT.checkCollectionStorageUse(dataverseAlias, apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.use", Arrays.asList("306"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        // Attempt to upload the second file - this should get us over the quota, 
+        // so it should be rejected:
+        
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // We should get this error message made up from 2 Bundle strings:
+        expectedApiMessage = BundleUtil.getStringFromBundle("file.addreplace.error.ingest_create_file_err");
+        expectedApiMessage = expectedApiMessage + " " + BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded", Arrays.asList("1.7 KB", "718 B"));
+        assertEquals(expectedApiMessage, JsonPath.from(uploadResponse.body().asString()).getString("message"));
+        
+        System.out.println(expectedApiMessage);
+        
+        // Check Storage Use again - should be unchanged: 
+        
+        checkStorageUseResponse = UtilIT.checkCollectionStorageUse(dataverseAlias, apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.use", Arrays.asList("306"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        // Disable the quota on the collection; try again:
+        
+        Response disableQuotaResponse = UtilIT.disableCollectionQuota(dataverseAlias, apiToken);
+        disableQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.quota.deleted");
+        assertEquals(expectedApiMessage, JsonPath.from(disableQuotaResponse.body().asString()).getString("data.message"));
+
+        // Check again: 
+        
+        checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // ... should say "no quota", again: 
+        assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        
+        // And try to upload the larger file again:
+        
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        // ... should work this time around:
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+            
+        // Let's confirm that the total storage use has been properly implemented:
+
+        //try {sleep(1000);}catch(InterruptedException ie){}
+        
+        checkStorageUseResponse = UtilIT.checkCollectionStorageUse(dataverseAlias, apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.use", Arrays.asList("2,093"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        // @todo: a test for the storage use hierarchy? - create a couple of 
+        // sub-collections, upload a file into a dataset in the farthest branch 
+        // collection, make sure the usage has been incremented all the way up 
+        // to the root? 
+        
+        UtilIT.deleteSetting(SettingsServiceBean.Key.UseStorageQuotas);
     }
 }

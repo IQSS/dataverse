@@ -204,7 +204,7 @@
                                                                                    or FilePage.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}">
                                                             <ui:include src="file-download-button-fragment.xhtml">
                                                                 <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
-                                                                <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                                                                <ui:param name="guestbookAndTermsPopupRequired" value="#{FilePage.guestbookAndTermsPopupRequired}"/>
                                                                 <ui:param name="requestAccessPopupRequired" value="#{FilePage.requestAccessPopupRequired}"/>
                                                                 <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                                                                 <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
@@ -214,6 +214,7 @@
                                                                 <ui:param name="exploreTools" value="#{FilePage.exploreTools}"/>
                                                                 <ui:param name="queryTools" value="#{FilePage.queryTools}"/>
                                                                 <ui:param name="anonymized" value="#{FilePage.anonymizedAccess}"/>
+                                                                <ui:param name="bean" value="#{FilePage}"/>
                                                             </ui:include>
                                                         </ui:fragment>
                                                         <!-- END: Explore/Download/Request Button Block -->
@@ -297,7 +298,7 @@
                                             <!-- Classic downloads -->
                                             <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">
                                                 <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                    <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
+                                                    <f:param value="#{guestbookResponseServiceBean.getDownloadCountByDataFileId(FilePage.fileId)}"/>
                                                 </h:outputFormat>
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.tip']}"></span>
@@ -305,7 +306,7 @@
                                             <!-- Make Data Count downloads -->
                                             <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
                                                 <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
-                                                    <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
+                                                    <f:param value="#{guestbookResponseServiceBean.getDownloadCountByDataFileId(FilePage.fileId)}"/>
                                                 </h:outputFormat>
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                         data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.file.downloads.nonmdc.tip']}"></span>
@@ -353,20 +354,22 @@
                             <p:tab id="previewTab" title="#{FilePage.toolTabTitle}" 
                                    rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                 <!-- PREVIEW TERMS/GUESTBOOK FORM -->
-                                <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.termsMet and (FilePage.getSelectedTool().previewTool or FilePage.getSelectedTool().queryTool)}">
-                                    <ui:include id="previewGB" src="file-download-popup-fragment.xhtml">
+                                <ui:fragment rendered="#{FilePage.guestbookAndTermsPopupRequired and !FilePage.termsMet and (FilePage.getSelectedTool().previewTool or FilePage.getSelectedTool().queryTool)}">
+                                    <ui:include id="previewGB" src="guestbook-terms-popup-fragment.xhtml">
                                         <ui:param name="popupContext" value="previewTab"/>
                                         <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
-                                        <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                                        <ui:param name="guestbookAndTermsPopupRequired" value="#{FilePage.guestbookAndTermsPopupRequired}"/>
                                         <ui:param name="hasRestrictedFile" value="#{FilePage.fileMetadata.restricted}"/>
                                         <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                                         <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                                         <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                                         <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
+                                        <ui:param name="termsGuestbookPopupAction" value="#{bundle.download}"/>
+                                        <ui:param name="guestbookPopupRequiredAtDownload" value="#{FilePage.guestbookPopupRequiredAtDownload}"/>
                                     </ui:include>
-                                </ui:fragment>   
+                                </ui:fragment>
                                 <!-- PREVIEW EXTERNAL TOOL -->
-                                <ui:fragment rendered="#{(!FilePage.downloadPopupRequired) or (FilePage.downloadPopupRequired and FilePage.termsMet)}">
+                                <ui:fragment rendered="#{(!FilePage.guestbookAndTermsPopupRequired) or FilePage.termsMet}">
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.allAvailableTools.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
@@ -384,12 +387,14 @@
                                                 </li>
                                             </ui:repeat>
                                         </ul>
-                                        </ui:fragment>                                        
+                                        </ui:fragment>
                                     </div>
                                     <!-- END: Preview Button Group -->
                                     <div class="btn-group" jsf:rendered="#{(FilePage.toolsWithPreviews.size() > 0 or FilePage.queryTools.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                         <!-- Modular/Configured Explore Tool -->
-                                        <h:commandLink rendered="#{!downloadPopupRequired}" 
+                                        <ui:remove><!-- Not sure this div will ever be rendered when terms are required and FilePage.termsMet isn't true. Leaving this logic in in case that is incorrect or changes going forward --></ui:remove>
+                            
+                                        <h:commandLink rendered="#{(!FilePage.guestbookAndTermsPopupRequired) or FilePage.termsMet}" 
                                                          type="submit"
                                                          styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
@@ -400,14 +405,15 @@
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </h:commandLink>
-                                        <p:commandLink rendered="#{downloadPopupRequired}"
+                                        <p:commandLink rendered="#{FilePage.guestbookAndTermsPopupRequired and !FilePage.termsMet}"
                                                          action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'externalTool', FilePage.selectedTool)}"
                                                          styleClass="btn btn-default"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                                          type="submit"
                                                          process="@this"
-                                                         update="@widgetVar(downloadPopup)"
-                                                         oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                                                         update="@widgetVar(guestbookAndTermsPopup)"
+                                                         oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
+                                            <f:actionListener binding="#{FilePage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                             <span class="glyphicon glyphicon-#{FilePage.selectedTool.exploreTool ? 'equalizer' : 'new-window'}"></span>
                                             <h:outputFormat value="#{FilePage.selectedTool.exploreTool ? bundle['file.previewTab.exploreBtn'] : bundle['file.previewTab.openBtn']}">
                                                 <f:param value="#{bundle.explore}"/>
@@ -629,46 +635,31 @@
                             </button>
                         </div>
                     </p:dialog>                                                              
-                    <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
-                         <ui:include src="file-download-popup-fragment.xhtml">
-                            <ui:param name="popupContext" value="downloadFile"/>
-                            <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
-                            <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
-                            <ui:param name="hasRestrictedFile" value="#{FilePage.fileMetadata.restricted}"/>
-                            <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
-                            <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
-                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                            <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
-                        </ui:include>
-                    </p:dialog>
+
                     <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}" widgetVar="downloadPackagePopup" modal="true">
                          <ui:include src="package-download-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
-                            <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                            <ui:param name="guestbookAndTermsPopupRequired" value="#{FilePage.guestbookAndTermsPopupRequired}"/>
                             <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
                             <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                             <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                         </ui:include>
                     </p:dialog>                  
-                    <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}" widgetVar="requestAccessPopup" modal="true">
+                    <p:dialog id="guestbookAndTermsPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="guestbookAndTermsPopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-                        <ui:include src="file-request-access-popup-fragment.xhtml">
+                        <ui:include src="guestbook-terms-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                             <ui:param name="someActivelyEmbargoedFiles" value="#{FilePage.cantRequestDueToEmbargo}"/>
+                            <ui:param name="guestbookAndTermsPopupRequired" value="#{FilePage.guestbookAndTermsPopupRequired}"/>
+                            <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                            <ui:param name="fileDownloadHelper" value="#{FilePage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                            <ui:param name="termsGuestbookPopupAction" value="#{FilePage.termsGuestbookPopupAction}"/>
+                            <ui:param name="guestbookPopupRequiredAtDownload" value="#{FilePage.guestbookPopupRequiredAtDownload}"/>
+                            
                         </ui:include>
-                    </p:dialog>                    
-                    <p:dialog id="mapDataDialog" header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapDataDialog" modal="true">
-                        <p class="help-block">
-                            <span class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
-                        </p>
-                        <div class="button-block">
-                            <button type="button" class="btn btn-default" onclick="PF('mapDataDialog').hide();PF('blockDatasetForm').hide();">
-                                #{bundle.close}
-                            </button>
-                        </div>
-                    </p:dialog>                    
+                    </p:dialog>
                     <ui:include rendered="#{systemConfig.provCollectionEnabled}" src="provenance-popups-fragment.xhtml">
                         <ui:param name="saveInPopup" value="true"/>
                     </ui:include>
@@ -683,7 +674,7 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <button class="btn btn-default" onclick="PF('accessSignUpLogIn_popup').hide();PF('blockDatasetForm').hide();" type="button">
+                            <button class="btn btn-default" onclick="PF('accessSignUpLogIn_popup').hide();" type="button">
                                 #{bundle.close}
                             </button>
                         </div>

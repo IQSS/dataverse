@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -231,6 +232,84 @@ public class ExternalToolsIT {
                 .body("data[0].displayName", CoreMatchers.equalTo("DatasetTool1"))
                 .body("data[0].scope", CoreMatchers.equalTo("dataset"))
                 .body("data[0].toolUrlWithQueryParams", CoreMatchers.equalTo("http://datasettool1.com?datasetPid=" + datasetPid + "&key=" + apiToken))
+                .statusCode(OK.getStatusCode());
+
+    }
+
+    @Test
+    public void testDatasetLevelToolConfigure() {
+
+        // Delete all external tools before testing.
+        Response getTools = UtilIT.getExternalTools();
+        getTools.prettyPrint();
+        getTools.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String body = getTools.getBody().asString();
+        JsonReader bodyObject = Json.createReader(new StringReader(body));
+        JsonArray tools = bodyObject.readObject().getJsonArray("data");
+        for (int i = 0; i < tools.size(); i++) {
+            JsonObject tool = tools.getJsonObject(i);
+            int id = tool.getInt("id");
+            Response deleteExternalTool = UtilIT.deleteExternalTool(id);
+            deleteExternalTool.prettyPrint();
+        }
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = JsonPath.from(createDataset.getBody().asString()).getInt("data.id");
+        String datasetPid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
+
+        String toolManifest = """
+{
+   "displayName": "Dataset Configurator",
+   "description": "Slices! Dices! <a href='https://docs.datasetconfigurator.com' target='_blank'>More info</a>.",
+   "types": [
+     "configure"
+   ],
+   "scope": "dataset",
+   "toolUrl": "https://datasetconfigurator.com",
+   "toolParameters": {
+     "queryParameters": [
+       {
+         "datasetPid": "{datasetPid}"
+       },
+       {
+         "localeCode": "{localeCode}"
+       }
+     ]
+   }
+ }
+""";
+
+        Response addExternalTool = UtilIT.addExternalTool(JsonUtil.getJsonObject(toolManifest));
+        addExternalTool.prettyPrint();
+        addExternalTool.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.displayName", CoreMatchers.equalTo("Dataset Configurator"));
+
+        Response getExternalToolsByDatasetId = UtilIT.getExternalToolsForDataset(datasetId.toString(), "configure", apiToken);
+        getExternalToolsByDatasetId.prettyPrint();
+        getExternalToolsByDatasetId.then().assertThat()
+                .body("data[0].displayName", CoreMatchers.equalTo("Dataset Configurator"))
+                .body("data[0].scope", CoreMatchers.equalTo("dataset"))
+                .body("data[0].types[0]", CoreMatchers.equalTo("configure"))
+                .body("data[0].toolUrlWithQueryParams", CoreMatchers.equalTo("https://datasetconfigurator.com?datasetPid=" + datasetPid))
                 .statusCode(OK.getStatusCode());
 
     }
