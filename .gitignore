@@ -18,7 +18,6 @@ GRTAGS
 .Trashes
 ehthumbs.db
 Thumbs.db
-.vagrant
 *.pyc
 *.swp
 scripts/api/py_api_wrapper/demo-data/*
@@ -38,17 +37,6 @@ scripts/api/setup-all.*.log
 
 # ctags generated tag file
 tags
-
-# dependencies I'm not sure we're allowed to redistribute / have in version control
-conf/docker-aio/dv/deps/
-
-# no need to check aoi installer zip into vc
-conf/docker-aio/dv/install/dvinstall.zip
-# or copy of test data
-conf/docker-aio/testdata/
-
-# docker-aio creates maven/ which reports 86 new files. ignore this wd.
-maven/
 
 scripts/installer/default.config
 *.pem
@@ -70,9 +58,6 @@ venv
 scripts/search/data/binary/trees.png.thumb140
 src/main/webapp/resources/images/cc0.png.thumb140
 src/main/webapp/resources/images/dataverseproject.png.thumb140
-
-# apache-maven is downloaded by docker-aio
-apache-maven*
 
 # Docker development volumes
 /docker-dev-volumes

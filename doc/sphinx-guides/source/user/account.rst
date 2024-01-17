@@ -109,7 +109,7 @@ If you are leaving your institution and need to convert your Dataverse installat
 ORCID Log In
 ~~~~~~~~~~~~~
 
-You can set up your Dataverse installation account to allow you to log in using your ORCID credentials. ORCID® is an independent non-profit effort to provide an open registry of unique researcher identifiers and open services to link research activities and organizations to these identifiers. Learn more at `orcid.org <http://orcid.org>`_. 
+You can set up your Dataverse installation account to allow you to log in using your ORCID credentials. ORCID® is an independent non-profit effort to provide an open registry of unique researcher identifiers and open services to link research activities and organizations to these identifiers. Learn more at `orcid.org <https://orcid.org>`_. 
 
 Create a Dataverse installation account using ORCID
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

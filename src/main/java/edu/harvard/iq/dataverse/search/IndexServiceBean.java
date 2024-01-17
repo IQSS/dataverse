@@ -1,27 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataFileTag;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.Embargo;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
@@ -35,13 +14,13 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -54,26 +33,25 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
-import javax.inject.Named;
-import javax.json.JsonObject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.AsyncResult;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
+import jakarta.inject.Named;
+import jakarta.json.JsonObject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -422,6 +400,7 @@ public class IndexServiceBean {
         }
     }
 
+    @Asynchronous
     public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
         for(Dataset dataset : datasets) {
             asyncIndexDataset(dataset, true);
@@ -1074,13 +1053,17 @@ public class IndexServiceBean {
                             if(maxNorthLat==null || Float.parseFloat(maxNorthLat) < Float.parseFloat(northLat)) {
                                 maxNorthLat=northLat;
                             }
-                            //W, E, N, S
-                            solrInputDocument.addField(SearchFields.GEOLOCATION, "ENVELOPE(" + westLon + "," + eastLon + "," + northLat + "," + southLat + ")");
+
+                            if (DatasetFieldValueValidator.validateBoundingBox(westLon, eastLon, northLat, southLat)) {
+                                //W, E, N, S
+                                solrInputDocument.addField(SearchFields.GEOLOCATION, "ENVELOPE(" + westLon + "," + eastLon + "," + northLat + "," + southLat + ")");
+                            }
                         }
                     }
                     //Only one bbox per dataset
                     //W, E, N, S
-                    if ((minWestLon != null || maxEastLon != null) && (maxNorthLat != null || minSouthLat != null)) {
+                    if (DatasetFieldValueValidator.validateBoundingBox(minWestLon, maxEastLon, maxNorthLat, minSouthLat) &&
+                            (minWestLon != null || maxEastLon != null) && (maxNorthLat != null || minSouthLat != null)) {
                         solrInputDocument.addField(SearchFields.BOUNDING_BOX, "ENVELOPE(" + minWestLon + "," + maxEastLon + "," + maxNorthLat + "," + minSouthLat + ")");
                     }
 

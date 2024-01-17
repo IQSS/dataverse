@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import javax.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestContext;
 
 import static edu.harvard.iq.dataverse.api.auth.WorkflowKeyAuthMechanism.RESPONSE_MESSAGE_BAD_WORKFLOW_KEY;
 import static org.junit.jupiter.api.Assertions.*;

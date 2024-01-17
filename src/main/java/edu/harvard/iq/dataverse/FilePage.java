@@ -30,8 +30,6 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
-import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -39,9 +37,8 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,19 +46,19 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.validator.ValidatorException;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.validation.ConstraintViolation;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.validator.ValidatorException;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.validation.ConstraintViolation;
 
 import org.primefaces.PrimeFaces;
 import org.primefaces.component.tabview.TabView;
@@ -328,6 +325,20 @@ public class FilePage implements java.io.Serializable {
         Collections.sort(retList, CompareExternalToolName);
         return retList;
     }
+    
+    private String termsGuestbookPopupAction = "";
+
+    public void setTermsGuestbookPopupAction(String popupAction){
+        if(popupAction != null && popupAction.length() > 0){
+            logger.info("TGPA set to " + popupAction);
+            this.termsGuestbookPopupAction = popupAction;
+        }
+
+    }
+
+    public String getTermsGuestbookPopupAction(){
+        return termsGuestbookPopupAction;
+    }
 
     public boolean isDownloadPopupRequired() {  
         if(fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null ){
@@ -343,6 +354,18 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.isRequestAccessPopupRequired(fileMetadata.getDatasetVersion());
     }
 
+    public boolean isGuestbookAndTermsPopupRequired() {  
+        if(fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null ){
+            return false;
+        }
+        return FileUtil.isGuestbookAndTermsPopupRequired(fileMetadata.getDatasetVersion());
+    }
+    
+    public boolean isGuestbookPopupRequiredAtDownload(){
+        // Only show guestbookAtDownload if guestbook at request is disabled (legacy behavior)
+        DatasetVersion workingVersion = fileMetadata.getDatasetVersion();
+        return FileUtil.isGuestbookPopupRequired(workingVersion) && !workingVersion.getDataset().getEffectiveGuestbookEntryAtRequest();
+    }
 
     public void setFileMetadata(FileMetadata fileMetadata) {
         this.fileMetadata = fileMetadata;
@@ -1046,7 +1069,7 @@ public class FilePage implements java.io.Serializable {
         ApiToken apiToken = null;
         User user = session.getUser();
         if (fileMetadata.getDatasetVersion().isDraft() || fileMetadata.getDatasetVersion().isDeaccessioned() || (fileMetadata.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fileMetadata))) {
-            apiToken=fileDownloadService.getApiToken(user);
+            apiToken=authService.getValidApiTokenForUser(user);
         }
         if(externalTool == null){
             return "";
@@ -1247,6 +1270,24 @@ public class FilePage implements java.io.Serializable {
     //Determines whether this File uses a public store and therefore doesn't support embargoed or restricted files
     public boolean isHasPublicStore() {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier())));
+    }
+    
+    //Allows use of fileDownloadHelper in file.xhtml
+    public FileDownloadHelper getFileDownloadHelper() {
+        return fileDownloadHelper;
+    }
+
+    public void setFileDownloadHelper(FileDownloadHelper fileDownloadHelper) {
+        this.fileDownloadHelper = fileDownloadHelper;
+    }
+
+    /**
+     * This method only exists because in file-edit-button-fragment.xhtml we
+     * call bean.editFileMetadata() and we need both FilePage (this bean) and
+     * DatasetPage to have the method defined to prevent errors in server.log.
+     */
+    public String editFileMetadata(){
+        return "";
     }
 
 }

@@ -6,33 +6,29 @@ import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
-import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
-import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
-import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
-import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -44,7 +40,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -53,21 +48,21 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 /**
  * AuthenticationService is for general authentication-related operations.
@@ -127,6 +122,9 @@ public class AuthenticationServiceBean {
     @EJB
     SavedSearchServiceBean savedSearchService;
 
+    @EJB
+    PrivateUrlServiceBean privateUrlService;
+ 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
         
@@ -589,7 +587,7 @@ public class AuthenticationServiceBean {
      * {@code userDisplayInfo}, a lookup entry for them based
      * UserIdentifier.getLookupStringPerAuthProvider (within the supplied
      * authentication provider), and internal user identifier (used for role
-     * assignments, etc.) based on UserIdentifier.getInternalUserIdentifer.
+     * assignments, etc.) based on UserIdentifier.getInternalUserIdentifier.
      *
      * @param userRecordId
      * @param proposedAuthenticatedUserIdentifier
@@ -614,20 +612,21 @@ public class AuthenticationServiceBean {
             proposedAuthenticatedUserIdentifier = proposedAuthenticatedUserIdentifier.trim();
         }
         // we now select a username for the generated AuthenticatedUser, or give up
-        String internalUserIdentifer = proposedAuthenticatedUserIdentifier;
+        String internalUserIdentifier = proposedAuthenticatedUserIdentifier;
         // TODO should lock table authenticated users for write here
-        if ( identifierExists(internalUserIdentifer) ) {
+        if ( identifierExists(internalUserIdentifier) ) {
             if ( ! generateUniqueIdentifier ) {
                 return null;
             }
             int i=1;
-            String identifier = internalUserIdentifer + i;
+            String identifier = internalUserIdentifier + i;
             while ( identifierExists(identifier) ) {
                 i += 1;
+                identifier = internalUserIdentifier + i;
             }
             authenticatedUser.setUserIdentifier(identifier);
         } else {
-            authenticatedUser.setUserIdentifier(internalUserIdentifer);
+            authenticatedUser.setUserIdentifier(internalUserIdentifier);
         }
         authenticatedUser = save( authenticatedUser );
         // TODO should unlock table authenticated users for write here
@@ -940,14 +939,45 @@ public class AuthenticationServiceBean {
         return query.getResultList();
     }
 
-    public ApiToken getValidApiTokenForUser(AuthenticatedUser user) {
+    /**
+     * This method gets a valid api token for an AuthenticatedUser, creating a new
+     * token if one doesn't exist or if the token is expired.
+     * 
+     * @param user
+     * @return
+     */
+    public ApiToken getValidApiTokenForAuthenticatedUser(AuthenticatedUser user) {
         ApiToken apiToken = null;
         apiToken = findApiTokenByUser(user);
-        if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+        if ((apiToken == null) || apiToken.isExpired()) {
             logger.fine("Created apiToken for user: " + user.getIdentifier());
             apiToken = generateApiTokenForUser(user);
         }
         return apiToken;
     }
 
+    /**
+     *  Gets a token for an AuthenticatedUser or a PrivateUrlUser. It will create a
+     *  new token if needed for an AuthenticatedUser. Note that, for a PrivateUrlUser, this method creates a token
+     *  with a temporary AuthenticateUser that only has a userIdentifier - needed in generating signed Urls.
+     * @param user
+     * @return a token or null (i.e. if the user is not an AuthenticatedUser or PrivateUrlUser)
+     */
+
+    public ApiToken getValidApiTokenForUser(User user) {
+        ApiToken apiToken = null;
+        if (user instanceof AuthenticatedUser) {
+            apiToken = getValidApiTokenForAuthenticatedUser((AuthenticatedUser) user);
+        } else if (user instanceof PrivateUrlUser) {
+            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+            
+            PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+            apiToken = new ApiToken();
+            apiToken.setTokenString(privateUrl.getToken());
+            AuthenticatedUser au = new AuthenticatedUser();
+            au.setUserIdentifier(privateUrlUser.getIdentifier());
+            apiToken.setAuthenticatedUser(au);
+        }
+        return apiToken;
+    }
 }

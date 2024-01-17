@@ -59,4 +59,24 @@ public class DataAccessTest {
     StorageIO<Dataset> storageIo = DataAccess.createNewStorageIO(dataset, "valid-tag");
     assertTrue(storageIo.getClass().equals(FileAccessIO.class));
   }
+  
+  @Test
+  void testGetLocationFromStorageId() {
+      Dataset d = new Dataset();
+      d.setAuthority("10.5072");
+      d.setIdentifier("FK2/ABCDEF");
+      assertEquals("s3://10.5072/FK2/ABCDEF/18b39722140-50eb7d3c5ece",
+              DataAccess.getLocationFromStorageId("s3://18b39722140-50eb7d3c5ece", d));
+      assertEquals("10.5072/FK2/ABCDEF/18b39722140-50eb7d3c5ece",
+              DataAccess.getLocationFromStorageId("18b39722140-50eb7d3c5ece", d));
+
+  }
+  
+  @Test
+  void testGetStorageIdFromLocation() {
+      assertEquals("file://18b39722140-50eb7d3c5ece",
+              DataAccess.getStorageIdFromLocation("file://10.5072/FK2/ABCDEF/18b39722140-50eb7d3c5ece"));
+      assertEquals("s3://18b39722140-50eb7d3c5ece",
+              DataAccess.getStorageIdFromLocation("s3://bucketname:10.5072/FK2/ABCDEF/18b39722140-50eb7d3c5ece"));
+  }
 }

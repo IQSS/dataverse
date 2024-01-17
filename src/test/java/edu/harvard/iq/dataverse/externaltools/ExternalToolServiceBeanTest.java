@@ -9,14 +9,15 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+
 import java.util.ArrayList;
 import java.util.List;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import org.junit.Test;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class ExternalToolServiceBeanTest {
 
@@ -50,7 +51,7 @@ public class ExternalToolServiceBeanTest {
         externalToolTypes.add(externalToolType);
         ExternalTool.Scope scope = ExternalTool.Scope.FILE;
         ExternalTool externalTool = new ExternalTool("displayName", "toolName", "description", externalToolTypes, scope, "http://foo.com", "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
-        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, null);
+        URLTokenUtil externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, null);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
         List<ExternalTool> availableExternalTools = externalToolService.findExternalToolsByFile(externalTools, dataFile);

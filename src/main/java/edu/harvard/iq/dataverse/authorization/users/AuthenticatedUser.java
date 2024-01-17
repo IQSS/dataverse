@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.authorization.users;
 
 import edu.harvard.iq.dataverse.Cart;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.FileAccessRequest;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.validation.ValidateEmail;
@@ -17,29 +19,31 @@ import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PostLoad;
-import javax.persistence.PrePersist;
-import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
-import org.hibernate.validator.constraints.NotBlank;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * When adding an attribute to this class, be sure to update the following:
@@ -202,6 +206,29 @@ public class AuthenticatedUser implements User, Serializable {
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<OAuth2TokenData> oAuth2TokenDatas;
 
+    /*for many to many fileAccessRequests*/
+    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    private List<FileAccessRequest> fileAccessRequests;
+
+    public List<FileAccessRequest> getFileAccessRequests() {
+        return fileAccessRequests;
+    }
+
+    public void setFileAccessRequests(List<FileAccessRequest> fARs) {
+        this.fileAccessRequests = fARs;
+    }
+
+    public List<DataFile> getRequestedDataFiles(){
+        List<DataFile> requestedDataFiles = new ArrayList<>();
+
+        for(FileAccessRequest far : getFileAccessRequests()){
+            if(far.isStateCreated()) {
+                requestedDataFiles.add(far.getDataFile());
+            }
+        }
+        return requestedDataFiles;
+    }
+    
     @Override
     public AuthenticatedUserDisplayInfo getDisplayInfo() {
         return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position);
