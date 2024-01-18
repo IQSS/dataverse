@@ -31,6 +31,48 @@ public class CacheFactoryBeanTest {
     AuthenticatedUser authUser = new AuthenticatedUser();
     String action;
     static RedisServer mockRedisServer;
+    static final String settingJson = "{\n" +
+            "  \"rateLimits\":[\n" +
+            "    {\n" +
+            "      \"tier\": 0,\n" +
+            "      \"limitPerHour\": 10,\n" +
+            "      \"actions\": [\n" +
+            "        \"GetLatestPublishedDatasetVersionCommand\",\n" +
+            "        \"GetPrivateUrlCommand\",\n" +
+            "        \"GetDatasetCommand\",\n" +
+            "        \"GetLatestAccessibleDatasetVersionCommand\"\n" +
+            "      ]\n" +
+            "    },\n" +
+            "    {\n" +
+            "      \"tier\": 0,\n" +
+            "      \"limitPerHour\": 1,\n" +
+            "      \"actions\": [\n" +
+            "        \"CreateGuestbookResponseCommand\",\n" +
+            "        \"UpdateDatasetVersionCommand\",\n" +
+            "        \"DestroyDatasetCommand\",\n" +
+            "        \"DeleteDataFileCommand\",\n" +
+            "        \"FinalizeDatasetPublicationCommand\",\n" +
+            "        \"PublishDatasetCommand\"\n" +
+            "      ]\n" +
+            "    },\n" +
+            "    {\n" +
+            "      \"tier\": 1,\n" +
+            "      \"limitPerHour\": 30,\n" +
+            "      \"actions\": [\n" +
+            "        \"CreateGuestbookResponseCommand\",\n" +
+            "        \"GetLatestPublishedDatasetVersionCommand\",\n" +
+            "        \"GetPrivateUrlCommand\",\n" +
+            "        \"GetDatasetCommand\",\n" +
+            "        \"GetLatestAccessibleDatasetVersionCommand\",\n" +
+            "        \"UpdateDatasetVersionCommand\",\n" +
+            "        \"DestroyDatasetCommand\",\n" +
+            "        \"DeleteDataFileCommand\",\n" +
+            "        \"FinalizeDatasetPublicationCommand\",\n" +
+            "        \"PublishDatasetCommand\"\n" +
+            "      ]\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}";
 
     @BeforeEach
     public void setup() throws IOException {
@@ -41,7 +83,7 @@ public class CacheFactoryBeanTest {
         lenient().doReturn(30).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(0), anyInt());
         lenient().doReturn(60).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(1), anyInt());
         lenient().doReturn(120).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(2), anyInt());
-        lenient().doReturn("").when(systemConfig).getRateLimitsJson();
+        lenient().doReturn(settingJson).when(systemConfig).getRateLimitsJson();
 
         cache.init();
         authUser.setRateLimitTier(1); // reset to default
