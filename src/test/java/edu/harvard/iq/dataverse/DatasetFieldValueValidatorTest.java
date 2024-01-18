@@ -108,7 +108,72 @@ public class DatasetFieldValueValidatorTest {
         
         value.setValue("12.14");
         result = instance.isValid(value, ctx);
+        assertEquals(false, result); 
+        
+        //BOOLEAN
+        dft.setFieldType(DatasetFieldType.FieldType.BOOLEAN); 
+        value.setValue("TRUE");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);
+        
+        value.setValue("true");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);
+        
+        value.setValue("FALSE");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result); 
+
+        value.setValue("false");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result); 
+
+        value.setValue(" ");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result); 
+
+        //URI_NO
+        dft.setFieldType(DatasetFieldType.FieldType.URI_NO); 
+        value.setValue("fish://foo.bar");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);
+        
+        value.setValue("ftp://foo.bar/hello");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);
+
+        value.setValue("s3://foo.bar/hello#rack-1");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);
+        
+        value.setValue("swift://foo.bar/hello?whoami=peter");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);
+
+        value.setValue("wtf://foo.bar/hello?whoami=peter#test");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);
+
+        value.setValue("rsync://foo.bar/target");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);
+
+        value.setValue("smb://foo.bar/share/folder/file.csv");
+        result = instance.isValid(value, ctx);
+        assertEquals(true, result);
+
+        value.setValue("scheme:foo.bar");
+        result = instance.isValid(value, ctx);
         assertEquals(false, result);
+
+        value.setValue("foo.bar");
+        result = instance.isValid(value, ctx);
+        assertEquals(false, result);
+        
+        value.setValue("urn:isbn:1234567890");
+        result = instance.isValid(value, ctx);
+        assertEquals(false, result);
+               
     }
 
     @Test
