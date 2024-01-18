@@ -299,8 +299,7 @@ public class HarvestingServerIT {
         // expected HTTP result codes. 
         
         String setName = UtilIT.getRandomString(6);
-        String persistentId = extraDatasetsIdentifiers.get(0); 
-        String setDef = "dsPersistentId:"+persistentId;
+        String setDefinition = "title:Sample";
 
         // Make sure the set does not exist
         String setPath = String.format("/api/harvest/server/oaisets/%s", setName);
@@ -313,20 +312,21 @@ public class HarvestingServerIT {
         // Create the set as admin user
         Response createSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
-                .body(jsonForTestSpec(setName, setDef))
+                .body(jsonForTestSpec(setName, setDefinition))
                 .post(createPath);
         assertEquals(201, createSetResponse.getStatusCode());
 
         // I. Test the Modify/Edit (POST method) functionality of the 
         // Dataverse OAI Sets API
         
-        String newDefinition = "title:New";
+        String persistentId = extraDatasetsIdentifiers.get(0); 
+        String newDefinition = "dsPersistentId:"+persistentId;
         String newDescription = "updated";
         
         // API Test 1. Try to modify the set as normal user, should fail
         Response editSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, normalUserAPIKey)
-                .body(jsonForEditSpec(setName, setDef, ""))
+                .body(jsonForEditSpec(setName, newDefinition, ""))
                 .put(setPath);
         logger.info("non-admin user editSetResponse.getStatusCode(): " + editSetResponse.getStatusCode());
         assertEquals(400, editSetResponse.getStatusCode());
