@@ -1617,8 +1617,12 @@ public class IndexServiceBean {
     }
 
     private void addLicenseToSolrDoc(SolrInputDocument solrInputDocument, DatasetVersion datasetVersion) {
-        if (datasetVersion != null && datasetVersion.getTermsOfUseAndAccess() != null && datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
-            solrInputDocument.addField(SearchFields.DATASET_LICENSE, datasetVersion.getTermsOfUseAndAccess().getLicense().getName());
+        if (datasetVersion != null && datasetVersion.getTermsOfUseAndAccess() != null) {
+            String licenseName = "Custom Terms";
+            if(datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
+                licenseName = datasetVersion.getTermsOfUseAndAccess().getLicense().getName();
+            }
+            solrInputDocument.addField(SearchFields.DATASET_LICENSE, licenseName);
         }
     }
 

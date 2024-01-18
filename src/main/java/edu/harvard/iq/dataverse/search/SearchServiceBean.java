@@ -754,7 +754,13 @@ public class SearchServiceBean {
                         }
 
                         localefriendlyName = metadataBlockFacet.get().getMetadataBlock().getLocaleDisplayFacet();
-                        } else {
+                    } else if (facetField.getName().equals(SearchFields.DATASET_LICENSE)) {
+                        try {
+                            localefriendlyName = BundleUtil.getStringFromPropertyFile("license." + facetFieldCount.getName().toLowerCase().replace(" ","_") + ".name", "License");
+                        } catch (Exception e) {
+                            localefriendlyName = facetFieldCount.getName();
+                        }
+                    } else {
                         try {
                            localefriendlyName = BundleUtil.getStringFromPropertyFile(facetFieldCount.getName(), "Bundle");
                         } catch (Exception e) {
