@@ -41,6 +41,7 @@ public class CacheFactoryBeanTest {
         lenient().doReturn(30).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(0), anyInt());
         lenient().doReturn(60).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(1), anyInt());
         lenient().doReturn(120).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(2), anyInt());
+        lenient().doReturn("").when(systemConfig).getRateLimitsJson();
 
         cache.init();
         authUser.setRateLimitTier(1); // reset to default
