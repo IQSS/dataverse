@@ -914,7 +914,7 @@ public class GuestbookResponseServiceBean {
         
     public Long getDownloadCountByDataFileId(Long dataFileId) {
         // datafile id is null, will return 0
-        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId + "and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
+        Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId + " and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
         return (Long) query.getSingleResult();
     }
     
