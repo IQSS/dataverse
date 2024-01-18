@@ -880,7 +880,28 @@ public class HarvestingServerIT {
         logger.info("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
         assertEquals(200, deleteResponse.getStatusCode(), "Failed to delete the control multi-record set");
     }
-    
+
+    @Test
+    public void testInvalidQueryParams() {
+
+        // The query parameter "verb" must appear.
+        Response noVerbArg = given().get("/oai?foo=bar");
+        noVerbArg.prettyPrint();
+        noVerbArg.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("oai.error.@code", equalTo("badVerb"))
+                .body("oai.error", equalTo("No argument 'verb' found"));
+
+        // The query parameter "verb" cannot appear more than once.
+        Response repeated = given().get( "/oai?verb=foo&verb=bar");
+        repeated.prettyPrint();
+        repeated.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("oai.error.@code", equalTo("badVerb"))
+                .body("oai.error", equalTo("Verb must be singular, given: '[foo, bar]'"));
+
+    }
+
     // TODO: 
     // What else can we test? 
     // Some ideas: 

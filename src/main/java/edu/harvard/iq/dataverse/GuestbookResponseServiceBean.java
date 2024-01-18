@@ -928,7 +928,7 @@ public class GuestbookResponseServiceBean {
         if(date != null) {
             query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsetime < '" + date.toString() + "' and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
         }else {
-            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId+ "and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
+            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId+ " and eventtype != '" + GuestbookResponse.ACCESS_REQUEST +"'");
         }
         return (Long) query.getSingleResult();
     }    
