@@ -1,17 +1,8 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
-
-import static edu.harvard.iq.dataverse.pidproviders.PidProvider.logger;
-
 import java.util.*;
-import java.util.function.Function;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public interface PidProvider {
