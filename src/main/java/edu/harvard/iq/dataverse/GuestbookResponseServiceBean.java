@@ -432,7 +432,7 @@ public class GuestbookResponseServiceBean {
             Query query = em.createNativeQuery(queryString);
             return (Long) query.getSingleResult();
         } else  {
-            String queryString = "select count(o) from GuestbookResponse as o, Dataset d, DvObject obj where o.dataset_id = d.id and d.id = obj.id and obj.owner_id = " + dataverseId + "and o.guestbook_id = " + guestbookId;
+            String queryString = "select count(o) from GuestbookResponse as o, Dataset d, DvObject obj where o.dataset_id = d.id and d.id = obj.id and obj.owner_id = " + dataverseId + " and o.guestbook_id = " + guestbookId;
             Query query = em.createNativeQuery(queryString);
             return (Long) query.getSingleResult();            
         }
