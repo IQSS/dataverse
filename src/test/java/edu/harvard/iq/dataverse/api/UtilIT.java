@@ -3459,6 +3459,13 @@ public class UtilIT {
         return response;
     }
 
+    static Response getFileCitation(Integer fileId, boolean getDraft, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + fileId + "/citation");
+        return response;
+    }
+
     static Response getVersionFiles(Integer datasetId,
                                     String version,
                                     Integer limit,

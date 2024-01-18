@@ -33,6 +33,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import java.time.Year;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
@@ -2483,4 +2484,43 @@ public class FilesIT {
         
         UtilIT.deleteSetting(SettingsServiceBean.Key.UseStorageQuotas);
     }
+
+    @Test
+    public void getFileCitation() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPid = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        Path pathToTxt = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "file.txt");
+        String contentOfTxt = "foobar";
+        java.nio.file.Files.write(pathToTxt, contentOfTxt.getBytes());
+
+        Response uploadFileTxt = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTxt.toString(), apiToken);
+        uploadFileTxt.prettyPrint();
+        uploadFileTxt.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("file.txt"));
+
+        Integer fileId = JsonPath.from(uploadFileTxt.body().asString()).getInt("data.files[0].dataFile.id");
+
+        String pidAsUrl = "https://doi.org/" + datasetPid.split("doi:")[1];
+        int currentYear = Year.now().getValue();
+
+        Response getFileCitation = UtilIT.getFileCitation(fileId, true, apiToken);
+        getFileCitation.prettyPrint();
+        getFileCitation.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; file.txt [fileName]"));
+    }
+
 }

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFileTag;
@@ -931,4 +932,21 @@ public class Files extends AbstractApiBean {
             return ok(dataFileServiceBean.hasBeenDeleted(dataFile));
         }, getRequestUser(crc));
     }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/citation")
+    public Response getFileCitation(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId) {
+        try {
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            FileMetadata fm = df.getLatestFileMetadata();
+            boolean direct = false;
+            DataCitation citation = new DataCitation(fm, direct);
+            return ok(citation.toString(true));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
 }
