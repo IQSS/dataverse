@@ -178,38 +178,40 @@ Persistent Identifiers and Publishing Datasets
 
 Persistent identifiers (PIDs) are a required and integral part of the Dataverse Software. They provide a URL that is
 guaranteed to resolve to the datasets or files they represent. The Dataverse Software currently supports creating
-identifiers using one of several PID providers. The most appropriate PIDs for public data are DOIs (provided by
+identifiers using any of several PID types. The most appropriate PIDs for public data are DOIs (e.g., provided by
 DataCite or EZID) and Handles. Dataverse also supports PermaLinks which could be useful for intranet or catalog use
 cases. A DOI provider called "FAKE" is recommended only for testing and development purposes.
+
+Dataverse can be configured with one or more PID providers, each of which can mint and manage PIDs with a given protocol 
+(e.g., doi, handle, permalink) using a specific service provider/account (e.g. with DataCite, EZId, or HandleNet) 
+to manage an authority/shoulder combination, aka a "prefix" (PermaLinks also support custom separator characters as part of the prefix), 
+along with an optional list of individual PIDs (with different authority/shoulders) than can be managed with that account.
 
 Testing PID Providers
 +++++++++++++++++++++
 
 By default, the installer configures the DataCite test service as the registration provider. DataCite requires that you
-register for a test account, configured with your own prefix (please contact support@datacite.org).
+register for a test account, configured with your own prefix (please contact support@datacite.org for a test account. Alternately,
+you may wish to `contact the GDCC <https://www.gdcc.io/about.html>`_ - GDCC is able to provide DataCite accounts with a group discount and can also provide test accounts.).
 
 Once you receive the login name, password, and prefix for the account,
-configure the credentials via :ref:`dataverse.pid.datacite.username` and
-:ref:`dataverse.pid.datacite.password`, then restart Payara.
+configure the credentials as described below. 
 
-Configure the prefix via the API (where it is referred to as :ref:`:Authority`):
+Alternately, you may wish to configure other providers for testing: 
 
-``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
-
-.. TIP::
-  This testing section is oriented around DataCite but other PID Providers can be tested as well.
-  
   - EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite.
    
-  - The PermaLink and FAKE DOI providers do not involve an external account. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
+  - The PermaLink and FAKE DOI providers do not involve an external account. The FAKE provider should only be used for testing, since it creates identifiers that look like DOIs but will not resolve. In contrast, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs, while they do resolve to the local dataset/file page in Dataverse. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
+
+Provider-specific configuration is described below.
 
 Once all is configured, you will be able to publish datasets and files, but **the persistent identifiers will not be citable**,
-and they will only resolve from the DataCite test environment (and then only if the Dataverse installation from which
+e.g. they will only resolve from the DataCite test environment (and then only if the Dataverse installation from which
 you published them is accessible - DOIs minted from your laptop will not resolve). Note that any datasets or files
 created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI
 namespace is configured.
 
-One you are done testing, to properly configure persistent identifiers for a production installation, an account and associated namespace must be
+One you are done testing, to properly configure persistent identifiers for a production installation, an account and associated namespace (e.g. authority/shoulder) must be
 acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider
 (see https://dataversecommunity.global for more on joining DataCite through the Global Dataverse Community Consortium) but **EZID**
 (http://ezid.cdlib.org) is an option for the University of California according to
@@ -217,17 +219,337 @@ https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ .
 **Handle.Net** (https://www.handle.net) is the HDL provider.
 
 Once you have your DOI or Handle account credentials and a namespace, configure your Dataverse installation
-using the JVM options and database settings below.
+using the settings below.
+
+ 
+Configuring PID Providers
++++++++++++++++++++++++++
+
+There are two required global settings to configure PID providers - the list of ids of providers and which one of those should be the default.
+Per-provider settings are also required - some that are common to all types and some type specific. All of these settings are defined 
+to be compatible with the MicroProfile specification which means that
+
+1. Any of these settings can be set via system properties (see :ref:`jvm-options` for how to do this), environment variables, or other
+   MicroProfile Config mechanisms supported by the app server.
+   `See Payara docs for supported sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html#config-sources>`_.
+2. Remember to protect your secrets. For passwords, use an environment variable (bare minimum), a password alias named the same
+   as the key (OK) or use the `"dir config source" of Payara <https://docs.payara.fish/community/docs/documentation/microprofile/config/directory.html>`_ (best).
+
+   Alias creation example:
+
+   .. code-block:: shell
+
+      echo "AS_ADMIN_ALIASPASSWORD=changeme" > /tmp/p.txt
+      asadmin create-password-alias --passwordfile /tmp/p.txt dataverse.pid.datacite1.datacite.password
+      rm /tmp/p.txt
+
+3. Environment variables follow the key, replacing any dot, colon, dash, etc. into an underscore "_" and all uppercase
+   letters. Example: ``dataverse.pid.default-provider`` -> ``DATAVERSE_PID_DEFAULT_PROVIDER``
+   
+Global Settings
+###############
+
+The following three global settings are required to configure PID Providers in the Dataverse software:
+
+.. _dataverse.pid.providers:
+
+dataverse.pid.providers
+#######################
+
+A comma-separated list of the ids of the PID providers to use. IDs should be simple unique text strings, e.g. datacite1, perma1, etc.
+IDs are used to scope the provider-specific settings but are not directly visible to users. 
+
+.. _dataverse.pid.default-provider:
+
+dataverse.pid.default-provider
+##############################
+
+The ID of the default PID provider to use.
+
+.. _dataverse.pid.provider-implementations-directory:
+
+dataverse.pid.provider-implementations-directory
+################################################
+
+The path to the directory where JAR files containing additional types of PID Providers can be added.
+Dataverse includes providers that support DOIs (DataCite, EZId, or FAKE), Handles, and PermaLinks.
+PID provider jar files added to this directory can replace any of these or add new PID Providers.
+
+Per-Provider Settings
+#####################
+
+Each Provider listed by id in the dataverse.pid.providers setting must be configured with the following common settings and any settings that are specific to the provider type.
+
+.. _dataverse.pid.*.type:
+
+dataverse.pid.\*.type
+####################
+
+The Provider type, currently one of ``datacite``, ``ezid``, ``FAKE``, ``hdl``, or ``perma``. The type defines which protocol a service supports (DOI, Handle, or PermaLink) and, for DOI Providers, which 
+DOI service is used.
+
+.. _dataverse.pid.*.label:
+
+dataverse.pid.\*.label
+######################
+
+A human-readable label for the provider
+
+.. _dataverse.pid.*.authority:
+
+dataverse.pid.\*.authority
+##########################
+
+.. _dataverse.pid.*.shoulder:
+
+dataverse.pid.\*.shoulder
+#########################
+
+In general, PIDs are of the form ``<protocol>:<authority>/<shoulder>*`` where ``*`` is the portion unique to an individual PID. PID Providers must define
+the authority and shoulder (with the protocol defined by the ``dataverse.pid.*.type`` setting) that defines the set of existing PIDs they can manage and the prefix they can use when minting new PIDs.
+(Often an account with a PID service provider will be limited to using a single authority/shoulder. If your PID service provider account allows more than one combination that you wish to use in Dataverse, configure multiple PID Provider, one for each combination.)
+ 
+.. _dataverse.pid.*.identifier-generation-style:
+
+dataverse.pid.\*.identifier-generation-style
+############################################
+
+By default, Pid Providers in Dataverse generate a random 6 character string,
+pre-pended by the Shoulder if set, to use as the identifier for a Dataset.
+Set this to ``storedProcGenerated`` to generate instead a custom *unique*
+identifier (again pre-pended by the Shoulder if set) through a database
+stored procedure or function (the assumed default setting is ``randomString``).
+When using the ``storedProcGenerated`` setting, a stored procedure or function must be created in
+the database.
+
+As a first example, the script below (downloadable
+:download:`here </_static/util/createsequence.sql>`) produces
+sequential numerical values. You may need to make some changes to suit your
+system setup, see the comments for more information:
+
+.. literalinclude:: ../_static/util/createsequence.sql
+   :language: plpgsql
+
+As a second example, the script below (downloadable
+:download:`here </_static/util/identifier_from_timestamp.sql>`) produces
+sequential 8 character identifiers from a base36 representation of current
+timestamp.
+
+.. literalinclude:: ../_static/util/identifier_from_timestamp.sql
+   :language: plpgsql
+
+Note that the SQL in these examples scripts is Postgres-specific.
+If necessary, it can be reimplemented in any other SQL flavor - the standard
+JPA code in the application simply expects the database to have a saved
+function ("stored procedure") named ``generateIdentifierFromStoredProcedure()``
+returning a single ``varchar`` argument.
+
+Please note that this setting interacts with the ``dataverse.pid.*.datafile-pid-format``
+setting below to determine how datafile identifiers are generated.
+
+
+.. _dataverse.pid.*.datafile-pid-format:
+
+dataverse.pid.\*.datafile-pid-format
+####################################
+
+This setting controls the way that the "identifier" component of a file's
+persistent identifier (PID) relates to the PID of its "parent" dataset - for a give PID Provider.
+
+By default the identifier for a file is dependent on its parent dataset.
+For example, if the identifier of a dataset is "TJCLKP", the identifier for
+a file within that dataset will consist of the parent dataset's identifier
+followed by a slash ("/"), followed by a random 6 character string,
+yielding "TJCLKP/MLGWJO". Identifiers in this format are what you should
+expect if you leave ``dataverse.pid.*.datafile-pid-format`` undefined or set it to
+``DEPENDENT`` and have not changed the ``dataverse.pid.*.identifier-generation-style``
+setting from its default.
+
+Alternatively, the identifier for File PIDs can be configured to be
+independent of Dataset PIDs using the setting ``INDEPENDENT``.
+In this case, file PIDs will not contain the PIDs of their parent datasets,
+and their PIDs will be generated the exact same way that datasets' PIDs are,
+based on the ``dataverse.pid.*.identifier-generation-style`` setting described above
+(random 6 character strings or custom unique identifiers through a stored
+procedure, pre-pended by any shoulder).
+
+The chart below shows examples from each possible combination of parameters
+from the two settings. ``dataverse.pid.*.identifier-generation-style`` can be either
+``randomString`` (the default) or ``storedProcGenerated`` and
+``dataverse.pid.*.datafile-pid-format`` can be either ``DEPENDENT`` (the default) or
+``INDEPENDENT``. In the examples below the "identifier" for the dataset is
+"TJCLKP" for ``randomString`` and "100001" for ``storedProcGenerated`` (when
+using sequential numerical values, as described in
+:ref:`dataverse.pid.*.identifier-generation-style` above), or "krby26qt" for
+``storedProcGenerated`` (when using base36 timestamps, as described in
+:ref:`dataverse.pid.*.identifier-generation-style` above).
+
++-----------------+---------------+----------------------+---------------------+
+|                 | randomString  | storedProcGenerated  | storedProcGenerated |
+|                 |               |                      |                     |
+|                 |               | (sequential numbers) | (base36 timestamps) |
++=================+===============+======================+=====================+
+| **DEPENDENT**   | TJCLKP/MLGWJO | 100001/1             | krby26qt/1          |
++-----------------+---------------+----------------------+---------------------+
+| **INDEPENDENT** | MLGWJO        | 100002               | krby27pz            |
++-----------------+---------------+----------------------+---------------------+
+
+As seen above, in cases where ``dataverse.pid.*.identifier-generation-style`` is set to
+``storedProcGenerated`` and ``dataverse.pid.*.datafile-pid-format`` is set to ``DEPENDENT``,
+each file within a dataset will be assigned a number *within* that dataset
+starting with "1".
+
+Otherwise, if ``dataverse.pid.*.datafile-pid-format`` is set to ``INDEPENDENT``, each file
+within the dataset is assigned with a new PID which is the next available
+identifier provided from the database stored procedure. In our example:
+"100002" when using sequential numbers or "krby27pz" when using base36
+timestamps.
+
+.. _dataverse.pid.*.managed-list:
+
+dataverse.pid.\*.managed-list
+#############################
+
+.. _dataverse.pid.*.excluded-list:
+
+dataverse.pid.\*.excluded-list
+##############################
+
+With at least some PID services, it is possible for the authority(permission) to manage specific individual PIDs
+to be transferred between accounts. To handle these cases, the individual PIDs, written in the
+standard format, e.g. doi:10.5072/FK2ABCDEF can be added to the comma-separated ``managed`` or ``excluded`` list
+for a given provider. For entries on the ``managed- list``, Dataverse will assume this PID
+Provider/account can update the metadata and landing URL for the PID at the service provider
+(even though it does not match the provider's authority/shoulder settings). Conversely,
+Dataverse will assume that PIDs on the ``excluded-list`` cannot be managed/updated by this provider
+(even though they match the provider's authority/shoulder settings). These settings are optional
+with the default assumption that these lists are empty.
+
+.. _dataverse.pid.*.datacite:
+
+DataCite-specific Settings
+##########################
+
+dataverse.pid.\*.datacite.mds-api-url
+#####################################
+dataverse.pid.\*.datacite.rest-api-url
+######################################
+dataverse.pid.\*.datacite.username
+##################################
+dataverse.pid.\*.datacite.password
+##################################
+
+PID Providers of type ``datacite`` require four additional parameters that define how the provider connects to DataCite.
+DataCite has two APIs that are used in Dataverse:
+
+The base URL of the `DataCite MDS API <https://support.datacite.org/reference/overview>`_,
+used to mint and manage DOIs. Current valid values for ``dataverse.pid.*.datacite.mds-api-url`` are "https://mds.datacite.org" (production) and "https://mds.test.datacite.org" (testing, the default).
+
+The `DataCite REST API <https://support.datacite.org/reference/introduction>`_ is also used - :ref:`PIDs API <pids-api>` information retrieval and :doc:`/admin/make-data-count`.
+Current valid values for ``dataverse.pid.*.datacite.rest-api-url`` are "https://api.datacite.org" (production) and "https://api.test.datacite.org" (testing, the default).
+
+DataCite uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
+for `Fabrica <https://doi.datacite.org/>`_ and their APIs. You need to provide
+the same credentials (``username``, ``password``) to Dataverse software to mint and manage DOIs for you.
+As noted above, you should use one of the more secure options for setting the password.
+
+
+.. _dataverse.pid.*.ezid:
+
+EZId-specific Settings
+######################
+
+dataverse.pid.\*.ezid.api-url
+#############################
+dataverse.pid.\*.ezid.username
+##############################
+dataverse.pid.\*.ezid.password
+##############################
+
+Note that use of `EZId <https://ezid.cdlib.org/>`_ is limited primarily to University of California institutions. If you have an EZId account,
+you will need to configure the ``api-url`` and your account ``username`` and ``password``. As above, you should use one of the more secure 
+options for setting the password.
+
+.. _dataverse.pid.*.permalink:
+
+PermaLink-specific Settings
+###########################
+
+dataverse.pid.\*.permalink.base-url
+###################################
+
+dataverse.pid.\*.permalink.separator
+####################################
+
+PermaLinks are a simple PID option intended for intranet and catalog use cases. They can be used without an external service or
+be configured with the ``base-url`` of a resolution service. PermaLinks also allow a custom ``separator`` to be used. (Note: when using multiple 
+PermaLink providers, you should avoid ambiguous authority/separator/shoulder combinations that would result in the same overall prefix.)
+
+.. _dataverse.pid.*.handlenet:
+
+Handle-specific Settings
+########################
+
+dataverse.pid.\*.handlenet.index
+################################
+
+dataverse.pid.\*.handlenet.independent-service
+##############################################
+
+dataverse.pid.\*.handlenet.auth-handle
+######################################
+
+dataverse.pid.\*.handlenet.key
+##############################
+
+dataverse.pid.\*.handlenet.path
+###############################
+
+dataverse.pid.\*.handlenet.passphrase
+#####################################
+
+Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <https://handle.net/hnr_documentation.html>`_.
+
+Configure your Handle.net ``index`` to be used registering new persistent
+identifiers. Defaults to ``300``. 
+
+Indices are used to separate concerns within the Handle system. To add data to
+an index, authentication is mandatory. See also chapter 1.4 "Authentication" of
+the `Handle.Net Technical Documentation <http://www.handle.net/tech_manual/HN_Tech_Manual_8.pdf>`__
+
+Handle.Net servers use a public key authentication method where the public key
+is stored in a handle itself and the matching private key is provided from this
+file. Typically, the absolute path ends like ``handle/svr_1/admpriv.bin``. 
+The key file may (and should) be encrypted with a passphrase (used for
+encryption with AES-128). See
+also chapter 1.4 "Authentication" of the `Handle.Net Technical Documentation
+<http://www.handle.net/tech_manual/HN_Tech_Manual_8.pdf>`__
+
+Provide an absolute ``key.path`` to a private key file authenticating requests to your
+Handle.Net server.
+
+Provide a ``key.passphrase`` to decrypt the private key file at ``dataverse.pid.*.handlenet.key.path``.
+
+Set ``independent-service`` to true if you want to use a Handle service which is setup to work 'independently' (No communication with the Global Handle Registry).
+By default this setting is false.
+
+Set ``auth-handle`` to <prefix>/<suffix> to be used on a global handle service when the public key is NOT stored in the default handle.
+This setting is optional. If the public key is, for instance, stored in handle: ``21.T12996/USER01``, ``auth-handle`` should be set to this value.
+
 
 .. _pids-doi-configuration:
 
-Configuring Your Dataverse Installation for DOIs
-++++++++++++++++++++++++++++++++++++++++++++++++
+Backward-compatibility for Single PID Provider Installations
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-As explained above, by default your Dataverse installation attempts to register DOIs for each
-dataset and file under a test authority. You must apply for your own credentials.
+While using the PID Provider configuration settings described above is recommended, Dataverse installations
+only using a single PID Provider can use the settings below instead. In general, these legacy settings mirror
+those above except for not including a PID Provider id. 
 
-Here are the configuration options for DOIs:
+Configuring Your Dataverse Installation for a SIngle DOI Provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Here are the configuration options for DOIs.:
 
 **JVM Options for DataCite:**
 
@@ -257,8 +579,8 @@ this provider.
 
 .. _pids-handle-configuration:
 
-Configuring Your Dataverse Installation for Handles
-+++++++++++++++++++++++++++++++++++++++++++++++++++
+Configuring Your Dataverse Installation for a Single Handle Provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Here are the configuration options for handles. Most notably, you need to
 change the ``:Protocol`` setting, as it defaults to DOI usage.
@@ -282,12 +604,8 @@ Note: If you are **minting your own handles** and plan to set up your own handle
 
 .. _permalinks:
 
-Configuring Your Dataverse Installation for PermaLinks
-++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-PermaLinks are a simple mechanism to provide persistent URLs for datasets and datafiles (if configured) that does not involve an external service providing metadata-based search services.
-They are potentially appropriate for Intranet use cases as well as in cases where Dataverse is being used as a catalog or holding duplicate copies of datasets where the authoritative copy already has a DOI or Handle.
-PermaLinks use the protocol "perma" (versus "doi" or "handle") and do not use a "/" character as a separator between the authority and shoulder. It is recommended to choose an alphanumeric value for authority that does not resemble that of DOIs (which are primarily numeric and start with "10." as in "10.5072") to avoid PermaLinks being mistaken for DOIs.
+Configuring Your Dataverse Installation for a Single PermaLink Provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Here are the configuration options for PermaLinks:
 
@@ -2114,8 +2432,8 @@ For limiting the size (in bytes) of thumbnail images generated from files. The d
 
 .. _dataverse.pid.datacite.mds-api-url:
 
-dataverse.pid.datacite.mds-api-url
-++++++++++++++++++++++++++++++++++
+Legacy Single PID Provider: dataverse.pid.datacite.mds-api-url
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Configure the base URL of the `DataCite MDS API <https://support.datacite.org/reference/overview>`_,
 used to mint and manage DOIs. Valid values are "https://mds.datacite.org" and "https://mds.test.datacite.org"
@@ -2148,8 +2466,8 @@ Without setting an option, always defaults to testing API endpoint.
 
 .. _dataverse.pid.datacite.rest-api-url:
 
-dataverse.pid.datacite.rest-api-url
-+++++++++++++++++++++++++++++++++++
+Legacy Single PID Provider: dataverse.pid.datacite.rest-api-url
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Configure the base URL endpoint of the `DataCite REST API <https://support.datacite.org/reference/introduction>`_, used for
 :ref:`PIDs API <pids-api>` information retrieval and :doc:`/admin/make-data-count`.
@@ -2176,8 +2494,8 @@ you can issue the following command:
 
 .. _dataverse.pid.datacite.username:
 
-dataverse.pid.datacite.username
-+++++++++++++++++++++++++++++++
+Legacy Single PID Provider: dataverse.pid.datacite.username
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 DataCite uses `HTTP Basic authentication <https://en.wikipedia.org/wiki/Basic_access_authentication>`_
 for `Fabrica <https://doi.datacite.org/>`_ and their APIs. You need to provide
@@ -2198,8 +2516,8 @@ Once you have a username from DataCite, you can enter it like this:
 
 .. _dataverse.pid.datacite.password:
 
-dataverse.pid.datacite.password
-+++++++++++++++++++++++++++++++
+Legacy Single PID Provider: dataverse.pid.datacite.password
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Once you have a password from your provider, you should create a password alias.
 This avoids storing it in clear text, although you could use a JVM option `to reference
@@ -2225,8 +2543,8 @@ To manage these, read up on `Payara docs about password aliases <https://docs.pa
 
 .. _dataverse.pid.handlenet.key.path:
 
-dataverse.pid.handlenet.key.path
-++++++++++++++++++++++++++++++++
+Legacy Single PID Provider: dataverse.pid.handlenet.key.path
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Related to :ref:`Handle.Net PID provider usage <pids-handle-configuration>`.
 
@@ -2247,8 +2565,8 @@ and re-add it.
 
 .. _dataverse.pid.handlenet.key.passphrase:
 
-dataverse.pid.handlenet.key.passphrase
-++++++++++++++++++++++++++++++++++++++
+Legacy Single PID Provider: dataverse.pid.handlenet.key.passphrase
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Related to :ref:`Handle.Net PID provider usage <pids-handle-configuration>`.
 
@@ -2268,8 +2586,8 @@ the old JVM option and the wrapped password alias, then recreate as shown for
 
 .. _dataverse.pid.handlenet.index:
 
-dataverse.pid.handlenet.index
-+++++++++++++++++++++++++++++
+Legacy Single PID Provider: dataverse.pid.handlenet.index
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Related to :ref:`Handle.Net PID provider usage <pids-handle-configuration>`.
 
@@ -2287,8 +2605,8 @@ re-add it.
 
 .. _dataverse.pid.permalink.base-url:
 
-dataverse.pid.permalink.base-url
-++++++++++++++++++++++++++++++++
+Legacy Single PID Provider: dataverse.pid.permalink.base-url
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 When using :ref:`PermaLinks <permalinks>`, this setting can be used to configure an external resolver. Dataverse will associate a PermaLink PID with the URL:
 ``<dataverse.pid.permalink.base-url>/citation?persistentId=perma:<permalink>``. The default value is your Dataverse site URL, which will result in PermaLinks correctly resolving to the appropriate dataset page.
@@ -2309,8 +2627,8 @@ variable ``DATAVERSE_PID_PERMALINK_BASE_URL``. This setting was formerly known a
 
 .. _dataverse.pid.ezid.api-url:
 
-dataverse.pid.ezid.api-url
-++++++++++++++++++++++++++
+Legacy Single PID Provider: dataverse.pid.ezid.api-url
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 The EZID DOI provider is likely not an option if you are `not associated with
 California Digital Library (CDL) or Purdue University 
@@ -2324,8 +2642,8 @@ variable ``DATAVERSE_PID_EZID_API_URL``. This setting was formerly known as
 
 .. _dataverse.pid.ezid.username:
 
-dataverse.pid.ezid.username
-+++++++++++++++++++++++++++
+Legacy Single PID Provider: dataverse.pid.ezid.username
++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 The EZID DOI provider is likely not an option if you are `not associated with
 California Digital Library (CDL) or Purdue University 
@@ -2342,8 +2660,8 @@ should delete and re-add it.
 
 .. _dataverse.pid.ezid.password:
 
-dataverse.pid.ezid.password
-+++++++++++++++++++++++++++
+Legacy Single PID Provider: dataverse.pid.ezid.password
++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 The EZID DOI provider is likely not an option if you are `not associated with
 California Digital Library (CDL) or Purdue University 
@@ -2805,8 +3123,8 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 
 .. _:DoiProvider:
 
-:DoiProvider
-++++++++++++
+Legacy Single PID Provider: :DoiProvider
+++++++++++++++++++++++++++++++++++++++++
 
 As of this writing "DataCite" and "EZID" are the only valid options for production installations. Developers using
 Dataverse Software 4.10+ are welcome to use the keyword "FAKE" to configure a non-production installation with an
@@ -2826,8 +3144,8 @@ JVM options:
 
 .. _:Protocol:
 
-:Protocol
-+++++++++
+Legacy Single PID Provider: :Protocol
++++++++++++++++++++++++++++++++++++++
 
 As of this writing "doi","hdl", and "perma" are the only valid option for the protocol for a persistent ID.
 
@@ -2835,8 +3153,8 @@ As of this writing "doi","hdl", and "perma" are the only valid option for the pr
 
 .. _:Authority:
 
-:Authority
-++++++++++
+Legacy Single PID Provider: :Authority
+++++++++++++++++++++++++++++++++++++++
 
 Use the authority assigned to you by your DoiProvider or HandleProvider, or your choice if using PermaLinks.
 
@@ -2846,8 +3164,8 @@ Please note that a DOI or Handle authority cannot have a slash ("/") in it (slas
 
 .. _:Shoulder:
 
-:Shoulder
-+++++++++
+Legacy Single PID Provider: :Shoulder
++++++++++++++++++++++++++++++++++++++
 
 The shoulder is used with DOIs and PermaLinks. Out of the box, the shoulder is set to "FK2/" but this is for testing only! When you apply for your DOI authority/namespace, you may have been assigned a shoulder. The following is only an example and a trailing slash is optional.
 
@@ -2855,8 +3173,8 @@ The shoulder is used with DOIs and PermaLinks. Out of the box, the shoulder is s
 
 .. _:IdentifierGenerationStyle:
 
-:IdentifierGenerationStyle
-++++++++++++++++++++++++++
+Legacy Single PID Provider: :IdentifierGenerationStyle
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 By default, the Dataverse Software generates a random 6 character string,
 pre-pended by the Shoulder if set, to use as the identifier for a Dataset.
@@ -2894,8 +3212,8 @@ more details.
 
 .. _:DataFilePIDFormat:
 
-:DataFilePIDFormat
-++++++++++++++++++
+Legacy Single PID Provider: :DataFilePIDFormat
+++++++++++++++++++++++++++++++++++++++++++++++
 
 This setting controls the way that the "identifier" component of a file's
 persistent identifier (PID) relates to the PID of its "parent" dataset.
@@ -2985,8 +3303,8 @@ When :AllowEnablingFilePIDsPerCollection is true, setting File PIDs to be enable
 
 .. _:IndependentHandleService:
 
-:IndependentHandleService
-+++++++++++++++++++++++++
+Legacy Single PID Provider: :IndependentHandleService
++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Specific for Handle PIDs. Set this setting to true if you want to use a Handle service which is setup to work 'independently' (No communication with the Global Handle Registry).
 By default this setting is absent and the Dataverse Software assumes it to be false.
@@ -2995,8 +3313,8 @@ By default this setting is absent and the Dataverse Software assumes it to be fa
 
 .. _:HandleAuthHandle:
 
-:HandleAuthHandle
-+++++++++++++++++
+Legacy Single PID Provider: :HandleAuthHandle
++++++++++++++++++++++++++++++++++++++++++++++
 
 Specific for Handle PIDs. Set this setting to <prefix>/<suffix> to be used on a global handle service when the public key is NOT stored in the default handle.
 By default this setting is absent and the Dataverse Software assumes it to be not set. If the public key for instance is stored in handle: 21.T12996/USER01.
