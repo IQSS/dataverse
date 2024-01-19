@@ -25,6 +25,7 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
@@ -119,6 +120,25 @@ public class OAISetServiceBean implements java.io.Serializable {
         } catch (Exception e) {
             return null;
         }
+    }
+    
+    /**
+     * "Active" sets are the ones that have been successfully exported, and contain
+     * a non-zero number of records. (Although a set that contains a number of 
+     * records that are all marked as "deleted" is still an active set!)
+     * @return list of OAISets
+     */
+    public List<OAISet> findAllActiveNamedSets() {
+        String jpaQueryString = "select object(o) "
+                + "from OAISet as o, OAIRecord as r "
+                + "where r.setName = o.spec "
+                + "and o.spec != '' "
+                + "group by o order by o.spec";
+        
+        Query query = em.createQuery(jpaQueryString);
+        List<OAISet> queryResults = query.getResultList();
+        
+        return queryResults;
     }
     
     @Asynchronous

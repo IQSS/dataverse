@@ -3730,4 +3730,12 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/requestGlobusDownload");
     }
 
+    static Response requestGlobusUploadPaths(Integer datasetId, JsonObject body, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(body.toString())
+                .contentType("application/json")
+                .post("/api/datasets/" + datasetId + "/requestGlobusUploadPaths");
+    }
+
 }
