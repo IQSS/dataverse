@@ -1,5 +1,7 @@
 ALTER TABLE dvobject ADD COLUMN IF NOT EXISTS harvestingclient_id BIGINT;
 
+ALTER TABLE dvobject ADD CONSTRAINT fk_dvobject_harvestingclient_id FOREIGN KEY (harvestingclient_id) REFERENCES harvestingclient (id);
+
 --add harvesting client id to dvobject records of harvested datasets
 update dvobject dvo set harvestingclient_id = s.harvestingclient_id from
 (select id, harvestingclient_id from dataset d where d.harvestingclient_id is not null) s
