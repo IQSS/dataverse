@@ -60,6 +60,8 @@ services:
     volumes:
       - ./docker-dev-volumes/app/data:/dv
       - ./docker-dev-volumes/app/secrets:/secrets
+      # Map the glassfish applications folder so that we can update webapp resources using scripts/intellij/cpwebapp.sh
+      - ./docker-dev-volumes/glassfish/applications:/opt/payara/appserver/glassfish/domains/domain1/applications
       # Uncomment for changes to xhtml to be deployed immediately (if supported your IDE or toolchain).
       # Replace 6.0 with the current version.
       # - ./target/dataverse-6.0:/opt/payara/deployments/dataverse
