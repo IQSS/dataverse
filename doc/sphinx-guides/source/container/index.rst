@@ -23,5 +23,7 @@ develop and extend them further are provided.
 
 .. toctree::
 
+  dev-usage
   base-image
-
+  app-image
+  configbaker-image

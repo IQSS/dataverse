@@ -1,31 +1,33 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
-import javax.ejb.Stateless;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.Stateless;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 /**
  * PIDs are Persistent IDentifiers such as DOIs or Handles.
@@ -46,11 +48,16 @@ public class Pids extends AbstractApiBean {
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
         }
-        String baseUrl = systemConfig.getDataCiteRestApiUrlString();
-        String username = System.getProperty("doi.username");
-        String password = System.getProperty("doi.password");
+
+        // FIXME: Even before changing to MPCONFIG retrieval, this was pinned to be DataCite specific!
+        //        Should this be extended to EZID and other PID systems like Handle?
+        String baseUrl = JvmSettings.DATACITE_REST_API_URL.lookup();
+        String username = JvmSettings.DATACITE_USERNAME.lookup();
+        String password = JvmSettings.DATACITE_PASSWORD.lookup();
+        
         try {
-            JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
+            GlobalId globalId = PidUtil.parseAsGlobalID(persistentId);
+            JsonObjectBuilder result = PidUtil.queryDoi(globalId, baseUrl, username, password);
             return ok(result);
         } catch (NotFoundException ex) {
             return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());

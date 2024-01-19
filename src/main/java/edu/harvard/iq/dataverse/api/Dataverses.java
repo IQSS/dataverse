@@ -15,10 +15,12 @@ import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
+
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -39,9 +41,13 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteCollectionQuotaCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetSchemaCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetCollectionQuotaCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetCollectionStorageUseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetRootCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseStorageSizeCommand;
@@ -61,11 +67,14 @@ import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SetCollectionQuotaCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ValidateDatasetJsonCommand;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
@@ -74,41 +83,43 @@ import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
-import java.io.StringReader;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
-import javax.json.stream.JsonParsingException;
-import javax.validation.ConstraintViolationException;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.json.stream.JsonParsingException;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.IOException;
@@ -120,10 +131,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.StreamingOutput;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -158,7 +169,7 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     SwordServiceBean swordService;
-
+    
     @POST
     @AuthRequired
     public Response addRoot(@Context ContainerRequestContext crc, String body) {
@@ -173,8 +184,8 @@ public class Dataverses extends AbstractApiBean {
 
         Dataverse d;
         JsonObject dvJson;
-        try (StringReader rdr = new StringReader(body)) {
-            dvJson = Json.createReader(rdr).readObject();
+        try {
+            dvJson = JsonUtil.getJsonObject(body);
             d = jsonParser().parseDataverse(dvJson);
         } catch (JsonParsingException jpe) {
             logger.log(Level.SEVERE, "Json: {0}", body);
@@ -226,18 +237,55 @@ public class Dataverses extends AbstractApiBean {
 
         }
     }
+    
+    @POST
+    @AuthRequired
+    @Path("{identifier}/validateDatasetJson")
+    @Consumes("application/json")
+    public Response validateDatasetJson(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String idtf) {
+        User u = getRequestUser(crc);
+        try {
+            String validationMessage = execCommand(new ValidateDatasetJsonCommand(createDataverseRequest(u), findDataverseOrDie(idtf), body));
+            return ok(validationMessage);
+        } catch (WrappedResponse ex) {
+            Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, null, ex);
+            return ex.getResponse();
+        }
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/datasetSchema")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDatasetSchema(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
+        User u = getRequestUser(crc);
+
+        try {
+            String datasetSchema = execCommand(new GetDatasetSchemaCommand(createDataverseRequest(u), findDataverseOrDie(idtf)));
+            JsonObject jsonObject = JsonUtil.getJsonObject(datasetSchema);
+            return Response.ok(jsonObject).build();
+        } catch (WrappedResponse ex) {
+            Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, null, ex);
+            return ex.getResponse();
+        }
+    }
+            
+    
 
     @POST
     @AuthRequired
     @Path("{identifier}/datasets")
     @Consumes("application/json")
-    public Response createDataset(@Context ContainerRequestContext crc, String jsonBody, @PathParam("identifier") String parentIdtf) {
+    public Response createDataset(@Context ContainerRequestContext crc, String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("doNotValidate") String doNotValidateParam) {
         try {
             logger.fine("Json is: " + jsonBody);
             User u = getRequestUser(crc);
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
             ds.setOwner(owner);
+            // Will make validation happen always except for the (rare) occasion of all three conditions are true
+            boolean validate = ! ( u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) &&
+                JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false) );
 
             if (ds.getVersions().isEmpty()) {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeVersion"));
@@ -252,6 +300,11 @@ public class Dataverses extends AbstractApiBean {
 
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
+
+            if (!validate && (version.getDatasetAuthors().isEmpty() || version.getDatasetAuthors().stream().anyMatch(a -> a.getName() == null || a.getName().isEmpty()))) {
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeAuthorName"));
+            }
+
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -264,7 +317,7 @@ public class Dataverses extends AbstractApiBean {
             ds.setGlobalIdCreateTime(null);
             Dataset managedDs = null;
             try {
-                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u), null, validate));
             } catch (WrappedResponse ww) {
                 Throwable cause = ww.getCause();
                 StringBuilder sb = new StringBuilder();
@@ -288,7 +341,7 @@ public class Dataverses extends AbstractApiBean {
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalIdString())
+                            .add("persistentId", managedDs.getGlobalId().asString())
             );
 
         } catch (WrappedResponse ex) {
@@ -331,7 +384,7 @@ public class Dataverses extends AbstractApiBean {
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalIdString())
+                            .add("persistentId", managedDs.getGlobalId().asString())
             );
 
         } catch (WrappedResponse ex) {
@@ -368,7 +421,7 @@ public class Dataverses extends AbstractApiBean {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
                     return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
                 }
-                Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
+                Optional<GlobalId> maybePid = GlobalIdServiceBean.parse(pidParam);
                 if (maybePid.isPresent()) {
                     ds.setGlobalId(maybePid.get());
                 } else {
@@ -399,7 +452,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                     .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalIdString());
+                    .add("persistentId", managedDs.getGlobalId().asString());
 
             if (shouldRelease) {
                 PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
@@ -443,7 +496,7 @@ public class Dataverses extends AbstractApiBean {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
                     return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
                 }
-                Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
+                Optional<GlobalId> maybePid = GlobalIdServiceBean.parse(pidParam);
                 if (maybePid.isPresent()) {
                     ds.setGlobalId(maybePid.get());
                 } else {
@@ -465,7 +518,7 @@ public class Dataverses extends AbstractApiBean {
 
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                     .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalIdString());
+                    .add("persistentId", managedDs.getGlobalId().toString());
 
             if (shouldRelease) {
                 DatasetVersion latestVersion = ds.getLatestVersion();
@@ -512,7 +565,7 @@ public class Dataverses extends AbstractApiBean {
             ds.getIdentifier().startsWith(settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder)))) {
                 throw new BadRequestException("Cannot recreate a dataset that has a PID that doesn't match the server's settings");
             }
-            if(!datasetSvc.isIdentifierLocallyUnique(ds)) {
+            if(!dvObjectSvc.isGlobalIdLocallyUnique(ds.getGlobalId())) {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
             
@@ -546,8 +599,8 @@ public class Dataverses extends AbstractApiBean {
     }
     
     private Dataset parseDataset(String datasetJson) throws WrappedResponse {
-        try (StringReader rdr = new StringReader(datasetJson)) {
-            return jsonParser().parseDataset(Json.createReader(rdr).readObject());
+        try {
+            return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson));
         } catch (JsonParsingException | JsonParseException jpe) {
             logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", datasetJson);
             throw new WrappedResponse(error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage()));
@@ -572,6 +625,75 @@ public class Dataverses extends AbstractApiBean {
             execCommand(new DeleteDataverseCommand(req, findDataverseOrDie(idtf)));
             return ok("Dataverse " + idtf + " deleted");
         }, getRequestUser(crc));
+    }
+
+    /**
+     * Endpoint to change attributes of a Dataverse collection.
+     *
+     * @apiNote Example curl command:
+     *          <code>curl -X PUT -d "test" http://localhost:8080/api/dataverses/$ALIAS/attribute/alias</code>
+     *          to change the alias of the collection named $ALIAS to "test".
+     */
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/attribute/{attribute}")
+    public Response updateAttribute(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier,
+                                    @PathParam("attribute") String attribute, @QueryParam("value") String value) {
+        try {
+            Dataverse collection = findDataverseOrDie(identifier);
+            User user = getRequestUser(crc);
+            DataverseRequest dvRequest = createDataverseRequest(user);
+    
+            // TODO: The cases below use hard coded strings, because we have no place for definitions of those!
+            //       They are taken from util.json.JsonParser / util.json.JsonPrinter. This shall be changed.
+            //       This also should be extended to more attributes, like the type, theme, contacts, some booleans, etc.
+            switch (attribute) {
+                case "alias":
+                    collection.setAlias(value);
+                    break;
+                case "name":
+                    collection.setName(value);
+                    break;
+                case "description":
+                    collection.setDescription(value);
+                    break;
+                case "affiliation":
+                    collection.setAffiliation(value);
+                    break;
+                /* commenting out the code from the draft pr #9462:
+                case "versionPidsConduct":
+                    CollectionConduct conduct = CollectionConduct.findBy(value);
+                    if (conduct == null) {
+                        return badRequest("'" + value + "' is not one of [" +
+                            String.join(",", CollectionConduct.asList()) + "]");
+                    }
+                    collection.setDatasetVersionPidConduct(conduct);
+                    break;
+                 */
+                case "filePIDsEnabled":
+                    if(!user.isSuperuser()) {
+                        return forbidden("You must be a superuser to change this setting");
+                    }
+                    if(!settingsService.isTrueForKey(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection, false)) {
+                        return forbidden("Changing File PID policy per collection is not enabled on this server");
+                    }
+                    collection.setFilePIDsEnabled(parseBooleanOrDie(value));
+                    break;
+                default:
+                    return badRequest("'" + attribute + "' is not a supported attribute");
+            }
+            
+            // Off to persistence layer
+            execCommand(new UpdateDataverseCommand(collection, null, null, dvRequest, null));
+    
+            // Also return modified collection to user
+            return ok("Update successful", JsonPrinter.json(collection));
+        
+        // TODO: This is an anti-pattern, necessary due to this bean being an EJB, causing very noisy and unnecessary
+        //       logging by the EJB container for bubbling exceptions. (It would be handled by the error handlers.)
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
     }
 
     @DELETE
@@ -854,7 +976,62 @@ public class Dataverses extends AbstractApiBean {
                 execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf), includeCached)))), getRequestUser(crc));
     }
     
+    @GET
+    @AuthRequired
+    @Path("{identifier}/storage/quota")
+    public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+        try {
+            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
+            if (bytesAllocated != null) {
+                return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation"),bytesAllocated));
+            }
+            return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
     
+    @POST
+    @AuthRequired
+    @Path("{identifier}/storage/quota/{bytesAllocated}")
+    public Response setCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("bytesAllocated") Long bytesAllocated) throws WrappedResponse {
+        try {
+            execCommand(new SetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), bytesAllocated));
+            return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/storage/quota")
+    public Response deleteCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+        try {
+            execCommand(new DeleteCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
+            return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.deleted"));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    /**
+     *
+     * @param crc
+     * @param identifier
+     * @return
+     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse 
+     * @todo: add an optional parameter that would force the recorded storage use
+     * to be recalculated (or should that be a POST version of this API?)
+     */
+    @GET
+    @AuthRequired
+    @Path("{identifier}/storage/use")
+    public Response getCollectionStorageUse(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) throws WrappedResponse {
+        return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.use"),
+                execCommand(new GetCollectionStorageUseCommand(req, findDataverseOrDie(identifier))))), getRequestUser(crc));
+    }
+
     @GET
     @AuthRequired
     @Path("{identifier}/roles")
@@ -894,6 +1071,8 @@ public class Dataverses extends AbstractApiBean {
      */
 //    File tempDir;
 //
+//    TODO: Code duplicate in ThemeWidgetFragment. Maybe extract, make static and put some place else?
+//          Important: at least use JvmSettings.DOCROOT_DIRECTORY and not the hardcoded location!
 //    private void createTempDir(Dataverse editDv) {
 //        try {
 //            File tempRoot = java.nio.file.Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();
@@ -1089,8 +1268,9 @@ public class Dataverses extends AbstractApiBean {
     public Response getGuestbookResponsesByDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
 
+        Dataverse dv;
         try {
-            Dataverse dv = findDataverseOrDie(dvIdtf);
+            dv = findDataverseOrDie(dvIdtf);
             User u = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(u);
             if (permissionSvc.request(req)
@@ -1110,16 +1290,14 @@ public class Dataverses extends AbstractApiBean {
             public void write(OutputStream os) throws IOException,
                     WebApplicationException {
 
-                Dataverse dv = dataverseService.findByAlias(dvIdtf);
                 Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
                 Map<Integer, String> datasetTitles = guestbookResponseService.mapDatasetTitles(dv.getId());
-                
+
                 List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
                 os.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
                 for (Object[] result : guestbookResults) {
                     StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, datasetTitles, result);
                     os.write(sb.toString().getBytes());
-
                 }
             }
         };

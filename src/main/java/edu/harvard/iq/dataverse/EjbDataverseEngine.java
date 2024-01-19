@@ -18,19 +18,20 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -40,16 +41,16 @@ import java.util.EnumSet;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Resource;
-import javax.ejb.EJBContext;
-import javax.ejb.EJBException;
-import javax.ejb.TransactionAttribute;
-import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
-import static javax.ejb.TransactionAttributeType.SUPPORTS;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.TransactionAttribute;
+import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
+import static jakarta.ejb.TransactionAttributeType.SUPPORTS;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 
 /**
  * An EJB capable of executing {@link Command}s in a JEE environment.
@@ -125,6 +126,9 @@ public class EjbDataverseEngine {
     HandlenetServiceBean handleNet;
     
     @EJB
+    PermaLinkPidProviderServiceBean permaLinkProvider;
+    
+    @EJB
     SettingsServiceBean settings;
     
     @EJB
@@ -180,6 +184,9 @@ public class EjbDataverseEngine {
     
     @EJB
     ConfirmEmailServiceBean confirmEmailService;
+    
+    @EJB
+    StorageUseServiceBean storageUseService; 
     
     @EJB
     EjbDataverseEngineInner innerEngine;
@@ -497,6 +504,11 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
+                public PermaLinkPidProviderServiceBean permaLinkProvider() {
+                    return permaLinkProvider;
+                }
+                
+                @Override
                 public SettingsServiceBean settings() {
                     return settings;
                 }
@@ -520,6 +532,12 @@ public class EjbDataverseEngine {
                 public DatasetLinkingServiceBean dsLinking() {
                     return dsLinking;
                 }
+                
+                @Override
+                public StorageUseServiceBean storageUse() {
+                    return storageUseService;
+                }
+                
                 @Override
                 public DataverseEngine engine() {
                     return new DataverseEngine() {

@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -11,10 +13,13 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -31,8 +36,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -44,33 +49,41 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.stream.JsonParsingException;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonDT;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+
+import jakarta.ws.rs.core.UriInfo;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -98,7 +111,11 @@ public class Files extends AbstractApiBean {
     SettingsServiceBean settingsService;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
-    
+    @Inject
+    GuestbookResponseServiceBean guestbookResponseService;
+    @Inject
+    DataFileServiceBean dataFileServiceBean;
+
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
     
@@ -311,6 +328,54 @@ public class Files extends AbstractApiBean {
         }
             
     } // end: replaceFileInDataset
+
+    /**
+     * Delete an Existing File 
+     * 
+     * @param id file ID or peristent ID
+     */
+    @DELETE
+    @AuthRequired
+    @Path("{id}")
+    public Response deleteFileInDataset(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId){
+        // (1) Get the user from the API key and create request
+        User authUser = getRequestUser(crc);
+        DataverseRequest dvRequest = createDataverseRequest(authUser);
+
+        // (2) Delete
+        boolean deletePhysicalFile = false;
+        try {
+            DataFile dataFile = findDataFileOrDie(fileIdOrPersistentId);
+            FileMetadata fileToDelete = dataFile.getLatestFileMetadata();
+            Dataset dataset = dataFile.getOwner();
+            DatasetVersion v = dataset.getOrCreateEditVersion();
+            deletePhysicalFile = !dataFile.isReleased();
+
+            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest,  Arrays.asList(fileToDelete), v);
+            update_cmd.setValidateLenient(true);
+
+            try {
+                commandEngine.submit(update_cmd);
+            } catch (CommandException ex) {
+                return error(BAD_REQUEST, "Delete failed for file ID " + fileIdOrPersistentId + " (CommandException): " + ex.getMessage());
+            } catch (EJBException ex) {
+                return error(BAD_REQUEST, "Delete failed for file ID " + fileIdOrPersistentId + "(EJBException): " + ex.getMessage());
+            }
+    
+            if (deletePhysicalFile) {
+                try {
+                    fileService.finalizeFileDelete(dataFile.getId(), fileService.getPhysicalFileToDelete(dataFile));
+                } catch (IOException ioex) {
+                    logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                            + dataFile.getId() + ", storage location: " + fileService.getPhysicalFileToDelete(dataFile));
+                }
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        return ok(deletePhysicalFile);
+    }
     
     //Much of this code is taken from the replace command, 
     //simplified as we aren't actually switching files
@@ -396,7 +461,7 @@ public class Files extends AbstractApiBean {
                     return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile. It is not part of the current version of the Dataset.");
                 }
 
-                javax.json.JsonObject jsonObject = JsonUtil.getJsonObject(jsonData);
+                jakarta.json.JsonObject jsonObject = JsonUtil.getJsonObject(jsonData);
                 String incomingLabel = jsonObject.getString("label", null);
                 String incomingDirectoryLabel = jsonObject.getString("directoryLabel", null);
                 String existingLabel = df.getFileMetadata().getLabel();
@@ -652,7 +717,7 @@ public class Files extends AbstractApiBean {
         dataFile = fileService.save(dataFile);
         
         // queue the data ingest job for asynchronous execution: 
-        String status = ingestService.startIngestJobs(new ArrayList<>(Arrays.asList(dataFile)), u);
+        String status = ingestService.startIngestJobs(dataset.getId(), new ArrayList<>(Arrays.asList(dataFile)), u);
         
         if (!StringUtil.isEmpty(status)) {
             // This most likely indicates some sort of a problem (for example, 
@@ -674,6 +739,11 @@ public class Files extends AbstractApiBean {
     public Response redetectDatafile(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("dryRun") boolean dryRun) {
         try {
             DataFile dataFileIn = findDataFileOrDie(id);
+            // Ingested Files have mimetype = text/tab-separated-values
+            // No need to redetect
+            if (dataFileIn.isTabularData()) {
+                return error(Response.Status.BAD_REQUEST, "The file is an ingested tabular file.");
+            }
             String originalContentType = dataFileIn.getContentType();
             DataFile dataFileOut = execCommand(new RedetectFileTypeCommand(createDataverseRequest(getRequestUser(crc)), dataFileIn, dryRun));
             NullSafeJsonBuilder result = NullSafeJsonBuilder.jsonObjectBuilder()
@@ -746,18 +816,119 @@ public class Files extends AbstractApiBean {
             return error(BAD_REQUEST, "External tool does not have file scope.");
         }
         ApiToken apiToken = null;
-        User u = getRequestUser(crc);
-        if (u instanceof AuthenticatedUser) {
-            apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) u);
-        }
+        User user = getRequestUser(crc);
+        apiToken = authSvc.getValidApiTokenForUser(user);
         FileMetadata target = fileSvc.findFileMetadata(fmid);
         if (target == null) {
             return error(BAD_REQUEST, "FileMetadata not found.");
         }
 
-        ExternalToolHandler eth = null;
+        URLTokenUtil eth = null;
 
         eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale);
-        return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters()))));
+        return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(externalTool.getAllowedApiCalls())));
+    }
+    
+    @GET
+    @Path("fixityAlgorithm")
+    public Response getFixityAlgorithm() {
+        return ok(systemConfig.getFileFixityChecksumAlgorithm().toString());
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/downloadCount")
+    public Response getFileDownloadCount(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            return ok(guestbookResponseService.getDownloadCountByDataFileId(dataFile.getId()).toString());
+        }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/dataTables")
+    public Response getFileDataTables(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+        } catch (WrappedResponse e) {
+            return notFound("File not found for given id.");
+        }
+        if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
+            DataverseRequest dataverseRequest = createDataverseRequest(getRequestUser(crc));
+            boolean hasPermissionToDownloadFile = permissionSvc.requestOn(dataverseRequest, dataFile).has(Permission.DownloadFile);
+            if (!hasPermissionToDownloadFile) {
+                return forbidden("Insufficient permissions to access the requested information.");
+            }
+        }
+        if (!dataFile.isTabularData()) {
+            return badRequest(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"));
+        }
+        return ok(jsonDT(dataFile.getDataTables()));
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{id}/metadata/categories")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setFileCategories(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            jakarta.json.JsonObject jsonObject;
+            try (StringReader stringReader = new StringReader(jsonBody)) {
+                jsonObject = Json.createReader(stringReader).readObject();
+                JsonArray requestedCategoriesJson = jsonObject.getJsonArray("categories");
+                FileMetadata fileMetadata = dataFile.getFileMetadata();
+                for (JsonValue jsonValue : requestedCategoriesJson) {
+                    JsonString jsonString = (JsonString) jsonValue;
+                    fileMetadata.addCategoryByName(jsonString.getString());
+                }
+                execCommand(new UpdateDatasetVersionCommand(fileMetadata.getDataFile().getOwner(), req));
+                return ok("Categories of file " + dataFileId + " updated.");
+            } catch (JsonParsingException jpe) {
+                return badRequest("Error parsing Json: " + jpe.getMessage());
+            }
+        }, getRequestUser(crc));
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{id}/metadata/tabularTags")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setFileTabularTags(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId, String jsonBody) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            if (!dataFile.isTabularData()) {
+                return badRequest(BundleUtil.getStringFromBundle("files.api.only.tabular.supported"));
+            }
+            jakarta.json.JsonObject jsonObject;
+            try (StringReader stringReader = new StringReader(jsonBody)) {
+                jsonObject = Json.createReader(stringReader).readObject();
+                JsonArray requestedTabularTagsJson = jsonObject.getJsonArray("tabularTags");
+                for (JsonValue jsonValue : requestedTabularTagsJson) {
+                    JsonString jsonString = (JsonString) jsonValue;
+                    try {
+                        dataFile.addUniqueTagByLabel(jsonString.getString());
+                    } catch (IllegalArgumentException iax){
+                        return badRequest(iax.getMessage());
+                    }
+                }
+                execCommand(new UpdateDatasetVersionCommand(dataFile.getOwner(), req));
+                return ok("Tabular tags of file " + dataFileId + " updated.");
+            } catch (JsonParsingException jpe) {
+                return badRequest("Error parsing Json: " + jpe.getMessage());
+            }
+        }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/hasBeenDeleted")
+    public Response getHasBeenDeleted(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        return response(req -> {
+            DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(dataFileId)));
+            return ok(dataFileServiceBean.hasBeenDeleted(dataFile));
+        }, getRequestUser(crc));
     }
 }

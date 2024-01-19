@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api.auth.doubles;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import static edu.harvard.iq.dataverse.api.auth.WorkflowKeyAuthMechanism.DATAVERSE_WORKFLOW_KEY_REQUEST_PARAM_NAME;
 

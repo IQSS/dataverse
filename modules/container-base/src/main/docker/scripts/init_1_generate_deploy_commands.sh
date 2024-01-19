@@ -61,5 +61,6 @@ find "$DEPLOY_DIR" -mindepth 1 -maxdepth 1 -name "*.rar" -print0 \
   | while IFS= read -r -d '' file; do deploy "$file"; done
 
 # Then every other WAR, EAR, JAR or directory
-find "$DEPLOY_DIR" -mindepth 1 -maxdepth 1 ! -name "*.rar" -a -name "*.war" -o -name "*.ear" -o -name "*.jar" -o -type d -print0 \
-  | while IFS= read -r -d '' file; do deploy "$file"; done
+find "$DEPLOY_DIR" -mindepth 1 -maxdepth 1 \
+  \( ! -name "*.rar" -a -name "*.war" -o -name "*.ear" -o -name "*.jar" -o -type d \) \
+  -print0 | while IFS= read -r -d '' file; do deploy "$file"; done

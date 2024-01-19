@@ -46,6 +46,7 @@ public class DdiExportUtilTest {
         DdiExportUtil.injectSettingsService(settingsSvc);
     }
     
+    
     @Test
     public void testJson2DdiNoFiles() throws Exception {
         // given
@@ -74,7 +75,7 @@ public class DdiExportUtilTest {
         
         // when
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
-        logger.fine(result);
+        logger.fine(XmlPrinter.prettyPrintXml(result));
         
         // then
         XmlAssert.assertThat(result).and(datasetAsDdi).ignoreWhitespace().areSimilar();
@@ -94,7 +95,7 @@ public class DdiExportUtilTest {
         String datasetAsDdi = XmlPrinter.prettyPrintXml(Files.readString(ddiFile, StandardCharsets.UTF_8));
         logger.fine(datasetAsDdi);
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
-        logger.fine(result);
+        logger.fine(XmlPrinter.prettyPrintXml(result));
         boolean filesMinimallySupported = false;
         // TODO: 
         // setting "filesMinimallySupported" to false here, thus disabling the test;

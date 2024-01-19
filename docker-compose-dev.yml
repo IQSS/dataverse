@@ -1,54 +1,223 @@
-version: "3.9"
+version: "2.4"
 
 services:
 
+  dev_dataverse:
+    container_name: "dev_dataverse"
+    hostname: dataverse
+    image: ${APP_IMAGE}
+    restart: on-failure
+    user: payara
+    environment:
+      DATAVERSE_DB_HOST: postgres
+      DATAVERSE_DB_PASSWORD: secret
+      DATAVERSE_DB_USER: ${DATAVERSE_DB_USER}
+      ENABLE_JDWP: "1"
+      DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
+      DATAVERSE_AUTH_OIDC_ENABLED: "1"
+      DATAVERSE_AUTH_OIDC_CLIENT_ID: test
+      DATAVERSE_AUTH_OIDC_CLIENT_SECRET: 94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8
+      DATAVERSE_AUTH_OIDC_AUTH_SERVER_URL: http://keycloak.mydomain.com:8090/realms/test
+      DATAVERSE_JSF_REFRESH_PERIOD: "1"
+      # These two oai settings are here to get HarvestingServerIT to pass
+      dataverse_oai_server_maxidentifiers: "2"
+      dataverse_oai_server_maxrecords: "2"
+      JVM_ARGS: -Ddataverse.files.storage-driver-id=file1
+        -Ddataverse.files.file1.type=file
+        -Ddataverse.files.file1.label=Filesystem
+        -Ddataverse.files.file1.directory=${STORAGE_DIR}/store
+        -Ddataverse.files.localstack1.type=s3
+        -Ddataverse.files.localstack1.label=LocalStack
+        -Ddataverse.files.localstack1.custom-endpoint-url=http://localstack:4566
+        -Ddataverse.files.localstack1.custom-endpoint-region=us-east-2
+        -Ddataverse.files.localstack1.bucket-name=mybucket
+        -Ddataverse.files.localstack1.path-style-access=true
+        -Ddataverse.files.localstack1.upload-redirect=true
+        -Ddataverse.files.localstack1.download-redirect=true
+        -Ddataverse.files.localstack1.access-key=default
+        -Ddataverse.files.localstack1.secret-key=default
+        -Ddataverse.files.minio1.type=s3
+        -Ddataverse.files.minio1.label=MinIO
+        -Ddataverse.files.minio1.custom-endpoint-url=http://minio:9000
+        -Ddataverse.files.minio1.custom-endpoint-region=us-east-1
+        -Ddataverse.files.minio1.bucket-name=mybucket
+        -Ddataverse.files.minio1.path-style-access=true
+        -Ddataverse.files.minio1.upload-redirect=false
+        -Ddataverse.files.minio1.download-redirect=false
+        -Ddataverse.files.minio1.access-key=4cc355_k3y
+        -Ddataverse.files.minio1.secret-key=s3cr3t_4cc355_k3y
+    ports:
+      - "8080:8080" # HTTP (Dataverse Application)
+      - "4848:4848" # HTTP (Payara Admin Console)
+      - "9009:9009" # JDWP
+      - "8686:8686" # JMX
+    networks:
+      - dataverse
+    depends_on:
+      - dev_postgres
+      - dev_solr
+      - dev_dv_initializer
+    volumes:
+      - ./docker-dev-volumes/app/data:/dv
+      - ./docker-dev-volumes/app/secrets:/secrets
+      # Uncomment for changes to xhtml to be deployed immediately (if supported your IDE or toolchain).
+      # Replace 6.0 with the current version.
+      # - ./target/dataverse-6.0:/opt/payara/deployments/dataverse
+    tmpfs:
+      - /dumps:mode=770,size=2052M,uid=1000,gid=1000
+      - /tmp:mode=770,size=2052M,uid=1000,gid=1000
+    mem_limit: 2147483648 # 2 GiB
+    mem_reservation: 1024m
+    privileged: false
+
+  dev_bootstrap:
+    container_name: "dev_bootstrap"
+    image: gdcc/configbaker:unstable
+    restart: "no"
+    command:
+      - bootstrap.sh
+      - dev
+    networks:
+      - dataverse
+
+  dev_dv_initializer:
+    container_name: "dev_dv_initializer"
+    image: gdcc/configbaker:unstable
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - "fix-fs-perms.sh dv"
+    volumes:
+      - ./docker-dev-volumes/app/data:/dv
+
   dev_postgres:
     container_name: "dev_postgres"
+    hostname: postgres
     image: postgres:${POSTGRES_VERSION}
     restart: on-failure
     environment:
-      - POSTGRES_USER=postgres
+      - POSTGRES_USER=${DATAVERSE_DB_USER}
       - POSTGRES_PASSWORD=secret
     ports:
       - "5432:5432"
+    networks:
+      - dataverse
     volumes:
       - ./docker-dev-volumes/postgresql/data:/var/lib/postgresql/data
 
   dev_solr_initializer:
     container_name: "dev_solr_initializer"
-    image: alpine
+    image: gdcc/configbaker:unstable
     restart: "no"
     command:
       - sh
       - -c
-      - "chown 8983:8983 /conf && cp *.xml /conf"
+      - "fix-fs-perms.sh solr && cp -a /template/* /solr-template"
     volumes:
-      - ./docker-dev-volumes/solr/conf:/conf
-      - ./conf/solr/8.11.1/schema.xml:/schema.xml
-      - ./conf/solr/8.11.1/solrconfig.xml:/solrconfig.xml
+      - ./docker-dev-volumes/solr/data:/var/solr
+      - ./docker-dev-volumes/solr/conf:/solr-template
 
   dev_solr:
     container_name: "dev_solr"
+    hostname: "solr"
     image: solr:${SOLR_VERSION}
     depends_on:
       - dev_solr_initializer
     restart: on-failure
     ports:
       - "8983:8983"
+    networks:
+      - dataverse
     command:
-      - bash
-      - -c
-      - "cd /opt/solr-${SOLR_VERSION}/server/solr/configsets/_default/conf && cp -R -n . /template && solr-precreate collection1 /template"
+      - "solr-precreate"
+      - "collection1"
+      - "/template"
     volumes:
       - ./docker-dev-volumes/solr/data:/var/solr
       - ./docker-dev-volumes/solr/conf:/template
 
   dev_smtp:
     container_name: "dev_smtp"
+    hostname: "smtp"
     image: maildev/maildev:2.0.5
     restart: on-failure
     ports:
-      - "25:1025" # smtp server
+      - "25:25" # smtp server
       - "1080:1080" # web ui
+    environment:
+      - MAILDEV_SMTP_PORT=25
+      - MAILDEV_MAIL_DIRECTORY=/mail
+    networks:
+      - dataverse
+    #volumes:
+    #  - ./docker-dev-volumes/smtp/data:/mail
+    tmpfs:
+      - /mail:mode=770,size=128M,uid=1000,gid=1000
+
+  dev_keycloak:
+    container_name: "dev_keycloak"
+    image: 'quay.io/keycloak/keycloak:21.0'
+    hostname: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=kcadmin
+      - KEYCLOAK_ADMIN_PASSWORD=kcpassword
+      - KEYCLOAK_LOGLEVEL=DEBUG
+      - KC_HOSTNAME_STRICT=false
+    networks:
+      dataverse:
+        aliases:
+          - keycloak.mydomain.com #create a DNS alias within the network (add the same alias to your /etc/hosts to get a working OIDC flow)
+    command: start-dev --import-realm --http-port=8090  # change port to 8090, so within the network and external the same port is used
+    ports:
+      - "8090:8090"
     volumes:
-      - ./docker-dev-volumes/smtp/data:/tmp/maildev-1
+      - './conf/keycloak/test-realm.json:/opt/keycloak/data/import/test-realm.json'
+
+  dev_nginx:
+    container_name: dev_nginx
+    image: gdcc/dev_nginx:unstable
+    ports:
+      - "4849:4849"
+    restart: always
+    networks:
+      - dataverse
+
+  dev_localstack:
+    container_name: "dev_localstack"
+    hostname: "localstack"
+    image: localstack/localstack:2.3.2
+    restart: on-failure
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      - DEBUG=${DEBUG-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME_EXTERNAL=localstack
+    networks:
+      - dataverse
+    volumes:
+      - ./conf/localstack:/etc/localstack/init/ready.d
+    tmpfs:
+      - /localstack:mode=770,size=128M,uid=1000,gid=1000
+
+  dev_minio:
+    container_name: "dev_minio"
+    hostname: "minio"
+    image: minio/minio
+    restart: on-failure
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - dataverse
+    volumes:
+      - ./docker-dev-volumes/minio_storage:/data
+    environment:
+      MINIO_ROOT_USER: 4cc355_k3y
+      MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k3y
+    command: server /data
+
+networks:
+  dataverse:
+    driver: bridge

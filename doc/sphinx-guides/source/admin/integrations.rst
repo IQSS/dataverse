@@ -121,6 +121,18 @@ Its goal is to make the dashboard adjustable for a Dataverse installation's need
 
 The integrations dashboard is currently in development. A preview and more information can be found at: `rdm-integration GitHub repository <https://github.com/libis/rdm-integration>`_
 
+Globus
+++++++
+
+Globus transfer uses an efficient transfer mechanism and has additional features that make it suitable for large files and large numbers of files:
+
+* robust file transfer capable of restarting after network or endpoint failures
+* third-party transfer, which enables a user accessing a Dataverse installation in their desktop browser to initiate transfer of their files from a remote endpoint (i.e. on a local high-performance computing cluster), directly to an S3 store managed by the Dataverse installation
+
+Users can transfer files via `Globus <https://www.globus.org>`_ into and out of datasets, or reference files on a remote Globus endpoint, when their Dataverse installation is configured to use a Globus accessible store(s) 
+and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ app has been properly installed and configured.
+
+
 Embedding Data on Websites
 --------------------------
 
@@ -147,6 +159,8 @@ Compute Button
 
 The "Compute" button is still highly experimental and has special requirements such as use of a Swift object store, but it is documented under "Setting up Compute" in the :doc:`/installation/config` section of the Installation Guide.
 
+.. _wholetale:
+
 Whole Tale
 ++++++++++
 
@@ -154,14 +168,18 @@ Whole Tale
 `import data from a Dataverse installation
 <https://wholetale.readthedocs.io/en/stable/users_guide/manage.html>`_ via identifier (e.g., DOI, URI, etc) or through the External Tools integration.  For installation instructions, see the :doc:`external-tools` section or the `Integration <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html#dataverse-external-tools>`_ section of the Whole Tale User Guide.
 
+.. _binder:
+
 Binder
 ++++++
 
-Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by entering the DOI of a dataset in a Dataverse installation on https://mybinder.org
+Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by entering the DOI of a dataset in a Dataverse installation at https://mybinder.org
 
-A Binder button can also be added to every dataset page to launch Binder from there. See :doc:`external-tools`.
+A Binder button can also be added to every dataset page to launch Binder from there. Instructions on enabling this feature can be found under :doc:`external-tools`.
 
-Institutions can self host BinderHub. The Dataverse Project is one of the supported `repository providers <https://binderhub.readthedocs.io/en/latest/developer/repoproviders.html#supported-repoproviders>`_.
+Additionally, institutions can self host `BinderHub <https://binderhub.readthedocs.io/en/latest/>`_ (the software that powers mybinder.org), which lists the Dataverse software as one of the supported `repository providers <https://binderhub.readthedocs.io/en/latest/developer/repoproviders.html#supported-repoproviders>`_.
+
+.. _renku:
 
 Renku
 +++++
@@ -179,15 +197,12 @@ Avgidea Data Search
 
 Researchers can use a Google Sheets add-on to search for Dataverse installation's CSV data and then import that data into a sheet. See `Avgidea Data Search <https://www.avgidea.io/avgidea-data-platform.html>`_ for details.
 
+.. _integrations-discovery:
+
 Discoverability
 ---------------
 
-Integration with `DataCite <https://datacite.org>`_ is built in to the Dataverse Software. When datasets are published, metadata is sent to DataCite. You can further increase the discoverability of your datasets by setting up additional integrations.
-
-OAI-PMH (Harvesting)
-++++++++++++++++++++
-
-The Dataverse Software supports a protocol called OAI-PMH that facilitates harvesting datasets from one system into another. For details on harvesting, see the :doc:`harvestserver` section.
+A number of builtin features related to data discovery are listed under :doc:`discoverability` but you can further increase the discoverability of your data by setting up integrations.
 
 SHARE
 +++++
@@ -214,7 +229,14 @@ Sponsored by the `Ontario Council of University Libraries (OCUL) <https://ocul.o
 RDA BagIt (BagPack) Archiving
 +++++++++++++++++++++++++++++
 
-A Dataverse installation can be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to the `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_, to a local file system, or to `Google Cloud Storage <https://cloud.google.com/storage>`_.
+A Dataverse installation can be configured to submit a copy of published Dataset versions, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ bags to `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_, a local file system, any S3 store, or to `Google Cloud Storage <https://cloud.google.com/storage>`_.
+Submission can be automated to occur upon publication, or can be done periodically (via external scripting).
+The archival status of each Dataset version can be seen in the Dataset page version table and queried via API.
+
+The archival Bags include all of the files and metadata in a given dataset version and are sufficient to recreate the dataset, e.g. in a new Dataverse instance, or potentially in another RDA-conformant repository.
+Specifically, the archival Bags include an OAI-ORE Map serialized as JSON-LD that describe the dataset and it's files, as well as information about the version of Dataverse used to export the archival Bag.
+
+The `DVUploader <https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader>`_ includes functionality to recreate a Dataset from an archival Bag produced by Dataverse (using the Dataverse API to do so).
 
 For details on how to configure this integration, see :ref:`BagIt Export` in the :doc:`/installation/config` section of the Installation Guide.
 
@@ -223,7 +245,7 @@ Future Integrations
 
 The `Dataverse Project Roadmap <https://www.iq.harvard.edu/roadmap-dataverse-project>`_ is a good place to see integrations that the core Dataverse Project team is working on.
 
-The `Community Dev <https://github.com/orgs/IQSS/projects/2#column-5298405>`_ column of our project board is a good way to track integrations that are being worked on by the Dataverse Community but many are not listed and if you have an idea for an integration, please ask on the `dataverse-community <https://groups.google.com/forum/#!forum/dataverse-community>`_ mailing list if someone is already working on it.
+If you have an idea for an integration, please ask on the `dataverse-community <https://groups.google.com/forum/#!forum/dataverse-community>`_ mailing list if someone is already working on it.
 
 Many integrations take the form of "external tools". See the :doc:`external-tools` section for details. External tool makers should check out the :doc:`/api/external-tools` section of the API Guide.
 

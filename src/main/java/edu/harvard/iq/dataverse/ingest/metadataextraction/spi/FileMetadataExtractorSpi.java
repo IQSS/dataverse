@@ -10,9 +10,7 @@ import edu.harvard.iq.dataverse.ingest.metadataextraction.*;
 import java.util.logging.*;
 import java.io.*;
 
-import edu.harvard.iq.dataverse.ingest.plugin.spi.RegisterableService;
 import edu.harvard.iq.dataverse.ingest.plugin.spi.IngestServiceProvider;
-import edu.harvard.iq.dataverse.ingest.plugin.spi.ServiceRegistry;
 import java.nio.MappedByteBuffer;
 import java.util.Locale;
 
@@ -44,22 +42,6 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
         this.version = version;
     }
 
-    public void onRegistration(ServiceRegistry registry,
-                               Class<?> category) {}
-                               
-    
-    public void onDeregistration(ServiceRegistry registry,
-                                 Class<?> category) {}
-    
-    public String getVersion() {
-        return version;
-    }
-
-    public String getVendorName() {
-        return vendorName;
-    }
-
-    
     public abstract String getDescription(Locale locale);
     
     protected String[] names = null;

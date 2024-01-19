@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.AccessRequest;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -9,6 +8,9 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -27,24 +29,20 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.StoredProcedureQuery;
-import javax.persistence.TypedQuery;
-import org.apache.commons.lang3.RandomStringUtils;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 /**
  *
  * @author Leonid Andreev
- * 
- * Basic skeleton of the new DataFile service for DVN 4.0
  * 
  */
 
@@ -67,13 +65,18 @@ public class DataFileServiceBean implements java.io.Serializable {
 
     @EJB EmbargoServiceBean embargoService;
     
+    @EJB SystemConfig systemConfig;
+    
+    @EJB
+    StorageUseServiceBean storageUseService; 
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
     // Assorted useful mime types:
     
     // 3rd-party and/or proprietary tabular data formasts that we know
-    // how to ingest: 
+    // how to ingest:
     
     private static final String MIME_TYPE_STATA = "application/x-stata";
     private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
@@ -154,8 +157,29 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }*/
     
+    public List<DataFile> findAll(List<Long> fileIds){
+        List<DataFile> dataFiles = new ArrayList<>();
+
+         for (Long fileId : fileIds){
+             dataFiles.add(find(fileId));
+         }
+
+        return dataFiles;
+    }
+
+    public List<DataFile> findAll(String fileIdsAsString){
+        ArrayList<Long> dataFileIds = new ArrayList<>();
+
+        String[] fileIds = fileIdsAsString.split(",");
+        for (String fId : fileIds){
+            dataFileIds.add(Long.parseLong(fId));
+        }
+
+        return findAll(dataFileIds);
+    }
+    
     public DataFile findByGlobalId(String globalId) {
-            return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
+            return (DataFile) dvObjectService.findByGlobalId(globalId, DvObject.DType.DataFile);
     }
 
     public List<DataFile> findByCreatorId(Long creatorId) {
@@ -197,6 +221,18 @@ public class DataFileServiceBean implements java.io.Serializable {
         String qr = "select o from DataFile o where o.owner.id = :studyId order by o.id";
         return em.createQuery(qr, DataFile.class)
                 .setParameter("studyId", studyId).getResultList();
+    }
+    
+    /**
+     * 
+     * @param collectionId numeric id of the parent collection ("dataverse")
+     * @return list of files in the datasets that are *direct* children of the collection specified
+     * (i.e., no datafiles in sub-collections of this collection will be included)
+     */
+    public List<DataFile> findByDirectCollectionOwner(Long collectionId) {
+        String queryString = "select f from DataFile f, Dataset d where f.owner.id = d.id and d.owner.id = :collectionId order by f.id";
+        return em.createQuery(queryString, DataFile.class)
+                .setParameter("collectionId", collectionId).getResultList();
     }
     
     public List<DataFile> findAllRelatedByRootDatafileId(Long datafileId) {
@@ -350,6 +386,18 @@ public class DataFileServiceBean implements java.io.Serializable {
             return fileMetadatas.get(0);
         }
     }
+    
+    public List<DataFile> findAllCheapAndEasy(String fileIdsAsString){ 
+        //assumption is that the fileIds are separated by ','
+        ArrayList <DataFile> dataFilesFound = new ArrayList<>();
+        String[] fileIds = fileIdsAsString.split(",");
+        DataFile df = this.findCheapAndEasy(Long.parseLong(fileIds[0]));
+        if(df != null){
+            dataFilesFound.add(df);
+        }
+
+        return dataFilesFound;
+    }
 
     public DataFile findCheapAndEasy(Long id) {
         DataFile dataFile;
@@ -357,7 +405,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Object[] result;
 
         try {
-            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t2.AUTHORITY, t2.IDENTIFIER, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.AUTHORITY, T0.PROTOCOL, T0.IDENTIFIER FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
+            result = (Object[]) em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t0.PREVIEWIMAGEAVAILABLE, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t3.ID, t2.AUTHORITY, t2.IDENTIFIER, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.AUTHORITY, T0.PROTOCOL, T0.IDENTIFIER, t2.PROTOCOL FROM DVOBJECT t0, DATAFILE t1, DVOBJECT t2, DATASET t3 WHERE ((t0.ID = " + id + ") AND (t0.OWNER_ID = t2.ID) AND (t2.ID = t3.ID) AND (t1.ID = t0.ID))").getSingleResult();
         } catch (Exception ex) {
             return null;
         }
@@ -501,7 +549,9 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (identifier != null) {
             dataFile.setIdentifier(identifier);
         }
-                
+        
+        owner.setProtocol((String) result[25]);
+        
         dataFile.setOwner(owner);
 
         // If content type indicates it's tabular data, spend 2 extra queries 
@@ -559,265 +609,25 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         return dataFile;
     }
-    /* 
-     * This is an experimental method for populating the versions of 
-     * the datafile with the filemetadatas, optimized for making as few db 
-     * queries as possible. 
-     * It should only be used to retrieve filemetadata for the DatasetPage!
-     * It is not guaranteed to adequately perform anywhere else. 
-    */
-
-    public void findFileMetadataOptimizedExperimental(Dataset owner, DatasetVersion version, AuthenticatedUser au) {
-        List<DataFile> dataFiles = new ArrayList<>();
-        List<DataTable> dataTables = new ArrayList<>();
-        //List<FileMetadata> retList = new ArrayList<>(); 
-        
-        // TODO: 
-        //  replace these maps with simple lists and run binary search on them. -- 4.2.1
-        
-        Map<Long, AuthenticatedUser> userMap = new HashMap<>(); 
-        Map<Long, Integer> filesMap = new HashMap<>();
-        Map<Long, Integer> datatableMap = new HashMap<>();
-        Map<Long, Integer> categoryMap = new HashMap<>();
-        Map<Long, Set<Integer>> fileTagMap = new HashMap<>();
-        List<Long> accessRequestFileIds = new ArrayList();
-        
-        List<String> fileTagLabels = DataFileTag.listTags();
-        
-        
-        int i = 0; 
-        //Cache responses
-        Map<Long, Embargo> embargoMap = new HashMap<Long, Embargo>();
-        
-        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT, t0.ORIGINALFILESIZE, t0.ORIGINALFILENAME FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID").getResultList();
-        
-        for (Object[] result : dataTableResults) {
-            DataTable dataTable = new DataTable(); 
-            long fileId = ((Number) result[1]).longValue();
-
-            dataTable.setId(((Number) result[1]).longValue());
-            
-            dataTable.setUnf((String)result[2]);
-            
-            dataTable.setCaseQuantity((Long)result[3]);
-            
-            dataTable.setVarQuantity((Long)result[4]);
-            
-            dataTable.setOriginalFileFormat((String)result[5]);
-            
-            dataTable.setOriginalFileSize((Long)result[6]);
-            
-            dataTable.setOriginalFileName((String)result[7]);
-            
-            dataTables.add(dataTable);
-            datatableMap.put(fileId, i++);
-            
-        }
-        
-        logger.fine("Retrieved "+dataTables.size()+" DataTable objects.");
-         
-        List<Object[]> dataTagsResults = em.createNativeQuery("SELECT t0.DATAFILE_ID, t0.TYPE FROM DataFileTag t0, dvObject t1 WHERE (t1.ID = t0.DATAFILE_ID) AND (t1.OWNER_ID="+ owner.getId() + ")").getResultList();
-        for (Object[] result : dataTagsResults) {
-            Long datafile_id = (Long) result[0];
-            Integer tagtype_id = (Integer) result[1];
-            if (fileTagMap.get(datafile_id) == null) {
-                fileTagMap.put(datafile_id, new HashSet<>());
-            }
-            fileTagMap.get(datafile_id).add(tagtype_id);
-        }
-        logger.fine("Retrieved "+dataTagsResults.size()+" data tags.");
-        dataTagsResults = null;
-
-        //Only need to check for access requests if there is an authenticated user       
-        if (au != null) {
-            List<Object> accessRequests = em.createNativeQuery("SELECT t0.ID FROM DVOBJECT t0, FILEACCESSREQUESTS t1 WHERE t1.datafile_id = t0.id and t0.OWNER_ID = " + owner.getId() + "  and t1.AUTHENTICATED_USER_ID = " + au.getId() + " ORDER BY t0.ID").getResultList();
-            for (Object result : accessRequests) {               
-                accessRequestFileIds.add(Long.valueOf((Integer)result));
-            }
-            logger.fine("Retrieved " + accessRequests.size() + " access requests.");           
-            accessRequests = null;
-        }
-
-        i = 0;
-        
-        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.PROTOCOL, t0.AUTHORITY, t0.IDENTIFIER, t1.EMBARGO_ID FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) ORDER BY t0.ID").getResultList(); 
     
-        for (Object[] result : fileResults) {
-            Integer file_id = (Integer) result[0];
-            
-            DataFile dataFile = new DataFile();
-            dataFile.setMergeable(false);
-            
-            dataFile.setId(file_id.longValue());
-            
-            Timestamp createDate = (Timestamp) result[1];
-            Timestamp indexTime = (Timestamp) result[2];
-            Timestamp modificationTime = (Timestamp) result[3];
-            Timestamp permissionIndexTime = (Timestamp) result[4];
-            Timestamp permissionModificationTime = (Timestamp) result[5];
-            Timestamp publicationDate = (Timestamp) result[6];
-            
-            dataFile.setCreateDate(createDate);
-            dataFile.setIndexTime(indexTime);
-            dataFile.setModificationTime(modificationTime);
-            dataFile.setPermissionIndexTime(permissionIndexTime);
-            dataFile.setPermissionModificationTime(permissionModificationTime);
-            dataFile.setPublicationDate(publicationDate);
-            
-            Long creatorId = (Long) result[7]; 
-            if (creatorId != null) {
-                AuthenticatedUser creator = userMap.get(creatorId);
-                if (creator == null) {
-                    creator = userService.find(creatorId);
-                    if (creator != null) {
-                        userMap.put(creatorId, creator);
-                    }
-                }
-                if (creator != null) {
-                    dataFile.setCreator(creator);
-                }
-            }
-            
-            dataFile.setOwner(owner);
-            
-            Long releaseUserId = (Long) result[8]; 
-            if (releaseUserId != null) {
-                AuthenticatedUser releaseUser = userMap.get(releaseUserId);
-                if (releaseUser == null) {
-                    releaseUser = userService.find(releaseUserId);
-                    if (releaseUser != null) {
-                        userMap.put(releaseUserId, releaseUser);
-                    }
-                }
-                if (releaseUser != null) {
-                    dataFile.setReleaseUser(releaseUser);
-                }
-            }
-            
-            String contentType = (String) result[9]; 
-            
-            if (contentType != null) {
-                dataFile.setContentType(contentType);
-            }
-            
-            String storageIdentifier = (String) result[10];
-            
-            if (storageIdentifier != null) {
-                dataFile.setStorageIdentifier(storageIdentifier);
-            }
-            
-            Long fileSize = (Long) result[11];
-            
-            if (fileSize != null) {
-                dataFile.setFilesize(fileSize);
-            }
-            
-            if (result[12] != null) {
-                String ingestStatusString = (String) result[12];
-                dataFile.setIngestStatus(ingestStatusString.charAt(0));
-            }
-            
-            String md5 = (String) result[13]; 
-            
-            if (md5 != null) {
-                dataFile.setChecksumValue(md5);
-            }
-            
-            Boolean restricted = (Boolean) result[14];
-            if (restricted != null) {
-                dataFile.setRestricted(restricted);
-            }
+    private List<AuthenticatedUser> retrieveFileAccessRequesters(DataFile fileIn) {
+        List<AuthenticatedUser> retList = new ArrayList<>();
 
-            String checksumType = (String) result[15];
-            if (checksumType != null) {
-                try {
-                    // In the database we store "SHA1" rather than "SHA-1".
-                    DataFile.ChecksumType typeFromStringInDatabase = DataFile.ChecksumType.valueOf(checksumType);
-                    dataFile.setChecksumType(typeFromStringInDatabase);
-                } catch (IllegalArgumentException ex) {
-                    logger.info("Exception trying to convert " + checksumType + " to enum: " + ex);
-                }
+        // List<Object> requesters = em.createNativeQuery("select authenticated_user_id
+        // from fileaccessrequests where datafile_id =
+        // "+fileIn.getId()).getResultList();
+        TypedQuery<Long> typedQuery = em.createQuery("select f.user.id from FileAccessRequest f where f.dataFile.id = :file_id and f.requestState= :requestState", Long.class);
+        typedQuery.setParameter("file_id", fileIn.getId());
+        typedQuery.setParameter("requestState", FileAccessRequest.RequestState.CREATED);
+        List<Long> requesters = typedQuery.getResultList();
+        for (Long userId : requesters) {
+            AuthenticatedUser user = userService.find(userId);
+            if (user != null) {
+                retList.add(user);
             }
-
-            Long previousDataFileId = (Long) result[16];
-            if (previousDataFileId != null) {
-                dataFile.setPreviousDataFileId(previousDataFileId);
-            }
-            
-            Long rootDataFileId = (Long) result[17];
-            if (rootDataFileId != null) {
-                dataFile.setRootDataFileId(rootDataFileId);
-            }
-            
-            String protocol = (String) result[18];
-            if (protocol != null) {
-                dataFile.setProtocol(protocol);
-            }
-            
-            String authority = (String) result[19];
-            if (authority != null) {
-                dataFile.setAuthority(authority);
-            }
-            
-            String identifier = (String) result[20];
-            if (identifier != null) {
-                dataFile.setIdentifier(identifier);
-            }
-            
-            Long embargo_id = (Long) result[21];
-            if (embargo_id != null) {
-                if (embargoMap.containsKey(embargo_id)) {
-                    dataFile.setEmbargo(embargoMap.get(embargo_id));
-                } else {
-                    Embargo e = embargoService.findByEmbargoId(embargo_id);
-                    dataFile.setEmbargo(e);
-                    embargoMap.put(embargo_id, e);
-                }
-            }
-            
-            // TODO: 
-            // - if ingest status is "bad", look up the ingest report; 
-            // - is it a dedicated thumbnail for the dataset? (do we ever need that info?? - not on the dataset page, I don't think...)
-            
-            // Is this a tabular file? 
-            
-            if (datatableMap.get(dataFile.getId()) != null) {
-                dataTables.get(datatableMap.get(dataFile.getId())).setDataFile(dataFile);
-                dataFile.setDataTable(dataTables.get(datatableMap.get(dataFile.getId())));
-                
-            }            
-
-            if (fileTagMap.get(dataFile.getId()) != null) {
-                for (Integer tag_id : fileTagMap.get(dataFile.getId())) {
-                    DataFileTag tag = new DataFileTag();
-                    tag.setTypeByLabel(fileTagLabels.get(tag_id));
-                    tag.setDataFile(dataFile);
-                    dataFile.addTag(tag);
-                }
-            } 
-            
-            if (dataFile.isRestricted() && accessRequestFileIds.contains(dataFile.getId())) {
-                dataFile.setFileAccessRequesters(Collections.singletonList(au));
-            } 
-
-            dataFiles.add(dataFile);
-            filesMap.put(dataFile.getId(), i++);
         }
-        fileResults = null;
-        
-        logger.fine("Retrieved and cached "+i+" datafiles.");
 
-        i = 0; 
-        for (DataFileCategory fileCategory : owner.getCategories()) {
-            //logger.fine("category: id="+fileCategory.getId());
-            categoryMap.put(fileCategory.getId(), i++);
-        }
-        
-        logger.fine("Retrieved "+i+" file categories attached to the dataset.");
-
-        version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, dataFiles, filesMap, categoryMap));
-        logger.fine("Retrieved " + version.getFileMetadatas().size() + " filemetadatas for the version " + version.getId());
-        owner.setFiles(dataFiles);
+        return retList;
     }
     
     private List<FileMetadata> retrieveFileMetadataForVersion(Dataset dataset, DatasetVersion version, List<DataFile> dataFiles, Map<Long, Integer> filesMap, Map<Long, Integer> categoryMap) {
@@ -1126,7 +936,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         // If thumbnails are not even supported for this class of files, 
-        // there's notthing to talk about:      
+        // there's nothing to talk about:      
         if (!FileUtil.isThumbnailSupported(file)) {
             return false;
         }
@@ -1141,16 +951,16 @@ public class DataFileServiceBean implements java.io.Serializable {
          is more important... 
         
         */
-                
         
-       if (ImageThumbConverter.isThumbnailAvailable(file)) {
-           file = this.find(file.getId());
-           file.setPreviewImageAvailable(true);
-           this.save(file); 
-           return true;
-       }
-
-       return false;
+        file = this.find(file.getId());
+        if (ImageThumbConverter.isThumbnailAvailable(file)) {
+            file.setPreviewImageAvailable(true);
+            this.save(file);
+            return true;
+        }
+        file.setPreviewImageFail(true);
+        this.save(file);
+        return false;
     }
 
     
@@ -1427,75 +1237,6 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
     
-    public String generateDataFileIdentifier(DataFile datafile, GlobalIdServiceBean idServiceBean) {
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-
-        String prepend = "";
-        if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())){
-            //If format is dependent then pre-pend the dataset identifier 
-            prepend = datafile.getOwner().getIdentifier() + "/";
-        } else {
-            //If there's a shoulder prepend independent identifiers with it
-        	prepend = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder, "");
-        }
- 
-        switch (doiIdentifierType) {
-            case "randomString":               
-                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
-            case "storedProcGenerated":
-                if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
-                    return generateIdentifierFromStoredProcedureIndependent(datafile, idServiceBean, prepend);
-                } else {
-                    return generateIdentifierFromStoredProcedureDependent(datafile, idServiceBean, prepend);
-                }
-            default:
-                /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
-        }
-    }
-    
-    private String generateIdentifierAsRandomString(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
-        String identifier = null;
-        do {
-            identifier = prepend + RandomStringUtils.randomAlphanumeric(6).toUpperCase();  
-        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
-
-        return identifier;
-    }
-
-
-    private String generateIdentifierFromStoredProcedureIndependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
-        String identifier; 
-        do {
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
-            query.execute();
-            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
-            // some diagnostics here maybe - is it possible to determine that it's failing 
-            // because the stored procedure hasn't been created in the database?
-            if (identifierFromStoredProcedure == null) {
-                return null; 
-            }
-            identifier = prepend + identifierFromStoredProcedure;
-        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
-        
-        return identifier;
-    }
-    
-    private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
-        String identifier;
-        Long retVal;
-
-        retVal = new Long(0);
-
-        do {
-            retVal++;
-            identifier = prepend + retVal.toString();
-
-        } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
-
-        return identifier;
-    }
 
     /**
      * Check that a identifier entered by the user is unique (not currently used
@@ -1506,38 +1247,6 @@ public class DataFileServiceBean implements java.io.Serializable {
      * @param idServiceBean
      * @return  {@code true} iff the global identifier is unique.
      */
-    public boolean isGlobalIdUnique(String userIdentifier, DataFile datafile, GlobalIdServiceBean idServiceBean) {
-        String testProtocol = "";
-        String testAuthority = "";
-        if (datafile.getAuthority() != null){
-            testAuthority = datafile.getAuthority();
-        } else {
-            testAuthority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority);
-        }
-        if (datafile.getProtocol() != null){
-            testProtocol = datafile.getProtocol();
-        } else {
-            testProtocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
-        }
-        
-        boolean u = em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
-            .setParameter("protocol", testProtocol)
-            .setParameter("authority", testAuthority)
-            .setParameter("identifier",userIdentifier)
-            .getResultList().isEmpty();
-            
-        try{
-            if (idServiceBean.alreadyExists(new GlobalId(testProtocol, testAuthority, userIdentifier))) {
-                u = false;
-            }
-        } catch (Exception e){
-            //we can live with failure - means identifier not found remotely
-        }
-
-       
-        return u;
-    }
-    
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
         // Verify that the DataFile no longer exists: 
         if (find(dataFileId) != null) {
@@ -1656,5 +1365,40 @@ public class DataFileServiceBean implements java.io.Serializable {
     public Embargo findEmbargo(Long id) {
         DataFile d = find(id);
         return d.getEmbargo();
+    }
+    
+    /**
+     * Checks if the supplied DvObjectContainer (Dataset or Collection; although
+     * only collection-level storage quotas are officially supported as of now)
+     * has a quota configured, and if not, keeps checking if any of the direct
+     * ancestor Collections further up have a configured quota. If it finds one, 
+     * it will retrieve the current total content size for that specific ancestor 
+     * dvObjectContainer and use it to define the quota limit for the upload
+     * session in progress. 
+     * 
+     * @param parent - DvObjectContainer, Dataset or Collection
+     * @return upload session size limit spec, or null if quota not defined on 
+     * any of the ancestor DvObjectContainers
+     */
+    public UploadSessionQuotaLimit getUploadSessionQuotaLimit(DvObjectContainer parent) {
+        DvObjectContainer testDvContainer = parent; 
+        StorageQuota quota = testDvContainer.getStorageQuota();
+        while (quota == null && testDvContainer.getOwner() != null) {
+            testDvContainer = testDvContainer.getOwner();
+            quota = testDvContainer.getStorageQuota();
+            if (quota != null) {
+                break;
+            }
+        }    
+        if (quota == null || quota.getAllocation() == null) {
+            return null; 
+        }
+        
+        // Note that we are checking the recorded storage use not on the 
+        // immediate parent necessarily, but on the specific ancestor 
+        // DvObjectContainer on which the storage quota is defined:
+        Long currentSize = storageUseService.findStorageSizeByDvContainerId(testDvContainer.getId()); 
+        
+        return new UploadSessionQuotaLimit(quota.getAllocation(), currentSize);
     }
 }
