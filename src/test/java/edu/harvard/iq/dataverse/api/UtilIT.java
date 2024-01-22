@@ -3460,10 +3460,11 @@ public class UtilIT {
     }
 
     static Response getFileCitation(Integer fileId, boolean getDraft, String apiToken) {
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/citation");
-        return response;
+        var spec = given();
+        if (apiToken != null) {
+            spec.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return spec.get("/api/files/" + fileId + "/citation");
     }
 
     static Response getVersionFiles(Integer datasetId,

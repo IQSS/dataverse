@@ -2516,11 +2516,34 @@ public class FilesIT {
         String pidAsUrl = "https://doi.org/" + datasetPid.split("doi:")[1];
         int currentYear = Year.now().getValue();
 
+        Response draftUnauthNoApitoken = UtilIT.getFileCitation(fileId, true, null);
+        draftUnauthNoApitoken.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        Response createNoPermsUser = UtilIT.createRandomUser();
+        createNoPermsUser.then().assertThat().statusCode(OK.getStatusCode());
+        String noPermsApiToken = UtilIT.getApiTokenFromResponse(createNoPermsUser);
+
+        Response draftUnauthNoPermsApiToken = UtilIT.getFileCitation(fileId, true, noPermsApiToken);
+        draftUnauthNoPermsApiToken.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
         Response getFileCitation = UtilIT.getFileCitation(fileId, true, apiToken);
         getFileCitation.prettyPrint();
         getFileCitation.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; file.txt [fileName]"));
+
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishedNoApiTokenNeeded = UtilIT.getFileCitation(fileId, true, null);
+        publishedNoApiTokenNeeded.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishedNoPermsApiTokenAllowed = UtilIT.getFileCitation(fileId, true, noPermsApiToken);
+        publishedNoPermsApiTokenAllowed.then().assertThat().statusCode(OK.getStatusCode());
+
     }
 
 }
