@@ -17,6 +17,7 @@ import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.File;
 import java.io.IOException;
 
@@ -2501,6 +2502,13 @@ public class FilesIT {
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         String datasetPid = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
 
+        Response getDatasetVersionCitationResponse = UtilIT.getDatasetVersionCitation(datasetId, DS_VERSION_DRAFT, false, apiToken);
+        getDatasetVersionCitationResponse.prettyPrint();
+        getDatasetVersionCitationResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // We check that the returned message contains information expected for the citation string
+                .body("data.message", containsString("DRAFT VERSION"));
+
         Path pathToTxt = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "file.txt");
         String contentOfTxt = "foobar";
         java.nio.file.Files.write(pathToTxt, contentOfTxt.getBytes());
@@ -2516,19 +2524,21 @@ public class FilesIT {
         String pidAsUrl = "https://doi.org/" + datasetPid.split("doi:")[1];
         int currentYear = Year.now().getValue();
 
-        Response draftUnauthNoApitoken = UtilIT.getFileCitation(fileId, true, null);
+        Response draftUnauthNoApitoken = UtilIT.getFileCitation(fileId, DS_VERSION_DRAFT, null);
+        draftUnauthNoApitoken.prettyPrint();
         draftUnauthNoApitoken.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
         Response createNoPermsUser = UtilIT.createRandomUser();
         createNoPermsUser.then().assertThat().statusCode(OK.getStatusCode());
         String noPermsApiToken = UtilIT.getApiTokenFromResponse(createNoPermsUser);
 
-        Response draftUnauthNoPermsApiToken = UtilIT.getFileCitation(fileId, true, noPermsApiToken);
+        Response draftUnauthNoPermsApiToken = UtilIT.getFileCitation(fileId, DS_VERSION_DRAFT, noPermsApiToken);
+        draftUnauthNoPermsApiToken.prettyPrint();
         draftUnauthNoPermsApiToken.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
-        Response getFileCitation = UtilIT.getFileCitation(fileId, true, apiToken);
-        getFileCitation.prettyPrint();
-        getFileCitation.then().assertThat()
+        Response getFileCitationDraft = UtilIT.getFileCitation(fileId, DS_VERSION_DRAFT, apiToken);
+        getFileCitationDraft.prettyPrint();
+        getFileCitationDraft.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; file.txt [fileName]"));
 
@@ -2538,12 +2548,33 @@ public class FilesIT {
         Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        Response publishedNoApiTokenNeeded = UtilIT.getFileCitation(fileId, true, null);
+        Response publishedNoApiTokenNeeded = UtilIT.getFileCitation(fileId, "1.0", null);
         publishedNoApiTokenNeeded.then().assertThat().statusCode(OK.getStatusCode());
 
-        Response publishedNoPermsApiTokenAllowed = UtilIT.getFileCitation(fileId, true, noPermsApiToken);
+        Response publishedNoPermsApiTokenAllowed = UtilIT.getFileCitation(fileId, "1.0", noPermsApiToken);
         publishedNoPermsApiTokenAllowed.then().assertThat().statusCode(OK.getStatusCode());
 
+        String updateJsonString = """
+{
+    "label": "foo.txt"
+}
+""";
+
+        Response updateMetadataResponse = UtilIT.updateFileMetadata(fileId.toString(), updateJsonString, apiToken);
+        updateMetadataResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());
+
+        Response getFileCitationPostV1Draft = UtilIT.getFileCitation(fileId, DS_VERSION_DRAFT, apiToken);
+        getFileCitationPostV1Draft.prettyPrint();
+        getFileCitationPostV1Draft.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; foo.txt [fileName]"));
+
+        Response getFileCitationV1Filename = UtilIT.getFileCitation(fileId, "1.0", apiToken);
+        getFileCitationV1Filename.prettyPrint();
+        getFileCitationV1Filename.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, V1; file.txt [fileName]"));
     }
 
 }

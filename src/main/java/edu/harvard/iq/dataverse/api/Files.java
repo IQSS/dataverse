@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -28,11 +29,16 @@ import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
@@ -933,14 +939,50 @@ public class Files extends AbstractApiBean {
         }, getRequestUser(crc));
     }
 
+    /**
+     * @param fileIdOrPersistentId Database ID or PID of the data file.
+     * @param dsVersionString The version of the dataset, such as 1.0, :draft,
+     * :latest-published, etc.
+     */
     @GET
     @AuthRequired
-    @Path("{id}/citation")
-    public Response getFileCitation(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId) {
+    @Path("{id}/versions/{dsVersionString}/citation")
+    public Response getFileCitationByVersion(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("dsVersionString") String dsVersionString) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
-            FileMetadata fm = df.getLatestFileMetadata();
+            Dataset ds = df.getOwner();
+            // Adapted from getDatasetVersionOrDie
+            // includeDeaccessioned and checkPermsWhenDeaccessioned were removed
+            // because they aren't needed.
+            DatasetVersion dsv = execCommand(handleVersion(dsVersionString, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
+
+                @Override
+                public Command<DatasetVersion> handleLatest() {
+                    return new GetLatestAccessibleDatasetVersionCommand(req, ds);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleDraft() {
+                    return new GetDraftDatasetVersionCommand(req, ds);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleSpecific(long major, long minor) {
+                    return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleLatestPublished() {
+                    return new GetLatestPublishedDatasetVersionCommand(req, ds);
+                }
+            }));
+
+            Long getDatasetVersionID = dsv.getId();
+            FileMetadata fm = dataFileServiceBean.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, df.getId());
+            if (fm == null) {
+                return notFound("File could not be found.");
+            }
             boolean direct = false;
             DataCitation citation = new DataCitation(fm, direct);
             return ok(citation.toString(true));
