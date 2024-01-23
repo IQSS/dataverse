@@ -792,9 +792,7 @@ public class IndexServiceBean {
             version.setDatasetFields(version.initDatasetFields());
             valid = version.isValid();
         }
-        if (JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false)) {
-            solrInputDocument.addField(SearchFields.DATASET_VALID, valid);
-        }
+        solrInputDocument.addField(SearchFields.DATASET_VALID, valid);
 
         final Dataverse dataverse = dataset.getDataverseContext();
         final String dvIndexableCategoryName = dataverse.getIndexableCategoryName();
