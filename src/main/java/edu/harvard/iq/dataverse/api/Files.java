@@ -953,9 +953,10 @@ public class Files extends AbstractApiBean {
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
             Dataset ds = df.getOwner();
             // Adapted from getDatasetVersionOrDie
-            // includeDeaccessioned and checkPermsWhenDeaccessioned were removed
-            // because they aren't needed.
             DatasetVersion dsv = execCommand(handleVersion(dsVersionString, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
+
+                boolean includeDeaccessioned = true;
+                boolean checkPermsWhenDeaccessioned = true;
 
                 @Override
                 public Command<DatasetVersion> handleLatest() {
@@ -969,7 +970,7 @@ public class Files extends AbstractApiBean {
 
                 @Override
                 public Command<DatasetVersion> handleSpecific(long major, long minor) {
-                    return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor);
+                    return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned, checkPermsWhenDeaccessioned);
                 }
 
                 @Override
@@ -977,6 +978,10 @@ public class Files extends AbstractApiBean {
                     return new GetLatestPublishedDatasetVersionCommand(req, ds);
                 }
             }));
+
+            if (dsv == null) {
+                return unauthorized("Dataset version cannot be found or unauthorized.");
+            }
 
             Long getDatasetVersionID = dsv.getId();
             FileMetadata fm = dataFileServiceBean.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, df.getId());

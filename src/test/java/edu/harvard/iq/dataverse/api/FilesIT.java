@@ -2487,7 +2487,7 @@ public class FilesIT {
     }
 
     @Test
-    public void getFileCitation() throws IOException {
+    public void testFileCitation() throws IOException {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -2570,11 +2570,37 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; foo.txt [fileName]"));
 
-        Response getFileCitationV1Filename = UtilIT.getFileCitation(fileId, "1.0", apiToken);
-        getFileCitationV1Filename.prettyPrint();
-        getFileCitationV1Filename.then().assertThat()
+        Response getFileCitationV1OldFilename = UtilIT.getFileCitation(fileId, "1.0", apiToken);
+        getFileCitationV1OldFilename.prettyPrint();
+        getFileCitationV1OldFilename.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, V1; file.txt [fileName]"));
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        Response deaccessionDataset = UtilIT.deaccessionDataset(datasetId, "1.0", "just because", "http://example.com", apiToken);
+        deaccessionDataset.prettyPrint();
+        deaccessionDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getFileCitationV1PostDeaccessionAuthor = UtilIT.getFileCitation(fileId, "1.0", apiToken);
+        getFileCitationV1PostDeaccessionAuthor.prettyPrint();
+        getFileCitationV1PostDeaccessionAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, V1, DEACCESSIONED VERSION; file.txt [fileName]"));
+
+        Response getFileCitationV1PostDeaccessionNoApiToken = UtilIT.getFileCitation(fileId, "1.0", null);
+        getFileCitationV1PostDeaccessionNoApiToken.prettyPrint();
+        getFileCitationV1PostDeaccessionNoApiToken.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("message", equalTo("Dataset version cannot be found or unauthorized."));
+
+        Response getFileCitationV1PostDeaccessionNoPermsUser = UtilIT.getFileCitation(fileId, "1.0", noPermsApiToken);
+        getFileCitationV1PostDeaccessionNoPermsUser.prettyPrint();
+        getFileCitationV1PostDeaccessionNoPermsUser.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("message", equalTo("Dataset version cannot be found or unauthorized."));
+
     }
 
 }
