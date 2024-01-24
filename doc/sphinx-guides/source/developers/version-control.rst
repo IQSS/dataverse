@@ -287,12 +287,10 @@ GitHub documents how to make changes to a fork at https://help.github.com/articl
 
 ----
 
-How to Update a "develop Branch to develop Branch" Pull Request
+Develop branch and pull request
 --------------------------------------------
 
-Refer to the third scenario "synchronize your branch with develop branch" of the subsection "summary of Git commands" at https://github.com/Recherche-Data-Gouv/dataverse/blob/9508-update-develop-branch-to-develop-branch-pull-request/doc/sphinx-guides/source/developers/version-control.rst#summary-of-git-commands.
-
-
+Please do not use your forked develop branch to push a PR and follow the [1st scenario: preparing the first pull request of Version Control Guide](https://github.com/Recherche-Data-Gouv/dataverse/blob/develop/doc/sphinx-guides/source/developers/version-control.rst#summary-of-git-commands)
 ----
 
 
