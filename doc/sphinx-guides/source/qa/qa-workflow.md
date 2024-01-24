@@ -27,9 +27,11 @@
 
     Same as for doc, just a heads up to an admin for something of note or especially upgrade instructions as needed.
 
-1. Does it use a DB, Flyway script?
+1. Does it include a database migration script (Flyway)?
     
-    Good to know since it may collide with another existing one by version or it could be a one way transform of your DB so back up your test DB before. Also, happens during deployment so be on the lookout for any issues.
+    First, check the numbering in the filename of the script. It must be in line with the rules defined at {ref}`create-sql-script`. If the number is out of date (very common for older pull requests), do not merge and ask the developer to rename the script. Otherwise, deployment will fail.
+
+    Once you're sure the numbering is ok (the next available number, basically), back up your database and proceeed with testing.
 
 1. Validate the documentation.
 
