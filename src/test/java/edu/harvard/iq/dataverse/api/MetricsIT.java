@@ -5,6 +5,8 @@ import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.AfterAll;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -16,10 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 //To improve these tests we should try adding data and see if the number DOESN'T
 //go up to show that the caching worked
 public class MetricsIT {
+    
+    private static String yyyymm;
 
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
+        yyyymm = LocalDate.now().format(DateTimeFormatter.ofPattern(MetricsUtil.YEAR_AND_MONTH_PATTERN));
         UtilIT.clearMetricCache();
     }
 
@@ -30,8 +35,7 @@ public class MetricsIT {
 
     @Test
     public void testGetDataversesToMonth() {
-        String yyyymm = "2018-04";
-//        yyyymm = null;
+
         Response response = UtilIT.metricsDataversesToMonth(yyyymm, null);
         String precache = response.prettyPrint();
         response.then().assertThat()
@@ -54,8 +58,7 @@ public class MetricsIT {
 
     @Test
     public void testGetDatasetsToMonth() {
-        String yyyymm = "2018-04";
-//        yyyymm = null;
+
         Response response = UtilIT.metricsDatasetsToMonth(yyyymm, null);
         String precache = response.prettyPrint();
         response.then().assertThat()
@@ -77,8 +80,7 @@ public class MetricsIT {
 
     @Test
     public void testGetFilesToMonth() {
-        String yyyymm = "2018-04";
-//        yyyymm = null;
+
         Response response = UtilIT.metricsFilesToMonth(yyyymm, null);
         String precache = response.prettyPrint();
         response.then().assertThat()
@@ -100,8 +102,7 @@ public class MetricsIT {
 
     @Test
     public void testGetDownloadsToMonth() {
-        String yyyymm = "2018-04";
-//        yyyymm = null;
+
         Response response = UtilIT.metricsDownloadsToMonth(yyyymm, null);
         String precache = response.prettyPrint();
         response.then().assertThat()

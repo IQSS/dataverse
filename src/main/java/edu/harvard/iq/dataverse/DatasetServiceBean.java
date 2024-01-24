@@ -583,54 +583,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         return null;
     }
 
-    /**
-     * Used to identify and properly display Harvested objects on the dataverse page.
-     *
-     * @param datasetIds
-     * @return
-     */
-    public Map<Long, String> getArchiveDescriptionsForHarvestedDatasets(Set<Long> datasetIds){
-        if (datasetIds == null || datasetIds.size() < 1) {
-            return null;
-        }
-
-        String datasetIdStr = StringUtils.join(datasetIds, ", ");
-
-        String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, dataset d WHERE d.harvestingClient_id = h.id AND d.id IN (" + datasetIdStr + ")";
-        List<Object[]> searchResults;
-
-        try {
-            searchResults = em.createNativeQuery(qstr).getResultList();
-        } catch (Exception ex) {
-            searchResults = null;
-        }
-
-        if (searchResults == null) {
-            return null;
-        }
-
-        Map<Long, String> ret = new HashMap<>();
-
-        for (Object[] result : searchResults) {
-            Long dsId;
-            if (result[0] != null) {
-                try {
-                    dsId = (Long)result[0];
-                } catch (Exception ex) {
-                    dsId = null;
-                }
-                if (dsId == null) {
-                    continue;
-                }
-
-                ret.put(dsId, (String)result[1]);
-            }
-        }
-
-        return ret;
-    }
-
-
 
     public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, User user) {
         if (datasetVersion == null) {
