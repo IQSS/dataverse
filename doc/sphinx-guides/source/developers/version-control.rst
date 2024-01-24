@@ -290,7 +290,7 @@ GitHub documents how to make changes to a fork at https://help.github.com/articl
 How to Update a "develop Branch to develop Branch" Pull Request
 --------------------------------------------
 
-Refer to the third scenario "synchronize your branch with develop branch" of the section "summary of Git commands".
+Refer to the third scenario "synchronize your branch with develop branch" of the section "summary of Git commands" at https://github.com/Recherche-Data-Gouv/dataverse/blob/9508-update-develop-branch-to-develop-branch-pull-request/doc/sphinx-guides/source/developers/version-control.rst#summary-of-git-commands .
 
 
 ----
