@@ -286,8 +286,9 @@ GitHub documents how to make changes to a fork at https://help.github.com/articl
         git push OdumInstitute 4709-postgresql_96
 
 ----
+
 Develop branch and pull request 
 -------------------------------------------- 
-Please do not use your forked develop branch to push a PR and follow the `1st scenario: preparing the first pull request of Version Control Guide <https://github.com/Recherche-Data-Gouv/dataverse/blob/develop/doc/sphinx-guides/source/developers/version-control.rst>`.
+Please do not use your forked develop branch to push a PR and follow the `1st scenario: preparing the first pull request of Version Control Guide <https://github.com/Recherche-Data-Gouv/dataverse/blob/develop/doc/sphinx-guides/source/developers/version-control.rst>`_.
 
 Previous: :doc:`troubleshooting` | Next: :doc:`sql-upgrade-scripts`
