@@ -290,26 +290,8 @@ GitHub documents how to make changes to a fork at https://help.github.com/articl
 How to Update a "develop Branch to develop Branch" Pull Request
 --------------------------------------------
 
-This section is to show how to update a develop branch to develop branch Pull Request. Make sure all of the above steps are done away from your normal code.
+Refer to the third scenario "synchronize your branch with develop branch" of the section "summary of Git commands".
 
-.. code-block:: bash
-
-	# clone the dataverse repo
-        git clone git@github.com:IQSS/dataverse.git
-	cd dataverse
-	# add your remote dataverse repo to the cloned dataverse repo
-	git remote add my_dataverse_repo git@github.com:my_dataverse_repo/dataverse.git
-	# retrieve the latest commits from the remote personal repository (to the local machine)
-	git fetch my_dataverse_repo
-	# make a new branch not called develop from the personal dataverse repository
-	git checkout my_dataverse_repo/develop -b dev1
-	git merge origin/develop
-	# delete the real develop branch locally
-	git branch -d develop
-	# checkout dev1 (false develop)  as develop for now
-	git checkout -b develop
-	# push the false develop to the contributor's fork
-	git push my_dataverse_repo develop 
 
 ----
 
