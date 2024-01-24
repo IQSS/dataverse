@@ -1,3 +1,0 @@
-It is now possible to configure registering PIDs for files in individual collections.
-
-For example, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See the [:FilePIDsEnabled](https://guides.dataverse.org/en/latest/installation/config.html#filepidsenabled) section of the Configuration guide for details.

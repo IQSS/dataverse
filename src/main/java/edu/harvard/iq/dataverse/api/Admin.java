@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
@@ -48,19 +47,19 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import java.io.InputStream;
@@ -69,14 +68,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
 
@@ -97,7 +96,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
@@ -106,8 +104,10 @@ import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -117,12 +117,13 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.persistence.Query;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.persistence.Query;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.StreamingOutput;
+import java.nio.file.Paths;
 
 /**
  * Where the secure, setup API calls live.
@@ -2419,12 +2420,60 @@ public class Admin extends AbstractApiBean {
         }
         
         String baseUrl = urlInfo.getString("url");
-        int timeout = urlInfo.getInt(ExternalToolHandler.TIMEOUT, 10);
-        String method = urlInfo.getString(ExternalToolHandler.HTTP_METHOD, "GET");
+        int timeout = urlInfo.getInt(URLTokenUtil.TIMEOUT, 10);
+        String method = urlInfo.getString(URLTokenUtil.HTTP_METHOD, "GET");
         
         String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
         
-        return ok(Json.createObjectBuilder().add(ExternalToolHandler.SIGNED_URL, signedUrl));
+        return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
  
+    @DELETE
+    @Path("/clearThumbnailFailureFlag")
+    public Response clearThumbnailFailureFlag() {
+        em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE").executeUpdate();
+        return ok("Thumbnail Failure Flags cleared.");
+    }
+    
+    @DELETE
+    @Path("/clearThumbnailFailureFlag/{id}")
+    public Response clearThumbnailFailureFlagByDatafile(@PathParam("id") String fileId) {
+        try {
+            DataFile df = findDataFileOrDie(fileId);
+            Query deleteQuery = em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE where id = ?");
+            deleteQuery.setParameter(1, df.getId());
+            deleteQuery.executeUpdate();
+            return ok("Thumbnail Failure Flag cleared for file id=: " + df.getId() + ".");
+        } catch (WrappedResponse r) {
+            logger.info("Could not find file with the id: " + fileId);
+            return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
+        }
+    }
+
+    /**
+     * For testing only. Download a file from /tmp.
+     */
+    @GET
+    @AuthRequired
+    @Path("/downloadTmpFile")
+    public Response downloadTmpFile(@Context ContainerRequestContext crc, @QueryParam("fullyQualifiedPathToFile") String fullyQualifiedPathToFile) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        java.nio.file.Path normalizedPath = Paths.get(fullyQualifiedPathToFile).normalize();
+        if (!normalizedPath.toString().startsWith("/tmp")) {
+            return error(Status.BAD_REQUEST, "Path must begin with '/tmp' but after normalization was '" + normalizedPath +"'.");
+        }
+        try {
+            return ok(new FileInputStream(fullyQualifiedPathToFile));
+        } catch (IOException ex) {
+            return error(Status.BAD_REQUEST, ex.toString());
+        }
+    }
+
 }

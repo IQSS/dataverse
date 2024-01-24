@@ -1,29 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
-import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
-import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -40,16 +17,33 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
-import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
+import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
-import java.io.StringReader;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.json.*;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.Response.Status;
+
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,24 +51,6 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.*;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
 
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
@@ -132,23 +108,21 @@ public abstract class AbstractApiBean {
          * In the common case of the wrapped response being of type JSON,
          * return the message field it has (if any).
          * @return the content of a message field, or {@code null}.
+         * @throws JsonException when JSON parsing fails.
          */
         String getWrappedMessageWhenJson() {
             if ( response.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE) ) {
                 Object entity = response.getEntity();
                 if ( entity == null ) return null;
 
-                String json = entity.toString();
-                try ( StringReader rdr = new StringReader(json) ){
-                    JsonReader jrdr = Json.createReader(rdr);
-                    JsonObject obj = jrdr.readObject();
-                    if ( obj.containsKey("message") ) {
-                        JsonValue message = obj.get("message");
-                        return message.getValueType() == ValueType.STRING ? obj.getString("message") : message.toString();
-                    } else {
-                        return null;
-                    }
+                JsonObject obj = JsonUtil.getJsonObject(entity.toString());
+                if ( obj.containsKey("message") ) {
+                    JsonValue message = obj.get("message");
+                    return message.getValueType() == ValueType.STRING ? obj.getString("message") : message.toString();
+                } else {
+                    return null;
                 }
+
             } else {
                 return null;
             }
@@ -661,7 +635,15 @@ public abstract class AbstractApiBean {
             .add("data", bld).build())
             .type(MediaType.APPLICATION_JSON).build();
     }
-    
+
+    protected Response ok( JsonArrayBuilder bld , long totalCount) {
+        return Response.ok(Json.createObjectBuilder()
+                        .add("status", ApiConstants.STATUS_OK)
+                        .add("totalCount", totalCount)
+                        .add("data", bld).build())
+                .type(MediaType.APPLICATION_JSON).build();
+    }
+
     protected Response ok( JsonArray ja ) {
         return Response.ok(Json.createObjectBuilder()
             .add("status", ApiConstants.STATUS_OK)
@@ -708,6 +690,12 @@ public abstract class AbstractApiBean {
             .add("data", value).build() ).build();
     }
 
+    protected Response ok(long value) {
+        return Response.ok().entity(Json.createObjectBuilder()
+                .add("status", ApiConstants.STATUS_OK)
+                .add("data", value).build()).build();
+    }
+
     /**
      * @param data Payload to return.
      * @param mediaType Non-JSON media type.
@@ -719,6 +707,11 @@ public abstract class AbstractApiBean {
         if(downloadFilename != null) {
             res = res.header("Content-Disposition", "attachment; filename=" + downloadFilename);
         }
+        return res.build();
+    }
+
+    protected Response ok(InputStream inputStream) {
+        ResponseBuilder res = Response.ok().entity(inputStream).type(MediaType.valueOf(FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT));
         return res.build();
     }
 

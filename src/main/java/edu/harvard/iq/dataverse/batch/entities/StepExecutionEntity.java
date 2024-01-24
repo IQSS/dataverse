@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.batch.entities;
 
-import javax.batch.runtime.BatchStatus;
-import javax.batch.runtime.Metric;
-import javax.batch.runtime.StepExecution;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.Metric;
+import jakarta.batch.runtime.StepExecution;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;

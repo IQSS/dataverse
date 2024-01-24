@@ -35,8 +35,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 // Dataverse imports:
@@ -55,6 +53,7 @@ import java.util.ArrayList;
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.FileAccessIO");
+    public static final String DIRECTORY = "directory";
 
 
     public FileAccessIO() {
@@ -115,7 +114,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 this.setInputStream(fin);
                 setChannel(fin.getChannel());
-                this.setSize(getLocalFileSize());
+                this.setSize(retrieveSizeFromMedia());
 
                 if (dataFile.getContentType() != null
                         && dataFile.getContentType().equals("text/tab-separated-values")
@@ -506,21 +505,6 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     
     // Auxilary helper methods, filesystem access-specific:
     
-    private long getLocalFileSize () {
-        long fileSize = -1;
-
-        try {
-            File testFile = getFileSystemPath().toFile();
-            if (testFile != null) {
-                fileSize = testFile.length();
-            }
-            return fileSize;
-        } catch (IOException ex) {
-            return -1;
-        }
-
-    }
-
     public FileInputStream openLocalFileAsInputStream () {
         FileInputStream in;
 
@@ -565,21 +549,26 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         if (isDirectAccess()) {
             throw new IOException("No DvObject defined in the Data Access Object");
         }
-
-        Path datasetDirectoryPath=null;
         
+        String authorityForFS = null;
+        String identifierForFS = null;
         if (dvObject instanceof Dataset) {
-            datasetDirectoryPath = Paths.get(this.getDataset().getAuthorityForFileStorage(), this.getDataset().getIdentifierForFileStorage());
+            authorityForFS = this.getDataset().getAuthorityForFileStorage();
+            identifierForFS = this.getDataset().getIdentifierForFileStorage();
         } else if (dvObject instanceof DataFile) {
-            datasetDirectoryPath = Paths.get(this.getDataFile().getOwner().getAuthorityForFileStorage(), this.getDataFile().getOwner().getIdentifierForFileStorage());
+            authorityForFS = this.getDataFile().getOwner().getAuthorityForFileStorage();
+            identifierForFS = this.getDataFile().getOwner().getIdentifierForFileStorage();
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("FileAccessIO: Dataverses are not a supported dvObject");
         }
-            
-        if (datasetDirectoryPath == null) {
+        
+        if (authorityForFS == null || identifierForFS == null) {
             throw new IOException("Could not determine the filesystem directory of the parent dataset.");
         }
-        String datasetDirectory = Paths.get(getFilesRootDirectory(), datasetDirectoryPath.toString()).toString();
+        
+        // Determine the final directory tree. As of JDK 16, the first component of the path MUST be non-null
+        // (we check for that via the setting), but also the others make no sense if they are null.
+        String datasetDirectory = Paths.get(getFilesRootDirectory(), authorityForFS, identifierForFS).toString();
 
         if (dvObject.getStorageIdentifier() == null || dvObject.getStorageIdentifier().isEmpty()) {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");
@@ -590,7 +579,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     
     
     protected String getFilesRootDirectory() {
-        String filesRootDirectory = System.getProperty("dataverse.files." + this.driverId + ".directory", "/tmp/files");
+        String filesRootDirectory = getConfigParam(DIRECTORY, "/tmp/files");
         return filesRootDirectory;
     }
     
@@ -735,6 +724,20 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             this.deleteFile(f);
         }
         return toDelete;
+    }
+
+    @Override
+    public long retrieveSizeFromMedia() {
+        long fileSize = -1;
+        try {
+            File testFile = getFileSystemPath().toFile();
+            if (testFile != null) {
+                fileSize = testFile.length();
+            }
+            return fileSize;
+        } catch (IOException ex) {
+            return -1;
+        }
     }
 
 }

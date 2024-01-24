@@ -25,6 +25,8 @@ Creating a Dataverse collection is easy but first you must be a registered user 
     * **Category**: Select a category that best describes the type of Dataverse collection this will be. For example, if this is a Dataverse collection for an individual researcher's datasets, select *Researcher*. If this is a Dataverse collection for an institution, select *Organization or Institution*.
     * **Email**: This is the email address that will be used as the contact for this particular Dataverse collection. You can have more than one contact email address for your Dataverse collection.
     * **Description**: Provide a description of this Dataverse collection. This will display on the landing page of your Dataverse collection and in the search result list. The description field supports certain HTML tags, if you'd like to format your text (<a>, <b>, <blockquote>, <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, <strong>, <strike>, <u>, <ul>).
+    * **Dataset Metadata Langauge**: (If enabled) Select which language should be used when entering dataset metadata, or leave that choice to dataset creators. 
+    * **Guestbook Entry Option**: (If enabled) Select whether guestbooks are displayed when a user requests access to restricted file(s) or when they initiate a download.
 #. **Choose the sets of Metadata Fields for datasets in this Dataverse collection**:
     * By default the metadata elements will be from the host Dataverse collection that this new Dataverse collection is created in.
     * The Dataverse Software offers metadata standards for multiple domains. To learn more about the metadata standards in the Dataverse Software please check out the :doc:`/user/appendix`.
@@ -212,7 +214,7 @@ Dataset linking allows a Dataverse collection owner to "link" their Dataverse co
 
 For example, researchers working on a collaborative study across institutions can each link their own individual institutional Dataverse collections to the one collaborative dataset, making it easier for interested parties from each institution to find the study.
 
-In order to link a dataset, you will need your account to have the "Add Dataset" permission on the Dataverse collection that is doing the linking. If you created the Dataverse collection then you should have this permission already, but if not then you will need to ask the admin of that Dataverse collection to assign that permission to your account. You do not need any special permissions on the dataset being linked.
+In order to link a dataset, you will need your account to have the "Publish Dataset" permission on the Dataverse collection that is doing the linking. If you created the Dataverse collection then you should have this permission already, but if not then you will need to ask the admin of that Dataverse collection to assign that permission to your account. You do not need any special permissions on the dataset being linked.
 
 To link a dataset to your Dataverse collection, you must navigate to that dataset and click the white "Link" button in the upper-right corner of the dataset page. This will open up a window where you can type in the name of the Dataverse collection that you would like to link the dataset to. Select your Dataverse collection and click the save button. This will establish the link, and the dataset will now appear under your Dataverse collection.
 

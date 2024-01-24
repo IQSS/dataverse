@@ -1,26 +1,26 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import static javax.ws.rs.core.Response.Status.CONFLICT;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.CONFLICT;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.Assert;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class AuxiliaryFilesIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
@@ -62,7 +62,7 @@ public class AuxiliaryFilesIT {
 
         Long fileId = JsonPath.from(uploadFile.body().asString()).getLong("data.files[0].dataFile.id");
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToDataFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToDataFile);
 
         Response restrictFile = UtilIT.restrictFile(fileId.toString(), true, apiToken);
         restrictFile.prettyPrint();
@@ -243,29 +243,29 @@ public class AuxiliaryFilesIT {
         // Download JSON aux file.
         Response downloadAuxFileJson = UtilIT.downloadAuxFile(fileId, formatTagJson, formatVersionJson, apiToken);
         downloadAuxFileJson.then().assertThat().statusCode(OK.getStatusCode());
-        Assert.assertEquals("attachment; filename=\"data.tab.dpJson_0.1.json\"", downloadAuxFileJson.header("Content-disposition"));
+        assertEquals("attachment; filename=\"data.tab.dpJson_0.1.json\"", downloadAuxFileJson.header("Content-disposition"));
 
         // Download XML aux file.
         Response downloadAuxFileXml = UtilIT.downloadAuxFile(fileId, formatTagXml, formatVersionXml, apiToken);
         downloadAuxFileXml.then().assertThat().statusCode(OK.getStatusCode());
-        Assert.assertEquals("attachment; filename=\"data.tab.dpXml_0.1.xml\"", downloadAuxFileXml.header("Content-disposition"));
+        assertEquals("attachment; filename=\"data.tab.dpXml_0.1.xml\"", downloadAuxFileXml.header("Content-disposition"));
 
         // Download PDF aux file.
         Response downloadAuxFilePdf = UtilIT.downloadAuxFile(fileId, formatTagPdf, formatVersionPdf, apiToken);
         downloadAuxFilePdf.then().assertThat().statusCode(OK.getStatusCode());
-        Assert.assertEquals("attachment; filename=\"data.tab.dpPdf_0.1.pdf\"", downloadAuxFilePdf.header("Content-disposition"));
+        assertEquals("attachment; filename=\"data.tab.dpPdf_0.1.pdf\"", downloadAuxFilePdf.header("Content-disposition"));
 
         // Download Markdown aux file.
         Response downloadAuxFileMd = UtilIT.downloadAuxFile(fileId, formatTagMd, formatVersionMd, apiToken);
         downloadAuxFileMd.then().assertThat().statusCode(OK.getStatusCode());
         // No file extenstion here because Tika's getDefaultMimeTypes doesn't include "text/markdown".
         // Note: browsers seem to add ".bin" ("myfile.bin") rather than no extension ("myfile").
-        Assert.assertEquals("attachment; filename=\"data.tab.README_0.1\"", downloadAuxFileMd.header("Content-disposition"));
+        assertEquals("attachment; filename=\"data.tab.README_0.1\"", downloadAuxFileMd.header("Content-disposition"));
 
         // Download Markdown aux file with no MIME type given
         Response downloadAuxFileNoMime1 = UtilIT.downloadAuxFile(fileId, formatTagNoMimeType1, formatVersionNoMimeType1, apiToken);
         downloadAuxFileNoMime1.then().assertThat().statusCode(OK.getStatusCode());
-        Assert.assertEquals("attachment; filename=\"data.tab.noMimeType1_0.1.txt\"", downloadAuxFileNoMime1.header("Content-disposition"));
+        assertEquals("attachment; filename=\"data.tab.noMimeType1_0.1.txt\"", downloadAuxFileNoMime1.header("Content-disposition"));
 
         Response createUserNoPrivs = UtilIT.createRandomUser();
         createUserNoPrivs.then().assertThat().statusCode(OK.getStatusCode());

@@ -9,7 +9,7 @@ Foundation elements are the very basic building blocks to create a page in Datav
 Grid Layout
 ===========
 
-`Bootstrap <http://getbootstrap.com/css/#grid>`__ provides a responsive, fluid, 12-column grid system that we use to organize our page layouts.
+`Bootstrap <https://getbootstrap.com/css/#grid>`__ provides a responsive, fluid, 12-column grid system that we use to organize our page layouts.
 
 We use the fixed-width ``.container`` class which provides responsive widths (i.e. auto, 750px, 970px or 1170px) based on media queries for the page layout, with a series of rows and columns for the content.
 
@@ -42,7 +42,7 @@ The grid layout uses ``.col-sm-*`` classes for horizontal groups of columns, ins
 Typography
 ==========
 
-The typeface, text size, and line-height are set in the `Bootstrap CSS <http://getbootstrap.com/css/#type>`__. We use Bootstrap's global default ``font-size`` of **14px**, with a ``line-height`` of **1.428**, which is applied to the ``<body>`` and all paragraphs.
+The typeface, text size, and line-height are set in the `Bootstrap CSS <https://getbootstrap.com/css/#type>`__. We use Bootstrap's global default ``font-size`` of **14px**, with a ``line-height`` of **1.428**, which is applied to the ``<body>`` and all paragraphs.
 
 .. code-block:: css
 
@@ -57,7 +57,7 @@ The typeface, text size, and line-height are set in the `Bootstrap CSS <http://g
 Color Palette
 =============
 
-The default color palette is set in the `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-colors>`__. It provides the background, border, text and link colors used across the application.
+The default color palette is set in the `Bootstrap CSS <https://getbootstrap.com/css/#less-variables-colors>`__. It provides the background, border, text and link colors used across the application.
 
 
 Brand Colors
@@ -138,7 +138,7 @@ We use our brand color, a custom burnt orange ``{color:#C55B28;}``, which is set
 Text Colors
 -----------
 
-Text color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-scaffolding>`__.
+Text color is the default setting from `Bootstrap CSS <https://getbootstrap.com/css/#less-variables-scaffolding>`__.
 
 .. code-block:: css
 
@@ -163,7 +163,7 @@ Text color is the default setting from `Bootstrap CSS <http://getbootstrap.com/c
 Link Colors
 -----------
 
-Link color is the default setting from `Bootstrap CSS <http://getbootstrap.com/css/#less-variables-links>`__. The hover state color is set to 15% darker.
+Link color is the default setting from `Bootstrap CSS <https://getbootstrap.com/css/#less-variables-links>`__. The hover state color is set to 15% darker.
 
 **Please note**, there is a CSS override issue with the link color due to the use of both a Bootstrap stylesheet and a PrimeFaces stylesheet in the UI. We've added CSS such as ``.ui-widget-content a {color: #428BCA;}`` to our stylesheet to keep the link color consistent.
 
@@ -204,7 +204,7 @@ Link color is the default setting from `Bootstrap CSS <http://getbootstrap.com/c
 Contextual Classes
 ------------------
 
-Contextual classes from `Bootstrap CSS <http://getbootstrap.com/css/#helper-classes>`__ can be used to style background and text colors. Semantic colors include various colors assigned to meaningful contextual values. We convey meaning through color with a handful of emphasis utility classes.
+Contextual classes from `Bootstrap CSS <https://getbootstrap.com/css/#helper-classes>`__ can be used to style background and text colors. Semantic colors include various colors assigned to meaningful contextual values. We convey meaning through color with a handful of emphasis utility classes.
 
 .. raw:: html
 
@@ -259,7 +259,7 @@ We use various icons across the application, which we get from Bootstrap, FontCu
 Bootstrap Glyphicons
 --------------------
 
-There are over 250 glyphs in font format from the Glyphicon Halflings set provided by `Bootstrap <http://getbootstrap.com/components/#glyphicons>`__. We utilize these mainly as icons inside of buttons and in message blocks.
+There are over 250 glyphs in font format from the Glyphicon Halflings set provided by `Bootstrap <https://getbootstrap.com/components/#glyphicons>`__. We utilize these mainly as icons inside of buttons and in message blocks.
 
 .. raw:: html
 
@@ -305,7 +305,7 @@ The :doc:`/developers/fontcustom` section of the Developer Guide explains how to
 Socicon Icon Font 
 -----------------
 
-We use `Socicon <http://www.socicon.com>`__ for our custom social icons. In the footer we use icons for Twitter and Github. In our Share feature, we also use custom social icons to allow users to select from a list of social media channels.
+We use `Socicon <https://www.socicon.com>`__ for our custom social icons. In the footer we use icons for Twitter and Github. In our Share feature, we also use custom social icons to allow users to select from a list of social media channels.
 
 .. raw:: html
 

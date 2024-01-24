@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.validation;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.apache.commons.validator.routines.UrlValidator;
 
 /**

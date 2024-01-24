@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import io.gdcc.xoai.exceptions.BadVerbException;
 import io.gdcc.xoai.exceptions.OAIException;
 import io.gdcc.xoai.model.oaipmh.Granularity;
 import io.gdcc.xoai.services.impl.SimpleResumptionTokenFormat;
@@ -38,17 +39,17 @@ import org.apache.commons.lang3.StringUtils;
 
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.inject.Inject;
+import jakarta.ejb.EJB;
+import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import javax.mail.internet.InternetAddress;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 import javax.xml.stream.XMLStreamException;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -257,10 +258,16 @@ public class OAIServlet extends HttpServlet {
                         "Sorry. OAI Service is disabled on this Dataverse node.");
                 return;
             }
-                        
-            RawRequest rawRequest = RequestBuilder.buildRawRequest(httpServletRequest.getParameterMap());
-            
-            OAIPMH handle = dataProvider.handle(rawRequest);
+
+            Map<String, String[]> params = httpServletRequest.getParameterMap();
+            OAIPMH handle;
+            try {
+                RawRequest rawRequest = RequestBuilder.buildRawRequest(params);
+                handle = dataProvider.handle(rawRequest);
+            } catch (BadVerbException bve) {
+                handle = dataProvider.handle(params);
+            }
+
             response.setContentType("text/xml;charset=UTF-8");
 
             try (XmlWriter xmlWriter = new XmlWriter(response.getOutputStream(), repositoryConfiguration);) {
