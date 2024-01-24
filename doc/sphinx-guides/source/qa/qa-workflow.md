@@ -41,7 +41,7 @@
 
 1. Build and deploy the pull request.
 
-    Normally this is done using Jenkins and automatically deployed to the QA test machine.
+    Normally this is done using Jenkins and automatically deployed to the QA test machine. See {ref}`deploy-to-internal`.
 
 1. Configure if required
 
