@@ -332,6 +332,11 @@ public class ImportServiceBean {
             
             Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId().asString());
 
+            //adding the harvesting client id to harvested files #9686
+            for (DataFile df : ds.getFiles()){
+                df.setHarvestedFrom(harvestingClient);
+            }  
+           
             if (existingDs != null) {
                 // If this dataset already exists IN ANOTHER DATAVERSE
                 // we are just going to skip it!
