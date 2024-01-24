@@ -6,6 +6,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 
 import edu.harvard.iq.dataverse.DataFile;
@@ -13,6 +17,10 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 
 public class URLTokenUtil {
 
@@ -22,6 +30,13 @@ public class URLTokenUtil {
     protected final FileMetadata fileMetadata;
     protected ApiToken apiToken;
     protected String localeCode;
+    
+    
+    public static final String HTTP_METHOD="httpMethod";
+    public static final String TIMEOUT="timeOut";
+    public static final String SIGNED_URL="signedUrl";
+    public static final String NAME="name";
+    public static final String URL_TEMPLATE="urlTemplate";
 
     /**
      * File level
@@ -177,8 +192,7 @@ public class URLTokenUtil {
                 }
             }
             if (("DRAFT").equals(versionString)) {
-                versionString = ":draft"; // send the token needed in api calls that can be substituted for a numeric
-                                          // version.
+                versionString = DS_VERSION_DRAFT; // send the token needed in api calls that can be substituted for a numeric version.
             }
             return versionString;
         case FILE_METADATA_ID:
@@ -193,6 +207,58 @@ public class URLTokenUtil {
         throw new IllegalArgumentException("Cannot replace reserved word: " + value);
     }
     
+    public JsonObjectBuilder createPostBody(JsonObject params, JsonArray allowedApiCalls) {
+        JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+        bodyBuilder.add("queryParameters", params);
+        if (allowedApiCalls != null && !allowedApiCalls.isEmpty()) {
+            JsonArrayBuilder apisBuilder = Json.createArrayBuilder();
+            allowedApiCalls.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
+                logger.fine(JsonUtil.prettyPrint(apiObj));
+                String name = apiObj.getJsonString(NAME).getString();
+                String httpmethod = apiObj.getJsonString(HTTP_METHOD).getString();
+                int timeout = apiObj.getInt(TIMEOUT);
+                String urlTemplate = apiObj.getJsonString(URL_TEMPLATE).getString();
+                logger.fine("URL Template: " + urlTemplate);
+                urlTemplate = SystemConfig.getDataverseSiteUrlStatic() + urlTemplate;
+                String apiPath = replaceTokensWithValues(urlTemplate);
+                logger.fine("URL WithTokens: " + apiPath);
+                String url = apiPath;
+                // Sign if apiToken exists, otherwise send unsigned URL (i.e. for guest users)
+                ApiToken apiToken = getApiToken();
+                if (apiToken != null) {
+                    url = UrlSignerUtil.signUrl(apiPath, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                            httpmethod, JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("")
+                                    + getApiToken().getTokenString());
+                }
+                logger.fine("Signed URL: " + url);
+                apisBuilder.add(Json.createObjectBuilder().add(NAME, name).add(HTTP_METHOD, httpmethod)
+                        .add(SIGNED_URL, url).add(TIMEOUT, timeout));
+            }));
+            bodyBuilder.add("signedUrls", apisBuilder);
+        }
+        return bodyBuilder;
+    }
+
+    public JsonObject getParams(JsonObject toolParameters) {
+        //ToDo - why an array of object each with a single key/value pair instead of one object?
+        JsonArray queryParams = toolParameters.getJsonArray("queryParameters");
+    
+        // ToDo return json and print later
+        JsonObjectBuilder paramsBuilder = Json.createObjectBuilder();
+        if (!(queryParams == null) && !queryParams.isEmpty()) {
+            queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
+                queryParam.keySet().forEach((key) -> {
+                    String value = queryParam.getString(key);
+                    JsonValue param = getParam(value);
+                    if (param != null) {
+                        paramsBuilder.add(key, param);
+                    }
+                });
+            });
+        }
+        return paramsBuilder.build();
+    }
+
     public static String getScriptForUrl(String url) {
         String msg = BundleUtil.getStringFromBundle("externaltools.enable.browser.popups");
         String script = "const newWin = window.open('" + url + "', target='_blank'); if (!newWin || newWin.closed || typeof newWin.closed == \"undefined\") {alert(\"" + msg + "\");}";

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -7,17 +8,24 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageQuota;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,8 +43,6 @@ import jakarta.persistence.TypedQuery;
 /**
  *
  * @author Leonid Andreev
- * 
- * Basic skeleton of the new DataFile service for DVN 4.0
  * 
  */
 
@@ -58,6 +64,11 @@ public class DataFileServiceBean implements java.io.Serializable {
     IngestServiceBean ingestService;
 
     @EJB EmbargoServiceBean embargoService;
+    
+    @EJB SystemConfig systemConfig;
+    
+    @EJB
+    StorageUseServiceBean storageUseService; 
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -145,6 +156,27 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (DataFile)query.getSingleResult();
         
     }*/
+    
+    public List<DataFile> findAll(List<Long> fileIds){
+        List<DataFile> dataFiles = new ArrayList<>();
+
+         for (Long fileId : fileIds){
+             dataFiles.add(find(fileId));
+         }
+
+        return dataFiles;
+    }
+
+    public List<DataFile> findAll(String fileIdsAsString){
+        ArrayList<Long> dataFileIds = new ArrayList<>();
+
+        String[] fileIds = fileIdsAsString.split(",");
+        for (String fId : fileIds){
+            dataFileIds.add(Long.parseLong(fId));
+        }
+
+        return findAll(dataFileIds);
+    }
     
     public DataFile findByGlobalId(String globalId) {
             return (DataFile) dvObjectService.findByGlobalId(globalId, DvObject.DType.DataFile);
@@ -353,6 +385,18 @@ public class DataFileServiceBean implements java.io.Serializable {
         } else {
             return fileMetadatas.get(0);
         }
+    }
+    
+    public List<DataFile> findAllCheapAndEasy(String fileIdsAsString){ 
+        //assumption is that the fileIds are separated by ','
+        ArrayList <DataFile> dataFilesFound = new ArrayList<>();
+        String[] fileIds = fileIdsAsString.split(",");
+        DataFile df = this.findCheapAndEasy(Long.parseLong(fileIds[0]));
+        if(df != null){
+            dataFilesFound.add(df);
+        }
+
+        return dataFilesFound;
     }
 
     public DataFile findCheapAndEasy(Long id) {
@@ -566,6 +610,125 @@ public class DataFileServiceBean implements java.io.Serializable {
         return dataFile;
     }
     
+    private List<AuthenticatedUser> retrieveFileAccessRequesters(DataFile fileIn) {
+        List<AuthenticatedUser> retList = new ArrayList<>();
+
+        // List<Object> requesters = em.createNativeQuery("select authenticated_user_id
+        // from fileaccessrequests where datafile_id =
+        // "+fileIn.getId()).getResultList();
+        TypedQuery<Long> typedQuery = em.createQuery("select f.user.id from FileAccessRequest f where f.dataFile.id = :file_id and f.requestState= :requestState", Long.class);
+        typedQuery.setParameter("file_id", fileIn.getId());
+        typedQuery.setParameter("requestState", FileAccessRequest.RequestState.CREATED);
+        List<Long> requesters = typedQuery.getResultList();
+        for (Long userId : requesters) {
+            AuthenticatedUser user = userService.find(userId);
+            if (user != null) {
+                retList.add(user);
+            }
+        }
+
+        return retList;
+    }
+    
+    private List<FileMetadata> retrieveFileMetadataForVersion(Dataset dataset, DatasetVersion version, List<DataFile> dataFiles, Map<Long, Integer> filesMap, Map<Long, Integer> categoryMap) {
+        List<FileMetadata> retList = new ArrayList<>();
+        Map<Long, Set<Long>> categoryMetaMap = new HashMap<>();
+        
+        List<Object[]> categoryResults = em.createNativeQuery("select t0.filecategories_id, t0.filemetadatas_id from filemetadata_datafilecategory t0, filemetadata t1 where (t0.filemetadatas_id = t1.id) AND (t1.datasetversion_id = "+version.getId()+")").getResultList();
+        int i = 0;
+        for (Object[] result : categoryResults) {
+            Long category_id = (Long) result[0];
+            Long filemeta_id = (Long) result[1];
+            if (categoryMetaMap.get(filemeta_id) == null) {
+                categoryMetaMap.put(filemeta_id, new HashSet<>());
+            }
+            categoryMetaMap.get(filemeta_id).add(category_id);
+            i++;
+        }
+        logger.fine("Retrieved and mapped "+i+" file categories attached to files in the version "+version.getId());
+        
+        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL, prov_freeform from FileMetadata where datasetversion_id = "+version.getId() + " ORDER BY LABEL").getResultList();
+        
+        for (Object[] result : metadataResults) {
+            Integer filemeta_id = (Integer) result[0];
+            
+            if (filemeta_id == null) {
+                continue;
+            }
+            
+            Long file_id = (Long) result[1];
+            if (file_id == null) {
+                continue;
+            }
+            
+            Integer file_list_id = filesMap.get(file_id);
+            if (file_list_id == null) {
+                continue;
+            }
+            FileMetadata fileMetadata = new FileMetadata();
+            fileMetadata.setId(filemeta_id.longValue());
+            fileMetadata.setCategories(new LinkedList<>());
+
+            if (categoryMetaMap.get(fileMetadata.getId()) != null) {
+                for (Long cat_id : categoryMetaMap.get(fileMetadata.getId())) {
+                    if (categoryMap.get(cat_id) != null) {
+                        fileMetadata.getCategories().add(dataset.getCategories().get(categoryMap.get(cat_id)));
+                    }
+                }
+            }
+
+            fileMetadata.setDatasetVersion(version);
+            
+            // Link the FileMetadata object to the DataFile:
+            fileMetadata.setDataFile(dataFiles.get(file_list_id));
+            // ... and the DataFile back to the FileMetadata:
+            fileMetadata.getDataFile().getFileMetadatas().add(fileMetadata);
+            
+            String description = (String) result[2]; 
+            
+            if (description != null) {
+                fileMetadata.setDescription(description);
+            }
+            
+            String label = (String) result[3];
+            
+            if (label != null) {
+                fileMetadata.setLabel(label);
+            }
+                        
+            Boolean restricted = (Boolean) result[4];
+            if (restricted != null) {
+                fileMetadata.setRestricted(restricted);
+            }
+            
+            String dirLabel = (String) result[5];
+            if (dirLabel != null){
+                fileMetadata.setDirectoryLabel(dirLabel);
+            }
+            
+            String provFreeForm = (String) result[6];
+            if (provFreeForm != null){
+                fileMetadata.setProvFreeForm(provFreeForm);
+            }
+                        
+            retList.add(fileMetadata);
+        }
+        
+        logger.fine("Retrieved "+retList.size()+" file metadatas for version "+version.getId()+" (inside the retrieveFileMetadataForVersion method).");
+                
+        
+        /* 
+            We no longer perform this sort here, just to keep this filemetadata
+            list as identical as possible to when it's produced by the "traditional"
+            EJB method. When it's necessary to have the filemetadatas sorted by 
+            FileMetadata.compareByLabel, the DatasetVersion.getFileMetadatasSorted()
+            method should be called. 
+        
+        Collections.sort(retList, FileMetadata.compareByLabel); */
+        
+        return retList; 
+    }
+    
     public List<DataFile> findIngestsInProgress() {
         if ( em.isOpen() ) {
             String qr = "select object(o) from DataFile as o where o.ingestStatus =:scheduledStatusCode or o.ingestStatus =:progressStatusCode order by o.id";
@@ -773,7 +936,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         // If thumbnails are not even supported for this class of files, 
-        // there's notthing to talk about:      
+        // there's nothing to talk about:      
         if (!FileUtil.isThumbnailSupported(file)) {
             return false;
         }
@@ -788,16 +951,16 @@ public class DataFileServiceBean implements java.io.Serializable {
          is more important... 
         
         */
-                
         
-       if (ImageThumbConverter.isThumbnailAvailable(file)) {
-           file = this.find(file.getId());
-           file.setPreviewImageAvailable(true);
-           this.save(file); 
-           return true;
-       }
-
-       return false;
+        file = this.find(file.getId());
+        if (ImageThumbConverter.isThumbnailAvailable(file)) {
+            file.setPreviewImageAvailable(true);
+            this.save(file);
+            return true;
+        }
+        file.setPreviewImageFail(true);
+        this.save(file);
+        return false;
     }
 
     
@@ -1202,5 +1365,40 @@ public class DataFileServiceBean implements java.io.Serializable {
     public Embargo findEmbargo(Long id) {
         DataFile d = find(id);
         return d.getEmbargo();
+    }
+    
+    /**
+     * Checks if the supplied DvObjectContainer (Dataset or Collection; although
+     * only collection-level storage quotas are officially supported as of now)
+     * has a quota configured, and if not, keeps checking if any of the direct
+     * ancestor Collections further up have a configured quota. If it finds one, 
+     * it will retrieve the current total content size for that specific ancestor 
+     * dvObjectContainer and use it to define the quota limit for the upload
+     * session in progress. 
+     * 
+     * @param parent - DvObjectContainer, Dataset or Collection
+     * @return upload session size limit spec, or null if quota not defined on 
+     * any of the ancestor DvObjectContainers
+     */
+    public UploadSessionQuotaLimit getUploadSessionQuotaLimit(DvObjectContainer parent) {
+        DvObjectContainer testDvContainer = parent; 
+        StorageQuota quota = testDvContainer.getStorageQuota();
+        while (quota == null && testDvContainer.getOwner() != null) {
+            testDvContainer = testDvContainer.getOwner();
+            quota = testDvContainer.getStorageQuota();
+            if (quota != null) {
+                break;
+            }
+        }    
+        if (quota == null || quota.getAllocation() == null) {
+            return null; 
+        }
+        
+        // Note that we are checking the recorded storage use not on the 
+        // immediate parent necessarily, but on the specific ancestor 
+        // DvObjectContainer on which the storage quota is defined:
+        Long currentSize = storageUseService.findStorageSizeByDvContainerId(testDvContainer.getId()); 
+        
+        return new UploadSessionQuotaLimit(quota.getAllocation(), currentSize);
     }
 }

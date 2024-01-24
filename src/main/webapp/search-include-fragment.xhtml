@@ -36,7 +36,7 @@
 
                         <p:remoteCommand name="submitsearch" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage, DataversePage.dataverse)}"/>
                     </div>
-                    <h:outputLink id="advsearchlink" value="#{widgetWrapper.wrapURL('/search/advanced.xhtml')}">
+                    <h:outputLink rel="nofollow" id="advsearchlink" value="#{widgetWrapper.wrapURL('/search/advanced.xhtml')}">
                         <f:param name="dataverseIdentifier" value="#{SearchIncludeFragment.dataverse.alias}"/>
                         <h:outputText value="#{bundle['dataverse.search.advancedSearch']}"/>
                         <!--<f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>-->
@@ -88,15 +88,26 @@
             <pre><h:outputText value="#{SearchIncludeFragment.searchException.cause.message}"/></pre>
         </div>
     </div>
+    
+    
+    <!-- ... And the message block for when SOLR IS DOWN *TEMPORARILY* -->
+    <div class="row" jsf:rendered="#{SearchIncludeFragment.solrTemporarilyUnavailable}">
+        <div class="col-sm-12">
+            <div class="bg-danger padding-12 margin-bottom">
+                <h:outputText value="#{bundle['dataverse.results.solrIsTemporarilyUnavailable']}" styleClass="highlightBold"/>
+            </div>
+            <pre><h:outputText value="#{bundle['dataverse.results.solrIsTemporarilyUnavailable.extraText']}"/></pre>
+        </div>
+    </div>
 
     <!-- Search Results / SOLR IS UP -->
-    <div id="search-row-panel" class="row row-offcanvas row-offcanvas-left" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
+    <div id="search-row-panel" class="row row-offcanvas row-offcanvas-left" jsf:rendered="#{!(SearchIncludeFragment.solrIsDown or SearchIncludeFragment.solrTemporarilyUnavailable)}">
         <div id="dv-sidebar" class="col-sm-4 col-md-3 sidebar-offcanvas">
             <!--TYPE FACET (DATAVERSES, DATASETS, FILES)-->
-            <h:form id="facetType">
+            <h:form id="facetType" rendered="#{!SearchIncludeFragment.facetsDisabled}">
                 <!--DATAVERSE TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null}">
+                    <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('dataverses')}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -109,7 +120,7 @@
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null ? true : false}" ariaLabel="#{bundle['facet.collection.label']}"/>
                     </h:outputLink>
                     <!--DATAVERSES ONLY-->
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
+                    <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="dataverses"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -128,7 +139,7 @@
                 </div>
                 <!--DATASETS TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null}">
+                    <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('datasets')}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -141,7 +152,7 @@
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null ? true : false}" ariaLabel="#{bundle['facet.dataset.label']}"/>
                     </h:outputLink>
                     <!--DATASETS ONLY-->
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}">
+                    <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="datasets"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -160,7 +171,7 @@
                 </div>
                 <!--FILES TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null}">
+                    <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('files')}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -173,7 +184,7 @@
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('files') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null ? true : false}" ariaLabel="#{bundle['facet.datafile.label']}"/>
                     </h:outputLink>
                     <!--FILES ONLY-->
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}">
+                    <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="files"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -193,11 +204,11 @@
             </h:form>
 
             <!--NON-TYPE FACETS-->
-            <h:form id="facetCategoryForm" rendered="#{DataversePage.searchResultsCount > 0}">
+            <h:form id="facetCategoryForm" rendered="#{(DataversePage.searchResultsCount > 0) and !SearchIncludeFragment.facetsDisabled}">
                 <p:dataList id="facetCategoryList" value="#{DataversePage.facetCategoryList}" var="facetCategory">
                     <h:outputText value="#{facetCategory.friendlyName}" styleClass="facetCategoryName"/>
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{DataversePage.getNumberOfFacets(facetCategory.name,5)}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!DataversePage.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
+                        <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}" rendered="#{!DataversePage.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
                             <h:outputText value="#{facetLabel.name}">
                                 <c:if test="#{!cvocConf.isEmpty()}">
                                     <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
@@ -218,7 +229,7 @@
                             <f:param name="order" value="#{DataversePage.sortOrder}"/>
                         </h:outputLink>
 
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{DataversePage.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
+                        <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}" rendered="#{DataversePage.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
                             <h:outputText value="#{facetLabel.name}">
                                 <c:if test="#{!cvocConf.isEmpty()}">
                                     <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
@@ -250,6 +261,12 @@
                         </p:panelGrid>
                     </ui:fragment>
                 </p:dataList>
+            </h:form>
+            <!-- "facets temporarily unavailable" message: -->
+            <h:form id="facetsUnavailable" rendered="#{SearchIncludeFragment.facetsDisabled}">
+                <div class="clearfix">
+                    <h:outputText value="#{bundle['dataverse.results.solrFacetsDisabled']}" styleClass="facetTypeLink"/>
+                </div>
             </h:form>
         </div>
         <div id="dv-main" class="col-sm-8 col-md-9">
@@ -290,7 +307,7 @@
                     </ui:fragment>
                     <ui:fragment rendered="#{SearchIncludeFragment.errorFromSolr != null}">
                         <p>
-                            <a data-toggle="collapse" data-parent="#emptyResults" href="#technicalDetails" aria-expanded="true" aria-controls="technicalDetails">[+] #{bundle['dataverse.results.empty.link.technicalDetails']}</a>
+                            <a rel="nofollow" data-toggle="collapse" data-parent="#emptyResults" href="#technicalDetails" aria-expanded="true" aria-controls="technicalDetails">[+] #{bundle['dataverse.results.empty.link.technicalDetails']}</a>
                         </p>
                         <div id="technicalDetails" class="collapse">
                             <pre><h:outputText value="#{SearchIncludeFragment.errorFromSolr}"/></pre>
@@ -361,7 +378,7 @@
                 <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery" rendered="#{!SearchIncludeFragment.wasSolrErrorEncountered()}">
                     <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
                     <ui:param name="filterType" value="#{SearchIncludeFragment.getTypeFromFilterQuery(filterQuery)}"/>
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames
+                    <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames
                                 and filterType != DataversePage.searchFieldType and filterType != DataversePage.searchFieldSubtree}">
                         <h:outputText value="#{friendlyNames.get(0)}: "/>
                         <h:outputText value="#{friendlyNames.get(1)}">
@@ -399,7 +416,7 @@
                         </button>
                         <ul class="dropdown-menu pull-right text-left">
                             <li>
-                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                                <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.nameAZ']}" styleClass="#{SearchIncludeFragment.sortedByNameAsc ? 'highlightBold' : ''}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -412,7 +429,7 @@
                                 </h:outputLink>
                             </li>
                             <li>
-                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                                <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.nameZA']}" styleClass="#{SearchIncludeFragment.sortedByNameDesc ? 'highlightBold' : ''}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -425,7 +442,7 @@
                                 </h:outputLink>
                             </li>
                             <li>
-                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                                <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.newest']}" styleClass="#{SearchIncludeFragment.sortedByReleaseDateDesc? 'highlightBold' : ''}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -438,7 +455,7 @@
                                 </h:outputLink>
                             </li>
                             <li>
-                                <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                                <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.oldest']}" styleClass="#{SearchIncludeFragment.sortedByReleaseDateAsc? 'highlightBold' : ''}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -452,7 +469,7 @@
                             </li>
                             <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                                 <li>
-                                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                                    <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}">
                                         <h:outputText value="#{bundle['dataverse.results.btn.sort.option.relevance']}" styleClass="#{SearchIncludeFragment.sortedByRelevance ? 'highlightBold' : ''}"/>
                                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -498,7 +515,7 @@
                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
-                            <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
+                            <h:outputLink rel="nofollow" value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
                                 <img src="#{result.imageUrl}" jsf:rendered="#{!empty result.imageUrl}" alt="#{of:format1(bundle['alt.logo'], result.name)}"/>
                                 <span class="icon-dataverse text-brand" jsf:rendered="#{empty result.imageUrl}"/>
                                 <f:passThroughAttribute name="aria-label" value="#{of:format1(bundle['alt.logo'], result.name)}"/>
@@ -508,7 +525,7 @@
                         <h:outputText value="#{result.dateToDisplayOnCard}" styleClass="text-muted" style="margin-right:.5em;"/>
 
                         <c:set var="dvParentUrl" value="/dataverse/#{result.dataverseParentAlias}"/>
-                        <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                        <h:outputLink rel="nofollow" value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                             <h:outputText value="#{result.parent.get('name')}"/>
                         </h:outputLink>
 
@@ -561,7 +578,7 @@
                             <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!SearchIncludeFragment.isValid(result)}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
-                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" aria-label="#{result.title}">
+                            <a rel="nofollow" href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" aria-label="#{result.title}">
                                 <img src="#{result.imageUrl}" jsf:rendered="#{!empty result.imageUrl and !result.deaccessionedState}" alt="#{result.title}"/>
                                 <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl or result.deaccessionedState}"/>
                             </a>
@@ -572,7 +589,7 @@
                         <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
                         
                         <c:set var="dvParentAlias" value="/dataverse/#{result.dataverseAlias}"/>
-                        <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                        <h:outputLink rel="nofollow" value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                             <h:outputText value="#{result.parent.get('name')}"/>
                         </h:outputLink>
 
@@ -624,7 +641,7 @@
 
                             <span class="text-danger glyphicon glyphicon-lock" data-toggle="tooltip" title="#{bundle.restricted}" jsf:rendered="#{result.entity.restricted and !permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
                             <span class="text-success icon-unlock" data-toggle="tooltip" title="#{bundle.restrictedaccess}" jsf:rendered="#{result.entity.restricted and permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
-                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                            <a rel="nofollow" href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
                                 <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                 <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                 <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{dataverseSession.debug}"/></a>
@@ -636,7 +653,7 @@
                         </div>
 
                         <div class="card-preview-icon-block text-center">
-                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" aria-label="#{result.name}">
+                            <a rel="nofollow" href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" aria-label="#{result.name}">
                                 <img src="#{result.imageUrl}" jsf:rendered="#{!empty result.imageUrl}" alt="#{result.name}"/>
                                 <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(result.entity)} text-muted h1"
                                       jsf:rendered="#{empty result.imageUrl}"/>
@@ -645,7 +662,7 @@
 
                         <div class="text-muted">
                             <h:outputText value="#{result.dateToDisplayOnCard} - "/>
-                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                            <a rel="nofollow" href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
                                 <h:outputText value="#{result.parent.get('name')}"/></a>
                         </div>
 

@@ -3,7 +3,7 @@ name: Bug report
 about: Did you encounter something unexpected or incorrect in the Dataverse software?
   We'd like to hear about it!
 title: ''
-labels: ''
+labels: 'Type: Bug'
 assignees: ''
 
 ---

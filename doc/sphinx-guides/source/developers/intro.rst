@@ -2,7 +2,7 @@
 Introduction
 ============
 
-Welcome! `The Dataverse Project <http://dataverse.org>`_ is an `open source <https://github.com/IQSS/dataverse/blob/master/LICENSE.md>`_ project that loves `contributors <https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md>`_!
+Welcome! `The Dataverse Project <https://dataverse.org>`_ is an `open source <https://github.com/IQSS/dataverse/blob/master/LICENSE.md>`_ project that loves `contributors <https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md>`_!
 
 .. contents:: |toctitle|
 	:local:
@@ -19,7 +19,7 @@ To get started, you'll want to set up your :doc:`dev-environment` and make sure 
 Getting Help
 ------------
 
-If you have any questions at all, please reach out to other developers via the channels listed in https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md such as http://chat.dataverse.org, the `dataverse-dev <https://groups.google.com/forum/#!forum/dataverse-dev>`_ mailing list, `community calls <https://dataverse.org/community-calls>`_, or support@dataverse.org.
+If you have any questions at all, please reach out to other developers via the channels listed in https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md such as https://chat.dataverse.org, the `dataverse-dev <https://groups.google.com/forum/#!forum/dataverse-dev>`_ mailing list, `community calls <https://dataverse.org/community-calls>`_, or support@dataverse.org.
 
 .. _core-technologies:
 
@@ -40,7 +40,7 @@ For the Dataverse Software development roadmap, please see https://www.iq.harvar
 Kanban Board
 ------------
 
-You can get a sense of what's currently in flight (in dev, in QA, etc.) by looking at https://github.com/orgs/IQSS/projects/2
+You can get a sense of what's currently in flight (in dev, in QA, etc.) by looking at https://github.com/orgs/IQSS/projects/34
 
 Issue Tracker
 -------------

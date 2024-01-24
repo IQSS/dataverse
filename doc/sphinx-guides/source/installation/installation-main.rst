@@ -100,7 +100,7 @@ The supplied site URL will be saved under the JVM option :ref:`dataverse.siteUrl
 
 The Dataverse Software uses JHOVE_ to help identify the file format (CSV, PNG, etc.) for files that users have uploaded. The installer places files called ``jhove.conf`` and ``jhoveConfig.xsd`` into the directory ``/usr/local/payara6/glassfish/domains/domain1/config`` by default and makes adjustments to the jhove.conf file based on the directory into which you chose to install Payara.
 
-.. _JHOVE: http://jhove.openpreservation.org
+.. _JHOVE: https://jhove.openpreservation.org
 
 Logging In
 ----------
@@ -120,7 +120,7 @@ Use the following credentials to log in:
 - username: dataverseAdmin
 - password: admin
 
-Congratulations! You have a working Dataverse installation. Soon you'll be tweeting at `@dataverseorg <https://twitter.com/dataverseorg>`_ asking to be added to the map at http://dataverse.org :)
+Congratulations! You have a working Dataverse installation. Soon you'll be tweeting at `@dataverseorg <https://twitter.com/dataverseorg>`_ asking to be added to the map at https://dataverse.org :)
 
 Trouble? See if you find an answer in the troubleshooting section below.
 
@@ -204,7 +204,7 @@ Be sure you save the changes made here and then restart your Payara server to te
 UnknownHostException While Deploying
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are seeing "Caused by: java.net.UnknownHostException: myhost: Name or service not known" in server.log and your hostname is "myhost" the problem is likely that "myhost" doesn't appear in ``/etc/hosts``. See also http://stackoverflow.com/questions/21817809/glassfish-exception-during-deployment-project-with-stateful-ejb/21850873#21850873
+If you are seeing "Caused by: java.net.UnknownHostException: myhost: Name or service not known" in server.log and your hostname is "myhost" the problem is likely that "myhost" doesn't appear in ``/etc/hosts``. See also https://stackoverflow.com/questions/21817809/glassfish-exception-during-deployment-project-with-stateful-ejb/21850873#21850873
 
 .. _fresh-reinstall:
 

@@ -96,7 +96,8 @@ public class NavigationWrapper implements java.io.Serializable {
         try {
             context.getExternalContext().responseSendError(errorCode,null);
         } catch (IOException ex) {
-            Logger.getLogger(PermissionsWrapper.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(PermissionsWrapper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(NavigationWrapper.class.getName()).fine("Caught exception in sendError(): "+ex.getMessage());
         }
         context.responseComplete();
         return "";

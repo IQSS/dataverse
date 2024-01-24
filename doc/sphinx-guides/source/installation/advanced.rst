@@ -7,6 +7,8 @@ Advanced installations are not officially supported but here we are at least doc
 .. contents:: |toctitle|
 	:local:
 
+.. _multiple-app-servers:
+
 Multiple App Servers
 --------------------
 

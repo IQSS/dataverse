@@ -80,6 +80,7 @@ public class SignpostingIT {
         assertTrue(linkHeader.contains(datasetPid));
         assertTrue(linkHeader.contains("cite-as"));
         assertTrue(linkHeader.contains("describedby"));
+        assertTrue(linkHeader.contains("<http://creativecommons.org/publicdomain/zero/1.0>;rel=\"license\""));
 
         Pattern pattern = Pattern.compile("<([^<]*)> ; rel=\"linkset\";type=\"application\\/linkset\\+json\"");
         Matcher matcher = pattern.matcher(linkHeader);
@@ -92,7 +93,7 @@ public class SignpostingIT {
 
         String responseString = linksetResponse.getBody().asString();
 
-        JsonObject data = JsonUtil.getJsonObject(responseString).getJsonObject("data");
+        JsonObject data = JsonUtil.getJsonObject(responseString);
         JsonObject lso = data.getJsonArray("linkset").getJsonObject(0);
         System.out.println("Linkset: " + lso.toString());
 
@@ -100,6 +101,16 @@ public class SignpostingIT {
 
         assertTrue(lso.getString("anchor").indexOf("/dataset.xhtml?persistentId=" + datasetPid) > 0);
         assertTrue(lso.containsKey("describedby"));
+
+        // Test export URL from link header
+        // regex inspired by https://stackoverflow.com/questions/68860255/how-to-match-the-closest-opening-and-closing-brackets
+        Pattern exporterPattern = Pattern.compile("[<\\[][^()\\[\\]]*?exporter=schema.org[^()\\[\\]]*[>\\]]");
+        Matcher exporterMatcher = exporterPattern.matcher(linkHeader);
+        exporterMatcher.find();
+
+        Response exportDataset = UtilIT.exportDataset(datasetPid, "schema.org");
+        exportDataset.prettyPrint();
+        exportDataset.then().assertThat().statusCode(OK.getStatusCode());
 
     }
 
