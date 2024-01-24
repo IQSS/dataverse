@@ -163,10 +163,10 @@ The following table lists the available metrics endpoints (not including the Mak
     /api/info/metrics/uniquefiledownloads/toMonth/{yyyy-MM},"count by id, pid","json, csv",collection subtree,published,y,cumulative up to month specified,unique download counts per file id to the specified month. PIDs are also included in output if they exist
     /api/info/metrics/tree,"id, ownerId, alias, depth, name, children",json,collection subtree,published,y,"tree of dataverses starting at the root or a specified parentAlias with their id, owner id, alias, name, a computed depth, and array of children dataverses","underlying code can also include draft dataverses, this is not currently accessible via api, depth starts at 0"
     /api/info/metrics/tree/toMonth/{yyyy-MM},"id, ownerId, alias, depth, name, children",json,collection subtree,published,y,"tree of dataverses in existence as of specified date starting at the root or a specified parentAlias with their id, owner id, alias, name, a computed depth, and array of children dataverses","underlying code can also include draft dataverses, this is not currently accessible via api, depth starts at 0"
-    /api/info/metrics/accounts,count,json,Dataverse instalation,all,y,as of now/totals,
-    /api/info/metrics/accounts/toMonth/{yyyy-MM},count,json,Dataverse instalation,all,y,cumulative up to month specified,
-    /api/info/metrics/accounts/pastDays/{n},count,json,Dataverse instalation,all,y,aggregate count for past n days,
-    /api/info/metrics/accounts/monthly,"date, count","json, csv",Dataverse instalation,all,y,monthly cumulative timeseries from first date of first entry to now,
+    /api/info/metrics/accounts,count,json,Dataverse installation,all,y,as of now/totals,
+    /api/info/metrics/accounts/toMonth/{yyyy-MM},count,json,Dataverse installation,all,y,cumulative up to month specified,
+    /api/info/metrics/accounts/pastDays/{n},count,json,Dataverse installation,all,y,aggregate count for past n days,
+    /api/info/metrics/accounts/monthly,"date, count","json, csv",Dataverse installation,all,y,monthly cumulative timeseries from first date of first entry to now,
 
 Related API Endpoints
 ---------------------
