@@ -2,9 +2,9 @@
 
 ```{toctree}
 overview.md
+testing-approach.md
 testing-infrastructure.md
 qa-workflow.md
-testing-approach.md
 test-automation.md
 performance-tests.md
 ```
