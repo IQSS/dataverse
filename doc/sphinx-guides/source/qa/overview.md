@@ -17,6 +17,8 @@ Before a pull request is moved to QA, it must be reviewed by a member of the dev
 
 Depending on whether the code modifies existing code or is completely new, a smoke test of core functionality is performed and some basic regression testing of modified or related code is performed. Any documentation provided is used to understand the feature and any assertions made in that documentation are tested. Once this passes and any bugs that are found are corrected, and the automated tests are confirmed to be passing, the PR is merged into the develop branch, the PR is closed, and the branch is deleted (if it is local). At this point, the PR moves from the QA column automatically into the Merged column (where it might be discussed at the next standup) and the process repeats with the next PR until it is decided to {doc}`make a release </developers/making-releases>`.
 
+The complete suggested workflow can be found at {doc}`qa-workflow`.
+
 ## Tips and Tricks
 
 - Start testing simply, with the most obvious test. You don’t need to know all your tests upfront. As you gain comfort and understanding of how it works, try more tests until you are done. If it is a complex feature, jot down your tests in an outline format, some beforehand as a guide, and some after as things occur to you. Save the doc in a testing folder (on Google Drive). This potentially will help with future testing.
