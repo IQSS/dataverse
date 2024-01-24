@@ -7,7 +7,9 @@ Two database settings configure the rate limiting.
 Note: If either of these settings exist in the database rate limiting will be enabled.
 If neither setting exists rate limiting is disabled.
 
-RateLimitingDefaultCapacityTiers is a comma separated list of default values for each tier. In the following example, the default for tier 0 (guest users) is set to 10,000 calls per command per hour and tier 1 (authenticated users) is set to 20,000 calls per command per hour. Tiers not specified in this setting will default to -1 (No Limit).
+`RateLimitingDefaultCapacityTiers` is a comma separated list of default values for each tier.
+In the following example, the default for tier `0` (guest users) is set to 10,000 calls per command per hour and tier `1` (authenticated users) is set to 20,000 calls per command per hour.
+Tiers not specified in this setting will default to `-1` (No Limit).
 curl http://localhost:8080/api/admin/settings/:RateLimitingDefaultCapacityTiers -X PUT -d '10000,20000'
 
 RateLimitingCapacityByTierAndAction is a Json object specifying the rate by tier and a list of actions (commands). This allows for more control over the rate limit of individual API command calls.
