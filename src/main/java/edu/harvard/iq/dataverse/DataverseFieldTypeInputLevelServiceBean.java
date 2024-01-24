@@ -88,6 +88,16 @@ public class DataverseFieldTypeInputLevelServiceBean {
             return null;
         }         
     }
+    
+    public List<DataverseFieldTypeInputLevel> findRequiredByDataverseId(Long dataverseId) {
+        Query query = em.createNamedQuery("DataverseFieldTypeInputLevel.findRequiredByDataverseId", DataverseFieldTypeInputLevel.class);
+        query.setParameter("dataverseId", dataverseId);
+        try{
+            return query.getResultList();
+        } catch ( NoResultException nre ) {
+            return null;
+        }         
+    }
 
     public void delete(DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel) {
         em.remove(em.merge(dataverseFieldTypeInputLevel));

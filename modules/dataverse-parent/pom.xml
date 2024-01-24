@@ -131,7 +131,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.0</revision>
+        <revision>6.1</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -165,7 +165,7 @@
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         
         <!-- NEW gdcc XOAI library implementation -->
-        <gdcc.xoai.version>5.1.0</gdcc.xoai.version>
+        <gdcc.xoai.version>5.2.0</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
         <testcontainers.version>1.19.0</testcontainers.version>
@@ -426,6 +426,7 @@
             <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
         </repository>
         <!-- Uncomment when using snapshot releases from Maven Central -->
+        <!--
         <repository>
             <id>oss-sonatype</id>
             <name>oss-sonatype</name>
@@ -446,7 +447,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        <!-- -->
+        -->
     </repositories>
     
     <profiles>

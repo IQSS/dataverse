@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -16,13 +15,13 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
-import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -74,8 +73,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @EJB
     AuthenticationServiceBean authService;
-    @EJB
-    PrivateUrlServiceBean privateUrlService;
     @EJB
     SettingsServiceBean settingsService;
     @EJB
@@ -315,13 +312,19 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten, Long fileMetadataId) {
-        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten, fileMetadataId);
-        logger.fine("Redirecting to file download url: " + fileDownloadUrl);
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
+    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten,
+            Long fileMetadataId) {
+        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten,
+                fileMetadataId);
+        if (downloadType.equals("GlobusTransfer")) {
+            PrimeFaces.current().executeScript(URLTokenUtil.getScriptForUrl(fileDownloadUrl));
+        } else {
+            logger.fine("Redirecting to file download url: " + fileDownloadUrl);
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+            } catch (IOException ex) {
+                logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
+            }
         }
     }
     
@@ -352,7 +355,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         User user = session.getUser();
         DatasetVersion version = fmd.getDatasetVersion();
         if (version.isDraft() || fmd.getDatasetVersion().isDeaccessioned() || (fmd.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fmd))) {
-            apiToken = getApiToken(user);
+            apiToken = authService.getValidApiTokenForUser(user);
         }
         DataFile dataFile = null;
         if (fmd != null) {
@@ -377,24 +380,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 writeGuestbookResponseRecord(guestbookResponse);
             }
         }
-    }
-
-    public ApiToken getApiToken(User user) {
-        ApiToken apiToken = null;
-        if (user instanceof AuthenticatedUser) {
-            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-            apiToken = authService.findApiTokenByUser(authenticatedUser);
-            if (apiToken == null || apiToken.isExpired()) {
-                //No un-expired token
-                apiToken = authService.generateApiTokenForUser(authenticatedUser);
-            }
-        } else if (user instanceof PrivateUrlUser) {
-            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
-            PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
-            apiToken = new ApiToken();
-            apiToken.setTokenString(privateUrl.getToken());
-        }
-        return apiToken;
     }
 
     public void downloadDatasetCitationXML(Dataset dataset) {
@@ -644,16 +629,5 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
             
         return null; 
-    }
-
-    /**
-     *  Checks if the DataverseRequest, which contains IP Groups, has permission to download the file
-     *
-     * @param dataverseRequest the DataverseRequest
-     * @param dataFile the DataFile to check permissions
-     * @return boolean
-     */
-    public boolean canDownloadFile(DataverseRequest dataverseRequest, DataFile dataFile) {
-        return permissionService.requestOn(dataverseRequest, dataFile).has(Permission.DownloadFile);
     }
 }

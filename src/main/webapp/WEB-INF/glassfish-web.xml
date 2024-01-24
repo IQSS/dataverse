@@ -10,13 +10,18 @@
   </jsp-config>
   <parameter-encoding default-charset="UTF-8"/>
   <!-- Find a list of properties here: https://docs.oracle.com/cd/E19798-01/821-1750/beayb/index.html -->
-  <property name="alternatedocroot_1" value="from=/guides/* dir=./docroot"/>
-  <property name="alternatedocroot_2" value="from=/dataexplore/* dir=./docroot"/>
-  <property name="alternatedocroot_logos" value="from=/logos/* dir=./docroot"/>
-  <property name="alternatedocroot_sitemap" value="from=/sitemap/* dir=./docroot"/>
+  <!-- NOTE: relative paths given will be relative to com.sun.aas.instanceRoot (usually domain1 folder) -->
+  <!-- NOTE: As we cannot use variables in defaults of ${MPCONFIG}, there is a workaround for containers necessary;
+             see src/main/docker/Dockerfile. Once Payara upstream fixes this, we can use STORAGE_DIR here. -->
+  <property name="alternatedocroot_1" value="from=/guides/* dir=${MPCONFIG=dataverse.files.docroot:./docroot}"/>
+  <property name="alternatedocroot_2" value="from=/dataexplore/* dir=${MPCONFIG=dataverse.files.docroot:./docroot}"/>
+  <property name="alternatedocroot_3" value="from=/logos/* dir=${MPCONFIG=dataverse.files.docroot:./docroot}"/>
+  <property name="alternatedocroot_4" value="from=/sitemap/* dir=${MPCONFIG=dataverse.files.docroot:./docroot}"/>
   <!--
     This folder is not only holding compiled JSP pages but also the place where file streams are stored
     during uploads. As Dataverse does not use any JSP, there will only be uploads stored here.
   -->
+  <!-- NOTE: As we cannot use variables in defaults of ${MPCONFIG}, there is a workaround for containers necessary;
+             see src/main/docker/Dockerfile. Once Payara upstream fixes this, we can use STORAGE_DIR here. -->
   <property name="tempdir" value="${MPCONFIG=dataverse.files.uploads:./uploads}"/>
 </glassfish-web-app>
