@@ -83,6 +83,8 @@ To test these images against our API test suite, go to the "alpha" workflow at h
 
 If there are failures, additional dependencies or settings may have been added to the "develop" workflow. Copy them over and try again.
 
+.. _build-guides:
+
 Build the Guides for the Release
 --------------------------------
 

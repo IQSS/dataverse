@@ -7,7 +7,7 @@
 
 ## Introduction
 
-The final testing activity before producing a release is performance testing. This could be done throughout the release cycle but since it is time-consuming it is done once near the end. Using a load-generating tool named {ref}`Locust <locust>`, it loads the statistically most loaded pages, according to Google Analytics, that is 50% homepage and 50% some type of dataset page. 
+The final testing activity before producing a release is performance testing. This could be done throughout the release cycle but since it is time-consuming, it is done once near the end. Using a load-generating tool named {ref}`Locust <locust>`, our scripts load the statistically most-loaded pages (according to Google Analytics): 50% homepage and 50% some type of dataset page. 
 
 Since dataset page weight also varies by the number of files, a selection of about 10 datasets with varying file counts is used. The pages are called randomly as a guest user with increasing levels of user load, from 1 user to 250 users. Typical daily loads in production are around the 50-user level. Though the simulated user level does have a modest amount of random think time before repeated calls, from 5-20 seconds, it is not a real-world load so direct comparisons to production are not reliable. Instead, we compare performance to prior versions of the product, and based on how that performed in production we have some idea whether this might be similar in performance or whether there is some undetected issue that appears under load, such as inefficient or too many DB queries per page.
 
@@ -19,11 +19,11 @@ Once the performance has been tested and recorded in a [Google spreadsheet](http
 
 ## Access
 
-Access to performance cluster instances requires ssh keys. The cluster itself is normally not running to reduce costs. To turn on the cluster, log on to the demo server and run the perfenv scripts from the centos default user dir. Access to the demo requires an ssh key, see Leonid. 
+Access to performance cluster instances requires ssh keys. The cluster itself is normally not running to reduce costs. To turn on the cluster, log on to the demo server and run the perfenv scripts from the centos default user dir.
 
 ## Special Notes ⚠️ 
 
-Please note the performance database is also used occasionally by Julian and the Curation team to generate prod reports so a courtesy check with Julian would be good before taking over the env.
+Please note the performance database is also used occasionally by members of the Curation team to generate prod reports so a courtesy check with them would be good before taking over the env.
 
 
 Executing the Performance Script

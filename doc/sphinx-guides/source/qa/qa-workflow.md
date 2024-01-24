@@ -23,9 +23,9 @@
 
     Small changes or fixes usually don’t have docs but new features or extensions of a feature or new configuration options should have documentation.
 
-1. Does it have or need release notes?
+1. Does it have or need a release note snippet?
 
-    Same as for doc, just a heads up to an admin for something of note or especially upgrade instructions as needed.
+    Same as for doc, just a heads up to an admin for something of note or especially upgrade instructions as needed. See also {ref}`writing-release-note-snippets` for what to expect in a release note snippet.
 
 1. Does it include a database migration script (Flyway)?
     
@@ -35,7 +35,7 @@
 
 1. Validate the documentation.
 
-    Build the doc using Jenkins, does it build without errors?
+    Build the doc using Jenkins or read the automated Read the Docs preview. Does it build without errors?
     Read it through for sense.
     Use it for test cases and to understand the feature.
 
@@ -88,11 +88,11 @@
     
     Click the "Merge pull request" button and be sure to use the "Create a merge commit" option to include this PR into the common develop branch.
 
-    Some of the reasons why we encourage using option over Rebase or Squash are:
+    Some of the reasons why we encourage using this option over Rebase or Squash are:
 
-        -Preserving commit history
-        -Clearer context and treaceability
-        -Easier collaboration, bug tracking and reverting
+    - Preservation of commit history
+    - Clearer context and treaceability
+    - Easier collaboration, bug tracking and reverting
 
 1. Delete merged branch
     

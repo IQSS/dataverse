@@ -15,17 +15,17 @@ The basic workflow is as follows. Bugs or feature requests are submitted to GitH
 
 Before a pull request is moved to QA, it must be reviewed by a member of the development team from a coding perspective, and it must pass automated tests. There it is tested manually, exercising the UI (using three common browsers) and any business logic it implements.  
 
-Depending on whether the code modifies existing code or is completely new, a smoke test of core functionality is performed and some basic regression testing of modified or related code is performed. Any documentation provided is used to understand the feature and any assertions made in that documentation are tested. Once this passes and any bugs that are found are corrected, and the automated tests are confirmed to be passing, the PR is merged into the develop, the PR is closed, and the branch is deleted (if it is local). At this point, the PR moves from the QA column automatically into the Done column and the process repeats with the next PR until it is decided to {doc}`make a release </developers/making-releases>`.
+Depending on whether the code modifies existing code or is completely new, a smoke test of core functionality is performed and some basic regression testing of modified or related code is performed. Any documentation provided is used to understand the feature and any assertions made in that documentation are tested. Once this passes and any bugs that are found are corrected, and the automated tests are confirmed to be passing, the PR is merged into the develop branch, the PR is closed, and the branch is deleted (if it is local). At this point, the PR moves from the QA column automatically into the Merged column (where it might be discussed at the next standup) and the process repeats with the next PR until it is decided to {doc}`make a release </developers/making-releases>`.
 
 ## Tips and Tricks
 
 - Start testing simply, with the most obvious test. You don’t need to know all your tests upfront. As you gain comfort and understanding of how it works, try more tests until you are done. If it is a complex feature, jot down your tests in an outline format, some beforehand as a guide, and some after as things occur to you. Save the doc in a testing folder (on Google Drive). This potentially will help with future testing.
 - When in doubt, ask someone. If you are confused about how something is working, it may be something you have missed, or it could be a documentation issue, or it could be a bug! Talk to the code reviewer and the contributor/developer for their opinion and advice.
-- Always tail the server.log file while testing. Open a terminal window to the test instance and `tail -F server.log`. This helps you get a real-time sense of what the server is doing when you act and makes it easier to identify any stack trace on failure.
-- When overloaded, do the simple pull requests first to reduce the queue. It gives you a mental boost to complete something and reduces the perception of the amount of work still to be done.
-- When testing a bug fix, try reproducing the bug on the demo before testing the fix, that way you know you are taking the correct steps to verify that the fix worked.
+- Always tail the server.log file while testing. Open a terminal window to the test instance and `tail -F server.log`. This helps you get a real-time sense of what the server is doing when you interact with the application and makes it easier to identify any stack trace on failure.
+- When overloaded, QA the simple pull requests first to reduce the queue. It gives you a mental boost to complete something and reduces the perception of the amount of work still to be done.
+- When testing a bug fix, try reproducing the bug on the demo server before testing the fix. That way you know you are taking the correct steps to verify that the fix worked.
 - When testing an optional feature that requires configuration, do a smoke test without the feature configured and then with it configured. That way you know that folks using the standard config are unaffected by the option if they choose not to configure it.
-- Back up your DB before applying an irreversible DB update and you are using a persistent/reusable platform. Just in case it fails, and you need to carry on testing something else you can use the backup.
+- Back up your DB before applying an irreversible DB update when you are using a persistent/reusable platform. Just in case it fails, and you need to carry on testing something else you can use the backup.
 
 ## Release Cadence and Sprints
 
