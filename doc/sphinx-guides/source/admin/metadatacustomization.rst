@@ -145,7 +145,6 @@ Each of the three main sections own sets of properties:
 |                           |                                                        |                                                          | \• text               |
 |                           |                                                        |                                                          | \• textbox            |
 |                           |                                                        |                                                          | \• url                |
-|                           |                                                        |                                                          | \• uri_no                |
 |                           |                                                        |                                                          | \• int                |
 |                           |                                                        |                                                          | \• float              |
 |                           |                                                        |                                                          | \• Boolean            |
@@ -311,10 +310,6 @@ FieldType definitions
 | url           | If not empty, field must contain   |
 |               | a valid URL.                       |
 +---------------+------------------------------------+
-| uri_no        | If not empty, field must contain   |
-|               | a valid; non-opaque, absolute URI. |
-|               | (Meaning an URL.)                  |
-+---------------+------------------------------------+
 | int           | An integer value destined for a    |
 |               | numeric field.                     |
 +---------------+------------------------------------+
@@ -324,11 +319,6 @@ FieldType definitions
 | Boolean       | A boolean value intended for a     |
 |               | boolean field.                     |
 +---------------+------------------------------------+
-
-.. _Java URL class: https://docs.oracle.com/javase/8/docs/api/java/net/URL.html#URL-java.lang.String-java.lang.String-int-java.lang.String-
-.. _W3C Axioms: https://www.w3.org/DesignIssues/Axioms.html
-.. _W3C URI Clarification: https://www.w3.org/TR/uri-clarification
-
 
 displayFormat variables
 ~~~~~~~~~~~~~~~~~~~~~~~

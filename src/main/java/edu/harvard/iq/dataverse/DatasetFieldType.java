@@ -36,7 +36,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
      * The set of possible metatypes of the field. Used for validation and layout.
      */
     public enum FieldType {
-        TEXT, TEXTBOX, DATE, EMAIL, URL, FLOAT, INT, BOOLEAN, URI_NO, NONE
+        TEXT, TEXTBOX, DATE, EMAIL, URL, FLOAT, INT, BOOLEAN, NONE
     };    
     
     @Id
@@ -171,14 +171,14 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     public Boolean isSanitizeHtml(){
-        if (this.fieldType.equals(FieldType.URL) || this.fieldType.equals(FieldType.URI_NO)){
+        if (this.fieldType.equals(FieldType.URL)){
             return true;
         }
         return this.fieldType.equals(FieldType.TEXTBOX);
     }
     
     public Boolean isEscapeOutputText(){
-        if (this.fieldType.equals(FieldType.URL) || this.fieldType.equals(FieldType.URI_NO)){
+        if (this.fieldType.equals(FieldType.URL)){
             return false;
         }
         if (this.fieldType.equals(FieldType.TEXTBOX)){
