@@ -13,7 +13,7 @@
 	studyAssayOtherTechnologyType	Other Technology Type	If Other was selected in Technology Type, list any other technology types that were used in this Dataset.		text	9		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
 	studyAssayPlatform	Technology Platform	The manufacturer and name of the technology platform used in the assay (e.g. Bruker AVANCE).		text	10		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
 	studyAssayOtherPlatform	Other Technology Platform	If Other was selected in Technology Platform, list any other technology platforms that were used in this Dataset.		text	11		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayCellType	Cell Type	The name of the cell line from which the source or sample derives.		text	12		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayCellType	Cell Type	The name of the cell line from which the source or sample derives.		text	12		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	studyDesignType	Case Control	EFO_0001427	0											
 	studyDesignType	Cross Sectional	EFO_0001428	1											
