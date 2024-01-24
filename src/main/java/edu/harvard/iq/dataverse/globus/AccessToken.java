@@ -46,7 +46,7 @@ public class AccessToken implements java.io.Serializable {
         return refreshToken;
     }
 
-    ArrayList<AccessToken> getOtherTokens() {
+    public ArrayList<AccessToken> getOtherTokens() {
         return otherTokens;
     }
 

@@ -7,7 +7,8 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
+                
+    <ui:fragment rendered="#{DatasetPage.editMode != 'CREATE'}">
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <p:focus context="guestbookUIFragment"/>
         <ui:fragment rendered="#{termsGuestbookPopupAction != bundle.download}">
@@ -273,8 +274,17 @@
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                              rendered="#{guestbookResponse.fileFormat != 'externalTool' and
                                          guestbookResponse.fileFormat != 'package' and
-                                         popupContext != 'previewTab'}"
-                             actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
+                                         popupContext != 'previewTab' and not isGlobusTransfer}"
+                             actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse, false)}"
+                             update="guestbookUIFragment">
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
+            </p:commandButton>
+            <!--  REGULAR GLOBUS TRANSFER -->
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                             rendered="#{guestbookResponse.fileFormat != 'externalTool' and
+                                         guestbookResponse.fileFormat != 'package' and
+                                         popupContext != 'previewTab' and isGlobusTransfer}"
+                             actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse, true)}"
                              update="guestbookUIFragment">
                 <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
@@ -321,4 +331,5 @@
 
             <button type="button" class="btn btn-default" onclick="PF('guestbookAndTermsPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
+    </ui:fragment>
 </ui:composition>

@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
-import edu.harvard.iq.dataverse.DataFileServiceBean.UserStorageQuota;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -19,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDataFilesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -219,7 +219,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unsupported file type found in URL: " + uri);
             }
         } else {
-            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Target or identifer not specified in URL: " + uri);
+            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Target or identifier not specified in URL: " + uri);
         }
     }
 
@@ -307,9 +307,9 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 
             try {
                 //CreateDataFileResult createDataFilesResponse =  FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, null, systemConfig);
-                UserStorageQuota quota = null; 
+                UploadSessionQuotaLimit quota = null; 
                 if (systemConfig.isStorageQuotasEnforced()) {
-                    quota = dataFileService.getUserStorageQuota(user, dataset);
+                    quota = dataFileService.getUploadSessionQuotaLimit(dataset);
                 }
                 Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvReq, editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, quota, null);
                 CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);

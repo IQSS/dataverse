@@ -41,9 +41,13 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteCollectionQuotaCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetSchemaCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetCollectionQuotaCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetCollectionStorageUseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetRootCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseStorageSizeCommand;
@@ -63,11 +67,13 @@ import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RemoveRoleAssigneesFromExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SetCollectionQuotaCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseDefaultContributorRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ValidateDatasetJsonCommand;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -78,8 +84,9 @@ import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
-import java.io.StringReader;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -125,7 +132,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
@@ -178,8 +184,8 @@ public class Dataverses extends AbstractApiBean {
 
         Dataverse d;
         JsonObject dvJson;
-        try (StringReader rdr = new StringReader(body)) {
-            dvJson = Json.createReader(rdr).readObject();
+        try {
+            dvJson = JsonUtil.getJsonObject(body);
             d = jsonParser().parseDataverse(dvJson);
         } catch (JsonParsingException jpe) {
             logger.log(Level.SEVERE, "Json: {0}", body);
@@ -231,6 +237,40 @@ public class Dataverses extends AbstractApiBean {
 
         }
     }
+    
+    @POST
+    @AuthRequired
+    @Path("{identifier}/validateDatasetJson")
+    @Consumes("application/json")
+    public Response validateDatasetJson(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String idtf) {
+        User u = getRequestUser(crc);
+        try {
+            String validationMessage = execCommand(new ValidateDatasetJsonCommand(createDataverseRequest(u), findDataverseOrDie(idtf), body));
+            return ok(validationMessage);
+        } catch (WrappedResponse ex) {
+            Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, null, ex);
+            return ex.getResponse();
+        }
+    }
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/datasetSchema")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDatasetSchema(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
+        User u = getRequestUser(crc);
+
+        try {
+            String datasetSchema = execCommand(new GetDatasetSchemaCommand(createDataverseRequest(u), findDataverseOrDie(idtf)));
+            JsonObject jsonObject = JsonUtil.getJsonObject(datasetSchema);
+            return Response.ok(jsonObject).build();
+        } catch (WrappedResponse ex) {
+            Logger.getLogger(Dataverses.class.getName()).log(Level.SEVERE, null, ex);
+            return ex.getResponse();
+        }
+    }
+            
+    
 
     @POST
     @AuthRequired
@@ -559,8 +599,8 @@ public class Dataverses extends AbstractApiBean {
     }
     
     private Dataset parseDataset(String datasetJson) throws WrappedResponse {
-        try (StringReader rdr = new StringReader(datasetJson)) {
-            return jsonParser().parseDataset(Json.createReader(rdr).readObject());
+        try {
+            return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson));
         } catch (JsonParsingException | JsonParseException jpe) {
             logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", datasetJson);
             throw new WrappedResponse(error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage()));
@@ -936,7 +976,62 @@ public class Dataverses extends AbstractApiBean {
                 execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf), includeCached)))), getRequestUser(crc));
     }
     
+    @GET
+    @AuthRequired
+    @Path("{identifier}/storage/quota")
+    public Response getCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+        try {
+            Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
+            if (bytesAllocated != null) {
+                return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation"),bytesAllocated));
+            }
+            return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
     
+    @POST
+    @AuthRequired
+    @Path("{identifier}/storage/quota/{bytesAllocated}")
+    public Response setCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("bytesAllocated") Long bytesAllocated) throws WrappedResponse {
+        try {
+            execCommand(new SetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), bytesAllocated));
+            return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/storage/quota")
+    public Response deleteCollectionQuota(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+        try {
+            execCommand(new DeleteCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
+            return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.deleted"));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    /**
+     *
+     * @param crc
+     * @param identifier
+     * @return
+     * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse 
+     * @todo: add an optional parameter that would force the recorded storage use
+     * to be recalculated (or should that be a POST version of this API?)
+     */
+    @GET
+    @AuthRequired
+    @Path("{identifier}/storage/use")
+    public Response getCollectionStorageUse(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) throws WrappedResponse {
+        return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.use"),
+                execCommand(new GetCollectionStorageUseCommand(req, findDataverseOrDie(identifier))))), getRequestUser(crc));
+    }
+
     @GET
     @AuthRequired
     @Path("{identifier}/roles")
@@ -976,6 +1071,8 @@ public class Dataverses extends AbstractApiBean {
      */
 //    File tempDir;
 //
+//    TODO: Code duplicate in ThemeWidgetFragment. Maybe extract, make static and put some place else?
+//          Important: at least use JvmSettings.DOCROOT_DIRECTORY and not the hardcoded location!
 //    private void createTempDir(Dataverse editDv) {
 //        try {
 //            File tempRoot = java.nio.file.Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();
@@ -1171,8 +1268,9 @@ public class Dataverses extends AbstractApiBean {
     public Response getGuestbookResponsesByDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
             @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
 
+        Dataverse dv;
         try {
-            Dataverse dv = findDataverseOrDie(dvIdtf);
+            dv = findDataverseOrDie(dvIdtf);
             User u = getRequestUser(crc);
             DataverseRequest req = createDataverseRequest(u);
             if (permissionSvc.request(req)
@@ -1192,16 +1290,14 @@ public class Dataverses extends AbstractApiBean {
             public void write(OutputStream os) throws IOException,
                     WebApplicationException {
 
-                Dataverse dv = dataverseService.findByAlias(dvIdtf);
                 Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
                 Map<Integer, String> datasetTitles = guestbookResponseService.mapDatasetTitles(dv.getId());
-                
+
                 List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
                 os.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
                 for (Object[] result : guestbookResults) {
                     StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, datasetTitles, result);
                     os.write(sb.toString().getBytes());
-
                 }
             }
         };

@@ -27,7 +27,7 @@
         <packaging.type>war</packaging.type>
         
         <reload4j.version>1.2.18.4</reload4j.version>
-        <flyway.version>9.21.2</flyway.version>
+        <flyway.version>9.22.1</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <poi.version>5.2.1</poi.version>
         <tika.version>2.4.1</tika.version>
@@ -359,12 +359,12 @@
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-servlet</artifactId>
-            <version>6.0.0-SNAPSHOT</version>
+            <version>10.0.0.Final</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-config-prettyfaces</artifactId>
-            <version>6.0.0-SNAPSHOT</version>
+            <version>10.0.0.Final</version>
         </dependency>
         <dependency>
             <groupId>edu.ucsb.nceas</groupId>
@@ -610,6 +610,11 @@
             <groupId>com.github.dasniko</groupId>
             <artifactId>testcontainers-keycloak</artifactId>
             <version>3.0.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>localstack</artifactId>
             <scope>test</scope>
         </dependency>
         <!--
@@ -906,7 +911,7 @@
                 <skipIntegrationTests>true</skipIntegrationTests>
                 <!-- Once we truly run tests with Testcontainers, this should be switch to "docker", activating ITs -->
                 <packaging.type>docker-build</packaging.type>
-                <postgresql.server.version>13</postgresql.server.version>
+                <postgresql.server.version>16</postgresql.server.version>
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
                 <app.image.tag>unstable</app.image.tag>
@@ -1007,6 +1012,14 @@
                                         <skip>true</skip>
                                     </run>
                                 </image>
+
+                                <image>
+                                    <name>gdcc/dev_nginx:unstable</name>
+                                    <build>
+                                        <contextDir>${project.basedir}/modules/nginx</contextDir>
+                                    </build>
+                                </image>
+
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
                         </configuration>

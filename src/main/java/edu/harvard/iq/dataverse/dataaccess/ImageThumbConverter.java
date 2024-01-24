@@ -48,6 +48,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 //import org.primefaces.util.Base64;
@@ -110,19 +111,30 @@ public class ImageThumbConverter {
         }
 
         if (isThumbnailCached(storageIO, size)) {
+            logger.fine("Found cached thumbnail for " + file.getId());
             return true;
         }
+        return generateThumbnail(file, storageIO, size);
 
-        logger.fine("Checking for thumbnail, file type: " + file.getContentType());
+    }
 
-        if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
-            return generateImageThumbnail(storageIO, size);
-        } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
-            return generatePDFThumbnail(storageIO, size);
+    private static boolean generateThumbnail(DataFile file, StorageIO<DataFile> storageIO, int size) {
+        logger.log(Level.FINE, (file.isPreviewImageFail() ? "Not trying" : "Trying") + " to generate thumbnail, file id: " + file.getId());
+        // Don't try to generate if there have been failures:
+        if (!file.isPreviewImageFail()) {
+            boolean thumbnailGenerated = false;
+            if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
+                thumbnailGenerated = generateImageThumbnail(storageIO, size);
+            } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
+                thumbnailGenerated = generatePDFThumbnail(storageIO, size);
+            }
+            if (!thumbnailGenerated) {
+                logger.fine("No thumbnail generated for " + file.getId());
+            }
+            return thumbnailGenerated;
         }
 
         return false;
-
     }
 
     // Note that this method works on ALL file types for which thumbnail 
@@ -184,6 +196,7 @@ public class ImageThumbConverter {
         // We rely on ImageMagick to convert PDFs; so if it's not installed, 
         // better give up right away: 
         if (!isImageMagickInstalled()) {
+            logger.fine("Couldn't find ImageMagick");
             return false;
         }
 
@@ -206,35 +219,34 @@ public class ImageThumbConverter {
             tempFilesRequired = true;
 
         } catch (IOException ioex) {
+            logger.warning(ioex.getMessage());
             // this on the other hand is likely a fatal condition :(
             return false;
         }
 
         if (tempFilesRequired) {
-            ReadableByteChannel pdfFileChannel;
-
+            InputStream inputStream = null; 
             try {
                 storageIO.open();
-                //inputStream = storageIO.getInputStream();
-                pdfFileChannel = storageIO.getReadChannel();
+                inputStream = storageIO.getInputStream();
             } catch (Exception ioex) {
                 logger.warning("caught Exception trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier());
                 return false;
             }
 
             File tempFile;
-            FileChannel tempFileChannel = null;
+            OutputStream outputStream = null;
             try {
                 tempFile = File.createTempFile("tempFileToRescale", ".tmp");
-                tempFileChannel = new FileOutputStream(tempFile).getChannel();
-
-                tempFileChannel.transferFrom(pdfFileChannel, 0, storageIO.getSize());
+                outputStream = new FileOutputStream(tempFile);
+                //Reads/transfers all bytes from the input stream to the output stream. 
+                inputStream.transferTo(outputStream);
             } catch (IOException ioex) {
                 logger.warning("GenerateImageThumb: failed to save pdf bytes in a temporary file.");
                 return false;
             } finally {
-                IOUtils.closeQuietly(tempFileChannel);
-                IOUtils.closeQuietly(pdfFileChannel);
+                IOUtils.closeQuietly(inputStream);
+                IOUtils.closeQuietly(outputStream);
             }
             sourcePdfFile = tempFile;
         }
@@ -436,16 +448,8 @@ public class ImageThumbConverter {
         if (cachedThumbnailChannel == null) {
             logger.fine("Null channel for aux object " + THUMBNAIL_SUFFIX + size);
 
-            // try to generate, if not available: 
-            boolean generated = false;
-            if (file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
-                generated = generateImageThumbnail(storageIO, size);
-            } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
-                generated = generatePDFThumbnail(storageIO, size);
-            }
-
-            if (generated) {
-                // try to open again: 
+            // try to generate, if not available and hasn't failed before
+            if(generateThumbnail(file, storageIO, size)) {
                 try {
                     cachedThumbnailChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
                 } catch (Exception ioEx) {
@@ -757,7 +761,7 @@ public class ImageThumbConverter {
             try {
                 fileSize = new File(fileLocation).length();
             } catch (Exception ex) {
-                // 
+               logger.warning("Can't open file: " + fileLocation);
             }
 
             if (fileSize == 0 || fileSize > sizeLimit) {

@@ -13,8 +13,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
-import edu.harvard.iq.dataverse.DataFileServiceBean.UserStorageQuota;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.file.FileExceedsStorageQuotaException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -74,7 +74,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
     private final InputStream inputStream;
     private final String fileName;
     private final String suppliedContentType; 
-    private final UserStorageQuota quota;
+    private final UploadSessionQuotaLimit quota;
     // parent Dataverse must be specified when the command is called on Create 
     // of a new dataset that does not exist in the database yet (for the purposes
     // of authorization - see getRequiredPermissions() below):
@@ -85,18 +85,18 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
     private DataFile.ChecksumType newCheckSumType;
     private final Long newFileSize;
 
-    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum) {
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum) {
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, null);
     }
     
-    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum, DataFile.ChecksumType newCheckSumType) {
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType) {
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType, null, null);
     }
     
     // This version of the command must be used when files are created in the 
     // context of creating a brand new dataset (from the Add Dataset page):
     
-    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UserStorageQuota quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize, Dataverse dataverse) {
+    public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum, DataFile.ChecksumType newCheckSumType, Long newFileSize, Dataverse dataverse) {
         super(aRequest, dataverse);
         
         this.version = version;
@@ -135,7 +135,10 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
             }
         }
         String finalType = null;
-        
+        File newFile = null;    // this File will be used for a single-file, local (non-direct) upload
+        long fileSize = -1; 
+
+
         if (newStorageIdentifier == null) {
             if (getFilesTempDirectory() != null) {
                 try {
@@ -154,7 +157,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 // (note that "no size limit set" = "unlimited")
                 // (also note, that if this is a zip file, we'll be checking
                 // the size limit for each of the individual unpacked files)
-                Long fileSize = tempFile.toFile().length();
+                fileSize = tempFile.toFile().length();
                 if (fileSizeLimit != null && fileSize > fileSizeLimit) {
                     try {
                         tempFile.toFile().delete();
@@ -213,11 +216,11 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 }
 
                 DataFile datafile = null;
-                long fileSize = 0L; 
+                long uncompressedFileSize = -1; 
                 try {
                     uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
                     File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit, storageQuotaLimit);
-                    fileSize = unZippedTempFile.length();
+                    uncompressedFileSize = unZippedTempFile.length();
                     datafile = FileUtil.createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, ctxt.systemConfig().getFileFixityChecksumAlgorithm());
                 } catch (IOException | FileExceedsMaxSizeException | FileExceedsStorageQuotaException ioex) {
                     // it looks like we simply skip the file silently, if its uncompressed size
@@ -248,7 +251,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     datafiles.add(datafile);
                     // Update quota if present
                     if (quota != null) {
-                        quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + fileSize);
+                        quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + uncompressedFileSize);
                     }
                     return CreateDataFileResult.success(fileName, finalType, datafiles);
                 }
@@ -628,7 +631,35 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     throw new CommandExecutionException("Failed to process uploaded BagIt file", ioex, this);
                 }
             }
+            
+            // These are the final File and its size that will be used to 
+            // add create a single Datafile: 
+            
+            newFile = tempFile.toFile();
+            fileSize = newFile.length();
+            
         } else {
+            // Direct upload.
+            
+            // Since this is a direct upload, and therefore no temp file associated 
+            // with it, we may, OR MAY NOT know the size of the file. If this is 
+            // a direct upload via the UI, the page must have already looked up 
+            // the size, after the client confirmed that the upload had completed. 
+            // (so that we can reject the upload here, i.e. before the user clicks
+            // save, if it's over the size limit or storage quota). However, if 
+            // this is a direct upload via the API, we will wait until the 
+            // upload is finalized in the saveAndAddFiles method to enforce the 
+            // limits. 
+            if (newFileSize != null) {
+                fileSize = newFileSize;
+                
+                // if the size is specified, and it's above the individual size 
+                // limit for this store, we can reject it now:
+                if (fileSizeLimit != null && fileSize > fileSizeLimit) {
+                    throw new CommandExecutionException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)), this);
+                }
+            }
+            
             // Default to suppliedContentType if set or the overall undetermined default if a contenttype isn't supplied
             finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
             String type = determineFileTypeByNameAndExtension(fileName);
@@ -639,32 +670,18 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 }
                 logger.fine("Supplied type: " + suppliedContentType + ", finalType: " + finalType);
             }
+            
+            
         }
+        
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
         // create and return a single DataFile:
-        File newFile = null;
-        long fileSize = -1; 
         
-        if (tempFile != null) {
-            newFile = tempFile.toFile();
-            fileSize = newFile.length();
-        } else {
-            // If this is a direct upload, and therefore no temp file associated 
-            // with it, the file size must be explicitly passed to the command 
-            // (note that direct upload relies on knowing the size of the file 
-            // that's being uploaded in advance).
-            if (newFileSize != null) {
-                fileSize = newFileSize;
-            } else {
-                throw new CommandExecutionException("File size must be explicitly specified when creating DataFiles with Direct Upload", this);
-            }
-        }
         
         // We have already checked that this file does not exceed the individual size limit; 
         // but if we are processing it as is, as a single file, we need to check if 
         // its size does not go beyond the allocated storage quota (if specified):
-        
         
         if (storageQuotaLimit != null && fileSize > storageQuotaLimit) {
             if (newFile != null) {
@@ -684,7 +701,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         
         DataFile datafile = FileUtil.createSingleDataFile(version, newFile, newStorageIdentifier, fileName, finalType, newCheckSumType, newCheckSum);
 
-        if (datafile != null && ((newFile != null) || (newStorageIdentifier != null))) {
+        if (datafile != null) {
 
             if (warningMessage != null) {
                 createIngestFailureReport(datafile, warningMessage);
@@ -695,10 +712,19 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
             }
             datafiles.add(datafile);
 
-            // Update quota (may not be necessary in the context of direct upload - ?)
-            if (quota != null) {
+            // Update the quota definition for the *current upload session*
+            // This is relevant for the uploads going through the UI page 
+            // (where there may be an appreciable amount of time between the user
+            // uploading the files and clicking "save". The file size should be 
+            // available here for both direct and local uploads via the UI. 
+            // It is not yet available if this is direct-via-API - but 
+            // for API uploads the quota check will be enforced during the final 
+            // save. 
+            if (fileSize > 0 && quota != null) {
+                logger.info("Setting total usage in bytes to " + (quota.getTotalUsageInBytes() + fileSize));
                 quota.setTotalUsageInBytes(quota.getTotalUsageInBytes() + fileSize);
             }
+
             return CreateDataFileResult.success(fileName, finalType, datafiles);
         }
 

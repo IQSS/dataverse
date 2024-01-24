@@ -54,7 +54,7 @@ import static org.mockito.Mockito.when;
 
 @Tag(Tags.INTEGRATION_TEST)
 @Tag(Tags.USES_TESTCONTAINERS)
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @ExtendWith(MockitoExtension.class)
 // NOTE: order is important here - Testcontainers must be first, otherwise it's not ready when we call getAuthUrl()
 @LocalJvmSettings

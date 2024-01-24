@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -53,6 +54,9 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean datafileService;
+    
+    @EJB
+    GlobusServiceBean globusService;
 
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
@@ -60,32 +64,32 @@ public class FileDownloadHelper implements java.io.Serializable {
         this.filesForRequestAccess = new ArrayList<>();
     }
 
-    // See also @Size(max = 255) in GuestbookResponse
-     private boolean testResponseLength(String value) {
-        return !(value != null && value.length() > 255);
-     }
-
     // This helper method is called from the Download terms/guestbook/etc. popup,
     // when the user clicks the "ok" button. We use it, instead of calling
     // downloadServiceBean directly, in order to differentiate between single
     // file downloads and multiple (batch) downloads - since both use the same
     // terms/etc. popup.
-    public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
+    public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse, boolean isGlobusTransfer) {
         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
         guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
          // Note that this method is only ever called from the file-download-popup -
          // meaning we know for the fact that we DO want to save this
          // guestbookResponse permanently in the database.
-        if (guestbookResponse.getSelectedFileIds() != null) {
-            // this is a batch (multiple file) download.
-            // Although here's a chance that this is not really a batch download - i.e.,
-            // there may only be one file on the file list. But the fileDownloadService
-            // method below will check for that, and will redirect to the single download, if
-            // that's the case. -- L.A.
-            fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse);
-        } else if (guestbookResponse.getDataFile() != null) {
-            // this a single file download:
-            fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
+        if(isGlobusTransfer) {
+            globusService.writeGuestbookAndStartTransfer(guestbookResponse, true);
+        } else {
+            if (guestbookResponse.getSelectedFileIds() != null) {
+                // this is a batch (multiple file) download.
+                // Although here's a chance that this is not really a batch download - i.e.,
+                // there may only be one file on the file list. But the fileDownloadService
+                // method below will check for that, and will redirect to the single download,
+                // if
+                // that's the case. -- L.A.
+                fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse);
+            } else if (guestbookResponse.getDataFile() != null) {
+                // this a single file download:
+                fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
+            }
         }
      }
 

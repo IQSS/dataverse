@@ -35,12 +35,15 @@ import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import edu.harvard.iq.dataverse.license.License;
+import edu.harvard.iq.dataverse.settings.ConfigCheckService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.file.BagItFileHandler;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
@@ -1003,25 +1006,17 @@ public class FileUtil implements java.io.Serializable  {
         }
     }
     
+    /**
+     * Return the location where data should be stored temporarily after uploading (UI or API)
+     * for local processing (ingest, unzip, ...) and transfer to final destination (see storage subsystem).
+     *
+     * This location is checked to be configured, does exist, and is writeable via
+     * {@link ConfigCheckService#checkSystemDirectories()}.
+     *
+     * @return String with a path to the temporary location. Will not be null (former versions did to indicate failure)
+     */
     public static String getFilesTempDirectory() {
-        
-        String filesRootDirectory = JvmSettings.FILES_DIRECTORY.lookup();
-        String filesTempDirectory = filesRootDirectory + "/temp";
-
-        if (!Files.exists(Paths.get(filesTempDirectory))) {
-            /* Note that "createDirectories()" must be used - not 
-             * "createDirectory()", to make sure all the parent 
-             * directories that may not yet exist are created as well. 
-             */
-            try {
-                Files.createDirectories(Paths.get(filesTempDirectory));
-            } catch (IOException ex) {
-                logger.severe("Failed to create filesTempDirectory: " + filesTempDirectory );
-                return null;
-            }
-        }
-
-        return filesTempDirectory;
+        return JvmSettings.FILES_DIRECTORY.lookup() + File.separator + "temp";
     }
     
     public static void generateS3PackageStorageIdentifier(DataFile dataFile) {
@@ -1454,6 +1449,17 @@ public class FileUtil implements java.io.Serializable  {
     	return s3io;
     }
     
+    private static InputStream getOriginalFileInputStream(StorageIO<DataFile> storage, boolean isTabularData) throws IOException {
+        storage.open(DataAccessOption.READ_ACCESS);
+        if (!isTabularData) {
+            return storage.getInputStream();
+        } else {
+            // if this is a tabular file, read the preserved original "auxiliary file"
+            // instead:
+            return storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+        }
+    }
+
     public static void validateDataFileChecksum(DataFile dataFile) throws IOException {
         DataFile.ChecksumType checksumType = dataFile.getChecksumType();
         if (checksumType == null) {
@@ -1463,35 +1469,24 @@ public class FileUtil implements java.io.Serializable  {
         }
 
         StorageIO<DataFile> storage = dataFile.getStorageIO();
-        InputStream in = null;
+        String recalculatedChecksum = null;
 
-        try {
-            storage.open(DataAccessOption.READ_ACCESS);
-
-            if (!dataFile.isTabularData()) {
-                in = storage.getInputStream();
-            } else {
-                // if this is a tabular file, read the preserved original "auxiliary file"
-                // instead:
-                in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-            }
+        try (InputStream inputStream = getOriginalFileInputStream(storage, dataFile.isTabularData())) {
+            recalculatedChecksum = FileUtil.calculateChecksum(inputStream, checksumType);
         } catch (IOException ioex) {
-            in = null;
-        }
-
-        if (in == null) {
             String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString()));
             logger.log(Level.INFO, info);
             throw new IOException(info);
+        } catch (RuntimeException rte) {
+            logger.log(Level.SEVERE, "failed to calculated checksum, one retry", rte);
+            recalculatedChecksum = null;
         }
 
-        String recalculatedChecksum = null;
-        try {
-            recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
-        } catch (RuntimeException rte) {
-            recalculatedChecksum = null;
-        } finally {
-            IOUtils.closeQuietly(in);
+        if (recalculatedChecksum == null) { //retry once
+            storage = dataFile.getStorageIO();
+            try (InputStream inputStream = getOriginalFileInputStream(storage, dataFile.isTabularData())) {
+                recalculatedChecksum = FileUtil.calculateChecksum(inputStream, checksumType);
+            }
         }
 
         if (recalculatedChecksum == null) {
@@ -1509,19 +1504,12 @@ public class FileUtil implements java.io.Serializable  {
             boolean fixed = false;
             if (!dataFile.isTabularData() && dataFile.getIngestReport() != null) {
                 // try again, see if the .orig file happens to be there:
-                try {
-                    in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                } catch (IOException ioex) {
-                    in = null;
+                try (InputStream in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION)) {
+                    recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
+                } catch (RuntimeException rte) {
+                    recalculatedChecksum = null;
                 }
-                if (in != null) {
-                    try {
-                        recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
-                    } catch (RuntimeException rte) {
-                        recalculatedChecksum = null;
-                    } finally {
-                        IOUtils.closeQuietly(in);
-                    }
+                if (recalculatedChecksum != null) {
                     // try again:
                     if (recalculatedChecksum.equals(dataFile.getChecksumValue())) {
                         fixed = true;
@@ -1745,7 +1733,7 @@ public class FileUtil implements java.io.Serializable  {
     private static String getFolderAccessUrl(DatasetVersion version, String currentFolder, String subFolder, String apiLocation, boolean originals) {
         String datasetId = version.getDataset().getId().toString();
         String versionTag = version.getFriendlyVersionNumber();
-        versionTag = versionTag.replace("DRAFT", ":draft");
+        versionTag = versionTag.replace("DRAFT", DS_VERSION_DRAFT);
         if (!"".equals(currentFolder)) {
             subFolder = currentFolder + "/" + subFolder;
         }
@@ -1808,6 +1796,12 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
         return false;
+    }
+
+
+    public static String getStorageDriver(DataFile dataFile) {
+        String storageIdentifier = dataFile.getStorageIdentifier();
+        return storageIdentifier.substring(0, storageIdentifier.indexOf(DataAccess.SEPARATOR));
     }
     
 }
