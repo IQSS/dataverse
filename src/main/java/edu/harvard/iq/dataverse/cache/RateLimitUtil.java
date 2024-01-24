@@ -1,17 +1,16 @@
 package edu.harvard.iq.dataverse.cache;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
+import jakarta.json.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 import java.io.StringReader;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
 import static java.lang.Math.max;
@@ -19,8 +18,9 @@ import static java.lang.Math.min;
 
 public class RateLimitUtil {
     private static final Logger logger = Logger.getLogger(RateLimitUtil.class.getCanonicalName());
-    protected static final List<RateLimitSetting> rateLimits = new ArrayList<>();
-    protected static final Map<String, Integer> rateLimitMap = new HashMap<>();
+    protected static final List<RateLimitSetting> rateLimits = new CopyOnWriteArrayList<>();
+    protected static final Map<String, Integer> rateLimitMap = new ConcurrentHashMap<>();
+    private static final Gson gson = new Gson();
     public static final int NO_LIMIT = -1;
 
     public static int getCapacityByTier(SystemConfig systemConfig, int tier) {
@@ -81,21 +81,19 @@ public class RateLimitUtil {
         rateLimits.forEach(r -> {
             r.setDefaultLimit(getCapacityByTier(systemConfig, r.getTier()));
             rateLimitMap.put(getMapKey(r.getTier()), r.getDefaultLimitPerHour());
-            r.getRateLimitActions().forEach(a -> rateLimitMap.put(getMapKey(r.getTier(), a), r.getLimitPerHour()));
+            r.getActions().forEach(a -> rateLimitMap.put(getMapKey(r.getTier(), a), r.getLimitPerHour()));
         });
     }
 
     private static void getRateLimitsFromJson(SystemConfig systemConfig) {
-        ObjectMapper mapper = new ObjectMapper();
         String setting = systemConfig.getRateLimitsJson();
         if (!setting.isEmpty()) {
             try {
                 JsonReader jr = Json.createReader(new StringReader(setting));
                 JsonObject obj= jr.readObject();
                 JsonArray lst = obj.getJsonArray("rateLimits");
-
-                rateLimits.addAll(mapper.readValue(lst.toString(),
-                        mapper.getTypeFactory().constructCollectionType(List.class, RateLimitSetting.class)));
+                rateLimits.addAll(gson.fromJson(String.valueOf(lst),
+                        new ArrayList<RateLimitSetting>() {}.getClass().getGenericSuperclass()));
             } catch (Exception e) {
                 logger.warning("Unable to parse Rate Limit Json" + ": " + e.getLocalizedMessage());
                 rateLimits.add(new RateLimitSetting()); // add a default entry to prevent re-initialization

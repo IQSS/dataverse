@@ -1,48 +1,46 @@
 package edu.harvard.iq.dataverse.cache;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.json.bind.annotation.JsonbProperty;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RateLimitSetting {
 
-    @JsonProperty("tier")
+    @JsonbProperty("tier")
     private int tier;
-    @JsonProperty("limitPerHour")
+    @JsonbProperty("limitPerHour")
     private int limitPerHour = RateLimitUtil.NO_LIMIT;
-    @JsonProperty("actions")
-    private List<String> rateLimitActions = new ArrayList<>();
+    @JsonbProperty("actions")
+    private List<String> actions = new ArrayList<>();
 
     private int defaultLimitPerHour;
 
     public RateLimitSetting() {}
 
-    @JsonProperty("tier")
+    @JsonbProperty("tier")
     public void setTier(int tier) {
         this.tier = tier;
     }
-    @JsonProperty("tier")
+    @JsonbProperty("tier")
     public int getTier() {
         return this.tier;
     }
-    @JsonProperty("limitPerHour")
+    @JsonbProperty("limitPerHour")
     public void setLimitPerHour(int limitPerHour) {
         this.limitPerHour = limitPerHour;
     }
-    @JsonProperty("limitPerHour")
+    @JsonbProperty("limitPerHour")
     public int getLimitPerHour() {
         return this.limitPerHour;
     }
-    @JsonProperty("actions")
-    public void setRateLimitActions(List<String> rateLimitActions) {
-        this.rateLimitActions = rateLimitActions;
+    @JsonbProperty("actions")
+    public void setActions(List<String> actions) {
+        this.actions = actions;
     }
-    @JsonProperty("actions")
-    public List<String> getRateLimitActions() {
-        return this.rateLimitActions;
+    @JsonbProperty("actions")
+    public List<String> getActions() {
+        return this.actions;
     }
     public void setDefaultLimit(int defaultLimitPerHour) {
         this.defaultLimitPerHour = defaultLimitPerHour;

@@ -6,15 +6,15 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.inject.Named;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.logging.Logger;
 
-@Stateless
-@Named
+@Singleton
+@Startup
 public class CacheFactoryBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(CacheFactoryBean.class.getCanonicalName());
     private static JedisPool jedisPool = null;
