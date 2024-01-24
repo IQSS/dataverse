@@ -41,7 +41,7 @@ public class RateLimitUtil {
         }
 
         long currentTime = System.currentTimeMillis() / 60000L; // convert to minutes
-        int tokensPerMinute = (int)Math.ceil(capacityPerHour / 60.0);
+        double tokensPerMinute = (capacityPerHour / 60.0);
 
         // Get the last time this bucket was added to
         final String keyLastUpdate = String.format("%s:last_update",key);

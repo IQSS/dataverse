@@ -76,7 +76,7 @@ public class CacheFactoryBeanTest {
 
     @BeforeEach
     public void setup() throws IOException {
-        lenient().doReturn(mockRedisServer.getHost()).when(systemConfig).getRedisBaseHost();
+        lenient().doReturn("127.0.0.1").when(systemConfig).getRedisBaseHost();
         lenient().doReturn(String.valueOf(mockRedisServer.getBindPort())).when(systemConfig).getRedisBasePort();
         lenient().doReturn(null).when(systemConfig).getRedisUser();
         lenient().doReturn(null).when(systemConfig).getRedisPassword();
