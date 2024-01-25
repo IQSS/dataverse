@@ -383,6 +383,54 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return ret;        
     }
     
+    /**
+     * Used to identify and properly display Harvested objects on the dataverse page.
+     *
+     * @param dvObjectIds
+     * @return
+     */
+    public Map<Long, String> getArchiveDescriptionsForHarvestedDvObjects(Set<Long> dvObjectIds){
+         
+        if (dvObjectIds == null || dvObjectIds.size() < 1) {
+            return null;
+        }
+        
+        String dvObjectIsString = StringUtils.join(dvObjectIds, ", ");
+        String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, DvObject d WHERE d.harvestingClient_id = h.id AND d.id IN (" + dvObjectIsString + ")";
+        List<Object[]> searchResults;
+
+        try {
+            searchResults = em.createNativeQuery(qstr).getResultList();
+        } catch (Exception ex) {
+            searchResults = null;
+        }
+
+        if (searchResults == null) {
+            return null;
+        }
+
+        Map<Long, String> ret = new HashMap<>();
+
+        for (Object[] result : searchResults) {
+            Long dvObjId;
+            if (result[0] != null) {
+                try {
+                    Integer castResult = (Integer) result[0];
+                    dvObjId =  Long.valueOf(castResult);                    
+                } catch (Exception ex) {
+                    dvObjId = null;
+                }
+                if (dvObjId == null) {
+                    continue;
+                }
+                ret.put(dvObjId, (String)result[1]);
+            }
+        }
+
+        return ret;
+    }
+
+    
     public String generateNewIdentifierByStoredProcedure() {
         StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
         query.execute();

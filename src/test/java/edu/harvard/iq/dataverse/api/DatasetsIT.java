@@ -2548,6 +2548,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         // Do stuff...
+        //SEK 01/22/2024 - as of 6.2 harvestingclient_id will be on the dv object table
+        // so if this is ever implemented change will probably need to happen in the updatequery below
         entityManager.createNativeQuery("UPDATE dataset SET harvestingclient_id=1 WHERE id="+datasetId2).executeUpdate();
         entityManager.getTransaction().commit();
         entityManager.close();
