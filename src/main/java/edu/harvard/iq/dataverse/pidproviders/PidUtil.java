@@ -271,4 +271,12 @@ public class PidUtil {
     public static Set<String> getManagedProviderIds() {
         return providerMap.keySet();
     }
+    
+    public static JsonObject getProviders() {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        for (PidProvider pidProvider : providerMap.values()) {
+            builder.add(pidProvider.getId(), pidProvider.getProviderSpecification());
+        }
+        return builder.build();
+    }
 }

@@ -2,6 +2,9 @@ package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -176,5 +179,11 @@ public interface PidProvider {
      * @return - whether related pids can be created by this pid provider. 
      */
     boolean canCreatePidsLike(GlobalId pid);
+
+    /**
+     * Returns a JSON representation of this pid provider including it's id, label, protocol, authority, separator, and identifier.
+     * @return
+     */
+    public JsonObject getProviderSpecification();
 
 }

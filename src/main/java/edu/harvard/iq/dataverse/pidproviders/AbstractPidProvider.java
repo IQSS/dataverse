@@ -7,6 +7,10 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -18,6 +22,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import com.beust.jcommander.Strings;
 
 public abstract class AbstractPidProvider implements PidProvider {
 
@@ -848,5 +854,21 @@ public abstract class AbstractPidProvider implements PidProvider {
     public boolean canCreatePidsLike(GlobalId pid) {
         return canManagePID() && !managedSet.contains(pid.asString())
                 && (getIdentifierGenerationStyle().equals("INDEPENDENT") || getId().equals(pid.getProviderId()));
+    }
+    
+    @Override
+    public JsonObject getProviderSpecification() {
+        JsonObjectBuilder providerSpecification = Json.createObjectBuilder();
+        providerSpecification.add("id", id);
+        providerSpecification.add("label", label);
+        providerSpecification.add("protocol", protocol);
+        providerSpecification.add("authority", authority);
+        providerSpecification.add("separator", getSeparator());
+        providerSpecification.add("shoulder", shoulder);
+        providerSpecification.add("identifierGenerationStyle", identifierGenerationStyle);
+        providerSpecification.add("datafilePidFormat", datafilePidFormat);
+        providerSpecification.add("managedSet", Strings.join(",", managedSet.toArray()));
+        providerSpecification.add("excludedSet", Strings.join(",", excludedSet.toArray()));
+        return providerSpecification.build();
     }
 }
