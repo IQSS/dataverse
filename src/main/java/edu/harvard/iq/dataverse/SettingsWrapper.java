@@ -6,6 +6,9 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -333,11 +336,28 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public boolean isGlobusEnabledStorageDriver(String driverId) {
-        if (globusStoreList == null) {
-            globusStoreList = systemConfig.getGlobusStoresList();
-        }
-        return globusStoreList.contains(driverId);
+        return (GlobusAccessibleStore.acceptsGlobusTransfers(driverId) || GlobusAccessibleStore.allowsGlobusReferences(driverId));
     }
+    
+    public boolean isDownloadable(FileMetadata fmd) {
+        boolean downloadable=true;
+        if(isGlobusFileDownload()) {
+            String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
+            
+            downloadable = downloadable && !AbstractRemoteOverlayAccessIO.isNotDataverseAccessible(driverId); 
+        }
+        return downloadable;
+    }
+    
+    public boolean isGlobusTransferable(FileMetadata fmd) {
+        boolean globusTransferable=true;
+        if(isGlobusFileDownload()) {
+            String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
+            globusTransferable = GlobusAccessibleStore.isGlobusAccessible(driverId);
+        }
+        return globusTransferable;
+    }
+    
     
     public String getGlobusAppUrl() {
         if (globusAppUrl == null) {

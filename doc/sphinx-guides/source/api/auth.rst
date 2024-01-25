@@ -80,3 +80,8 @@ To test if bearer tokens are working, you can try something like the following (
   export TOKEN=`curl -s -X POST --location "http://keycloak.mydomain.com:8090/realms/test/protocol/openid-connect/token" -H "Content-Type: application/x-www-form-urlencoded" -d "username=user&password=user&grant_type=password&client_id=test&client_secret=94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8" | jq '.access_token' -r | tr -d "\n"`
   
   curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/users/:me
+
+Signed URLs
+-----------
+
+See :ref:`signed-urls`.
