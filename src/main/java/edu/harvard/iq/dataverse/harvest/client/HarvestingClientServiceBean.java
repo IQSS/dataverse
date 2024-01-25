@@ -199,8 +199,8 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     public Long getNumberOfHarvestedDatasetsByAllClients() {
         try {
-            return (Long) em.createNativeQuery("SELECT count(d.id) FROM dvobject d "
-                    + " WHERE d.harvestingclient_id IS NOT NULL and d.dtype = 'Dataset'").getSingleResult();
+            return (Long) em.createNativeQuery("SELECT count(d.id) FROM dataset d "
+                    + " WHERE d.harvestingclient_id IS NOT NULL").getSingleResult();
 
         } catch (Exception ex) {
             logger.info("Warning: exception looking up the total number of harvested datasets: " + ex.getMessage());
