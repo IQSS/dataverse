@@ -30,8 +30,9 @@ import jakarta.persistence.UniqueConstraint;
     @NamedQuery(name = "DataverseFieldTypeInputLevel.findByDataverseIdDatasetFieldTypeId",
             query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.datasetFieldType.id = :datasetFieldTypeId"),
     @NamedQuery(name = "DataverseFieldTypeInputLevel.findByDataverseIdAndDatasetFieldTypeIdList",
-            query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.datasetFieldType.id in :datasetFieldIdList")
- 
+            query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.datasetFieldType.id in :datasetFieldIdList"),
+    @NamedQuery(name = "DataverseFieldTypeInputLevel.findRequiredByDataverseId",
+            query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.required = 'true' ")
 })
 @Table(name="DataverseFieldTypeInputLevel"
         ,  uniqueConstraints={

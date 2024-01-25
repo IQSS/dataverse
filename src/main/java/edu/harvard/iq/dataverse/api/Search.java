@@ -157,7 +157,9 @@ public class Search extends AbstractApiBean {
                         numResultsPerPage,
                         true, //SEK get query entities always for search API additional Dataset Information 6300  12/6/2019
                         geoPoint,
-                        geoRadius
+                        geoRadius,
+                        showFacets, // facets are expensive, no need to ask for them if not requested
+                        showRelevance // no need for highlights unless requested either
                 );
             } catch (SearchException ex) {
                 Throwable cause = ex;

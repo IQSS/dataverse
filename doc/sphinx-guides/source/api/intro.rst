@@ -187,6 +187,10 @@ Lists of Dataverse APIs
   - Files
   - etc.
 
+- :doc:`/developers/dataset-semantic-metadata-api`: For creating, reading, editing, and deleting dataset metadata using JSON-LD.
+- :doc:`/developers/dataset-migration-api`: For migrating datasets from other repositories while retaining the original persistent identifiers and publication date.
+- :doc:`/developers/s3-direct-upload-api`: For the transfer of larger files/larger numbers of files directly to an S3 bucket managed by Dataverse. 
+- :doc:`/developers/globus-api`: For the Globus transfer of larger files/larger numbers of files directly via Globus endpoints managed by Dataverse or referencing files in remote endpoints. 
 - :doc:`metrics`: For query statistics about usage of a Dataverse installation.
 - :doc:`sword`: For depositing data using a standards-based approach rather than the :doc:`native-api`.
 

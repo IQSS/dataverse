@@ -17,21 +17,30 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 public class GetLatestPublishedDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     private final Dataset ds;
     private final boolean includeDeaccessioned;
+    private boolean checkPerms;
 
     public GetLatestPublishedDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {
-        this(aRequest, anAffectedDataset, false);
+        this(aRequest, anAffectedDataset, false, false);
     }
 
-    public GetLatestPublishedDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, boolean includeDeaccessioned) {
+    public GetLatestPublishedDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, boolean includeDeaccessioned, boolean checkPerms) {
         super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
         this.includeDeaccessioned = includeDeaccessioned;
+        this.checkPerms = checkPerms;
     }
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
+
         for (DatasetVersion dsv : ds.getVersions()) {
-            if (dsv.isReleased() || (includeDeaccessioned && dsv.isDeaccessioned() && ctxt.permissions().requestOn(getRequest(), ds).has(Permission.EditDataset))) {
+            if (dsv.isReleased() || (includeDeaccessioned && dsv.isDeaccessioned())) {
+                
+                if(dsv.isDeaccessioned() && checkPerms){
+                    if(!ctxt.permissions().requestOn(getRequest(), ds).has(Permission.EditDataset)){
+                        return null;
+                    }
+                }
                 return dsv;
             }
         }

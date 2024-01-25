@@ -22,12 +22,8 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.ws.rs.HttpMethod;
@@ -43,15 +39,10 @@ import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_LATEST;
  */
 public class ExternalToolHandler extends URLTokenUtil {
 
-    private final ExternalTool externalTool;
+    public final ExternalTool externalTool;
 
     private String requestMethod;
-    
-    public static final String HTTP_METHOD="httpMethod";
-    public static final String TIMEOUT="timeOut";
-    public static final String SIGNED_URL="signedUrl";
-    public static final String NAME="name";
-    public static final String URL_TEMPLATE="urlTemplate";
+
     
 
     /**
@@ -136,12 +127,12 @@ public class ExternalToolHandler extends URLTokenUtil {
 
         } else {
             // ToDo - if the allowedApiCalls() are defined, could/should we send them to
-            // tools using GET as well?
+            // tools using POST as well?
 
             if (requestMethod.equals(HttpMethod.POST)) {
-                String body = JsonUtil.prettyPrint(createPostBody(params).build());
+                String body = JsonUtil.prettyPrint(createPostBody(params, null).build());
                 try {
-                    logger.info("POST Body: " + body);
+                    logger.fine("POST Body: " + body);
                     return postFormData(body);
                 } catch (IOException | InterruptedException ex) {
                     Logger.getLogger(ExternalToolHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -149,60 +140,6 @@ public class ExternalToolHandler extends URLTokenUtil {
             }
         }
         return null;
-    }
-
-    public JsonObject getParams(JsonObject toolParameters) {
-        //ToDo - why an array of object each with a single key/value pair instead of one object?
-        JsonArray queryParams = toolParameters.getJsonArray("queryParameters");
-
-        // ToDo return json and print later
-        JsonObjectBuilder paramsBuilder = Json.createObjectBuilder();
-        if (!(queryParams == null) && !queryParams.isEmpty()) {
-            queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
-                queryParam.keySet().forEach((key) -> {
-                    String value = queryParam.getString(key);
-                    JsonValue param = getParam(value);
-                    if (param != null) {
-                        paramsBuilder.add(key, param);
-                    }
-                });
-            });
-        }
-        return paramsBuilder.build();
-    }
-
-    public JsonObjectBuilder createPostBody(JsonObject params) {
-        JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
-        bodyBuilder.add("queryParameters", params);
-        String apiCallStr = externalTool.getAllowedApiCalls();
-        if (apiCallStr != null && !apiCallStr.isBlank()) {
-            JsonArray apiArray = JsonUtil.getJsonArray(externalTool.getAllowedApiCalls());
-            JsonArrayBuilder apisBuilder = Json.createArrayBuilder();
-            apiArray.getValuesAs(JsonObject.class).forEach(((apiObj) -> {
-                logger.fine(JsonUtil.prettyPrint(apiObj));
-                String name = apiObj.getJsonString(NAME).getString();
-                String httpmethod = apiObj.getJsonString(HTTP_METHOD).getString();
-                int timeout = apiObj.getInt(TIMEOUT);
-                String urlTemplate = apiObj.getJsonString(URL_TEMPLATE).getString();
-                logger.fine("URL Template: " + urlTemplate);
-                urlTemplate = SystemConfig.getDataverseSiteUrlStatic() + urlTemplate;
-                String apiPath = replaceTokensWithValues(urlTemplate);
-                logger.fine("URL WithTokens: " + apiPath);
-                String url = apiPath;
-                // Sign if apiToken exists, otherwise send unsigned URL (i.e. for guest users)
-                ApiToken apiToken = getApiToken();
-                if (apiToken != null) {
-                    url = UrlSignerUtil.signUrl(apiPath, timeout, apiToken.getAuthenticatedUser().getUserIdentifier(),
-                            httpmethod, JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("")
-                                    + getApiToken().getTokenString());
-                }
-                logger.fine("Signed URL: " + url);
-                apisBuilder.add(Json.createObjectBuilder().add(NAME, name).add(HTTP_METHOD, httpmethod)
-                        .add(SIGNED_URL, url).add(TIMEOUT, timeout));
-            }));
-            bodyBuilder.add("signedUrls", apisBuilder);
-        }
-        return bodyBuilder;
     }
 
     private String postFormData(String allowedApis) throws IOException, InterruptedException {

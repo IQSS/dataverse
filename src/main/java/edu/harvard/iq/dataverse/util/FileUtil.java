@@ -1449,6 +1449,17 @@ public class FileUtil implements java.io.Serializable  {
     	return s3io;
     }
     
+    private static InputStream getOriginalFileInputStream(StorageIO<DataFile> storage, boolean isTabularData) throws IOException {
+        storage.open(DataAccessOption.READ_ACCESS);
+        if (!isTabularData) {
+            return storage.getInputStream();
+        } else {
+            // if this is a tabular file, read the preserved original "auxiliary file"
+            // instead:
+            return storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+        }
+    }
+
     public static void validateDataFileChecksum(DataFile dataFile) throws IOException {
         DataFile.ChecksumType checksumType = dataFile.getChecksumType();
         if (checksumType == null) {
@@ -1458,35 +1469,24 @@ public class FileUtil implements java.io.Serializable  {
         }
 
         StorageIO<DataFile> storage = dataFile.getStorageIO();
-        InputStream in = null;
+        String recalculatedChecksum = null;
 
-        try {
-            storage.open(DataAccessOption.READ_ACCESS);
-
-            if (!dataFile.isTabularData()) {
-                in = storage.getInputStream();
-            } else {
-                // if this is a tabular file, read the preserved original "auxiliary file"
-                // instead:
-                in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-            }
+        try (InputStream inputStream = getOriginalFileInputStream(storage, dataFile.isTabularData())) {
+            recalculatedChecksum = FileUtil.calculateChecksum(inputStream, checksumType);
         } catch (IOException ioex) {
-            in = null;
-        }
-
-        if (in == null) {
             String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString()));
             logger.log(Level.INFO, info);
             throw new IOException(info);
+        } catch (RuntimeException rte) {
+            logger.log(Level.SEVERE, "failed to calculated checksum, one retry", rte);
+            recalculatedChecksum = null;
         }
 
-        String recalculatedChecksum = null;
-        try {
-            recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
-        } catch (RuntimeException rte) {
-            recalculatedChecksum = null;
-        } finally {
-            IOUtils.closeQuietly(in);
+        if (recalculatedChecksum == null) { //retry once
+            storage = dataFile.getStorageIO();
+            try (InputStream inputStream = getOriginalFileInputStream(storage, dataFile.isTabularData())) {
+                recalculatedChecksum = FileUtil.calculateChecksum(inputStream, checksumType);
+            }
         }
 
         if (recalculatedChecksum == null) {
@@ -1504,19 +1504,12 @@ public class FileUtil implements java.io.Serializable  {
             boolean fixed = false;
             if (!dataFile.isTabularData() && dataFile.getIngestReport() != null) {
                 // try again, see if the .orig file happens to be there:
-                try {
-                    in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                } catch (IOException ioex) {
-                    in = null;
+                try (InputStream in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION)) {
+                    recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
+                } catch (RuntimeException rte) {
+                    recalculatedChecksum = null;
                 }
-                if (in != null) {
-                    try {
-                        recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
-                    } catch (RuntimeException rte) {
-                        recalculatedChecksum = null;
-                    } finally {
-                        IOUtils.closeQuietly(in);
-                    }
+                if (recalculatedChecksum != null) {
                     // try again:
                     if (recalculatedChecksum.equals(dataFile.getChecksumValue())) {
                         fixed = true;
@@ -1803,6 +1796,12 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
         return false;
+    }
+
+
+    public static String getStorageDriver(DataFile dataFile) {
+        String storageIdentifier = dataFile.getStorageIdentifier();
+        return storageIdentifier.substring(0, storageIdentifier.indexOf(DataAccess.SEPARATOR));
     }
     
 }
