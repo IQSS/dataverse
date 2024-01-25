@@ -22,7 +22,6 @@ import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Provider;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -159,7 +158,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         }
 
                     } else if (dataFile.isTabularData()) {
-                        // Many separate special cases here.
+                        // Many separate special cases here. 
 
                         if (di.getConversionParam() != null) {
                             if (di.getConversionParam().equals("format")) {
@@ -182,10 +181,25 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 }
                             } else if (!di.getConversionParam().equals("noVarHeader")) {
                                 // This is a subset request - can't do. 
-                                redirectSupported = false;
+                                // @todo: hm? why "subset"?
+                                // @todo: should we actually drop support for this "noVarHeader" flag? 
+                                
+                                // if the file is stored *without* the var. header, 
+                                // then we *can* use direct download on it.
+                                if (!dataFile.getDataTable().isStoredWithVariableHeader()) {
+                                    redirectSupported = false;
+                                } else {
+                                    // if it is, however, we should say "can't do":
+                                    throw new ServiceUnavailableException();
+                                }
                             }
                         } else {
-                            redirectSupported = false;
+                            // "straight" download of the full tab-delimited file. 
+                            // can redirect, but only if stored with the variable 
+                            // header already added: 
+                            if (!dataFile.getDataTable().isStoredWithVariableHeader()) {
+                                redirectSupported = false;
+                            }
                         }
                     }
                 }
