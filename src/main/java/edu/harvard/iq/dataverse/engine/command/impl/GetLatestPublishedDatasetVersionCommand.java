@@ -40,14 +40,14 @@ public class GetLatestPublishedDatasetVersionCommand extends AbstractCommand<Dat
      */
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        DatasetVersion dsVersionResult = getReleaseOrDeaccessionedVersion();
+        DatasetVersion dsVersionResult = getReleaseOrDeaccessionedDatasetVersion();
         if (dsVersionResult != null && userHasPermissionsOnDatasetVersion(dsVersionResult, checkPermsWhenDeaccessioned, ctxt, ds)) {
             return dsVersionResult;
         }
         return null;
     }
 
-    private DatasetVersion getReleaseOrDeaccessionedVersion() {
+    private DatasetVersion getReleaseOrDeaccessionedDatasetVersion() {
         for (DatasetVersion dsVersion : ds.getVersions()) {
             if (dsVersion.isReleased() || (includeDeaccessioned && dsVersion.isDeaccessioned())) {
                 return dsVersion;
