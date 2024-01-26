@@ -2729,7 +2729,7 @@ To see the current choice for this dataset:
 
   curl "$SERVER_URL/api/datasets/:persistentId/pidGenerator?persistentId=$PERSISTENT_IDENTIFIER"
   
-  The response will be the id of the PID Provider that will be used. Details of that provider's configration can be obtained via the :ref:`_pids-providers-api`.
+The response will be the id of the PID Provider that will be used. Details of that provider's configration can be obtained via the :ref:`_pids-providers-api`.
 
 To set the behavior for this dataset:
 
@@ -2743,9 +2743,9 @@ To set the behavior for this dataset:
   curl -X PUT -H "X-Dataverse-key:$API_TOKEN" -H Content-type:application/json -d $GENERATOR_ID "$SERVER_URL/api/datasets/:persistentId/pidGenerator?persistentId=$PERSISTENT_IDENTIFIER"
 
 
-  The PID Provider id used must be one of the those configured - see :ref:`_pids-providers-api`.
-  The return status code may be 200/OK, 401/403 if an api key is not sent or the user is not a superuser, or 404 if the dataset or PID provider are not found.
-  Note that using a PIDProvider that generates DEPENDENT datafile PIDs that doesn't share the dataset PID's protocol/authority/separator/shoulder is not supported. (INDEPENDENT should be used in this case see the :ref:`pids-configuration` section for more information).
+The PID Provider id used must be one of the those configured - see :ref:`_pids-providers-api`.
+The return status code may be 200/OK, 401/403 if an api key is not sent or the user is not a superuser, or 404 if the dataset or PID provider are not found.
+Note that using a PIDProvider that generates DEPENDENT datafile PIDs that doesn't share the dataset PID's protocol/authority/separator/shoulder is not supported. (INDEPENDENT should be used in this case see the :ref:`pids-configuration` section for more information).
   
 The API can also be used to reset the dataset to use the default/inherited value:
 
@@ -2757,7 +2757,7 @@ The API can also be used to reset the dataset to use the default/inherited value
 
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" -H Content-type:application/json "$SERVER_URL/api/datasets/:persistentId/pidGenerator?persistentId=$PERSISTENT_IDENTIFIER"
 
-  The default will always be the same provider as for the dataset PID if that provider can generate new PIDs, and will be the PID Provider set for the collection or the global default otherwise.
+The default will always be the same provider as for the dataset PID if that provider can generate new PIDs, and will be the PID Provider set for the collection or the global default otherwise.
 
 Files
 -----
