@@ -2714,7 +2714,7 @@ The fully expanded example above (without environment variables) looks like this
 Configure The PID Generator a Dataset Uses (If Enabled)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dataverse can be configured to use multiple PID Providers (see the :ref:`_pids-configuration` section for more information).
+Dataverse can be configured to use multiple PID Providers (see the :ref:`pids-configuration` section for more information).
 When there are multiple PID Providers and File PIDs are enabled, it is possible to set which provider will be used to generate (mint) those PIDs.
 While it usually makes sense to use the same PID Provider that manages the dataset PID, there are cases, specifically if the PID Provider for the dataset PID cannot generate
 other PIDs with the same authority/shoulder, etc. as in the dataset PID, where another Provider is needed. Dataverse has a set of API calls to see what PID provider will be
@@ -2745,7 +2745,7 @@ To set the behavior for this dataset:
 
   The PID Provider id used must be one of the those configured - see :ref:`_pids-providers-api`.
   The return status code may be 200/OK, 401/403 if an api key is not sent or the user is not a superuser, or 404 if the dataset or PID provider are not found.
-  Note that using a PIDProvider that generates DEPENDENT datafile PIDs that doesn't share the dataset PID's protocol/authority/separator/shoulder is not supported. (INDEPENDENT should be used in this case see the :ref:`_pids-configuration` section for more information).
+  Note that using a PIDProvider that generates DEPENDENT datafile PIDs that doesn't share the dataset PID's protocol/authority/separator/shoulder is not supported. (INDEPENDENT should be used in this case see the :ref:`pids-configuration` section for more information).
   
 The API can also be used to reset the dataset to use the default/inherited value:
 
@@ -4647,7 +4647,7 @@ Get Information about Configured PID Providers
 
 Dataverse can be configured with one or more PID Providers that it uses to create new PIDs and manage existing ones.
 This API call returns a JSONObject listing the configured providers and details about the protocol/authority/separator/shoulder they manage,
-along with information about about how new dataset and datafile PIDs are generated. See the :ref:`_pids-configuration` section for more information.
+along with information about about how new dataset and datafile PIDs are generated. See the :ref:`pids-configuration` section for more information.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -4668,7 +4668,7 @@ Get the id of the PID Provider Managing a Given PID
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Dataverse can be configured with one or more PID Providers that it uses to create new PIDs and manage existing ones.
-This API call returns the string id of the PID Provider than manages a given PID. See the :ref:`_pids-configuration` section for more information.
+This API call returns the string id of the PID Provider than manages a given PID. See the :ref:`pids-configuration` section for more information.
 Delete PID (this is only possible for PIDs that are in the "draft" state) and within a Dataverse installation, set ``globalidcreatetime`` to null and ``identifierregistered`` to false. A superuser API token is required.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
