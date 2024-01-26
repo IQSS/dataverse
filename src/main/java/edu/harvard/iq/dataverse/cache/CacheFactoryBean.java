@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.cache;
 
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -8,29 +11,34 @@ import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.logging.Logger;
+import java.util.Map;
 
 @Singleton
 @Startup
 public class CacheFactoryBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(CacheFactoryBean.class.getCanonicalName());
-    private static JedisPool jedisPool = null;
+    private static HazelcastInstance hazelcastInstance = null;
+    private static Map<String, String> rateLimitCache;
     @EJB
     SystemConfig systemConfig;
 
+    public final static String RATE_LIMIT_CACHE = "rateLimitCache";
+
     @PostConstruct
     public void init() {
-        logger.info("CacheFactoryBean.init Redis Host:Port " + systemConfig.getRedisBaseHost() + ":" + systemConfig.getRedisBasePort());
-        jedisPool = new JedisPool(new JedisPoolConfig(), systemConfig.getRedisBaseHost(), Integer.valueOf(systemConfig.getRedisBasePort()),
-                systemConfig.getRedisUser(), systemConfig.getRedisPassword());
+        if (hazelcastInstance == null) {
+            Config hazelcastConfig = new Config();
+            hazelcastConfig.setClusterName("dataverse");
+            hazelcastInstance = Hazelcast.newHazelcastInstance(hazelcastConfig);
+            rateLimitCache = hazelcastInstance.getMap(RATE_LIMIT_CACHE);
+        }
     }
     @Override
     protected void finalize() throws Throwable {
-        if (jedisPool != null) {
-            jedisPool.close();
+        if (hazelcastInstance != null) {
+            hazelcastInstance.shutdown();
         }
         super.finalize();
     }
@@ -53,8 +61,8 @@ public class CacheFactoryBean implements java.io.Serializable {
 
         // get the capacity, i.e. calls per hour, from config
         int capacity = (user instanceof AuthenticatedUser) ?
-                RateLimitUtil.getCapacityByTier(systemConfig, ((AuthenticatedUser) user).getRateLimitTier()) :
-                RateLimitUtil.getCapacityByTier(systemConfig, 0);
-        return (!RateLimitUtil.rateLimited(jedisPool, id.toString(), capacity));
+                RateLimitUtil.getCapacityByTierAndAction(systemConfig, ((AuthenticatedUser) user).getRateLimitTier(), action) :
+                RateLimitUtil.getCapacityByTierAndAction(systemConfig, 0, action);
+        return (!RateLimitUtil.rateLimited(rateLimitCache, id.toString(), capacity));
     }
 }

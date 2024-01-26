@@ -100,8 +100,7 @@ else:
                      "database",
                      "rserve",
                      "system",
-                     "doi",
-                     "redis"]
+                     "doi"]
 
 
 # read pre-defined defaults:

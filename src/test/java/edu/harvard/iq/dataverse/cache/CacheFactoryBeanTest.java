@@ -1,12 +1,9 @@
 package edu.harvard.iq.dataverse.cache;
 
-import ai.grakn.redismock.RedisServer;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,10 +24,9 @@ public class CacheFactoryBeanTest {
     @Mock
     SystemConfig systemConfig;
     @InjectMocks
-    CacheFactoryBean cache = new CacheFactoryBean();
+    static CacheFactoryBean cache = new CacheFactoryBean();
     AuthenticatedUser authUser = new AuthenticatedUser();
     String action;
-    static RedisServer mockRedisServer;
     static final String settingJson = "{\n" +
             "  \"rateLimits\":[\n" +
             "    {\n" +
@@ -76,29 +72,17 @@ public class CacheFactoryBeanTest {
 
     @BeforeEach
     public void setup() throws IOException {
-        lenient().doReturn("127.0.0.1").when(systemConfig).getRedisBaseHost();
-        lenient().doReturn(String.valueOf(mockRedisServer.getBindPort())).when(systemConfig).getRedisBasePort();
-        lenient().doReturn(null).when(systemConfig).getRedisUser();
-        lenient().doReturn(null).when(systemConfig).getRedisPassword();
         lenient().doReturn(30).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(0), anyInt());
         lenient().doReturn(60).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(1), anyInt());
         lenient().doReturn(120).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(2), anyInt());
+        lenient().doReturn(RateLimitUtil.NO_LIMIT).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(3), anyInt());
         lenient().doReturn(settingJson).when(systemConfig).getRateLimitsJson();
 
         cache.init();
         authUser.setRateLimitTier(1); // reset to default
         action = "cmd-" + UUID.randomUUID();
     }
-    @BeforeAll
-    public static void init() throws IOException {
-        mockRedisServer = RedisServer.newRedisServer();
-        mockRedisServer.start();
-    }
-    @AfterAll
-    public static void cleanup() {
-        if (mockRedisServer != null)
-            mockRedisServer.stop();
-    }
+
     @Test
     public void testGuestUserGettingRateLimited() throws InterruptedException {
         User user = GuestUser.get();
@@ -152,21 +136,15 @@ public class CacheFactoryBeanTest {
             }
         }
         assertTrue(!limited);
-    }
 
-    @Test
-    public void testAuthenticatedUserWithRateLimitingOff() throws InterruptedException {
-        lenient().doReturn(RateLimitUtil.NO_LIMIT).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(1), anyInt());
-        authUser.setSuperuser(false);
-        authUser.setUserIdentifier("user1");
-        boolean rateLimited = false;
-        int cnt = 0;
-        for (; cnt <100; cnt++) {
-            rateLimited = !cache.checkRate(authUser, action);
-            if (rateLimited) {
+        // Now change the user's tier so it is no longer limited
+        authUser.setRateLimitTier(3); // tier 3 = no limit
+        for (cnt = 0; cnt <200; cnt++) {
+            limited = !cache.checkRate(authUser, action);
+            if (limited) {
                 break;
             }
         }
-        assertTrue(!rateLimited && cnt > 99);
+        assertTrue(!limited && cnt == 200);
     }
 }

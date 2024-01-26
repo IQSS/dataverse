@@ -29,12 +29,6 @@ def runAsadminScript(config):
    os.environ['DOI_USERNAME'] = config.get('doi','DOI_USERNAME')
    os.environ['DOI_PASSWORD'] = config.get('doi','DOI_PASSWORD')
    os.environ['DOI_DATACITERESTAPIURL'] = config.get('doi','DOI_DATACITERESTAPIURL')
-
-   os.environ['REDIS_HOST'] = config.get('redis','REDIS_HOST')
-   os.environ['REDIS_PORT'] = config.get('redis','REDIS_PORT')
-   os.environ['REDIS_USER'] = config.get('redis','REDIS_USER')
-   os.environ['REDIS_PASS'] = config.get('redis','REDIS_PASSWORD')
-
    mailServerEntry = config.get('system','MAIL_SERVER')
 
    try:
