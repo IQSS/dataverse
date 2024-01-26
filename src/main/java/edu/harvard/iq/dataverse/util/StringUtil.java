@@ -126,7 +126,7 @@ public class StringUtil {
     public static String encrypt(String value, String password ) {
         byte[] baseBytes = value.getBytes();
         try {
-            Cipher aes = Cipher.getInstance("AES");
+            Cipher aes = Cipher.getInstance("AES/GCM/NoPadding");
             final SecretKeySpec secretKeySpec = generateKeyFromString(password);
             aes.init(Cipher.ENCRYPT_MODE, secretKeySpec);
             byte[] encrypted = aes.doFinal(baseBytes);
@@ -149,7 +149,7 @@ public class StringUtil {
         
         byte[] baseBytes = Base64.getDecoder().decode(base64);
         try {
-            Cipher aes = Cipher.getInstance("AES");
+            Cipher aes = Cipher.getInstance("AES/GCM/NoPadding");
             aes.init( Cipher.DECRYPT_MODE, generateKeyFromString(password));
             byte[] decrypted = aes.doFinal(baseBytes);
             return new String(decrypted);
