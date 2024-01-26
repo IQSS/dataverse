@@ -14,16 +14,18 @@ See :doc:`version-control` for background on our branching strategy.
 
 The steps below describe making both regular releases and hotfix releases.
 
+.. _write-release-notes:
+
 Write Release Notes
 -------------------
 
-Developers express the need for an addition to release notes by creating a file in ``/doc/release-notes`` containing the name of the issue they're working on. The name of the branch could be used for the filename with ".md" appended (release notes are written in Markdown) such as ``5053-apis-custom-homepage.md``. 
+Developers express the need for an addition to release notes by creating a "release note snippet" in ``/doc/release-notes`` containing the name of the issue they're working on. The name of the branch could be used for the filename with ".md" appended (release notes are written in Markdown) such as ``5053-apis-custom-homepage.md``. See :ref:`writing-release-note-snippets` for how this is described for contributors.
 
-The task at or near release time is to collect these notes into a single doc.
+The task at or near release time is to collect these snippets into a single file.
 
 - Create an issue in GitHub to track the work of creating release notes for the upcoming release.
-- Create a branch, add a .md file for the release (ex. 5.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the issue-specific release notes mentioned above.
-- Delete the previously-created, issue-specific release notes as the content is added to the main release notes file.
+- Create a branch, add a .md file for the release (ex. 5.10.1 Release Notes) in ``/doc/release-notes`` and write the release notes, making sure to pull content from the release note snippets mentioned above.
+- Delete the release note snippets as the content is added to the main release notes file.
 - Include instructions to describe the steps required to upgrade the application from the previous version. These must be customized for release numbers and special circumstances such as changes to metadata blocks and infrastructure.
 - Take the release notes .md through the regular Code Review and QA process.
 
