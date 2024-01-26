@@ -5,7 +5,7 @@ services:
   dev_dataverse:
     container_name: "dev_dataverse"
     hostname: dataverse
-    image: gdcc/dataverse:unstable
+    image: gdcc/dataverse:alpha
     restart: on-failure
     user: payara
     environment:
@@ -54,7 +54,7 @@ services:
 
   dev_bootstrap:
     container_name: "dev_bootstrap"
-    image: gdcc/configbaker:unstable
+    image: gdcc/configbaker:alpha
     restart: "no"
     command:
       - bootstrap.sh
@@ -64,7 +64,7 @@ services:
 
   dev_dv_initializer:
     container_name: "dev_dv_initializer"
-    image: gdcc/configbaker:unstable
+    image: gdcc/configbaker:alpha
     restart: "no"
     command:
       - sh
@@ -90,7 +90,7 @@ services:
 
   dev_solr_initializer:
     container_name: "dev_solr_initializer"
-    image: gdcc/configbaker:unstable
+    image: gdcc/configbaker:alpha
     restart: "no"
     command:
       - sh
