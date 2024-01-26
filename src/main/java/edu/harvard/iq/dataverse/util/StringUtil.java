@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -141,7 +142,10 @@ public class StringUtil {
             GCMParameterSpec parameterSpec = new GCMParameterSpec(128, iv); 
             aes.init(Cipher.ENCRYPT_MODE, secretKeySpec, parameterSpec);
             byte[] encrypted = aes.doFinal(baseBytes);
-            String base64ed = new String(Base64.getEncoder().encode(encrypted));
+            ByteBuffer byteBuffer = ByteBuffer.allocate(iv.length + encrypted.length);
+            byteBuffer.put(iv);
+            byteBuffer.put(encrypted);
+            String base64ed = new String(Base64.getEncoder().encode(byteBuffer.array()));
             return base64ed.replaceAll("\\+", ".")
                     .replaceAll("=", "-")
                     .replaceAll("/", "_");
