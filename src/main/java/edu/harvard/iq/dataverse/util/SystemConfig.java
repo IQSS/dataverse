@@ -1206,21 +1206,4 @@ public class SystemConfig {
         }
         return value;
     }
-
-    public String getRedisBaseHost() {
-        String saneDefault = "redis";
-        return System.getProperty("DATAVERSE_REDIS_HOST",saneDefault);
-    }
-    public String getRedisBasePort() {
-        String saneDefault = "6379";
-        return System.getProperty("DATAVERSE_REDIS_PORT",saneDefault);
-    }
-    public String getRedisUser() {
-        String saneDefault = "default";
-        return System.getProperty("DATAVERSE_REDIS_USER",saneDefault);
-    }
-    public String getRedisPassword() {
-        String saneDefault = "redis_secret";
-        return System.getProperty("DATAVERSE_REDIS_PASSWORD",saneDefault);
-    }
 }
