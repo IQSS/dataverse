@@ -40,21 +40,6 @@ public class ExternalToolsIT {
     @Test
     public void testFileLevelTool1() {
 
-        // Delete all external tools before testing.
-        Response getTools = UtilIT.getExternalTools();
-        getTools.prettyPrint();
-        getTools.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        String body = getTools.getBody().asString();
-        JsonReader bodyObject = Json.createReader(new StringReader(body));
-        JsonArray tools = bodyObject.readObject().getJsonArray("data");
-        for (int i = 0; i < tools.size(); i++) {
-            JsonObject tool = tools.getJsonObject(i);
-            int id = tool.getInt("id");
-            Response deleteExternalTool = UtilIT.deleteExternalTool(id);
-            deleteExternalTool.prettyPrint();
-        }
-
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         createUser.then().assertThat()
@@ -145,25 +130,13 @@ public class ExternalToolsIT {
                 .statusCode(OK.getStatusCode())
                 // No tools for this file type.
                 .body("data", Matchers.hasSize(0));
+        
+        //Delete the tool added by this test...
+        Response deleteExternalTool = UtilIT.deleteExternalTool(toolId);
     }
 
     @Test
     public void testDatasetLevelTool1() {
-
-        // Delete all external tools before testing.
-        Response getTools = UtilIT.getExternalTools();
-        getTools.prettyPrint();
-        getTools.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        String body = getTools.getBody().asString();
-        JsonReader bodyObject = Json.createReader(new StringReader(body));
-        JsonArray tools = bodyObject.readObject().getJsonArray("data");
-        for (int i = 0; i < tools.size(); i++) {
-            JsonObject tool = tools.getJsonObject(i);
-            int id = tool.getInt("id");
-            Response deleteExternalTool = UtilIT.deleteExternalTool(id);
-            deleteExternalTool.prettyPrint();
-        }
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -184,7 +157,6 @@ public class ExternalToolsIT {
         createDataset.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
 
-//        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
         Integer datasetId = JsonPath.from(createDataset.getBody().asString()).getInt("data.id");
         String datasetPid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
 
@@ -219,6 +191,8 @@ public class ExternalToolsIT {
         addExternalTool.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.displayName", CoreMatchers.equalTo("DatasetTool1"));
+        
+        long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
 
         Response getExternalToolsByDatasetIdInvalidType = UtilIT.getExternalToolsForDataset(datasetId.toString(), "invalidType", apiToken);
         getExternalToolsByDatasetIdInvalidType.prettyPrint();
@@ -233,26 +207,15 @@ public class ExternalToolsIT {
                 .body("data[0].scope", CoreMatchers.equalTo("dataset"))
                 .body("data[0].toolUrlWithQueryParams", CoreMatchers.equalTo("http://datasettool1.com?datasetPid=" + datasetPid + "&key=" + apiToken))
                 .statusCode(OK.getStatusCode());
-
+        
+        //Delete the tool added by this test...
+        Response deleteExternalTool = UtilIT.deleteExternalTool(toolId);
+        deleteExternalTool.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 
     @Test
     public void testDatasetLevelToolConfigure() {
-
-        // Delete all external tools before testing.
-        Response getTools = UtilIT.getExternalTools();
-        getTools.prettyPrint();
-        getTools.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        String body = getTools.getBody().asString();
-        JsonReader bodyObject = Json.createReader(new StringReader(body));
-        JsonArray tools = bodyObject.readObject().getJsonArray("data");
-        for (int i = 0; i < tools.size(); i++) {
-            JsonObject tool = tools.getJsonObject(i);
-            int id = tool.getInt("id");
-            Response deleteExternalTool = UtilIT.deleteExternalTool(id);
-            deleteExternalTool.prettyPrint();
-        }
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -302,6 +265,8 @@ public class ExternalToolsIT {
         addExternalTool.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.displayName", CoreMatchers.equalTo("Dataset Configurator"));
+        
+        long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
 
         Response getExternalToolsByDatasetId = UtilIT.getExternalToolsForDataset(datasetId.toString(), "configure", apiToken);
         getExternalToolsByDatasetId.prettyPrint();
@@ -310,6 +275,11 @@ public class ExternalToolsIT {
                 .body("data[0].scope", CoreMatchers.equalTo("dataset"))
                 .body("data[0].types[0]", CoreMatchers.equalTo("configure"))
                 .body("data[0].toolUrlWithQueryParams", CoreMatchers.equalTo("https://datasetconfigurator.com?datasetPid=" + datasetPid))
+                .statusCode(OK.getStatusCode());
+        
+        //Delete the tool added by this test...
+        Response deleteExternalTool = UtilIT.deleteExternalTool(toolId);
+        deleteExternalTool.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
     }
@@ -400,12 +370,13 @@ public class ExternalToolsIT {
         String body = getTools.getBody().asString();
         JsonReader bodyObject = Json.createReader(new StringReader(body));
         JsonArray tools = bodyObject.readObject().getJsonArray("data");
+        /*
         for (int i = 0; i < tools.size(); i++) {
             JsonObject tool = tools.getJsonObject(i);
             int id = tool.getInt("id");
             Response deleteExternalTool = UtilIT.deleteExternalTool(id);
             deleteExternalTool.prettyPrint();
-        }
+        }*/
     }
 
     // preview only
@@ -446,6 +417,13 @@ public class ExternalToolsIT {
         addExternalTool.prettyPrint();
         addExternalTool.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        
+        long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
+        
+        //Delete the tool added by this test...
+        Response deleteExternalTool = UtilIT.deleteExternalTool(toolId);
+        deleteExternalTool.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 
     // explore only
@@ -478,6 +456,13 @@ public class ExternalToolsIT {
         Response addExternalTool = UtilIT.addExternalTool(job.build());
         addExternalTool.prettyPrint();
         addExternalTool.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
+        
+        //Delete the tool added by this test...
+        Response deleteExternalTool = UtilIT.deleteExternalTool(toolId);
+        deleteExternalTool.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
 
@@ -526,21 +511,6 @@ public class ExternalToolsIT {
 
     @Test
     public void testFileLevelToolWithAuxFileReq() throws IOException {
-
-        // Delete all external tools before testing.
-        Response getTools = UtilIT.getExternalTools();
-        getTools.prettyPrint();
-        getTools.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        String body = getTools.getBody().asString();
-        JsonReader bodyObject = Json.createReader(new StringReader(body));
-        JsonArray tools = bodyObject.readObject().getJsonArray("data");
-        for (int i = 0; i < tools.size(); i++) {
-            JsonObject tool = tools.getJsonObject(i);
-            int id = tool.getInt("id");
-            Response deleteExternalTool = UtilIT.deleteExternalTool(id);
-            deleteExternalTool.prettyPrint();
-        }
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -640,6 +610,12 @@ public class ExternalToolsIT {
                 .body("data[0].displayName", CoreMatchers.equalTo("HDF5 Tool"))
                 .body("data[0].scope", CoreMatchers.equalTo("file"))
                 .body("data[0].contentType", CoreMatchers.equalTo("application/x-hdf5"));
+        
+        //Delete the tool added by this test...
+        Response deleteExternalTool = UtilIT.deleteExternalTool(toolId);
+        deleteExternalTool.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
     }
 
 }
