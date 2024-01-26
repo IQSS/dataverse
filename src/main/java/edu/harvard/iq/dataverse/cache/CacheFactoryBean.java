@@ -65,4 +65,36 @@ public class CacheFactoryBean implements java.io.Serializable {
                 RateLimitUtil.getCapacityByTierAndAction(systemConfig, 0, action);
         return (!RateLimitUtil.rateLimited(rateLimitCache, id.toString(), capacity));
     }
+
+    public long getCacheSize(String cacheName) {
+        long cacheSize = 0;
+        switch (cacheName) {
+            case RATE_LIMIT_CACHE:
+                cacheSize = rateLimitCache.size();
+                break;
+            default:
+                break;
+        }
+        return cacheSize;
+    }
+    public Object getCacheValue(String cacheName, String key) {
+        Object cacheValue = null;
+        switch (cacheName) {
+            case RATE_LIMIT_CACHE:
+                cacheValue = rateLimitCache.containsKey(key) ? rateLimitCache.get(key) : "";
+                break;
+            default:
+                break;
+        }
+        return cacheValue;
+    }
+    public void setCacheValue(String cacheName, String key, Object value) {
+        switch (cacheName) {
+            case RATE_LIMIT_CACHE:
+                rateLimitCache.put(key, (String) value);
+                break;
+            default:
+                break;
+        }
+    }
 }
