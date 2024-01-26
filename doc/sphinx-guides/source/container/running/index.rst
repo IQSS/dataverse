@@ -8,5 +8,6 @@ Contents:
    production
    demo
    metadata-blocks
+   github-action
    frontend-dev
    backend-dev

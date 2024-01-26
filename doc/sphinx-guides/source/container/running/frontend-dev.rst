@@ -4,4 +4,7 @@ Frontend Development
 .. contents:: |toctitle|
 	:local:
 
-https://github.com/IQSS/dataverse-frontend includes docs and scripts for running Dataverse in Docker for frontend development.
+Intro
+-----
+
+The frontend (web interface) of Dataverse is being decoupled from the backend. This evolving codebase has its own repo at https://github.com/IQSS/dataverse-frontend which includes docs and scripts for running the backend of Dataverse in Docker.

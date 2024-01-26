@@ -9,7 +9,7 @@ Dataverse in containers!
 Intended Audience
 -----------------
 
-This guide is intended for anyone who wants to run Dataverse in containers. This is potentially a wide audience, from sysadmins interested in running Dataverse in production in containers (not recommended yet) to contributors working on a bug fix (encouraged!).
+This guide is intended for anyone who wants to run Dataverse in containers. This is potentially a wide audience, from sysadmins interested in running Dataverse in production in containers (not recommended yet) to contributors working on a bug fix (encouraged!). See :doc:`running/index` for various scenarios and please let us know if your use case is not covered.
 
 .. _getting-help-containers:
 
