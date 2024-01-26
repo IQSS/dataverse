@@ -133,6 +133,8 @@ public class ExternalToolsIT {
         
         //Delete the tool added by this test...
         Response deleteExternalTool = UtilIT.deleteExternalTool(toolId);
+        deleteExternalTool.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 
     @Test
