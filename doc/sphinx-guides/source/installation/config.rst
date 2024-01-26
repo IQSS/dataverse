@@ -247,14 +247,14 @@ to be compatible with the MicroProfile specification which means that
    letters. Example: ``dataverse.pid.default-provider`` -> ``DATAVERSE_PID_DEFAULT_PROVIDER``
    
 Global Settings
-###############
+^^^^^^^^^^^^^^^
 
 The following three global settings are required to configure PID Providers in the Dataverse software:
 
 .. _dataverse.pid.providers:
 
 dataverse.pid.providers
-#######################
+^^^^^^^^^^^^^^^^^^^^^^^
 
 A comma-separated list of the ids of the PID providers to use. IDs should be simple unique text strings, e.g. datacite1, perma1, etc.
 IDs are used to scope the provider-specific settings but are not directly visible to users. 
@@ -262,48 +262,48 @@ IDs are used to scope the provider-specific settings but are not directly visibl
 .. _dataverse.pid.default-provider:
 
 dataverse.pid.default-provider
-##############################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ID of the default PID provider to use.
 
 .. _dataverse.pid.provider-implementations-directory:
 
 dataverse.pid.provider-implementations-directory
-################################################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The path to the directory where JAR files containing additional types of PID Providers can be added.
 Dataverse includes providers that support DOIs (DataCite, EZId, or FAKE), Handles, and PermaLinks.
 PID provider jar files added to this directory can replace any of these or add new PID Providers.
 
 Per-Provider Settings
-#####################
+^^^^^^^^^^^^^^^^^^^^^
 
 Each Provider listed by id in the dataverse.pid.providers setting must be configured with the following common settings and any settings that are specific to the provider type.
 
 .. _dataverse.pid.*.type:
 
-dataverse.pid.\*.type
-####################
+dataverse.pid.*.type
+^^^^^^^^^^^^^^^^^^^^
 
 The Provider type, currently one of ``datacite``, ``ezid``, ``FAKE``, ``hdl``, or ``perma``. The type defines which protocol a service supports (DOI, Handle, or PermaLink) and, for DOI Providers, which 
 DOI service is used.
 
 .. _dataverse.pid.*.label:
 
-dataverse.pid.\*.label
-######################
+dataverse.pid.*.label
+^^^^^^^^^^^^^^^^^^^^^
 
 A human-readable label for the provider
 
 .. _dataverse.pid.*.authority:
 
-dataverse.pid.\*.authority
-##########################
+dataverse.pid.*.authority
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. _dataverse.pid.*.shoulder:
 
-dataverse.pid.\*.shoulder
-#########################
+dataverse.pid.*.shoulder
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 In general, PIDs are of the form ``<protocol>:<authority>/<shoulder>*`` where ``*`` is the portion unique to an individual PID. PID Providers must define
 the authority and shoulder (with the protocol defined by the ``dataverse.pid.*.type`` setting) that defines the set of existing PIDs they can manage and the prefix they can use when minting new PIDs.
@@ -311,8 +311,8 @@ the authority and shoulder (with the protocol defined by the ``dataverse.pid.*.t
  
 .. _dataverse.pid.*.identifier-generation-style:
 
-dataverse.pid.\*.identifier-generation-style
-############################################
+dataverse.pid.*.identifier-generation-style
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 By default, Pid Providers in Dataverse generate a random 6 character string,
 pre-pended by the Shoulder if set, to use as the identifier for a Dataset.
@@ -350,8 +350,8 @@ setting below to determine how datafile identifiers are generated.
 
 .. _dataverse.pid.*.datafile-pid-format:
 
-dataverse.pid.\*.datafile-pid-format
-####################################
+dataverse.pid.*.datafile-pid-format
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This setting controls the way that the "identifier" component of a file's
 persistent identifier (PID) relates to the PID of its "parent" dataset - for a give PID Provider.
@@ -407,13 +407,13 @@ timestamps.
 
 .. _dataverse.pid.*.managed-list:
 
-dataverse.pid.\*.managed-list
-#############################
+dataverse.pid.*.managed-list
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. _dataverse.pid.*.excluded-list:
 
-dataverse.pid.\*.excluded-list
-##############################
+dataverse.pid.*.excluded-list
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 With at least some PID services, it is possible for the authority(permission) to manage specific individual PIDs
 to be transferred between accounts. To handle these cases, the individual PIDs, written in the
@@ -428,16 +428,16 @@ with the default assumption that these lists are empty.
 .. _dataverse.pid.*.datacite:
 
 DataCite-specific Settings
-##########################
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-dataverse.pid.\*.datacite.mds-api-url
-#####################################
-dataverse.pid.\*.datacite.rest-api-url
-######################################
-dataverse.pid.\*.datacite.username
-##################################
-dataverse.pid.\*.datacite.password
-##################################
+dataverse.pid.*.datacite.mds-api-url
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.datacite.rest-api-url
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.datacite.username
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.datacite.password
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PID Providers of type ``datacite`` require four additional parameters that define how the provider connects to DataCite.
 DataCite has two APIs that are used in Dataverse:
@@ -457,14 +457,14 @@ As noted above, you should use one of the more secure options for setting the pa
 .. _dataverse.pid.*.ezid:
 
 EZId-specific Settings
-######################
+^^^^^^^^^^^^^^^^^^^^^^
 
-dataverse.pid.\*.ezid.api-url
-#############################
-dataverse.pid.\*.ezid.username
-##############################
-dataverse.pid.\*.ezid.password
-##############################
+dataverse.pid.*.ezid.api-url
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.ezid.username
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.pid.*.ezid.password
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Note that use of `EZId <https://ezid.cdlib.org/>`_ is limited primarily to University of California institutions. If you have an EZId account,
 you will need to configure the ``api-url`` and your account ``username`` and ``password``. As above, you should use one of the more secure 
@@ -473,13 +473,13 @@ options for setting the password.
 .. _dataverse.pid.*.permalink:
 
 PermaLink-specific Settings
-###########################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-dataverse.pid.\*.permalink.base-url
-###################################
+dataverse.pid.*.permalink.base-url
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-dataverse.pid.\*.permalink.separator
-####################################
+dataverse.pid.*.permalink.separator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PermaLinks are a simple PID option intended for intranet and catalog use cases. They can be used without an external service or
 be configured with the ``base-url`` of a resolution service. PermaLinks also allow a custom ``separator`` to be used. (Note: when using multiple 
@@ -488,25 +488,25 @@ PermaLink providers, you should avoid ambiguous authority/separator/shoulder com
 .. _dataverse.pid.*.handlenet:
 
 Handle-specific Settings
-########################
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-dataverse.pid.\*.handlenet.index
-################################
+dataverse.pid.*.handlenet.index
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-dataverse.pid.\*.handlenet.independent-service
-##############################################
+dataverse.pid.*.handlenet.independent-service
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-dataverse.pid.\*.handlenet.auth-handle
-######################################
+dataverse.pid.*.handlenet.auth-handle
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-dataverse.pid.\*.handlenet.key
-##############################
+dataverse.pid.*.handlenet.key
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-dataverse.pid.\*.handlenet.path
-###############################
+dataverse.pid.*.handlenet.path
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-dataverse.pid.\*.handlenet.passphrase
-#####################################
+dataverse.pid.*.handlenet.passphrase
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <https://handle.net/hnr_documentation.html>`_.
 
@@ -546,7 +546,7 @@ While using the PID Provider configuration settings described above is recommend
 only using a single PID Provider can use the settings below instead. In general, these legacy settings mirror
 those above except for not including a PID Provider id. 
 
-Configuring Your Dataverse Installation for a SIngle DOI Provider
+Configuring Your Dataverse Installation for a Single DOI Provider
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Here are the configuration options for DOIs.:
