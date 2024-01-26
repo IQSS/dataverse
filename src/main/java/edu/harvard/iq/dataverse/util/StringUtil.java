@@ -2,9 +2,12 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2LoginBackingBean;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -19,6 +22,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
@@ -117,6 +121,9 @@ public class StringUtil {
         return cleanTextArray;
     }
     
+    private final static SecureRandom secureRandom = new SecureRandom();
+    private final static int GCM_IV_LENGTH = 12;
+
     /**
      * Generates an AES-encrypted version of the string. Resultant string is URL safe.
      * @param value The value to encrypt.
@@ -124,11 +131,15 @@ public class StringUtil {
      * @return encrypted string, URL-safe.
      */
     public static String encrypt(String value, String password ) {
+
         byte[] baseBytes = value.getBytes();
         try {
+            byte[] iv = new byte[GCM_IV_LENGTH]; //NEVER REUSE THIS IV WITH SAME KEY
+            secureRandom.nextBytes(iv);
             Cipher aes = Cipher.getInstance("AES/GCM/NoPadding");
             final SecretKeySpec secretKeySpec = generateKeyFromString(password);
-            aes.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+            GCMParameterSpec parameterSpec = new GCMParameterSpec(128, iv); 
+            aes.init(Cipher.ENCRYPT_MODE, secretKeySpec, parameterSpec);
             byte[] encrypted = aes.doFinal(baseBytes);
             String base64ed = new String(Base64.getEncoder().encode(encrypted));
             return base64ed.replaceAll("\\+", ".")
@@ -136,7 +147,7 @@ public class StringUtil {
                     .replaceAll("/", "_");
             
         } catch (  InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
-                  | IllegalBlockSizeException | NoSuchPaddingException | UnsupportedEncodingException ex) {
+                  | IllegalBlockSizeException | NoSuchPaddingException | UnsupportedEncodingException | InvalidAlgorithmParameterException ex) {
             Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
@@ -150,12 +161,14 @@ public class StringUtil {
         byte[] baseBytes = Base64.getDecoder().decode(base64);
         try {
             Cipher aes = Cipher.getInstance("AES/GCM/NoPadding");
-            aes.init( Cipher.DECRYPT_MODE, generateKeyFromString(password));
+            //use first 12 bytes for iv
+            AlgorithmParameterSpec gcmIv = new GCMParameterSpec(128, baseBytes, 0, GCM_IV_LENGTH);
+            aes.init( Cipher.DECRYPT_MODE, generateKeyFromString(password),gcmIv);
             byte[] decrypted = aes.doFinal(baseBytes);
             return new String(decrypted);
             
         } catch ( InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
-                  | IllegalBlockSizeException | NoSuchPaddingException | UnsupportedEncodingException ex) {
+                  | IllegalBlockSizeException | NoSuchPaddingException | UnsupportedEncodingException | InvalidAlgorithmParameterException ex) {
             Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
