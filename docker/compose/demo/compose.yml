@@ -12,9 +12,7 @@ services:
       DATAVERSE_DB_HOST: postgres
       DATAVERSE_DB_PASSWORD: secret
       DATAVERSE_DB_USER: dataverse
-      ENABLE_JDWP: "1"
       DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
-      DATAVERSE_JSF_REFRESH_PERIOD: "1"
       JVM_ARGS: -Ddataverse.files.storage-driver-id=file1
         -Ddataverse.files.file1.type=file
         -Ddataverse.files.file1.label=Filesystem
@@ -33,11 +31,6 @@ services:
     volumes:
       - ./docker-dev-volumes/app/data:/dv
       - ./docker-dev-volumes/app/secrets:/secrets
-      # Uncomment to map the glassfish applications folder so that we can update webapp resources using scripts/intellij/cpwebapp.sh
-      # - ./docker-dev-volumes/glassfish/applications:/opt/payara/appserver/glassfish/domains/domain1/applications
-      # Uncomment for changes to xhtml to be deployed immediately (if supported your IDE or toolchain).
-      # Replace 6.0 with the current version.
-      # - ./target/dataverse-6.0:/opt/payara/deployments/dataverse
     tmpfs:
       - /dumps:mode=770,size=2052M,uid=1000,gid=1000
       - /tmp:mode=770,size=2052M,uid=1000,gid=1000
@@ -129,15 +122,6 @@ services:
     #  - ./docker-dev-volumes/smtp/data:/mail
     tmpfs:
       - /mail:mode=770,size=128M,uid=1000,gid=1000
-
-  dev_nginx:
-    container_name: dev_nginx
-    image: gdcc/dev_nginx:unstable
-    ports:
-      - "4849:4849"
-    restart: always
-    networks:
-      - dataverse
 
 networks:
   dataverse:
