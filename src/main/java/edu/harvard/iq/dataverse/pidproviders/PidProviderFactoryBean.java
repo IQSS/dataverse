@@ -138,34 +138,53 @@ public class PidProviderFactoryBean {
                         .getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "random");
                 String dataFilePidFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat,
                         "DEPENDENT");
-                switch (provider) {
-                case "EZID":
-                    /*
-                     * String baseUrl = JvmSettings.PID_EZID_BASE_URL.lookup(String.class); String
-                     * username = JvmSettings.PID_EZID_USERNAME.lookup(String.class); String
-                     * password = JvmSettings.PID_EZID_PASSWORD.lookup(String.class);
-                     * PidUtil.addToProviderList( new EZIdDOIProvider("legacy", "legacy", authority,
-                     * shoulder, identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl,
-                     * username, password));
-                     */
-                    break;
-                case "DataCite":
-                    String mdsUrl = JvmSettings.LEGACY_DATACITE_MDS_API_URL.lookup(String.class);
-                    String restUrl = JvmSettings.LEGACY_DATACITE_REST_API_URL.lookup(String.class);
-                    //Defaults for testing where no account is set up
-                    String dcUsername = JvmSettings.LEGACY_DATACITE_USERNAME.lookup(String.class);
-                    String dcPassword = JvmSettings.LEGACY_DATACITE_PASSWORD.lookup(String.class);
-                    if (mdsUrl != null && restUrl != null && dcUsername != null && dcPassword != null) {
-                        legacy = new DataCiteDOIProvider("legacy", "legacy", authority, shoulder,
-                                identifierGenerationStyle, dataFilePidFormat, "", "", mdsUrl, restUrl, dcUsername,
-                                dcPassword);
+                switch (protocol) {
+                case "doi":
+                    switch (provider) {
+                    case "EZID":
+
+                        String baseUrl = JvmSettings.LEGACY_EZID_API_URL.lookup();
+                        String username = JvmSettings.LEGACY_EZID_USERNAME.lookup();
+                        String password = JvmSettings.LEGACY_EZID_PASSWORD.lookup();
+                        PidUtil.addToProviderList(new EZIdDOIProvider("legacy", "legacy", authority, shoulder,
+                                identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl, username, password));
+
+                        break;
+                    case "DataCite":
+                        String mdsUrl = JvmSettings.LEGACY_DATACITE_MDS_API_URL.lookup();
+                        String restUrl = JvmSettings.LEGACY_DATACITE_REST_API_URL.lookup();
+                        // Defaults for testing where no account is set up
+                        String dcUsername = JvmSettings.LEGACY_DATACITE_USERNAME.lookup();
+                        String dcPassword = JvmSettings.LEGACY_DATACITE_PASSWORD.lookup();
+                        if (mdsUrl != null && restUrl != null && dcUsername != null && dcPassword != null) {
+                            legacy = new DataCiteDOIProvider("legacy", "legacy", authority, shoulder,
+                                    identifierGenerationStyle, dataFilePidFormat, "", "", mdsUrl, restUrl, dcUsername,
+                                    dcPassword);
+                        }
+                        break;
+                    case "FAKE":
+                        logger.warning("Adding FAKE provider");
+                        legacy = new FakeDOIProvider("legacy", "legacy", authority, shoulder, identifierGenerationStyle,
+                                dataFilePidFormat, "", "");
+                        break;
                     }
                     break;
-                case "FAKE":
-                    logger.warning("Adding FAKE provider");
-                    legacy = new FakeDOIProvider("legacy", "legacy", authority, shoulder,
-                                identifierGenerationStyle, dataFilePidFormat, "", "");
+                case "hdl":
+                    int index = JvmSettings.LEGACY_HANDLENET_INDEX.lookup(Integer.class);
+                    String path = JvmSettings.LEGACY_HANDLENET_KEY_PATH.lookup();
+                    String passphrase = JvmSettings.LEGACY_HANDLENET_KEY_PASSPHRASE.lookup();
+                    boolean independentHandleService = settingsService
+                            .isTrueForKey(SettingsServiceBean.Key.IndependentHandleService, false);
+                    String handleAuthHandle = settingsService.getValueForKey(SettingsServiceBean.Key.HandleAuthHandle);
+                            
+                    legacy = new HandlePidProvider("legacy", "legacy", authority, shoulder, identifierGenerationStyle,
+                            dataFilePidFormat, "", "", index, independentHandleService, handleAuthHandle, path,
+                            passphrase);
                     break;
+                case "perma":
+                    String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookup();
+                    legacy = new PermaLinkPidProvider("legacy", "legacy", authority, shoulder, identifierGenerationStyle,
+                            dataFilePidFormat, "", "", baseUrl, PermaLinkPidProvider.SEPARATOR);
                 }
                 if (legacy != null) {
                     legacy.setPidProviderServiceBean(this);

@@ -111,6 +111,23 @@ public enum JvmSettings {
     LEGACY_DATACITE_USERNAME(SCOPE_LEGACY_PID_DATACITE, "username", "doi.username"),
     LEGACY_DATACITE_PASSWORD(SCOPE_LEGACY_PID_DATACITE, "password", "doi.password"),
     
+    // PROVIDER EZID (legacy - single provider setting)
+    SCOPE_LEGACY_PID_EZID(SCOPE_PID, "ezid"),
+    LEGACY_EZID_API_URL(SCOPE_LEGACY_PID_EZID, "api-url"),
+    LEGACY_EZID_USERNAME(SCOPE_LEGACY_PID_EZID, "username"),
+    LEGACY_EZID_PASSWORD(SCOPE_LEGACY_PID_EZID, "password"),
+    
+    // PROVIDER PERMALINK (legacy - single provider setting)
+    SCOPE_LEGACY_PID_PERMALINK(SCOPE_PID, "permalink"),
+    LEGACY_PERMALINK_BASEURL(SCOPE_LEGACY_PID_PERMALINK, "base-url", "perma.baseurlstring"),
+
+    // PROVIDER HANDLE (legacy - single provider setting)
+    SCOPE_LEGACY_PID_HANDLENET(SCOPE_PID, "handlenet"),
+    LEGACY_HANDLENET_INDEX(SCOPE_LEGACY_PID_HANDLENET, "index", "dataverse.handlenet.index"),
+    SCOPE_LEGACY_PID_HANDLENET_KEY(SCOPE_LEGACY_PID_HANDLENET, "key"),
+    LEGACY_HANDLENET_KEY_PATH(SCOPE_LEGACY_PID_HANDLENET_KEY, "path", "dataverse.handlenet.admcredfile"),
+    LEGACY_HANDLENET_KEY_PASSPHRASE(SCOPE_LEGACY_PID_HANDLENET_KEY, "passphrase", "dataverse.handlenet.admprivphrase"),
+    
     // PROVIDER EZID - these settings were formerly kept together with DataCite ones
     SCOPE_PID_EZID(SCOPE_PID_PROVIDER, "ezid"),
     EZID_API_URL(SCOPE_PID_EZID, "api-url"),

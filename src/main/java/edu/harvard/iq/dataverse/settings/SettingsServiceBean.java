@@ -348,7 +348,7 @@ public class SettingsServiceBean {
         PVCustomPasswordResetAlertMessage,
         /*
         String to describe DOI format for data files. Default is DEPENDENT. 
-        'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
+        'DEPENDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
         'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
         */
         DataFilePIDFormat, 
@@ -367,12 +367,12 @@ public class SettingsServiceBean {
         /**
          * Indicates if the Handle service is setup to work 'independently' (No communication with the Global Handle Registry)
          */
-        //IndependentHandleService,
+        IndependentHandleService,
 
         /**
         Handle to use for authentication if the default is not being used
         */
-        //HandleAuthHandle,
+        HandleAuthHandle,
 
         /**
          * Archiving can be configured by providing an Archiver class name (class must extend AstractSubmitToArchiverCommand)
