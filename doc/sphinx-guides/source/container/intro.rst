@@ -18,6 +18,8 @@ Getting Help
 
 Please ask in #containers at https://chat.dataverse.org
 
+Alternatively, you can try one or more of the channels under :ref:`support`.
+
 .. _helping-containers:
 
 Helping with the Containerization Effort
