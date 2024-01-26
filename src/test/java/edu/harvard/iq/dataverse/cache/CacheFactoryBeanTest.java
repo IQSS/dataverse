@@ -81,6 +81,16 @@ public class CacheFactoryBeanTest {
         cache.init();
         authUser.setRateLimitTier(1); // reset to default
         action = "cmd-" + UUID.randomUUID();
+
+        // testing cache implementation and code coverage
+        final String cacheKey = "CacheTestKey" + UUID.randomUUID();
+        final String cacheValue = "CacheTestValue" + UUID.randomUUID();
+        long cacheSize = cache.getCacheSize(cache.RATE_LIMIT_CACHE);
+        System.out.println("Cache Size : " + cacheSize);
+        cache.setCacheValue(cache.RATE_LIMIT_CACHE, cacheKey,cacheValue);
+        assertTrue(cache.getCacheSize(cache.RATE_LIMIT_CACHE) > cacheSize);
+        Object cacheValueObj = cache.getCacheValue(cache.RATE_LIMIT_CACHE, cacheKey);
+        assertTrue(cacheValueObj != null && cacheValue.equalsIgnoreCase((String) cacheValueObj));
     }
 
     @Test
