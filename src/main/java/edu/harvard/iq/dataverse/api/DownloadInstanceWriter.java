@@ -103,8 +103,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                 String auxiliaryTag = null;
                 String auxiliaryType = null;
                 String auxiliaryFileName = null; 
+                
                 // Before we do anything else, check if this download can be handled 
                 // by a redirect to remote storage (only supported on S3, as of 5.4):
+                
                 if (storageIO.downloadRedirectEnabled()) {
 
                     // Even if the above is true, there are a few cases where a  
@@ -179,20 +181,19 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         redirectSupported = false;
                                     }
                                 }
-                            } else if (!di.getConversionParam().equals("noVarHeader")) {
-                                // This is a subset request - can't do. 
-                                // @todo: hm? why "subset"?
-                                // @todo: should we actually drop support for this "noVarHeader" flag? 
-                                
-                                // if the file is stored *without* the var. header, 
-                                // then we *can* use direct download on it.
-                                if (!dataFile.getDataTable().isStoredWithVariableHeader()) {
-                                    redirectSupported = false;
-                                } else {
-                                    // if it is, however, we should say "can't do":
+                            } else if (di.getConversionParam().equals("noVarHeader")) {
+                                // This will work just fine, if the tab. file is 
+                                // stored without the var. header. Throw "unavailable"
+                                // exception otherwise. 
+                                // @todo: should we actually drop support for this "noVarHeader" flag?
+                                if (dataFile.getDataTable().isStoredWithVariableHeader()) {
                                     throw new ServiceUnavailableException();
                                 }
-                            }
+                                // ... defaults to redirectSupported = true
+                            } else {
+                                // This must be a subset request then - can't do. 
+                                redirectSupported = false; 
+                            } 
                         } else {
                             // "straight" download of the full tab-delimited file. 
                             // can redirect, but only if stored with the variable 
@@ -261,11 +262,16 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // finally, issue the redirect:
                         Response response = Response.seeOther(redirect_uri).build();
                         logger.fine("Issuing redirect to the file location.");
+                        // Yes, this throws an exception. It's not an exception 
+                        // as in, "bummer, something went wrong". This is how a 
+                        // redirect is produced here!
                         throw new RedirectionException(response);
                     }
                     throw new ServiceUnavailableException();
                 }
 
+                // Past this point, this is a locally served/streamed download
+                
                 if (di.getConversionParam() != null) {
                     // Image Thumbnail and Tabular data conversion: 
                     // NOTE: only supported on local files, as of 4.0.2!
@@ -299,9 +305,15 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // request any tabular-specific services. 
 
                         if (di.getConversionParam().equals("noVarHeader")) {
-                            logger.fine("tabular data with no var header requested");
-                            storageIO.setNoVarHeader(Boolean.TRUE);
-                            storageIO.setVarHeader(null);
+                            if (!dataFile.getDataTable().isStoredWithVariableHeader()) {
+                                logger.fine("tabular data with no var header requested");
+                                storageIO.setNoVarHeader(Boolean.TRUE);
+                                storageIO.setVarHeader(null);
+                            } else {
+                                //@todo: throw "service unavailable" if the file is physically stored with the var header
+                                logger.fine("can't serve request for tabular data without varheader, since stored with it");
+                                throw new ServiceUnavailableException();
+                            }
                         } else if (di.getConversionParam().equals("format")) {
                             // Conversions, and downloads of "stored originals" are 
                             // now supported on all DataFiles for which StorageIO 
@@ -326,6 +338,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             }
                         } else if (di.getConversionParam().equals("subset")) {
                             logger.fine("processing subset request.");
+                            // @todo: adjust this code to support tab. files stored with the header 
 
                             // TODO: 
                             // If there are parameters on the list that are 
@@ -394,8 +407,13 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             } else {
                                 logger.fine("empty list of extra arguments.");
                             }
+                            // end of tab. data subset case
+                        } else if (dataFile.getDataTable().isStoredWithVariableHeader()) {
+                            logger.fine("tabular file stored with the var header included, no need to generate it on the fly");
+                            storageIO.setNoVarHeader(Boolean.TRUE);
+                            storageIO.setVarHeader(null);
                         }
-                    }
+                    } // end of tab. data file case
 
                     if (storageIO == null) {
                         //throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
