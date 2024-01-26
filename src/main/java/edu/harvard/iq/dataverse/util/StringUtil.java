@@ -164,7 +164,7 @@ public class StringUtil {
             //use first 12 bytes for iv
             AlgorithmParameterSpec gcmIv = new GCMParameterSpec(128, baseBytes, 0, GCM_IV_LENGTH);
             aes.init( Cipher.DECRYPT_MODE, generateKeyFromString(password),gcmIv);
-            byte[] decrypted = aes.doFinal(baseBytes);
+            byte[] decrypted = aes.doFinal(baseBytes,GCM_IV_LENGTH, baseBytes.length - GCM_IV_LENGTH);
             return new String(decrypted);
             
         } catch ( InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
