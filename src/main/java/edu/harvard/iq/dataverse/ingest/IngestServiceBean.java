@@ -1024,11 +1024,7 @@ public class IngestServiceBean {
         
         TabularDataIngest tabDataIngest = null; 
         try {
-            if (additionalData != null) {
-                tabDataIngest = ingestPlugin.read(inputStream, additionalData);
-            } else {
-                tabDataIngest = ingestPlugin.read(inputStream, null);
-            }
+            tabDataIngest = ingestPlugin.read(inputStream, systemConfig.isStoringIngestedFilesWithHeaders(), additionalData);
         } catch (IOException ingestEx) {
             dataFile.SetIngestProblem();
             FileUtil.createIngestFailureReport(dataFile, ingestEx.getMessage());
@@ -1171,7 +1167,11 @@ public class IngestServiceBean {
                     }
 
                     // Replace contents of the file with the tab-delimited data produced:
-                    dataAccess.savePath(Paths.get(tabFile.getAbsolutePath()));
+                    //if (!systemConfig.isStoringIngestedFilesWithHeaders()) {
+                        dataAccess.savePath(Paths.get(tabFile.getAbsolutePath()));
+                    //} else {
+                        // @todo!
+                    //}
                     // Reset the file size: 
                     dataFile.setFilesize(dataAccess.getSize());
                     
@@ -2297,7 +2297,7 @@ public class IngestServiceBean {
         TabularDataIngest tabDataIngest = null;
         
         try {
-            tabDataIngest = ingestPlugin.read(fileInputStream, null);
+            tabDataIngest = ingestPlugin.read(fileInputStream, false, null);
         } catch (IOException ingestEx) {
             System.err.println("Caught an exception trying to ingest file "+file+".");
             System.exit(1);

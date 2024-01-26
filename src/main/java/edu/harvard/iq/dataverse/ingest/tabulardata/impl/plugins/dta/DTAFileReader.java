@@ -505,7 +505,8 @@ public class DTAFileReader extends TabularDataFileReader{
     }
 
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
+    public TabularDataIngest read(BufferedInputStream stream, boolean storeWithVariableHeader, File dataFile) throws IOException {
+        // @todo: implement storing the file with the header as needed
         dbgLog.info("***** DTAFileReader: read() start *****");
         
         if (dataFile != null) {
