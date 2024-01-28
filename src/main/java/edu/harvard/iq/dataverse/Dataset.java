@@ -852,6 +852,15 @@ public class Dataset extends DvObjectContainer {
                 if (StringUtil.nonEmpty(this.getProtocol()) 
                         && StringUtil.nonEmpty(this.getAuthority())
                         && StringUtil.nonEmpty(this.getIdentifier())) {
+                    
+                    // If there is a custom archival url for this Harvesting 
+                    // Source, we'll use that
+                    String harvestingUrl = this.getHarvestedFrom().getHarvestingUrl();
+                    String archivalUrl = this.getHarvestedFrom().getArchiveUrl();
+                    if (!harvestingUrl.contains(archivalUrl)) {
+                        return archivalUrl + this.getAuthority() + "/" + this.getIdentifier();
+                    }
+                    // ... if not, we'll redirect to the resolver for the global id: 
                     return this.getPersistentURL();    
                 }
                 
