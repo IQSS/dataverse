@@ -7,8 +7,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -19,17 +17,17 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class CacheFactoryBeanTest {
 
-    @Mock
-    SystemConfig systemConfig;
-    @InjectMocks
-    static CacheFactoryBean cache = new CacheFactoryBean();
+    private SystemConfig mockedSystemConfig;
+    static CacheFactoryBean cache = null;
     AuthenticatedUser authUser = new AuthenticatedUser();
     GuestUser guestUser = GuestUser.get();
+    String action;
     static final String settingJson = "{\n" +
             "  \"rateLimits\":[\n" +
             "    {\n" +
@@ -75,29 +73,39 @@ public class CacheFactoryBeanTest {
 
     @BeforeEach
     public void setup() throws IOException {
-        doReturn(30).when(systemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(0), eq(RateLimitUtil.NO_LIMIT));
-        doReturn(60).when(systemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(1), eq(RateLimitUtil.NO_LIMIT));
-        doReturn(120).when(systemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(2), eq(RateLimitUtil.NO_LIMIT));
-        doReturn(RateLimitUtil.NO_LIMIT).when(systemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(3), eq(RateLimitUtil.NO_LIMIT));
-        doReturn(settingJson).when(systemConfig).getRateLimitsJson();
+        // reuse cache and config for all tests
+        if (cache == null) {
+            mockedSystemConfig = mock(SystemConfig.class);
+            doReturn(30).when(mockedSystemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(0), eq(RateLimitUtil.NO_LIMIT));
+            doReturn(60).when(mockedSystemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(1), eq(RateLimitUtil.NO_LIMIT));
+            doReturn(120).when(mockedSystemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(2), eq(RateLimitUtil.NO_LIMIT));
+            doReturn(RateLimitUtil.NO_LIMIT).when(mockedSystemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(3), eq(RateLimitUtil.NO_LIMIT));
+            doReturn(settingJson).when(mockedSystemConfig).getRateLimitsJson();
+            cache = new CacheFactoryBean();
+            cache.systemConfig = mockedSystemConfig;
+            cache.init(); // PostConstruct - start Hazelcast
 
-        cache.init(); // PostConstruct
-        authUser.setRateLimitTier(1); // reset to default
+            // testing cache implementation and code coverage
+            final String cacheKey = "CacheTestKey" + UUID.randomUUID();
+            final String cacheValue = "CacheTestValue" + UUID.randomUUID();
+            long cacheSize = cache.getCacheSize(cache.RATE_LIMIT_CACHE);
+            cache.setCacheValue(cache.RATE_LIMIT_CACHE, cacheKey,cacheValue);
+            assertTrue(cache.getCacheSize(cache.RATE_LIMIT_CACHE) > cacheSize);
+            Object cacheValueObj = cache.getCacheValue(cache.RATE_LIMIT_CACHE, cacheKey);
+            assertTrue(cacheValueObj != null && cacheValue.equalsIgnoreCase((String) cacheValueObj));
+        }
 
-        // testing cache implementation and code coverage
-        final String cacheKey = "CacheTestKey" + UUID.randomUUID();
-        final String cacheValue = "CacheTestValue" + UUID.randomUUID();
-        long cacheSize = cache.getCacheSize(cache.RATE_LIMIT_CACHE);
-        cache.setCacheValue(cache.RATE_LIMIT_CACHE, cacheKey,cacheValue);
-        assertTrue(cache.getCacheSize(cache.RATE_LIMIT_CACHE) > cacheSize);
-        Object cacheValueObj = cache.getCacheValue(cache.RATE_LIMIT_CACHE, cacheKey);
-        assertTrue(cacheValueObj != null && cacheValue.equalsIgnoreCase((String) cacheValueObj));
+        // reset to default auth user
+        authUser.setRateLimitTier(1);
+        authUser.setSuperuser(false);
+        authUser.setUserIdentifier("authUser");
+
+        // create a unique action for each test
+        action = "cmd-" + UUID.randomUUID();
     }
 
     @Test
     public void testGuestUserGettingRateLimited() {
-        String action = "cmd-" + UUID.randomUUID();
-
         String key = RateLimitUtil.generateCacheKey(guestUser,action);
         String value = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, key));
         String keyLastUpdate = String.format("%s:last_update",key);
@@ -129,7 +137,6 @@ public class CacheFactoryBeanTest {
     public void testAdminUserExemptFromGettingRateLimited() {
         authUser.setSuperuser(true);
         authUser.setUserIdentifier("admin");
-        String action = "cmd-" + UUID.randomUUID();
         boolean rateLimited = false;
         int cnt = 0;
         for (; cnt <100; cnt++) {
@@ -143,10 +150,7 @@ public class CacheFactoryBeanTest {
 
     @Test
     public void testAuthenticatedUserGettingRateLimited() throws InterruptedException {
-        authUser.setSuperuser(false);
-        authUser.setUserIdentifier("authUser");
         authUser.setRateLimitTier(2); // 120 cals per hour - 1 added token every 30 seconds
-        String action = "cmd-" + UUID.randomUUID();
         boolean rateLimited = false;
         int cnt;
         for (cnt = 0; cnt <200; cnt++) {
