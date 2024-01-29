@@ -2,8 +2,8 @@ version: "2.4"
 
 services:
 
-  dev_dataverse:
-    container_name: "dev_dataverse"
+  dataverse:
+    container_name: "dataverse"
     hostname: dataverse
     image: gdcc/dataverse:alpha
     restart: on-failure
@@ -25,9 +25,9 @@ services:
     networks:
       - dataverse
     depends_on:
-      - dev_postgres
-      - dev_solr
-      - dev_dv_initializer
+      - postgres
+      - solr
+      - dv_initializer
     volumes:
       - ./docker-dev-volumes/app/data:/dv
       - ./docker-dev-volumes/app/secrets:/secrets
@@ -38,8 +38,8 @@ services:
     mem_reservation: 1024m
     privileged: false
 
-  dev_bootstrap:
-    container_name: "dev_bootstrap"
+  bootstrap:
+    container_name: "bootstrap"
     image: gdcc/configbaker:alpha
     restart: "no"
     command:
@@ -48,8 +48,8 @@ services:
     networks:
       - dataverse
 
-  dev_dv_initializer:
-    container_name: "dev_dv_initializer"
+  dv_initializer:
+    container_name: "dv_initializer"
     image: gdcc/configbaker:alpha
     restart: "no"
     command:
@@ -59,8 +59,8 @@ services:
     volumes:
       - ./docker-dev-volumes/app/data:/dv
 
-  dev_postgres:
-    container_name: "dev_postgres"
+  postgres:
+    container_name: "postgres"
     hostname: postgres
     image: postgres:13
     restart: on-failure
@@ -74,8 +74,8 @@ services:
     volumes:
       - ./docker-dev-volumes/postgresql/data:/var/lib/postgresql/data
 
-  dev_solr_initializer:
-    container_name: "dev_solr_initializer"
+  solr_initializer:
+    container_name: "solr_initializer"
     image: gdcc/configbaker:alpha
     restart: "no"
     command:
@@ -86,12 +86,12 @@ services:
       - ./docker-dev-volumes/solr/data:/var/solr
       - ./docker-dev-volumes/solr/conf:/solr-template
 
-  dev_solr:
-    container_name: "dev_solr"
+  solr:
+    container_name: "solr"
     hostname: "solr"
     image: solr:9.3.0
     depends_on:
-      - dev_solr_initializer
+      - solr_initializer
     restart: on-failure
     ports:
       - "8983:8983"
@@ -105,8 +105,8 @@ services:
       - ./docker-dev-volumes/solr/data:/var/solr
       - ./docker-dev-volumes/solr/conf:/template
 
-  dev_smtp:
-    container_name: "dev_smtp"
+  smtp:
+    container_name: "smtp"
     hostname: "smtp"
     image: maildev/maildev:2.0.5
     restart: on-failure
