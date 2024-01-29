@@ -310,7 +310,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 storageIO.setNoVarHeader(Boolean.TRUE);
                                 storageIO.setVarHeader(null);
                             } else {
-                                //@todo: throw "service unavailable" if the file is physically stored with the var header
                                 logger.fine("can't serve request for tabular data without varheader, since stored with it");
                                 throw new ServiceUnavailableException();
                             }
@@ -356,11 +355,13 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         if (variable.getDataTable().getDataFile().getId().equals(dataFile.getId())) {
                                             logger.fine("adding variable id " + variable.getId() + " to the list.");
                                             variablePositionIndex.add(variable.getFileOrder());
-                                            if (subsetVariableHeader == null) {
-                                                subsetVariableHeader = variable.getName();
-                                            } else {
-                                                subsetVariableHeader = subsetVariableHeader.concat("\t");
-                                                subsetVariableHeader = subsetVariableHeader.concat(variable.getName());
+                                            if (!dataFile.getDataTable().isStoredWithVariableHeader()) {
+                                                if (subsetVariableHeader == null) {
+                                                    subsetVariableHeader = variable.getName();
+                                                } else {
+                                                    subsetVariableHeader = subsetVariableHeader.concat("\t");
+                                                    subsetVariableHeader = subsetVariableHeader.concat(variable.getName());
+                                                }
                                             }
                                         } else {
                                             logger.warning("variable does not belong to this data file.");
@@ -381,8 +382,11 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                                             InputStreamIO subsetStreamIO = new InputStreamIO(subsetStream, subsetSize);
                                             logger.fine("successfully created subset output stream.");
-                                            subsetVariableHeader = subsetVariableHeader.concat("\n");
-                                            subsetStreamIO.setVarHeader(subsetVariableHeader);
+                                            
+                                            if (subsetVariableHeader != null) {
+                                                subsetVariableHeader = subsetVariableHeader.concat("\n");
+                                                subsetStreamIO.setVarHeader(subsetVariableHeader);
+                                            }
 
                                             String tabularFileName = storageIO.getFileName();
 

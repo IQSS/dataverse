@@ -36,7 +36,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.xml.sax.Attributes;
@@ -81,7 +80,9 @@ public class XLSXFileReader extends TabularDataFileReader {
      * @throws java.io.IOException if a reading error occurs.
      */
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
+    public TabularDataIngest read(BufferedInputStream stream, boolean saveWithVariableHeader, File dataFile) throws IOException {
+        // @todo: implement handling of "saveWithVariableHeader" option
+        
         init();
         
         TabularDataIngest ingesteddata = new TabularDataIngest();
@@ -549,7 +550,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         
         BufferedInputStream xlsxInputStream = new BufferedInputStream(new FileInputStream(new File(args[0])));
         
-        TabularDataIngest dataIngest = testReader.read(xlsxInputStream, null);
+        TabularDataIngest dataIngest = testReader.read(xlsxInputStream, false, null);
         
         dataTable = dataIngest.getDataTable();
         
