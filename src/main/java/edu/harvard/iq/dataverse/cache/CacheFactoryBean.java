@@ -29,6 +29,7 @@ public class CacheFactoryBean implements java.io.Serializable {
         if (hazelcastInstance == null) {
             Config hazelcastConfig = new Config();
             hazelcastConfig.setClusterName("dataverse");
+            hazelcastConfig.getJetConfig().setEnabled(true);
             hazelcastInstance = Hazelcast.newHazelcastInstance(hazelcastConfig);
             rateLimitCache = hazelcastInstance.getMap(RATE_LIMIT_CACHE);
         }
