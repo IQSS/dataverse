@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import jakarta.ejb.EJB;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
@@ -96,7 +95,7 @@ public class RateLimitUtil {
 
     private static void getRateLimitsFromJson(SystemConfig systemConfig) {
         String setting = systemConfig.getRateLimitsJson();
-        if (!setting.isEmpty()) {
+        if (!setting.isEmpty() && rateLimits.isEmpty()) {
             try {
                 JsonReader jr = Json.createReader(new StringReader(setting));
                 JsonObject obj= jr.readObject();
@@ -110,11 +109,11 @@ public class RateLimitUtil {
         }
     }
 
-    private static String getMapKey(Integer tier) {
+    private static String getMapKey(int tier) {
         return getMapKey(tier, null);
     }
 
-    private static String getMapKey(Integer tier, String action) {
+    private static String getMapKey(int tier, String action) {
         StringBuffer key = new StringBuffer();
         key.append(tier).append(":");
         if (action != null) {
