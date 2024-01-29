@@ -94,6 +94,13 @@ public class CacheFactoryBeanTest {
     public void testGuestUserGettingRateLimited() throws InterruptedException {
         User user = GuestUser.get();
         String action = "cmd-" + UUID.randomUUID();
+
+        String key = RateLimitUtil.generateCacheKey(user,action);
+        String value = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, key));
+        String keyLastUpdate = String.format("%s:last_update",key);
+        String lastUpdate = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, keyLastUpdate));
+        System.out.println(">>> key/value/lastUpdate  /" + key + "/" + value + "/" + lastUpdate);
+
         boolean rateLimited = false;
         int cnt = 0;
         for (; cnt <100; cnt++) {
@@ -101,11 +108,15 @@ public class CacheFactoryBeanTest {
             if (rateLimited) {
                 break;
             }
+            if (cnt == 10) {
+                value = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, key));
+                lastUpdate = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, keyLastUpdate));
+                System.out.println(">>> key/value/lastUpdate  /" + key + "/" + value + "/" + lastUpdate);
+            }
         }
-        String key = RateLimitUtil.generateCacheKey(user,action);
-        String value = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, key));
-        String keyLastUpdate = String.format("%s:last_update",key);
-        String lastUpdate = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, keyLastUpdate));
+
+        value = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, key));
+        lastUpdate = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, keyLastUpdate));
         System.out.println(">>> key/value/lastUpdate  /" + key + "/" + value + "/" + lastUpdate);
         assertTrue(cache.getCacheSize(cache.RATE_LIMIT_CACHE) > 0);
         assertTrue(rateLimited && cnt > 1 && cnt <= 30, "rateLimited:"+rateLimited + " cnt:"+cnt);
