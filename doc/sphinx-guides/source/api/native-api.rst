@@ -1066,7 +1066,11 @@ The fully expanded example above (without environment variables) looks like this
  
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0/files"
 
-This endpoint supports optional pagination, through the ``limit`` and ``offset`` query parameters:
+This endpoint supports optional pagination, through the ``limit`` and ``offset`` query parameters.
+
+To aid in pagination the JSON response also includes the total number of rows (totalCount) available.
+
+Usage example:
 
 .. code-block:: bash
 
@@ -1568,8 +1572,8 @@ The fully expanded example above (without environment variables) looks like this
 Set Citation Date Field Type for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the dataset citation date field type for a given dataset. ``:publicationDate`` is the default.
-Note that the dataset citation date field type must be a date field.
+Sets the dataset citation date field type for a given dataset. ``:publicationDate`` is the default. 
+Note that the dataset citation date field type must be a date field. This change applies to all versions of the dataset that have an entry for the new date field. It also applies to all file citations in the dataset. 
 
 .. code-block:: bash
 
