@@ -374,7 +374,11 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     try {
                                         File tempSubsetFile = File.createTempFile("tempSubsetFile", ".tmp");
                                         TabularSubsetGenerator tabularSubsetGenerator = new TabularSubsetGenerator();
-                                        tabularSubsetGenerator.subsetFile(storageIO.getInputStream(), tempSubsetFile.getAbsolutePath(), variablePositionIndex, dataFile.getDataTable().getCaseQuantity(), "\t");
+                                        tabularSubsetGenerator.subsetFile(storageIO.getInputStream(), 
+                                                tempSubsetFile.getAbsolutePath(), 
+                                                variablePositionIndex, 
+                                                dataFile.getDataTable().getCaseQuantity(), 
+                                                "\t");
 
                                         if (tempSubsetFile.exists()) {
                                             FileInputStream subsetStream = new FileInputStream(tempSubsetFile);
