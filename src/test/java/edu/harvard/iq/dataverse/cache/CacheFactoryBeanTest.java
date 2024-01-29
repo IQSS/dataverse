@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.cache;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,15 +9,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.io.IOException;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class CacheFactoryBeanTest {
 
     @Mock
@@ -26,6 +28,7 @@ public class CacheFactoryBeanTest {
     @InjectMocks
     static CacheFactoryBean cache = new CacheFactoryBean();
     AuthenticatedUser authUser = new AuthenticatedUser();
+    GuestUser guestUser = GuestUser.get();
     static final String settingJson = "{\n" +
             "  \"rateLimits\":[\n" +
             "    {\n" +
@@ -71,13 +74,13 @@ public class CacheFactoryBeanTest {
 
     @BeforeEach
     public void setup() throws IOException {
-        lenient().doReturn(30).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(0), anyInt());
-        lenient().doReturn(60).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(1), anyInt());
-        lenient().doReturn(120).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(2), anyInt());
-        lenient().doReturn(RateLimitUtil.NO_LIMIT).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(3), anyInt());
-        lenient().doReturn(settingJson).when(systemConfig).getRateLimitsJson();
+        doReturn(30).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(0), anyInt());
+        doReturn(60).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(1), anyInt());
+        doReturn(120).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(2), anyInt());
+        doReturn(RateLimitUtil.NO_LIMIT).when(systemConfig).getIntFromCSVStringOrDefault(any(),eq(3), anyInt());
+        doReturn(settingJson).when(systemConfig).getRateLimitsJson();
 
-        cache.init();
+        cache.init(); // PostConstruct
         authUser.setRateLimitTier(1); // reset to default
 
         // testing cache implementation and code coverage
@@ -91,39 +94,38 @@ public class CacheFactoryBeanTest {
     }
 
     @Test
-    public void testGuestUserGettingRateLimited() throws InterruptedException {
-        User user = GuestUser.get();
+    public void testGuestUserGettingRateLimited() {
         String action = "cmd-" + UUID.randomUUID();
 
-        String key = RateLimitUtil.generateCacheKey(user,action);
+        String key = RateLimitUtil.generateCacheKey(guestUser,action);
         String value = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, key));
         String keyLastUpdate = String.format("%s:last_update",key);
         String lastUpdate = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, keyLastUpdate));
-        System.out.println(">>> key/value/lastUpdate  /" + key + "/" + value + "/" + lastUpdate);
+        System.out.println(">>> key|value|lastUpdate  |" + key + "|" + value + "|" + lastUpdate);
 
         boolean rateLimited = false;
         int cnt = 0;
         for (; cnt <100; cnt++) {
-            rateLimited = !cache.checkRate(user, action);
+            rateLimited = !cache.checkRate(guestUser, action);
             if (rateLimited) {
                 break;
             }
-            if (cnt == 10) {
+            if (cnt % 10 == 0) {
                 value = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, key));
                 lastUpdate = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, keyLastUpdate));
-                System.out.println(">>> key/value/lastUpdate  /" + key + "/" + value + "/" + lastUpdate);
+                System.out.println(cnt + " key|value|lastUpdate  |" + key + "|" + value + "|" + lastUpdate);
             }
         }
 
         value = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, key));
         lastUpdate = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, keyLastUpdate));
-        System.out.println(">>> key/value/lastUpdate  /" + key + "/" + value + "/" + lastUpdate);
+        System.out.println(cnt + " key|value|lastUpdate  |" + key + "|" + value + "|" + lastUpdate);
         assertTrue(cache.getCacheSize(cache.RATE_LIMIT_CACHE) > 0);
         assertTrue(rateLimited && cnt > 1 && cnt <= 30, "rateLimited:"+rateLimited + " cnt:"+cnt);
     }
 
     @Test
-    public void testAdminUserExemptFromGettingRateLimited() throws InterruptedException {
+    public void testAdminUserExemptFromGettingRateLimited() {
         authUser.setSuperuser(true);
         authUser.setUserIdentifier("admin");
         String action = "cmd-" + UUID.randomUUID();
