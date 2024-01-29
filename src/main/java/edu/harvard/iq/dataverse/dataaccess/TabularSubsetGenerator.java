@@ -62,16 +62,16 @@ public class TabularSubsetGenerator implements SubsetGenerator {
 
     private static Logger dbgLog = Logger.getLogger(TabularSubsetGenerator.class.getPackage().getName());
 
-    private static int COLUMN_TYPE_STRING = 1;
-    private static int COLUMN_TYPE_LONG   = 2;
-    private static int COLUMN_TYPE_DOUBLE = 3; 
-    private static int COLUMN_TYPE_FLOAT = 4; 
+    private static final int COLUMN_TYPE_STRING = 1;
+    private static final int COLUMN_TYPE_LONG   = 2;
+    private static final int COLUMN_TYPE_DOUBLE = 3; 
+    private static final int COLUMN_TYPE_FLOAT = 4; 
     
-    private static int MAX_COLUMN_BUFFER = 8192;
+    //private static int MAX_COLUMN_BUFFER = 8192;
     
     private FileChannel fileChannel = null; 
     
-    private int varcount; 
+    /*private int varcount; 
     private int casecount; 
     private int subsetcount;
     
@@ -84,13 +84,25 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     
     private long[] columnStartOffsets; 
     private long[] columnTotalOffsets;
-    private long[] columnTotalLengths;
+    private long[] columnTotalLengths;*/
     
     public TabularSubsetGenerator() {
         
     }
     
-    public TabularSubsetGenerator (DataFile datafile, List<DataVariable> variables) throws IOException {
+    /**
+     * This class use to be much more complex. There were methods for subsetting
+     * from fixed-width field files; including using the optimized, "90 deg. rotated"
+     * versions of such files (i.e. you create a *columns-wise* copy of your data 
+     * file in which the columns are stored sequentially, and a table of byte 
+     * offsets of each column. You can then read individual variable columns 
+     * for cheap; at the expense of doubling the storage size of your tabular 
+     * data files. These methods were not used, so they were deleted (in Jan. 2024
+     * prior to 6.2.
+     * Please consult git history if you are interested in looking at that code. 
+     */
+    
+    /*public TabularSubsetGenerator (DataFile datafile, List<DataVariable> variables) throws IOException {
         if (!datafile.isTabularData()) {
             throw new IOException("DataFile is not tabular data.");
         }
@@ -118,6 +130,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
         
         subsetcount = variables.size();
+        storedWithVariableHeader = datafile.getDataTable().isStoredWithVariableHeader();
         columnTotalOffsets = new long[subsetcount];
         columnTotalLengths = new long[subsetcount];
         columnByteBuffers = new ByteBuffer[subsetcount];
@@ -157,13 +170,13 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                 i++;
             }
         }
-    }
+    }*/
     
-    private int getVarCount() {
+    /*private int getVarCount() {
         return varcount;
-    }
+    }*/
     
-    private void setVarCount(int varcount) {
+    /*private void setVarCount(int varcount) {
         this.varcount = varcount; 
     }
     
@@ -173,7 +186,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     
     private void setCaseCount(int casecount) {
         this.casecount = casecount; 
-    }
+    }*/
     
     
     /* 
@@ -185,7 +198,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      * columns, in an order that doesn't have to follow the physical order
      * of the columns in the file. 
     */
-    private long extractColumnOffset(long[] columnEndOffsets, int column) throws IOException {
+    /*private long extractColumnOffset(long[] columnEndOffsets, int column) throws IOException {
         if (columnEndOffsets == null || columnEndOffsets.length <= column) {
             throw new IOException("Offsets table not initialized; or column out of bounds.");
         }
@@ -197,12 +210,12 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             columnOffset = getVarCount() * 8; 
         }
         return columnOffset; 
-    }
+    }*/
     
     /* 
      * See the comment for the method above. 
      */
-    private long extractColumnLength(long[] columnEndOffsets, int column) throws IOException {
+    /*private long extractColumnLength(long[] columnEndOffsets, int column) throws IOException {
         if (columnEndOffsets == null || columnEndOffsets.length <= column) {
             throw new IOException("Offsets table not initialized; or column out of bounds.");
         }
@@ -215,10 +228,10 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
         
         return columnLength; 
-    }
+    }*/
       
     
-    private void bufferMoreColumnBytes(int column) throws IOException {
+    /*private void bufferMoreColumnBytes(int column) throws IOException {
         if (columnTotalOffsets[column] >= columnTotalLengths[column]) {
             throw new IOException("attempt to buffer bytes past the column boundary");
         }
@@ -233,9 +246,9 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         dbgLog.fine("Read "+columnBufferSizes[column]+" bytes for subset column "+column);
         columnBufferOffsets[column] = 0;
         columnTotalOffsets[column] += columnBufferSizes[column];
-    }
+    }*/
     
-    public byte[] readColumnEntryBytes(int column) {
+    /*public byte[] readColumnEntryBytes(int column) {
         return readColumnEntryBytes(column, true);
     }
     
@@ -301,9 +314,9 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             ret[ret.length - 1] = '\t';
         }
         return ret;
-    }
+    }*/
     
-    public int readSingleColumnSubset(byte[] buffer) throws IOException {
+    /*public int readSingleColumnSubset(byte[] buffer) throws IOException {
         if (columnTotalOffsets[0] == columnTotalLengths[0]) {
             return -1;
         }
@@ -323,10 +336,10 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         columnTotalOffsets[0] += bytesread;
         columnByteBuffers[0].clear();
         return bytesread > 0 ? bytesread : -1;
-    }
+    }*/
     
     
-    public byte[] readSubsetLineBytes() throws IOException {
+    /*public byte[] readSubsetLineBytes() throws IOException {
         byte[] ret = null; 
         int total = 0; 
         
@@ -346,10 +359,10 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
         dbgLog.fine("line: "+new String(ret));
         return ret;
-    } 
+    } */
     
     
-    public void close() {
+    /*public void close() {
         if (fileChannel != null) {
             try {
                 fileChannel.close();
@@ -357,7 +370,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                 // don't care.
             }
         }
-    }
+    }*/
     
     public void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases) {
         subsetFile(infile, outfile, columns, numCases, "\t");
@@ -627,7 +640,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      * a 2-dimensional array of Doubles;
      * Inefficient on large files, OK to use on small ones.
      */
-    public static Double[][] subsetDoubleVectors(InputStream in, Set<Integer> columns, int numCases) throws IOException {
+    /*public static Double[][] subsetDoubleVectors(InputStream in, Set<Integer> columns, int numCases) throws IOException {
         Double[][] retVector = new Double[columns.size()][numCases];
         try (Scanner scanner = new Scanner(in)) {
             scanner.useDelimiter("\\n");
@@ -665,46 +678,46 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
         return retVector;
 
-    }
+    }*/
     
-    public String[] subsetStringVector(DataFile datafile, int column) throws IOException {
+    /*public String[] subsetStringVector(DataFile datafile, int column) throws IOException {
         return (String[])subsetObjectVector(datafile, column, COLUMN_TYPE_STRING);
-    }
+    }*/
     
-    public Double[] subsetDoubleVector(DataFile datafile, int column) throws IOException {
+    /*public Double[] subsetDoubleVector(DataFile datafile, int column) throws IOException {
         return (Double[])subsetObjectVector(datafile, column, COLUMN_TYPE_DOUBLE);
-    }
+    }*/
     
-    public Long[] subsetLongVector(DataFile datafile, int column) throws IOException {
+    /*public Long[] subsetLongVector(DataFile datafile, int column) throws IOException {
         return (Long[])subsetObjectVector(datafile, column, COLUMN_TYPE_LONG);
-    }
+    }*/
     
     // Float methods are temporary; 
     // In normal operations we'll be treating all the floating point types as 
     // doubles. I need to be able to handle floats for some 4.0 vs 3.* ingest
     // tests. -- L.A. 
     
-    public Float[] subsetFloatVector(DataFile datafile, int column) throws IOException {
+    /*public Float[] subsetFloatVector(DataFile datafile, int column) throws IOException {
         return (Float[])subsetObjectVector(datafile, column, COLUMN_TYPE_FLOAT);
-    }
+    }*/
     
-    public String[] subsetStringVector(File tabfile, int column, int varcount, int casecount) throws IOException {
+    /*public String[] subsetStringVector(File tabfile, int column, int varcount, int casecount) throws IOException {
         return (String[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_STRING);
-    }
+    }*/
     
-    public Double[] subsetDoubleVector(File tabfile, int column, int varcount, int casecount) throws IOException {
+    /*public Double[] subsetDoubleVector(File tabfile, int column, int varcount, int casecount) throws IOException {
         return (Double[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_DOUBLE);
-    }
+    }*/
     
-    public Long[] subsetLongVector(File tabfile, int column, int varcount, int casecount) throws IOException {
+    /*public Long[] subsetLongVector(File tabfile, int column, int varcount, int casecount) throws IOException {
         return (Long[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_LONG);
-    }
+    }*/
     
-    public Float[] subsetFloatVector(File tabfile, int column, int varcount, int casecount) throws IOException {
+    /*public Float[] subsetFloatVector(File tabfile, int column, int varcount, int casecount) throws IOException {
         return (Float[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_FLOAT);
-    }
+    }*/
     
-    public Object[] subsetObjectVector(DataFile dataFile, int column, int columntype) throws IOException {
+    /*public Object[] subsetObjectVector(DataFile dataFile, int column, int columntype) throws IOException {
         if (!dataFile.isTabularData()) {
             throw new IOException("DataFile is not tabular data.");
         }
@@ -776,15 +789,15 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
 
         return subsetObjectVector(tabfile, column, varcount, casecount, columntype);
-    }
+    }*/
     
-    public Object[] subsetObjectVector(File tabfile, int column, int varcount, int casecount, int columntype) throws IOException {
+    /*public Object[] subsetObjectVector(File tabfile, int column, int varcount, int casecount, int columntype) throws IOException {
         return subsetObjectVector(tabfile, column, varcount, casecount, columntype, false);
-    }
+    }*/
     
     
     
-    public Object[] subsetObjectVector(File tabfile, int column, int varcount, int casecount, int columntype, boolean compatmode) throws IOException {
+    /*public Object[] subsetObjectVector(File tabfile, int column, int varcount, int casecount, int columntype, boolean compatmode) throws IOException {
         
         Object[] retVector = null; 
         
@@ -849,6 +862,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
 
                 while (bytecount < bytesRead) {
                     if (columnBytes[bytecount] == '\n') {
+    */
                         /*
                         String token = new String(columnBytes, byteoffset, bytecount-byteoffset, "UTF8");
 
@@ -870,6 +884,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                          * merged byte buffer, and then turn it into a UTF8 string. 
                          *      -- L.A. 4.0
                          */
+    /*
                         String token = null;
 
                         if (leftover == null) {
@@ -1062,9 +1077,9 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
         
         return retVector; 
-    }
+    }*/
     
-    private long[] extractColumnOffsets (File rotatedImageFile, int varcount, int casecount) throws IOException {
+    /*private long[] extractColumnOffsets (File rotatedImageFile, int varcount, int casecount) throws IOException {
         long[] byteOffsets = new long[varcount];
         
         try (BufferedInputStream rotfileStream = new BufferedInputStream(new FileInputStream(rotatedImageFile))) {
@@ -1090,9 +1105,9 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
 
         return byteOffsets;
-    }
+    }*/
     
-    private File getRotatedImage(File tabfile, int varcount, int casecount)  throws IOException {
+    /*private File getRotatedImage(File tabfile, int varcount, int casecount)  throws IOException {
         String fileName = tabfile.getAbsolutePath();
         String rotatedImageFileName = fileName + ".90d";
         File rotatedImageFile = new File(rotatedImageFileName); 
@@ -1276,103 +1291,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         
         return new File(rotatedImageFileName);
 
-    }
-  
-    /*
-     * Test method for taking a "rotated" image, and reversing it, reassembling 
-     * all the columns in the original order. Which should result in a file 
-     * byte-for-byte identical file to the original tab-delimited version.
-     *
-     * (do note that this method is not efficiently implemented; it's only 
-     * being used for experiments so far, to confirm the accuracy of the 
-     * accuracy of generateRotatedImage(). It should not be used for any 
-     * practical means in the application!)
-     */
-    private void reverseRotatedImage (File rotfile, int varcount, int casecount) throws IOException {
-        // open the file, read in the offset header: 
-        try (BufferedInputStream rotfileStream = new BufferedInputStream(new FileInputStream(rotfile))) {
-            byte[] offsetHeader = new byte[varcount * 8];
-            long[] byteOffsets = new long[varcount];
-            
-            int readlen = rotfileStream.read(offsetHeader); 
-            
-            if (readlen != varcount * 8) {
-                throw new IOException ("Could not read "+varcount*8+" header bytes from the rotated file.");
-            }
-            
-            for (int varindex = 0; varindex < varcount; varindex++) {
-                byte[] offsetBytes = new byte[8];
-                System.arraycopy(offsetHeader, varindex*8, offsetBytes, 0, 8);
-               
-                ByteBuffer offsetByteBuffer = ByteBuffer.wrap(offsetBytes);
-                byteOffsets[varindex] = offsetByteBuffer.getLong();
-                
-                //System.out.println(byteOffsets[varindex]);
-            }
-            
-            String [][] reversedMatrix = new String[casecount][varcount];
-            
-            long offset = varcount * 8; 
-            byte[] columnBytes; 
-            
-            for (int varindex = 0; varindex < varcount; varindex++) {
-                long columnLength = byteOffsets[varindex] - offset; 
-                
-                
-                
-                columnBytes = new byte[(int)columnLength];
-                readlen = rotfileStream.read(columnBytes);
-                
-                if (readlen != columnLength) {
-                    throw new IOException ("Could not read "+columnBytes+" bytes for column "+varindex);
-                }
-                /*
-                String columnString = new String(columnBytes);
-                //System.out.print(columnString);
-                String[] values = columnString.split("\n", -1);
-                
-                if (values.length < casecount) {
-                    throw new IOException("count mismatch: "+values.length+" tokens found for column "+varindex);
-                }
-                
-                for (int caseindex = 0; caseindex < casecount; caseindex++) {
-                    reversedMatrix[caseindex][varindex] = values[caseindex];
-                }*/
-                
-                int bytecount = 0; 
-                int byteoffset = 0; 
-                int caseindex = 0;
-                //System.out.println("generating value vector for column "+varindex);
-                while (bytecount < columnLength) {
-                    if (columnBytes[bytecount] == '\n') {
-                        String token = new String(columnBytes, byteoffset, bytecount-byteoffset);
-                        reversedMatrix[caseindex++][varindex] = token;
-                        byteoffset = bytecount + 1;
-                    }
-                    bytecount++;
-                }
-                
-                if (caseindex != casecount) {
-                    throw new IOException("count mismatch: "+caseindex+" tokens found for column "+varindex);
-                }
-                offset = byteOffsets[varindex];
-            }
-            
-            for (int caseindex = 0; caseindex < casecount; caseindex++) {
-                for (int varindex = 0; varindex < varcount; varindex++) {
-                    System.out.print(reversedMatrix[caseindex][varindex]);
-                    if (varindex < varcount-1) {
-                        System.out.print("\t");
-                    } else {
-                        System.out.print("\n");
-                    }
-                }
-            }
-            
-        }
-        
-        
-    }
+    }*/
     
     /**
      * main() method, for testing
@@ -1394,22 +1313,10 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         
         TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator(); 
         
-        /*
-        try {
-            rotatedImageFile = subsetGenerator.getRotatedImage(tabFile, varcount, casecount);
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-        }
-        */
-        
-        //System.out.println("\nFinished generating \"rotated\" column image file."); 
-                
-        //System.out.println("\nOffsets:");
-        
         MathContext doubleMathContext = new MathContext(15, RoundingMode.HALF_EVEN);
         String FORMAT_IEEE754 = "%+#.15e";
         
-        try {
+        /*try {
             //subsetGenerator.reverseRotatedImage(rotatedImageFile, varcount, casecount);
             //String[] columns = subsetGenerator.subsetStringVector(tabFile, column, varcount, casecount);
             if ("string".equals(type)) {
@@ -1432,7 +1339,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             }
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
-        }
+        }*/
     }
 }
 

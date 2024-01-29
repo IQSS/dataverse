@@ -356,12 +356,9 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                             logger.fine("adding variable id " + variable.getId() + " to the list.");
                                             variablePositionIndex.add(variable.getFileOrder());
                                             if (!dataFile.getDataTable().isStoredWithVariableHeader()) {
-                                                if (subsetVariableHeader == null) {
-                                                    subsetVariableHeader = variable.getName();
-                                                } else {
-                                                    subsetVariableHeader = subsetVariableHeader.concat("\t");
-                                                    subsetVariableHeader = subsetVariableHeader.concat(variable.getName());
-                                                }
+                                                subsetVariableHeader = subsetVariableHeader == null 
+                                                        ? variable.getName()
+                                                        : subsetVariableHeader.concat("\t" + variable.getName());
                                             }
                                         } else {
                                             logger.warning("variable does not belong to this data file.");
@@ -374,10 +371,16 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     try {
                                         File tempSubsetFile = File.createTempFile("tempSubsetFile", ".tmp");
                                         TabularSubsetGenerator tabularSubsetGenerator = new TabularSubsetGenerator();
+                                        
+                                        long numberOfLines = dataFile.getDataTable().getCaseQuantity();
+                                        if (dataFile.getDataTable().isStoredWithVariableHeader()) {
+                                            numberOfLines++;
+                                        }
+                                        
                                         tabularSubsetGenerator.subsetFile(storageIO.getInputStream(), 
                                                 tempSubsetFile.getAbsolutePath(), 
                                                 variablePositionIndex, 
-                                                dataFile.getDataTable().getCaseQuantity(), 
+                                                numberOfLines, 
                                                 "\t");
 
                                         if (tempSubsetFile.exists()) {
