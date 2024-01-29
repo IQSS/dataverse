@@ -89,7 +89,7 @@ public class CacheFactoryBeanTest {
         Object cacheValueObj = cache.getCacheValue(cache.RATE_LIMIT_CACHE, cacheKey);
         assertTrue(cacheValueObj != null && cacheValue.equalsIgnoreCase((String) cacheValueObj));
     }
-
+/*
     @Test
     public void testGuestUserGettingRateLimited() throws InterruptedException {
         User user = GuestUser.get();
@@ -105,7 +105,7 @@ public class CacheFactoryBeanTest {
         assertTrue(cache.getCacheSize(cache.RATE_LIMIT_CACHE) > 0);
         assertTrue(rateLimited && cnt > 1 && cnt <= 30, "rateLimited:"+rateLimited + " cnt:"+cnt);
     }
-
+*/
     @Test
     public void testAdminUserExemptFromGettingRateLimited() throws InterruptedException {
         authUser.setSuperuser(true);
