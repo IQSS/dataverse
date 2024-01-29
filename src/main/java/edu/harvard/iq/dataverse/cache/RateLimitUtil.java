@@ -28,6 +28,7 @@ public class RateLimitUtil {
     public static final int NO_LIMIT = -1;
 
     protected static int getCapacityByTier(SystemConfig systemConfig, int tier) {
+        System.out.println("getIntFromCSVStringOrDefault: " +tier + " " + systemConfig.getIntFromCSVStringOrDefault(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers, tier, NO_LIMIT));
         return systemConfig.getIntFromCSVStringOrDefault(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers, tier, NO_LIMIT);
     }
 
@@ -45,8 +46,8 @@ public class RateLimitUtil {
         };
         // get the capacity, i.e. calls per hour, from config
         return (user instanceof AuthenticatedUser) ?
-                RateLimitUtil.getCapacityByTierAndAction(systemConfig, ((AuthenticatedUser) user).getRateLimitTier(), action) :
-                RateLimitUtil.getCapacityByTierAndAction(systemConfig, 0, action);
+                getCapacityByTierAndAction(systemConfig, ((AuthenticatedUser) user).getRateLimitTier(), action) :
+                getCapacityByTierAndAction(systemConfig, 0, action);
     }
     protected static boolean rateLimited(final Map<String, String> cache, final String key, int capacityPerHour) {
         if (capacityPerHour == NO_LIMIT) {
