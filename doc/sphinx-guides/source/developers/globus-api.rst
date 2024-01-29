@@ -1,7 +1,11 @@
 Globus Transfer API
 ===================
 
+.. contents:: |toctitle|
+        :local:
+
 The Globus API addresses three use cases:
+
 * Transfer to a Dataverse-managed Globus endpoint (File-based or using the Globus S3 Connector)
 * Reference of files that will remain in a remote Globus endpoint
 * Transfer from a Dataverse-managed Globus endpoint
@@ -68,7 +72,7 @@ The response includes the id for the Globus endpoint to use along with several s
 
 The getDatasetMetadata and getFileListing URLs are just signed versions of the standard Dataset metadata and file listing API calls. The other two are Globus specific.
 
-If called for a dataset using a store that is configured with a remote Globus endpoint(s), the return response is similar but the response includes a
+If called for, a dataset using a store that is configured with a remote Globus endpoint(s), the return response is similar but the response includes a
 the "managed" parameter will be false, the "endpoint" parameter is replaced with a JSON array of "referenceEndpointsWithPaths" and the
 requestGlobusTransferPaths and addGlobusFiles URLs are replaced with ones for requestGlobusReferencePaths and addFiles. All of these calls are
 described further below.
@@ -87,7 +91,7 @@ The returned response includes the same getDatasetMetadata and getFileListing UR
 Performing an Upload/Transfer In
 --------------------------------
 
-The information from the API call above can be used to provide a user with information about the dataset and to prepare to transfer or to reference files (based on the "managed" parameter). 
+The information from the API call above can be used to provide a user with information about the dataset and to prepare to transfer (managed=true) or to reference files (managed=false).
 
 Once the user identifies which files are to be added, the requestGlobusTransferPaths or requestGlobusReferencePaths URLs can be called. These both reference the same API call but must be used with different entries in the JSON body sent:
 
@@ -98,7 +102,7 @@ Once the user identifies which files are to be added, the requestGlobusTransferP
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
   export LOCALE=en-US
  
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST "$SERVER_URL/api/datasets/:persistentId/requestGlobusUpload"
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST "$SERVER_URL/api/datasets/:persistentId/requestGlobusUploadPaths"
 
 Note that when using the dataverse-globus app or the return from the previous call, the URL for this call will be signed and no API_TOKEN is needed. 
   
@@ -153,7 +157,7 @@ In the remote/reference case, the map is from the initially supplied endpoint/pa
 Adding Files to the Dataset
 ---------------------------
 
-In the managed case, once a Globus transfer has been initiated a final API call is made to Dataverse to provide it with the task identifier of the transfer and information about the files being transferred:
+In the managed case, you must initiate a Globus transfer and take note of its task identifier. As in the JSON example below, you will pass it as ``taskIdentifier`` along with details about the files you are transferring:
 
 .. code-block:: bash
 
@@ -164,9 +168,9 @@ In the managed case, once a Globus transfer has been initiated a final API call 
                     "files": [{"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"globusm://18b3972213f-f6b5c2221423", "fileName":"file1.txt", "mimeType":"text/plain", "checksum": {"@type": "MD5", "@value": "1234"}}, \
                     {"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"globusm://18b39722140-50eb7d3c5ece", "fileName":"file2.txt", "mimeType":"text/plain", "checksum": {"@type": "MD5", "@value": "2345"}}]}'
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:multipart/form-data" -X POST "$SERVER_URL/api/datasets/:persistentId/addGlobusFiles -F "jsonData=$JSON_DATA"
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:multipart/form-data" -X POST "$SERVER_URL/api/datasets/:persistentId/addGlobusFiles" -F "jsonData=$JSON_DATA"
 
-Note that the mimetype is multipart/form-data, matching the /addFiles API call. ALso note that the API_TOKEN is not needed when using a signed URL.
+Note that the mimetype is multipart/form-data, matching the /addFiles API call. Also note that the API_TOKEN is not needed when using a signed URL.
 
 With this information, Dataverse will begin to monitor the transfer and when it completes, will add all files for which the transfer succeeded.
 As the transfer can take significant time and the API call is asynchronous, the only way to determine if the transfer succeeded via API is to use the standard calls to check the dataset lock state and contents.

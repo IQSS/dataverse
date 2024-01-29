@@ -288,7 +288,7 @@ public class HarvestingServerIT {
     }
     
     @Test
-    public void testSetEditAPIandOAIlistSets() {
+    public void testSetEditAPIandOAIlistSets() throws InterruptedException {
         // This test focuses on testing the Edit functionality of the Dataverse
         // OAI Set API and the ListSets method of the Dataverse OAI server.
         
@@ -299,7 +299,7 @@ public class HarvestingServerIT {
         // expected HTTP result codes. 
         
         String setName = UtilIT.getRandomString(6);
-        String setDef = "*";
+        String setDefinition = "title:Sample";
 
         // Make sure the set does not exist
         String setPath = String.format("/api/harvest/server/oaisets/%s", setName);
@@ -312,20 +312,21 @@ public class HarvestingServerIT {
         // Create the set as admin user
         Response createSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
-                .body(jsonForTestSpec(setName, setDef))
+                .body(jsonForTestSpec(setName, setDefinition))
                 .post(createPath);
         assertEquals(201, createSetResponse.getStatusCode());
 
         // I. Test the Modify/Edit (POST method) functionality of the 
         // Dataverse OAI Sets API
         
-        String newDefinition = "title:New";
+        String persistentId = extraDatasetsIdentifiers.get(0); 
+        String newDefinition = "dsPersistentId:"+persistentId;
         String newDescription = "updated";
         
         // API Test 1. Try to modify the set as normal user, should fail
         Response editSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, normalUserAPIKey)
-                .body(jsonForEditSpec(setName, setDef, ""))
+                .body(jsonForEditSpec(setName, newDefinition, ""))
                 .put(setPath);
         logger.info("non-admin user editSetResponse.getStatusCode(): " + editSetResponse.getStatusCode());
         assertEquals(400, editSetResponse.getStatusCode());
@@ -369,16 +370,35 @@ public class HarvestingServerIT {
         
         XmlPath responseXmlPath = validateOaiVerbResponse(listSetsResponse, "ListSets");
         
-        // 2. Validate the payload of the response, by confirming that the set 
+        // 2. The set hasn't been exported yet, so it shouldn't be listed in 
+        // ListSets (#3322). Let's confirm that: 
+        
+        List<Node> listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list().findAll{it.setName=='"+setName+"'}", Node.class);
+        // 2a. Confirm that our set is listed:
+        assertNotNull(listSets, "Unexpected response from ListSets");
+        assertEquals(0, listSets.size(), "An unexported OAI set is listed in ListSets");
+        
+        // export the set: 
+        
+        Response exportSetResponse = UtilIT.exportOaiSet(setName);
+        assertEquals(200, exportSetResponse.getStatusCode());
+        Thread.sleep(1000L); // sleep for a sec to be sure
+        
+        // ... try again: 
+        
+        listSetsResponse = UtilIT.getOaiListSets();
+        responseXmlPath = validateOaiVerbResponse(listSetsResponse, "ListSets");
+        
+        // 3. Validate the payload of the response, by confirming that the set 
         // we created and modified, above, is being listed by the OAI server 
         // and its xml record is properly formatted
         
-        List<Node> listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list().findAll{it.setName=='"+setName+"'}", Node.class);
+        listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list().findAll{it.setName=='"+setName+"'}", Node.class);
         
-        // 2a. Confirm that our set is listed:
+        // 3a. Confirm that our set is listed:
         assertNotNull(listSets, "Unexpected response from ListSets");
         assertEquals(1, listSets.size(), "Newly-created set isn't properly listed by the OAI server");
-        // 2b. Confirm that the set entry contains the updated description: 
+        // 3b. Confirm that the set entry contains the updated description: 
         assertEquals(newDescription, listSets.get(0).getPath("setDescription.metadata.element.field", String.class), "Incorrect description in the ListSets entry");
         
         // ok, the xml record looks good! 
@@ -860,7 +880,28 @@ public class HarvestingServerIT {
         logger.info("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
         assertEquals(200, deleteResponse.getStatusCode(), "Failed to delete the control multi-record set");
     }
-    
+
+    @Test
+    public void testInvalidQueryParams() {
+
+        // The query parameter "verb" must appear.
+        Response noVerbArg = given().get("/oai?foo=bar");
+        noVerbArg.prettyPrint();
+        noVerbArg.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("oai.error.@code", equalTo("badVerb"))
+                .body("oai.error", equalTo("No argument 'verb' found"));
+
+        // The query parameter "verb" cannot appear more than once.
+        Response repeated = given().get( "/oai?verb=foo&verb=bar");
+        repeated.prettyPrint();
+        repeated.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("oai.error.@code", equalTo("badVerb"))
+                .body("oai.error", equalTo("Verb must be singular, given: '[foo, bar]'"));
+
+    }
+
     // TODO: 
     // What else can we test? 
     // Some ideas: 

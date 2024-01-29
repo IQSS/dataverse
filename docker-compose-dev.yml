@@ -19,6 +19,9 @@ services:
       DATAVERSE_AUTH_OIDC_CLIENT_SECRET: 94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8
       DATAVERSE_AUTH_OIDC_AUTH_SERVER_URL: http://keycloak.mydomain.com:8090/realms/test
       DATAVERSE_JSF_REFRESH_PERIOD: "1"
+      # These two oai settings are here to get HarvestingServerIT to pass
+      dataverse_oai_server_maxidentifiers: "2"
+      dataverse_oai_server_maxrecords: "2"
       JVM_ARGS: -Ddataverse.files.storage-driver-id=file1
         -Ddataverse.files.file1.type=file
         -Ddataverse.files.file1.label=Filesystem
@@ -57,6 +60,8 @@ services:
     volumes:
       - ./docker-dev-volumes/app/data:/dv
       - ./docker-dev-volumes/app/secrets:/secrets
+      # Uncomment to map the glassfish applications folder so that we can update webapp resources using scripts/intellij/cpwebapp.sh
+      # - ./docker-dev-volumes/glassfish/applications:/opt/payara/appserver/glassfish/domains/domain1/applications
       # Uncomment for changes to xhtml to be deployed immediately (if supported your IDE or toolchain).
       # Replace 6.0 with the current version.
       # - ./target/dataverse-6.0:/opt/payara/deployments/dataverse

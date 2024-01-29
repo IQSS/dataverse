@@ -464,7 +464,7 @@ public class DatasetUtil {
 
             try {
                 in = ImageThumbConverter.getImageThumbnailAsInputStream(thumbnailFile.getStorageIO(),
-                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE).getInputStream();
+                        ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE).getInputStream();
             } catch (IOException ioex) {
                 logger.warning("getLogo(): Failed to get logo from DataFile for " + dataset.getStorageIdentifier()
                         + " (" + ioex.getMessage() + ")");
