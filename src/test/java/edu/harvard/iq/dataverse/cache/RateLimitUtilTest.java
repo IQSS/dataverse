@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.cache;
 
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -91,5 +94,23 @@ public class RateLimitUtilTest {
         assertEquals(100, RateLimitUtil.getCapacityByTierAndAction(systemConfig, 0, "GetLatestAccessibleDatasetVersionCommand"));
         assertEquals(200, RateLimitUtil.getCapacityByTierAndAction(systemConfig, 1, "GetLatestAccessibleDatasetVersionCommand"));
         assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacityByTierAndAction(systemConfig, 2, "GetLatestAccessibleDatasetVersionCommand"));
+    }
+
+    @Test
+    public void testGenerateCacheKey() {
+        User user = GuestUser.get();
+        assertEquals(RateLimitUtil.generateCacheKey(user,"action1"), ":guest:action1");
+    }
+    @Test
+    public void testGetCapacity() {
+        lenient().doReturn(settingJson).when(systemConfig).getRateLimitsJson();
+        GuestUser guestUser = GuestUser.get();
+        assertEquals(10, RateLimitUtil.getCapacity(systemConfig, guestUser, "GetPrivateUrlCommand"));
+
+        AuthenticatedUser authUser = new AuthenticatedUser();
+        authUser.setRateLimitTier(1);
+        assertEquals(30, RateLimitUtil.getCapacity(systemConfig, authUser, "GetPrivateUrlCommand"));
+        authUser.setSuperuser(true);
+        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(systemConfig, authUser, "GetPrivateUrlCommand"));
     }
 }

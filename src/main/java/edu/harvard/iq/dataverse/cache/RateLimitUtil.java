@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.cache;
 
 import com.google.gson.Gson;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import jakarta.ejb.EJB;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
@@ -30,7 +32,7 @@ public class RateLimitUtil {
         return systemConfig.getIntFromCSVStringOrDefault(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers, tier, NO_LIMIT);
     }
 
-    public static String generateCacheKey(final User user, final String action) {
+    protected static String generateCacheKey(final User user, final String action) {
         StringBuffer id = new StringBuffer();
         id.append(user != null ? user.getIdentifier() : GuestUser.get().getIdentifier());
         if (action != null) {
@@ -38,7 +40,16 @@ public class RateLimitUtil {
         }
         return id.toString();
     }
-    public static boolean rateLimited(final Map<String, String> cache, final String key, int capacityPerHour) {
+    protected static int getCapacity(SystemConfig systemConfig, User user, String action) {
+        if (user != null && user.isSuperuser()) {
+            return NO_LIMIT;
+        };
+        // get the capacity, i.e. calls per hour, from config
+        return (user instanceof AuthenticatedUser) ?
+                RateLimitUtil.getCapacityByTierAndAction(systemConfig, ((AuthenticatedUser) user).getRateLimitTier(), action) :
+                RateLimitUtil.getCapacityByTierAndAction(systemConfig, 0, action);
+    }
+    protected static boolean rateLimited(final Map<String, String> cache, final String key, int capacityPerHour) {
         if (capacityPerHour == NO_LIMIT) {
             return false;
         }
@@ -60,7 +71,7 @@ public class RateLimitUtil {
         return tokens < 1;
     }
 
-    public static int getCapacityByTierAndAction(SystemConfig systemConfig, Integer tier, String action) {
+    protected static int getCapacityByTierAndAction(SystemConfig systemConfig, Integer tier, String action) {
         if (rateLimits.isEmpty()) {
             init(systemConfig);
         }
