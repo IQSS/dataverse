@@ -84,7 +84,7 @@ If you no longer need the containers because your demo or evaluation is finished
 Deleting the Data Directory
 +++++++++++++++++++++++++++
 
-Data related to the Dataverse containers is placed in a directory called ``docker-dev-volumes`` next to the ``compose.yml`` file. If you are finished with your demo or evaluation or you want to start fresh, simply delete this directory.
+Data related to the Dataverse containers is placed in a directory called ``data`` next to the ``compose.yml`` file. If you are finished with your demo or evaluation or you want to start fresh, simply delete this directory.
 
 Configuration
 -------------
