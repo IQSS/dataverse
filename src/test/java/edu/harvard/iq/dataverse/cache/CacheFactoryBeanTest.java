@@ -85,6 +85,10 @@ public class CacheFactoryBeanTest {
             cache.systemConfig = mockedSystemConfig;
             cache.init(); // PostConstruct - start Hazelcast
 
+            // clear the static data so it can be reloaded with the new mocked data
+            RateLimitUtil.rateLimitMap.clear();
+            RateLimitUtil.rateLimits.clear();
+
             // testing cache implementation and code coverage
             final String cacheKey = "CacheTestKey" + UUID.randomUUID();
             final String cacheValue = "CacheTestValue" + UUID.randomUUID();
