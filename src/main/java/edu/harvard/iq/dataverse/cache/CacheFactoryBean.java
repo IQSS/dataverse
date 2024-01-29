@@ -18,7 +18,7 @@ import java.util.Map;
 public class CacheFactoryBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(CacheFactoryBean.class.getCanonicalName());
     private static HazelcastInstance hazelcastInstance = null;
-    private static Map<String, String> rateLimitCache;
+    protected static Map<String, String> rateLimitCache;
     @EJB
     SystemConfig systemConfig;
 
@@ -54,7 +54,7 @@ public class CacheFactoryBean implements java.io.Serializable {
             return true;
         } else {
             String cacheKey = RateLimitUtil.generateCacheKey(user, action);
-            return (!RateLimitUtil.rateLimited(rateLimitCache, cacheKey, capacity));
+            return (!RateLimitUtil.rateLimited(cacheKey, capacity));
         }
     }
 
