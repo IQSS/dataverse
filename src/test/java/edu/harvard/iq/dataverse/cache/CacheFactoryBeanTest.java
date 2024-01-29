@@ -104,7 +104,7 @@ public class CacheFactoryBeanTest {
                 break;
             }
         }
-        assertTrue(rateLimited && cnt > 1 && cnt <= 30);
+        assertTrue(rateLimited && cnt > 1 && cnt <= 30, "rateLimited:"+rateLimited + " cnt:"+cnt);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class CacheFactoryBeanTest {
                 break;
             }
         }
-        assertTrue(!rateLimited && cnt >= 99);
+        assertTrue(!rateLimited && cnt >= 99, "rateLimited:"+rateLimited + " cnt:"+cnt);
     }
 
     @Test
@@ -128,33 +128,33 @@ public class CacheFactoryBeanTest {
         authUser.setSuperuser(false);
         authUser.setUserIdentifier("authUser");
         authUser.setRateLimitTier(2); // 120 cals per hour - 1 added token every 30 seconds
-        boolean limited = false;
+        boolean rateLimited = false;
         int cnt;
         for (cnt = 0; cnt <200; cnt++) {
-            limited = !cache.checkRate(authUser, action);
-            if (limited) {
+            rateLimited = !cache.checkRate(authUser, action);
+            if (rateLimited) {
                 break;
             }
         }
-        assertTrue(limited && cnt == 120);
+        assertTrue(rateLimited && cnt == 120, "rateLimited:"+rateLimited + " cnt:"+cnt);
 
         for (cnt = 0; cnt <60; cnt++) {
             Thread.sleep(1000);// wait for bucket to be replenished (check each second for 1 minute max)
-            limited = !cache.checkRate(authUser, action);
-            if (!limited) {
+            rateLimited = !cache.checkRate(authUser, action);
+            if (!rateLimited) {
                 break;
             }
         }
-        assertTrue(!limited);
+        assertTrue(!rateLimited, "rateLimited:"+rateLimited + " cnt:"+cnt);
 
         // Now change the user's tier so it is no longer limited
         authUser.setRateLimitTier(3); // tier 3 = no limit
         for (cnt = 0; cnt <200; cnt++) {
-            limited = !cache.checkRate(authUser, action);
-            if (limited) {
+            rateLimited = !cache.checkRate(authUser, action);
+            if (rateLimited) {
                 break;
             }
         }
-        assertTrue(!limited && cnt == 200);
+        assertTrue(!rateLimited && cnt == 200, "rateLimited:"+rateLimited + " cnt:"+cnt);
     }
 }

@@ -53,17 +53,14 @@ public class CacheFactoryBean implements java.io.Serializable {
         if (user != null && user.isSuperuser()) {
             return true;
         };
-        StringBuffer id = new StringBuffer();
-        id.append(user != null ? user.getIdentifier() : GuestUser.get().getIdentifier());
-        if (action != null) {
-            id.append(":").append(action);
-        }
+
+        String cacheKey = RateLimitUtil.generateCacheKey(user, action);
 
         // get the capacity, i.e. calls per hour, from config
         int capacity = (user instanceof AuthenticatedUser) ?
                 RateLimitUtil.getCapacityByTierAndAction(systemConfig, ((AuthenticatedUser) user).getRateLimitTier(), action) :
                 RateLimitUtil.getCapacityByTierAndAction(systemConfig, 0, action);
-        return (!RateLimitUtil.rateLimited(rateLimitCache, id.toString(), capacity));
+        return (!RateLimitUtil.rateLimited(rateLimitCache, cacheKey, capacity));
     }
 
     public long getCacheSize(String cacheName) {

@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.cache;
 
 import com.google.gson.Gson;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.json.Json;
@@ -28,6 +30,14 @@ public class RateLimitUtil {
         return systemConfig.getIntFromCSVStringOrDefault(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers, tier, NO_LIMIT);
     }
 
+    public static String generateCacheKey(final User user, final String action) {
+        StringBuffer id = new StringBuffer();
+        id.append(user != null ? user.getIdentifier() : GuestUser.get().getIdentifier());
+        if (action != null) {
+            id.append(":").append(action);
+        }
+        return id.toString();
+    }
     public static boolean rateLimited(final Map<String, String> cache, final String key, int capacityPerHour) {
         if (capacityPerHour == NO_LIMIT) {
             return false;
@@ -83,9 +93,8 @@ public class RateLimitUtil {
                 rateLimits.addAll(gson.fromJson(String.valueOf(lst),
                         new ArrayList<RateLimitSetting>() {}.getClass().getGenericSuperclass()));
             } catch (Exception e) {
-                logger.warning("Unable to parse Rate Limit Json" + ": " + e.getLocalizedMessage());
+                logger.warning("Unable to parse Rate Limit Json: " + e.getLocalizedMessage() + "   Json:(" + setting + ")");
                 rateLimits.add(new RateLimitSetting()); // add a default entry to prevent re-initialization
-                e.printStackTrace();
             }
         }
     }
