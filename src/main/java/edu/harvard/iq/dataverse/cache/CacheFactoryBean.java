@@ -3,8 +3,6 @@ package edu.harvard.iq.dataverse.cache;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.annotation.PostConstruct;
@@ -50,17 +48,13 @@ public class CacheFactoryBean implements java.io.Serializable {
      * @return true if user is superuser or rate not limited
      */
     public boolean checkRate(User user, String action) {
-        if (user != null && user.isSuperuser()) {
+        int capacity = RateLimitUtil.getCapacity(systemConfig, user, action);
+        if (capacity == RateLimitUtil.NO_LIMIT) {
             return true;
-        };
-
-        String cacheKey = RateLimitUtil.generateCacheKey(user, action);
-
-        // get the capacity, i.e. calls per hour, from config
-        int capacity = (user instanceof AuthenticatedUser) ?
-                RateLimitUtil.getCapacityByTierAndAction(systemConfig, ((AuthenticatedUser) user).getRateLimitTier(), action) :
-                RateLimitUtil.getCapacityByTierAndAction(systemConfig, 0, action);
-        return (!RateLimitUtil.rateLimited(rateLimitCache, cacheKey, capacity));
+        } else {
+            String cacheKey = RateLimitUtil.generateCacheKey(user, action);
+            return (!RateLimitUtil.rateLimited(rateLimitCache, cacheKey, capacity));
+        }
     }
 
     public long getCacheSize(String cacheName) {

@@ -26,7 +26,6 @@ public class CacheFactoryBeanTest {
     @InjectMocks
     static CacheFactoryBean cache = new CacheFactoryBean();
     AuthenticatedUser authUser = new AuthenticatedUser();
-    String action;
     static final String settingJson = "{\n" +
             "  \"rateLimits\":[\n" +
             "    {\n" +
@@ -80,13 +79,11 @@ public class CacheFactoryBeanTest {
 
         cache.init();
         authUser.setRateLimitTier(1); // reset to default
-        action = "cmd-" + UUID.randomUUID();
 
         // testing cache implementation and code coverage
         final String cacheKey = "CacheTestKey" + UUID.randomUUID();
         final String cacheValue = "CacheTestValue" + UUID.randomUUID();
         long cacheSize = cache.getCacheSize(cache.RATE_LIMIT_CACHE);
-        System.out.println("Cache Size : " + cacheSize);
         cache.setCacheValue(cache.RATE_LIMIT_CACHE, cacheKey,cacheValue);
         assertTrue(cache.getCacheSize(cache.RATE_LIMIT_CACHE) > cacheSize);
         Object cacheValueObj = cache.getCacheValue(cache.RATE_LIMIT_CACHE, cacheKey);
@@ -96,6 +93,7 @@ public class CacheFactoryBeanTest {
     @Test
     public void testGuestUserGettingRateLimited() throws InterruptedException {
         User user = GuestUser.get();
+        String action = "cmd-" + UUID.randomUUID();
         boolean rateLimited = false;
         int cnt = 0;
         for (; cnt <100; cnt++) {
@@ -104,6 +102,7 @@ public class CacheFactoryBeanTest {
                 break;
             }
         }
+        assertTrue(cache.getCacheSize(cache.RATE_LIMIT_CACHE) > 0);
         assertTrue(rateLimited && cnt > 1 && cnt <= 30, "rateLimited:"+rateLimited + " cnt:"+cnt);
     }
 
@@ -111,7 +110,7 @@ public class CacheFactoryBeanTest {
     public void testAdminUserExemptFromGettingRateLimited() throws InterruptedException {
         authUser.setSuperuser(true);
         authUser.setUserIdentifier("admin");
-
+        String action = "cmd-" + UUID.randomUUID();
         boolean rateLimited = false;
         int cnt = 0;
         for (; cnt <100; cnt++) {
@@ -128,6 +127,7 @@ public class CacheFactoryBeanTest {
         authUser.setSuperuser(false);
         authUser.setUserIdentifier("authUser");
         authUser.setRateLimitTier(2); // 120 cals per hour - 1 added token every 30 seconds
+        String action = "cmd-" + UUID.randomUUID();
         boolean rateLimited = false;
         int cnt;
         for (cnt = 0; cnt <200; cnt++) {
@@ -147,7 +147,7 @@ public class CacheFactoryBeanTest {
         }
         assertTrue(!rateLimited, "rateLimited:"+rateLimited + " cnt:"+cnt);
 
-        // Now change the user's tier so it is no longer limited
+        // Now change the user's tier, so it is no longer limited
         authUser.setRateLimitTier(3); // tier 3 = no limit
         for (cnt = 0; cnt <200; cnt++) {
             rateLimited = !cache.checkRate(authUser, action);
