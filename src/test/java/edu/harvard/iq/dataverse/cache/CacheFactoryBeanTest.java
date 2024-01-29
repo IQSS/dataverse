@@ -110,12 +110,6 @@ public class CacheFactoryBeanTest {
 
     @Test
     public void testGuestUserGettingRateLimited() {
-        String key = RateLimitUtil.generateCacheKey(guestUser,action);
-        String value = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, key));
-        String keyLastUpdate = String.format("%s:last_update",key);
-        String lastUpdate = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, keyLastUpdate));
-        System.out.println(">>> key|value|lastUpdate  |" + key + "|" + value + "|" + lastUpdate);
-
         boolean rateLimited = false;
         int cnt = 0;
         for (; cnt <100; cnt++) {
@@ -123,16 +117,7 @@ public class CacheFactoryBeanTest {
             if (rateLimited) {
                 break;
             }
-            if (cnt % 10 == 0) {
-                value = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, key));
-                lastUpdate = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, keyLastUpdate));
-                System.out.println(cnt + " key|value|lastUpdate  |" + key + "|" + value + "|" + lastUpdate);
-            }
         }
-
-        value = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, key));
-        lastUpdate = String.valueOf(cache.getCacheValue(cache.RATE_LIMIT_CACHE, keyLastUpdate));
-        System.out.println(cnt + " key|value|lastUpdate  |" + key + "|" + value + "|" + lastUpdate);
         assertTrue(cache.getCacheSize(cache.RATE_LIMIT_CACHE) > 0);
         assertTrue(rateLimited && cnt > 1 && cnt <= 30, "rateLimited:"+rateLimited + " cnt:"+cnt);
     }
