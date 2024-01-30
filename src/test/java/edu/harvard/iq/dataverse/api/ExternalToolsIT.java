@@ -432,6 +432,7 @@ public class ExternalToolsIT {
     @Disabled
     @Test
     public void createToolDataExplorer() {
+    /*    
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "Data Explorer");
         job.add("description", "");
@@ -466,6 +467,7 @@ public class ExternalToolsIT {
         Response deleteExternalTool = UtilIT.deleteExternalTool(toolId);
         deleteExternalTool.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        */
     }
 
     // both preview and explore
