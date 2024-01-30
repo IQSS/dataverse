@@ -51,6 +51,8 @@ services:
       - "4848:4848" # HTTP (Payara Admin Console)
       - "9009:9009" # JDWP
       - "8686:8686" # JMX
+      - "5701:5701" # Hazelcast
+      - "5702:5702" # Hazelcast
     networks:
       - dataverse
     depends_on:
