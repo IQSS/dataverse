@@ -28,10 +28,18 @@ public class CacheFactoryBean implements java.io.Serializable {
     @PostConstruct
     public void init() {
         if (hazelcastInstance == null) {
-            Config hazelcastConfig = new Config();
-            hazelcastConfig.setClusterName("dataverse");
-            hazelcastConfig.getJetConfig().setEnabled(true);
-            hazelcastInstance = Hazelcast.newHazelcastInstance(hazelcastConfig);
+            Config config = new Config();
+            config.setClusterName("dataverse");
+            config.getJetConfig().setEnabled(true);
+
+            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(true);
+            config.getNetworkConfig().getJoin().getAwsConfig().setEnabled(false);
+            config.getNetworkConfig().getJoin().getAzureConfig().setEnabled(false);
+            //        .setProperty("tag-key", "my-ec2-instance-tag-key")
+            //        .setProperty("tag-value", "my-ec2-instance-tag-value");
+
+
+            hazelcastInstance = Hazelcast.newHazelcastInstance(config);
             rateLimitCache = hazelcastInstance.getMap(RATE_LIMIT_CACHE);
         }
     }
