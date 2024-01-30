@@ -48,7 +48,7 @@ public class RateLimitUtil {
                 getCapacityByTierAndAction(systemConfig, ((AuthenticatedUser) user).getRateLimitTier(), action) :
                 getCapacityByTierAndAction(systemConfig, 0, action);
     }
-    protected static boolean rateLimited(final String key, int capacityPerHour) {
+    protected static boolean rateLimited(final Map rateLimitCache, final String key, int capacityPerHour) {
         if (capacityPerHour == NO_LIMIT) {
             return false;
         }
@@ -56,17 +56,17 @@ public class RateLimitUtil {
         double tokensPerMinute = (capacityPerHour / 60.0);
         // Get the last time this bucket was added to
         final String keyLastUpdate = String.format("%s:last_update",key);
-        long lastUpdate = longFromKey(CacheFactoryBean.rateLimitCache, keyLastUpdate);
+        long lastUpdate = longFromKey(rateLimitCache, keyLastUpdate);
         long deltaTime = currentTime - lastUpdate;
         // Get the current number of tokens in the bucket
-        long tokens = longFromKey(CacheFactoryBean.rateLimitCache, key);
+        long tokens = longFromKey(rateLimitCache, key);
         long tokensToAdd = (long) (deltaTime * tokensPerMinute);
         if (tokensToAdd > 0) { // Don't update timestamp if we aren't adding any tokens to the bucket
             tokens = min(capacityPerHour, tokens + tokensToAdd);
-            CacheFactoryBean.rateLimitCache.put(keyLastUpdate, String.valueOf(currentTime));
+            rateLimitCache.put(keyLastUpdate, String.valueOf(currentTime));
         }
         // Update with any added tokens and decrement 1 token for this call if not rate limited (0 tokens)
-        CacheFactoryBean.rateLimitCache.put(key, String.valueOf(max(0, tokens-1)));
+        rateLimitCache.put(key, String.valueOf(max(0, tokens-1)));
         return tokens < 1;
     }
 

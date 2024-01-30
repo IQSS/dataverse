@@ -6,6 +6,7 @@ import com.hazelcast.core.HazelcastInstance;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
@@ -17,8 +18,8 @@ import java.util.Map;
 @Startup
 public class CacheFactoryBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(CacheFactoryBean.class.getCanonicalName());
-    private static HazelcastInstance hazelcastInstance = null;
-    protected static Map<String, String> rateLimitCache;
+    private HazelcastInstance hazelcastInstance = null;
+    private Map<String, String> rateLimitCache;
     @EJB
     SystemConfig systemConfig;
 
@@ -34,11 +35,16 @@ public class CacheFactoryBean implements java.io.Serializable {
             rateLimitCache = hazelcastInstance.getMap(RATE_LIMIT_CACHE);
         }
     }
-    @Override
-    protected void finalize() throws Throwable {
+    @PreDestroy
+    protected void cleanup() {
         if (hazelcastInstance != null) {
             hazelcastInstance.shutdown();
+            hazelcastInstance = null;
         }
+    }
+    @Override
+    protected void finalize() throws Throwable {
+        cleanup();
         super.finalize();
     }
 
@@ -54,7 +60,7 @@ public class CacheFactoryBean implements java.io.Serializable {
             return true;
         } else {
             String cacheKey = RateLimitUtil.generateCacheKey(user, action);
-            return (!RateLimitUtil.rateLimited(cacheKey, capacity));
+            return (!RateLimitUtil.rateLimited(rateLimitCache, cacheKey, capacity));
         }
     }
 
@@ -84,6 +90,15 @@ public class CacheFactoryBean implements java.io.Serializable {
         switch (cacheName) {
             case RATE_LIMIT_CACHE:
                 rateLimitCache.put(key, (String) value);
+                break;
+            default:
+                break;
+        }
+    }
+    public void clearCache(String cacheName) {
+        switch (cacheName) {
+            case RATE_LIMIT_CACHE:
+                rateLimitCache.clear();
                 break;
             default:
                 break;

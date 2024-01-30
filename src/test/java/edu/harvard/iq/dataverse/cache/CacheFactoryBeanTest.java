@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -108,6 +109,13 @@ public class CacheFactoryBeanTest {
         action = "cmd-" + UUID.randomUUID();
     }
 
+    @AfterAll
+    public static void cleanup() {
+        if (cache != null) {
+            cache.cleanup(); // PreDestroy - shutdown Hazelcast
+            cache = null;
+        }
+    }
     @Test
     public void testGuestUserGettingRateLimited() {
         boolean rateLimited = false;
@@ -168,5 +176,38 @@ public class CacheFactoryBeanTest {
             }
         }
         assertTrue(!rateLimited && cnt == 200, "rateLimited:"+rateLimited + " cnt:"+cnt);
+    }
+
+    @Test
+    public void testCluster() {
+        //make sure at least 1 entry is in the original cache
+        cache.checkRate(authUser, action);
+
+        // create a second cache to test cluster
+        CacheFactoryBean cache2 = new CacheFactoryBean();
+        cache2.systemConfig = mockedSystemConfig;
+        cache2.init(); // PostConstruct - start Hazelcast
+
+        // check to see if the new cache synced with the existing cache
+        long s1 = cache.getCacheSize(CacheFactoryBean.RATE_LIMIT_CACHE);
+        long s2 = cache2.getCacheSize(CacheFactoryBean.RATE_LIMIT_CACHE);
+        assertTrue(s1 > 0 && s1 == s2);
+
+        String key = "key1";
+        String value = "value1";
+        // verify that both caches stay in sync
+        cache.setCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key, value);
+        assertTrue(value.equals(cache2.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
+        // clearing one cache also clears the other cache in the cluster
+        cache2.clearCache(CacheFactoryBean.RATE_LIMIT_CACHE);
+        assertTrue(String.valueOf(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)).isEmpty());
+
+        // verify no issue dropping one node from cluster
+        cache2.setCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key, value);
+        assertTrue(value.equals(cache2.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
+        assertTrue(value.equals(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
+        cache2.cleanup(); // remove cache2
+        assertTrue(value.equals(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
+
     }
 }
