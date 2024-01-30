@@ -191,7 +191,7 @@ public class CacheFactoryBeanTest {
         // check to see if the new cache synced with the existing cache
         long s1 = cache.getCacheSize(CacheFactoryBean.RATE_LIMIT_CACHE);
         long s2 = cache2.getCacheSize(CacheFactoryBean.RATE_LIMIT_CACHE);
-        assertTrue(s1 > 0 && s1 == s2);
+        assertTrue(s1 > 0 && s1 == s2, "Size1:" + s1 + " Size2:" + s2 );
 
         String key = "key1";
         String value = "value1";
