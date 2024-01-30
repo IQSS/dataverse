@@ -31,6 +31,7 @@ Developer Guide
    making-releases
    making-library-releases
    metadataexport
+   metadatablocksdev
    tools
    unf/index
    make-data-count
