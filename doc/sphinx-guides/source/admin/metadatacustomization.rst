@@ -648,6 +648,11 @@ Alternatively, you are welcome to request "edit" access to this "Tips for Datave
 
 The thinking is that the tips can become issues and the issues can eventually be worked on as features to improve the Dataverse Software metadata system.
 
+Development Tasks Specific to Changing Fields in Core Metadata Blocks
+---------------------------------------------------------------------
+
+When it comes to the fields from the core blocks that are distributed with Dataverse (such as Citation and Social Science blocks), code dependencies may exist in Dataverse, primarily in the Import and Export subsystems, on these fields being configured a certain way. So, if it becomes necessary to modify one of such core fields (a real life example is making a single value-only field support multiple values), code changes may be necessary to accompany the change in the block tsv, plus some sample and test files maintained in the Dataverse source tree will need to be adjusted accordingly. An example of a checklist of such tasks is provided in the Development Guide, please see the :doc:`/developers/metadatablocksdev` section.
+
 Footnotes
 ---------
 
