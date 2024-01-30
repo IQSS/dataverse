@@ -424,11 +424,15 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      * files, OK to use on small files:
      */
     
-    public static Double[] subsetDoubleVector(InputStream in, int column, int numCases) {
+    public static Double[] subsetDoubleVector(InputStream in, int column, int numCases, boolean skipHeader) {
         Double[] retVector = new Double[numCases];
         try (Scanner scanner = new Scanner(in)) {
             scanner.useDelimiter("\\n");
 
+            if (skipHeader) {
+                skipFirstLine(scanner);
+            }
+            
             for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
                 if (scanner.hasNext()) {
                     String[] line = (scanner.next()).split("\t", -1);
@@ -476,11 +480,15 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      * Same deal as with the method above - straightforward, but (potentially) slow. 
      * Not a resource hog though - will only try to store one vector in memory. 
      */
-    public static Float[] subsetFloatVector(InputStream in, int column, int numCases) {
+    public static Float[] subsetFloatVector(InputStream in, int column, int numCases, boolean skipHeader) {
         Float[] retVector = new Float[numCases];
         try (Scanner scanner = new Scanner(in)) {
             scanner.useDelimiter("\\n");
 
+            if (skipHeader) {
+                skipFirstLine(scanner);
+            }
+            
             for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
                 if (scanner.hasNext()) {
                     String[] line = (scanner.next()).split("\t", -1);
@@ -526,11 +534,15 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      * Same deal as with the method above - straightforward, but (potentially) slow. 
      * Not a resource hog though - will only try to store one vector in memory. 
      */
-    public static Long[] subsetLongVector(InputStream in, int column, int numCases) {
+    public static Long[] subsetLongVector(InputStream in, int column, int numCases, boolean skipHeader) {
         Long[] retVector = new Long[numCases];
         try (Scanner scanner = new Scanner(in)) {
             scanner.useDelimiter("\\n");
 
+            if (skipHeader) {
+                skipFirstLine(scanner);
+            }
+            
             for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
                 if (scanner.hasNext()) {
                     String[] line = (scanner.next()).split("\t", -1);
@@ -562,11 +574,15 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      * Same deal as with the method above - straightforward, but (potentially) slow. 
      * Not a resource hog though - will only try to store one vector in memory. 
      */
-    public static String[] subsetStringVector(InputStream in, int column, int numCases) {
+    public static String[] subsetStringVector(InputStream in, int column, int numCases, boolean skipHeader) {
         String[] retVector = new String[numCases];
         try (Scanner scanner = new Scanner(in)) {
             scanner.useDelimiter("\\n");
 
+            if (skipHeader) {
+                skipFirstLine(scanner);
+            }
+            
             for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
                 if (scanner.hasNext()) {
                     String[] line = (scanner.next()).split("\t", -1);
@@ -634,6 +650,13 @@ public class TabularSubsetGenerator implements SubsetGenerator {
 
     }
 
+    private static void skipFirstLine(Scanner scanner) {
+        if (!scanner.hasNext()) {
+            throw new RuntimeException("Failed to read the variable name header line from the tab-delimited file!");
+        }
+        scanner.next();
+    }
+    
     /*
      * Straightforward method for subsetting a tab-delimited data file, extracting
      * all the columns representing continuous variables and returning them as 
@@ -1292,55 +1315,6 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         return new File(rotatedImageFileName);
 
     }*/
-    
-    /**
-     * main() method, for testing
-     * usage: java edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator testfile.tab varcount casecount column type
-     * make sure the CLASSPATH contains ...
-     * 
-     */
-    
-    public static void main(String[] args) {
-        
-        String tabFileName = args[0]; 
-        int varcount = new Integer(args[1]).intValue();
-        int casecount = new Integer(args[2]).intValue();
-        int column = new Integer(args[3]).intValue();
-        String type = args[4];
-        
-        File tabFile = new File(tabFileName);
-        File rotatedImageFile = null; 
-        
-        TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator(); 
-        
-        MathContext doubleMathContext = new MathContext(15, RoundingMode.HALF_EVEN);
-        String FORMAT_IEEE754 = "%+#.15e";
-        
-        /*try {
-            //subsetGenerator.reverseRotatedImage(rotatedImageFile, varcount, casecount);
-            //String[] columns = subsetGenerator.subsetStringVector(tabFile, column, varcount, casecount);
-            if ("string".equals(type)) {
-                String[] columns = subsetGenerator.subsetStringVector(tabFile, column, varcount, casecount);
-                for (int i = 0; i < casecount; i++) {
-                    System.out.println(columns[i]);
-                }
-            } else {
-
-                Double[] columns = subsetGenerator.subsetDoubleVector(tabFile, column, varcount, casecount);
-                for (int i = 0; i < casecount; i++) {
-                    if (columns[i] != null) {
-                        BigDecimal outBigDecimal = new BigDecimal(columns[i], doubleMathContext);
-                        System.out.println(String.format(FORMAT_IEEE754, outBigDecimal));
-                    } else {
-                        System.out.println("NA");
-                    }
-                    //System.out.println(columns[i]);
-                }
-            }
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-        }*/
-    }
 }
 
 

@@ -195,7 +195,7 @@ public class CSVFileReaderTest {
                 fail("Failed to open generated tab-delimited file for reading" + ioex);
             }
 
-            Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+            Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue(), false);
 
             assertArrayEquals(floatVectors[vectorCount++], columnVector, "column " + i + ":");
         }
@@ -229,7 +229,7 @@ public class CSVFileReaderTest {
                 fail("Failed to open generated tab-delimited file for reading" + ioex);
             }
 
-            Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+            Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue(), false);
 
             assertArrayEquals(longVectors[vectorCount++], columnVector, "column " + i + ":");
         }
@@ -256,7 +256,7 @@ public class CSVFileReaderTest {
                 fail("Failed to open generated tab-delimited file for reading" + ioex);
             }
 
-            String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+            String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue(), false);
 
             assertArrayEquals(stringVectors[vectorCount++], columnVector, "column " + i + ":");
         }
@@ -327,7 +327,7 @@ public class CSVFileReaderTest {
                     fail("Failed to open generated tab-delimited file for reading" + ioex);
                 }
 
-                Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue(), false);
                 try {
                     unf = UNFUtil.calculateUNF(columnVector);
                 } catch (IOException | UnfException ioex) {
@@ -345,7 +345,7 @@ public class CSVFileReaderTest {
                     fail("Failed to open generated tab-delimited file for reading" + ioex);
                 }
 
-                Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue(), false);
 
                 try {
                     unf = UNFUtil.calculateUNF(columnVector);
@@ -363,7 +363,7 @@ public class CSVFileReaderTest {
                     fail("Failed to open generated tab-delimited file for reading" + ioex);
                 }
 
-                String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue(), false);
 
                 String[] dateFormats = null;
 
