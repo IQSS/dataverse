@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +30,7 @@ public class CacheFactoryBeanTest {
     AuthenticatedUser authUser = new AuthenticatedUser();
     GuestUser guestUser = GuestUser.get();
     String action;
+    static final String staticHazelcastSystemProperties = "dataverse.hazelcast.";
     static final String settingJson = "{\n" +
             "  \"rateLimits\":[\n" +
             "    {\n" +
@@ -72,8 +74,13 @@ public class CacheFactoryBeanTest {
             "  ]\n" +
             "}";
 
+    @BeforeAll
+    public static void setup() {
+        System.setProperty(staticHazelcastSystemProperties + "join", "TcpIp");
+        System.setProperty(staticHazelcastSystemProperties + "members", "localhost:5701,localhost:5702");
+    }
     @BeforeEach
-    public void setup() throws IOException {
+    public void init() throws IOException {
         // reuse cache and config for all tests
         if (cache == null) {
             mockedSystemConfig = mock(SystemConfig.class);
