@@ -101,7 +101,7 @@ public class ExternalToolsIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.displayName", CoreMatchers.equalTo("AwesomeTool"));
 
-        long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
+        Long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
 
         Response getTool = UtilIT.getExternalTool(toolId);
         getTool.prettyPrint();
@@ -115,14 +115,17 @@ public class ExternalToolsIT {
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview, query]."));
 
-        Response getExternalToolsForTabularFiles = UtilIT.getExternalToolsForFile(tabularFileId.toString(), "explore", apiToken);
+       // Getting tool by tool Id to avoid issue where there are existing tools
+        String toolIdString = toolId.toString();
+        Response getExternalToolsForTabularFiles = UtilIT.getExternalToolForFileById(tabularFileId.toString(), "explore", apiToken, toolIdString);
         getExternalToolsForTabularFiles.prettyPrint();
+        
         getExternalToolsForTabularFiles.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data[0].displayName", CoreMatchers.equalTo("AwesomeTool"))
-                .body("data[0].scope", CoreMatchers.equalTo("file"))
-                .body("data[0].contentType", CoreMatchers.equalTo("text/tab-separated-values"))
-                .body("data[0].toolUrlWithQueryParams", CoreMatchers.equalTo("http://awesometool.com?fileid=" + tabularFileId + "&key=" + apiToken));
+                .body("data.displayName", CoreMatchers.equalTo("AwesomeTool"))
+                .body("data.scope", CoreMatchers.equalTo("file"))
+                .body("data.contentType", CoreMatchers.equalTo("text/tab-separated-values"))
+                .body("data.toolUrlWithQueryParams", CoreMatchers.equalTo("http://awesometool.com?fileid=" + tabularFileId + "&key=" + apiToken));
 
         Response getExternalToolsForJuptyerNotebooks = UtilIT.getExternalToolsForFile(jupyterNotebookFileId.toString(), "explore", apiToken);
         getExternalToolsForJuptyerNotebooks.prettyPrint();
