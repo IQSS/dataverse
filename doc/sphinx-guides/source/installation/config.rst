@@ -4151,6 +4151,15 @@ A true/false (default) option determining whether the dataset datafile table dis
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
 
+
+.. _:UseStorageQuotas:
+
+:UseStorageQuotas
++++++++++++++++++
+
+Enables storage use quotas in collections. See the :doc:`/api/native-api` for details.
+
+
 .. _:StoreIngestedTabularFilesWithVarHeaders:
 
 :StoreIngestedTabularFilesWithVarHeaders
