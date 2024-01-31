@@ -30,6 +30,8 @@ import jakarta.faces.event.ActionEvent;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -430,9 +432,19 @@ public class HarvestingSetsPage implements java.io.Serializable {
         return false;
     }
     
+    // The numbers of datasets and deleted/exported records below are used 
+    // in rendering rules on the page. They absolutely need to be cached
+    // on the first lookup. 
+    
+    Map<String, Integer> cachedSetInfoNumDatasets = new HashMap<>();
+    
     public int getSetInfoNumOfDatasets(OAISet oaiSet) {
         if (oaiSet.isDefaultSet()) {
             return getSetInfoNumOfExported(oaiSet);
+        }
+        
+        if (cachedSetInfoNumDatasets.get(oaiSet.getSpec()) != null) {
+            return cachedSetInfoNumDatasets.get(oaiSet.getSpec());
         }
         
         String query = oaiSet.getDefinition();
@@ -440,34 +452,72 @@ public class HarvestingSetsPage implements java.io.Serializable {
         try {
             int num = oaiSetService.validateDefinitionQuery(query);
             if (num > -1) {
+                cachedSetInfoNumDatasets.put(oaiSet.getSpec(), num);
                 return num;
             }
         } catch (OaiSetException ose) {
-            // do notghin - will return zero.
+            // do nothing - will return zero.
         }
+        cachedSetInfoNumDatasets.put(oaiSet.getSpec(), 0);
         return 0;
     }
     
+    Map<String, Integer> cachedSetInfoNumExported = new HashMap<>();
+    Integer defaultSetNumExported = null; 
+    
     public int getSetInfoNumOfExported(OAISet oaiSet) {
+        if (oaiSet.isDefaultSet() && defaultSetNumExported != null) {
+            return defaultSetNumExported;
+        } else if (cachedSetInfoNumExported.get(oaiSet.getSpec()) != null) {
+            return cachedSetInfoNumExported.get(oaiSet.getSpec());
+        }
+        
         List<OAIRecord> records = oaiRecordService.findActiveOaiRecordsBySetName(oaiSet.getSpec());
         
+        int num; 
+        
         if (records == null || records.isEmpty()) {
-            return 0; 
+            num = 0; 
+        } else {
+            num = records.size();
         }
         
-        return records.size();
+        if (oaiSet.isDefaultSet()) {
+            defaultSetNumExported = num;
+        } else {
+            cachedSetInfoNumExported.put(oaiSet.getSpec(), num);
+        }
         
+        return num;
     }
     
+    Map<String, Integer> cachedSetInfoNumDeleted = new HashMap<>();
+    Integer defaultSetNumDeleted = null;
+    
     public int getSetInfoNumOfDeleted(OAISet oaiSet) {
-        List<OAIRecord> records = oaiRecordService.findDeletedOaiRecordsBySetName(oaiSet.getSpec());
-        
-        if (records == null || records.isEmpty()) {
-            return 0; 
+        if (oaiSet.isDefaultSet() && defaultSetNumDeleted != null) {
+            return defaultSetNumDeleted;
+        } else if (cachedSetInfoNumDeleted.get(oaiSet.getSpec()) != null) {
+            return cachedSetInfoNumDeleted.get(oaiSet.getSpec());
         }
         
-        return records.size();
+        List<OAIRecord> records = oaiRecordService.findDeletedOaiRecordsBySetName(oaiSet.getSpec());
         
+        int num; 
+        
+        if (records == null || records.isEmpty()) {
+            num = 0; 
+        } else {
+            num = records.size();
+        }
+        
+        if (oaiSet.isDefaultSet()) {
+            defaultSetNumDeleted = num;
+        } else {
+            cachedSetInfoNumDeleted.put(oaiSet.getSpec(), num);
+        }
+        
+        return num;
     }
     
     public void validateSetQuery() {

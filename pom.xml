@@ -27,7 +27,7 @@
         <packaging.type>war</packaging.type>
         
         <reload4j.version>1.2.18.4</reload4j.version>
-        <flyway.version>9.21.2</flyway.version>
+        <flyway.version>9.22.1</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <poi.version>5.2.1</poi.version>
         <tika.version>2.4.1</tika.version>
@@ -466,7 +466,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>common</artifactId>
-            <version>7.1.1</version>
+            <version>8.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -481,7 +481,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>storeclient</artifactId>
-            <version>7.1.1</version>
+            <version>8.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -650,7 +650,7 @@
         <dependency>
             <groupId>org.htmlunit</groupId>
             <artifactId>htmlunit</artifactId>
-            <version>3.2.0</version>
+            <version>3.9.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -911,7 +911,7 @@
                 <skipIntegrationTests>true</skipIntegrationTests>
                 <!-- Once we truly run tests with Testcontainers, this should be switch to "docker", activating ITs -->
                 <packaging.type>docker-build</packaging.type>
-                <postgresql.server.version>13</postgresql.server.version>
+                <postgresql.server.version>16</postgresql.server.version>
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
                 <app.image.tag>unstable</app.image.tag>
