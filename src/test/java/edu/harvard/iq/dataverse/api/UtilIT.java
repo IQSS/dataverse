@@ -1069,7 +1069,7 @@ public class UtilIT {
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + "?key=" + apiToken + optionalQueryParam);
     }
 
-    static Response getFileMetadata(String fileIdOrPersistentId, String optionalFormat) {
+     static Response getFileMetadata(String fileIdOrPersistentId, String optionalFormat) {
         String idInPath = fileIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isCreatable(fileIdOrPersistentId)) {
