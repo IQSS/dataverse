@@ -11,18 +11,19 @@ import edu.harvard.iq.dataverse.util.xml.XmlValidator;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,10 @@ import org.junit.jupiter.api.io.TempDir;
 import org.xml.sax.SAXException;
 
 class SiteMapUtilTest {
+
+    // see https://www.sitemaps.org/protocol.html#validating
+    final String xsdSitemap = "https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd";
+    final String xsdSitemapIndex = "https://www.sitemaps.org/schemas/sitemap/0.9/siteindex.xsd";
 
     @TempDir
     Path tempDir;
@@ -105,7 +110,7 @@ class SiteMapUtilTest {
         // then
         String pathToSiteMap = tempDocroot.resolve("sitemap").resolve("sitemap.xml").toString();
         assertDoesNotThrow(() -> XmlValidator.validateXmlWellFormed(pathToSiteMap));
-        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap, new URL("https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd")));
+        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap, new URL(xsdSitemap)));
 
         File sitemapFile = new File(pathToSiteMap);
         String sitemapString = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(sitemapFile.getAbsolutePath()))));
@@ -116,7 +121,56 @@ class SiteMapUtilTest {
         assertFalse(sitemapString.contains(unpublishedPid));
         assertFalse(sitemapString.contains(harvestedPid));
         assertFalse(sitemapString.contains(deaccessionedPid));
+    }
 
+    @Test
+    void testHugeSiteMap() throws IOException, ParseException, SAXException {
+        // given
+        final int nbDataverse = 50;
+        final int nbDataset = 50000;
+
+        final List<Dataverse> dataverses = new ArrayList<>(nbDataverse);
+        for (int i = 1; i <= nbDataverse; i++) {
+            final Dataverse publishedDataverse = new Dataverse();
+            publishedDataverse.setAlias(String.format("publishedDv%s", i));
+            publishedDataverse.setModificationTime(new Timestamp(new Date().getTime()));
+            publishedDataverse.setPublicationDate(new Timestamp(new Date().getTime()));
+            dataverses.add(publishedDataverse);
+        }
+
+        final List<Dataset> datasets = new ArrayList<>(nbDataset);
+        for (int i = 1; i <= nbDataset; i++) {
+            final Dataset published = new Dataset();
+            published.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, "10.666", String.format("FAKE/published%s", i), null, DOIServiceBean.DOI_RESOLVER_URL, null));
+            published.setPublicationDate(new Timestamp(new Date().getTime()));
+            published.setModificationTime(new Timestamp(new Date().getTime()));
+            datasets.add(published);
+        }
+
+        // when
+        SiteMapUtil.updateSiteMap(dataverses, datasets);
+
+        // then
+        final Path siteMapDir = tempDocroot.resolve("sitemap");
+        final String pathToSiteMapIndexFile = siteMapDir.resolve("sitemap_index.xml").toString();
+        assertDoesNotThrow(() -> XmlValidator.validateXmlWellFormed(pathToSiteMapIndexFile));
+        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMapIndexFile, new URL(xsdSitemapIndex)));
+
+        final File sitemapFile = new File(pathToSiteMapIndexFile);
+        String sitemapString = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(sitemapFile.getAbsolutePath())), StandardCharsets.UTF_8));
+        // System.out.println("sitemap: " + sitemapString);
+
+        assertTrue(sitemapString.contains("sitemap1.xml"));
+        assertTrue(sitemapString.contains("sitemap2.xml"));
+        assertTrue(sitemapString.contains("</sitemapindex>"));
+
+        final String pathToSiteMap1File = siteMapDir.resolve("sitemap1.xml").toString();
+        assertDoesNotThrow(() -> XmlValidator.validateXmlWellFormed(pathToSiteMap1File));
+        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap1File, new URL(xsdSitemap)));
+
+        final String pathToSiteMap2File = siteMapDir.resolve("sitemap2.xml").toString();
+        assertDoesNotThrow(() -> XmlValidator.validateXmlWellFormed(pathToSiteMap2File));
+        assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap2File, new URL(xsdSitemap)));
     }
 
 }
