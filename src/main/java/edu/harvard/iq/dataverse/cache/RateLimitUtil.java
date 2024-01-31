@@ -22,8 +22,8 @@ import static java.lang.Math.min;
 
 public class RateLimitUtil {
     private static final Logger logger = Logger.getLogger(RateLimitUtil.class.getCanonicalName());
-    protected static final List<RateLimitSetting> rateLimits = new CopyOnWriteArrayList<>();
-    protected static final Map<String, Integer> rateLimitMap = new ConcurrentHashMap<>();
+    static final List<RateLimitSetting> rateLimits = new CopyOnWriteArrayList<>();
+    static final Map<String, Integer> rateLimitMap = new ConcurrentHashMap<>();
     private static final Gson gson = new Gson();
     public static final int NO_LIMIT = -1;
 
