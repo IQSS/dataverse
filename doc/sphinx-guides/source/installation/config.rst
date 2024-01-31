@@ -4151,3 +4151,16 @@ A true/false (default) option determining whether the dataset datafile table dis
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
 
+.. _:StoreIngestedTabularFilesWithVarHeaders:
+
+:StoreIngestedTabularFilesWithVarHeaders
+++++++++++++++++++++++++++++++++++++++++
+
+With this setting enabled, tabular files produced during Ingest will
+be stored with the list of variable names added as the first
+tab-delimited line. As the most significant effect of this feature,
+Access API will be able to take advantage of Direct Download for
+tab. files saved with these headers on S3 - since they no longer have
+to be generated and added to the streamed file on the fly.
+
+The setting is ``false`` by default, preserving the legacy behavior. 
