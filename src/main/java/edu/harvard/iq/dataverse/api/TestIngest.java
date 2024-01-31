@@ -68,7 +68,7 @@ public class TestIngest {
     @Path("test/file")
     @GET
     @Produces({ "text/plain" })
-    public String datafile(@QueryParam("fileName") String fileName, @QueryParam("fileType") String fileType, @QueryParam("storeWithHeader") boolean storeWithHeader, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
+    public String datafile(@QueryParam("fileName") String fileName, @QueryParam("fileType") String fileType, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
         String output = "";
 
         if (StringUtil.isEmpty(fileName) || StringUtil.isEmpty(fileType)) {
@@ -100,7 +100,7 @@ public class TestIngest {
         TabularDataIngest tabDataIngest = null;
         
         try {
-            tabDataIngest = ingestPlugin.read(fileInputStream, storeWithHeader, null);
+            tabDataIngest = ingestPlugin.read(fileInputStream, false, null);
         } catch (IOException ingestEx) {
             output = output.concat("Caught an exception trying to ingest file " + fileName + ": " + ingestEx.getLocalizedMessage());
             return output;

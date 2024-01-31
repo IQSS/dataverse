@@ -337,7 +337,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             }
                         } else if (di.getConversionParam().equals("subset")) {
                             logger.fine("processing subset request.");
-                            // @todo: adjust this code to support tab. files stored with the header 
 
                             // TODO: 
                             // If there are parameters on the list that are 
