@@ -11,6 +11,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 
+import java.util.Arrays;
 import java.util.logging.Logger;
 import java.util.Map;
 
@@ -22,25 +23,14 @@ public class CacheFactoryBean implements java.io.Serializable {
     private Map<String, String> rateLimitCache;
     @EJB
     SystemConfig systemConfig;
-
     public final static String RATE_LIMIT_CACHE = "rateLimitCache";
-
+    public enum JoinVia {
+        Multicast, TcpIp, AWS, Azure;
+    }
     @PostConstruct
     public void init() {
         if (hazelcastInstance == null) {
-            // TODO: move config to a file (yml)
-            Config config = new Config();
-            config.setClusterName("dataverse");
-            config.getJetConfig().setEnabled(true);
-            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
-            config.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
-            config.getNetworkConfig().getJoin().getTcpIpConfig().addMember("localhost:5701");
-            config.getNetworkConfig().getJoin().getTcpIpConfig().addMember("localhost:5702");
-            config.getNetworkConfig().getJoin().getAwsConfig().setEnabled(false);
-            config.getNetworkConfig().getJoin().getAzureConfig().setEnabled(false);
-            //        .setProperty("tag-key", "my-ec2-instance-tag-key")
-            //        .setProperty("tag-value", "my-ec2-instance-tag-value");
-            hazelcastInstance = Hazelcast.newHazelcastInstance(config);
+            hazelcastInstance = Hazelcast.newHazelcastInstance(getConfig());
             rateLimitCache = hazelcastInstance.getMap(RATE_LIMIT_CACHE);
         }
     }
@@ -112,5 +102,37 @@ public class CacheFactoryBean implements java.io.Serializable {
             default:
                 break;
         }
+    }
+
+    private Config getConfig() {
+        JoinVia joinVia;
+        try {
+            String join = System.getProperty("dataverse.hazelcast.join", "Multicast");
+            joinVia = JoinVia.valueOf(join);
+        } catch (IllegalArgumentException e) {
+            logger.warning("dataverse.hazelcast.join must be one of " + JoinVia.values() + ". Defaulting to Multicast");
+            joinVia = JoinVia.Multicast;
+        }
+        Config config = new Config();
+        config.setClusterName("dataverse");
+        config.getJetConfig().setEnabled(true);
+        if (joinVia == JoinVia.TcpIp) {
+            config.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
+            String members = System.getProperty("dataverse.hazelcast.members", "");
+            logger.info("dataverse.hazelcast.members: " + members);
+            try {
+                Arrays.stream(members.split(",")).forEach(m ->
+                        config.getNetworkConfig().getJoin().getTcpIpConfig().addMember(m));
+            } catch (IllegalArgumentException e) {
+                logger.warning("dataverse.hazelcast.members must contain at least 1 'host:port' entry, Defaulting to Multicast");
+                joinVia = JoinVia.Multicast;
+            }
+        }
+        logger.info("dataverse.hazelcast.join:" + joinVia);
+        config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(joinVia == JoinVia.Multicast);
+        config.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(joinVia == JoinVia.TcpIp);
+        config.getNetworkConfig().getJoin().getAwsConfig().setEnabled(joinVia == JoinVia.AWS);
+        config.getNetworkConfig().getJoin().getAzureConfig().setEnabled(joinVia == JoinVia.Azure);
+        return config;
     }
 }
