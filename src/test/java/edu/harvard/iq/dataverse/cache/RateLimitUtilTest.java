@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.cache;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -69,9 +67,7 @@ public class RateLimitUtilTest {
     @BeforeEach
     public void setup() {
         mockedSystemConfig = mock(SystemConfig.class);
-        doReturn(100).when(mockedSystemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(0), eq(RateLimitUtil.NO_LIMIT));
-        doReturn(200).when(mockedSystemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(1), eq(RateLimitUtil.NO_LIMIT));
-        doReturn(RateLimitUtil.NO_LIMIT).when(mockedSystemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(2), eq(RateLimitUtil.NO_LIMIT));
+        doReturn("100,200").when(mockedSystemConfig).getRateLimitingDefaultCapacityTiers();
         // clear the static data so it can be reloaded with the new mocked data
         RateLimitUtil.rateLimitMap.clear();
         RateLimitUtil.rateLimits.clear();
@@ -115,5 +111,17 @@ public class RateLimitUtilTest {
         assertEquals(30, RateLimitUtil.getCapacity(mockedSystemConfig, authUser, "GetPrivateUrlCommand"));
         authUser.setSuperuser(true);
         assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(mockedSystemConfig, authUser, "GetPrivateUrlCommand"));
+
+        // no setting means rate limiting is not on
+        doReturn("").when(mockedSystemConfig).getRateLimitsJson();
+        doReturn("").when(mockedSystemConfig).getRateLimitingDefaultCapacityTiers();
+        RateLimitUtil.rateLimitMap.clear();
+        RateLimitUtil.rateLimits.clear();
+        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(mockedSystemConfig, guestUser, "GetPrivateUrlCommand"));
+        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(mockedSystemConfig, guestUser, "xyz"));
+        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(mockedSystemConfig, authUser, "GetPrivateUrlCommand"));
+        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(mockedSystemConfig, authUser, "abc"));
+        authUser.setRateLimitTier(99);
+        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(mockedSystemConfig, authUser, "def"));
     }
 }
