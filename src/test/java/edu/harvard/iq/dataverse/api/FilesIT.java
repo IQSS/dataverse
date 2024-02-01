@@ -2498,6 +2498,10 @@ public class FilesIT {
         // file as seen by the final Access API user (i.e., with the variable 
         // header line in it):
         String tabularFileMD5 = "f298c2567cc8eb544e36ad83edf6f595";
+        // Expected byte sizes of the generated tab-delimited file as stored, 
+        // with and without the header:
+        int tabularFileSizeWoutHeader = 4026; 
+        int tabularFileSizeWithHeader = 4113; 
 
         String apiToken = createUserGetToken();
         String dataverseAlias = createDataverseGetAlias(apiToken);
@@ -2528,7 +2532,7 @@ public class FilesIT {
         fileDataResponse.then().assertThat()
                 .body("data.dataFile.filename", equalTo("stata13-auto.tab"))
                 .body("data.dataFile.contentType", equalTo("text/tab-separated-values"))
-                .body("data.dataFile.filesize", equalTo(4026))
+                .body("data.dataFile.filesize", equalTo(tabularFileSizeWoutHeader))
                 .statusCode(OK.getStatusCode());
         
 
@@ -2576,7 +2580,7 @@ public class FilesIT {
         fileDataResponse.then().assertThat()
                 .body("data.dataFile.filename", equalTo("stata13-auto.tab"))
                 .body("data.dataFile.contentType", equalTo("text/tab-separated-values"))
-                .body("data.dataFile.filesize", equalTo(4113))
+                .body("data.dataFile.filesize", equalTo(tabularFileSizeWithHeader))
                 .statusCode(OK.getStatusCode());
         
 
