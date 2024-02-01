@@ -138,8 +138,8 @@ public class MetricsServiceBean implements Serializable {
                 + "from datasetversion\n"
                 + "where versionstate='RELEASED' \n"
                 + (((d == null)&&(DATA_LOCATION_ALL.equals(dataLocation))) ? "" : "and dataset_id in (select dataset.id from dataset, dvobject where dataset.id=dvobject.id\n")
-                + ((DATA_LOCATION_LOCAL.equals(dataLocation)) ? "and dvobject.harvestingclient_id IS NULL and publicationdate is not null\n " : "")
-                + ((DATA_LOCATION_REMOTE.equals(dataLocation)) ? "and dvobject.harvestingclient_id IS NOT NULL\n "  : "")
+                + ((DATA_LOCATION_LOCAL.equals(dataLocation)) ? "and dataset.harvestingclient_id IS NULL and publicationdate is not null\n " : "")
+                + ((DATA_LOCATION_REMOTE.equals(dataLocation)) ? "and dataset.harvestingclient_id IS NOT NULL\n "  : "")
                 + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n ")
                 + (((d == null)&&(DATA_LOCATION_ALL.equals(dataLocation))) ? "" : ")\n")
                 + "group by dataset_id) as subq group by subq.date order by date;"
@@ -156,11 +156,11 @@ public class MetricsServiceBean implements Serializable {
      * @param d
      */
     public long datasetsToMonth(String yyyymm, String dataLocation, Dataverse d) {
-        String dataLocationLine = "(date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM') and dvobject.harvestingclient_id IS NULL)\n";
+        String dataLocationLine = "(date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM') and dataset.harvestingclient_id IS NULL)\n";
 
         if (!DATA_LOCATION_LOCAL.equals(dataLocation)) { // Default api state is DATA_LOCATION_LOCAL
             //we have to use createtime for harvest as post dvn3 harvests do not have releasetime populated
-            String harvestBaseLine = "(date_trunc('month', createtime) <=  to_date('" + yyyymm + "','YYYY-MM') and dvobject.harvestingclient_id IS NOT NULL)\n";
+            String harvestBaseLine = "(date_trunc('month', createtime) <=  to_date('" + yyyymm + "','YYYY-MM') and dataset.harvestingclient_id IS NOT NULL)\n";
             if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
                 dataLocationLine = harvestBaseLine; // replace
             } else if (DATA_LOCATION_ALL.equals(dataLocation)) {
@@ -189,7 +189,7 @@ public class MetricsServiceBean implements Serializable {
                         + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))\n"
                         + "from datasetversion\n"
                         + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                        + "join dvobject on dvobject.id = dataset.id\n"
+                        + ((d == null) ? "" : "join dvobject on dvobject.id = dataset.id\n")
                         + "where versionstate='RELEASED' \n"
                         + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n ")
                         + "and \n"
@@ -198,6 +198,7 @@ public class MetricsServiceBean implements Serializable {
             +") sub_temp"
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
+
         return (long) query.getSingleResult();
     }
 
@@ -206,17 +207,16 @@ public class MetricsServiceBean implements Serializable {
         // A published local datasets may have more than one released version!
         // So that's why we have to jump through some extra hoops below
         // in order to select the latest one:
-        String originClause = "(datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in\n"
-                + "(\n"
-                + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))\n"
-                + "       from datasetversion\n"
-                + "       join dataset on dataset.id = datasetversion.dataset_id\n"
-                + "       join dvobject on dataset.id = dvobject.id\n"
-                + "       where versionstate='RELEASED'\n"
-                + "       and dvobject.harvestingclient_id is null"
-                + "       and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "       group by dataset_id\n"
-                + "))\n";
+        String originClause = "(datasetversion.dataset_id || ':' || datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber) in\n" +
+                "(\n" +
+                "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))\n" +
+                "       from datasetversion\n" +
+                "       join dataset on dataset.id = datasetversion.dataset_id\n" +
+                "       where versionstate='RELEASED'\n" +
+                "       	     and dataset.harvestingclient_id is null\n" +
+                "       	     and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n" +
+                "       group by dataset_id\n" +
+                "))\n";
 
         if (!DATA_LOCATION_LOCAL.equals(dataLocation)) { // Default api state is DATA_LOCATION_LOCAL
             //we have to use createtime for harvest as post dvn3 harvests do not have releasetime populated
@@ -225,7 +225,7 @@ public class MetricsServiceBean implements Serializable {
             // so the query is simpler:
             String harvestOriginClause = "(\n" +
                     "   datasetversion.dataset_id = dataset.id\n" +
-                    "   AND dvobject.harvestingclient_id IS NOT null \n" +
+                    "   AND dataset.harvestingclient_id IS NOT null \n" +
                     "   AND date_trunc('month', datasetversion.createtime) <=  to_date('" + yyyymm + "','YYYY-MM')\n" +
                     ")\n";
 
@@ -244,7 +244,7 @@ public class MetricsServiceBean implements Serializable {
                 + "JOIN datasetfieldtype ON datasetfieldtype.id = controlledvocabularyvalue.datasetfieldtype_id\n"
                 + "JOIN datasetversion ON datasetversion.id = datasetfield.datasetversion_id\n"
                 + "JOIN dataset ON dataset.id = datasetversion.dataset_id\n"
-                + "JOIN dvobject ON dvobject.id = dataset.id\n"
+                + ((d == null) ? "" : "JOIN dvobject ON dvobject.id = dataset.id\n")
                 + "WHERE\n"
                 + originClause
                 + "AND datasetfieldtype.name = 'subject'\n"
@@ -258,11 +258,11 @@ public class MetricsServiceBean implements Serializable {
     }
 
     public long datasetsPastDays(int days, String dataLocation, Dataverse d) {
-        String dataLocationLine = "(releasetime > current_date - interval '" + days + "' day and dvobject.harvestingclient_id IS NULL)\n";
+        String dataLocationLine = "(releasetime > current_date - interval '" + days + "' day and dataset.harvestingclient_id IS NULL)\n";
 
         if (!DATA_LOCATION_LOCAL.equals(dataLocation)) { // Default api state is DATA_LOCATION_LOCAL
             //we have to use createtime for harvest as post dvn3 harvests do not have releasetime populated
-            String harvestBaseLine = "(createtime > current_date - interval '" + days + "' day and dvobject.harvestingclient_id IS NOT NULL)\n";
+            String harvestBaseLine = "(createtime > current_date - interval '" + days + "' day and dataset.harvestingclient_id IS NOT NULL)\n";
             if (DATA_LOCATION_REMOTE.equals(dataLocation)) {
                 dataLocationLine = harvestBaseLine; // replace
             } else if (DATA_LOCATION_ALL.equals(dataLocation)) {
@@ -276,7 +276,7 @@ public class MetricsServiceBean implements Serializable {
                         + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max\n"
                         + "from datasetversion\n"
                         + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                        + "join dvobject on dvobject.id = dataset.id\n"
+                        + ((d == null) ? "" : "join dvobject on dvobject.id = dataset.id\n")
                         + "where versionstate='RELEASED' \n"
                         + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
                         + "and \n"
@@ -304,7 +304,7 @@ public class MetricsServiceBean implements Serializable {
                         + "where datasetversion.id=filemetadata.datasetversion_id\n"
                         + "and versionstate='RELEASED' \n"
                         + "and dataset_id in (select dataset.id from dataset, dvobject where dataset.id=dvobject.id\n"
-                        + "and dvobject.harvestingclient_id IS NULL and publicationdate is not null\n "
+                        + "and dataset.harvestingclient_id IS NULL and publicationdate is not null\n "
                         + ((d == null) ? ")" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + "))\n ")
                         + "group by filemetadata.id) as subq group by subq.date order by date;");
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -327,11 +327,11 @@ public class MetricsServiceBean implements Serializable {
                 + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
                 + "from datasetversion\n"
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                +  "join dvobject on dvobject.id = dataset.id\n"
+                + ((d == null) ? "" : "join dvobject on dvobject.id = dataset.id\n")
                 + "where versionstate='RELEASED'\n"
                 + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
                 + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "and dvobject.harvestingclient_id is null\n"
+                + "and dataset.harvestingclient_id is null\n"
                 + "group by dataset_id \n"
                 + ");"
         );
@@ -350,11 +350,11 @@ public class MetricsServiceBean implements Serializable {
                 + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber)) as max \n"
                 + "from datasetversion\n"
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
-                + "join dvobject on dvobject.id = dataset.id\n"
+                + ((d == null) ? "" : "join dvobject on dvobject.id = dataset.id\n")
                 + "where versionstate='RELEASED'\n"
                 + "and releasetime > current_date - interval '" + days + "' day\n"
                 + ((d == null) ? "" : "AND dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
-                + "and dvobject.harvestingclient_id is null\n"
+                + "and dataset.harvestingclient_id is null\n"
                 + "group by dataset_id \n"
                 + ");"
         );
