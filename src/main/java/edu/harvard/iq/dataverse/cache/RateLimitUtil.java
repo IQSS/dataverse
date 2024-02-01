@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -27,11 +26,7 @@ public class RateLimitUtil {
     private static final Gson gson = new Gson();
     public static final int NO_LIMIT = -1;
 
-    protected static int getCapacityByTier(SystemConfig systemConfig, int tier) {
-        return systemConfig.getIntFromCSVStringOrDefault(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers, tier, NO_LIMIT);
-    }
-
-    protected static String generateCacheKey(final User user, final String action) {
+    static String generateCacheKey(final User user, final String action) {
         StringBuffer id = new StringBuffer();
         id.append(user != null ? user.getIdentifier() : GuestUser.get().getIdentifier());
         if (action != null) {
@@ -39,7 +34,7 @@ public class RateLimitUtil {
         }
         return id.toString();
     }
-    protected static int getCapacity(SystemConfig systemConfig, User user, String action) {
+    static int getCapacity(SystemConfig systemConfig, User user, String action) {
         if (user != null && user.isSuperuser()) {
             return NO_LIMIT;
         };
@@ -48,7 +43,7 @@ public class RateLimitUtil {
                 getCapacityByTierAndAction(systemConfig, ((AuthenticatedUser) user).getRateLimitTier(), action) :
                 getCapacityByTierAndAction(systemConfig, 0, action);
     }
-    protected static boolean rateLimited(final Map rateLimitCache, final String key, int capacityPerHour) {
+    static boolean rateLimited(final Map rateLimitCache, final String key, int capacityPerHour) {
         if (capacityPerHour == NO_LIMIT) {
             return false;
         }
@@ -70,7 +65,7 @@ public class RateLimitUtil {
         return tokens < 1;
     }
 
-    protected static int getCapacityByTierAndAction(SystemConfig systemConfig, Integer tier, String action) {
+    static int getCapacityByTierAndAction(SystemConfig systemConfig, Integer tier, String action) {
         if (rateLimits.isEmpty()) {
             init(systemConfig);
         }
@@ -79,8 +74,22 @@ public class RateLimitUtil {
                 rateLimitMap.containsKey(getMapKey(tier)) ? rateLimitMap.get(getMapKey(tier)) :
                         getCapacityByTier(systemConfig, tier);
     }
-
-    private static void init(SystemConfig systemConfig) {
+    static int getCapacityByTier(SystemConfig systemConfig, int tier) {
+        int value = NO_LIMIT;
+        String csvString = systemConfig.getRateLimitingDefaultCapacityTiers();
+        try {
+            if (!csvString.isEmpty()) {
+                int[] values = Arrays.stream(csvString.split(",")).mapToInt(Integer::parseInt).toArray();
+                if (tier < values.length) {
+                    value = values[tier];
+                }
+            }
+        } catch (NumberFormatException nfe) {
+            logger.warning(nfe.getMessage());
+        }
+        return value;
+    }
+    static void init(SystemConfig systemConfig) {
         getRateLimitsFromJson(systemConfig);
         /* Convert the List of Rate Limit Settings containing a list of Actions to a fast lookup Map where the key is:
              for default if no action defined: "{tier}:" and the value is the default limit for the tier
@@ -92,8 +101,7 @@ public class RateLimitUtil {
             r.getActions().forEach(a -> rateLimitMap.put(getMapKey(r.getTier(), a), r.getLimitPerHour()));
         });
     }
-
-    private static void getRateLimitsFromJson(SystemConfig systemConfig) {
+    static void getRateLimitsFromJson(SystemConfig systemConfig) {
         String setting = systemConfig.getRateLimitsJson();
         if (!setting.isEmpty() && rateLimits.isEmpty()) {
             try {
@@ -108,12 +116,10 @@ public class RateLimitUtil {
             }
         }
     }
-
-    private static String getMapKey(int tier) {
+    static String getMapKey(int tier) {
         return getMapKey(tier, null);
     }
-
-    private static String getMapKey(int tier, String action) {
+    static String getMapKey(int tier, String action) {
         StringBuffer key = new StringBuffer();
         key.append(tier).append(":");
         if (action != null) {
@@ -121,8 +127,7 @@ public class RateLimitUtil {
         }
         return key.toString();
     }
-
-    private static long longFromKey(Map cache, String key) {
+    static long longFromKey(Map cache, String key) {
         Object l = cache.get(key);
         return l != null ? Long.parseLong(String.valueOf(l)) : 0L;
     }

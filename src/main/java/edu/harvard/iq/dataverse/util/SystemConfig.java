@@ -1188,22 +1188,7 @@ public class SystemConfig {
     public String getRateLimitsJson() {
         return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingCapacityByTierAndAction, "");
     }
-
-    public int getIntFromCSVStringOrDefault(final SettingsServiceBean.Key settingKey, int index, int defaultValue) {
-        int value = defaultValue;
-        if (settingKey != null && !settingKey.equals("")) {
-            String csv = settingsService.getValueForKey(settingKey, "");
-            try {
-                if (!csv.isEmpty()) {
-                    int[] values = Arrays.stream(csv.split(",")).mapToInt(Integer::parseInt).toArray();
-                    if (index < values.length) {
-                        value = values[index];
-                    }
-                }
-            } catch (NumberFormatException nfe) {
-                logger.warning(nfe.getMessage());
-            }
-        }
-        return value;
+    public String getRateLimitingDefaultCapacityTiers() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers, "");
     }
 }

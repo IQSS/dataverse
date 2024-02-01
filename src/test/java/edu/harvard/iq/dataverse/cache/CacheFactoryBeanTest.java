@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.cache;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,7 +16,6 @@ import java.io.IOException;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -31,6 +29,7 @@ public class CacheFactoryBeanTest {
     GuestUser guestUser = GuestUser.get();
     String action;
     static final String staticHazelcastSystemProperties = "dataverse.hazelcast.";
+    static final String settingDefaultCapacity = "30,60,120";
     static final String settingJson = "{\n" +
             "  \"rateLimits\":[\n" +
             "    {\n" +
@@ -84,10 +83,7 @@ public class CacheFactoryBeanTest {
         // reuse cache and config for all tests
         if (cache == null) {
             mockedSystemConfig = mock(SystemConfig.class);
-            doReturn(30).when(mockedSystemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(0), eq(RateLimitUtil.NO_LIMIT));
-            doReturn(60).when(mockedSystemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(1), eq(RateLimitUtil.NO_LIMIT));
-            doReturn(120).when(mockedSystemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(2), eq(RateLimitUtil.NO_LIMIT));
-            doReturn(RateLimitUtil.NO_LIMIT).when(mockedSystemConfig).getIntFromCSVStringOrDefault(eq(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers),eq(3), eq(RateLimitUtil.NO_LIMIT));
+            doReturn(settingDefaultCapacity).when(mockedSystemConfig).getRateLimitingDefaultCapacityTiers();
             doReturn(settingJson).when(mockedSystemConfig).getRateLimitsJson();
             cache = new CacheFactoryBean();
             cache.systemConfig = mockedSystemConfig;
