@@ -665,8 +665,8 @@ As a recent real life example, a few fields from the Citation and Social Science
 - Modify the OpenAire export utility (``OpenAireExportUtil.java``).
 - Modify the following JSON source files in the Dataverse code tree to actually include multiple values for the field (two should be quite enough!): ``scripts/api/data/dataset-create-new-all-default-fields.json``, ``src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt``, ``src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json`` and ``src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-create-new-all-ddi-fields.json``. (These are used as examples for populating datasets via the import API and by the automated import and export code tests).
 - Similarly modify the following XML files that are used by the DDI export code tests: ``src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml`` and ``src/test/java/edu/harvard/iq/dataverse/export/ddi/exportfull.xml``.
-- Make sure all the automated unit and integration tests are passing.
-- Write a short release note to announce the change in the upcoming release.
+- Make sure all the automated unit and integration tests are passing. See :doc:`/developers/testing` in the Developer Guide.
+- Write a short release note to announce the change in the upcoming release. See :ref:`writing-release-note-snippets` in the Developer Guide.
 - Make a pull request. 
 
 
