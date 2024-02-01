@@ -16,6 +16,8 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationP
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+import static java.lang.Math.max;
+
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -146,19 +148,20 @@ public class AuthenticatedUser implements User, Serializable {
     @Transient
     private Set<Type> mutedNotificationsSet = new HashSet<>();
 
-    @Column
     private int rateLimitTier;
 
     @PrePersist
     void prePersist() {
         mutedNotifications = Type.toStringValue(mutedNotificationsSet);
         mutedEmails = Type.toStringValue(mutedEmailsSet);
+        rateLimitTier = max(1,rateLimitTier); // db column defaults to 1 (minimum value for a tier).
     }
     
     @PostLoad
     public void initialize() {
         mutedNotificationsSet = Type.tokenizeToSet(mutedNotifications);
         mutedEmailsSet = Type.tokenizeToSet(mutedEmails);
+        rateLimitTier = max(1,rateLimitTier); // db column defaults to 1 (minimum value for a tier).
     }
 
     /**
