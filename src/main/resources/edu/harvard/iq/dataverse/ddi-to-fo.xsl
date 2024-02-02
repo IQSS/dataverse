@@ -123,7 +123,7 @@
 	<xsl:param name="font-family">Times</xsl:param>
 	
 	<!-- LOAD MULTILINGUAL STRINGS -->
-	<xsl:include href="ddi-pdf/i18n.inc.xslt"/>
+	<xsl:include href="ddi-pdf/i18n.inc.xsl"/>
 	<!--<xsl:include href="ddi-pdf/i18n.inc.xslt"/>-->
 	<!--
 		Report title
