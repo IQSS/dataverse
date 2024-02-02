@@ -1,17 +1,14 @@
 package edu.harvard.iq.dataverse.cache;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
+import jakarta.inject.Inject;
 
-import java.util.Arrays;
 import java.util.logging.Logger;
 import java.util.Map;
 
@@ -19,32 +16,18 @@ import java.util.Map;
 @Startup
 public class CacheFactoryBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(CacheFactoryBean.class.getCanonicalName());
-    private HazelcastInstance hazelcastInstance = null;
     private Map<String, String> rateLimitCache;
     @EJB
     SystemConfig systemConfig;
+    @Inject
+    HazelcastInstance hzInstance;
     public final static String RATE_LIMIT_CACHE = "rateLimitCache";
-    public enum JoinVia {
-        Multicast, TcpIp, AWS, Azure;
-    }
+
     @PostConstruct
     public void init() {
-        if (hazelcastInstance == null) {
-            hazelcastInstance = Hazelcast.newHazelcastInstance(getHazelcastConfig());
-            rateLimitCache = hazelcastInstance.getMap(RATE_LIMIT_CACHE);
-        }
-    }
-    @PreDestroy
-    protected void cleanup() {
-        if (hazelcastInstance != null) {
-            hazelcastInstance.shutdown();
-            hazelcastInstance = null;
-        }
-    }
-    @Override
-    protected void finalize() throws Throwable {
-        cleanup();
-        super.finalize();
+        logger.info("Hazelcast member:" + hzInstance.getCluster().getLocalMember());
+        rateLimitCache = hzInstance.getMap(RATE_LIMIT_CACHE);
+        logger.info("Rate Limit Cache Size: " + rateLimitCache.size());
     }
 
     /**
@@ -102,37 +85,5 @@ public class CacheFactoryBean implements java.io.Serializable {
             default:
                 break;
         }
-    }
-
-    private Config getHazelcastConfig() {
-        JoinVia joinVia;
-        try {
-            String join = System.getProperty("dataverse.hazelcast.join", "Multicast");
-            joinVia = JoinVia.valueOf(join);
-        } catch (IllegalArgumentException e) {
-            logger.warning("dataverse.hazelcast.join must be one of " + JoinVia.values() + ". Defaulting to Multicast");
-            joinVia = JoinVia.Multicast;
-        }
-        Config config = new Config();
-        String clusterName = System.getProperty("dataverse.hazelcast.cluster", "dataverse");
-        config.setClusterName(clusterName);
-        if (joinVia == JoinVia.TcpIp) {
-            config.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
-            String members = System.getProperty("dataverse.hazelcast.members", "");
-            logger.info("dataverse.hazelcast.members: " + members);
-            try {
-                Arrays.stream(members.split(",")).forEach(m ->
-                        config.getNetworkConfig().getJoin().getTcpIpConfig().addMember(m));
-            } catch (IllegalArgumentException e) {
-                logger.warning("dataverse.hazelcast.members must contain at least 1 'host:port' entry, Defaulting to Multicast");
-                joinVia = JoinVia.Multicast;
-            }
-        }
-        logger.info("dataverse.hazelcast.join:" + joinVia);
-        config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(joinVia == JoinVia.Multicast);
-        config.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(joinVia == JoinVia.TcpIp);
-        config.getNetworkConfig().getJoin().getAwsConfig().setEnabled(joinVia == JoinVia.AWS);
-        config.getNetworkConfig().getJoin().getAzureConfig().setEnabled(joinVia == JoinVia.Azure);
-        return config;
     }
 }

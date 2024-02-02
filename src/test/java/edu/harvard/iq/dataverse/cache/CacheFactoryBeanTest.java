@@ -1,10 +1,11 @@
 package edu.harvard.iq.dataverse.cache;
 
+import com.hazelcast.config.Config;
+import com.hazelcast.core.*;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,16 +76,6 @@ public class CacheFactoryBeanTest {
             "  ]\n" +
             "}";
 
-    @BeforeAll
-    public static void setup() {
-        System.setProperty(staticHazelcastSystemProperties + "cluster", "dataverse-test");
-        System.setProperty(staticHazelcastSystemProperties + "join", "Multicast");
-        if (System.getenv("JENKINS_HOME") != null) {
- //           System.setProperty(staticHazelcastSystemProperties + "join", "AWS");
-        }
-        //System.setProperty(staticHazelcastSystemProperties + "join", "TcpIp");
-        //System.setProperty(staticHazelcastSystemProperties + "members", "localhost:5701,localhost:5702");
-    }
     @BeforeEach
     public void init() throws IOException {
         // reuse cache and config for all tests
@@ -94,7 +85,10 @@ public class CacheFactoryBeanTest {
             doReturn(settingJson).when(mockedSystemConfig).getRateLimitsJson();
             cache = new CacheFactoryBean();
             cache.systemConfig = mockedSystemConfig;
-            cache.init(); // PostConstruct - start Hazelcast
+            if (cache.hzInstance == null) {
+                cache.hzInstance = Hazelcast.newHazelcastInstance(new Config());
+            }
+            cache.init(); // PostConstruct - set up Hazelcast
 
             // clear the static data, so it can be reloaded with the new mocked data
             RateLimitUtil.rateLimitMap.clear();
@@ -121,13 +115,11 @@ public class CacheFactoryBeanTest {
 
     @AfterAll
     public static void cleanup() {
-        if (cache != null) {
-            cache.cleanup(); // PreDestroy - shutdown Hazelcast
-            cache = null;
+        if (cache != null && cache.hzInstance != null) {
+            cache.hzInstance.shutdown();
         }
-        if (cache2 != null) {
-            cache2.cleanup(); // PreDestroy - shutdown Hazelcast
-            cache2 = null;
+        if (cache2 != null && cache2.hzInstance != null) {
+            cache2.hzInstance.shutdown();
         }
     }
     @Test
@@ -200,7 +192,10 @@ public class CacheFactoryBeanTest {
         // create a second cache to test cluster
         cache2 = new CacheFactoryBean();
         cache2.systemConfig = mockedSystemConfig;
-        cache2.init(); // PostConstruct - start Hazelcast
+        if (cache2.hzInstance == null) {
+            cache2.hzInstance = Hazelcast.newHazelcastInstance(new Config());
+        }
+        cache2.init(); // PostConstruct - set up Hazelcast
 
         // check to see if the new cache synced with the existing cache
         long s1 = cache.getCacheSize(CacheFactoryBean.RATE_LIMIT_CACHE);
@@ -220,7 +215,7 @@ public class CacheFactoryBeanTest {
         cache2.setCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key, value);
         assertTrue(value.equals(cache2.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
         assertTrue(value.equals(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
-        cache2.cleanup(); // remove cache2
+        cache2.hzInstance.shutdown(); // remove cache2
         assertTrue(value.equals(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
     }
 }
