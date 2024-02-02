@@ -17,12 +17,4 @@ This allows for more control over the rate limit of individual API command calls
 In the following example, calls made by a guest user (tier 0) for API `GetLatestPublishedDatasetVersionCommand` is further limited to only 10 calls per hour, while an authenticated user (tier 1) will be able to make 30 calls per hour to the same API.
 `curl http://localhost:8080/api/admin/settings/:RateLimitingCapacityByTierAndAction -X PUT -d '{"rateLimits":[{"tier": 0, "limitPerHour": 10, "actions": ["GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand"]}, {"tier": 0, "limitPerHour": 1, "actions": ["CreateGuestbookResponseCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}, {"tier": 1, "limitPerHour": 30, "actions": ["CreateGuestbookResponseCommand", "GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}]}'`
 
-JVM properties to configure Hazelcast to work as a cluster.
-By default, Hazelcast uses Multicast to discover cluster members see https://docs.hazelcast.com/imdg/4.2/clusters/discovery-mechanisms
-and the cluster name defaults to 'dataverse'
-Cluster name can be configured using
--Ddataverse.hazelcast.cluster=dataverse-test
-Valid join types: Multicast, TcpIp, AWS, or Azure
-TcpIp member IPs can be listed in a CSV field of 'host:port' for each dataverse app instance
--Ddataverse.hazelcast.join=TcpIp
--Ddataverse.hazelcast.members=localhost:5701,localhost:5702
+Hazelcast is configured in Payara and should not need any changes for this feature

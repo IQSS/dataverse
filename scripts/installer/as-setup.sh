@@ -127,9 +127,6 @@ function preliminary_setup()
 
   # so we can front with apache httpd ( ProxyPass / ajp://localhost:8009/ )
   ./asadmin $ASADMIN_OPTS create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector
-
-  # set up rate limiting using hazelcast in TcpIp discovery mode
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.hazelcast.join=Multicast"
 }
 
 function final_setup(){
