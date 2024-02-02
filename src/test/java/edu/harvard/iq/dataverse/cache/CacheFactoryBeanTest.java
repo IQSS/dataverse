@@ -78,10 +78,9 @@ public class CacheFactoryBeanTest {
     @BeforeAll
     public static void setup() {
         System.setProperty(staticHazelcastSystemProperties + "cluster", "dataverse-test");
+        System.setProperty(staticHazelcastSystemProperties + "join", "Multicast");
         if (System.getenv("JENKINS_HOME") != null) {
-            System.setProperty(staticHazelcastSystemProperties + "join", "AWS");
-        } else {
-            System.setProperty(staticHazelcastSystemProperties + "join", "Multicast");
+ //           System.setProperty(staticHazelcastSystemProperties + "join", "AWS");
         }
         //System.setProperty(staticHazelcastSystemProperties + "join", "TcpIp");
         //System.setProperty(staticHazelcastSystemProperties + "members", "localhost:5701,localhost:5702");
@@ -97,7 +96,7 @@ public class CacheFactoryBeanTest {
             cache.systemConfig = mockedSystemConfig;
             cache.init(); // PostConstruct - start Hazelcast
 
-            // clear the static data so it can be reloaded with the new mocked data
+            // clear the static data, so it can be reloaded with the new mocked data
             RateLimitUtil.rateLimitMap.clear();
             RateLimitUtil.rateLimits.clear();
 
