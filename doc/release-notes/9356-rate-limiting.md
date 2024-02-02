@@ -19,7 +19,10 @@ In the following example, calls made by a guest user (tier 0) for API `GetLatest
 
 JVM properties to configure Hazelcast to work as a cluster.
 By default, Hazelcast uses Multicast to discover cluster members see https://docs.hazelcast.com/imdg/4.2/clusters/discovery-mechanisms
-Valid join types: Multicast or TcpIp
-Members can be listed in a CSV field of 'host:port' for each dataverse app instance
+and the cluster name defaults to 'dataverse'
+Cluster name can be configured using
+-Ddataverse.hazelcast.cluster=dataverse-test
+Valid join types: Multicast, TcpIp, AWS, or Azure
+TcpIp member IPs can be listed in a CSV field of 'host:port' for each dataverse app instance
 -Ddataverse.hazelcast.join=TcpIp
 -Ddataverse.hazelcast.members=localhost:5701,localhost:5702

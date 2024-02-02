@@ -25,6 +25,8 @@ public class CacheFactoryBeanTest {
 
     private SystemConfig mockedSystemConfig;
     static CacheFactoryBean cache = null;
+    // Second instance for cluster testing
+    static CacheFactoryBean cache2 = null;
     AuthenticatedUser authUser = new AuthenticatedUser();
     GuestUser guestUser = GuestUser.get();
     String action;
@@ -75,8 +77,14 @@ public class CacheFactoryBeanTest {
 
     @BeforeAll
     public static void setup() {
-        System.setProperty(staticHazelcastSystemProperties + "join", "TcpIp");
-        System.setProperty(staticHazelcastSystemProperties + "members", "localhost:5701,localhost:5702");
+        System.setProperty(staticHazelcastSystemProperties + "cluster", "dataverse-test");
+        if (System.getenv("JENKINS_HOME") != null) {
+            System.setProperty(staticHazelcastSystemProperties + "join", "AWS");
+        } else {
+            System.setProperty(staticHazelcastSystemProperties + "join", "Multicast");
+        }
+        //System.setProperty(staticHazelcastSystemProperties + "join", "TcpIp");
+        //System.setProperty(staticHazelcastSystemProperties + "members", "localhost:5701,localhost:5702");
     }
     @BeforeEach
     public void init() throws IOException {
@@ -117,6 +125,10 @@ public class CacheFactoryBeanTest {
         if (cache != null) {
             cache.cleanup(); // PreDestroy - shutdown Hazelcast
             cache = null;
+        }
+        if (cache2 != null) {
+            cache2.cleanup(); // PreDestroy - shutdown Hazelcast
+            cache2 = null;
         }
     }
     @Test
@@ -187,7 +199,7 @@ public class CacheFactoryBeanTest {
         cache.checkRate(authUser, action);
 
         // create a second cache to test cluster
-        CacheFactoryBean cache2 = new CacheFactoryBean();
+        cache2 = new CacheFactoryBean();
         cache2.systemConfig = mockedSystemConfig;
         cache2.init(); // PostConstruct - start Hazelcast
 
@@ -211,6 +223,5 @@ public class CacheFactoryBeanTest {
         assertTrue(value.equals(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
         cache2.cleanup(); // remove cache2
         assertTrue(value.equals(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
-
     }
 }

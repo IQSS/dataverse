@@ -30,7 +30,7 @@ public class CacheFactoryBean implements java.io.Serializable {
     @PostConstruct
     public void init() {
         if (hazelcastInstance == null) {
-            hazelcastInstance = Hazelcast.newHazelcastInstance(getConfig());
+            hazelcastInstance = Hazelcast.newHazelcastInstance(getHazelcastConfig());
             rateLimitCache = hazelcastInstance.getMap(RATE_LIMIT_CACHE);
         }
     }
@@ -104,7 +104,7 @@ public class CacheFactoryBean implements java.io.Serializable {
         }
     }
 
-    private Config getConfig() {
+    private Config getHazelcastConfig() {
         JoinVia joinVia;
         try {
             String join = System.getProperty("dataverse.hazelcast.join", "Multicast");
@@ -114,8 +114,8 @@ public class CacheFactoryBean implements java.io.Serializable {
             joinVia = JoinVia.Multicast;
         }
         Config config = new Config();
-        config.setClusterName("dataverse");
-        config.getJetConfig().setEnabled(true);
+        String clusterName = System.getProperty("dataverse.hazelcast.cluster", "dataverse");
+        config.setClusterName(clusterName);
         if (joinVia == JoinVia.TcpIp) {
             config.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
             String members = System.getProperty("dataverse.hazelcast.members", "");
