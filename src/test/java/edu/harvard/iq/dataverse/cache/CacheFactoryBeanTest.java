@@ -16,6 +16,7 @@ import org.mockito.quality.Strictness;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class CacheFactoryBeanTest {
-
+    private static final Logger logger = Logger.getLogger(CacheFactoryBeanTest.class.getCanonicalName());
     private SystemConfig mockedSystemConfig;
     static CacheFactoryBean cache = null;
     // Second instance for cluster testing
@@ -87,7 +88,7 @@ public class CacheFactoryBeanTest {
             cache = new CacheFactoryBean();
             cache.systemConfig = mockedSystemConfig;
             if (cache.hzInstance == null) {
-                cache.hzInstance = Hazelcast.newHazelcastInstance(new Config());
+                cache.hzInstance = Hazelcast.newHazelcastInstance(getConfig());
             }
             cache.init(); // PostConstruct - set up Hazelcast
 
@@ -194,14 +195,11 @@ public class CacheFactoryBeanTest {
         cache2 = new CacheFactoryBean();
         cache2.systemConfig = mockedSystemConfig;
         if (cache2.hzInstance == null) {
-            cache2.hzInstance = Hazelcast.newHazelcastInstance(new Config());
-
             // Needed for Jenkins to form cluster based on TcpIp since Multicast fails
-            Address m1 = cache.hzInstance.getCluster().getLocalMember().getAddress();
-            Address m2 = cache2.hzInstance.getCluster().getLocalMember().getAddress();
-            String members = String.format("%s:%d,%s:%d", m1.getHost(),m1.getPort(),m2.getHost(),m2.getPort());
-            cache.hzInstance.getConfig().getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true).addMember(members);
-            cache2.hzInstance.getConfig().getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true).addMember(members);
+            Address initialCache = cache.hzInstance.getCluster().getLocalMember().getAddress();
+            String members = String.format("%s:%d", initialCache.getHost(),initialCache.getPort());
+            logger.info("Switching to TcpIp mode with members: " + members);
+            cache2.hzInstance = Hazelcast.newHazelcastInstance(getConfig(members));
         }
         cache2.init(); // PostConstruct - set up Hazelcast
 
@@ -227,5 +225,22 @@ public class CacheFactoryBeanTest {
         cache2.hzInstance.shutdown();
         cache2 = null;
         assertTrue(value.equals(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
+    }
+
+    private Config getConfig() {
+        return getConfig(null);
+    }
+    private Config getConfig(String members) {
+        Config config = new Config();
+        config.getNetworkConfig().getJoin().getAutoDetectionConfig().setEnabled(false);
+        config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+        config.getNetworkConfig().getJoin().getAwsConfig().setEnabled(false);
+        config.getNetworkConfig().getJoin().getAzureConfig().setEnabled(false);
+        config.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true);
+        if (members != null) {
+            config.getNetworkConfig().getJoin().getAutoDetectionConfig().setEnabled(true);
+            config.getNetworkConfig().getJoin().getTcpIpConfig().addMember(members);
+        }
+        return config;
     }
 }
