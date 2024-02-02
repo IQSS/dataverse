@@ -30,6 +30,12 @@
             "value": "Darwin's Finches"
           },
           {
+              "typeName": "alternativeTitle",
+              "multiple": true,
+              "typeClass": "primitive",
+              "value": ["Darwin's Finches Alternative Title1", "Darwin's Finches Alternative Title2"]
+          },
+          {
             "typeName": "author",
             "multiple": true,
             "typeClass": "compound",

@@ -42,9 +42,9 @@
           },
           {
             "typeName": "alternativeTitle",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "Alternative Title"
+            "value": ["Alternative Title"]
           },
           {
             "typeName": "alternativeURL",

@@ -6,6 +6,9 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -24,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.Set;
 
@@ -332,11 +336,28 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public boolean isGlobusEnabledStorageDriver(String driverId) {
-        if (globusStoreList == null) {
-            globusStoreList = systemConfig.getGlobusStoresList();
-        }
-        return globusStoreList.contains(driverId);
+        return (GlobusAccessibleStore.acceptsGlobusTransfers(driverId) || GlobusAccessibleStore.allowsGlobusReferences(driverId));
     }
+    
+    public boolean isDownloadable(FileMetadata fmd) {
+        boolean downloadable=true;
+        if(isGlobusFileDownload()) {
+            String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
+            
+            downloadable = downloadable && !AbstractRemoteOverlayAccessIO.isNotDataverseAccessible(driverId); 
+        }
+        return downloadable;
+    }
+    
+    public boolean isGlobusTransferable(FileMetadata fmd) {
+        boolean globusTransferable=true;
+        if(isGlobusFileDownload()) {
+            String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
+            globusTransferable = GlobusAccessibleStore.isGlobusAccessible(driverId);
+        }
+        return globusTransferable;
+    }
+    
     
     public String getGlobusAppUrl() {
         if (globusAppUrl == null) {
@@ -594,7 +615,7 @@ public class SettingsWrapper implements java.io.Serializable {
     public Map<String, String> getMetadataLanguages(DvObjectContainer target) {
         Map<String,String> currentMap = new HashMap<String,String>();
         currentMap.putAll(getBaseMetadataLanguageMap(false));
-        currentMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
+        currentMap.put(DvObjectContainer.UNDEFINED_CODE, getDefaultMetadataLanguageLabel(target));
         return currentMap;
     }
 
@@ -605,7 +626,7 @@ public class SettingsWrapper implements java.io.Serializable {
             String mlCode = target.getOwner().getEffectiveMetadataLanguage();
 
             // If it's undefined, no parent has a metadata language defined, and the global default should be used.
-            if (!mlCode.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            if (!mlCode.equals(DvObjectContainer.UNDEFINED_CODE)) {
                 // Get the label for the language code found
                 mlLabel = getBaseMetadataLanguageMap(false).get(mlCode);
                 mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
@@ -623,12 +644,38 @@ public class SettingsWrapper implements java.io.Serializable {
             return (String) mdMap.keySet().toArray()[0];
             } else {
                 //More than one - :MetadataLanguages is set and the default is undefined (users must choose if the collection doesn't override the default)
-                return DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE;
+                return DvObjectContainer.UNDEFINED_CODE;
             }
         } else {
             // None - :MetadataLanguages is not set so return null to turn off the display (backward compatibility)
             return null;
         }
+    }
+    
+    public Map<String, String> getGuestbookEntryOptions(DvObjectContainer target) {
+        Map<String, String> currentMap = new HashMap<String, String>();
+        String atDownload = BundleUtil.getStringFromBundle("dataverse.guestbookentry.atdownload");
+        String atRequest = BundleUtil.getStringFromBundle("dataverse.guestbookentry.atrequest");
+        Optional<Boolean> gbDefault = JvmSettings.GUESTBOOK_AT_REQUEST.lookupOptional(Boolean.class);
+        if (gbDefault.isPresent()) {
+            // Three options - inherited/default option, at Download, at Request
+            String useDefault = null;
+            if (target.getOwner() == null) {
+                boolean defaultOption = gbDefault.get();
+                useDefault = (defaultOption ? atRequest : atDownload)
+                        + BundleUtil.getStringFromBundle("dataverse.default");
+            } else {
+                boolean defaultOption = target.getOwner().getEffectiveGuestbookEntryAtRequest();
+                useDefault = (defaultOption ? atRequest : atDownload)
+                        + BundleUtil.getStringFromBundle("dataverse.inherited");
+            }
+            currentMap.put(DvObjectContainer.UNDEFINED_CODE, useDefault);
+            currentMap.put(Boolean.toString(true), atRequest);
+            currentMap.put(Boolean.toString(false), atDownload);
+        } else {
+            // Setting not defined - leave empty
+        }
+        return currentMap;
     }
     
     public Dataverse getRootDataverse() {
