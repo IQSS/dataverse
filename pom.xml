@@ -549,8 +549,8 @@
         </dependency>
         <dependency>
             <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast</artifactId>
-            <version>5.3.6</version>
+            <artifactId>hazelcast-all</artifactId>
+            <version>4.0.2</version>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>
