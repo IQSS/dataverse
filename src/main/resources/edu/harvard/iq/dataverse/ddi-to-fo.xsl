@@ -109,7 +109,7 @@
 	<!-- 
 		Params from OutputServlet.java
 	-->
-   <xsl:param name="showVariableGroupsParam" select="1"/>
+   <xsl:param name="showVariableGroupsParam"/>
 	<xsl:param name="numberOfVars" select="10000"/>
 	<xsl:param name="numberOfGroups"/>
 	<xsl:param name="subsetGroups"/>
@@ -123,7 +123,7 @@
 	<xsl:param name="font-family">Times</xsl:param>
 	
 	<!-- LOAD MULTILINGUAL STRINGS -->
-    <xsl:include href="ddi-pdf/i18n.inc.xsl"/>
+	<xsl:include href="ddi-pdf/i18n.inc.xslt"/>
 	<!--<xsl:include href="ddi-pdf/i18n.inc.xslt"/>-->
 	<!--
 		Report title
@@ -172,7 +172,7 @@
    <!-- Show variable groups only if there is any -->
    <xsl:variable name="showVariableGroups">
       <xsl:choose>
-         <xsl:when test="$showVariableGroupsParam = 1">1</xsl:when>
+         <xsl:when test="$showVariableGroupsParam = 1 and count(/ddi:codeBook/ddi:dataDscr/ddi:varGrp) &gt; 0">1</xsl:when>
          <xsl:otherwise>0</xsl:otherwise>
       </xsl:choose>
    </xsl:variable>
@@ -3884,50 +3884,17 @@
 																				select="$catgry-freq div $catgry-sum-freq"/>
 																		</xsl:otherwise>
 																	</xsl:choose>
-																</xsl:variable>
-																<!-- compute bar width (percentage of highest value minus some space to display the percentage value) -->
-																<xsl:variable name="tmp-col-width-1">
-																	<xsl:choose>
-																		<xsl:when test="$is-weighted">
-																			<xsl:value-of
-																				select="($catgry-freq-wgtd div $catgry-max-freq-wgtd) * ($bar-column-width - 0.5)"
-																			/>
-																		</xsl:when>
-																		<xsl:otherwise>
-																			<xsl:value-of
-																				select="($catgry-freq div $catgry-max-freq) * ($bar-column-width - 0.5)"
-																			/>
-																		</xsl:otherwise>
-																	</xsl:choose>
-																</xsl:variable>
-																<xsl:variable name="col-width-1">
-																<!--	ToDO: handle exceptions regarding column-width	-->
-																	<xsl:choose>
-																		<xsl:when test="string(number($tmp-col-width-1)) != 'NaN'">
-																			<xsl:value-of select="$tmp-col-width-1"/>
-																		</xsl:when>
-																		<xsl:otherwise>
-																			0
-																		</xsl:otherwise>
-																	</xsl:choose>
-																</xsl:variable>
-																<!-- compute remaining space for second column -->
-																<xsl:variable name="col-width-2"
-																	select="$bar-column-width - $col-width-1"/>
+                                                                </xsl:variable>
+
 																<!-- display the bar but not for missing values or if there was a problem computing the width -->
 																<xsl:if
-																	test="not(@missing='Y') and $col-width-1 > 0">
+																	test="not(@missing='Y')">
 																	<fo:table-cell text-align="left"
 																		border="0.5pt solid white" padding="2pt">
 																		<fo:table table-layout="fixed" width="100%">
-																			<fo:table-column column-width="{$col-width-1}in"/>
-																			<fo:table-column column-width="{$col-width-2}in"/>
 																			<fo:table-body>
 																				<fo:table-row>
-																					<fo:table-cell background-color="{$color-gray4}">
-																						<fo:block> </fo:block>
-																					</fo:table-cell>
-																					<fo:table-cell margin-left="0.05in">
+																					<fo:table-cell margin-left="0.05in" text-align="center">
 																						<fo:block>
 																							<xsl:value-of
 																								select="format-number($catgry-pct , '#0.0%')"/>
@@ -3947,11 +3914,6 @@
 													</fo:table-body>
 												</fo:table>
 												<!-- end category table -->
-												<fo:block font-weight="bold" color="#400000"
-													font-size="6pt" font-style="italic">
-													<xsl:value-of
-														select="$msg/*/entry[@key='SumStat_Warning']"/>
-												</fo:block>
 											</fo:table-cell>
 										</xsl:when>
 										<xsl:otherwise>
