@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.cache;
 
+import com.hazelcast.cluster.Address;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.*;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -78,7 +79,7 @@ public class CacheFactoryBeanTest {
 
     @BeforeEach
     public void init() throws IOException {
-        // reuse cache and config for all tests
+        // Reuse cache and config for all tests
         if (cache == null) {
             mockedSystemConfig = mock(SystemConfig.class);
             doReturn(settingDefaultCapacity).when(mockedSystemConfig).getRateLimitingDefaultCapacityTiers();
@@ -90,11 +91,11 @@ public class CacheFactoryBeanTest {
             }
             cache.init(); // PostConstruct - set up Hazelcast
 
-            // clear the static data, so it can be reloaded with the new mocked data
+            // Clear the static data, so it can be reloaded with the new mocked data
             RateLimitUtil.rateLimitMap.clear();
             RateLimitUtil.rateLimits.clear();
 
-            // testing cache implementation and code coverage
+            // Testing cache implementation and code coverage
             final String cacheKey = "CacheTestKey" + UUID.randomUUID();
             final String cacheValue = "CacheTestValue" + UUID.randomUUID();
             long cacheSize = cache.getCacheSize(cache.RATE_LIMIT_CACHE);
@@ -104,12 +105,12 @@ public class CacheFactoryBeanTest {
             assertTrue(cacheValueObj != null && cacheValue.equalsIgnoreCase((String) cacheValueObj));
         }
 
-        // reset to default auth user
+        // Reset to default auth user
         authUser.setRateLimitTier(1);
         authUser.setSuperuser(false);
         authUser.setUserIdentifier("authUser");
 
-        // create a unique action for each test
+        // Create a unique action for each test
         action = "cmd-" + UUID.randomUUID();
     }
 
@@ -165,7 +166,7 @@ public class CacheFactoryBeanTest {
         assertTrue(rateLimited && cnt == 120, "rateLimited:"+rateLimited + " cnt:"+cnt);
 
         for (cnt = 0; cnt <60; cnt++) {
-            Thread.sleep(1000);// wait for bucket to be replenished (check each second for 1 minute max)
+            Thread.sleep(1000);// Wait for bucket to be replenished (check each second for 1 minute max)
             rateLimited = !cache.checkRate(authUser, action);
             if (!rateLimited) {
                 break;
@@ -186,36 +187,45 @@ public class CacheFactoryBeanTest {
 
     @Test
     public void testCluster() {
-        //make sure at least 1 entry is in the original cache
+        // Make sure at least 1 entry is in the original cache
         cache.checkRate(authUser, action);
 
-        // create a second cache to test cluster
+        // Create a second cache to test cluster
         cache2 = new CacheFactoryBean();
         cache2.systemConfig = mockedSystemConfig;
         if (cache2.hzInstance == null) {
             cache2.hzInstance = Hazelcast.newHazelcastInstance(new Config());
+
+            // Needed for Jenkins to form cluster based on TcpIp since Multicast fails
+            Address m1 = cache.hzInstance.getCluster().getLocalMember().getAddress();
+            Address m2 = cache2.hzInstance.getCluster().getLocalMember().getAddress();
+            String members = String.format("%s:%d,%s:%d", m1.getHost(),m1.getPort(),m2.getHost(),m2.getPort());
+            cache.hzInstance.getConfig().getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true).addMember(members);
+            cache2.hzInstance.getConfig().getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(true).addMember(members);
         }
         cache2.init(); // PostConstruct - set up Hazelcast
 
-        // check to see if the new cache synced with the existing cache
+        // Check to see if the new cache synced with the existing cache
         long s1 = cache.getCacheSize(CacheFactoryBean.RATE_LIMIT_CACHE);
         long s2 = cache2.getCacheSize(CacheFactoryBean.RATE_LIMIT_CACHE);
         assertTrue(s1 > 0 && s1 == s2, "Size1:" + s1 + " Size2:" + s2 );
 
         String key = "key1";
         String value = "value1";
-        // verify that both caches stay in sync
+        // Verify that both caches stay in sync
         cache.setCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key, value);
         assertTrue(value.equals(cache2.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
-        // clearing one cache also clears the other cache in the cluster
+        // Clearing one cache also clears the other cache in the cluster
         cache2.clearCache(CacheFactoryBean.RATE_LIMIT_CACHE);
         assertTrue(String.valueOf(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)).isEmpty());
 
-        // verify no issue dropping one node from cluster
+        // Verify no issue dropping one node from cluster
         cache2.setCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key, value);
         assertTrue(value.equals(cache2.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
         assertTrue(value.equals(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
-        cache2.hzInstance.shutdown(); // remove cache2
+        // Shut down hazelcast on cache2 and make sure data is still available in original cache
+        cache2.hzInstance.shutdown();
+        cache2 = null;
         assertTrue(value.equals(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
     }
 }
