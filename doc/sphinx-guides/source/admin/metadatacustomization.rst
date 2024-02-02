@@ -37,8 +37,8 @@ tab-separated value (TSV). [1]_\ :sup:`,`\  [2]_ While it is technically
 possible to define more than one metadata block in a TSV file, it is
 good organizational practice to define only one in each file.
 
-The metadata block TSVs shipped with the Dataverse Software are in `/tree/develop/scripts/api/data/metadatablocks
-<https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__ and the corresponding ResourceBundle property files `/tree/develop/src/main/java <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__ of the Dataverse Software GitHub repo. Human-readable copies are available in `this Google Sheets
+The metadata block TSVs shipped with the Dataverse Software are in `/src/scripts/api/data/metadatablocks
+<https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__ and the corresponding ResourceBundle property files `/src/main/java/propertyFiles <https://github.com/IQSS/dataverse/tree/develop/src/main/java/propertyFiles>`__ of the Dataverse Software GitHub repo. Human-readable copies are available in `this Google Sheets
 document <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=0>`__ but they tend to get out of sync with the TSV files, which should be considered authoritative. The Dataverse Software installation process operates on the TSVs, not the Google spreadsheet.
 
 About the metadata block TSV
