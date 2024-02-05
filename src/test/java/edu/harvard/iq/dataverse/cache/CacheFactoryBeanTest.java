@@ -33,7 +33,6 @@ public class CacheFactoryBeanTest {
     AuthenticatedUser authUser = new AuthenticatedUser();
     GuestUser guestUser = GuestUser.get();
     String action;
-    static final String staticHazelcastSystemProperties = "dataverse.hazelcast.";
     static final String settingDefaultCapacity = "30,60,120";
     static final String settingJson = "{\n" +
             "  \"rateLimits\":[\n" +
