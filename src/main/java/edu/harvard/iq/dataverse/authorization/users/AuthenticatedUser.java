@@ -68,7 +68,8 @@ import jakarta.validation.constraints.NotNull;
     @NamedQuery( name="AuthenticatedUser.filter",
                 query="select au from AuthenticatedUser au WHERE ("
                         + "LOWER(au.userIdentifier) like LOWER(:query) OR "
-                        + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query))"),
+                        + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query) or "
+                        + "lower(au.email) like lower(:query))"),
     @NamedQuery( name="AuthenticatedUser.findAdminUser",
                 query="select au from AuthenticatedUser au WHERE "
                         + "au.superuser = true "
