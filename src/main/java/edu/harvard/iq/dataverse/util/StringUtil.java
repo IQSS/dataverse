@@ -123,6 +123,7 @@ public class StringUtil {
     }
     
     private final static SecureRandom secureRandom = new SecureRandom();
+    // 12 bytes is recommended by GCM spec
     private final static int GCM_IV_LENGTH = 12;
 
     /**
