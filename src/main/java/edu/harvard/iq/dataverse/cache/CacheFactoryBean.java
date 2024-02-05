@@ -16,6 +16,7 @@ import java.util.Map;
 @Startup
 public class CacheFactoryBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(CacheFactoryBean.class.getCanonicalName());
+    // Retrieved from Hazelcast, implements ConcurrentMap and is threadsafe
     private Map<String, String> rateLimitCache;
     @EJB
     SystemConfig systemConfig;
