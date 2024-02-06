@@ -14,7 +14,7 @@ This guide describes the testing process used by QA at IQSS and provides a refer
 Here is a brief description of our workflow: 
 
 ### Issue Submission and Prioritization: 
-- Members of the community or the development team submit bugs or request features through GitHub as [Issues](https://github.com/IQSS/dataverse/issues)sues.
+- Members of the community or the development team submit bugs or request features through GitHub as [Issues](https://github.com/IQSS/dataverse/issues).
 - These Issues are prioritized and added to a two-week-long sprint that can be tracked on the {ref}`kanban-board`.
 
 ### Development Process:
