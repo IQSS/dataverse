@@ -42,6 +42,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Logger;
@@ -873,13 +874,13 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                         String token = null;
 
                         if (leftover == null) {
-                            token = new String(columnBytes, byteoffset, bytecount - byteoffset, "UTF8");
+                            token = new String(columnBytes, byteoffset, bytecount - byteoffset, StandardCharsets.UTF_8);
                         } else {
                             byte[] merged = new byte[leftover.length + bytecount - byteoffset];
 
                             System.arraycopy(leftover, 0, merged, 0, leftover.length);
                             System.arraycopy(columnBytes, byteoffset, merged, leftover.length, bytecount - byteoffset);
-                            token = new String(merged, "UTF8");
+                            token = new String(merged, StandardCharsets.UTF_8);
                             leftover = null;
                             merged = null;
                         }

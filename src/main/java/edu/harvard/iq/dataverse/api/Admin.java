@@ -64,6 +64,7 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 
 import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -1129,7 +1130,7 @@ public class Admin extends AbstractApiBean {
                         os.write(",\n".getBytes());
                     }
 
-                    os.write(output.build().toString().getBytes("UTF8"));
+                    os.write(output.build().toString().getBytes(StandardCharsets.UTF_8));
                     
                     if (!wroteObject) {
                         wroteObject = true;
@@ -1243,7 +1244,7 @@ public class Admin extends AbstractApiBean {
                         os.write(",\n".getBytes());
                     }
 
-                    os.write(output.build().toString().getBytes("UTF8"));
+                    os.write(output.build().toString().getBytes(StandardCharsets.UTF_8));
                     
                     if (!wroteObject) {
                         wroteObject = true;

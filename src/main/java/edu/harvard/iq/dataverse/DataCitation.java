@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -252,7 +253,7 @@ public class DataCitation {
     
     public void writeAsBibtexCitation(OutputStream os) throws IOException {
         // Use UTF-8
-        Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
+        Writer out = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
         if(getFileTitle() !=null && isDirect()) {
             out.write("@incollection{");
         } else {
@@ -316,7 +317,7 @@ public class DataCitation {
 
     public void writeAsRISCitation(OutputStream os) throws IOException {
         // Use UTF-8
-        Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
+        Writer out = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
         out.write("Provider: " + publisher + "\r\n");
         out.write("Content: text/plain; charset=\"utf-8\"" + "\r\n");
         // Using type "DATA" - see https://github.com/IQSS/dataverse/issues/4816
