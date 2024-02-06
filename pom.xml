@@ -51,6 +51,17 @@
                 <artifactId>abdera-i18n</artifactId>
                 <version>1.1.3</version>
             </dependency>
+            <!-- Dependency for Apache Abdera and Apache Tika. Tika needs newer version. -->
+            <dependency>
+                <groupId>org.apache.james</groupId>
+                <artifactId>apache-mime4j-core</artifactId>
+                <version>0.8.7</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.james</groupId>
+                <artifactId>apache-mime4j-dom</artifactId>
+                <version>0.8.7</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <!-- Declare any DIRECT dependencies here.
