@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -13,7 +12,6 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
@@ -51,6 +49,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -81,7 +80,6 @@ import jakarta.ws.rs.core.Response;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonDT;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 
 import jakarta.ws.rs.core.UriInfo;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -500,22 +498,22 @@ public class Files extends AbstractApiBean {
                 .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
                 .build();
     }
-    
-    @GET
-    @AuthRequired
-    @Path("{id}/draft")
-    public Response getFileDataDraft(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
-        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, true);
-    }
-    
+
     @GET
     @AuthRequired
     @Path("{id}")
-    public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
-          return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, false);
+    public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, null);
     }
-    
-    private Response getFileDataResponse(User user, String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response, boolean draft ){
+
+    @GET
+    @AuthRequired
+    @Path("{id}/{datasetVersionId}")
+    public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("datasetVersionId") String datasetVersionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, datasetVersionId);
+    }
+
+    private Response getFileDataResponse(User user, String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, String datasetVersionId){
         
         DataverseRequest req;
         try {
@@ -532,7 +530,7 @@ public class Files extends AbstractApiBean {
 
         FileMetadata fm;
 
-        if (draft) {
+        if (datasetVersionId.equals(DS_VERSION_DRAFT)) {
             try {
                 fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
             } catch (WrappedResponse w) {
@@ -547,7 +545,7 @@ public class Files extends AbstractApiBean {
 
             try {
                 fm = df.getLatestPublishedFileMetadata();
-                
+
             } catch (UnsupportedOperationException e) {
                 try {
                     fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
