@@ -3013,6 +3013,46 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, badTerms, false);
         response.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
+        
+        //We publish the dataset and dataverse      
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());    
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        
+        //We check the version is published
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.prettyPrint();
+        jsonLDString = getData(response.getBody().asString());
+        jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        String publishedVersion = jsonLDObject.getString("http://schema.org/version");
+        assertNotEquals("DRAFT", publishedVersion);
+
+        // Upload a file so a draft version is created
+        String pathToFile = "src/main/webapp/resources/images/cc0.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        int fileID = uploadResponse.jsonPath().getInt("data.files[0].dataFile.id");
+        
+        //We check the authenticated user gets DRAFT
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.prettyPrint(); 
+        jsonLDString = getData(response.getBody().asString());
+        jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        assertEquals("DRAFT", jsonLDObject.getString("http://schema.org/version"));
+        
+        // Create user with no permission and check they get published version
+        String apiTokenNoPerms = UtilIT.createRandomUserGetToken();
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiTokenNoPerms);
+        response.prettyPrint();
+        jsonLDString = getData(response.getBody().asString());
+        jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        assertNotEquals("DRAFT", jsonLDObject.getString("http://schema.org/version"));
+        
+        // Delete the file
+        Response deleteFileResponse = UtilIT.deleteFileInDataset(fileID, apiToken);
+        deleteFileResponse.prettyPrint();
+        deleteFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
         // Delete the terms of use
         response = UtilIT.deleteDatasetJsonLDMetadata(datasetId, apiToken,
                 "{\"https://dataverse.org/schema/core#termsOfUse\": \"New terms\"}");
@@ -3026,15 +3066,27 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
         assertTrue(!jsonLDObject.containsKey("https://dataverse.org/schema/core#termsOfUse"));
 
-        // Cleanup - delete dataset, dataverse, user...
-        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
-        deleteDatasetResponse.prettyPrint();
-        assertEquals(200, deleteDatasetResponse.getStatusCode());
+        //Delete the DRAFT dataset
+        Response deleteDraftResponse = UtilIT.deleteDatasetVersionViaNativeApi(datasetId, DS_VERSION_DRAFT, apiToken);
+        deleteDraftResponse.prettyPrint();
+        deleteDraftResponse.then().assertThat().statusCode(OK.getStatusCode());
 
+        //We set the user as superuser so we can delete the published dataset
+        Response superUserResponse = UtilIT.makeSuperUser(username);
+        superUserResponse.prettyPrint();
+        deleteDraftResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        //Delete the published dataset
+        Response deletePublishedResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deletePublishedResponse.prettyPrint();
+        deleteDraftResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        //Delete the dataverse
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
+        //Delete the user
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
