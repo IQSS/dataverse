@@ -1202,7 +1202,7 @@ public class SearchIT {
                                                                                         .add("value", "42.33661")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
-                                                                                        .add("typeName", "southLongitud e")
+                                                                                        .add("typeName", "southLongitude")
                                                                         )
                                                                         .add("eastLongitude",
                                                                                 Json.createObjectBuilder()
