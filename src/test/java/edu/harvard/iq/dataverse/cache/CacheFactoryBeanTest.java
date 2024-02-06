@@ -245,60 +245,116 @@ public class CacheFactoryBeanTest {
             cache.put("memberAddress", String.format("%s:%d", address.getHost(), address.getPort()));
         }
         @Override
-        public String get(String s) {return cache.get(s);}
+        public String get(String s) {
+            return cache.get(s);
+        }
         @Override
-        public Map<String, String> getAll(Set<? extends String> set) {return null;}
+        public Map<String, String> getAll(Set<? extends String> set) {
+            return null;
+        }
         @Override
-        public boolean containsKey(String s) {return get(s) != null;}
+        public boolean containsKey(String s) {
+            return get(s) != null;
+        }
         @Override
-        public void loadAll(Set<? extends String> set, boolean b, CompletionListener completionListener) {}
+        public void loadAll(Set<? extends String> set, boolean b, CompletionListener completionListener) {
+
+        }
         @Override
-        public void put(String s, String s2) {cache.put(s,s2);}
+        public void put(String s, String s2) {
+            cache.put(s,s2);
+        }
         @Override
-        public String getAndPut(String s, String s2) {return null;}
+        public String getAndPut(String s, String s2) {
+            return null;
+        }
         @Override
-        public void putAll(Map<? extends String, ? extends String> map) {}
+        public void putAll(Map<? extends String, ? extends String> map) {
+
+        }
         @Override
-        public boolean putIfAbsent(String s, String s2) {return false;}
+        public boolean putIfAbsent(String s, String s2) {
+            return false;
+        }
         @Override
-        public boolean remove(String s) {return false;}
+        public boolean remove(String s) {
+            return false;
+        }
         @Override
-        public boolean remove(String s, String s2) {return false;}
+        public boolean remove(String s, String s2) {
+            return false;
+        }
         @Override
-        public String getAndRemove(String s) {return null;}
+        public String getAndRemove(String s) {
+            return null;
+        }
         @Override
-        public boolean replace(String s, String s2, String v1) {return false;}
+        public boolean replace(String s, String s2, String v1) {
+            return false;
+        }
         @Override
-        public boolean replace(String s, String s2) {return false;}
+        public boolean replace(String s, String s2) {
+            return false;
+        }
         @Override
-        public String getAndReplace(String s, String s2) {return null;}
+        public String getAndReplace(String s, String s2) {
+            return null;
+        }
         @Override
-        public void removeAll(Set<? extends String> set) {}
+        public void removeAll(Set<? extends String> set) {
+
+        }
         @Override
-        public void removeAll() {}
+        public void removeAll() {
+
+        }
         @Override
-        public void clear() {cache.clear();}
+        public void clear() {
+            cache.clear();
+        }
         @Override
-        public <C extends Configuration<String, String>> C getConfiguration(Class<C> aClass) {return null;}
+        public <C extends Configuration<String, String>> C getConfiguration(Class<C> aClass) {
+            return null;
+        }
         @Override
-        public <T> T invoke(String s, EntryProcessor<String, String, T> entryProcessor, Object... objects) throws EntryProcessorException {return null;}
+        public <T> T invoke(String s, EntryProcessor<String, String, T> entryProcessor, Object... objects) throws EntryProcessorException {
+            return null;
+        }
         @Override
-        public <T> Map<String, EntryProcessorResult<T>> invokeAll(Set<? extends String> set, EntryProcessor<String, String, T> entryProcessor, Object... objects) {return null;}
+        public <T> Map<String, EntryProcessorResult<T>> invokeAll(Set<? extends String> set, EntryProcessor<String, String, T> entryProcessor, Object... objects) {
+            return null;
+        }
         @Override
-        public String getName() {return null;}
+        public String getName() {
+            return null;
+        }
         @Override
-        public CacheManager getCacheManager() {return null;}
+        public CacheManager getCacheManager() {
+            return null;
+        }
         @Override
-        public void close() {hzInstance.shutdown();}
+        public void close() {
+            hzInstance.shutdown();
+        }
         @Override
-        public boolean isClosed() {return false;}
+        public boolean isClosed() {
+            return false;
+        }
         @Override
-        public <T> T unwrap(Class<T> aClass) {return null;}
+        public <T> T unwrap(Class<T> aClass) {
+            return null;
+        }
         @Override
-        public void registerCacheEntryListener(CacheEntryListenerConfiguration<String, String> cacheEntryListenerConfiguration) {}
+        public void registerCacheEntryListener(CacheEntryListenerConfiguration<String, String> cacheEntryListenerConfiguration) {
+
+        }
         @Override
-        public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<String, String> cacheEntryListenerConfiguration) {}
+        public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<String, String> cacheEntryListenerConfiguration) {
+
+        }
         @Override
-        public Iterator<Cache.Entry<String, String>> iterator() {return null;}
+        public Iterator<Cache.Entry<String, String>> iterator() {
+            return null;
+        }
     }
 }
