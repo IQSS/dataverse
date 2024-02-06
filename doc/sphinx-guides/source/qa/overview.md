@@ -11,11 +11,28 @@ This guide describes the testing process used by QA at IQSS and provides a refer
 
 ## Workflow
 
-The basic workflow is as follows. Bugs or feature requests are submitted to GitHub by the community or by team members as [issues](https://github.com/IQSS/dataverse/issues). These issues are prioritized and added to a two-week sprint that is reflected on the GitHub {ref}`kanban-board`. As developers work on these issues, a GitHub branch is produced, code is contributed, and a pull request is made to merge these new changes back into the common {ref}`develop branch <develop-branch>` and ultimately released as part of the product.
+Here is a brief description of our workflow: 
 
-Before a pull request is moved to QA, it must be reviewed by a member of the development team from a coding perspective, and it must pass automated tests. There it is tested manually, exercising the UI (using three common browsers) and any business logic it implements.  
+### Issue Submission and Prioritization: 
+- Members of the community or the development team submit bugs or request features through GitHub as [Issues](https://github.com/IQSS/dataverse/issues)sues.
+- These Issues are prioritized and added to a two-week-long sprint that can be tracked on the {ref}`kanban-board`.
 
-Depending on whether the code modifies existing code or is completely new, a smoke test of core functionality is performed and some basic regression testing of modified or related code is performed. Any documentation provided is used to understand the feature and any assertions made in that documentation are tested. Once this passes and any bugs that are found are corrected, and the automated tests are confirmed to be passing, the PR is merged into the develop branch, the PR is closed, and the branch is deleted (if it is local). At this point, the PR moves from the QA column automatically into the Merged column (where it might be discussed at the next standup) and the process repeats with the next PR until it is decided to {doc}`make a release </developers/making-releases>`.
+### Development Process:
+- Developers will work on a solution on a separate branch
+- Once a developer completes their work, they submit a [Pull Request](https://github.com/IQSS/dataverse/pulls) (PR).
+- The PR is reviewed by a developer from the team.
+- During the review, the reviewer may suggest coding or documentation changes to the original developer.
+
+### Quality Assurance (QA) Testing:
+- The QA tester performs a smoke test of core functionality and regression testing.
+- Documentation is used to understand the feature and validate any assertions made.
+- If no documentation is provided in the PR, the tester may refer to the original bug report to determine the desired outcome of the changes.
+- Once the branch is assumed to be safe, it is merged into the develop branch.
+
+### Final Steps:
+- The PR and the Issue are closed and assigned the “merged” status.
+- It is good practice to delete the branch if it is local.
+- The content from the PR becomes part of the codebase for {doc}`future releases </developers/making-releases>`.
 
 The complete suggested workflow can be found at {doc}`qa-workflow`.
 
