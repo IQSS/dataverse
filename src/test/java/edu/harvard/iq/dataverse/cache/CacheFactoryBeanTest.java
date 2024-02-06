@@ -2,7 +2,9 @@ package edu.harvard.iq.dataverse.cache;
 
 import com.hazelcast.cluster.Address;
 import com.hazelcast.config.Config;
-import com.hazelcast.core.*;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.map.IMap;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -14,7 +16,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.configuration.CacheEntryListenerConfiguration;
+import javax.cache.configuration.Configuration;
+import javax.cache.integration.CompletionListener;
+import javax.cache.processor.EntryProcessor;
+import javax.cache.processor.EntryProcessorException;
+import javax.cache.processor.EntryProcessorResult;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -28,8 +41,7 @@ public class CacheFactoryBeanTest {
     private static final Logger logger = Logger.getLogger(CacheFactoryBeanTest.class.getCanonicalName());
     private SystemConfig mockedSystemConfig;
     static CacheFactoryBean cache = null;
-    // Second instance for cluster testing
-    static CacheFactoryBean cache2 = null;
+
     AuthenticatedUser authUser = new AuthenticatedUser();
     GuestUser guestUser = GuestUser.get();
     String action;
@@ -86,23 +98,13 @@ public class CacheFactoryBeanTest {
             doReturn(settingJson).when(mockedSystemConfig).getRateLimitsJson();
             cache = new CacheFactoryBean();
             cache.systemConfig = mockedSystemConfig;
-            if (cache.hzInstance == null) {
-                cache.hzInstance = Hazelcast.newHazelcastInstance(getConfig());
+            if (cache.rateLimitCache == null) {
+                cache.rateLimitCache = new TestCache(getConfig());
             }
-            cache.init(); // PostConstruct - set up Hazelcast
 
             // Clear the static data, so it can be reloaded with the new mocked data
             RateLimitUtil.rateLimitMap.clear();
             RateLimitUtil.rateLimits.clear();
-
-            // Testing cache implementation and code coverage
-            final String cacheKey = "CacheTestKey" + UUID.randomUUID();
-            final String cacheValue = "CacheTestValue" + UUID.randomUUID();
-            long cacheSize = cache.getCacheSize(cache.RATE_LIMIT_CACHE);
-            cache.setCacheValue(cache.RATE_LIMIT_CACHE, cacheKey,cacheValue);
-            assertTrue(cache.getCacheSize(cache.RATE_LIMIT_CACHE) > cacheSize);
-            Object cacheValueObj = cache.getCacheValue(cache.RATE_LIMIT_CACHE, cacheKey);
-            assertTrue(cacheValueObj != null && cacheValue.equalsIgnoreCase((String) cacheValueObj));
         }
 
         // Reset to default auth user
@@ -116,12 +118,7 @@ public class CacheFactoryBeanTest {
 
     @AfterAll
     public static void cleanup() {
-        if (cache != null && cache.hzInstance != null) {
-            cache.hzInstance.shutdown();
-        }
-        if (cache2 != null && cache2.hzInstance != null) {
-            cache2.hzInstance.shutdown();
-        }
+        Hazelcast.shutdownAll();
     }
     @Test
     public void testGuestUserGettingRateLimited() {
@@ -133,7 +130,8 @@ public class CacheFactoryBeanTest {
                 break;
             }
         }
-        assertTrue(cache.getCacheSize(cache.RATE_LIMIT_CACHE) > 0);
+        String key = RateLimitUtil.generateCacheKey(guestUser, action);
+        assertTrue(cache.rateLimitCache.containsKey(key));
         assertTrue(rateLimited && cnt > 1 && cnt <= 30, "rateLimited:"+rateLimited + " cnt:"+cnt);
     }
 
@@ -189,41 +187,34 @@ public class CacheFactoryBeanTest {
     public void testCluster() {
         // Make sure at least 1 entry is in the original cache
         cache.checkRate(authUser, action);
+        String key = RateLimitUtil.generateCacheKey(authUser, action);
 
         // Create a second cache to test cluster
-        cache2 = new CacheFactoryBean();
+        CacheFactoryBean cache2 = new CacheFactoryBean();
         cache2.systemConfig = mockedSystemConfig;
-        if (cache2.hzInstance == null) {
-            // Needed for Jenkins to form cluster based on TcpIp since Multicast fails
-            Address initialCache = cache.hzInstance.getCluster().getLocalMember().getAddress();
-            String members = String.format("%s:%d", initialCache.getHost(),initialCache.getPort());
-            logger.info("Switching to TcpIp mode with members: " + members);
-            cache2.hzInstance = Hazelcast.newHazelcastInstance(getConfig(members));
-        }
-        cache2.init(); // PostConstruct - set up Hazelcast
+        // join cluster with original Hazelcast instance
+        cache2.rateLimitCache = new TestCache(getConfig(cache.rateLimitCache.get("memberAddress")));
 
         // Check to see if the new cache synced with the existing cache
-        long s1 = cache.getCacheSize(CacheFactoryBean.RATE_LIMIT_CACHE);
-        long s2 = cache2.getCacheSize(CacheFactoryBean.RATE_LIMIT_CACHE);
-        assertTrue(s1 > 0 && s1 == s2, "Size1:" + s1 + " Size2:" + s2 );
+        assertTrue(cache.rateLimitCache.get(key).equals(cache2.rateLimitCache.get(key)));
 
-        String key = "key1";
+        key = "key1";
         String value = "value1";
         // Verify that both caches stay in sync
-        cache.setCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key, value);
-        assertTrue(value.equals(cache2.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
+        cache.rateLimitCache.put(key, value);
+        assertTrue(value.equals(cache2.rateLimitCache.get(key)));
         // Clearing one cache also clears the other cache in the cluster
-        cache2.clearCache(CacheFactoryBean.RATE_LIMIT_CACHE);
-        assertTrue(String.valueOf(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)).isEmpty());
+        cache2.rateLimitCache.clear();
+        assertTrue(cache.rateLimitCache.get(key) == null);
 
         // Verify no issue dropping one node from cluster
-        cache2.setCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key, value);
-        assertTrue(value.equals(cache2.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
-        assertTrue(value.equals(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
+        cache2.rateLimitCache.put(key, value);
+        assertTrue(value.equals(cache2.rateLimitCache.get(key)));
+        assertTrue(value.equals(cache.rateLimitCache.get(key)));
         // Shut down hazelcast on cache2 and make sure data is still available in original cache
-        cache2.hzInstance.shutdown();
+        cache2.rateLimitCache.close();
         cache2 = null;
-        assertTrue(value.equals(cache.getCacheValue(CacheFactoryBean.RATE_LIMIT_CACHE, key)));
+        assertTrue(value.equals(cache.rateLimitCache.get(key)));
     }
 
     private Config getConfig() {
@@ -241,5 +232,73 @@ public class CacheFactoryBeanTest {
             config.getNetworkConfig().getJoin().getTcpIpConfig().addMember(members);
         }
         return config;
+    }
+
+    // convert Hazelcast IMap<String,String> to JCache Cache<Object, Object>
+    private class TestCache implements Cache<String, String>{
+        HazelcastInstance hzInstance;
+        IMap<String, String> cache;
+        TestCache(Config config) {
+            hzInstance = Hazelcast.newHazelcastInstance(config);
+            cache = hzInstance.getMap("test");
+            Address address = hzInstance.getCluster().getLocalMember().getAddress();
+            cache.put("memberAddress", String.format("%s:%d", address.getHost(), address.getPort()));
+        }
+        @Override
+        public String get(String s) {return cache.get(s);}
+        @Override
+        public Map<String, String> getAll(Set<? extends String> set) {return null;}
+        @Override
+        public boolean containsKey(String s) {return get(s) != null;}
+        @Override
+        public void loadAll(Set<? extends String> set, boolean b, CompletionListener completionListener) {}
+        @Override
+        public void put(String s, String s2) {cache.put(s,s2);}
+        @Override
+        public String getAndPut(String s, String s2) {return null;}
+        @Override
+        public void putAll(Map<? extends String, ? extends String> map) {}
+        @Override
+        public boolean putIfAbsent(String s, String s2) {return false;}
+        @Override
+        public boolean remove(String s) {return false;}
+        @Override
+        public boolean remove(String s, String s2) {return false;}
+        @Override
+        public String getAndRemove(String s) {return null;}
+        @Override
+        public boolean replace(String s, String s2, String v1) {return false;}
+        @Override
+        public boolean replace(String s, String s2) {return false;}
+        @Override
+        public String getAndReplace(String s, String s2) {return null;}
+        @Override
+        public void removeAll(Set<? extends String> set) {}
+        @Override
+        public void removeAll() {}
+        @Override
+        public void clear() {cache.clear();}
+        @Override
+        public <C extends Configuration<String, String>> C getConfiguration(Class<C> aClass) {return null;}
+        @Override
+        public <T> T invoke(String s, EntryProcessor<String, String, T> entryProcessor, Object... objects) throws EntryProcessorException {return null;}
+        @Override
+        public <T> Map<String, EntryProcessorResult<T>> invokeAll(Set<? extends String> set, EntryProcessor<String, String, T> entryProcessor, Object... objects) {return null;}
+        @Override
+        public String getName() {return null;}
+        @Override
+        public CacheManager getCacheManager() {return null;}
+        @Override
+        public void close() {hzInstance.shutdown();}
+        @Override
+        public boolean isClosed() {return false;}
+        @Override
+        public <T> T unwrap(Class<T> aClass) {return null;}
+        @Override
+        public void registerCacheEntryListener(CacheEntryListenerConfiguration<String, String> cacheEntryListenerConfiguration) {}
+        @Override
+        public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<String, String> cacheEntryListenerConfiguration) {}
+        @Override
+        public Iterator<Cache.Entry<String, String>> iterator() {return null;}
     }
 }
