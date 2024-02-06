@@ -1,4 +1,4 @@
-## Rate Limiting using JCache (with Hazelcast as a provider)
+## Rate Limiting using JCache (with Hazelcast as provided by Payara)
 The option to rate limit has been added to prevent users from over taxing the system either deliberately or by runaway automated processes.
 Rate limiting can be configured on a tier level with tier 0 being reserved for guest users and tiers 1-any for authenticated users.
 Superuser accounts are exempt from rate limiting.

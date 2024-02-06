@@ -1052,8 +1052,8 @@ Before being moved there,
 
 .. _cache-rate-limiting:
 
-Configure Your Dataverse Installation to use JCache (with Hazelcast as a provider) for Rate Limiting
-----------------------------------------------------------------------------------------------------
+Configure Your Dataverse Installation to use JCache (with Hazelcast as provided by Payara) for Rate Limiting
+------------------------------------------------------------------------------------------------------------
 
 Rate limiting has been added to prevent users from over taxing the system either deliberately or by runaway automated processes.
 Rate limiting can be configured on a tier level with tier 0 being reserved for guest users and tiers 1-any for authenticated users.
