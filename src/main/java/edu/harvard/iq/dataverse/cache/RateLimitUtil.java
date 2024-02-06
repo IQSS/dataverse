@@ -10,6 +10,7 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 
+import javax.cache.Cache;
 import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +44,7 @@ public class RateLimitUtil {
                 getCapacityByTierAndAction(systemConfig, ((AuthenticatedUser) user).getRateLimitTier(), action) :
                 getCapacityByTierAndAction(systemConfig, 0, action);
     }
-    static boolean rateLimited(final Map rateLimitCache, final String key, int capacityPerHour) {
+    static boolean rateLimited(final Cache rateLimitCache, final String key, int capacityPerHour) {
         if (capacityPerHour == NO_LIMIT) {
             return false;
         }
@@ -95,6 +96,7 @@ public class RateLimitUtil {
              for default if no action defined: "{tier}:" and the value is the default limit for the tier
              for each action: "{tier}:{action}" and the value is the limit defined in the setting
         */
+        rateLimitMap.clear();
         rateLimits.forEach(r -> {
             r.setDefaultLimit(getCapacityByTier(systemConfig, r.getTier()));
             rateLimitMap.put(getMapKey(r.getTier()), r.getDefaultLimitPerHour());
@@ -103,7 +105,8 @@ public class RateLimitUtil {
     }
     static void getRateLimitsFromJson(SystemConfig systemConfig) {
         String setting = systemConfig.getRateLimitsJson();
-        if (!setting.isEmpty() && rateLimits.isEmpty()) {
+        rateLimits.clear();
+        if (!setting.isEmpty()) {
             try {
                 JsonReader jr = Json.createReader(new StringReader(setting));
                 JsonObject obj= jr.readObject();
@@ -127,7 +130,7 @@ public class RateLimitUtil {
         }
         return key.toString();
     }
-    static long longFromKey(Map cache, String key) {
+    static long longFromKey(Cache cache, String key) {
         Object l = cache.get(key);
         return l != null ? Long.parseLong(String.valueOf(l)) : 0L;
     }
