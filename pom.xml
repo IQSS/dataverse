@@ -30,7 +30,7 @@
         <flyway.version>9.22.1</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <poi.version>5.2.1</poi.version>
-        <tika.version>2.4.1</tika.version>
+        <tika.version>2.9.1</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
     </properties>
     
