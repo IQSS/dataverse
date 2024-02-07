@@ -980,13 +980,13 @@ public class Files extends AbstractApiBean {
             }));
 
             if (dsv == null) {
-                return unauthorized("Dataset version cannot be found or unauthorized.");
+                return unauthorized(BundleUtil.getStringFromBundle("files.api.no.draftOrUnauth"));
             }
 
             Long getDatasetVersionID = dsv.getId();
             FileMetadata fm = dataFileServiceBean.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, df.getId());
             if (fm == null) {
-                return notFound("File could not be found.");
+                return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
             }
             boolean direct = false;
             DataCitation citation = new DataCitation(fm, direct);
