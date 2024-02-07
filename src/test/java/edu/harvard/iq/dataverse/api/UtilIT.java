@@ -3475,11 +3475,11 @@ public class UtilIT {
     }
 
     static Response getFileCitation(Integer fileId, String datasetVersion, String apiToken) {
-        var spec = given();
+        RequestSpecification requestSpecification = given();
         if (apiToken != null) {
-            spec.header(API_TOKEN_HTTP_HEADER, apiToken);
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
         }
-        return spec.get("/api/files/" + fileId + "/versions/" + datasetVersion + "/citation");
+        return requestSpecification.get("/api/files/" + fileId + "/versions/" + datasetVersion + "/citation");
     }
 
     static Response getVersionFiles(Integer datasetId,
