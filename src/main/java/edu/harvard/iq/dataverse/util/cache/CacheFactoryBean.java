@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.cache;
+package edu.harvard.iq.dataverse.util.cache;
 
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
