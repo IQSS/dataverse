@@ -17,11 +17,11 @@ public class GetSpecificPublishedFileMetadataByDatasetVersionCommand extends Abs
     private final long minorVersion;
     private final DataFile dataFile;
 
-    public GetSpecificPublishedFileMetadataByDatasetVersionCommand(DataverseRequest aRequest, DataFile dataFile, long majorVersionNum, long minorVersionNum) {
+    public GetSpecificPublishedFileMetadataByDatasetVersionCommand(DataverseRequest aRequest, DataFile dataFile, long majorVersion, long minorVersion) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
-        majorVersion = majorVersionNum;
-        minorVersion = minorVersionNum;
+        this.majorVersion = majorVersion;
+        this.minorVersion = minorVersion;
     }
 
     @Override
