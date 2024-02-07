@@ -3536,7 +3536,7 @@ When the dataset version is a draft or deaccessioned, authentication is required
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export FILE_ID=42
-  export DATASET_VERSION=":draft"
+  export DATASET_VERSION=:draft
 
   curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/files/$FILE_ID/versions/$DATASET_VERSION/citation"
 
