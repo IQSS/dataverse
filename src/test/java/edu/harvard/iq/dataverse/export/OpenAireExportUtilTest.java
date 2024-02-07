@@ -966,8 +966,8 @@ public class OpenAireExportUtilTest {
                 + "<geoLocationBox>"
                 + "<eastBoundLongitude>23</eastBoundLongitude>"
                 + "<northBoundLatitude>786</northBoundLatitude>"
-                + "<westBoundLongitude>45</westBoundLongitude>"
                 + "<southBoundLatitude>34</southBoundLatitude>"
+                + "<westBoundLongitude>45</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation></geoLocations>",
                 stringWriter.toString());
