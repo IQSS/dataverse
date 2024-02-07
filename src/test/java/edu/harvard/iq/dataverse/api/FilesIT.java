@@ -2487,7 +2487,7 @@ public class FilesIT {
     }
 
     @Test
-    public void testFileCitation() throws IOException {
+    public void testFileCitationByVersion() throws IOException {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -2502,24 +2502,11 @@ public class FilesIT {
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         String datasetPid = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
 
-        Response getDatasetVersionCitationResponse = UtilIT.getDatasetVersionCitation(datasetId, DS_VERSION_DRAFT, false, apiToken);
-        getDatasetVersionCitationResponse.prettyPrint();
-        getDatasetVersionCitationResponse.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                // We check that the returned message contains information expected for the citation string
-                .body("data.message", containsString("DRAFT VERSION"));
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadFile.then().assertThat().statusCode(OK.getStatusCode());
 
-        Path pathToTxt = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "file.txt");
-        String contentOfTxt = "foobar";
-        java.nio.file.Files.write(pathToTxt, contentOfTxt.getBytes());
-
-        Response uploadFileTxt = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTxt.toString(), apiToken);
-        uploadFileTxt.prettyPrint();
-        uploadFileTxt.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.files[0].label", equalTo("file.txt"));
-
-        Integer fileId = JsonPath.from(uploadFileTxt.body().asString()).getInt("data.files[0].dataFile.id");
+        Integer fileId = JsonPath.from(uploadFile.body().asString()).getInt("data.files[0].dataFile.id");
 
         String pidAsUrl = "https://doi.org/" + datasetPid.split("doi:")[1];
         int currentYear = Year.now().getValue();
@@ -2540,7 +2527,7 @@ public class FilesIT {
         getFileCitationDraft.prettyPrint();
         getFileCitationDraft.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; file.txt [fileName]"));
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; coffeeshop.png [fileName]"));
 
         Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -2556,7 +2543,7 @@ public class FilesIT {
 
         String updateJsonString = """
 {
-    "label": "foo.txt"
+    "label": "foo.png"
 }
 """;
 
@@ -2568,13 +2555,13 @@ public class FilesIT {
         getFileCitationPostV1Draft.prettyPrint();
         getFileCitationPostV1Draft.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; foo.txt [fileName]"));
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; foo.png [fileName]"));
 
         Response getFileCitationV1OldFilename = UtilIT.getFileCitation(fileId, "1.0", apiToken);
         getFileCitationV1OldFilename.prettyPrint();
         getFileCitationV1OldFilename.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, V1; file.txt [fileName]"));
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, V1; coffeeshop.png [fileName]"));
 
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken)
                 .then().assertThat().statusCode(OK.getStatusCode());
@@ -2587,7 +2574,7 @@ public class FilesIT {
         getFileCitationV1PostDeaccessionAuthor.prettyPrint();
         getFileCitationV1PostDeaccessionAuthor.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, V1, DEACCESSIONED VERSION; file.txt [fileName]"));
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, V1, DEACCESSIONED VERSION; coffeeshop.png [fileName]"));
 
         Response getFileCitationV1PostDeaccessionNoApiToken = UtilIT.getFileCitation(fileId, "1.0", null);
         getFileCitationV1PostDeaccessionNoApiToken.prettyPrint();
