@@ -508,7 +508,7 @@ public class Files extends AbstractApiBean {
 
     @GET
     @AuthRequired
-    @Path("{id}/{datasetVersionId}")
+    @Path("{id}/versions/{datasetVersionId}")
     public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("datasetVersionId") String datasetVersionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, datasetVersionId);
     }
@@ -530,7 +530,7 @@ public class Files extends AbstractApiBean {
 
         FileMetadata fm;
 
-        if (datasetVersionId.equals(DS_VERSION_DRAFT)) {
+        if (datasetVersionId != null && datasetVersionId.equals(DS_VERSION_DRAFT)) {
             try {
                 fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
             } catch (WrappedResponse w) {
@@ -558,19 +558,19 @@ public class Files extends AbstractApiBean {
             }
 
         }
-        
+
         if (fm.getDatasetVersion().isReleased()) {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
             mdcLogService.logEntry(entry);
-        } 
-        
+        }
+
         return Response.ok(Json.createObjectBuilder()
                 .add("status", ApiConstants.STATUS_OK)
                 .add("data", json(fm)).build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
-    
+
     @GET
     @AuthRequired
     @Path("{id}/metadata")
