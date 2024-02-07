@@ -648,6 +648,28 @@ Alternatively, you are welcome to request "edit" access to this "Tips for Datave
 
 The thinking is that the tips can become issues and the issues can eventually be worked on as features to improve the Dataverse Software metadata system.
 
+Development Tasks Specific to Changing Fields in Core Metadata Blocks
+---------------------------------------------------------------------
+
+When it comes to the fields from the core blocks that are distributed with Dataverse (such as Citation, Social Science and Geospatial blocks), code dependencies may exist in Dataverse, primarily in the Import and Export subsystems, on these fields being configured a certain way. So, if it becomes necessary to modify one of such core fields, code changes may be necessary to accompany the change in the block tsv, plus some sample and test files maintained in the Dataverse source tree will need to be adjusted accordingly. 
+
+Making a Field Multi-Valued
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As a recent real life example, a few fields from the Citation and Social Science block were changed to support multiple values, in order to accommodate specific needs of some community member institutions. A PR for one of these fields, ``alternativeTitle`` from the Citation block is linked below. Each time a number of code changes, plus some changes in the sample metadata files in the Dataverse code tree had to be made. The checklist below is to help another developer in the event that a similar change becomes necessary in the future. Note that some of the steps below may not apply 1:1 to a different metadata field, depending on how it is exported and imported in various formats by Dataverse. It may help to consult the PR `#9440 <https://github.com/IQSS/dataverse/pull/9440/files>`_ as a specific example of the changes that had to be made for the ``alternativeTitle`` field. 
+
+- Change the value from ``FALSE`` to ``TRUE`` in the ``allowmultiples`` column of the .tsv file for the block.
+- Change the value of the ``multiValued`` attribute for the search field in the Solr schema (``conf/solr/x.x.x/schema.xml``).
+- Modify the DDI import code (``ImportDDIServiceBean.java``) to support multiple values. (You may be able to use the change in the PR above as a model.)
+- Modify the DDI export utility (``DdiExportUtil.java``).
+- Modify the OpenAire export utility (``OpenAireExportUtil.java``).
+- Modify the following JSON source files in the Dataverse code tree to actually include multiple values for the field (two should be quite enough!): ``scripts/api/data/dataset-create-new-all-default-fields.json``, ``src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt``, ``src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json`` and ``src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-create-new-all-ddi-fields.json``. (These are used as examples for populating datasets via the import API and by the automated import and export code tests).
+- Similarly modify the following XML files that are used by the DDI export code tests: ``src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml`` and ``src/test/java/edu/harvard/iq/dataverse/export/ddi/exportfull.xml``.
+- Make sure all the automated unit and integration tests are passing. See :doc:`/developers/testing` in the Developer Guide.
+- Write a short release note to announce the change in the upcoming release. See :ref:`writing-release-note-snippets` in the Developer Guide.
+- Make a pull request. 
+
+
 Footnotes
 ---------
 

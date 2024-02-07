@@ -778,7 +778,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/metadata")
     @Produces("application/ld+json, application/json-ld")
     public Response getVersionJsonLDMetadata(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return getVersionJsonLDMetadata(crc, id, DS_VERSION_DRAFT, uriInfo, headers);
+        return getVersionJsonLDMetadata(crc, id, DS_VERSION_LATEST, uriInfo, headers);
     }
 
     @PUT
@@ -2731,7 +2731,7 @@ public class Datasets extends AbstractApiBean {
 
             @Override
             public Command<DatasetVersion> handleLatest() {
-                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned);
+                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
             }
 
             @Override
