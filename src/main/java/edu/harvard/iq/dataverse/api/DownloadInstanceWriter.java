@@ -22,7 +22,6 @@ import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Provider;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.dataaccess.*;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -104,8 +103,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                 String auxiliaryTag = null;
                 String auxiliaryType = null;
                 String auxiliaryFileName = null; 
+                
                 // Before we do anything else, check if this download can be handled 
                 // by a redirect to remote storage (only supported on S3, as of 5.4):
+                
                 if (storageIO.downloadRedirectEnabled()) {
 
                     // Even if the above is true, there are a few cases where a  
@@ -159,7 +160,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         }
 
                     } else if (dataFile.isTabularData()) {
-                        // Many separate special cases here.
+                        // Many separate special cases here. 
 
                         if (di.getConversionParam() != null) {
                             if (di.getConversionParam().equals("format")) {
@@ -180,12 +181,26 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         redirectSupported = false;
                                     }
                                 }
-                            } else if (!di.getConversionParam().equals("noVarHeader")) {
-                                // This is a subset request - can't do. 
+                            } else if (di.getConversionParam().equals("noVarHeader")) {
+                                // This will work just fine, if the tab. file is 
+                                // stored without the var. header. Throw "unavailable"
+                                // exception otherwise. 
+                                // @todo: should we actually drop support for this "noVarHeader" flag?
+                                if (dataFile.getDataTable().isStoredWithVariableHeader()) {
+                                    throw new ServiceUnavailableException();
+                                }
+                                // ... defaults to redirectSupported = true
+                            } else {
+                                // This must be a subset request then - can't do. 
+                                redirectSupported = false; 
+                            } 
+                        } else {
+                            // "straight" download of the full tab-delimited file. 
+                            // can redirect, but only if stored with the variable 
+                            // header already added: 
+                            if (!dataFile.getDataTable().isStoredWithVariableHeader()) {
                                 redirectSupported = false;
                             }
-                        } else {
-                            redirectSupported = false;
                         }
                     }
                 }
@@ -247,11 +262,16 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // finally, issue the redirect:
                         Response response = Response.seeOther(redirect_uri).build();
                         logger.fine("Issuing redirect to the file location.");
+                        // Yes, this throws an exception. It's not an exception 
+                        // as in, "bummer, something went wrong". This is how a 
+                        // redirect is produced here!
                         throw new RedirectionException(response);
                     }
                     throw new ServiceUnavailableException();
                 }
 
+                // Past this point, this is a locally served/streamed download
+                
                 if (di.getConversionParam() != null) {
                     // Image Thumbnail and Tabular data conversion: 
                     // NOTE: only supported on local files, as of 4.0.2!
@@ -285,9 +305,14 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // request any tabular-specific services. 
 
                         if (di.getConversionParam().equals("noVarHeader")) {
-                            logger.fine("tabular data with no var header requested");
-                            storageIO.setNoVarHeader(Boolean.TRUE);
-                            storageIO.setVarHeader(null);
+                            if (!dataFile.getDataTable().isStoredWithVariableHeader()) {
+                                logger.fine("tabular data with no var header requested");
+                                storageIO.setNoVarHeader(Boolean.TRUE);
+                                storageIO.setVarHeader(null);
+                            } else {
+                                logger.fine("can't serve request for tabular data without varheader, since stored with it");
+                                throw new ServiceUnavailableException();
+                            }
                         } else if (di.getConversionParam().equals("format")) {
                             // Conversions, and downloads of "stored originals" are 
                             // now supported on all DataFiles for which StorageIO 
@@ -329,11 +354,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         if (variable.getDataTable().getDataFile().getId().equals(dataFile.getId())) {
                                             logger.fine("adding variable id " + variable.getId() + " to the list.");
                                             variablePositionIndex.add(variable.getFileOrder());
-                                            if (subsetVariableHeader == null) {
-                                                subsetVariableHeader = variable.getName();
-                                            } else {
-                                                subsetVariableHeader = subsetVariableHeader.concat("\t");
-                                                subsetVariableHeader = subsetVariableHeader.concat(variable.getName());
+                                            if (!dataFile.getDataTable().isStoredWithVariableHeader()) {
+                                                subsetVariableHeader = subsetVariableHeader == null 
+                                                        ? variable.getName()
+                                                        : subsetVariableHeader.concat("\t" + variable.getName());
                                             }
                                         } else {
                                             logger.warning("variable does not belong to this data file.");
@@ -346,7 +370,17 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     try {
                                         File tempSubsetFile = File.createTempFile("tempSubsetFile", ".tmp");
                                         TabularSubsetGenerator tabularSubsetGenerator = new TabularSubsetGenerator();
-                                        tabularSubsetGenerator.subsetFile(storageIO.getInputStream(), tempSubsetFile.getAbsolutePath(), variablePositionIndex, dataFile.getDataTable().getCaseQuantity(), "\t");
+                                        
+                                        long numberOfLines = dataFile.getDataTable().getCaseQuantity();
+                                        if (dataFile.getDataTable().isStoredWithVariableHeader()) {
+                                            numberOfLines++;
+                                        }
+                                        
+                                        tabularSubsetGenerator.subsetFile(storageIO.getInputStream(), 
+                                                tempSubsetFile.getAbsolutePath(), 
+                                                variablePositionIndex, 
+                                                numberOfLines, 
+                                                "\t");
 
                                         if (tempSubsetFile.exists()) {
                                             FileInputStream subsetStream = new FileInputStream(tempSubsetFile);
@@ -354,8 +388,11 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                                             InputStreamIO subsetStreamIO = new InputStreamIO(subsetStream, subsetSize);
                                             logger.fine("successfully created subset output stream.");
-                                            subsetVariableHeader = subsetVariableHeader.concat("\n");
-                                            subsetStreamIO.setVarHeader(subsetVariableHeader);
+                                            
+                                            if (subsetVariableHeader != null) {
+                                                subsetVariableHeader = subsetVariableHeader.concat("\n");
+                                                subsetStreamIO.setVarHeader(subsetVariableHeader);
+                                            }
 
                                             String tabularFileName = storageIO.getFileName();
 
@@ -380,8 +417,13 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             } else {
                                 logger.fine("empty list of extra arguments.");
                             }
+                            // end of tab. data subset case
+                        } else if (dataFile.getDataTable().isStoredWithVariableHeader()) {
+                            logger.fine("tabular file stored with the var header included, no need to generate it on the fly");
+                            storageIO.setNoVarHeader(Boolean.TRUE);
+                            storageIO.setVarHeader(null);
                         }
-                    }
+                    } // end of tab. data file case
 
                     if (storageIO == null) {
                         //throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
